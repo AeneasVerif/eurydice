@@ -1,8 +1,4 @@
 let () =
   let json = Eurydice.LoadLlbc.load_file "../charon/tests/llbc/array.llbc" in
-  match json with
-  | Ok _ ->
-      print_endline "ok"
-  | Error e ->
-      print_endline e;
-      exit 1
+  let _ast = Eurydice.AstOfLlbc.file_of_crate json (* materialize file name here *) in
+  print_endline "done"
