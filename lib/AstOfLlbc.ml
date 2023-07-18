@@ -3,6 +3,7 @@ module C = struct
   include Charon.GAst
   include Charon.LlbcAst
   include Charon.Types
+  include Charon.Expressions
 end
 
 module K = Krml.Ast
@@ -16,7 +17,7 @@ type env = {
   get_nth_global: C.GlobalDeclId.id -> C.global_decl;
 
   (* Current DeBruijn index. *)
-  binders: string list;
+  binders: C.var_id list;
   type_binders: C.type_var_id list;
 
   (* For printing. *)
@@ -26,12 +27,14 @@ type env = {
   crate_name: string;
 }
 
+let builtin_slice: K.lident = ["Eurydice"], "slice"
+
 let lookup_typ env (v1: C.type_var_id) =
   let exception Found of int in
   try
     List.iteri (fun i v2 ->
       if v1 = v2 then
-        throw (Found i)
+        raise (Found i)
     ) env.type_binders;
     raise Not_found
   with Found i ->
@@ -43,6 +46,23 @@ let push_type_binder env (t: C.type_var) =
 let push_type_binders env (ts: C.type_var list) =
   List.fold_left push_type_binder env ts
 
+let lookup env (v1: C.var_id) =
+  let exception Found of int in
+  try
+    List.iteri (fun i v2 ->
+      if v1 = v2 then
+        raise (Found i)
+    ) env.binders;
+    raise Not_found
+  with Found i ->
+    i
+
+let push_binder env (t: C.var) =
+  { env with binders = t.index :: env.binders }
+
+let push_binders env (ts: C.var list) =
+  List.fold_left push_binder env ts
+
 let string_of_path_elem (p: Charon.Names.path_elem): string =
   match p with
   | Charon.Names.Ident s -> s
@@ -51,7 +71,7 @@ let string_of_path_elem (p: Charon.Names.path_elem): string =
 let lid_of_name (env: env) (name: Charon.Names.name): K.lident =
   [ env.crate_name ], String.concat "_" (List.map string_of_path_elem name)
 
-let width_of_integer_type (t: Charon.PrimitiveValues.integer_type): Krml.Constant.width =
+let width_of_integer_type (t: Charon.PrimitiveValues.integer_type): K.width =
   match t with
   | Charon.PrimitiveValues.Isize -> failwith "TODO: Isize"
   | I8 -> Int8
@@ -59,7 +79,7 @@ let width_of_integer_type (t: Charon.PrimitiveValues.integer_type): Krml.Constan
   | I32 -> Int32
   | I64 -> Int64
   | I128 -> failwith "TODO: I128"
-  | Usize -> USize
+  | Usize -> SizeT
   | U8 -> UInt8
   | U16 -> UInt16
   | U32 -> UInt32
@@ -67,18 +87,18 @@ let width_of_integer_type (t: Charon.PrimitiveValues.integer_type): Krml.Constan
   | U128 -> failwith "TODO: U128"
 
 let lid_of_type_decl_id (env: env) (id: C.type_decl_id) =
-  let { name; _ } = env.get_nth_type id in
-  lid_of_name name
+  let { C.name; _ } = env.get_nth_type id in
+  lid_of_name env name
 
-let typ_of_ty (type region) (env: env) (ty: region Charon.Types.region Charon.Types.ty): K.typ =
+let rec typ_of_ty (env: env) (ty: 'region Charon.Types.region Charon.Types.ty): K.typ =
   match ty with
   | C.Adt (C.AdtId id, _, []) ->
-      TQualified (lid_of_type_decl_id id)
-  | C.Adt (C.AdtId _, _, args) ->
-      TApp (lid_of_type_decl_id id, List.map (typ_of_typ env) args)
+      TQualified (lid_of_type_decl_id env id)
+  | C.Adt (C.AdtId id, _, args) ->
+      TApp (lid_of_type_decl_id env id, List.map (typ_of_ty env) args)
   | C.Adt (C.Tuple, _, args) ->
-      TTuple (List.map (typ_of_typ env) args)
-  | C.Adt (C.Assumed _, _, args) ->
+      TTuple (List.map (typ_of_ty env) args)
+  | C.Adt (C.Assumed _, _, _args) ->
       failwith "TODO: Adt/Assumed"
 
   | C.TypeVar id ->
@@ -93,12 +113,12 @@ let typ_of_ty (type region) (env: env) (ty: region Charon.Types.region Charon.Ty
       K.TInt (width_of_integer_type k)
   | C.Str ->
       failwith "TODO: Str"
-  | C.Array (t, n) ->
-      _
+  | C.Array (t, _n) ->
+      K.TBuf (typ_of_ty env t, false)
   | C.Slice t ->
-      _
+      K.TApp (builtin_slice, [ typ_of_ty env t ])
   | C.Ref (_, t, _) ->
-      _
+      K.TBuf (typ_of_ty env t, false)
 
 let of_declaration_group (dg: 'id C.g_declaration_group) (f: 'id -> 'a): 'a list =
   (* We do not care about recursion as in C, everything is mutually recursive
@@ -106,6 +126,18 @@ let of_declaration_group (dg: 'id C.g_declaration_group) (f: 'id -> 'a): 'a list
   match dg with
   | NonRec id -> [ f id ]
   | Rec ids -> List.map f ids
+
+let rec with_locals (env: env) (locals: C.var list) (k: env -> K.expr): K.expr =
+  match locals with
+  | [] -> k env
+  | l :: locals ->
+      let env = push_binder env l in
+      (* TODO: take type, surround in ELet, CPS *)
+      with_locals env locals k
+
+let expression_of_raw_statement (env: env) (s: C.raw_statement) (k: env -> K.expr): K.expr =
+  ignore (env, s, k);
+  failwith "TODO: expression_of_raw_statement"
 
 let decls_of_declarations (env: env) (formatter: C.fun_decl -> Charon.PrintGAst.ast_formatter) (d: C.declaration_group): K.decl list =
   match d with
@@ -124,7 +156,6 @@ let decls_of_declarations (env: env) (formatter: C.fun_decl -> Charon.PrintGAst.
           (Charon.PrintLlbcAst.Ast.fun_decl_to_string formatter "  " "  " decl);
 
         assert (def_id = id);
-        ignore (is_global_decl_body, env);
         match body with
         | None ->
             (* Opaque function *)
@@ -138,8 +169,29 @@ let decls_of_declarations (env: env) (formatter: C.fun_decl -> Charon.PrintGAst.
               List.map (fun (x: (_, _) Charon.Types.indexed_var) -> x.name) type_params
             in
             K.DExternal (None, [], List.length type_params, name, t, name_hints)
-        | Some _ ->
-            failwith "TODO: C.Fun, non-opaque case"
+        | Some { arg_count; locals; body; _ } ->
+            if is_global_decl_body then
+              failwith "TODO: C.Fun is_global decl"
+            else
+              let { C.type_params; inputs; output ; _ } = signature in
+              let env = push_type_binders env type_params in
+              let name = lid_of_name env name in
+              let output = typ_of_ty env output in
+              let args, locals = Krml.KList.split (arg_count + 1) locals in
+              let return_var = List.hd args in
+              let args = List.tl args in
+              let inputs = List.map2 (fun t (arg: C.var) ->
+                let name = Option.get arg.name in
+                Krml.Helpers.fresh_binder name (typ_of_ty env t)
+              ) inputs args in
+              let env = push_binders env args in
+              let body =
+                with_locals env (return_var :: locals) (fun env ->
+                  expression_of_raw_statement env body.content (fun env ->
+                    K.(with_type output (EBound (lookup env return_var.index)))
+                  ))
+              in
+              K.DFunction (None, [], List.length type_params, output, name, inputs, body)
       )
   | C.Global _id ->
       failwith "TODO: C.Global"
@@ -150,7 +202,7 @@ let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
     (* TODO: if we're spending too much time here, use a hash table or something *)
     List.nth things (to_int id)
   in
-  let get_nth_function id = gen_nth C.FunDeclId.to_int functions in
+  let get_nth_function = get_nth C.FunDeclId.to_int functions in
   let get_nth_type = get_nth C.TypeDeclId.to_int types in
   let get_nth_global = get_nth C.GlobalDeclId.to_int globals in
   let formatter (decl: C.fun_decl) =
