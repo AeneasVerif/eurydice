@@ -12,7 +12,7 @@ module K = Krml.Ast
 module L = Logging
 
 
-(** Environments *)
+(** Environment *)
 
 type env = {
   (* Lookup functions to resolve various id's into actual declarations. *)
@@ -20,8 +20,8 @@ type env = {
   get_nth_type: C.TypeDeclId.id -> C.type_decl;
   get_nth_global: C.GlobalDeclId.id -> C.global_decl;
 
-  (* Current DeBruijn index. *)
-  binders: C.var_id list;
+  (* To compute DeBruijn indices *)
+  binders: (C.var_id * K.typ) list;
   type_binders: C.type_var_id list;
 
   (* For printing. *)
@@ -30,6 +30,8 @@ type env = {
   (* For picking pretty names *)
   crate_name: string;
 }
+
+(* Environment: types *)
 
 let lookup_typ env (v1: C.type_var_id) =
   let exception Found of int in
@@ -47,23 +49,6 @@ let push_type_binder env (t: C.type_var) =
 
 let push_type_binders env (ts: C.type_var list) =
   List.fold_left push_type_binder env ts
-
-let lookup env (v1: C.var_id) =
-  let exception Found of int in
-  try
-    List.iteri (fun i v2 ->
-      if v1 = v2 then
-        raise (Found i)
-    ) env.binders;
-    raise Not_found
-  with Found i ->
-    i
-
-let push_binder env (t: C.var) =
-  { env with binders = t.index :: env.binders }
-
-let push_binders env (ts: C.var list) =
-  List.fold_left push_binder env ts
 
 
 (** Small helpers *)
@@ -132,6 +117,25 @@ let rec typ_of_ty (env: env) (ty: 'region Charon.Types.ty): K.typ =
   | C.Ref (_, t, _) ->
       K.TBuf (typ_of_ty env t, false)
 
+(* Environment: expressions *)
+
+let lookup env (v1: C.var_id) =
+  let exception Found of int * K.typ in
+  try
+    List.iteri (fun i v2 ->
+      if v1 = fst v2 then
+        raise (Found (i, snd v2))
+    ) env.binders;
+    raise Not_found
+  with Found (i, t) ->
+    i, t
+
+let push_binder env (t: C.var) =
+  { env with binders = (t.index, typ_of_ty env t.var_ty) :: env.binders }
+
+let push_binders env (ts: C.var list) =
+  List.fold_left push_binder env ts
+
 
 (** Translation of expressions (statements, operands, rvalues, places) *)
 
@@ -147,17 +151,22 @@ let rec with_locals (env: env) (t: K.typ) (locals: C.var list) (k: env -> 'a): '
       let b = binder_of_var env l in
       K.(with_type t (ELet (b, Krml.Helpers.any, with_locals env t locals k)))
 
+let expression_of_var_id (env: env) (v: C.var_id): K.expr =
+  let i, t = lookup env v in
+  K.(with_type t (EBound i))
+
 let expression_of_place (env: env) (p: C.place): K.expr =
   let { C.var_id; projection } = p in
-  let e = with_any K.(EBound (lookup env var_id)) in
+  let e = expression_of_var_id env var_id in
   List.fold_right (fun pe e ->
     match pe with
     | C.Deref | C.DerefBox ->
-        Krml.Helpers.mk_deref K.TAny e.K.node
+        Krml.Helpers.(mk_deref (assert_tbuf e.K.typ) e.K.node)
     | Field _ ->
         failwith "expression_of_place Field"
     | Offset ofs_id ->
-        with_any K.(EBufSub (e, with_type (TInt SizeT) (EBound (lookup env ofs_id))))
+        let t = Krml.Helpers.assert_tbuf e.typ in
+        K.(with_type (TBuf (t, false)) (EBufSub (e, expression_of_var_id env ofs_id)))
   ) projection e
 
 let constant_of_scalar_value { C.value; int_ty } =
@@ -202,17 +211,23 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
   | Use op ->
       expression_of_operand env op
   | Ref (p, _) ->
-      with_any (EAddrOf (expression_of_place env p))
+      let p = expression_of_place env p in
+      K.(with_type (TBuf (p.typ, false)) (EAddrOf p))
   | UnaryOp (_, _) ->
       failwith "expression_of_rvalue UnaryOp"
-  | BinaryOp (op, e1, e2) ->
-      with_any (EApp (with_any (EOp (op_of_binop op)), [
-        expression_of_rvalue e1;
-        expression_of_rvalue e2]))
+  | BinaryOp (op, o1, o2) ->
+      let op = op_of_binop op in
+      let o1 = expression_of_operand env o1 in
+      let o2 = expression_of_operand env o2 in
+      let w = match o1.typ with K.TInt w -> w | _ -> assert false in
+      let op_t = Krml.Helpers.type_of_op op w in
+      let op = K.(with_type op_t (EOp (op, w))) in
+      let ret_t, _ = Krml.Helpers.flatten_arrow op_t in
+      K.(with_type ret_t (EApp (op, [ o1; o2 ])))
   | Discriminant _ ->
       failwith "expression_of_rvalue Discriminant"
   | Aggregate (AggregatedTuple, ops) ->
-      with_any (ETuple (List.map (expression_of_operand env) ops))
+      with_any (K.ETuple (List.map (expression_of_operand env) ops))
   | Aggregate (AggregatedOption (_, _), _) ->
       failwith "expression_of_rvalue AggregatedOption"
   | Aggregate (AggregatedAdt (_, _, _, _), _) ->
@@ -226,12 +241,12 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
   | Len _ ->
       failwith "expression_of_rvalue Len"
 
-let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (ret_typ: K.typ) (s: C.raw_statement): K.expr =
+let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_statement): K.expr =
   match s with
   | Assign (p, rv) ->
       let p = expression_of_place env p in
       let rv = expression_of_rvalue env rv in
-      K.with_unit (EAssign (p, rv))
+      K.(with_type TUnit (EAssign (p, rv)))
   | FakeRead _ ->
       failwith "C.FakeRead"
   | SetDiscriminant (_, _) ->
@@ -245,7 +260,8 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (ret_typ: K.t
   | Panic ->
       with_any (EAbort None)
   | Return ->
-      K.with_type ret_typ K.(EReturn (with_type ret_typ (EBound (lookup env ret_var))))
+      let e = expression_of_var_id env ret_var in
+      K.(with_type e.typ (EReturn e))
   | Break _ ->
       with_any EBreak
   | Continue _ ->
@@ -254,19 +270,19 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (ret_typ: K.t
       failwith "C.Nop"
   | Sequence (s1, s2) ->
       with_any (ESequence [
-        expression_of_raw_statement env ret_var ret_typ s1.content;
-        expression_of_raw_statement env ret_var ret_typ s2.content])
+        expression_of_raw_statement env ret_var s1.content;
+        expression_of_raw_statement env ret_var s2.content])
   | Switch (If (op, s1, s2)) ->
       with_any (EIfThenElse (expression_of_operand env op,
-        expression_of_raw_statement env ret_var ret_typ s1.content,
-        expression_of_raw_statement env ret_var ret_typ s2.content))
+        expression_of_raw_statement env ret_var s1.content,
+        expression_of_raw_statement env ret_var s2.content))
   | Switch (SwitchInt (_, _, _, _)) ->
       failwith "expression_of_raw_statement SwitchInt"
   | Switch (Match (_, _, _)) ->
       failwith "expression_of_raw_statement Match"
   | Loop s ->
       with_any (EWhile (Krml.Helpers.etrue,
-        expression_of_raw_statement env ret_var ret_typ s.content))
+        expression_of_raw_statement env ret_var s.content))
 
 
 (** Top-level declarations: orchestration *)
@@ -328,7 +344,7 @@ let decls_of_declarations (env: env) (formatter: C.fun_decl -> Charon.PrintGAst.
               let env = push_binders env args in
               let body =
                 with_locals env return_type (return_var :: locals) (fun env ->
-                  expression_of_raw_statement env return_var.index return_type body.content)
+                  expression_of_raw_statement env return_var.index body.content)
               in
               K.DFunction (None, [], List.length signature.C.type_params, return_type, name, arg_binders, body)
       )
