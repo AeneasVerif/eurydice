@@ -276,16 +276,17 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       failwith "expression_of_rvalue AggregateArray"
   | Global _ ->
       failwith "expression_of_rvalue Global"
-  | Len { var_id; projection } ->
-      (* Length of an array, can be inferred from context *)
-      if projection <> [ Deref ] then
-        failwith "TODO: Len / non-deref case";
+  | Len ({ var_id; projection } as p) ->
+      (* Overloaded to mean either array length or slice length! *)
       let _, t = lookup env var_id in
-      match t with
-      | TArray (_, l) ->
+      match t, projection with
+      | TBuf (TArray (_, l), _), [ Deref ] ->
           K.(with_type (TInt (fst l)) (EConstant l))
-      | t ->
-          Krml.Warn.fatal_error "Not an array: %a" Krml.PrintAst.Ops.ptyp t
+      | TBuf (TApp (lid, [ t ]), _), [ Deref ] when lid = builtin_slice ->
+          let p = expression_of_place env p in
+          mk_slice_len t p
+      | t, _ ->
+          Krml.Warn.fatal_error "Unknown Len overload: %a" Krml.PrintAst.Ops.ptyp t
 
 let expression_of_assertion (env: env) ({ cond; expected }: C.assertion): K.expr =
   let cond =
