@@ -55,7 +55,25 @@ let push_type_binders env (ts: C.type_var list) =
 
 let builtin_slice: K.lident = ["Eurydice"], "slice"
 
+let builtin_slice_len: K.lident = ["Eurydice"], "slice_len"
+
 let with_any = K.(with_type TAny)
+
+let mk_slice (t: K.typ): K.typ =
+  K.TApp (builtin_slice, [ t ])
+
+let mk_slice_len (t: K.typ) (e: K.expr): K.expr =
+  let hd = K.with_type (TArrow (mk_slice t, TInt SizeT))
+    (K.ETApp (with_any (K.EQualified builtin_slice_len), [ t ]))
+  in
+  K.with_type (TInt SizeT) (K.EApp (hd, [ e ]))
+
+let assert_slice (t: K.typ) =
+  match t with
+  | TApp (lid, [ t ]) when lid = builtin_slice ->
+      t
+  | _ ->
+      Krml.Warn.fatal_error "Not a slice: %a" Krml.PrintAst.Ops.ptyp t
 
 let string_of_path_elem (p: Charon.Names.path_elem): string =
   match p with
@@ -87,6 +105,10 @@ let lid_of_type_decl_id (env: env) (id: C.type_decl_id) =
   let { C.name; _ } = env.get_nth_type id in
   lid_of_name env name
 
+let constant_of_scalar_value { C.value; int_ty } =
+  let w = width_of_integer_type int_ty in
+  w, Z.to_string value
+
 let rec typ_of_ty (env: env) (ty: 'region Charon.Types.ty): K.typ =
   match ty with
   | C.Adt (C.AdtId id, _, []) ->
@@ -110,8 +132,8 @@ let rec typ_of_ty (env: env) (ty: 'region Charon.Types.ty): K.typ =
       K.TInt (width_of_integer_type k)
   | C.Str ->
       failwith "TODO: Str"
-  | C.Array (t, _n) ->
-      K.TBuf (typ_of_ty env t, false)
+  | C.Array (t, n) ->
+      K.TArray (typ_of_ty env t, constant_of_scalar_value n)
   | C.Slice t ->
       K.TApp (builtin_slice, [ typ_of_ty env t ])
   | C.Ref (_, t, _) ->
@@ -169,9 +191,9 @@ let expression_of_place (env: env) (p: C.place): K.expr =
         K.(with_type (TBuf (t, false)) (EBufSub (e, expression_of_var_id env ofs_id)))
   ) projection e
 
-let constant_of_scalar_value { C.value; int_ty } =
+let expression_of_scalar_value ({ C.int_ty; _ } as sv) =
   let w = width_of_integer_type int_ty in
-  K.(with_type (TInt w) (EConstant (w, Z.to_string value)))
+  K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
 
 let expression_of_operand (env: env) (p: C.operand): K.expr =
   match p with
@@ -179,13 +201,19 @@ let expression_of_operand (env: env) (p: C.operand): K.expr =
   | Move p ->
       expression_of_place env p
   | Constant (_ty, Scalar sv) ->
-      constant_of_scalar_value sv
+      expression_of_scalar_value sv
   | Constant (_ty, Bool b) ->
       K.(with_type TBool (EBool b))
   | Constant (_ty, Char _) ->
       failwith "expression_of_operand Char"
   | Constant (_ty, String _) ->
       failwith "expression_of_operand String"
+
+let op_of_unop (op: C.unop): Krml.Constant.op =
+  match op with
+  | C.Not -> Not
+  | C.Neg -> Neg
+  | _ -> assert false
 
 let op_of_binop (op: C.binop): Krml.Constant.op =
   match op with
@@ -206,6 +234,17 @@ let op_of_binop (op: C.binop): Krml.Constant.op =
   | C.Shl -> BShiftL
   | C.Shr -> BShiftR
 
+let mk_op_app (op: K.op) (first: K.expr) (rest: K.expr list): K.expr =
+  let w = match first.typ with
+    | K.TInt w -> w
+    | K.TBool -> Bool
+    | t -> Krml.Warn.fatal_error "Not an operator type: %a" Krml.PrintAst.Ops.ptyp t
+  in
+  let op_t = Krml.Helpers.type_of_op op w in
+  let op = K.(with_type op_t (EOp (op, w))) in
+  let ret_t, _ = Krml.Helpers.flatten_arrow op_t in
+  K.(with_type ret_t (EApp (op, first :: rest)))
+
 let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
   match p with
   | Use op ->
@@ -213,21 +252,20 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
   | Ref (p, _) ->
       let p = expression_of_place env p in
       K.(with_type (TBuf (p.typ, false)) (EAddrOf p))
-  | UnaryOp (_, _) ->
-      failwith "expression_of_rvalue UnaryOp"
+  | UnaryOp (Cast (_, _), _e) ->
+      failwith "TODO: UnaryOp Cast"
+  | UnaryOp (SliceNew _, _e) ->
+      failwith "TODO: UnaryOp SliceNew"
+  | UnaryOp (op, o1) ->
+      mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
-      let op = op_of_binop op in
-      let o1 = expression_of_operand env o1 in
-      let o2 = expression_of_operand env o2 in
-      let w = match o1.typ with K.TInt w -> w | _ -> assert false in
-      let op_t = Krml.Helpers.type_of_op op w in
-      let op = K.(with_type op_t (EOp (op, w))) in
-      let ret_t, _ = Krml.Helpers.flatten_arrow op_t in
-      K.(with_type ret_t (EApp (op, [ o1; o2 ])))
+      mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
   | Discriminant _ ->
       failwith "expression_of_rvalue Discriminant"
   | Aggregate (AggregatedTuple, ops) ->
-      with_any (K.ETuple (List.map (expression_of_operand env) ops))
+      let ops = List.map (expression_of_operand env) ops in
+      let ts = List.map (fun x -> x.K.typ) ops in
+      K.with_type (TTuple ts) (K.ETuple ops)
   | Aggregate (AggregatedOption (_, _), _) ->
       failwith "expression_of_rvalue AggregatedOption"
   | Aggregate (AggregatedAdt (_, _, _, _), _) ->
@@ -238,8 +276,59 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       failwith "expression_of_rvalue AggregateArray"
   | Global _ ->
       failwith "expression_of_rvalue Global"
-  | Len _ ->
-      failwith "expression_of_rvalue Len"
+  | Len { var_id; projection } ->
+      (* Length of an array, can be inferred from context *)
+      if projection <> [ Deref ] then
+        failwith "TODO: Len / non-deref case";
+      let _, t = lookup env var_id in
+      match t with
+      | TArray (_, l) ->
+          K.(with_type (TInt (fst l)) (EConstant l))
+      | t ->
+          Krml.Warn.fatal_error "Not an array: %a" Krml.PrintAst.Ops.ptyp t
+
+let expression_of_assertion (env: env) ({ cond; expected }: C.assertion): K.expr =
+  let cond =
+    if not expected then
+      expression_of_operand env cond
+    else
+      Krml.Helpers.mk_not (expression_of_operand env cond)
+  in
+  K.(with_type TAny (
+    EIfThenElse (cond,
+      with_type TAny (EAbort (Some "assert failure")),
+      Krml.Helpers.eunit)))
+
+let lookup_fun (env: env) (f: C.fun_id) =
+  match f with
+  | C.Regular f ->
+      let { C.name; signature = { type_params; inputs; output; _ }; _ } = env.get_nth_function f in
+      name, type_params, inputs, output
+  | Assumed Replace ->
+      failwith "lookup_fun Replace"
+  | Assumed BoxNew ->
+      failwith "lookup_fun BoxNew"
+  | Assumed BoxDeref ->
+      failwith "lookup_fun BoxDeref"
+  | Assumed BoxDerefMut ->
+      failwith "lookup_fun BoxDerefMut"
+  | Assumed BoxFree ->
+      failwith "lookup_fun BoxFree"
+  | Assumed VecNew ->
+      failwith "lookup_fun VecNew"
+  | Assumed VecPush ->
+      failwith "lookup_fun VecPush"
+  | Assumed VecInsert ->
+      failwith "lookup_fun VecInsert"
+  | Assumed VecLen ->
+      failwith "lookup_fun VecLen"
+  | Assumed VecIndex ->
+      failwith "lookup_fun VecIndex"
+  | Assumed VecIndexMut ->
+      failwith "lookup_fun VecIndexMut"
+  | Assumed ArraySlice ->
+      (* forall a. slice<a> slice_of_array(x: &[a]); *)
+      failwith "lookup_fun ArraySlice"
 
 let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_statement): K.expr =
   match s with
@@ -247,16 +336,33 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let p = expression_of_place env p in
       let rv = expression_of_rvalue env rv in
       K.(with_type TUnit (EAssign (p, rv)))
-  | FakeRead _ ->
-      failwith "C.FakeRead"
   | SetDiscriminant (_, _) ->
       failwith "C.SetDiscriminant"
+  | FakeRead _
   | Drop _ ->
       Krml.Helpers.eunit
-  | Assert _ ->
-      failwith "C.Assert"
-  | Call _ ->
-      failwith "C.Call"
+  | Assert a ->
+      expression_of_assertion env a
+  | Call { func; type_args; args; dest; _ } ->
+      let dest = expression_of_place env dest in
+      let args = List.map (expression_of_operand env) args in
+      let type_args = List.map (typ_of_ty env) type_args in
+      let name, type_params, inputs, output = lookup_fun env func in
+      assert (List.length type_params = List.length type_args);
+      let output, t =
+        let env = push_type_binders env type_params in
+        let output = typ_of_ty env output in
+        let t = Krml.Helpers.fold_arrow (List.map (typ_of_ty env) inputs) output in
+        Krml.DeBruijn.subst_tn type_args output, Krml.DeBruijn.subst_tn type_args t
+      in
+      let hd =
+        let hd = with_any (EQualified (lid_of_name env name)) in
+        if type_args <> [] then
+          K.with_type t (K.ETApp (hd, type_args))
+        else
+          hd
+      in
+      Krml.Helpers.with_unit K.(EAssign (dest, with_type output (EApp (hd, args))))
   | Panic ->
       with_any (EAbort None)
   | Return ->
@@ -267,7 +373,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
   | Continue _ ->
       with_any EContinue
   | Nop ->
-      failwith "C.Nop"
+      Krml.Helpers.eunit
   | Sequence (s1, s2) ->
       with_any (ESequence [
         expression_of_raw_statement env ret_var s1.content;
@@ -287,6 +393,12 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
 
 (** Top-level declarations: orchestration *)
 
+(* Top-level declaration formatters *)
+type formatters = {
+  mk_formatter: C.fun_decl -> Charon.PrintGAst.ast_formatter;
+  type_ctx: C.type_decl C.TypeDeclId.Map.t
+}
+
 let of_declaration_group (dg: 'id C.g_declaration_group) (f: 'id -> 'a): 'a list =
   (* We do not care about recursion as in C, everything is mutually recursive
      thanks to header inclusion. *)
@@ -294,17 +406,25 @@ let of_declaration_group (dg: 'id C.g_declaration_group) (f: 'id -> 'a): 'a list
   | NonRec id -> [ f id ]
   | Rec ids -> List.map f ids
 
-let decls_of_declarations (env: env) (formatter: C.fun_decl -> Charon.PrintGAst.ast_formatter) (d: C.declaration_group): K.decl list =
+let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_group): K.decl option list =
   match d with
   | C.Type dg ->
       of_declaration_group dg (fun (id: C.TypeDeclId.id) ->
-        let _decl = env.get_nth_type id in
-        failwith "TODO: C.Type"
+        let decl = env.get_nth_type id in
+        let { C.name; def_id; kind; _ } = decl in
+        L.log "AstOfLlbc" "Visting type: %s\n%s" (Charon.Names.name_to_string name)
+          (Charon.PrintLlbcAst.Crate.type_decl_to_string formatters.type_ctx decl);
+
+        assert (def_id = id);
+        match kind with
+        | Opaque -> None
+        | Struct _ -> failwith "TODO: C.Type Struct"
+        | Enum _ -> failwith "TODO: C.Type Enum"
       )
   | C.Fun dg ->
       of_declaration_group dg (fun (id: C.FunDeclId.id) ->
         let decl = env.get_nth_function id in
-        let formatter = formatter decl in
+        let formatter = formatters.mk_formatter decl in
         let env = { env with formatter = Some formatter } in
         let { C.def_id; name; signature; body; is_global_decl_body; _ } = decl in
         L.log "AstOfLlbc" "Visting function: %s\n%s" (Charon.Names.name_to_string name)
@@ -323,7 +443,7 @@ let decls_of_declarations (env: env) (formatter: C.fun_decl -> Charon.PrintGAst.
             let name_hints: string list =
               List.map (fun (x: (_, _) Charon.Types.indexed_var) -> x.name) type_params
             in
-            K.DExternal (None, [], List.length type_params, name, t, name_hints)
+            Some (K.DExternal (None, [], List.length type_params, name, t, name_hints))
         | Some { arg_count; locals; body; _ } ->
             if is_global_decl_body then
               failwith "TODO: C.Fun is_global decl"
@@ -338,7 +458,7 @@ let decls_of_declarations (env: env) (formatter: C.fun_decl -> Charon.PrintGAst.
 
               let return_type = typ_of_ty env return_var.var_ty in
               let arg_binders = List.map (fun (arg: C.var) ->
-                let name = Option.get arg.name in
+                let name = Option.value ~default:"_" arg.name in
                 Krml.Helpers.fresh_binder name (typ_of_ty env arg.var_ty)
               ) args in
               let env = push_binders env args in
@@ -346,7 +466,7 @@ let decls_of_declarations (env: env) (formatter: C.fun_decl -> Charon.PrintGAst.
                 with_locals env return_type (return_var :: locals) (fun env ->
                   expression_of_raw_statement env return_var.index body.content)
               in
-              K.DFunction (None, [], List.length signature.C.type_params, return_type, name, arg_binders, body)
+              Some (K.DFunction (None, [], List.length signature.C.type_params, return_type, name, arg_binders, body))
       )
   | C.Global _id ->
       failwith "TODO: C.Global"
@@ -360,9 +480,12 @@ let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
   let get_nth_function = get_nth C.FunDeclId.to_int functions in
   let get_nth_type = get_nth C.TypeDeclId.to_int types in
   let get_nth_global = get_nth C.GlobalDeclId.to_int globals in
-  let formatter (decl: C.fun_decl) =
-    let t, f, g = Charon.LlbcAstUtils.compute_defs_maps crate in
-    Charon.PrintLlbcAst.Crate.decl_ctx_and_fun_decl_to_ast_formatter t f g decl
+  let formatters: formatters =
+    let type_ctx, f, g = Charon.LlbcAstUtils.compute_defs_maps crate in
+    let mk_formatter (decl: C.fun_decl) =
+      Charon.PrintLlbcAst.Crate.decl_ctx_and_fun_decl_to_ast_formatter type_ctx f g decl
+    in
+    { mk_formatter; type_ctx }
   in
   let env = {
     get_nth_function;
@@ -373,4 +496,4 @@ let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
     formatter = None;
     crate_name = name;
   } in
-  name, List.concat_map (decls_of_declarations env formatter) declarations
+  name, Krml.KList.filter_some (List.concat_map (decls_of_declarations env formatters) declarations)
