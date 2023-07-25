@@ -328,8 +328,11 @@ let lookup_fun (env: env) (f: C.fun_id) =
   | Assumed VecIndexMut ->
       failwith "lookup_fun VecIndexMut"
   | Assumed ArraySlice ->
-      (* forall a. slice<a> slice_of_array(x: &[a]); *)
+      (* forall a. slice<a> slice_of_array(x: [a]); *)
       failwith "lookup_fun ArraySlice"
+  | Assumed ArraySliceMut ->
+      (* forall a. slice<a> slice_of_array(x: [a]); *)
+      failwith "lookup_fun ArraySliceMut"
 
 let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_statement): K.expr =
   match s with
@@ -413,7 +416,7 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
       of_declaration_group dg (fun (id: C.TypeDeclId.id) ->
         let decl = env.get_nth_type id in
         let { C.name; def_id; kind; _ } = decl in
-        L.log "AstOfLlbc" "Visting type: %s\n%s" (Charon.Names.name_to_string name)
+        L.log "AstOfLlbc" "Visiting type: %s\n%s" (Charon.Names.name_to_string name)
           (Charon.PrintLlbcAst.Crate.type_decl_to_string formatters.type_ctx decl);
 
         assert (def_id = id);
@@ -428,7 +431,7 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
         let formatter = formatters.mk_formatter decl in
         let env = { env with formatter = Some formatter } in
         let { C.def_id; name; signature; body; is_global_decl_body; _ } = decl in
-        L.log "AstOfLlbc" "Visting function: %s\n%s" (Charon.Names.name_to_string name)
+        L.log "AstOfLlbc" "Visiting function: %s\n%s" (Charon.Names.name_to_string name)
           (Charon.PrintLlbcAst.Ast.fun_decl_to_string formatter "  " "  " decl);
 
         assert (def_id = id);
