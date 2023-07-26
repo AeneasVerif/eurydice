@@ -51,22 +51,16 @@ let push_type_binders env (ts: C.type_var list) =
   List.fold_left push_type_binder env ts
 
 
-(** Small helpers *)
+(** Helpers: types *)
 
 let builtin_slice: K.lident = ["Eurydice"], "slice"
-
 let builtin_slice_len: K.lident = ["Eurydice"], "slice_len"
+let builtin_slice_new: K.lident = ["Eurydice"], "slice_new"
 
 let with_any = K.(with_type TAny)
 
 let mk_slice (t: K.typ): K.typ =
   K.TApp (builtin_slice, [ t ])
-
-let mk_slice_len (t: K.typ) (e: K.expr): K.expr =
-  let hd = K.with_type (TArrow (mk_slice t, TInt SizeT))
-    (K.ETApp (with_any (K.EQualified builtin_slice_len), [ t ]))
-  in
-  K.with_type (TInt SizeT) (K.EApp (hd, [ e ]))
 
 let assert_slice (t: K.typ) =
   match t with
@@ -134,10 +128,44 @@ let rec typ_of_ty (env: env) (ty: 'region Charon.Types.ty): K.typ =
       failwith "TODO: Str"
   | C.Array (t, n) ->
       K.TArray (typ_of_ty env t, constant_of_scalar_value n)
-  | C.Slice t ->
-      K.TApp (builtin_slice, [ typ_of_ty env t ])
-  | C.Ref (_, t, _) ->
+  | C.Ref (_, C.Slice t, _) ->
+      (* We compile slices to fat pointers, which hold the pointer underneath -- no need for an
+         extra reference here. *)
+      mk_slice (typ_of_ty env t)
+  | C.Ref (_, C.Array (t, _), _) ->
+      (* We collapse Ref(Array) into a pointer type, leveraging C's implicit decay between array
+         types and pointer types. *)
       K.TBuf (typ_of_ty env t, false)
+  | C.Slice _ ->
+      (* Slice values cannot be materialized since their storage space cannot be computed at
+         compile-time; we should never encounter this case. *)
+      assert false
+  | C.Ref (_, t, _) ->
+      (* Normal reference *)
+      K.TBuf (typ_of_ty env t, false)
+
+(* Helpers: expressions *)
+
+let mk_slice_len (t: K.typ) (e: K.expr): K.expr =
+  let hd = K.with_type (TArrow (mk_slice t, TInt SizeT))
+    (K.ETApp (with_any (K.EQualified builtin_slice_len), [ t ]))
+  in
+  K.with_type (TInt SizeT) (K.EApp (hd, [ e ]))
+
+let mk_slice_new (e: K.expr) (e_start: K.expr) (e_end: K.expr): K.expr =
+  let t = Krml.Helpers.assert_tbuf_or_tarray e.typ in
+  let t_new = Krml.Helpers.fold_arrow [ TBuf (t, false); TInt SizeT; TInt SizeT ] (mk_slice t) in
+  let hd = K.with_type t_new
+    (K.ETApp (with_any (K.EQualified builtin_slice_new), [ t ]))
+  in
+  K.with_type (mk_slice t) (K.EApp (hd, [ e; e_start; e_end ]))
+
+(* To be desugared later into variable hoisting, allocating suitable storage space, followed by a
+   memcpy. *)
+let mk_deep_copy (e: K.expr) (t: K.typ) (l: K.constant) =
+  let builtin_copy_operator = K.EQualified (["Eurydice"], "array_copy") in
+  let builtin_copy_operator_t = K.TArrow (TArray (t, l), TArray (t, l)) in
+  K.(with_type (TArray (t, l)) (EApp (with_type builtin_copy_operator_t builtin_copy_operator, [ e ])))
 
 (* Environment: expressions *)
 
@@ -180,16 +208,26 @@ let expression_of_var_id (env: env) (v: C.var_id): K.expr =
 let expression_of_place (env: env) (p: C.place): K.expr =
   let { C.var_id; projection } = p in
   let e = expression_of_var_id env var_id in
-  List.fold_right (fun pe e ->
+  Krml.KPrint.bprintf "%a: %a %s\n"
+    Krml.PrintAst.Ops.pexpr e
+    Krml.PrintAst.Ops.ptyp e.typ
+    (String.concat ", " (List.map Charon.Expressions.show_projection_elem projection));
+  List.fold_left (fun e pe ->
     match pe with
-    | C.Deref | C.DerefBox ->
-        Krml.Helpers.(mk_deref (assert_tbuf e.K.typ) e.K.node)
+    | C.Deref ->
+        let t = Krml.Helpers.assert_tbuf e.K.typ in
+        if Krml.Helpers.is_array t then
+          e
+        else
+          Krml.Helpers.(mk_deref t e.K.node)
+    | DerefBox ->
+        failwith "expression_of_place DerefBox"
     | Field _ ->
         failwith "expression_of_place Field"
     | Offset ofs_id ->
-        let t = Krml.Helpers.assert_tbuf e.typ in
-        K.(with_type (TBuf (t, false)) (EBufSub (e, expression_of_var_id env ofs_id)))
-  ) projection e
+        let t = Krml.Helpers.assert_tbuf_or_tarray e.typ in
+        K.(with_type t (EBufRead (e, expression_of_var_id env ofs_id)))
+  ) e projection
 
 let expression_of_scalar_value ({ C.int_ty; _ } as sv) =
   let w = width_of_integer_type int_ty in
@@ -197,7 +235,15 @@ let expression_of_scalar_value ({ C.int_ty; _ } as sv) =
 
 let expression_of_operand (env: env) (p: C.operand): K.expr =
   match p with
-  | Copy p
+  | Copy p ->
+      let p = expression_of_place env p in
+      begin match p.typ with
+      | TArray (t, n) ->
+          mk_deep_copy p t n
+      | _ ->
+          p
+      end
+
   | Move p ->
       expression_of_place env p
   | Constant (_ty, Scalar sv) ->
@@ -251,11 +297,18 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       expression_of_operand env op
   | Ref (p, _) ->
       let p = expression_of_place env p in
-      K.(with_type (TBuf (p.typ, false)) (EAddrOf p))
+      (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
+         pass one for the other *)
+      if Krml.Helpers.is_array p.typ then
+        p
+      else
+        K.(with_type (TBuf (p.typ, false)) (EAddrOf p))
+
   | UnaryOp (Cast (_, _), _e) ->
       failwith "TODO: UnaryOp Cast"
-  | UnaryOp (SliceNew _, _e) ->
-      failwith "TODO: UnaryOp SliceNew"
+  | UnaryOp (SliceNew l, e) ->
+      let e = expression_of_operand env e in
+      mk_slice_new e (Krml.Helpers.zero SizeT) (expression_of_scalar_value l)
   | UnaryOp (op, o1) ->
       mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
@@ -272,20 +325,19 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       failwith "expression_of_rvalue AggregatedAdt"
   | Aggregate (AggregatedRange _, _) ->
       failwith "expression_of_rvalue AggregatedRange"
-  | Aggregate (AggregatedArray _, _) ->
-      failwith "expression_of_rvalue AggregateArray"
+  | Aggregate (AggregatedArray t, ops) ->
+      K.with_type (typ_of_ty env t) (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
   | Global _ ->
       failwith "expression_of_rvalue Global"
-  | Len ({ var_id; projection } as p) ->
+  | Len p ->
       (* Overloaded to mean either array length or slice length! *)
-      let _, t = lookup env var_id in
-      match t, projection with
-      | TBuf (TArray (_, l), _), [ Deref ] ->
+      let p = expression_of_place env p in
+      match p.typ with
+      | TArray (_, l) ->
           K.(with_type (TInt (fst l)) (EConstant l))
-      | TBuf (TApp (lid, [ t ]), _), [ Deref ] when lid = builtin_slice ->
-          let p = expression_of_place env p in
+      | TApp (lid, [ t ]) when lid = builtin_slice ->
           mk_slice_len t p
-      | t, _ ->
+      | t ->
           Krml.Warn.fatal_error "Unknown Len overload: %a" Krml.PrintAst.Ops.ptyp t
 
 let expression_of_assertion (env: env) ({ cond; expected }: C.assertion): K.expr =
@@ -449,6 +501,7 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
             in
             Some (K.DExternal (None, [], List.length type_params, name, t, name_hints))
         | Some { arg_count; locals; body; _ } ->
+            (* try *)
             if is_global_decl_body then
               failwith "TODO: C.Fun is_global decl"
             else
@@ -471,6 +524,7 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
                   expression_of_raw_statement env return_var.index body.content)
               in
               Some (K.DFunction (None, [], List.length signature.C.type_params, return_type, name, arg_binders, body))
+            (* with _ -> None *)
       )
   | C.Global _id ->
       failwith "TODO: C.Global"

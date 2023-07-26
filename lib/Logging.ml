@@ -24,6 +24,6 @@ let dummy = Buffer.create 1
 
 let log (type a) (m: string) (fmt: (a, Buffer.t, unit, unit) format4) =
   if has_logging m then
-    Krml.KPrint.bfprintf stderr (fmt ^^ "\n")
+    Krml.KPrint.bfprintf stdout (fmt ^^ "\n")
   else
     Printf.ibprintf dummy fmt
