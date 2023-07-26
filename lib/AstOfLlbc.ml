@@ -233,8 +233,28 @@ let expression_of_place (env: env) (p: C.place): K.expr =
         Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e.K.typ) e.K.node), ty
     | DerefBox, _ ->
         failwith "expression_of_place DerefBox"
-    | Field _, _ ->
-        failwith "expression_of_place Field"
+    | Field (ProjAdt _, _), _ ->
+        failwith "expression_of_place ProjAdt"
+    | Field (ProjOption _, _), _ ->
+        failwith "expression_of_place ProjOption"
+    | Field (ProjTuple n, i), C.Adt (_, _, tys) ->
+        (* match e with (_, ..., _, x, _, ..., _) -> x *)
+        let i = Charon.Types.FieldId.to_int i in
+        let ts, t_i =
+          match e.typ with
+          | TTuple ts ->
+              assert (List.length ts = n);
+              ts, List.nth ts i
+          | _ ->
+              failwith "impossible: mismatch ProjTuple/TTuple"
+        in
+        let binders = [ Krml.Helpers.fresh_binder "uu____" t_i ] in
+        let pattern =
+          K.with_type e.typ (K.PTuple (List.mapi (fun i' t ->
+            K.with_type t (if i = i' then K.PBound 0 else PWild)) ts))
+        in
+        let expr = K.with_type t_i (K.EBound 0) in
+        K.with_type t_i (K.EMatch (e, [ binders, pattern, expr ])), List.nth tys i
     | Offset ofs_id, (Ref (_, ty, _) | Array (ty, _) | Slice ty) ->
         K.(with_type (typ_of_ty env ty) (EBufRead (e, expression_of_var_id env ofs_id))), ty
     | _ ->
@@ -303,6 +323,13 @@ let mk_op_app (op: K.op) (first: K.expr) (rest: K.expr list): K.expr =
   let ret_t, _ = Krml.Helpers.flatten_arrow op_t in
   K.(with_type ret_t (EApp (op, first :: rest)))
 
+let find_nth_variant (env: env) (typ: C.type_decl_id) (var: C.variant_id) =
+  match env.get_nth_type typ with
+  | { kind = Enum variants; _ } ->
+      Charon.Types.VariantId.nth variants var
+  | _ ->
+      failwith "impossible: type is not a variant"
+
 let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
   match p with
   | Use op ->
@@ -333,8 +360,19 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       K.with_type (TTuple ts) (K.ETuple ops)
   | Aggregate (AggregatedOption (_, _), _) ->
       failwith "expression_of_rvalue AggregatedOption"
-  | Aggregate (AggregatedAdt (_, _, _, _), _) ->
-      failwith "expression_of_rvalue AggregatedAdt"
+  | Aggregate (AggregatedAdt (typ_id, variant_id, _, typ_args), args) ->
+      let { C.name; _ } = env.get_nth_type typ_id in
+      let typ_lid = lid_of_name env name in
+      let typ_args = List.map (typ_of_ty env) typ_args in
+      let t = if typ_args = [] then K.TQualified typ_lid else TApp (typ_lid, typ_args) in
+      let args = List.map (expression_of_operand env) args in
+      begin match variant_id with
+      | Some variant_id ->
+          let variant_id = (find_nth_variant env typ_id variant_id).variant_name in
+          K.with_type t (K.ECons (variant_id, args))
+      | None ->
+          failwith "TODO: AggregatedAdt None"
+      end
   | Aggregate (AggregatedRange t, ops) ->
       if t <> C.Integer Usize then
         failwith "TODO: polymorphic ranges";
@@ -489,15 +527,25 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
   | C.Type dg ->
       of_declaration_group dg (fun (id: C.TypeDeclId.id) ->
         let decl = env.get_nth_type id in
-        let { C.name; def_id; kind; _ } = decl in
+        let { C.name; def_id; kind; type_params; _ } = decl in
         L.log "AstOfLlbc" "Visiting type: %s\n%s" (Charon.Names.name_to_string name)
           (Charon.PrintLlbcAst.Crate.type_decl_to_string formatters.type_ctx decl);
 
         assert (def_id = id);
+        let name = lid_of_name env name in
+
         match kind with
         | Opaque -> None
         | Struct _ -> failwith "TODO: C.Type Struct"
-        | Enum _ -> failwith "TODO: C.Type Enum"
+        | Enum branches ->
+            let env = push_type_binders env type_params in
+            let branches = List.map (fun { C.variant_name; fields; _ } ->
+              variant_name, List.mapi (fun i { C.field_name; field_ty; _ } ->
+                Option.value ~default:("f" ^ string_of_int i) field_name,
+                (typ_of_ty env field_ty, true)
+              ) fields
+            ) branches in
+            Some (K.DType (name, [], List.length type_params, Variant branches))
       )
   | C.Fun dg ->
       of_declaration_group dg (fun (id: C.FunDeclId.id) ->
