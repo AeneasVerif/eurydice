@@ -1,4 +1,4 @@
 (executable
  (public_name eurydice)
  (name main)
- (libraries eurydice))
+ (libraries eurydice terminal))

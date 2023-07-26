@@ -12,6 +12,7 @@ bug-reports: "https://github.com/AeneasVerif/eurydice/issues"
 depends: [
   "ocaml"
   "dune" {>= "3.7"}
+  "terminal"
   "odoc" {with-doc}
 ]
 build: [

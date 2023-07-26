@@ -219,10 +219,10 @@ let expression_and_original_type_of_var_id (env: env) (v: C.var_id): K.expr * C.
 let expression_of_place (env: env) (p: C.place): K.expr =
   let { C.var_id; projection } = p in
   let e, ty = expression_and_original_type_of_var_id env var_id in
-  Krml.KPrint.bprintf "%a: %a %s\n"
-    Krml.PrintAst.Ops.pexpr e
-    Krml.PrintAst.Ops.ptyp e.typ
-    (String.concat ", " (List.map Charon.Expressions.show_projection_elem projection));
+  (* Krml.KPrint.bprintf "%a: %a %s\n" *)
+  (*   Krml.PrintAst.Ops.pexpr e *)
+  (*   Krml.PrintAst.Ops.ptyp e.typ *)
+  (*   (String.concat ", " (List.map Charon.Expressions.show_projection_elem projection)); *)
   List.fold_left (fun (e, (ty: C.ety)) pe ->
     match pe, ty with
     | C.Deref, Ref (r, (Array (ty, _) as t), k) ->
