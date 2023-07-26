@@ -335,8 +335,18 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       failwith "expression_of_rvalue AggregatedOption"
   | Aggregate (AggregatedAdt (_, _, _, _), _) ->
       failwith "expression_of_rvalue AggregatedAdt"
-  | Aggregate (AggregatedRange _, _) ->
-      failwith "expression_of_rvalue AggregatedRange"
+  | Aggregate (AggregatedRange t, ops) ->
+      if t <> C.Integer Usize then
+        failwith "TODO: polymorphic ranges";
+      let start_index, end_index =
+        match ops with
+          | [ x; y ] ->
+              expression_of_operand env x, expression_of_operand env y
+          | _ ->
+              failwith "too many arguments to range"
+      in
+      K.with_type (TQualified builtin_range)
+        (K.EFlat [ Some "start", start_index; Some "end", end_index ])
   | Aggregate (AggregatedArray t, ops) ->
       K.with_type (typ_of_ty env t) (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
   | Global _ ->
@@ -396,7 +406,7 @@ let lookup_fun (env: env) (f: C.fun_id): K.lident * int * K.typ list * K.typ =
   | Assumed ArraySliceMut ->
       (* forall a. slice<a> slice_of_array(x: [a], range); *)
       let name = builtin_slice_of_array in
-      let range_t = K.TApp (builtin_range, [ TBound 0 ]) in
+      let range_t = K.TQualified builtin_range in
       let array_t = K.TBuf (TBound 0, false) in
       name, 1, [ array_t; range_t ], mk_slice (TBound 0)
 
