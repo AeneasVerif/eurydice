@@ -56,6 +56,9 @@ let push_type_binders env (ts: C.type_var list) =
 let builtin_slice: K.lident = ["Eurydice"], "slice"
 let builtin_slice_len: K.lident = ["Eurydice"], "slice_len"
 let builtin_slice_new: K.lident = ["Eurydice"], "slice_new"
+let builtin_slice_of_array: K.lident = ["Eurydice"], "slice_of_array"
+
+let builtin_range: K.lident = ["Eurydice"], "range"
 
 let with_any = K.(with_type TAny)
 
@@ -361,11 +364,12 @@ let expression_of_assertion (env: env) ({ cond; expected }: C.assertion): K.expr
       with_type TAny (EAbort (Some "assert failure")),
       Krml.Helpers.eunit)))
 
-let lookup_fun (env: env) (f: C.fun_id) =
+let lookup_fun (env: env) (f: C.fun_id): K.lident * int * K.typ list * K.typ =
   match f with
   | C.Regular f ->
       let { C.name; signature = { type_params; inputs; output; _ }; _ } = env.get_nth_function f in
-      name, type_params, inputs, output
+      let env = push_type_binders env type_params in
+      lid_of_name env name, List.length type_params, List.map (typ_of_ty env) inputs, typ_of_ty env output
   | Assumed Replace ->
       failwith "lookup_fun Replace"
   | Assumed BoxNew ->
@@ -388,12 +392,13 @@ let lookup_fun (env: env) (f: C.fun_id) =
       failwith "lookup_fun VecIndex"
   | Assumed VecIndexMut ->
       failwith "lookup_fun VecIndexMut"
-  | Assumed ArraySlice ->
-      (* forall a. slice<a> slice_of_array(x: [a]); *)
-      failwith "lookup_fun ArraySlice"
+  | Assumed ArraySlice
   | Assumed ArraySliceMut ->
-      (* forall a. slice<a> slice_of_array(x: [a]); *)
-      failwith "lookup_fun ArraySliceMut"
+      (* forall a. slice<a> slice_of_array(x: [a], range); *)
+      let name = builtin_slice_of_array in
+      let range_t = K.TApp (builtin_range, [ TBound 0 ]) in
+      let array_t = K.TBuf (TBound 0, false) in
+      name, 1, [ array_t; range_t ], mk_slice (TBound 0)
 
 let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_statement): K.expr =
   match s with
@@ -412,16 +417,14 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let dest = expression_of_place env dest in
       let args = List.map (expression_of_operand env) args in
       let type_args = List.map (typ_of_ty env) type_args in
-      let name, type_params, inputs, output = lookup_fun env func in
-      assert (List.length type_params = List.length type_args);
+      let name, n_type_params, inputs, output = lookup_fun env func in
+      assert (n_type_params = List.length type_args);
+      let poly_t = Krml.Helpers.fold_arrow inputs output in
       let output, t =
-        let env = push_type_binders env type_params in
-        let output = typ_of_ty env output in
-        let t = Krml.Helpers.fold_arrow (List.map (typ_of_ty env) inputs) output in
-        Krml.DeBruijn.subst_tn type_args output, Krml.DeBruijn.subst_tn type_args t
+        Krml.DeBruijn.subst_tn type_args output, Krml.DeBruijn.subst_tn type_args poly_t
       in
       let hd =
-        let hd = with_any (EQualified (lid_of_name env name)) in
+        let hd = K.with_type poly_t (K.EQualified name) in
         if type_args <> [] then
           K.with_type t (K.ETApp (hd, type_args))
         else
