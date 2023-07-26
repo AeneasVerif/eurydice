@@ -21,7 +21,7 @@ type env = {
   get_nth_global: C.GlobalDeclId.id -> C.global_decl;
 
   (* To compute DeBruijn indices *)
-  binders: (C.var_id * K.typ) list;
+  binders: (C.var_id * K.typ * C.ety) list;
   type_binders: C.type_var_id list;
 
   (* For printing. *)
@@ -169,19 +169,23 @@ let mk_deep_copy (e: K.expr) (t: K.typ) (l: K.constant) =
 
 (* Environment: expressions *)
 
-let lookup env (v1: C.var_id) =
-  let exception Found of int * K.typ in
+let lookup_with_original_type env (v1: C.var_id) =
+  let exception Found of int * K.typ * C.ety in
   try
-    List.iteri (fun i v2 ->
-      if v1 = fst v2 then
-        raise (Found (i, snd v2))
+    List.iteri (fun i (v2, t, ty) ->
+      if v1 = v2 then
+        raise (Found (i, t, ty))
     ) env.binders;
     raise Not_found
-  with Found (i, t) ->
-    i, t
+  with Found (i, t, ty) ->
+    i, t, ty
+
+let lookup env v1 =
+  let i, t, _ = lookup_with_original_type env v1 in
+  i, t
 
 let push_binder env (t: C.var) =
-  { env with binders = (t.index, typ_of_ty env t.var_ty) :: env.binders }
+  { env with binders = (t.index, typ_of_ty env t.var_ty, t.var_ty) :: env.binders }
 
 let push_binders env (ts: C.var list) =
   List.fold_left push_binder env ts
@@ -205,29 +209,34 @@ let expression_of_var_id (env: env) (v: C.var_id): K.expr =
   let i, t = lookup env v in
   K.(with_type t (EBound i))
 
+let expression_and_original_type_of_var_id (env: env) (v: C.var_id): K.expr * C.ety =
+  let i, t, ty = lookup_with_original_type env v in
+  K.(with_type t (EBound i)), ty
+
 let expression_of_place (env: env) (p: C.place): K.expr =
   let { C.var_id; projection } = p in
-  let e = expression_of_var_id env var_id in
+  let e, ty = expression_and_original_type_of_var_id env var_id in
   Krml.KPrint.bprintf "%a: %a %s\n"
     Krml.PrintAst.Ops.pexpr e
     Krml.PrintAst.Ops.ptyp e.typ
     (String.concat ", " (List.map Charon.Expressions.show_projection_elem projection));
-  List.fold_left (fun e pe ->
-    match pe with
-    | C.Deref ->
-        let t = Krml.Helpers.assert_tbuf e.K.typ in
-        if Krml.Helpers.is_array t then
-          e
-        else
-          Krml.Helpers.(mk_deref t e.K.node)
-    | DerefBox ->
+  List.fold_left (fun (e, (ty: C.ety)) pe ->
+    match pe, ty with
+    | C.Deref, Ref (r, (Array (ty, _) as t), k) ->
+        K.with_type (typ_of_ty env t) e.K.node, Ref (r, ty, k)
+    | C.Deref, Ref (_, (Slice _ as t), _) ->
+        e, t
+    | C.Deref, Ref (_, ty, _) ->
+        Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e.K.typ) e.K.node), ty
+    | DerefBox, _ ->
         failwith "expression_of_place DerefBox"
-    | Field _ ->
+    | Field _, _ ->
         failwith "expression_of_place Field"
-    | Offset ofs_id ->
-        let t = Krml.Helpers.assert_tbuf_or_tarray e.typ in
-        K.(with_type t (EBufRead (e, expression_of_var_id env ofs_id)))
-  ) e projection
+    | Offset ofs_id, (Ref (_, ty, _) | Array (ty, _) | Slice ty) ->
+        K.(with_type (typ_of_ty env ty) (EBufRead (e, expression_of_var_id env ofs_id))), ty
+    | _ ->
+        failwith "unexpected / ill-typed projection"
+  ) (e, ty) projection |> fst
 
 let expression_of_scalar_value ({ C.int_ty; _ } as sv) =
   let w = width_of_integer_type int_ty in
