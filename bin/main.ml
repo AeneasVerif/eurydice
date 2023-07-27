@@ -44,8 +44,12 @@ Supported options:|}
 
   Printf.printf "✅ LLBC ➡️  AST\n";
   let terminal_width = Terminal.Size.(match get_dimensions () with Some d -> d.columns | None -> 80) in
-  PPrint.(ToChannel.pretty 0.95 terminal_width stdout (Krml.PrintAst.print_files files ^^ hardline));
+  let print files =
+    PPrint.(ToChannel.pretty 0.95 terminal_width stdout (Krml.PrintAst.print_files files ^^ hardline))
+  in
 
+  let files = Eurydice.PreCleanup.expand_array_copies files in
+  print files;
   let success, _files = Krml.Checker.check_everything ~warn:true files in
   if not success then
     exit 1

@@ -53,21 +53,14 @@ let push_type_binders env (ts: C.type_var list) =
 
 (** Helpers: types *)
 
-let builtin_slice: K.lident = ["Eurydice"], "slice"
-let builtin_slice_len: K.lident = ["Eurydice"], "slice_len"
-let builtin_slice_new: K.lident = ["Eurydice"], "slice_new"
-let builtin_slice_of_array: K.lident = ["Eurydice"], "slice_of_array"
-
-let builtin_range: K.lident = ["Eurydice"], "range"
-
 let with_any = K.(with_type TAny)
 
 let mk_slice (t: K.typ): K.typ =
-  K.TApp (builtin_slice, [ t ])
+  K.TApp (Builtin.slice, [ t ])
 
 let assert_slice (t: K.typ) =
   match t with
-  | TApp (lid, [ t ]) when lid = builtin_slice ->
+  | TApp (lid, [ t ]) when lid = Builtin.slice ->
       t
   | _ ->
       Krml.Warn.fatal_error "Not a slice: %a" Krml.PrintAst.Ops.ptyp t
@@ -151,7 +144,7 @@ let rec typ_of_ty (env: env) (ty: 'region Charon.Types.ty): K.typ =
 
 let mk_slice_len (t: K.typ) (e: K.expr): K.expr =
   let hd = K.with_type (TArrow (mk_slice t, TInt SizeT))
-    (K.ETApp (with_any (K.EQualified builtin_slice_len), [ t ]))
+    (K.ETApp (with_any (K.EQualified Builtin.slice_len), [ t ]))
   in
   K.with_type (TInt SizeT) (K.EApp (hd, [ e ]))
 
@@ -159,14 +152,14 @@ let mk_slice_new (e: K.expr) (e_start: K.expr) (e_end: K.expr): K.expr =
   let t = Krml.Helpers.assert_tbuf_or_tarray e.typ in
   let t_new = Krml.Helpers.fold_arrow [ TBuf (t, false); TInt SizeT; TInt SizeT ] (mk_slice t) in
   let hd = K.with_type t_new
-    (K.ETApp (with_any (K.EQualified builtin_slice_new), [ t ]))
+    (K.ETApp (with_any (K.EQualified Builtin.slice_new), [ t ]))
   in
   K.with_type (mk_slice t) (K.EApp (hd, [ e; e_start; e_end ]))
 
 (* To be desugared later into variable hoisting, allocating suitable storage space, followed by a
    memcpy. *)
 let mk_deep_copy (e: K.expr) (t: K.typ) (l: K.constant) =
-  let builtin_copy_operator = K.EQualified (["Eurydice"], "array_copy") in
+  let builtin_copy_operator = K.EQualified Builtin.array_copy in
   let builtin_copy_operator_t = K.TArrow (TArray (t, l), TArray (t, l)) in
   K.(with_type (TArray (t, l)) (EApp (with_type builtin_copy_operator_t builtin_copy_operator, [ e ])))
 
@@ -197,8 +190,8 @@ let push_binders env (ts: C.var list) =
 (** Translation of expressions (statements, operands, rvalues, places) *)
 
 let binder_of_var (env: env) (l: C.var): K.binder =
-  let name = Option.value ~default:"x" l.name in
-  Krml.Helpers.fresh_binder name (typ_of_ty env l.var_ty)
+  let name = Option.value ~default:"uu____" l.name in
+  Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env l.var_ty)
 
 let rec with_locals (env: env) (t: K.typ) (locals: C.var list) (k: env -> 'a): 'a =
   match locals with
@@ -383,7 +376,7 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
           | _ ->
               failwith "too many arguments to range"
       in
-      K.with_type (TQualified builtin_range)
+      K.with_type (TQualified Builtin.range)
         (K.EFlat [ Some "start", start_index; Some "end", end_index ])
   | Aggregate (AggregatedArray t, ops) ->
       K.with_type (typ_of_ty env t) (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
@@ -395,7 +388,7 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       match p.typ with
       | TArray (_, l) ->
           K.(with_type (TInt (fst l)) (EConstant l))
-      | TApp (lid, [ t ]) when lid = builtin_slice ->
+      | TApp (lid, [ t ]) when lid = Builtin.slice ->
           mk_slice_len t p
       | t ->
           Krml.Warn.fatal_error "Unknown Len overload: %a" Krml.PrintAst.Ops.ptyp t
@@ -443,8 +436,8 @@ let lookup_fun (env: env) (f: C.fun_id): K.lident * int * K.typ list * K.typ =
   | Assumed ArraySlice
   | Assumed ArraySliceMut ->
       (* forall a. slice<a> slice_of_array(x: [a], range); *)
-      let name = builtin_slice_of_array in
-      let range_t = K.TQualified builtin_range in
+      let name = Builtin.slice_of_array in
+      let range_t = K.TQualified Builtin.range in
       let array_t = K.TBuf (TBound 0, false) in
       name, 1, [ array_t; range_t ], mk_slice (TBound 0)
 
