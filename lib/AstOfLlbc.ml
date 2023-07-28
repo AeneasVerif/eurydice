@@ -215,17 +215,17 @@ let expression_and_original_type_of_var_id (env: env) (v: C.var_id): K.expr * C.
   let i, t, ty = lookup_with_original_type env v in
   K.(with_type t (EBound i)), ty
 
-let expression_of_place (env: env) (p: C.place): K.expr =
+let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
   let { C.var_id; projection } = p in
   let e, ty = expression_and_original_type_of_var_id env var_id in
-  (* Krml.KPrint.bprintf "%a: %a %s\n" *)
-  (*   Krml.PrintAst.Ops.pexpr e *)
-  (*   Krml.PrintAst.Ops.ptyp e.typ *)
-  (*   (String.concat ", " (List.map Charon.Expressions.show_projection_elem projection)); *)
+  (* We construct a target expression, but retain the original type so that callers can tell arrays
+     and references apart, since their *uses* (e.g. addr-of) compile in a type-directed way based on
+     the *original* rust type *)
   List.fold_left (fun (e, (ty: C.ety)) pe ->
     match pe, ty with
-    | C.Deref, Ref (r, (Array (ty, _) as t), k) ->
-        K.with_type (typ_of_ty env t) e.K.node, Ref (r, ty, k)
+    | C.Deref, Ref (_, (Array (t, _) as ty), _) ->
+        (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
+        K.with_type (TBuf (typ_of_ty env t, false)) e.K.node, ty
     | C.Deref, Ref (_, (Slice _ as t), _) ->
         e, t
     | C.Deref, Ref (_, ty, _) ->
@@ -258,7 +258,7 @@ let expression_of_place (env: env) (p: C.place): K.expr =
         K.(with_type (typ_of_ty env ty) (EBufRead (e, expression_of_var_id env ofs_id))), ty
     | _ ->
         failwith "unexpected / ill-typed projection"
-  ) (e, ty) projection |> fst
+  ) (e, ty) projection
 
 let expression_of_scalar_value ({ C.int_ty; _ } as sv) =
   let w = width_of_integer_type int_ty in
@@ -267,16 +267,16 @@ let expression_of_scalar_value ({ C.int_ty; _ } as sv) =
 let expression_of_operand (env: env) (p: C.operand): K.expr =
   match p with
   | Copy p ->
-      let p = expression_of_place env p in
-      begin match p.typ with
-      | TArray (t, n) ->
-          mk_deep_copy p t n
+      let p, ty = expression_of_place env p in
+      begin match ty with
+      | C.Array (t, n) ->
+          mk_deep_copy p (typ_of_ty env t) (constant_of_scalar_value n)
       | _ ->
           p
       end
 
   | Move p ->
-      expression_of_place env p
+      fst (expression_of_place env p)
   | Constant (_ty, Scalar sv) ->
       expression_of_scalar_value sv
   | Constant (_ty, Bool b) ->
@@ -334,14 +334,14 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
   | Use op ->
       expression_of_operand env op
   | Ref (p, _) ->
-      let p = expression_of_place env p in
+      let e, ty = expression_of_place env p in
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
          pass one for the other *)
-      begin match p.typ with
-      | TArray (t, _) ->
-          K.(with_type (TBuf (t, false)) p.node)
+      begin match ty with
+      | Array (_, _) ->
+          e
       | _ ->
-          K.(with_type (TBuf (p.typ, false)) (EAddrOf p))
+          K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
       end
 
   | UnaryOp (Cast (_, _), _e) ->
@@ -391,15 +391,15 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
   | Global _ ->
       failwith "expression_of_rvalue Global"
   | Len p ->
-      (* Overloaded to mean either array length or slice length! *)
-      let p = expression_of_place env p in
-      match p.typ with
-      | TArray (_, l) ->
-          K.(with_type (TInt (fst l)) (EConstant l))
-      | TApp (lid, [ t ]) when lid = Builtin.slice ->
-          mk_slice_len t p
-      | t ->
-          Krml.Warn.fatal_error "Unknown Len overload: %a" Krml.PrintAst.Ops.ptyp t
+      (* This will go away once proper treatment of lengths lands in Charon *)
+      let e, ty = expression_of_place env p in
+      match ty with
+      | Array (_, n) ->
+          expression_of_scalar_value n
+      | Slice ty ->
+          mk_slice_len (typ_of_ty env ty) e
+      | _ ->
+          Krml.Warn.fatal_error "Unknown Len overload: %a" Krml.PrintAst.Ops.ptyp e.typ
 
 let expression_of_assertion (env: env) ({ cond; expected }: C.assertion): K.expr =
   let cond =
@@ -462,7 +462,7 @@ let lesser t1 t2 =
 let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_statement): K.expr =
   match s with
   | Assign (p, rv) ->
-      let p = expression_of_place env p in
+      let p, _ = expression_of_place env p in
       let rv = expression_of_rvalue env rv in
       K.(with_type TUnit (EAssign (p, rv)))
   | SetDiscriminant (_, _) ->
@@ -473,7 +473,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
   | Assert a ->
       expression_of_assertion env a
   | Call { func; type_args; args; dest; _ } ->
-      let dest = expression_of_place env dest in
+      let dest, _ = expression_of_place env dest in
       let args = List.map (expression_of_operand env) args in
       let type_args = List.map (typ_of_ty env) type_args in
       let name, n_type_params, inputs, output = lookup_fun env func in
