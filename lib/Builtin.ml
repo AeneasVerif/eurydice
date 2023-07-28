@@ -19,13 +19,19 @@ let slice_new_t = Krml.Helpers.fold_arrow [
 
 let slice_of_array: K.lident = ["Eurydice"], "slice_of_array"
 
-let range: K.lident = ["Eurydice"], "range"
+let range: K.lident = ["core"; "ops"; "range"], "Range"
+let mk_range (t: K.typ): K.typ =
+  K.TApp (range, [ t ])
 
 let array_copy = ["Eurydice"], "array_copy"
 
 let files = [
   "Eurydice", [
     K.DExternal (None, [], 1, slice_len, slice_len_t, [ "s" ]);
-    K.DExternal (None, [], 1, slice_new, slice_new_t, [ "s" ])
+    K.DExternal (None, [], 1, slice_new, slice_new_t, [ "s" ]);
+    K.DType (range, [], 1, Flat [
+      Some "start", (TBound 0, true);
+      Some "end", (TBound 0, true);
+    ]);
   ]
 ]

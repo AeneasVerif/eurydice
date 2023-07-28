@@ -70,8 +70,9 @@ let string_of_path_elem (p: Charon.Names.path_elem): string =
 
 (** Translation of types *)
 
-let lid_of_name (env: env) (name: Charon.Names.name): K.lident =
-  [ env.crate_name ], String.concat "_" (List.map string_of_path_elem name)
+let lid_of_name (_: env) (name: Charon.Names.name): K.lident =
+  let prefix, name = Krml.KList.split_at_last name in
+  List.map string_of_path_elem prefix, string_of_path_elem name
 
 let width_of_integer_type (t: Charon.PrimitiveValues.integer_type): K.width =
   match t with
@@ -384,7 +385,7 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
           | _ ->
               failwith "too many arguments to range"
       in
-      K.with_type (TQualified Builtin.range)
+      K.with_type (Builtin.mk_range (TInt SizeT))
         (K.EFlat [ Some "start", start_index; Some "end", end_index ])
   | Aggregate (AggregatedArray t, ops) ->
       K.with_type (typ_of_ty env t) (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
@@ -445,7 +446,7 @@ let lookup_fun (env: env) (f: C.fun_id): K.lident * int * K.typ list * K.typ =
   | Assumed ArraySliceMut ->
       (* forall a. slice<a> slice_of_array(x: [a], range); *)
       let name = Builtin.slice_of_array in
-      let range_t = K.TQualified Builtin.range in
+      let range_t = Builtin.mk_range (TInt SizeT) in
       let array_t = K.TBuf (TBound 0, false) in
       name, 1, [ array_t; range_t ], Builtin.mk_slice (TBound 0)
 
