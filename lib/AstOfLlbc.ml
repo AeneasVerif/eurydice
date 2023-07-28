@@ -55,9 +55,6 @@ let push_type_binders env (ts: C.type_var list) =
 
 let with_any = K.(with_type TAny)
 
-let mk_slice (t: K.typ): K.typ =
-  K.TApp (Builtin.slice, [ t ])
-
 let assert_slice (t: K.typ) =
   match t with
   | TApp (lid, [ t ]) when lid = Builtin.slice ->
@@ -127,7 +124,7 @@ let rec typ_of_ty (env: env) (ty: 'region Charon.Types.ty): K.typ =
   | C.Ref (_, C.Slice t, _) ->
       (* We compile slices to fat pointers, which hold the pointer underneath -- no need for an
          extra reference here. *)
-      mk_slice (typ_of_ty env t)
+      Builtin.mk_slice (typ_of_ty env t)
   | C.Ref (_, C.Array (t, _), _) ->
       (* We collapse Ref(Array) into a pointer type, leveraging C's implicit decay between array
          types and pointer types. *)
@@ -143,18 +140,20 @@ let rec typ_of_ty (env: env) (ty: 'region Charon.Types.ty): K.typ =
 (* Helpers: expressions *)
 
 let mk_slice_len (t: K.typ) (e: K.expr): K.expr =
-  let hd = K.with_type (TArrow (mk_slice t, TInt SizeT))
-    (K.ETApp (with_any (K.EQualified Builtin.slice_len), [ t ]))
+  let open K in
+  let t_len = Krml.DeBruijn.subst_t t 0 Builtin.slice_len_t in
+  let hd = with_type t_len
+    (ETApp (with_type Builtin.slice_len_t (EQualified Builtin.slice_len), [ t ]))
   in
-  K.with_type (TInt SizeT) (K.EApp (hd, [ e ]))
+  with_type (TInt SizeT) (EApp (hd, [ e ]))
 
 let mk_slice_new (e: K.expr) (e_start: K.expr) (e_end: K.expr): K.expr =
   let t = Krml.Helpers.assert_tbuf_or_tarray e.typ in
-  let t_new = Krml.Helpers.fold_arrow [ TBuf (t, false); TInt SizeT; TInt SizeT ] (mk_slice t) in
+  let t_new = Krml.DeBruijn.subst_t t 0 Builtin.slice_new_t in
   let hd = K.with_type t_new
-    (K.ETApp (with_any (K.EQualified Builtin.slice_new), [ t ]))
+    K.(ETApp (with_type Builtin.slice_new_t (EQualified Builtin.slice_new), [ t ]))
   in
-  K.with_type (mk_slice t) (K.EApp (hd, [ e; e_start; e_end ]))
+  K.with_type (Builtin.mk_slice t) (K.EApp (hd, [ e; e_start; e_end ]))
 
 (* To be desugared later into variable hoisting, allocating suitable storage space, followed by a
    memcpy. *)
@@ -448,7 +447,17 @@ let lookup_fun (env: env) (f: C.fun_id): K.lident * int * K.typ list * K.typ =
       let name = Builtin.slice_of_array in
       let range_t = K.TQualified Builtin.range in
       let array_t = K.TBuf (TBound 0, false) in
-      name, 1, [ array_t; range_t ], mk_slice (TBound 0)
+      name, 1, [ array_t; range_t ], Builtin.mk_slice (TBound 0)
+
+let lesser t1 t2 =
+  if t1 = K.TAny then
+    t2
+  else if t2 = K.TAny then
+    t2
+  else if t1 <> t2 then
+    Krml.Warn.fatal_error "lesser t1=%a t2=%a" Krml.PrintAst.Ops.ptyp t1 Krml.PrintAst.Ops.ptyp t2
+  else
+    t1
 
 let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_statement): K.expr =
   match s with
@@ -482,31 +491,34 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       in
       Krml.Helpers.with_unit K.(EAssign (dest, with_type output (EApp (hd, args))))
   | Panic ->
-      with_any (EAbort None)
+      with_any (K.EAbort None)
   | Return ->
       let e = expression_of_var_id env ret_var in
-      K.(with_type e.typ (EReturn e))
+      K.(with_type TUnit (EReturn e))
   | Break _ ->
-      with_any EBreak
+      K.(with_type TUnit EBreak)
   | Continue _ ->
-      with_any EContinue
+      K.(with_type TUnit EContinue)
   | Nop ->
       Krml.Helpers.eunit
   | Sequence (s1, s2) ->
-      with_any (ESequence [
-        expression_of_raw_statement env ret_var s1.content;
-        expression_of_raw_statement env ret_var s2.content])
+      let e1 = expression_of_raw_statement env ret_var s1.content in
+      let e2 = expression_of_raw_statement env ret_var s2.content in
+      K.(with_type e2.typ (ESequence [ e1; e2 ]))
   | Switch (If (op, s1, s2)) ->
-      with_any (EIfThenElse (expression_of_operand env op,
-        expression_of_raw_statement env ret_var s1.content,
-        expression_of_raw_statement env ret_var s2.content))
+      let e1 = expression_of_raw_statement env ret_var s1.content in
+      let e2 = expression_of_raw_statement env ret_var s2.content in
+      Krml.(KPrint.bprintf "ITE, e1=%a\n" PrintAst.Ops.pexpr e1);
+      Krml.(KPrint.bprintf "ITE, e2=%a\n" PrintAst.Ops.pexpr e2);
+      let t = lesser e1.typ e2.typ in
+      K.(with_type t (EIfThenElse (expression_of_operand env op, e1, e2 )))
   | Switch (SwitchInt (_, _, _, _)) ->
       failwith "expression_of_raw_statement SwitchInt"
   | Switch (Match (_, _, _)) ->
       failwith "expression_of_raw_statement Match"
   | Loop s ->
-      with_any (EWhile (Krml.Helpers.etrue,
-        expression_of_raw_statement env ret_var s.content))
+      K.(with_type TUnit (EWhile (Krml.Helpers.etrue,
+        expression_of_raw_statement env ret_var s.content)))
 
 
 (** Top-level declarations: orchestration *)
