@@ -3,6 +3,25 @@ open Krml.Ast
 let expr_of_constant (w, n) =
   with_type (TInt w) (EConstant (w, n))
 
+let flatten_sequences files =
+  (object
+    inherit [_] map as super
+
+    method! visit_ESequence env es =
+      let rec flatten acc e =
+        match e.node with
+        | ESequence [ { node = EUnit; _ }; e2 ] ->
+            flatten acc e2
+        | ESequence [ e1; e2 ] ->
+            flatten (e1 :: acc) e2
+        | ESequence _ ->
+            failwith "impossible: charon generates right-nested two-element sequences"
+        | _ ->
+            ESequence (List.rev_append acc [ super#visit_expr env e ])
+      in
+      flatten [] (with_type (snd env) (ESequence es))
+  end)#visit_files () files
+
 let expand_array_copies files =
   (object
     inherit [_] map as super

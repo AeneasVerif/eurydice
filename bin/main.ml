@@ -49,6 +49,7 @@ Supported options:|}
   in
 
   let files = Eurydice.PreCleanup.expand_array_copies files in
+  let files = Eurydice.PreCleanup.flatten_sequences files in
   print files;
   let success, _files = Krml.Checker.check_everything ~warn:true files in
   if not success then

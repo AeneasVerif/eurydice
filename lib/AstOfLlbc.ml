@@ -189,8 +189,15 @@ let push_binders env (ts: C.var list) =
 
 (** Translation of expressions (statements, operands, rvalues, places) *)
 
+let uu =
+  let r = ref 0 in
+  fun () ->
+    let suffix = string_of_int !r in
+    incr r;
+    "uu____" ^ suffix
+
 let binder_of_var (env: env) (l: C.var): K.binder =
-  let name = Option.value ~default:"uu____" l.name in
+  let name = Option.value ~default:(uu ()) l.name in
   Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env l.var_ty)
 
 let rec with_locals (env: env) (t: K.typ) (locals: C.var list) (k: env -> 'a): 'a =
@@ -241,7 +248,7 @@ let expression_of_place (env: env) (p: C.place): K.expr =
           | _ ->
               failwith "impossible: mismatch ProjTuple/TTuple"
         in
-        let binders = [ Krml.Helpers.fresh_binder "uu____" t_i ] in
+        let binders = [ Krml.Helpers.fresh_binder (uu ()) t_i ] in
         let pattern =
           K.with_type e.typ (K.PTuple (List.mapi (fun i' t ->
             K.with_type t (if i = i' then K.PBound 0 else PWild)) ts))
@@ -331,10 +338,12 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       let p = expression_of_place env p in
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
          pass one for the other *)
-      if Krml.Helpers.is_array p.typ then
-        p
-      else
-        K.(with_type (TBuf (p.typ, false)) (EAddrOf p))
+      begin match p.typ with
+      | TArray (t, _) ->
+          K.(with_type (TBuf (t, false)) p.node)
+      | _ ->
+          K.(with_type (TBuf (p.typ, false)) (EAddrOf p))
+      end
 
   | UnaryOp (Cast (_, _), _e) ->
       failwith "TODO: UnaryOp Cast"
