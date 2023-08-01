@@ -444,11 +444,30 @@ let lookup_fun (env: env) (f: C.fun_id): K.lident * int * K.typ list * K.typ =
       failwith "lookup_fun VecIndexMut"
   | Assumed ArraySlice
   | Assumed ArraySliceMut ->
-      (* forall a. slice<a> slice_of_array(x: [a], range); *)
-      let name = Builtin.slice_of_array in
-      let range_t = Builtin.mk_range (TInt SizeT) in
-      let array_t = K.TBuf (TBound 0, false) in
-      name, 1, [ array_t; range_t ], Builtin.mk_slice (TBound 0)
+      (* we intentionally give a type here that is too general... the idea is that krml's
+         type-checker cannot represent dependencies, or type-level functions, so we can write
+         neither:
+           forall a n. (x: [a; n], range) -> slice a
+         or
+           forall a. (x: a, range) -> slice (decay a)
+         so instead we do something that is too general, but will eventually work out:
+           forall a b. (x: b*, range) -> slice b
+         where all uses pick a = [ t; n ] and b = t.
+         An additional subtletly is that the rvalue passed to the function decays automatically into
+         a pointer type so really the only purpose of the first type argument is to retain the
+         length that will eventually be emitted in the code-gen. *)
+      let name = Builtin.slice_new_with_range in
+      let ret, args = Krml.Helpers.flatten_arrow Builtin.slice_new_with_range_t in
+      name, List.length args, args, ret
+
+(* See explanation above *)
+let adjust_type_args (f: C.fun_id) (type_args: K.typ list): K.typ list =
+  match f with
+  | Assumed (ArraySlice | ArraySliceMut) ->
+      let t = match type_args with [ TArray (t, _) ] -> t | _ -> failwith "ill-typed slice_new_with_range" in
+      type_args @ [ t ]
+  | _ ->
+      type_args
 
 let lesser t1 t2 =
   if t1 = K.TAny then
@@ -477,6 +496,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let dest, _ = expression_of_place env dest in
       let args = List.map (expression_of_operand env) args in
       let type_args = List.map (typ_of_ty env) type_args in
+      let type_args = adjust_type_args func type_args in
       let name, n_type_params, inputs, output = lookup_fun env func in
       assert (n_type_params = List.length type_args);
       let poly_t = Krml.Helpers.fold_arrow inputs output in

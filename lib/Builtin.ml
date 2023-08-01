@@ -17,18 +17,23 @@ let slice_new_t = Krml.Helpers.fold_arrow [
     TInt SizeT
   ] (mk_slice (TBound 0))
 
-let slice_of_array: K.lident = ["Eurydice"], "slice_of_array"
-
 let range: K.lident = ["core"; "ops"; "range"], "Range"
 let mk_range (t: K.typ): K.typ =
   K.TApp (range, [ t ])
+
+let slice_new_with_range: K.lident = ["Eurydice"], "slice_new_with_range"
+let slice_new_with_range_t = Krml.Helpers.fold_arrow [
+    TBuf (TBound 0, false);
+    mk_range (TInt SizeT)
+  ] (TBound 0)
 
 let array_copy = ["Eurydice"], "array_copy"
 
 let files = [
   "Eurydice", [
     K.DExternal (None, [], 1, slice_len, slice_len_t, [ "s" ]);
-    K.DExternal (None, [], 1, slice_new, slice_new_t, [ "s" ]);
+    K.DExternal (None, [], 1, slice_new, slice_new_t, [ "a" ]);
+    K.DExternal (None, [], 1, slice_new_with_range, slice_new_with_range_t, [ "a"; "r" ]);
     K.DType (range, [], 1, Flat [
       Some "start", (TBound 0, true);
       Some "end", (TBound 0, true);
