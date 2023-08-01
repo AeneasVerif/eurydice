@@ -36,8 +36,15 @@ Supported options:|}
   if !files = [] then
     fatal_error "%s" (Arg.usage_string spec usage);
 
+  let terminal_width = Terminal.Size.(match get_dimensions () with Some d -> d.columns | None -> 80) in
+  let pfiles b files =
+    PPrint.(ToBuffer.pretty 0.95 terminal_width b (Krml.PrintAst.print_files files ^^ hardline))
+  in
+
   (* This is where the action happens *)
   Eurydice.Logging.enable_logging !O.log_level;
+  (* Type applications are compiled as a regular external type. *)
+  Krml.Options.allow_tapps := true;
 
   let files = Eurydice.Builtin.files @ List.map (fun filename ->
     let llbc = Eurydice.LoadLlbc.load_file filename in
@@ -45,11 +52,6 @@ Supported options:|}
   ) !files in
 
   Printf.printf "1️⃣ LLBC ➡️  AST\n";
-  let terminal_width = Terminal.Size.(match get_dimensions () with Some d -> d.columns | None -> 80) in
-  let pfiles b files =
-    PPrint.(ToBuffer.pretty 0.95 terminal_width b (Krml.PrintAst.print_files files ^^ hardline))
-  in
-
   let files = Eurydice.PreCleanup.expand_array_copies files in
   let files = Eurydice.PreCleanup.flatten_sequences files in
 
@@ -58,15 +60,58 @@ Supported options:|}
   if errors then
     exit 1;
 
-  Printf.printf "2️⃣ Initial check\n";
-
+  Printf.printf "2️⃣ Cleanup\n";
   let files = Eurydice.Cleanup1.cleanup files in
+
   Eurydice.Logging.log "Phase2" "%a" pfiles files;
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
     exit 1;
 
-  (* 3️⃣ *)
-  Printf.printf "✅ Done\n";
+  Printf.printf "3️⃣ Monomorphization, datatypes\n";
+  let files = Krml.Monomorphization.functions files in
+  let files = Krml.Monomorphization.datatypes files in
+  let files = Krml.DataTypes.simplify files in
+  let files = Krml.DataTypes.optimize files in
+  let _, files = Krml.DataTypes.everything files in
+  let files = Krml.Simplify.sequence_to_let#visit_files () files in
+  Eurydice.Logging.log "Phase3" "%a" pfiles files;
+  let files = Krml.Simplify.hoist#visit_files [] files in
+  let files = Krml.Simplify.let_to_sequence#visit_files () files in
 
-  ignore files
+  Eurydice.Logging.log "Phase3" "%a" pfiles files;
+  let errors, files = Krml.Checker.check_everything ~warn:true files in
+  if errors then
+    exit 1;
+
+  let macros =
+    (object(self)
+      inherit [_] Krml.Ast.reduce
+      method private zero = Krml.Idents.LidSet.empty
+      method private plus = Krml.Idents.LidSet.union
+      method! visit_DExternal _ _ _ n name _ _ =
+        if n > 0 then
+          Krml.Idents.LidSet.singleton name
+        else
+          self#zero
+    end)#visit_files () files
+  in
+  let open Krml in
+  let file_of_map = Bundle.mk_file_of files in
+  let c_name_map = Simplify.allocate_c_names files in
+  let deps = Bundles.direct_dependencies_with_internal files file_of_map in
+  let files = AstToCStar.mk_files files c_name_map Idents.LidSet.empty macros in
+
+  let headers = CStarToC11.mk_headers c_name_map files in
+  let deps = CStarToC11.drop_empty_headers deps headers in
+  let internal_headers = Bundles.StringSet.of_list
+    (List.filter_map (function (name, C11.Internal _) -> Some name | _ -> None) headers)
+  in
+  let public_headers = Bundles.StringSet.of_list
+    (List.filter_map (function (name, C11.Public _) -> Some name | _ -> None) headers)
+  in
+  let files = CStarToC11.mk_files c_name_map files in
+  ignore (Output.write_c files internal_headers deps);
+  ignore (Output.write_h headers public_headers deps);
+
+  Printf.printf "✅ Done\n"
