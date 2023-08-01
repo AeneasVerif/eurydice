@@ -50,7 +50,20 @@ Supported options:|}
 
   let files = Eurydice.PreCleanup.expand_array_copies files in
   let files = Eurydice.PreCleanup.flatten_sequences files in
+
+  let errors, files = Krml.Checker.check_everything ~warn:true files in
+  if errors then
+    exit 1;
+
+  Printf.printf "✅ Initial check\n";
+
+  let files = Eurydice.Cleanup1.cleanup files in
   print files;
-  let success, _files = Krml.Checker.check_everything ~warn:true files in
-  if not success then
-    exit 1
+
+  let errors, files = Krml.Checker.check_everything ~warn:true files in
+  if errors then
+    exit 1;
+
+  Printf.printf "✅ Done\n";
+
+  print files

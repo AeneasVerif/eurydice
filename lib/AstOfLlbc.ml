@@ -529,8 +529,6 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
   | Switch (If (op, s1, s2)) ->
       let e1 = expression_of_raw_statement env ret_var s1.content in
       let e2 = expression_of_raw_statement env ret_var s2.content in
-      Krml.(KPrint.bprintf "ITE, e1=%a\n" PrintAst.Ops.pexpr e1);
-      Krml.(KPrint.bprintf "ITE, e2=%a\n" PrintAst.Ops.pexpr e2);
       let t = lesser e1.typ e2.typ in
       K.(with_type t (EIfThenElse (expression_of_operand env op, e1, e2 )))
   | Switch (SwitchInt (_, _, _, _)) ->
