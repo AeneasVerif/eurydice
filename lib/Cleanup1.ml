@@ -64,14 +64,19 @@ let remove_assignments = object(self)
     | EIfThenElse (e1, e2, e3) ->
         assert (b.node.meta = Some MetaSequence);
         close_now (AtomSet.union (count e1) (AtomSet.inter (count e2) (count e3)))
+    | EWhile (e1, _) ->
+        assert (b.node.meta = Some MetaSequence);
+        close_now (count e1)
     | _ ->
         (* The open variables in e1 for which we have not yet inserted a declaration need to be closed now *)
         close_now (count e1)
 end
 
-(* PPrint.(Print.(print (PrintAst.print_files files ^^ hardline))); *)
+(* PPrint.(Krml.Print.(print (Krml.PrintAst.print_files files ^^ hardline))); *)
 
 let cleanup files =
   let files = remove_assignments#visit_files AtomMap.empty files in
+  let files = Krml.Simplify.count_and_remove_locals#visit_files [] files in
+  let files = Krml.Simplify.remove_uu#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
   files

@@ -104,7 +104,12 @@ let rec typ_of_ty (env: env) (ty: 'region Charon.Types.ty): K.typ =
   | C.Adt (C.AdtId id, _, args) ->
       TApp (lid_of_type_decl_id env id, List.map (typ_of_ty env) args)
   | C.Adt (C.Tuple, _, args) ->
-      TTuple (List.map (typ_of_ty env) args)
+      if args = [] then
+        TUnit
+      else begin
+        assert (List.length args > 1);
+        TTuple (List.map (typ_of_ty env) args)
+      end
   | C.Adt (C.Assumed _, _, _args) ->
       failwith "TODO: Adt/Assumed"
 
@@ -255,8 +260,15 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
         in
         let expr = K.with_type t_i (K.EBound 0) in
         K.with_type t_i (K.EMatch (e, [ binders, pattern, expr ])), List.nth tys i
-    | Offset ofs_id, (Ref (_, ty, _) | Array (ty, _) | Slice ty) ->
+    | Offset ofs_id, (Ref (_, ty, _) | Array (ty, _)) ->
         K.(with_type (typ_of_ty env ty) (EBufRead (e, expression_of_var_id env ofs_id))), ty
+    | Offset ofs_id, (Slice ty) ->
+        let slice_index = K.with_type Builtin.slice_index_t (K.EQualified Builtin.slice_index) in
+        let t = typ_of_ty env ty in
+        let slice_index = K.with_type (Krml.DeBruijn.subst_tn [ t ] Builtin.slice_index_t)
+          (K.ETApp (slice_index, [ t ]))
+        in
+        K.(with_type t (EApp (slice_index, [ e; expression_of_var_id env ofs_id ]))), ty
     | _ ->
         failwith "unexpected / ill-typed projection"
   ) (e, ty) projection
@@ -339,7 +351,7 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
          pass one for the other *)
       begin match ty with
-      | Array (_, _) ->
+      | Array _ | Slice _ ->
           e
       | _ ->
           K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
@@ -359,7 +371,12 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
   | Aggregate (AggregatedTuple, ops) ->
       let ops = List.map (expression_of_operand env) ops in
       let ts = List.map (fun x -> x.K.typ) ops in
-      K.with_type (TTuple ts) (K.ETuple ops)
+      if ops = [] then
+        K.with_type TUnit K.EUnit
+      else begin
+        assert (List.length ops > 1);
+        K.with_type (TTuple ts) (K.ETuple ops)
+      end
   | Aggregate (AggregatedOption (_, _), _) ->
       failwith "expression_of_rvalue AggregatedOption"
   | Aggregate (AggregatedAdt (typ_id, variant_id, _, typ_args), args) ->
