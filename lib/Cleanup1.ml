@@ -102,7 +102,7 @@ let remove_units = object
   inherit [_] map as super
 
   method! visit_EAssign env e1 e2 =
-    if e1.typ = TUnit && e2.node = EUnit then
+    if e1.typ = TUnit && Krml.Helpers.is_readonly_c_expression e2 then
       EUnit
     else
       super#visit_EAssign env e1 e2
