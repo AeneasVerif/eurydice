@@ -15,6 +15,7 @@ Supported options:|}
   let spec = [
     "--log", Arg.Set_string O.log_level, " log level, use * for everything";
     "--debug", Arg.String debug, " debug options, to be passed to krml";
+    "--output", Arg.Set_string Krml.Options.tmpdir, " output directory in which to write files";
   ] in
   let spec = Arg.align spec in
   let files = ref [] in
