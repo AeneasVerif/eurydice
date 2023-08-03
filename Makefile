@@ -14,9 +14,11 @@ test: $(addprefix test-,$(TEST_FILES))
 $(CHARON_HOME)/tests/llbc/%.llbc: $(CHARON_HOME)/tests/src/%.rs
 	RUST_BACKTRACE=1 $(MAKE) -C $(CHARON_HOME)/tests test-$*
 
+CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS)
+
 test-%: $(CHARON_HOME)/tests/llbc/%.llbc | out/test-% all
 	$(EURYDICE) --output out/test-$* $<
-	cd out/test-$* && $(CC) -Wall -Werror -I. $*.c -o $*.exe && ./$*.exe
+	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $*.c -o $*.exe && ./$*.exe
 
 .PRECIOUS: out/%
 out/%:

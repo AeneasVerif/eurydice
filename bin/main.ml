@@ -45,7 +45,13 @@ Supported options:|}
   (* This is where the action happens *)
   Eurydice.Logging.enable_logging !O.log_level;
   (* Type applications are compiled as a regular external type. *)
-  Krml.Options.allow_tapps := true;
+  Krml.Options.(
+    allow_tapps := true;
+    minimal := true;
+    add_include := [ All, "\"eurydice_glue.h\"" ];
+    (* header := "/* This file compiled from Rust to C by Eurydice \ *)
+    (*   <http://github.com/aeneasverif/eurydice> */"; *)
+  );
 
   let files = Eurydice.Builtin.files @ List.map (fun filename ->
     let llbc = Eurydice.LoadLlbc.load_file filename in
@@ -79,6 +85,7 @@ Supported options:|}
   Eurydice.Logging.log "Phase3" "%a" pfiles files;
   let files = Krml.Simplify.hoist#visit_files [] files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
+  let files = Krml.Inlining.cross_call_analysis files in
 
   Eurydice.Logging.log "Phase3" "%a" pfiles files;
   let errors, files = Krml.Checker.check_everything ~warn:true files in
@@ -97,6 +104,7 @@ Supported options:|}
           self#zero
     end)#visit_files () files
   in
+  let macros = Krml.Idents.LidSet.union macros Eurydice.Builtin.macros in
   let open Krml in
   let file_of_map = Bundle.mk_file_of files in
   let c_name_map = Simplify.allocate_c_names files in

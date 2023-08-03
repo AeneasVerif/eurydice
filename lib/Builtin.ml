@@ -47,3 +47,7 @@ let files = [
     ]);
   ]
 ]
+
+let macros = Krml.Idents.LidSet.of_list [
+  [ "core"; "slice"; "[T]"; "{0}" ], "len"
+]
