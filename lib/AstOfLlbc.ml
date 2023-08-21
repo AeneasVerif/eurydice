@@ -428,7 +428,7 @@ let expression_of_assertion (env: env) ({ cond; expected }: C.assertion): K.expr
   in
   K.(with_type TAny (
     EIfThenElse (cond,
-      with_type TAny (EAbort (Some "assert failure")),
+      with_type TAny (EAbort (None, Some "assert failure")),
       Krml.Helpers.eunit)))
 
 let lookup_fun (env: env) (f: C.fun_id): K.lident * int * K.typ list * K.typ =
@@ -529,7 +529,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       in
       Krml.Helpers.with_unit K.(EAssign (dest, with_type output (EApp (hd, args))))
   | Panic ->
-      with_any (K.EAbort None)
+      with_any (K.EAbort (None, Some "panic!"))
   | Return ->
       let e = expression_of_var_id env ret_var in
       K.(with_type TUnit (EReturn e))
