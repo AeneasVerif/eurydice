@@ -99,49 +99,56 @@ let constant_of_scalar_value { C.value; int_ty } =
 
 let rec typ_of_ty (env: env) (ty: 'region Charon.Types.ty): K.typ =
   match ty with
-  | C.Adt (C.AdtId id, _, []) ->
+  | C.Adt (C.AdtId id, _, [], []) ->
       TQualified (lid_of_type_decl_id env id)
-  | C.Adt (C.AdtId id, _, args) ->
+  | C.Adt (C.AdtId id, _, args, generic_args) ->
+      if List.length generic_args > 0 then
+        failwith "TODO: Adt/generic_args";
       TApp (lid_of_type_decl_id env id, List.map (typ_of_ty env) args)
-  | C.Adt (C.Tuple, _, args) ->
+  | C.Adt (C.Tuple, _, args, cgs) ->
+      assert (cgs = []);
       if args = [] then
         TUnit
       else begin
         assert (List.length args > 1);
         TTuple (List.map (typ_of_ty env) args)
       end
-  | C.Adt (C.Assumed _, _, _args) ->
-      failwith "TODO: Adt/Assumed"
 
   | C.TypeVar id ->
       K.TBound (lookup_typ env id)
-  | C.Bool ->
+  | C.Literal Bool ->
       K.TBool
-  | C.Char ->
+  | C.Literal Char ->
       failwith "TODO: Char"
   | C.Never ->
       failwith "Impossible: Never"
-  | C.Integer k ->
+  | C.Literal (Integer k) ->
       K.TInt (width_of_integer_type k)
-  | C.Str ->
-      failwith "TODO: Str"
-  | C.Array (t, n) ->
+
+  | C.Adt (Assumed Array, _, [ t ], [ ConstGenericValue (Scalar n) ]) ->
       K.TArray (typ_of_ty env t, constant_of_scalar_value n)
-  | C.Ref (_, C.Slice t, _) ->
+
+  | C.Ref (_, Adt (Assumed Slice, _, [ t ], _), _) ->
       (* We compile slices to fat pointers, which hold the pointer underneath -- no need for an
          extra reference here. *)
       Builtin.mk_slice (typ_of_ty env t)
-  | C.Ref (_, C.Array (t, _), _) ->
+
+  | C.Ref (_, Adt (Assumed Array, _, [ t ], _), _) ->
       (* We collapse Ref(Array) into a pointer type, leveraging C's implicit decay between array
          types and pointer types. *)
       K.TBuf (typ_of_ty env t, false)
-  | C.Slice _ ->
+
+  | C.Adt (Assumed Slice, _, _, _) ->
       (* Slice values cannot be materialized since their storage space cannot be computed at
          compile-time; we should never encounter this case. *)
       assert false
+
   | C.Ref (_, t, _) ->
       (* Normal reference *)
       K.TBuf (typ_of_ty env t, false)
+
+  | C.Adt (C.Assumed _, _, _args, _) ->
+      failwith "TODO: Adt/Assumed"
 
 (* Helpers: expressions *)
 
@@ -153,11 +160,11 @@ let mk_slice_len (t: K.typ) (e: K.expr): K.expr =
   in
   with_type (TInt SizeT) (EApp (hd, [ e ]))
 
-let mk_slice_new (e: K.expr) (e_start: K.expr) (e_end: K.expr): K.expr =
+let mk_array_to_slice (e: K.expr) (e_start: K.expr) (e_end: K.expr): K.expr =
   let t = Krml.Helpers.assert_tbuf_or_tarray e.typ in
-  let t_new = Krml.DeBruijn.subst_t t 0 Builtin.slice_new_t in
+  let t_new = Krml.DeBruijn.subst_t t 0 Builtin.array_to_slice_t in
   let hd = K.with_type t_new
-    K.(ETApp (with_type Builtin.slice_new_t (EQualified Builtin.slice_new), [ t ]))
+    K.(ETApp (with_type Builtin.array_to_slice_t (EQualified Builtin.array_to_slice), [ t ]))
   in
   K.with_type (Builtin.mk_slice t) (K.EApp (hd, [ e; e_start; e_end ]))
 
@@ -229,10 +236,10 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
      the *original* rust type *)
   List.fold_left (fun (e, (ty: C.ety)) pe ->
     match pe, ty with
-    | C.Deref, Ref (_, (Array (t, _) as ty), _) ->
+    | C.Deref, Ref (_, (Adt (Assumed Array, _, [ t ], _) as ty), _) ->
         (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
         K.with_type (TBuf (typ_of_ty env t, false)) e.K.node, ty
-    | C.Deref, Ref (_, (Slice _ as t), _) ->
+    | C.Deref, Ref (_, (Adt (Assumed Slice, _, _, _) as t), _) ->
         e, t
     | C.Deref, Ref (_, ty, _) ->
         Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e.K.typ) e.K.node), ty
@@ -242,7 +249,8 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
         failwith "expression_of_place ProjAdt"
     | Field (ProjOption _, _), _ ->
         failwith "expression_of_place ProjOption"
-    | Field (ProjTuple n, i), C.Adt (_, _, tys) ->
+    | Field (ProjTuple n, i), C.Adt (_, _, tys, cgs) ->
+        assert (cgs = []);
         (* match e with (_, ..., _, x, _, ..., _) -> x *)
         let i = Charon.Types.FieldId.to_int i in
         let ts, t_i =
@@ -260,15 +268,6 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
         in
         let expr = K.with_type t_i (K.EBound 0) in
         K.with_type t_i (K.EMatch (e, [ binders, pattern, expr ])), List.nth tys i
-    | Offset ofs_id, (Ref (_, ty, _) | Array (ty, _)) ->
-        K.(with_type (typ_of_ty env ty) (EBufRead (e, expression_of_var_id env ofs_id))), ty
-    | Offset ofs_id, (Slice ty) ->
-        let slice_index = K.with_type Builtin.slice_index_t (K.EQualified Builtin.slice_index) in
-        let t = typ_of_ty env ty in
-        let slice_index = K.with_type (Krml.DeBruijn.subst_tn [ t ] Builtin.slice_index_t)
-          (K.ETApp (slice_index, [ t ]))
-        in
-        K.(with_type t (EApp (slice_index, [ e; expression_of_var_id env ofs_id ]))), ty
     | _ ->
         failwith "unexpected / ill-typed projection"
   ) (e, ty) projection
@@ -282,7 +281,7 @@ let expression_of_operand (env: env) (p: C.operand): K.expr =
   | Copy p ->
       let p, ty = expression_of_place env p in
       begin match ty with
-      | C.Array (t, n) ->
+      | C.Adt (Assumed Array, _, [ t ], [ ConstGenericValue (Scalar n) ]) ->
           mk_deep_copy p (typ_of_ty env t) (constant_of_scalar_value n)
       | _ ->
           p
@@ -296,8 +295,6 @@ let expression_of_operand (env: env) (p: C.operand): K.expr =
       K.(with_type TBool (EBool b))
   | Constant (_ty, Char _) ->
       failwith "expression_of_operand Char"
-  | Constant (_ty, String _) ->
-      failwith "expression_of_operand String"
 
 let op_of_unop (op: C.unop): Krml.Constant.op =
   match op with
@@ -351,7 +348,7 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
          pass one for the other *)
       begin match ty with
-      | Array _ | Slice _ ->
+      | Adt (Assumed (Array | Slice), _, _, _) ->
           e
       | _ ->
           K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
@@ -359,9 +356,6 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
 
   | UnaryOp (Cast (_, _), _e) ->
       failwith "TODO: UnaryOp Cast"
-  | UnaryOp (SliceNew l, e) ->
-      let e = expression_of_operand env e in
-      mk_slice_new e (Krml.Helpers.zero SizeT) (expression_of_scalar_value l)
   | UnaryOp (op, o1) ->
       mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
@@ -379,7 +373,7 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       end
   | Aggregate (AggregatedOption (_, _), _) ->
       failwith "expression_of_rvalue AggregatedOption"
-  | Aggregate (AggregatedAdt (typ_id, variant_id, _, typ_args), args) ->
+  | Aggregate (AggregatedAdt (typ_id, variant_id, _, typ_args, _), args) ->
       let { C.name; _ } = env.get_nth_type typ_id in
       let typ_lid = lid_of_name env name in
       let typ_args = List.map (typ_of_ty env) typ_args in
@@ -393,7 +387,7 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
           failwith "TODO: AggregatedAdt None"
       end
   | Aggregate (AggregatedRange t, ops) ->
-      if t <> C.Integer Usize then
+      if t <> C.Literal (Integer Usize) then
         failwith "TODO: polymorphic ranges";
       let start_index, end_index =
         match ops with
@@ -404,20 +398,10 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       in
       K.with_type (Builtin.mk_range (TInt SizeT))
         (K.EFlat [ Some "start", start_index; Some "end", end_index ])
-  | Aggregate (AggregatedArray t, ops) ->
+  | Aggregate (AggregatedArray (t, _), ops) ->
       K.with_type (typ_of_ty env t) (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
   | Global _ ->
       failwith "expression_of_rvalue Global"
-  | Len p ->
-      (* This will go away once proper treatment of lengths lands in Charon *)
-      let e, ty = expression_of_place env p in
-      match ty with
-      | Array (_, n) ->
-          expression_of_scalar_value n
-      | Slice ty ->
-          mk_slice_len (typ_of_ty env ty) e
-      | _ ->
-          Krml.Warn.fatal_error "Unknown Len overload: %a" Krml.PrintAst.Ops.ptyp e.typ
 
 let expression_of_assertion (env: env) ({ cond; expected }: C.assertion): K.expr =
   let cond =
@@ -437,30 +421,23 @@ let lookup_fun (env: env) (f: C.fun_id): K.lident * int * K.typ list * K.typ =
       let { C.name; signature = { type_params; inputs; output; _ }; _ } = env.get_nth_function f in
       let env = push_type_binders env type_params in
       lid_of_name env name, List.length type_params, List.map (typ_of_ty env) inputs, typ_of_ty env output
-  | Assumed Replace ->
-      failwith "lookup_fun Replace"
-  | Assumed BoxNew ->
-      failwith "lookup_fun BoxNew"
-  | Assumed BoxDeref ->
-      failwith "lookup_fun BoxDeref"
-  | Assumed BoxDerefMut ->
-      failwith "lookup_fun BoxDerefMut"
-  | Assumed BoxFree ->
-      failwith "lookup_fun BoxFree"
-  | Assumed VecNew ->
-      failwith "lookup_fun VecNew"
-  | Assumed VecPush ->
-      failwith "lookup_fun VecPush"
-  | Assumed VecInsert ->
-      failwith "lookup_fun VecInsert"
-  | Assumed VecLen ->
-      failwith "lookup_fun VecLen"
-  | Assumed VecIndex ->
-      failwith "lookup_fun VecIndex"
-  | Assumed VecIndexMut ->
-      failwith "lookup_fun VecIndexMut"
-  | Assumed ArraySlice
-  | Assumed ArraySliceMut ->
+
+  | Assumed SliceLen ->
+      let name = Builtin.slice_len in
+      let ret, args = Krml.Helpers.flatten_arrow Builtin.slice_len_t in
+      name, List.length args, args, ret
+
+  | Assumed (SliceIndexShared | SliceIndexMut) ->
+      let name = Builtin.slice_index in
+      let ret, args = Krml.Helpers.flatten_arrow Builtin.slice_index_t in
+      name, List.length args, args, ret
+
+  | Assumed (ArrayToSliceShared | ArrayToSliceMut) ->
+      let name = Builtin.array_to_slice in
+      let ret, args = Krml.Helpers.flatten_arrow Builtin.array_to_slice_t in
+      name, List.length args, args, ret
+
+  | Assumed (ArraySubsliceShared | ArraySubsliceMut) ->
       (* we intentionally give a type here that is too general... the idea is that krml's
          type-checker cannot represent dependencies, or type-level functions, so we can write
          neither:
@@ -473,18 +450,30 @@ let lookup_fun (env: env) (f: C.fun_id): K.lident * int * K.typ list * K.typ =
          An additional subtletly is that the rvalue passed to the function decays automatically into
          a pointer type so really the only purpose of the first type argument is to retain the
          length that will eventually be emitted in the code-gen. *)
-      let name = Builtin.slice_new_with_range in
-      let ret, args = Krml.Helpers.flatten_arrow Builtin.slice_new_with_range_t in
+      let name = Builtin.array_to_subslice in
+      let ret, args = Krml.Helpers.flatten_arrow Builtin.array_to_subslice_t in
       name, List.length args, args, ret
+
+  | Assumed f ->
+      Krml.Warn.fatal_error "unknown assumed function: %s"
+        (C.show_assumed_fun_id f)
 
 (* See explanation above *)
 let adjust_type_args (f: C.fun_id) (type_args: K.typ list): K.typ list =
   match f with
-  | Assumed (ArraySlice | ArraySliceMut) ->
-      let t = match type_args with [ TArray (t, _) ] -> t | _ -> failwith "ill-typed slice_new_with_range" in
+  | Assumed (ArraySubsliceShared | ArraySubsliceMut) ->
+      let t = match type_args with [ TArray (t, _) ] -> t | _ -> failwith "ill-typed array_to_subslice" in
       type_args @ [ t ]
   | _ ->
       type_args
+
+(* Runs after the adjustment above *)
+let args_of_const_generic_args (f: C.fun_id) (const_generic_args: C.const_generic list): K.expr list =
+  match f, const_generic_args with
+  | Assumed (ArrayToSliceShared | ArrayToSliceMut), [ ConstGenericValue (Scalar n) ] ->
+      [ expression_of_scalar_value n ]
+  | _ ->
+      []
 
 let lesser t1 t2 =
   if t1 = K.TAny then
@@ -509,11 +498,12 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       Krml.Helpers.eunit
   | Assert a ->
       expression_of_assertion env a
-  | Call { func; type_args; args; dest; _ } ->
+
+  | Call { func; type_args; args; dest; const_generic_args; _ } ->
       let dest, _ = expression_of_place env dest in
       let args = List.map (expression_of_operand env) args in
       let type_args = List.map (typ_of_ty env) type_args in
-      let type_args = adjust_type_args func type_args in
+      let args = args @ args_of_const_generic_args func const_generic_args in
       let name, n_type_params, inputs, output = lookup_fun env func in
       assert (n_type_params = List.length type_args);
       let poly_t = Krml.Helpers.fold_arrow inputs output in
@@ -562,7 +552,8 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
 (* Top-level declaration formatters *)
 type formatters = {
   mk_formatter: C.fun_decl -> Charon.PrintGAst.ast_formatter;
-  type_ctx: C.type_decl C.TypeDeclId.Map.t
+  type_ctx: C.type_decl C.TypeDeclId.Map.t;
+  global_ctx: C.global_decl C.GlobalDeclId.Map.t
 }
 
 let of_declaration_group (dg: 'id C.g_declaration_group) (f: 'id -> 'a): 'a list =
@@ -579,7 +570,7 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
         let decl = env.get_nth_type id in
         let { C.name; def_id; kind; type_params; _ } = decl in
         L.log "AstOfLlbc" "Visiting type: %s\n%s" (Charon.Names.name_to_string name)
-          (Charon.PrintLlbcAst.Crate.type_decl_to_string formatters.type_ctx decl);
+          (Charon.PrintLlbcAst.Crate.type_decl_to_string formatters.type_ctx formatters.global_ctx decl);
 
         assert (def_id = id);
         let name = lid_of_name env name in
@@ -651,19 +642,16 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
 
 let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
   let { C.name; declarations; types; functions; globals } = crate in
-  let get_nth (type id) (type b) (to_int: id -> int) (things: b list) (id: id) =
-    (* TODO: if we're spending too much time here, use a hash table or something *)
-    List.nth things (to_int id)
-  in
-  let get_nth_function = get_nth C.FunDeclId.to_int functions in
-  let get_nth_type = get_nth C.TypeDeclId.to_int types in
-  let get_nth_global = get_nth C.GlobalDeclId.to_int globals in
+  let get_nth_function = fun id -> C.FunDeclId.Map.find id functions in
+  let get_nth_type = fun id -> C.TypeDeclId.Map.find id types in
+  let get_nth_global = fun id -> C.GlobalDeclId.Map.find id globals in
   let formatters: formatters =
-    let type_ctx, f, g = Charon.LlbcAstUtils.compute_defs_maps crate in
+    let type_ctx = types in
+    let global_ctx = globals in
     let mk_formatter (decl: C.fun_decl) =
-      Charon.PrintLlbcAst.Crate.decl_ctx_and_fun_decl_to_ast_formatter type_ctx f g decl
+      Charon.PrintLlbcAst.Crate.decl_ctx_and_fun_decl_to_ast_formatter type_ctx functions global_ctx decl
     in
-    { mk_formatter; type_ctx }
+    { mk_formatter; type_ctx; global_ctx }
   in
   let env = {
     get_nth_function;
