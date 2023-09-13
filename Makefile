@@ -1,5 +1,5 @@
 CHARON_HOME 	?= ../charon
-EURYDICE	= ./eurydice
+EURYDICE	= ./eurydice $(EURYDICE_FLAGS)
 
 TEST_FILES	= array
 

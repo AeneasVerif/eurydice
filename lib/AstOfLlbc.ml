@@ -143,28 +143,33 @@ let rec typ_of_ty (env: env) (ty: 'region Charon.Types.ty): K.typ =
          compile-time; we should never encounter this case. *)
       assert false
 
+  | C.Adt (Assumed Range, _, [ t ], _) ->
+      Builtin.mk_range (typ_of_ty env t)
+
   | C.Ref (_, t, _) ->
       (* Normal reference *)
       K.TBuf (typ_of_ty env t, false)
 
-  | C.Adt (C.Assumed _, _, _args, _) ->
-      failwith "TODO: Adt/Assumed"
+  | C.Adt (Assumed f, _, args, cgs) ->
+      List.iter (fun x -> print_endline (C.show_const_generic x)) cgs;
+      Krml.Warn.fatal_error "TODO: Adt/Assumed %s (%d) %d " (C.show_assumed_ty f) (List.length args)
+        (List.length cgs)
 
 (* Helpers: expressions *)
 
 let mk_slice_len (t: K.typ) (e: K.expr): K.expr =
   let open K in
-  let t_len = Krml.DeBruijn.subst_t t 0 Builtin.slice_len_t in
+  let t_len = Krml.DeBruijn.subst_t t 0 Builtin.slice_len.typ in
   let hd = with_type t_len
-    (ETApp (with_type Builtin.slice_len_t (EQualified Builtin.slice_len), [ t ]))
+    (ETApp (with_type Builtin.slice_len.typ (EQualified Builtin.slice_len.name), [ t ]))
   in
   with_type (TInt SizeT) (EApp (hd, [ e ]))
 
 let mk_array_to_slice (e: K.expr) (e_start: K.expr) (e_end: K.expr): K.expr =
   let t = Krml.Helpers.assert_tbuf_or_tarray e.typ in
-  let t_new = Krml.DeBruijn.subst_t t 0 Builtin.array_to_slice_t in
+  let t_new = Krml.DeBruijn.subst_t t 0 Builtin.array_to_slice.typ in
   let hd = K.with_type t_new
-    K.(ETApp (with_type Builtin.array_to_slice_t (EQualified Builtin.array_to_slice), [ t ]))
+    K.(ETApp (with_type Builtin.array_to_slice.typ (EQualified Builtin.array_to_slice.name), [ t ]))
   in
   K.with_type (Builtin.mk_slice t) (K.EApp (hd, [ e; e_start; e_end ]))
 
@@ -339,6 +344,22 @@ let find_nth_variant (env: env) (typ: C.type_decl_id) (var: C.variant_id) =
   | _ ->
       failwith "impossible: type is not a variant"
 
+(* According to the rules (see my notebook), array and slice types do not need
+   the address-taking because they are already addresses. Therefore, the
+   compilation scheme skips the address-taking operation and represents a value
+   of type [T; N] as T[N] and a value of type &[T; N] as T*, relying on the fact
+   that the former converts automatically to the latter. This is a type-driven
+   translation that does not work with polymorphism, so perhaps there ought to
+   be a MAYBE_CAST operator that gets desugared post-krml monomorphization. TBD.
+   *)
+let maybe_addrof (ty: 'a C.ty) (e: K.expr) =
+  (* ty is the *original* Rust type *)
+  match ty with
+  | Adt (Assumed (Array | Slice), _, _, _) ->
+      e
+  | _ ->
+      K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
+
 let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
   match p with
   | Use op ->
@@ -347,12 +368,7 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       let e, ty = expression_of_place env p in
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
          pass one for the other *)
-      begin match ty with
-      | Adt (Assumed (Array | Slice), _, _, _) ->
-          e
-      | _ ->
-          K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
-      end
+      maybe_addrof ty e
 
   | UnaryOp (Cast (_, _), _e) ->
       failwith "TODO: UnaryOp Cast"
@@ -416,56 +432,24 @@ let expression_of_assertion (env: env) ({ cond; expected }: C.assertion): K.expr
       Krml.Helpers.eunit)))
 
 let lookup_fun (env: env) (f: C.fun_id): K.lident * int * K.typ list * K.typ =
+  let builtin_of_fun_id = function
+    | C.SliceLen -> Builtin.slice_len
+    | SliceIndexShared | SliceIndexMut -> Builtin.slice_index
+    | ArrayToSliceShared | ArrayToSliceMut -> Builtin.array_to_slice
+    | ArraySubsliceShared | ArraySubsliceMut -> Builtin.array_to_subslice
+    | SliceSubsliceShared | SliceSubsliceMut -> Builtin.slice_subslice
+    | f -> Krml.Warn.fatal_error "unknown assumed function: %s" (C.show_assumed_fun_id f)
+  in
   match f with
   | C.Regular f ->
       let { C.name; signature = { type_params; inputs; output; _ }; _ } = env.get_nth_function f in
       let env = push_type_binders env type_params in
       lid_of_name env name, List.length type_params, List.map (typ_of_ty env) inputs, typ_of_ty env output
 
-  | Assumed SliceLen ->
-      let name = Builtin.slice_len in
-      let ret, args = Krml.Helpers.flatten_arrow Builtin.slice_len_t in
-      name, List.length args, args, ret
-
-  | Assumed (SliceIndexShared | SliceIndexMut) ->
-      let name = Builtin.slice_index in
-      let ret, args = Krml.Helpers.flatten_arrow Builtin.slice_index_t in
-      name, List.length args, args, ret
-
-  | Assumed (ArrayToSliceShared | ArrayToSliceMut) ->
-      let name = Builtin.array_to_slice in
-      let ret, args = Krml.Helpers.flatten_arrow Builtin.array_to_slice_t in
-      name, List.length args, args, ret
-
-  | Assumed (ArraySubsliceShared | ArraySubsliceMut) ->
-      (* we intentionally give a type here that is too general... the idea is that krml's
-         type-checker cannot represent dependencies, or type-level functions, so we can write
-         neither:
-           forall a n. (x: [a; n], range) -> slice a
-         or
-           forall a. (x: a, range) -> slice (decay a)
-         so instead we do something that is too general, but will eventually work out:
-           forall a b. (x: b*, range) -> slice b
-         where all uses pick a = [ t; n ] and b = t.
-         An additional subtletly is that the rvalue passed to the function decays automatically into
-         a pointer type so really the only purpose of the first type argument is to retain the
-         length that will eventually be emitted in the code-gen. *)
-      let name = Builtin.array_to_subslice in
-      let ret, args = Krml.Helpers.flatten_arrow Builtin.array_to_subslice_t in
-      name, List.length args, args, ret
-
   | Assumed f ->
-      Krml.Warn.fatal_error "unknown assumed function: %s"
-        (C.show_assumed_fun_id f)
-
-(* See explanation above *)
-let adjust_type_args (f: C.fun_id) (type_args: K.typ list): K.typ list =
-  match f with
-  | Assumed (ArraySubsliceShared | ArraySubsliceMut) ->
-      let t = match type_args with [ TArray (t, _) ] -> t | _ -> failwith "ill-typed array_to_subslice" in
-      type_args @ [ t ]
-  | _ ->
-      type_args
+      let { Builtin.name; typ; n_type_args; _ } = builtin_of_fun_id f in
+      let ret, args = Krml.Helpers.flatten_arrow typ in
+      name, n_type_args, args, ret
 
 (* Runs after the adjustment above *)
 let args_of_const_generic_args (f: C.fun_id) (const_generic_args: C.const_generic list): K.expr list =
@@ -499,13 +483,23 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
   | Assert a ->
       expression_of_assertion env a
 
+  | Call { func = Assumed (ArrayIndexShared | ArrayIndexMut); type_args = [ ty ]; args = [ e1; e2 ]; dest; _ } ->
+      let e1 = expression_of_operand env e1 in
+      let e2 = expression_of_operand env e2 in
+      let t = typ_of_ty env ty in
+      let dest, _ = expression_of_place env dest in
+      Krml.Helpers.with_unit K.(EAssign (dest, maybe_addrof ty (with_type t (EBufRead (e1, e2)))))
+
   | Call { func; type_args; args; dest; const_generic_args; _ } ->
       let dest, _ = expression_of_place env dest in
       let args = List.map (expression_of_operand env) args in
       let type_args = List.map (typ_of_ty env) type_args in
       let args = args @ args_of_const_generic_args func const_generic_args in
       let name, n_type_params, inputs, output = lookup_fun env func in
-      assert (n_type_params = List.length type_args);
+      if not (n_type_params = List.length type_args) then
+        Krml.Warn.fatal_error "%a: n_type_params %d != type_args %d"
+          Krml.PrintAst.Ops.plid name
+          n_type_params (List.length type_args);
       let poly_t = Krml.Helpers.fold_arrow inputs output in
       let output, t =
         Krml.DeBruijn.subst_tn type_args output, Krml.DeBruijn.subst_tn type_args poly_t
