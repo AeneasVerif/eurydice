@@ -61,7 +61,7 @@ let slice_index = {
   typ = Krml.Helpers.fold_arrow [
     mk_slice (TBound 0);
     TInt SizeT
-  ] (TBuf (TBound 0, false));
+  ] (TBound 0);
   n_type_args = 1;
   arg_names = ["s"; "i"]
 }

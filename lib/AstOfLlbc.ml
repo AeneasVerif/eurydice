@@ -493,6 +493,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
   | Call { func; type_args; args; dest; const_generic_args; _ } ->
       let dest, _ = expression_of_place env dest in
       let args = List.map (expression_of_operand env) args in
+      let original_type_args = type_args in
       let type_args = List.map (typ_of_ty env) type_args in
       let args = args @ args_of_const_generic_args func const_generic_args in
       let name, n_type_params, inputs, output = lookup_fun env func in
@@ -511,7 +512,19 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
         else
           hd
       in
-      Krml.Helpers.with_unit K.(EAssign (dest, with_type output (EApp (hd, args))))
+      let rhs = K.with_type output (K.EApp (hd, args)) in
+      (* This does something similar to maybe_addrof *)
+      let rhs =
+        match func, original_type_args with
+        | C.Assumed (SliceIndexShared | SliceIndexMut), [ Adt (Assumed (Array | Slice), _, _, _) ] ->
+            (* Will decay. See comment above maybe_addrof *)
+            rhs
+        | C.Assumed (SliceIndexShared | SliceIndexMut), _ ->
+            K.(with_type (TBuf (rhs.typ, false)) (EAddrOf rhs))
+        | _ ->
+            rhs
+      in
+      Krml.Helpers.with_unit K.(EAssign (dest, rhs))
   | Panic ->
       with_any (K.EAbort (None, Some "panic!"))
   | Return ->
