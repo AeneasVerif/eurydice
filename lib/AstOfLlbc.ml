@@ -99,14 +99,14 @@ let constant_of_scalar_value { C.value; int_ty } =
 
 let rec typ_of_ty (env: env) (ty: 'region Charon.Types.ty): K.typ =
   match ty with
-  | C.Adt (C.AdtId id, _, [], []) ->
+  | C.Adt (C.AdtId id, { types = []; const_generics = []; _ }) ->
       TQualified (lid_of_type_decl_id env id)
-  | C.Adt (C.AdtId id, _, args, generic_args) ->
+  | C.Adt (C.AdtId id, { types = args; const_generics = generic_args; _ }) ->
       if List.length generic_args > 0 then
         failwith "TODO: Adt/generic_args";
       TApp (lid_of_type_decl_id env id, List.map (typ_of_ty env) args)
-  | C.Adt (C.Tuple, _, args, cgs) ->
-      assert (cgs = []);
+  | C.Adt (C.Tuple, { types = args; const_generics; _ }) ->
+      assert (const_generics = []);
       if args = [] then
         TUnit
       else begin
@@ -125,35 +125,38 @@ let rec typ_of_ty (env: env) (ty: 'region Charon.Types.ty): K.typ =
   | C.Literal (Integer k) ->
       K.TInt (width_of_integer_type k)
 
-  | C.Adt (Assumed Array, _, [ t ], [ ConstGenericValue (Scalar n) ]) ->
+  | C.Adt (Assumed Array, { types = [ t ]; const_generics = [ ConstGenericValue (Scalar n) ]; _ }) ->
       K.TArray (typ_of_ty env t, constant_of_scalar_value n)
 
-  | C.Ref (_, Adt (Assumed Slice, _, [ t ], _), _) ->
+  | C.Ref (_, Adt (Assumed Slice, { types = [ t ]; _ }), _) ->
       (* We compile slices to fat pointers, which hold the pointer underneath -- no need for an
          extra reference here. *)
       Builtin.mk_slice (typ_of_ty env t)
 
-  | C.Ref (_, Adt (Assumed Array, _, [ t ], _), _) ->
+  | C.Ref (_, Adt (Assumed Array, { types = [ t ]; _ }), _) ->
       (* We collapse Ref(Array) into a pointer type, leveraging C's implicit decay between array
          types and pointer types. *)
       K.TBuf (typ_of_ty env t, false)
 
-  | C.Adt (Assumed Slice, _, _, _) ->
+  | C.Adt (Assumed Slice, _) ->
       (* Slice values cannot be materialized since their storage space cannot be computed at
          compile-time; we should never encounter this case. *)
       assert false
 
-  | C.Adt (Assumed Range, _, [ t ], _) ->
+  | C.Adt (Assumed Range, { types = [ t ]; _ }) ->
       Builtin.mk_range (typ_of_ty env t)
 
   | C.Ref (_, t, _) ->
       (* Normal reference *)
       K.TBuf (typ_of_ty env t, false)
 
-  | C.Adt (Assumed f, _, args, cgs) ->
-      List.iter (fun x -> print_endline (C.show_const_generic x)) cgs;
+  | C.Adt (Assumed f, { types = args; const_generics; _ }) ->
+      List.iter (fun x -> print_endline (C.show_const_generic x)) const_generics;
       Krml.Warn.fatal_error "TODO: Adt/Assumed %s (%d) %d " (C.show_assumed_ty f) (List.length args)
-        (List.length cgs)
+        (List.length const_generics)
+
+  | C.TraitType _ ->
+      Krml.Warn.fatal_error "TODO: TraitTypes"
 
 (* Helpers: expressions *)
 
@@ -241,10 +244,10 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
      the *original* rust type *)
   List.fold_left (fun (e, (ty: C.ety)) pe ->
     match pe, ty with
-    | C.Deref, Ref (_, (Adt (Assumed Array, _, [ t ], _) as ty), _) ->
+    | C.Deref, Ref (_, (Adt (Assumed Array, { types = [ t ]; _ }) as ty), _) ->
         (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
         K.with_type (TBuf (typ_of_ty env t, false)) e.K.node, ty
-    | C.Deref, Ref (_, (Adt (Assumed Slice, _, _, _) as t), _) ->
+    | C.Deref, Ref (_, (Adt (Assumed Slice, _) as t), _) ->
         e, t
     | C.Deref, Ref (_, ty, _) ->
         Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e.K.typ) e.K.node), ty
@@ -254,7 +257,7 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
         failwith "expression_of_place ProjAdt"
     | Field (ProjOption _, _), _ ->
         failwith "expression_of_place ProjOption"
-    | Field (ProjTuple n, i), C.Adt (_, _, tys, cgs) ->
+    | Field (ProjTuple n, i), C.Adt (_, { types = tys; const_generics = cgs; _ }) ->
         assert (cgs = []);
         (* match e with (_, ..., _, x, _, ..., _) -> x *)
         let i = Charon.Types.FieldId.to_int i in
@@ -286,7 +289,7 @@ let expression_of_operand (env: env) (p: C.operand): K.expr =
   | Copy p ->
       let p, ty = expression_of_place env p in
       begin match ty with
-      | C.Adt (Assumed Array, _, [ t ], [ ConstGenericValue (Scalar n) ]) ->
+      | C.Adt (Assumed Array, { types = [ t ]; const_generics = [ ConstGenericValue (Scalar n) ]; _ }) ->
           mk_deep_copy p (typ_of_ty env t) (constant_of_scalar_value n)
       | _ ->
           p
@@ -294,12 +297,12 @@ let expression_of_operand (env: env) (p: C.operand): K.expr =
 
   | Move p ->
       fst (expression_of_place env p)
-  | Constant (_ty, Scalar sv) ->
+  | Constant ({ value = CLiteral (Scalar sv); _ }) ->
       expression_of_scalar_value sv
-  | Constant (_ty, Bool b) ->
+  | Constant ({ value = CLiteral (Bool b); _ }) ->
       K.(with_type TBool (EBool b))
-  | Constant (_ty, Char _) ->
-      failwith "expression_of_operand Char"
+  | Constant _ ->
+      failwith "expression_of_operand Constant"
 
 let op_of_unop (op: C.unop): Krml.Constant.op =
   match op with
@@ -355,7 +358,7 @@ let find_nth_variant (env: env) (typ: C.type_decl_id) (var: C.variant_id) =
 let maybe_addrof (ty: 'a C.ty) (e: K.expr) =
   (* ty is the *original* Rust type *)
   match ty with
-  | Adt (Assumed (Array | Slice), _, _, _) ->
+  | Adt (Assumed (Array | Slice), _) ->
       e
   | _ ->
       K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
@@ -364,7 +367,7 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
   match p with
   | Use op ->
       expression_of_operand env op
-  | Ref (p, _) ->
+  | RvRef (p, _) ->
       let e, ty = expression_of_place env p in
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
          pass one for the other *)
@@ -389,7 +392,7 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       end
   | Aggregate (AggregatedOption (_, _), _) ->
       failwith "expression_of_rvalue AggregatedOption"
-  | Aggregate (AggregatedAdt (typ_id, variant_id, _, typ_args, _), args) ->
+  | Aggregate (AggregatedAdt (typ_id, variant_id, { types = typ_args; _ }), args) ->
       let { C.name; _ } = env.get_nth_type typ_id in
       let typ_lid = lid_of_name env name in
       let typ_args = List.map (typ_of_ty env) typ_args in
@@ -442,7 +445,7 @@ let lookup_fun (env: env) (f: C.fun_id): K.lident * int * K.typ list * K.typ =
   in
   match f with
   | C.Regular f ->
-      let { C.name; signature = { type_params; inputs; output; _ }; _ } = env.get_nth_function f in
+      let { C.name; signature = { generics = { types = type_params; _ }; inputs; output; _ }; _ } = env.get_nth_function f in
       let env = push_type_binders env type_params in
       lid_of_name env name, List.length type_params, List.map (typ_of_ty env) inputs, typ_of_ty env output
 
@@ -483,14 +486,15 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
   | Assert a ->
       expression_of_assertion env a
 
-  | Call { func = Assumed (ArrayIndexShared | ArrayIndexMut); type_args = [ ty ]; args = [ e1; e2 ]; dest; _ } ->
+  | Call { func = FunId (Assumed (ArrayIndexShared | ArrayIndexMut)); generics = { types = [ ty ]; _ }; args = [ e1; e2 ]; dest; _ } ->
       let e1 = expression_of_operand env e1 in
       let e2 = expression_of_operand env e2 in
       let t = typ_of_ty env ty in
       let dest, _ = expression_of_place env dest in
       Krml.Helpers.with_unit K.(EAssign (dest, maybe_addrof ty (with_type t (EBufRead (e1, e2)))))
 
-  | Call { func; type_args; args; dest; const_generic_args; _ } ->
+  | Call { func; generics = { types = type_args; const_generics = const_generic_args; _ }; args; dest; _ } ->
+      let func = match func with FunId func -> func | _ -> Krml.Warn.fatal_error "TODO: Call/not(FuncId)" in
       let dest, _ = expression_of_place env dest in
       let args = List.map (expression_of_operand env) args in
       let original_type_args = type_args in
@@ -516,7 +520,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       (* This does something similar to maybe_addrof *)
       let rhs =
         match func, original_type_args with
-        | C.Assumed (SliceIndexShared | SliceIndexMut), [ Adt (Assumed (Array | Slice), _, _, _) ] ->
+        | C.Assumed (SliceIndexShared | SliceIndexMut), [ Adt (Assumed (Array | Slice), _) ] ->
             (* Will decay. See comment above maybe_addrof *)
             rhs
         | C.Assumed (SliceIndexShared | SliceIndexMut), _ ->
@@ -560,7 +564,9 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
 type formatters = {
   mk_formatter: C.fun_decl -> Charon.PrintGAst.ast_formatter;
   type_ctx: C.type_decl C.TypeDeclId.Map.t;
-  global_ctx: C.global_decl C.GlobalDeclId.Map.t
+  global_ctx: C.global_decl C.GlobalDeclId.Map.t;
+  trait_ctx: C.trait_decl C.TraitDeclId.Map.t;
+  trait_impl_ctx: C.trait_impl C.TraitImplId.Map.t;
 }
 
 let of_declaration_group (dg: 'id C.g_declaration_group) (f: 'id -> 'a): 'a list =
@@ -575,9 +581,9 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
   | C.Type dg ->
       of_declaration_group dg (fun (id: C.TypeDeclId.id) ->
         let decl = env.get_nth_type id in
-        let { C.name; def_id; kind; type_params; _ } = decl in
+        let { C.name; def_id; kind; generics = { types = type_params; _ }; _ } = decl in
         L.log "AstOfLlbc" "Visiting type: %s\n%s" (Charon.Names.name_to_string name)
-          (Charon.PrintLlbcAst.Crate.type_decl_to_string formatters.type_ctx formatters.global_ctx decl);
+          (Charon.PrintLlbcAst.Crate.type_decl_to_string formatters.type_ctx formatters.global_ctx formatters.trait_ctx formatters.trait_impl_ctx decl);
 
         assert (def_id = id);
         let name = lid_of_name env name in
@@ -608,7 +614,7 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
         match body with
         | None ->
             (* Opaque function *)
-            let { C.type_params; inputs; output ; _ } = signature in
+            let { C.generics = { types = type_params; _ }; inputs; output ; _ } = signature in
             let env = push_type_binders env type_params in
             let inputs = List.map (typ_of_ty env) inputs in
             let output = typ_of_ty env output in
@@ -623,7 +629,7 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
             if is_global_decl_body then
               failwith "TODO: C.Fun is_global decl"
             else
-              let env = push_type_binders env signature.C.type_params in
+              let env = push_type_binders env signature.C.generics.types in
               let name = lid_of_name env name in
               (* `locals` contains, in order: special return variable; function arguments;
                  local variables *)
@@ -641,24 +647,30 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
                 with_locals env return_type (return_var :: locals) (fun env ->
                   expression_of_raw_statement env return_var.index body.content)
               in
-              Some (K.DFunction (None, [], List.length signature.C.type_params, return_type, name, arg_binders, body))
+              Some (K.DFunction (None, [], List.length signature.C.generics.types, return_type, name, arg_binders, body))
             (* with _ -> None *)
       )
   | C.Global _id ->
       failwith "TODO: C.Global"
+  | C.TraitDecl _ ->
+      failwith "TODO: C.TraitDecl"
+  | C.TraitImpl _ ->
+      failwith "TODO: C.TraitImpl"
 
 let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
-  let { C.name; declarations; types; functions; globals } = crate in
+  let { C.name; declarations; types; functions; globals; trait_impls; trait_decls } = crate in
   let get_nth_function = fun id -> C.FunDeclId.Map.find id functions in
   let get_nth_type = fun id -> C.TypeDeclId.Map.find id types in
   let get_nth_global = fun id -> C.GlobalDeclId.Map.find id globals in
   let formatters: formatters =
     let type_ctx = types in
     let global_ctx = globals in
+    let trait_ctx = trait_decls in
+    let trait_impl_ctx = trait_impls in
     let mk_formatter (decl: C.fun_decl) =
-      Charon.PrintLlbcAst.Crate.decl_ctx_and_fun_decl_to_ast_formatter type_ctx functions global_ctx decl
+      Charon.PrintLlbcAst.Crate.decl_ctx_and_fun_decl_to_ast_formatter type_ctx functions global_ctx trait_ctx trait_impl_ctx decl
     in
-    { mk_formatter; type_ctx; global_ctx }
+    { mk_formatter; type_ctx; global_ctx; trait_ctx; trait_impl_ctx }
   in
   let env = {
     get_nth_function;
