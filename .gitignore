@@ -2,3 +2,4 @@ _build
 lib/krml
 lib/charon
 out
+test/*/target
