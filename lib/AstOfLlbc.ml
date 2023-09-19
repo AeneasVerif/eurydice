@@ -533,11 +533,11 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       with_any (K.EAbort (None, Some "panic!"))
   | Return ->
       let e = expression_of_var_id env ret_var in
-      K.(with_type TUnit (EReturn e))
+      K.(with_type TAny (EReturn e))
   | Break _ ->
-      K.(with_type TUnit EBreak)
+      K.(with_type TAny EBreak)
   | Continue _ ->
-      K.(with_type TUnit EContinue)
+      K.(with_type TAny EContinue)
   | Nop ->
       Krml.Helpers.eunit
   | Sequence (s1, s2) ->
@@ -650,8 +650,25 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
               Some (K.DFunction (None, [], List.length signature.C.generics.types, return_type, name, arg_binders, body))
             (* with _ -> None *)
       )
-  | C.Global _id ->
-      failwith "TODO: C.Global"
+  | C.Global id ->
+      let global = env.get_nth_global id in
+      let { C.name; ty; body_id; _ } = global in
+      let def = env.get_nth_function body_id in
+        let formatter = formatters.mk_formatter def in
+      L.log "AstOfLlbc" "Visiting global:%s\n%s" (Charon.Names.name_to_string name)
+          (Charon.PrintLlbcAst.Ast.fun_decl_to_string formatter "  " "  " def);
+      assert (def.signature.inputs = []);
+      assert (def.signature.generics.types = []);
+      assert (def.signature.generics.const_generics = []);
+      let body = Option.get def.body in
+      let ret_var = Krml.KList.one body.locals in
+      let ty = typ_of_ty env ty in
+      let body =
+        with_locals env ty [ ret_var ] (fun env ->
+          expression_of_raw_statement env ret_var.index body.body.content)
+      in
+      [ Some (K.DGlobal ([], lid_of_name env name, 0, ty, body)) ]
+
   | C.TraitDecl _ ->
       failwith "TODO: C.TraitDecl"
   | C.TraitImpl _ ->

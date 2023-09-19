@@ -20,19 +20,24 @@ end
 let remove_assignments = object(self)
   inherit [_] map
 
+  method private peel_lets to_close e =
+    match e.node with
+    | ELet (b, e1, e2) ->
+        assert (e1.node = EAny || e1.node = EUnit);
+        let b, e2 = open_binder b e2 in
+        let to_close = AtomMap.add b.node.atom (b.node.name, b.typ) to_close in
+        self#peel_lets to_close e2
+    | _ ->
+        let e = Krml.Simplify.sequence_to_let#visit_expr_w () e in
+        self#visit_expr_w to_close e
+
   method! visit_DFunction to_close cc flags n t name bs e =
-    let rec peel_lets to_close e =
-      match e.node with
-      | ELet (b, e1, e2) ->
-          assert (e1.node = EAny || e1.node = EUnit);
-          let b, e2 = open_binder b e2 in
-          let to_close = AtomMap.add b.node.atom (b.node.name, b.typ) to_close in
-          peel_lets to_close e2
-      | _ ->
-          let e = Krml.Simplify.sequence_to_let#visit_expr_w () e in
-          self#visit_expr_w to_close e
-    in
-    DFunction (cc, flags, n, t, name, bs, peel_lets to_close e)
+    assert (AtomMap.is_empty to_close);
+    DFunction (cc, flags, n, t, name, bs, self#peel_lets to_close e)
+
+  method! visit_DGlobal to_close flags n t name e =
+    assert (AtomMap.is_empty to_close);
+    DGlobal (flags, n, t, name, self#peel_lets to_close e)
 
   method! visit_ELet (not_yet_closed, t) b e1 e2 =
     let close_now_over not_yet_closed candidates mk_node =
@@ -108,6 +113,29 @@ let remove_units = object
       super#visit_EAssign env e1 e2
 end
 
+let remove_terminal_returns = object(self)
+  inherit [_] map
+
+  method! visit_ELet (terminal, _) b e1 e2 =
+    ELet (b, self#visit_expr_w false e1, self#visit_expr_w terminal e2)
+
+  method! visit_EWhile _ e1 e2 =
+    EWhile (self#visit_expr_w false e1, self#visit_expr_w false e2)
+
+  method! visit_EFor _ b e1 e2 e3 e4 =
+    EFor (b, self#visit_expr_w false e1, self#visit_expr_w false e2, self#visit_expr_w false e3,
+      self#visit_expr_w false e4)
+
+  method! visit_EReturn (terminal, _) e =
+    if terminal then
+      (self#visit_expr_w terminal e).node
+    else
+      EReturn (self#visit_expr_w terminal e)
+
+  method! visit_ESequence _ _ =
+    assert false
+end
+
 (* PPrint.(Krml.Print.(print (Krml.PrintAst.print_files files ^^ hardline))); *)
 
 let cleanup files =
@@ -115,5 +143,6 @@ let cleanup files =
   let files = remove_assignments#visit_files AtomMap.empty files in
   let files = Krml.Simplify.count_and_remove_locals#visit_files [] files in
   let files = Krml.Simplify.remove_uu#visit_files () files in
+  let files = remove_terminal_returns#visit_files true files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
   files
