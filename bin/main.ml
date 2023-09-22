@@ -83,6 +83,7 @@ Supported options:|}
   let _, files = Krml.DataTypes.everything files in
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
   let files = Krml.Simplify.hoist#visit_files [] files in
+  let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
   let files = Krml.Inlining.cross_call_analysis files in
 

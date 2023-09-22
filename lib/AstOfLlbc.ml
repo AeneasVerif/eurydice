@@ -525,6 +525,7 @@ let lookup_fun (env: env) (f: C.fun_id): K.lident * int * K.typ list * K.typ =
     | VecPush -> Builtin.vec_push
     | VecNew -> Builtin.vec_new
     | VecLen -> Builtin.vec_len
+    | VecIndexMut | VecIndex -> Builtin.vec_index
     | f -> Krml.Warn.fatal_error "unknown assumed function: %s" (C.show_assumed_fun_id f)
   in
   match f with
@@ -564,9 +565,24 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       K.(with_type TUnit (EAssign (p, rv)))
   | SetDiscriminant (_, _) ->
       failwith "C.SetDiscriminant"
-  | FakeRead _
-  | Drop _ ->
+  | FakeRead _ ->
       Krml.Helpers.eunit
+  | Drop p ->
+      let p, ty = expression_of_place env p in
+      begin match ty with
+      (* doesn't do the right thing yet, need to understand why there are
+         several drops per variable *)
+      | C.Adt (Assumed Vec, _) when false ->
+          (* p is a vec t *)
+          let t = match p.typ with TApp ((["Eurydice"], "vec"), [ t ]) -> t | _ -> assert false in
+          Krml.Helpers.(with_unit K.(EApp (
+            with_type (Krml.DeBruijn.subst_tn [ t ] Builtin.vec_drop.typ) (ETApp (
+              with_type Builtin.vec_drop.typ (EQualified Builtin.vec_drop.name),
+              [ t ])),
+            [ p ])))
+      | _ ->
+          Krml.Helpers.eunit
+      end
   | Assert a ->
       expression_of_assertion env a
 
@@ -615,30 +631,54 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
             rhs
       in
       Krml.Helpers.with_unit K.(EAssign (dest, rhs))
+
   | Panic ->
       with_any (K.EAbort (None, Some "panic!"))
+
   | Return ->
       let e = expression_of_var_id env ret_var in
       K.(with_type TAny (EReturn e))
+
   | Break _ ->
       K.(with_type TAny EBreak)
+
   | Continue _ ->
       K.(with_type TAny EContinue)
+
   | Nop ->
       Krml.Helpers.eunit
+
   | Sequence (s1, s2) ->
       let e1 = expression_of_raw_statement env ret_var s1.content in
       let e2 = expression_of_raw_statement env ret_var s2.content in
       K.(with_type e2.typ (ESequence [ e1; e2 ]))
+
   | Switch (If (op, s1, s2)) ->
       let e1 = expression_of_raw_statement env ret_var s1.content in
       let e2 = expression_of_raw_statement env ret_var s2.content in
       let t = lesser e1.typ e2.typ in
       K.(with_type t (EIfThenElse (expression_of_operand env op, e1, e2 )))
+
   | Switch (SwitchInt (_, _, _, _)) ->
       failwith "expression_of_raw_statement SwitchInt"
-  | Switch (Match (_, _, _)) ->
-      failwith "expression_of_raw_statement Match"
+
+  | Switch (Match (p, branches, default)) ->
+      let p, ty = expression_of_place env p in
+      let typ_id = match ty with Adt (AdtId typ_id, _) -> typ_id | _ -> assert false in
+      let { C.kind; _ } = env.get_nth_type typ_id in
+      let variants = match kind with Enum variants -> variants | _ -> assert false in
+
+      let branches = List.concat_map (fun (variant_ids, e) ->
+        List.map (fun variant_id ->
+          let variant = C.VariantId.nth variants variant_id in
+          let pat = K.with_type p.typ (K.PCons (variant.variant_name, [])) in
+          [], pat, expression_of_raw_statement env ret_var e.C.content
+        ) variant_ids
+      ) branches in
+      let branches = branches @ [ [], K.with_type p.typ K.PWild, expression_of_raw_statement env ret_var default.C.content ] in
+      let t = Krml.KList.reduce lesser (List.map (fun (_, _, e) -> e.K.typ) branches) in
+      K.(with_type t (EMatch (p, branches)))
+
   | Loop s ->
       K.(with_type TUnit (EWhile (Krml.Helpers.etrue,
         expression_of_raw_statement env ret_var s.content)))
