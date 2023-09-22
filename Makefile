@@ -19,6 +19,7 @@ test: $(addprefix charon-test-,$(CHARON_TEST_FILES)) $(addprefix test-,$(TEST_DI
 $(CHARON_HOME)/tests/llbc/%.llbc: $(CHARON_HOME)/tests/src/%.rs
 	RUST_BACKTRACE=1 $(MAKE) -C $(CHARON_HOME)/tests test-$*
 
+.PRECIOUS: $(CHARON_HOME)/tests/llbc/%.llbc
 charon-test-%: $(CHARON_HOME)/tests/llbc/%.llbc | out/test-% all
 	$(EURYDICE) --output out/test-$* $<
 	# These tests do not have a main
@@ -28,6 +29,7 @@ charon-test-%: $(CHARON_HOME)/tests/llbc/%.llbc | out/test-% all
 test/%/out.llbc: | $(wildcard test/%/*.rs) all
 	cd test/$* && $(CHARON_HOME)/bin/charon --crate $* --input lib.rs --no-code-duplication --dest .
 
+.PRECIOUS: test/%/out.llbc
 test-%: test/%/out.llbc
 	$(EURYDICE) --output out/test-$* $<
 	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $*.c -c

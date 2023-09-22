@@ -5,6 +5,61 @@ module C = struct
   include Charon.Types
   include Charon.Expressions
   include Charon.PrimitiveValues
+
+  let rec ety_of_typ (ty: 'a gr_ty): ety =
+    match ty with
+    | Adt (type_id, generics) ->
+        let generics = egeneric_args_of_args generics in
+        Adt (type_id, generics)
+    | TypeVar v -> TypeVar v
+    | Literal ty -> Literal ty
+    | Never -> Never
+    | TraitType (trait_ref, generics, type_name) ->
+        let trait_ref = etrait_ref_of_trait_ref trait_ref in
+        let generics = egeneric_args_of_args generics in
+        TraitType (trait_ref, generics, type_name)
+    | Ref (_, t, k) ->
+        Ref (Erased, ety_of_typ t, k)
+
+  and egeneric_args_of_args (g : 'a region generic_args ) :
+      egeneric_args=
+    let { regions; types; const_generics; trait_refs } = g in
+    assert (regions = []);
+    let types = List.map ety_of_typ types in
+    let trait_refs = List.map etrait_ref_of_trait_ref trait_refs in
+    { regions = []; types; const_generics; trait_refs }
+
+  and etrait_ref_of_trait_ref (tr : 'a region trait_ref) : etrait_ref=
+    let ({ trait_id; generics; trait_decl_ref } : _) = tr in
+    let trait_id = etrait_instance_of_trait_instance trait_id in
+    let generics = egeneric_args_of_args generics in
+    let trait_decl_ref = etrait_decl_ref_of_decl_erf trait_decl_ref in
+    { trait_id; generics; trait_decl_ref }
+
+  and etrait_decl_ref_of_decl_erf (tr : 'a region trait_decl_ref) :
+      etrait_decl_ref =
+    let ({ trait_decl_id; decl_generics } : _) = tr in
+    let decl_generics =
+      egeneric_args_of_args decl_generics
+    in
+    { trait_decl_id; decl_generics }
+
+  and etrait_instance_of_trait_instance (id : 'a region trait_instance_id) : etrait_instance_id =
+    match id with
+    | Self -> Self
+    | TraitImpl id -> TraitImpl id
+    | BuiltinOrAuto id -> BuiltinOrAuto id
+    | Clause id -> Clause id
+    | ParentClause (id, decl_id, cid) ->
+        let id = etrait_instance_of_trait_instance id in
+        ParentClause (id, decl_id, cid)
+    | ItemClause (id, decl_id, name, cid) ->
+        let id = etrait_instance_of_trait_instance id in
+        ItemClause (id, decl_id, name, cid)
+    | TraitRef tr ->
+        let tr = etrait_ref_of_trait_ref tr in
+        TraitRef tr
+    | UnknownTrait msg -> UnknownTrait msg
 end
 
 module K = Krml.Ast
@@ -128,6 +183,14 @@ let rec typ_of_ty (env: env) (ty: 'region Charon.Types.ty): K.typ =
   | C.Adt (Assumed Array, { types = [ t ]; const_generics = [ ConstGenericValue (Scalar n) ]; _ }) ->
       K.TArray (typ_of_ty env t, constant_of_scalar_value n)
 
+  | C.Ref (_, Adt (Assumed Vec, { types = [ t ]; _ }), _) ->
+      (* We compile vecs to fat pointers, which hold the pointer underneath -- no need for an
+         extra reference here. *)
+      Builtin.mk_vec (typ_of_ty env t)
+
+  | C.Adt (Assumed Vec, { types = [ t ]; _ }) ->
+      Builtin.mk_vec (typ_of_ty env t)
+
   | C.Ref (_, Adt (Assumed Slice, { types = [ t ]; _ }), _) ->
       (* We compile slices to fat pointers, which hold the pointer underneath -- no need for an
          extra reference here. *)
@@ -148,6 +211,9 @@ let rec typ_of_ty (env: env) (ty: 'region Charon.Types.ty): K.typ =
 
   | C.Ref (_, t, _) ->
       (* Normal reference *)
+      K.TBuf (typ_of_ty env t, false)
+
+  | C.Adt (Assumed Box, { types = [ t ]; _ }) ->
       K.TBuf (typ_of_ty env t, false)
 
   | C.Adt (Assumed f, { types = args; const_generics; _ }) ->
@@ -247,14 +313,28 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
     | C.Deref, Ref (_, (Adt (Assumed Array, { types = [ t ]; _ }) as ty), _) ->
         (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
         K.with_type (TBuf (typ_of_ty env t, false)) e.K.node, ty
-    | C.Deref, Ref (_, (Adt (Assumed Slice, _) as t), _) ->
+    | C.Deref, Ref (_, (Adt (Assumed (Slice | Vec), _) as t), _) ->
         e, t
     | C.Deref, Ref (_, ty, _) ->
         Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e.K.typ) e.K.node), ty
     | DerefBox, _ ->
         failwith "expression_of_place DerefBox"
-    | Field (ProjAdt _, _), _ ->
-        failwith "expression_of_place ProjAdt"
+    | Field (ProjAdt (typ_id, variant_id), field_id), _ ->
+        begin match variant_id with
+        | None ->
+            let { C.kind; _ } = env.get_nth_type typ_id in
+            let fields = match kind with Struct fields -> fields | _ -> failwith "not a struct" in
+            let field_name, field_t =
+              let field = List.nth fields (C.FieldId.to_int field_id) in
+              match field.C.field_name with
+              | Some field_name -> field_name, field.C.field_ty
+              | None -> failwith "TODO: understand what empty field name means"
+            in
+            K.with_type (typ_of_ty env field_t) (K.EField (e, field_name)),
+            C.ety_of_typ field_t
+        | Some _->
+            failwith "TODO: Field/ProjAdt/Some variant_id"
+        end
     | Field (ProjOption _, _), _ ->
         failwith "expression_of_place ProjOption"
     | Field (ProjTuple n, i), C.Adt (_, { types = tys; const_generics = cgs; _ }) ->
@@ -358,7 +438,7 @@ let find_nth_variant (env: env) (typ: C.type_decl_id) (var: C.variant_id) =
 let maybe_addrof (ty: 'a C.ty) (e: K.expr) =
   (* ty is the *original* Rust type *)
   match ty with
-  | Adt (Assumed (Array | Slice), _) ->
+  | Adt (Assumed (Array | Slice | Vec), _) ->
       e
   | _ ->
       K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
@@ -393,7 +473,7 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
   | Aggregate (AggregatedOption (_, _), _) ->
       failwith "expression_of_rvalue AggregatedOption"
   | Aggregate (AggregatedAdt (typ_id, variant_id, { types = typ_args; _ }), args) ->
-      let { C.name; _ } = env.get_nth_type typ_id in
+      let { C.name; kind; _ } = env.get_nth_type typ_id in
       let typ_lid = lid_of_name env name in
       let typ_args = List.map (typ_of_ty env) typ_args in
       let t = if typ_args = [] then K.TQualified typ_lid else TApp (typ_lid, typ_args) in
@@ -403,7 +483,8 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
           let variant_id = (find_nth_variant env typ_id variant_id).variant_name in
           K.with_type t (K.ECons (variant_id, args))
       | None ->
-          failwith "TODO: AggregatedAdt None"
+          let fields = match kind with Struct fields -> fields | _ -> failwith "not a struct" in
+          K.with_type t (K.EFlat (List.map2 (fun f a -> f.C.field_name, a) fields args))
       end
   | Aggregate (AggregatedRange t, ops) ->
       if t <> C.Literal (Integer Usize) then
@@ -441,6 +522,9 @@ let lookup_fun (env: env) (f: C.fun_id): K.lident * int * K.typ list * K.typ =
     | ArrayToSliceShared | ArrayToSliceMut -> Builtin.array_to_slice
     | ArraySubsliceShared | ArraySubsliceMut -> Builtin.array_to_subslice
     | SliceSubsliceShared | SliceSubsliceMut -> Builtin.slice_subslice
+    | VecPush -> Builtin.vec_push
+    | VecNew -> Builtin.vec_new
+    | VecLen -> Builtin.vec_len
     | f -> Krml.Warn.fatal_error "unknown assumed function: %s" (C.show_assumed_fun_id f)
   in
   match f with
@@ -500,7 +584,9 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let original_type_args = type_args in
       let type_args = List.map (typ_of_ty env) type_args in
       let args = args @ args_of_const_generic_args func const_generic_args in
+      let args = if args = [] then [ Krml.Helpers.eunit ] else args in
       let name, n_type_params, inputs, output = lookup_fun env func in
+      let inputs = if inputs = [] then [ K.TUnit ] else inputs in
       if not (n_type_params = List.length type_args) then
         Krml.Warn.fatal_error "%a: n_type_params %d != type_args %d"
           Krml.PrintAst.Ops.plid name
@@ -520,7 +606,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       (* This does something similar to maybe_addrof *)
       let rhs =
         match func, original_type_args with
-        | C.Assumed (SliceIndexShared | SliceIndexMut), [ Adt (Assumed (Array | Slice), _) ] ->
+        | C.Assumed (SliceIndexShared | SliceIndexMut), [ Adt (Assumed (Array | Slice | Vec), _) ] ->
             (* Will decay. See comment above maybe_addrof *)
             rhs
         | C.Assumed (SliceIndexShared | SliceIndexMut), _ ->
@@ -590,7 +676,12 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
 
         match kind with
         | Opaque -> None
-        | Struct _ -> failwith "TODO: C.Type Struct"
+        | Struct fields ->
+            let env = push_type_binders env type_params in
+            let fields = List.map (fun { C.field_name; field_ty; _ } ->
+              field_name, (typ_of_ty env field_ty, false)
+            ) fields in
+            Some (K.DType (name, [], List.length type_params, Flat fields))
         | Enum branches ->
             let env = push_type_binders env type_params in
             let branches = List.map (fun { C.variant_name; fields; _ } ->
@@ -640,8 +731,11 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
               let return_type = typ_of_ty env return_var.var_ty in
               let arg_binders = List.map (fun (arg: C.var) ->
                 let name = Option.value ~default:"_" arg.name in
-                Krml.Helpers.fresh_binder name (typ_of_ty env arg.var_ty)
+                Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty)
               ) args in
+              (* Note: Rust allows zero-argument functions but the krml internal
+                 representation wants a unit there. *)
+              let arg_binders = if arg_binders = [] then [ Krml.Helpers.fresh_binder "dummy" K.TUnit ] else arg_binders in
               let env = push_binders env args in
               let body =
                 with_locals env return_type (return_var :: locals) (fun env ->

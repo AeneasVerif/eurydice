@@ -4,6 +4,11 @@ end
 
 (* Helpers to build krml types *)
 
+let vec: K.lident = ["Eurydice"], "vec"
+
+let mk_vec (t: K.typ): K.typ =
+  K.TApp (vec, [ t ])
+
 let slice: K.lident = ["Eurydice"], "slice"
 
 let mk_slice (t: K.typ): K.typ =
@@ -76,6 +81,34 @@ let slice_subslice = {
   arg_names = ["s"; "r"]
 }
 
+let vec_new = {
+  name = ["Eurydice"], "vec_new";
+  typ = Krml.Helpers.fold_arrow [
+    TUnit
+  ] (mk_vec (TBound 0));
+  n_type_args = 1;
+  arg_names = []
+}
+
+let vec_push = {
+  name = ["Eurydice"], "vec_push";
+  typ = Krml.Helpers.fold_arrow [
+    mk_vec (TBound 0);
+    TBound 0;
+  ] TUnit;
+  n_type_args = 1;
+  arg_names = ["v"; "x"]
+}
+
+let vec_len = {
+  name = ["Eurydice"], "vec_len";
+  typ = Krml.Helpers.fold_arrow [
+    mk_vec (TBound 0);
+  ] (TInt SizeT);
+  n_type_args = 1;
+  arg_names = ["v"]
+}
+
 let files = [
   let externals = List.map (fun { name; typ; n_type_args; arg_names } ->
       K.DExternal (None, [], n_type_args, name, typ, arg_names)
@@ -85,6 +118,9 @@ let files = [
       slice_len;
       slice_index;
       slice_subslice;
+      vec_push;
+      vec_new;
+      vec_len;
   ] in
   "Eurydice", externals @ [
     K.DType (range, [], 1, Flat [
