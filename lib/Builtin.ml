@@ -128,6 +128,15 @@ let vec_index = {
   arg_names = ["v"; "i"]
 }
 
+let box_new = {
+  name = ["Eurydice"], "box_new";
+  typ = Krml.Helpers.fold_arrow [
+    TBound 0;
+  ] (TBuf (TBound 0, false));
+  n_type_args = 1;
+  arg_names = ["v"]
+}
+
 let files = [
   let externals = List.map (fun { name; typ; n_type_args; arg_names } ->
       K.DExternal (None, [], n_type_args, name, typ, arg_names)
@@ -142,6 +151,7 @@ let files = [
       vec_len;
       vec_drop;
       vec_index;
+      box_new;
   ] in
   "Eurydice", externals @ [
     K.DType (range, [], 1, Flat [

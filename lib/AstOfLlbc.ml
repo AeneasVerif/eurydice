@@ -122,6 +122,10 @@ let string_of_path_elem (p: Charon.Names.path_elem): string =
   | Charon.Names.Ident s -> s
   | Disambiguator i -> Charon.Names.Disambiguator.to_string i
 
+let mk_field_name f i =
+  match f with
+  | Some f -> f
+  | None -> "f" ^ string_of_int i
 
 (** Translation of types *)
 
@@ -317,8 +321,8 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
         e, t
     | C.Deref, Ref (_, ty, _) ->
         Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e.K.typ) e.K.node), ty
-    | DerefBox, _ ->
-        failwith "expression_of_place DerefBox"
+    | DerefBox, Adt (Assumed Box, { types = [ ty ]; _ }) ->
+        Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e.K.typ) e.K.node), ty
     | Field (ProjAdt (typ_id, variant_id), field_id), _ ->
         begin match variant_id with
         | None ->
@@ -526,6 +530,7 @@ let lookup_fun (env: env) (f: C.fun_id): K.lident * int * K.typ list * K.typ =
     | VecNew -> Builtin.vec_new
     | VecLen -> Builtin.vec_len
     | VecIndexMut | VecIndex -> Builtin.vec_index
+    | BoxNew -> Builtin.box_new
     | f -> Krml.Warn.fatal_error "unknown assumed function: %s" (C.show_assumed_fun_id f)
   in
   match f with
@@ -726,7 +731,7 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
             let env = push_type_binders env type_params in
             let branches = List.map (fun { C.variant_name; fields; _ } ->
               variant_name, List.mapi (fun i { C.field_name; field_ty; _ } ->
-                Option.value ~default:("f" ^ string_of_int i) field_name,
+                mk_field_name field_name i,
                 (typ_of_ty env field_ty, true)
               ) fields
             ) branches in
@@ -794,14 +799,18 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
       assert (def.signature.inputs = []);
       assert (def.signature.generics.types = []);
       assert (def.signature.generics.const_generics = []);
-      let body = Option.get def.body in
-      let ret_var = Krml.KList.one body.locals in
       let ty = typ_of_ty env ty in
-      let body =
-        with_locals env ty [ ret_var ] (fun env ->
-          expression_of_raw_statement env ret_var.index body.body.content)
-      in
-      [ Some (K.DGlobal ([], lid_of_name env name, 0, ty, body)) ]
+      begin match def.body with
+      | Some body ->
+          let ret_var = Krml.KList.one body.locals in
+          let body =
+            with_locals env ty [ ret_var ] (fun env ->
+              expression_of_raw_statement env ret_var.index body.body.content)
+          in
+          [ Some (K.DGlobal ([], lid_of_name env name, 0, ty, body)) ]
+      | None ->
+          [ Some (K.DExternal (None, [], 0, lid_of_name env name, ty, [])) ]
+      end
 
   | C.TraitDecl _ ->
       failwith "TODO: C.TraitDecl"
