@@ -220,6 +220,9 @@ let rec typ_of_ty (env: env) (ty: 'region Charon.Types.ty): K.typ =
   | C.Adt (Assumed Box, { types = [ t ]; _ }) ->
       K.TBuf (typ_of_ty env t, false)
 
+  | C.Adt (Assumed Option, { types = [ t ]; _ }) ->
+      Builtin.mk_option (typ_of_ty env t)
+
   | C.Adt (Assumed f, { types = args; const_generics; _ }) ->
       List.iter (fun x -> print_endline (C.show_const_generic x)) const_generics;
       Krml.Warn.fatal_error "TODO: Adt/Assumed %s (%d) %d " (C.show_assumed_ty f) (List.length args)
@@ -290,6 +293,13 @@ let binder_of_var (env: env) (l: C.var): K.binder =
   let name = Option.value ~default:(uu ()) l.name in
   Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env l.var_ty)
 
+let find_nth_variant (env: env) (typ: C.type_decl_id) (var: C.variant_id) =
+  match env.get_nth_type typ with
+  | { kind = Enum variants; _ } ->
+      Charon.Types.VariantId.nth variants var
+  | _ ->
+      failwith "impossible: type is not a variant"
+
 let rec with_locals (env: env) (t: K.typ) (locals: C.var list) (k: env -> 'a): 'a =
   match locals with
   | [] -> k env
@@ -317,13 +327,17 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
     | C.Deref, Ref (_, (Adt (Assumed Array, { types = [ t ]; _ }) as ty), _) ->
         (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
         K.with_type (TBuf (typ_of_ty env t, false)) e.K.node, ty
+
     | C.Deref, Ref (_, (Adt (Assumed (Slice | Vec), _) as t), _) ->
         e, t
+
     | C.Deref, Ref (_, ty, _) ->
         Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e.K.typ) e.K.node), ty
+
     | DerefBox, Adt (Assumed Box, { types = [ ty ]; _ }) ->
         Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e.K.typ) e.K.node), ty
-    | Field (ProjAdt (typ_id, variant_id), field_id), _ ->
+
+    | Field (ProjAdt (typ_id, variant_id), field_id), field_ty ->
         begin match variant_id with
         | None ->
             let { C.kind; _ } = env.get_nth_type typ_id in
@@ -336,11 +350,40 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
             in
             K.with_type (typ_of_ty env field_t) (K.EField (e, field_name)),
             C.ety_of_typ field_t
-        | Some _->
-            failwith "TODO: Field/ProjAdt/Some variant_id"
+        | Some variant_id ->
+            let variant = find_nth_variant env typ_id variant_id in
+            let field_id = C.FieldId.to_int field_id in
+            let field = List.nth variant.fields field_id in
+            (* Not using the field.C.field_ty because that one may still have
+               type variables in it (?). *)
+            let field_t = typ_of_ty env field_ty in
+            let b = Krml.Helpers.fresh_binder (mk_field_name field.C.field_name field_id) field_t in
+            K.with_type field_t K.(EMatch (Unchecked,
+              e,
+              [[ b ],
+              with_type e.typ (
+                PCons (variant.C.variant_name,
+                Krml.KList.make (List.length variant.fields) (fun i ->
+                  if i = field_id then
+                    with_type field_t (PBound 0)
+                  else
+                    with_type TAny PWild))),
+              with_type field_t (EBound 0)])),
+            field_ty
         end
-    | Field (ProjOption _, _), _ ->
-        failwith "expression_of_place ProjOption"
+
+    | Field (ProjOption v, _), field_ty ->
+        assert (v = C.option_some_id);
+        (* TODO: share with case above *)
+        let field_t = typ_of_ty env field_ty in
+        let b = Krml.Helpers.fresh_binder "x" field_t in
+        K.with_type field_t K.(EMatch (Unchecked,
+          e,
+          [[ b ],
+          with_type e.typ (PCons ("Some", [ with_type field_t (PBound 0) ])),
+          with_type field_t (EBound 0)])),
+        field_ty
+
     | Field (ProjTuple n, i), C.Adt (_, { types = tys; const_generics = cgs; _ }) ->
         assert (cgs = []);
         (* match e with (_, ..., _, x, _, ..., _) -> x *)
@@ -359,7 +402,8 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
             K.with_type t (if i = i' then K.PBound 0 else PWild)) ts))
         in
         let expr = K.with_type t_i (K.EBound 0) in
-        K.with_type t_i (K.EMatch (e, [ binders, pattern, expr ])), List.nth tys i
+        K.with_type t_i (K.EMatch (Checked, e, [ binders, pattern, expr ])), List.nth tys i
+
     | _ ->
         failwith "unexpected / ill-typed projection"
   ) (e, ty) projection
@@ -424,13 +468,6 @@ let mk_op_app (op: K.op) (first: K.expr) (rest: K.expr list): K.expr =
   let ret_t, _ = Krml.Helpers.flatten_arrow op_t in
   K.(with_type ret_t (EApp (op, first :: rest)))
 
-let find_nth_variant (env: env) (typ: C.type_decl_id) (var: C.variant_id) =
-  match env.get_nth_type typ with
-  | { kind = Enum variants; _ } ->
-      Charon.Types.VariantId.nth variants var
-  | _ ->
-      failwith "impossible: type is not a variant"
-
 (* According to the rules (see my notebook), array and slice types do not need
    the address-taking because they are already addresses. Therefore, the
    compilation scheme skips the address-taking operation and represents a value
@@ -457,8 +494,9 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
          pass one for the other *)
       maybe_addrof ty e
 
-  | UnaryOp (Cast (_, _), _e) ->
-      failwith "TODO: UnaryOp Cast"
+  | UnaryOp (Cast (_, dst), e) ->
+      let dst = K.TInt (width_of_integer_type dst) in
+      K.with_type dst (K.ECast (expression_of_operand env e, dst))
   | UnaryOp (op, o1) ->
       mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
@@ -474,8 +512,13 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
         assert (List.length ops > 1);
         K.with_type (TTuple ts) (K.ETuple ops)
       end
-  | Aggregate (AggregatedOption (_, _), _) ->
-      failwith "expression_of_rvalue AggregatedOption"
+  | Aggregate (AggregatedOption (v, t), x) ->
+      let t = typ_of_ty env t in
+      if v = C.option_none_id then
+        K.with_type (Builtin.mk_option t) (K.ECons ("None", []))
+      else
+        let x = Krml.KList.one x in
+        K.with_type (Builtin.mk_option t) (K.ECons ("Some", [ expression_of_operand env x ]))
   | Aggregate (AggregatedAdt (typ_id, variant_id, { types = typ_args; _ }), args) ->
       let { C.name; kind; _ } = env.get_nth_type typ_id in
       let typ_lid = lid_of_name env name in
@@ -504,8 +547,9 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
         (K.EFlat [ Some "start", start_index; Some "end", end_index ])
   | Aggregate (AggregatedArray (t, _), ops) ->
       K.with_type (typ_of_ty env t) (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
-  | Global _ ->
-      failwith "expression_of_rvalue Global"
+  | Global id ->
+      let global = env.get_nth_global id in
+      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.name))
 
 let expression_of_assertion (env: env) ({ cond; expected }: C.assertion): K.expr =
   let cond =
@@ -531,6 +575,7 @@ let lookup_fun (env: env) (f: C.fun_id): K.lident * int * K.typ list * K.typ =
     | VecLen -> Builtin.vec_len
     | VecIndexMut | VecIndex -> Builtin.vec_index
     | BoxNew -> Builtin.box_new
+    | Replace -> Builtin.replace
     | f -> Krml.Warn.fatal_error "unknown assumed function: %s" (C.show_assumed_fun_id f)
   in
   match f with
@@ -669,20 +714,34 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
 
   | Switch (Match (p, branches, default)) ->
       let p, ty = expression_of_place env p in
-      let typ_id = match ty with Adt (AdtId typ_id, _) -> typ_id | _ -> assert false in
-      let { C.kind; _ } = env.get_nth_type typ_id in
-      let variants = match kind with Enum variants -> variants | _ -> assert false in
+      let variant_name_of_variant_id =
+        match ty with
+        | Adt (AdtId typ_id, _) ->
+            let { C.kind; _ } = env.get_nth_type typ_id in
+            let variants = match kind with Enum variants -> variants | _ -> assert false in
+            fun v -> (C.VariantId.nth variants v).variant_name
+        | Adt (Assumed Option, _) ->
+            fun x ->
+              if x = C.option_none_id then
+                "None"
+              else if x = C.option_some_id then
+                "Some"
+              else
+                failwith "unknown variant id for option"
+        | _ ->
+            failwith "TODO: match on not adt, not option"
+      in
 
       let branches = List.concat_map (fun (variant_ids, e) ->
         List.map (fun variant_id ->
-          let variant = C.VariantId.nth variants variant_id in
-          let pat = K.with_type p.typ (K.PCons (variant.variant_name, [])) in
+          let variant_name = variant_name_of_variant_id variant_id in
+          let pat = K.with_type p.typ (K.PCons (variant_name, [])) in
           [], pat, expression_of_raw_statement env ret_var e.C.content
         ) variant_ids
       ) branches in
       let branches = branches @ [ [], K.with_type p.typ K.PWild, expression_of_raw_statement env ret_var default.C.content ] in
       let t = Krml.KList.reduce lesser (List.map (fun (_, _, e) -> e.K.typ) branches) in
-      K.(with_type t (EMatch (p, branches)))
+      K.(with_type t (EMatch (Checked, p, branches)))
 
   | Loop s ->
       K.(with_type TUnit (EWhile (Krml.Helpers.etrue,

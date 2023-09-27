@@ -18,6 +18,10 @@ let range: K.lident = ["core"; "ops"; "range"], "Range"
 let mk_range (t: K.typ): K.typ =
   K.TApp (range, [ t ])
 
+let option: K.lident = ["core"; "ops"; "option"], "Option"
+let mk_option (t: K.typ): K.typ =
+  K.TApp (option, [ t ])
+
 let array_copy = ["Eurydice"], "array_copy"
 
 let macros = Krml.Idents.LidSet.of_list [
@@ -137,6 +141,16 @@ let box_new = {
   arg_names = ["v"]
 }
 
+let replace = {
+  name = ["Eurydice"], "replace";
+  typ = Krml.Helpers.fold_arrow [
+    TBuf (TBound 0, false);
+    TBound 0;
+  ] (TBound 0);
+  n_type_args = 1;
+  arg_names = ["v"; "x"]
+}
+
 let files = [
   let externals = List.map (fun { name; typ; n_type_args; arg_names } ->
       K.DExternal (None, [], n_type_args, name, typ, arg_names)
@@ -152,11 +166,16 @@ let files = [
       vec_drop;
       vec_index;
       box_new;
+      replace;
   ] in
   "Eurydice", externals @ [
     K.DType (range, [], 1, Flat [
       Some "start", (TBound 0, true);
       Some "end", (TBound 0, true);
+    ]);
+    K.DType (option, [], 1, Variant [
+      "None", [];
+      "Some", [ "x", (TBound 0, true) ]
     ]);
   ]
 ]
