@@ -69,23 +69,6 @@ module L = Logging
 
 (** Environment *)
 
-(* LLBC matches on the tag only, and further accesses to fields rely on an
-   "assert-then-project" construct that directly selects from the right tag.
-   For instance, we receive (in ML-like syntax):
-   let rec len x = match *x with Cons -> 1 + ( *x / Cons).tl | ...
-                                              ^^^^^^^^^
-                                      assert x is Cons then select field tl
-
-   We could either add a construct to krml called EConsField or something that
-   selects the constructor and MUST be followed by further field selections. Or,
-   like we do here, we turn the environment into a telescope; in addition to
-   regular variables, we have special proj variables. Whenever matching on a
-   constructor, we automatically bind all fields, remember the scrutinee,
-   constructor and field, and find it later when translating expressions. *)
-type binder =
-  | Var of C.var_id
-  | Proj of K.expr * C.variant_id * C.field_id
-
 type env = {
   (* Lookup functions to resolve various id's into actual declarations. *)
   get_nth_function: C.FunDeclId.id -> C.fun_decl;
@@ -93,7 +76,7 @@ type env = {
   get_nth_global: C.GlobalDeclId.id -> C.global_decl;
 
   (* To compute DeBruijn indices *)
-  binders: (binder * K.typ * C.ety) list;
+  binders: (C.var_id * K.typ * C.ety) list;
   type_binders: C.type_var_id list;
 
   (* For printing. *)
@@ -102,19 +85,6 @@ type env = {
   (* For picking pretty names *)
   crate_name: string;
 }
-
-let debug env =
-  List.iteri (fun i b ->
-    match b with
-    | Var v, _, _ ->
-        Krml.KPrint.bprintf "%d: %s\n" i (C.VarId.to_string v)
-    | Proj (e, v, f), _, _ ->
-        Krml.(KPrint.bprintf "%d: %a / %d / %d in the env\n"
-          i
-          PrintAst.Ops.pexpr e
-          (C.VariantId.to_int v)
-          (C.FieldId.to_int f))
-  ) env.binders
 
 (* Environment: types *)
 
@@ -289,35 +259,19 @@ let lookup_with_original_type env (v1: C.var_id) =
   let exception Found of int * K.typ * C.ety in
   try
     List.iteri (fun i (v2, t, ty) ->
-      if Var v1 = v2 then
+      if v1 = v2 then
         raise (Found (i, t, ty))
     ) env.binders;
     raise Not_found
   with Found (i, t, ty) ->
     i, t, ty
 
-let lookup_cons_field env e v f =
-  let shift e = Krml.DeBruijn.subst Krml.Helpers.eunit 0 e in
-  let rec lookup_cons_field l i (e: K.expr) (v: C.variant_id) (f: C.field_id) =
-    match l with
-    | (Proj (e', v', f'), t, ty) :: _ when (e, v, f) = (e', v', f') ->
-        Some (i, t, ty)
-    | [] ->
-        None
-    | _ :: tl ->
-        lookup_cons_field tl (i + 1) (shift e) v f
-  in
-  lookup_cons_field env.binders 0 (shift e) v f
-
 let lookup env v1 =
   let i, t, _ = lookup_with_original_type env v1 in
   i, t
 
 let push_binder env (t: C.var) =
-  { env with binders = (Var t.index, typ_of_ty env t.var_ty, t.var_ty) :: env.binders }
-
-let push_cons_field env t e v f =
-  { env with binders = (Proj (e, v, f), typ_of_ty env t, t) :: env.binders }
+  { env with binders = (t.index, typ_of_ty env t.var_ty, t.var_ty) :: env.binders }
 
 let push_binders env (ts: C.var list) =
   List.fold_left push_binder env ts
@@ -378,19 +332,12 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
               let field = List.nth fields (C.FieldId.to_int field_id) in
               match field.C.field_name with
               | Some field_name -> field_name, field.C.field_ty
-              | None -> failwith "TODO: understand what empty field name means here"
+              | None -> failwith "TODO: understand what empty field name means"
             in
             K.with_type (typ_of_ty env field_t) (K.EField (e, field_name)),
             C.ety_of_typ field_t
-        | Some variant_id ->
-            match lookup_cons_field env e variant_id field_id with
-            | Some (i, t, ty) ->
-                K.(with_type t (EBound i)), ty
-            | None ->
-                debug env;
-                Krml.(Warn.fatal_error "Could not find %a / %d / %d in the env"
-                  PrintAst.Ops.pexpr e (C.VariantId.to_int variant_id)
-                  (C.FieldId.to_int field_id))
+        | Some _->
+            failwith "TODO: Field/ProjAdt/Some variant_id"
         end
     | Field (ProjOption _, _), _ ->
         failwith "expression_of_place ProjOption"
@@ -729,16 +676,8 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let branches = List.concat_map (fun (variant_ids, e) ->
         List.map (fun variant_id ->
           let variant = C.VariantId.nth variants variant_id in
-          let env, binders, pats = Krml.KList.fold_lefti (fun i (env, binders, pats) (f: C.field) ->
-            let t = typ_of_ty env f.field_ty in
-            let b = Krml.Helpers.fresh_binder (mk_field_name f.field_name i) t in
-            let env = push_cons_field env (C.ety_of_typ f.field_ty)
-              (Krml.DeBruijn.lift i p) variant_id (C.FieldId.of_int i)
-            in
-            env, b :: binders, K.(with_type t (PBound i) :: pats)
-          ) (env, [], []) variant.C.fields in
-          let pat = K.with_type p.typ (K.PCons (variant.variant_name, pats)) in
-          List.rev binders, pat, expression_of_raw_statement env ret_var e.C.content
+          let pat = K.with_type p.typ (K.PCons (variant.variant_name, [])) in
+          [], pat, expression_of_raw_statement env ret_var e.C.content
         ) variant_ids
       ) branches in
       let branches = branches @ [ [], K.with_type p.typ K.PWild, expression_of_raw_statement env ret_var default.C.content ] in
