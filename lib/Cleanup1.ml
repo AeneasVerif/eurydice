@@ -23,15 +23,19 @@ let remove_assignments = object(self)
   method private peel_lets to_close e =
     match e.node with
     | ELet (b, e1, e2) ->
-        assert (e1.node = EAny || e1.node = EUnit);
+        if not (e1.node = EAny || e1.node = EUnit) then
+          Krml.(Warn.fatal_error "Initializer of let-binding is %a" PrintAst.Ops.pexpr e1);
+        (* Krml.(KPrint.bprintf "peeling %s\n" b.node.name); *)
         let b, e2 = open_binder b e2 in
         let to_close = AtomMap.add b.node.atom (b.node.name, b.typ) to_close in
         self#peel_lets to_close e2
     | _ ->
         let e = Krml.Simplify.sequence_to_let#visit_expr_w () e in
+        (* Krml.(KPrint.bprintf "after peeling:\n%a" PrintAst.Ops.ppexpr e); *)
         self#visit_expr_w to_close e
 
   method! visit_DFunction to_close cc flags n t name bs e =
+    (* Krml.(KPrint.bprintf "visiting %a\n" PrintAst.Ops.plid name); *)
     assert (AtomMap.is_empty to_close);
     DFunction (cc, flags, n, t, name, bs, self#peel_lets to_close e)
 
@@ -40,6 +44,13 @@ let remove_assignments = object(self)
     DGlobal (flags, n, t, name, self#peel_lets to_close e)
 
   method! visit_ELet (not_yet_closed, t) b e1 e2 =
+    (* If [not_yet_closed] represents the set of bindings that have yet to be
+       closed (i.e. for which we have yet to insert a let-binding, as close as
+       possible to the first use-site), and [candidates] represents the atoms
+       that we know for sure must be closed right now, then [close_now_over]
+       inserts suitable let-bindings for the candidates that have not yet been
+       closed, then calls the continuation with the remaining subset of
+       not_yet_closed. *)
     let close_now_over not_yet_closed candidates mk_node =
       let to_close_now = AtomSet.inter candidates (set_of_map_keys not_yet_closed) in
       let bs = List.of_seq (AtomSet.to_seq to_close_now) in
@@ -57,16 +68,55 @@ let remove_assignments = object(self)
 
     let count e = count_atoms#visit_expr_w () e in
 
-    let recurse_or_close not_yet_closed e =
+    let (++) = AtomSet.union in
+
+    (* Called when hitting a node in terminal position: either fall back into
+       the general case if it's a let-node; special treatment if it's
+       control-flow (match, if, while); otherwise, just close everything now and
+       move on (wildcard case). *)
+    let rec recurse_or_close not_yet_closed e =
       match e.node with
       | ELet _ ->
+          (* let node: restart logic and jump back to match below *)
           self#visit_expr_w not_yet_closed e
+      | EIfThenElse (e, e', e'') ->
+          with_type e.typ @@ close_now_over not_yet_closed (
+            (* We must now bind: *)
+              (count e) ++ (* whichever variables were in the condition *)
+              (AtomSet.inter (count e') (count e''))) (* variables that appear in both branches *)
+            (fun not_yet_closed ->
+              EIfThenElse (self#visit_expr_w not_yet_closed e,
+                recurse_or_close not_yet_closed e',
+                recurse_or_close not_yet_closed e''))
+      | EWhile (e, e') ->
+          with_type e.typ @@ close_now_over not_yet_closed
+            (count e)
+            (fun not_yet_closed ->
+              EWhile (self#visit_expr_w not_yet_closed e, recurse_or_close not_yet_closed e'))
+      | EMatch (c, e, branches) ->
+          with_type e.typ @@ close_now_over not_yet_closed (
+            (* We must now bind: *)
+              (count e) ++
+                (* i.e., whichever variables were in the condition *)
+              (Krml.KList.reduce AtomSet.inter (List.map (fun (_bs, _p, e) -> count e) branches)))
+                (* i.e., variables that appear in all branches -- note that we
+                   don't open _bs meaning that we don't collect bound variables in this branch *)
+            (fun not_yet_closed ->
+              EMatch (
+                c,
+                self#visit_expr_w not_yet_closed e,
+                List.map (fun (bs, p, e) ->
+                  bs, p, recurse_or_close not_yet_closed e
+                ) branches))
       | _ ->
+          (* There are opportunities for finesse here, for instance, if we reach
+             an assignment in terminal position, *and* the variable has yet to
+             be closed, it means that the assignment is useless since no one
+             else will be using the variable after that. *)
           with_type e.typ (close_now_over not_yet_closed (count e) (fun not_yet_closed ->
+            (* not_yet_closed should be empty at this stage *)
             (self#visit_expr_w not_yet_closed e).node))
     in
-
-    let (++) = AtomSet.union in
 
     match e1.node with
     | EAssign ({ node = EOpen (_, atom); _ }, e1) when AtomMap.mem atom not_yet_closed ->
@@ -97,18 +147,42 @@ let remove_assignments = object(self)
           ELet (b,
             with_type TUnit (EWhile (self#visit_expr_w not_yet_closed e, recurse_or_close not_yet_closed e')),
             recurse_or_close not_yet_closed e2))
+    | EMatch (c, e, branches) ->
+        assert (b.node.meta = Some MetaSequence);
+        close_now_over not_yet_closed (
+          (* We must now bind: *)
+            (count e) ++
+              (* i.e., whichever variables were in the condition *)
+            (Krml.KList.reduce AtomSet.inter (List.map (fun (_bs, _p, e) -> count e) branches)) ++
+              (* i.e., variables that appear in all branches -- note that we
+                 don't open _bs meaning that we don't collect bound variables in this branch *)
+            (AtomSet.inter
+              (Krml.KList.reduce (++) (List.map (fun (_, _, e) -> count e) branches))
+              (count e2)))
+              (* i.e., variables in either one of the branches *and* used later *)
+          (fun not_yet_closed ->
+            ELet (b, with_type e1.typ (EMatch (
+                c,
+                self#visit_expr_w not_yet_closed e,
+                List.map (fun (bs, p, e) -> bs, p, recurse_or_close not_yet_closed e) branches)),
+              recurse_or_close not_yet_closed e2))
+
     | _ ->
         (* The open variables in e1 for which we have not yet inserted a declaration need to be closed now *)
         close_now_over not_yet_closed (count e1) (fun not_yet_closed ->
           ELet (b, self#visit_expr_w not_yet_closed e1, recurse_or_close not_yet_closed e2))
 end
 
-let remove_units = object
+let remove_units = object(self)
   inherit [_] map as super
 
   method! visit_EAssign env e1 e2 =
     if e1.typ = TUnit && Krml.Helpers.is_readonly_c_expression e2 then
       EUnit
+    else if e1.typ = TUnit && Krml.Helpers.is_readonly_c_expression e1 then
+      (* Unit nodes have been initialized at declaration-time by
+         remove_assignments above. So, e1 := e2 can safely become e2. *)
+      (self#visit_expr env e2).node
     else
       super#visit_EAssign env e1 e2
 end
