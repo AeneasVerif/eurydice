@@ -27,30 +27,30 @@ typedef struct {
  * pointer (one word). */
 typedef struct {
   void *ptr;
-  size_t len;
-  size_t size;
-} *Eurydice_vec;
+  size_t len; /* the number of elements */
+  size_t alloc_size; /* the size of the allocation, in number of BYTES */
+} Eurydice_vec_s, *Eurydice_vec;
 
 /* Here, we set everything to zero rather than use a non-standard GCC
  * statement-expression -- this suitably initializes ptr to NULL and len and
  * size to 0. */
-#define EURYDICE_VEC_NEW(_) calloc(1, sizeof(Eurydice_vec))
+#define EURYDICE_VEC_NEW(_) calloc(1, sizeof(Eurydice_vec_s))
 #define EURYDICE_VEC_PUSH(v, x, t) \
   do { \
     /* Grow the vector if capacity has been reached. */ \
-    if (v->len == v->size) { \
+    if (v->len == v->alloc_size/sizeof(t)) { \
       /* Assuming that this does not exceed SIZE_MAX, because code proven \
        * correct by Aeneas. Would this even happen in practice? */ \
       size_t new_size; \
-      if (v->size == 0) \
+      if (v->alloc_size == 0) \
         new_size = 8 * sizeof(t); \
-      else if (v->size <= SIZE_MAX/2) \
+      else if (v->alloc_size <= SIZE_MAX/2) \
         /* TODO: discuss growth policy */ \
-        new_size = 2 * v->size; \
+        new_size = 2 * v->alloc_size; \
       else \
-        new_size = SIZE_MAX; \
+        new_size = (SIZE_MAX/sizeof(t))*sizeof(t); \
       v->ptr = realloc(v->ptr, new_size); \
-      v->size = new_size / sizeof(t); \
+      v->alloc_size = new_size; \
     } \
     ((t*)v->ptr)[v->len] = x; \
     v->len++; \
@@ -63,3 +63,9 @@ typedef struct {
   } while (0)
 
 #define EURYDICE_VEC_INDEX(v, i, t) &((t*) v->ptr)[i]
+#define EURYDICE_VEC_LEN(v, t) (v)->len
+
+/* TODO: remove GCC-isms */
+#define EURYDICE_BOX_NEW(x, t) ({ t *p = malloc(sizeof(t)); *p = x; p; })
+
+#define EURYDICE_REPLACE(ptr, new_v, t) ({ t old_v = *ptr; *ptr = new_v; old_v; })
