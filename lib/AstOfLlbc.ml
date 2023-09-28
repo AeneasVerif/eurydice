@@ -6,6 +6,16 @@ module C = struct
   include Charon.Expressions
   include Charon.PrimitiveValues
 
+  let tsubst args ty =
+    (object
+      inherit [_] map_ty
+
+      method! visit_TypeVar _ v =
+        TypeVarId.nth args v
+
+      method visit_'r _ x = x
+    end)#visit_ty () ty
+
   let rec ety_of_typ (ty: 'a gr_ty): ety =
     match ty with
     | Adt (type_id, generics) ->
@@ -337,25 +347,24 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
     | DerefBox, Adt (Assumed Box, { types = [ ty ]; _ }) ->
         Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e.K.typ) e.K.node), ty
 
-    | Field (ProjAdt (typ_id, variant_id), field_id), field_ty ->
+    | Field (ProjAdt (typ_id, variant_id), field_id), C.Adt (_, { types; _ }) ->
         begin match variant_id with
         | None ->
             let { C.kind; _ } = env.get_nth_type typ_id in
             let fields = match kind with Struct fields -> fields | _ -> failwith "not a struct" in
-            let field_name, field_t =
+            let field_name, field_ty =
               let field = List.nth fields (C.FieldId.to_int field_id) in
               match field.C.field_name with
-              | Some field_name -> field_name, field.C.field_ty
+              | Some field_name -> field_name, C.tsubst types (C.ety_of_typ field.C.field_ty)
               | None -> failwith "TODO: understand what empty field name means"
             in
-            K.with_type (typ_of_ty env field_t) (K.EField (e, field_name)),
-            C.ety_of_typ field_t
+            K.with_type (typ_of_ty env field_ty) (K.EField (e, field_name)),
+            field_ty
         | Some variant_id ->
             let variant = find_nth_variant env typ_id variant_id in
             let field_id = C.FieldId.to_int field_id in
             let field = List.nth variant.fields field_id in
-            (* Not using the field.C.field_ty because that one may still have
-               type variables in it (?). *)
+            let field_ty = C.tsubst types (C.ety_of_typ field.C.field_ty) in
             let field_t = typ_of_ty env field_ty in
             let b = Krml.Helpers.fresh_binder (mk_field_name field.C.field_name field_id) field_t in
             K.with_type field_t K.(EMatch (Unchecked,
@@ -372,9 +381,11 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
             field_ty
         end
 
-    | Field (ProjOption v, _), field_ty ->
+    | Field (ProjOption v, _), C.Adt (_, { types; _ }) ->
         assert (v = C.option_some_id);
-        (* TODO: share with case above *)
+        let field_ty = Krml.KList.one types in
+        (* The type of the x field of the Some constructor in option t is t
+           itself. *)
         let field_t = typ_of_ty env field_ty in
         let b = Krml.Helpers.fresh_binder "x" field_t in
         K.with_type field_t K.(EMatch (Unchecked,
@@ -719,13 +730,15 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
         | Adt (AdtId typ_id, _) ->
             let { C.kind; _ } = env.get_nth_type typ_id in
             let variants = match kind with Enum variants -> variants | _ -> assert false in
-            fun v -> (C.VariantId.nth variants v).variant_name
+            fun v ->
+              let v = C.VariantId.nth variants v in
+              v.variant_name, List.length v.fields
         | Adt (Assumed Option, _) ->
             fun x ->
               if x = C.option_none_id then
-                "None"
+                "None", 0
               else if x = C.option_some_id then
-                "Some"
+                "Some", 1
               else
                 failwith "unknown variant id for option"
         | _ ->
@@ -734,8 +747,9 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
 
       let branches = List.concat_map (fun (variant_ids, e) ->
         List.map (fun variant_id ->
-          let variant_name = variant_name_of_variant_id variant_id in
-          let pat = K.with_type p.typ (K.PCons (variant_name, [])) in
+          let variant_name, n_fields = variant_name_of_variant_id variant_id in
+          let dummies = Krml.KList.make n_fields (fun _ -> K.(with_type TAny PWild)) in
+          let pat = K.with_type p.typ (K.PCons (variant_name, dummies)) in
           [], pat, expression_of_raw_statement env ret_var e.C.content
         ) variant_ids
       ) branches in
@@ -783,7 +797,7 @@ let decls_of_declarations (env: env) (formatters: formatters) (d: C.declaration_
         | Struct fields ->
             let env = push_type_binders env type_params in
             let fields = List.map (fun { C.field_name; field_ty; _ } ->
-              field_name, (typ_of_ty env field_ty, false)
+              field_name, (typ_of_ty env field_ty, true)
             ) fields in
             Some (K.DType (name, [], List.length type_params, Flat fields))
         | Enum branches ->

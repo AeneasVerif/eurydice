@@ -81,6 +81,8 @@ Supported options:|}
   let files = Krml.DataTypes.simplify files in
   let files = Krml.DataTypes.optimize files in
   let _, files = Krml.DataTypes.everything files in
+  let files = Krml.Simplify.count_and_remove_locals#visit_files [] files in
+  let files = Krml.Simplify.remove_uu#visit_files () files in
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
   let files = Krml.Simplify.hoist#visit_files [] files in
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
