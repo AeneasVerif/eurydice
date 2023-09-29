@@ -208,6 +208,48 @@ let remove_terminal_returns = object(self)
 
   method! visit_ESequence _ _ =
     assert false
+
+  method! visit_EIfThenElse (terminal, _) e1 e2 e3 =
+    EIfThenElse (self#visit_expr_w false e1, self#visit_expr_w terminal e2,
+      self#visit_expr_w terminal e3)
+
+  method! visit_EMatch (terminal, _) f e branches =
+    EMatch (f, self#visit_expr_w false e, List.map (fun (b, p, e) ->
+      b, p, self#visit_expr_w terminal e) branches)
+end
+
+let remove_terminal_continues = object(self)
+  inherit [_] map
+
+  method! visit_ELet (terminal, _) b e1 e2 =
+    ELet (b, self#visit_expr_w false e1, self#visit_expr_w terminal e2)
+
+  method! visit_EWhile _ e1 e2 =
+    EWhile (self#visit_expr_w false e1, self#visit_expr_w true e2)
+
+  method! visit_EFor _ b e1 e2 e3 e4 =
+    EFor (b, self#visit_expr_w false e1, self#visit_expr_w false e2,
+      self#visit_expr_w false e3, self#visit_expr_w true e4)
+
+  method! visit_EContinue (terminal, t) =
+    if terminal then begin
+      (* Rust managed to type-check a loop as infinite, therefore having type
+         bottom...? *)
+      assert (t = TUnit);
+      EUnit
+    end else
+      EContinue
+
+  method! visit_ESequence _ _ =
+    assert false
+
+  method! visit_EIfThenElse (terminal, _) e1 e2 e3 =
+    EIfThenElse (self#visit_expr_w false e1, self#visit_expr_w terminal e2,
+      self#visit_expr_w terminal e3)
+
+  method! visit_EMatch (terminal, _) f e branches =
+    EMatch (f, self#visit_expr_w false e, List.map (fun (b, p, e) ->
+      b, p, self#visit_expr_w terminal e) branches)
 end
 
 (* PPrint.(Krml.Print.(print (Krml.PrintAst.print_files files ^^ hardline))); *)
@@ -218,5 +260,6 @@ let cleanup files =
   let files = Krml.Simplify.count_and_remove_locals#visit_files [] files in
   let files = Krml.Simplify.remove_uu#visit_files () files in
   let files = remove_terminal_returns#visit_files true files in
+  let files = remove_terminal_continues#visit_files false files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
   files
