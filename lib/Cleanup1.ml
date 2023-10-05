@@ -56,7 +56,7 @@ let remove_assignments = object(self)
       let bs = List.of_seq (AtomSet.to_seq to_close_now) in
       let bs = List.map (fun atom ->
         let name, typ = AtomMap.find atom not_yet_closed in
-        { node = { atom; name; mut = true; mark = ref 0; meta = None }; typ },
+        Krml.Helpers.fresh_binder name typ,
         if typ = TUnit then Krml.Helpers.eunit else Krml.Helpers.any
       ) bs in
       (* For the subexpressions, we now need to insert declarations for those variables that we're
@@ -125,7 +125,7 @@ let remove_assignments = object(self)
           assert (b.node.meta = Some MetaSequence);
           let e2 = snd (open_binder b e2) in
           let name, typ = AtomMap.find atom not_yet_closed in
-          let b = { node = { atom; name; mut = true; mark = ref 0; meta = None }; typ } in
+          let b = Krml.Helpers.fresh_binder ~mut:true name typ in
           let not_yet_closed = AtomMap.remove atom not_yet_closed in
           let e2 = self#visit_expr_w not_yet_closed (close_binder b e2) in
           ELet (b, e1, e2))
@@ -257,8 +257,7 @@ end
 let cleanup files =
   let files = remove_units#visit_files () files in
   let files = remove_assignments#visit_files AtomMap.empty files in
-  let files = Krml.Simplify.count_and_remove_locals#visit_files [] files in
-  let files = Krml.Simplify.remove_uu#visit_files () files in
+  let files = Krml.Simplify.optimize_lets files in
   let files = remove_terminal_returns#visit_files true files in
   let files = remove_terminal_continues#visit_files false files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
