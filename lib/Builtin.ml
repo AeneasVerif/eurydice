@@ -152,6 +152,7 @@ let replace = {
 }
 
 let files = [
+  Krml.Builtin.lowstar_ignore;
   let externals = List.map (fun { name; typ; n_type_args; arg_names } ->
       K.DExternal (None, [], n_type_args, name, typ, arg_names)
     ) [

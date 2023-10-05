@@ -51,6 +51,7 @@ Supported options:|}
     add_include := [ All, "\"eurydice_glue.h\"" ];
     (* header := "/* This file compiled from Rust to C by Eurydice \ *)
     (*   <http://github.com/aeneasverif/eurydice> */"; *)
+    parentheses := true;
   );
 
   let files = Eurydice.Builtin.files @ List.map (fun filename ->
