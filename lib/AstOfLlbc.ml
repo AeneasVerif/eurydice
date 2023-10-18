@@ -647,6 +647,18 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
   | Assert a ->
       expression_of_assertion env a
 
+  | Call { func = FunId (Assumed ArrayRepeat); generics = { types = [ ty ]; const_generics = [ c ]; _ }; args = [ e ]; dest; _ } ->
+      let e = expression_of_operand env e in
+      let t = typ_of_ty env ty in
+      let dest, _ = expression_of_place env dest in
+      let n = match c with
+        | ConstGenericValue (Scalar n) -> n
+        | _ -> failwith "unexpected const generic for ArrayRepeat" in
+      let c = constant_of_scalar_value n in
+      let n = Z.to_int n.value in
+      Krml.Helpers.with_unit K.(
+        EAssign (dest, (with_type (TArray (t, c)) (EBufCreateL (Stack, List.init n (fun _ -> e))))))
+
   | Call { func = FunId (Assumed (ArrayIndexShared | ArrayIndexMut)); generics = { types = [ ty ]; _ }; args = [ e1; e2 ]; dest; _ } ->
       let e1 = expression_of_operand env e1 in
       let e2 = expression_of_operand env e2 in

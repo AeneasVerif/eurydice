@@ -69,3 +69,5 @@ typedef struct {
 #define EURYDICE_BOX_NEW(x, t) ({ t *p = malloc(sizeof(t)); *p = x; p; })
 
 #define EURYDICE_REPLACE(ptr, new_v, t) ({ t old_v = *ptr; *ptr = new_v; old_v; })
+
+#define LOWSTAR_IGNORE_IGNORE(e, t) ((void)e)
