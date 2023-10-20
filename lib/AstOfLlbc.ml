@@ -30,6 +30,8 @@ module C = struct
         TraitType (trait_ref, generics, type_name)
     | Ref (_, t, k) ->
         Ref (Erased, ety_of_typ t, k)
+    | Arrow (ts, t) ->
+        Arrow (List.map ety_of_typ ts, ety_of_typ t)
 
   and egeneric_args_of_args (g : 'a region generic_args ) :
       egeneric_args=
@@ -70,6 +72,7 @@ module C = struct
         let tr = etrait_ref_of_trait_ref tr in
         TraitRef tr
     | UnknownTrait msg -> UnknownTrait msg
+    | FnPointer t -> FnPointer (ety_of_typ t)
 end
 
 module K = Krml.Ast
@@ -240,6 +243,9 @@ let rec typ_of_ty (env: env) (ty: 'region Charon.Types.ty): K.typ =
 
   | C.TraitType _ ->
       Krml.Warn.fatal_error "TODO: TraitTypes"
+
+  | C.Arrow (ts, t) ->
+      Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
 
 (* Helpers: expressions *)
 
@@ -505,7 +511,7 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
          pass one for the other *)
       maybe_addrof ty e
 
-  | UnaryOp (Cast (_, dst), e) ->
+  | UnaryOp (Cast (CastInteger (_, dst)), e) ->
       let dst = K.TInt (width_of_integer_type dst) in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
   | UnaryOp (op, o1) ->
@@ -647,7 +653,12 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
   | Assert a ->
       expression_of_assertion env a
 
-  | Call { func = FunId (Assumed ArrayRepeat); generics = { types = [ ty ]; const_generics = [ c ]; _ }; args = [ e ]; dest; _ } ->
+  | Call {
+      func = { func = FunId (Assumed ArrayRepeat); generics = { types = [ ty ]; const_generics = [ c ]; _ }; _ };
+      args = [ e ];
+      dest;
+      _
+    } ->
       let e = expression_of_operand env e in
       let t = typ_of_ty env ty in
       let dest, _ = expression_of_place env dest in
@@ -659,14 +670,19 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       Krml.Helpers.with_unit K.(
         EAssign (dest, (with_type (TArray (t, c)) (EBufCreateL (Stack, List.init n (fun _ -> e))))))
 
-  | Call { func = FunId (Assumed (ArrayIndexShared | ArrayIndexMut)); generics = { types = [ ty ]; _ }; args = [ e1; e2 ]; dest; _ } ->
+  | Call {
+      func = { func = FunId (Assumed (ArrayIndexShared | ArrayIndexMut)); generics = { types = [ ty ]; _ }; _ };
+      args = [ e1; e2 ];
+      dest;
+      _
+    } ->
       let e1 = expression_of_operand env e1 in
       let e2 = expression_of_operand env e2 in
       let t = typ_of_ty env ty in
       let dest, _ = expression_of_place env dest in
       Krml.Helpers.with_unit K.(EAssign (dest, maybe_addrof ty (with_type t (EBufRead (e1, e2)))))
 
-  | Call { func; generics = { types = type_args; const_generics = const_generic_args; _ }; args; dest; _ } ->
+  | Call { func = { func; generics = { types = type_args; const_generics = const_generic_args; _ }; _ }; args; dest; _ } ->
       let func = match func with FunId func -> func | _ -> Krml.Warn.fatal_error "TODO: Call/not(FuncId)" in
       let dest, _ = expression_of_place env dest in
       let args = List.map (expression_of_operand env) args in
