@@ -1,6 +1,6 @@
 use std::ops::{self, Index, IndexMut};
 
-use crate::parameters::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
+use super::constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS};
 
 pub(crate) type KyberFieldElement = i32;
 
@@ -19,10 +19,21 @@ const MONTGOMERY_R: i64 = 1i64 << MONTGOMERY_SHIFT;
 const INVERSE_OF_MODULUS_MOD_R: i64 = -3327; // FIELD_MODULUS^{-1} mod MONTGOMERY_R
 
 pub(crate) fn montgomery_reduce(value: KyberFieldElement) -> KyberFieldElement {
-    let t: i64 = i64::from(value) * INVERSE_OF_MODULUS_MOD_R;
-    let t: i32 = (t & (MONTGOMERY_R - 1)) as i32;
+    debug_assert!(value > -FIELD_MODULUS * (MONTGOMERY_R as i32));
+    debug_assert!(value < FIELD_MODULUS * (MONTGOMERY_R as i32));
 
-    (value - (t * FIELD_MODULUS)) >> MONTGOMERY_SHIFT
+    let t = i64::from(value) * INVERSE_OF_MODULUS_MOD_R;
+    let t = (t & (MONTGOMERY_R - 1)) as i16;
+
+    let reduced =
+        (value >> MONTGOMERY_SHIFT) - ((i32::from(t) * FIELD_MODULUS) >> MONTGOMERY_SHIFT);
+
+    // If -qR < value < qR, we must have:
+    // -3q/2 < reduced < 3q/2 ==> -3q < 2 * reduced < 3q
+    debug_assert!(2 * reduced > -FIELD_MODULUS * 3);
+    debug_assert!(2 * reduced < FIELD_MODULUS * 3);
+
+    reduced
 }
 
 // Given a |value|, return |value|*R mod q. Notice that montgomery_reduce
