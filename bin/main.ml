@@ -54,6 +54,12 @@ Supported options:|}
     parentheses := true;
   );
 
+  Krml.Helpers.pure_builtin_lids := [
+    [ "Eurydice" ], "vec_len";
+    [ "Eurydice" ], "vec_index";
+    [ "core"; "num"; "u32"; "8" ], "rotate_left";
+  ] @ !Krml.Helpers.pure_builtin_lids;
+
   let files = Eurydice.Builtin.files @ List.map (fun filename ->
     let llbc = Eurydice.LoadLlbc.load_file filename in
     Eurydice.AstOfLlbc.file_of_crate llbc

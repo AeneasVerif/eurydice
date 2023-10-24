@@ -252,11 +252,32 @@ let remove_terminal_continues = object(self)
       b, p, self#visit_expr_w terminal e) branches)
 end
 
+let unsigned_overflow_is_ok_in_c = object
+  inherit [_] map as super
+
+  method! visit_EApp env e es =
+    let is_u = function "u8" | "u16" | "u32" | "u64" | "usize" -> true | _ -> false in
+    let as_w = function
+      | "u8" -> K.UInt8
+      | "u16" -> UInt16
+      | "u32" -> UInt32
+      | "u64" -> UInt64
+      | "usize" -> SizeT
+      | _ -> failwith "not an unsigned crate name"
+    in
+    match e.node with
+    | EQualified (["core"; "num"; t; _], "wrapping_add") when is_u t ->
+        EApp (Krml.Helpers.mk_op Add (as_w t), es)
+    | _ ->
+        super#visit_EApp env e es
+end
+
 (* PPrint.(Krml.Print.(print (Krml.PrintAst.print_files files ^^ hardline))); *)
 
 let cleanup files =
   let files = remove_units#visit_files () files in
   let files = remove_assignments#visit_files AtomMap.empty files in
+  let files = unsigned_overflow_is_ok_in_c#visit_files () files in
   let files = Krml.Simplify.optimize_lets files in
   let files = remove_terminal_returns#visit_files true files in
   let files = remove_terminal_continues#visit_files false files in
