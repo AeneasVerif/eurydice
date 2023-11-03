@@ -1,3 +1,5 @@
+//use crate::digest::{digest_size, Algorithm};
+
 /// Field modulus: 3329
 pub(crate) const FIELD_MODULUS: i32 = 3329;
 
@@ -36,4 +38,4 @@ pub(crate) const CPA_PKE_KEY_GENERATION_SEED_SIZE: usize = 32;
 //     (COEFFICIENTS_IN_RING_ELEMENT * FACTOR) / 8
 // }
 
-pub(crate) const H_DIGEST_SIZE: usize = 32;
+//pub(crate) const H_DIGEST_SIZE: usize = digest_size(Algorithm::Sha3_256);
