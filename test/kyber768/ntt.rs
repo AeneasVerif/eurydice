@@ -1,8 +1,5 @@
 use super::{
-    arithmetic::{
-        add_to_ring_element, barrett_reduce, montgomery_reduce, KyberFieldElement,
-        KyberPolynomialRingElement,
-    },
+    arithmetic::*,
     constants::{COEFFICIENTS_IN_RING_ELEMENT, FIELD_MODULUS},
 };
 
@@ -272,7 +269,6 @@ pub(crate) fn compute_ring_element_v<const K: usize>(
     result
 }
 
-/* TODO: this fails for now
 // u := NTT^{-1}(AˆT ◦ rˆ) + e_1
 #[inline(always)]
 pub(crate) fn compute_vector_u<const K: usize>(
@@ -282,8 +278,12 @@ pub(crate) fn compute_vector_u<const K: usize>(
 ) -> [KyberPolynomialRingElement; K] {
     let mut result = [KyberPolynomialRingElement::ZERO; K];
 
-    for (i, row) in a_as_ntt.iter().enumerate() {
-        for (j, a_element) in row.iter().enumerate() {
+    // SH: I rewrote the code so as not to use the `array::iter` method, which
+    // makes Charon crash.
+    for i in 0..a_as_ntt.len() {
+        let row = &a_as_ntt[i];
+        for j in 0..row.len() {
+            let a_element = &row[j];
             let product = ntt_multiply(a_element, &r_as_ntt[j]);
             result[i] = add_to_ring_element(result[i], &product);
         }
@@ -300,9 +300,7 @@ pub(crate) fn compute_vector_u<const K: usize>(
 
     result
 }
-*/
 
-/* TODO: this fails for now
 // NOTE: This function performs matrix multiplication, then conversion from the
 // montgomery domain, and last barrett reduction. It is only used in
 // ind_cpa::generate_keypair(). (TODO: Verify this) Doing barrett reduction in
@@ -317,8 +315,12 @@ pub(crate) fn compute_As_plus_e<const K: usize>(
 ) -> [KyberPolynomialRingElement; K] {
     let mut result = [KyberPolynomialRingElement::ZERO; K];
 
-    for (i, row) in matrix_A.iter().enumerate() {
-        for (j, matrix_element) in row.iter().enumerate() {
+    // SH: I rewrote the code so as not to use the `array::iter` method, which
+    // makes Charon crash.
+    for i in 0..matrix_A.len() {
+        let row = &matrix_A[i];
+        for j in 0..row.len() {
+            let matrix_element = &row[j];
             let product = ntt_multiply(matrix_element, &s_as_ntt[j]);
             result[i] = add_to_ring_element(result[i], &product);
         }
@@ -340,4 +342,3 @@ pub(crate) fn compute_As_plus_e<const K: usize>(
 
     result
 }
-*/
