@@ -54,11 +54,18 @@ Supported options:|}
     parentheses := true;
   );
 
-  Krml.Helpers.pure_builtin_lids := [
-    [ "Eurydice" ], "vec_len";
-    [ "Eurydice" ], "vec_index";
-    [ "core"; "num"; "u32"; "8" ], "rotate_left";
-  ] @ !Krml.Helpers.pure_builtin_lids;
+  Krml.Helpers.is_readonly_builtin_lid_ :=
+    (let is_readonly_pure_lid_ = !Krml.Helpers.is_readonly_builtin_lid_ in
+    fun lid ->
+      is_readonly_pure_lid_ lid ||
+        match lid with
+        | [ "Eurydice" ], "vec_len"
+        | [ "Eurydice" ], "vec_index"
+        | [ "core"; "num"; "u32"; _ ], "rotate_left" ->
+            true
+        | _ ->
+            false
+    );
 
   let files = Eurydice.Builtin.files @ List.map (fun filename ->
     let llbc = Eurydice.LoadLlbc.load_file filename in
