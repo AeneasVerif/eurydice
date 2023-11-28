@@ -111,6 +111,10 @@ module RustNames = struct
       match_name env.name_ctx config index name ||
       match_name env.name_ctx config get_unchecked name ||
       true
+
+  let is_slice_index_range env =
+    let slice_index_range = parse_pattern "core::slice::index<u32, core::ops::range::Range<usize>>::index" in
+    match_trait_type env.name_ctx config slice_index_range
 end
 
 (** Translation of types *)
@@ -516,28 +520,38 @@ let expression_of_assertion (env: env) ({ cond; expected }: C.assertion): K.expr
       with_type TAny (EAbort (None, Some "assert failure")),
       Krml.Helpers.eunit)))
 
-let lookup_fun (env: env) (f: C.fun_id): K.lident * int * K.typ list * K.typ =
+let lookup_fun (env: env) (f: C.fun_id_or_trait_method_ref): K.lident * int * K.typ list * K.typ =
   let builtin_of_fun_id = function
     | C.SliceIndexShared | SliceIndexMut -> Builtin.slice_index
     | ArrayToSliceShared | ArrayToSliceMut -> Builtin.array_to_slice
     | BoxNew -> Builtin.box_new
     | f -> Krml.Warn.fatal_error "unknown assumed function: %s" (C.show_assumed_fun_id f)
   in
+  let builtin b =
+    let { Builtin.name; typ; n_type_args; _ } = b in
+    let ret, args = Krml.Helpers.flatten_arrow typ in
+    name, n_type_args, args, ret
+  in
   match f with
-  | FRegular f ->
+  | FunId (FRegular f) ->
       let { C.name; signature = { generics = { types = type_params; _ }; inputs; output; _ }; _ } = env.get_nth_function f in
       let env = push_type_binders env type_params in
       lid_of_name env name, List.length type_params, List.map (typ_of_ty env) inputs, typ_of_ty env output
 
-  | FAssumed f ->
-      let { Builtin.name; typ; n_type_args; _ } = builtin_of_fun_id f in
-      let ret, args = Krml.Helpers.flatten_arrow typ in
-      name, n_type_args, args, ret
+  | FunId (FAssumed f) ->
+      builtin (builtin_of_fun_id f)
+
+  | TraitMethod (trait_ref, name, _) ->
+      if RustNames.is_slice_index_range env trait_ref name then
+        builtin Builtin.slice_subslice
+      else
+        Krml.Warn.fatal_error "Unknown trait ref: %s" name
+
 
 (* Runs after the adjustment above *)
-let args_of_const_generic_args (f: C.fun_id) (const_generic_args: C.const_generic list): K.expr list =
+let args_of_const_generic_args (f: C.fun_id_or_trait_method_ref) (const_generic_args: C.const_generic list): K.expr list =
   match f, const_generic_args with
-  | FAssumed (ArrayToSliceShared | ArrayToSliceMut), [ CgValue (VScalar n) ] ->
+  | FunId (FAssumed (ArrayToSliceShared | ArrayToSliceMut)), [ CgValue (VScalar n) ] ->
       [ expression_of_scalar_value n ]
   | _ ->
       []
@@ -611,13 +625,6 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       Krml.Helpers.with_unit K.(EAssign (dest, maybe_addrof env ty (with_type t (EBufRead (e1, e2)))))
 
   | Call { func = { func; generics = { types = type_args; const_generics = const_generic_args; _ }; _ }; args; dest; _ } ->
-      let func =
-        match func with
-        | FunId func ->
-            func
-        | TraitMethod (_, m, _) ->
-            Krml.Warn.fatal_error "TODO: Call/not(FuncId) %s" m
-      in
       let dest, _ = expression_of_place env dest in
       let args = List.map (expression_of_operand env) args in
       let original_type_args = type_args in
@@ -645,13 +652,13 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       (* This does something similar to maybe_addrof *)
       let rhs =
         match func, original_type_args with
-        | C.FAssumed (SliceIndexShared | SliceIndexMut), [ TAdt (TAssumed (TArray | TSlice), _) ] ->
+        | FunId (FAssumed (SliceIndexShared | SliceIndexMut)), [ TAdt (TAssumed (TArray | TSlice), _) ] ->
             (* Will decay. See comment above maybe_addrof *)
             rhs
-        | C.FAssumed (SliceIndexShared | SliceIndexMut), [ TAdt (id, generics) ] when RustNames.is_vec env id generics ->
+        | FunId (FAssumed (SliceIndexShared | SliceIndexMut)), [ TAdt (id, generics) ] when RustNames.is_vec env id generics ->
             (* Will decay. See comment above maybe_addrof *)
             rhs
-        | C.FAssumed (SliceIndexShared | SliceIndexMut), _ ->
+        | FunId (FAssumed (SliceIndexShared | SliceIndexMut)), _ ->
             K.(with_type (TBuf (rhs.typ, false)) (EAddrOf rhs))
         | _ ->
             rhs

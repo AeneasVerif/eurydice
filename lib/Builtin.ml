@@ -38,6 +38,13 @@ type builtin = {
   arg_names: string list;
 }
 
+let slice_len = {
+  name = ["Eurydice"], "slice_len";
+  typ = K.(TArrow (mk_slice (TBound 0), TInt SizeT));
+  n_type_args = 1;
+  arg_names = [ "s" ]
+}
+
 let array_to_slice = {
   name = ["Eurydice"], "array_to_slice";
   typ = Krml.Helpers.fold_arrow [
@@ -46,6 +53,16 @@ let array_to_slice = {
   ] (mk_slice (TBound 0));
   n_type_args = 1;
   arg_names = [ "a" ]
+}
+
+let array_to_subslice = {
+  name = ["Eurydice"], "array_to_subslice";
+  typ = Krml.Helpers.fold_arrow [
+    TBuf (TBound 0, false);
+    mk_range (TInt SizeT)
+  ] (mk_slice (TBound 0));
+  n_type_args = 1;
+  arg_names = [ "a"; "r" ]
 }
 
 let slice_index = {
@@ -58,6 +75,63 @@ let slice_index = {
   arg_names = ["s"; "i"]
 }
 
+let slice_subslice = {
+  name = ["Eurydice"], "slice_subslice";
+  typ = Krml.Helpers.fold_arrow [
+    mk_slice (TBound 0);
+    mk_range (TInt SizeT)
+  ] (mk_slice (TBound 0));
+  n_type_args = 1;
+  arg_names = ["s"; "r"]
+}
+
+let vec_new = {
+  name = ["Eurydice"], "vec_new";
+  typ = Krml.Helpers.fold_arrow [
+    TUnit
+  ] (mk_vec (TBound 0));
+  n_type_args = 1;
+  arg_names = []
+}
+
+let vec_push = {
+  name = ["Eurydice"], "vec_push";
+  typ = Krml.Helpers.fold_arrow [
+    mk_vec (TBound 0);
+    TBound 0;
+  ] TUnit;
+  n_type_args = 1;
+  arg_names = ["v"; "x"]
+}
+
+let vec_len = {
+  name = ["Eurydice"], "vec_len";
+  typ = Krml.Helpers.fold_arrow [
+    mk_vec (TBound 0);
+  ] (TInt SizeT);
+  n_type_args = 1;
+  arg_names = ["v"]
+}
+
+let vec_drop = {
+  name = ["Eurydice"], "vec_drop";
+  typ = Krml.Helpers.fold_arrow [
+    mk_vec (TBound 0);
+  ] TUnit;
+  n_type_args = 1;
+  arg_names = ["v"]
+}
+
+let vec_index = {
+  name = ["Eurydice"], "vec_index";
+  typ = Krml.Helpers.fold_arrow [
+    mk_vec (TBound 0);
+    TInt SizeT
+  ] (TBuf (TBound 0, false));
+  n_type_args = 1;
+  arg_names = ["v"; "i"]
+}
+
 let box_new = {
   name = ["Eurydice"], "box_new";
   typ = Krml.Helpers.fold_arrow [
@@ -67,14 +141,33 @@ let box_new = {
   arg_names = ["v"]
 }
 
+let replace = {
+  name = ["Eurydice"], "replace";
+  typ = Krml.Helpers.fold_arrow [
+    TBuf (TBound 0, false);
+    TBound 0;
+  ] (TBound 0);
+  n_type_args = 1;
+  arg_names = ["v"; "x"]
+}
+
 let files = [
   Krml.Builtin.lowstar_ignore;
   let externals = List.map (fun { name; typ; n_type_args; arg_names } ->
       K.DExternal (None, [], n_type_args, name, typ, arg_names)
     ) [
       array_to_slice;
+      array_to_subslice;
+      slice_len;
       slice_index;
+      slice_subslice;
+      vec_push;
+      vec_new;
+      vec_len;
+      vec_drop;
+      vec_index;
       box_new;
+      replace;
   ] in
   "Eurydice", externals @ [
     K.DType (range, [], 1, Flat [
