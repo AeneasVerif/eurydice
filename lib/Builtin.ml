@@ -39,7 +39,7 @@ type builtin = {
 }
 
 let slice_len = {
-  name = ["Eurydice"], "slice_len";
+  name = ["core"; "slice"; "{@Slice<T>}"], "len";
   typ = K.(TArrow (mk_slice (TBound 0), TInt SizeT));
   n_type_args = 1;
   arg_names = [ "s" ]
@@ -58,10 +58,10 @@ let array_to_slice = {
 let array_to_subslice = {
   name = ["Eurydice"], "array_to_subslice";
   typ = Krml.Helpers.fold_arrow [
-    TBuf (TBound 0, false);
+    TBuf (TBound 1, false);
     mk_range (TInt SizeT)
-  ] (mk_slice (TBound 0));
-  n_type_args = 1;
+  ] (mk_slice (TBound 1));
+  n_type_args = 2;
   arg_names = [ "a"; "r" ]
 }
 
@@ -78,10 +78,10 @@ let slice_index = {
 let slice_subslice = {
   name = ["Eurydice"], "slice_subslice";
   typ = Krml.Helpers.fold_arrow [
-    mk_slice (TBound 0);
+    mk_slice (TBound 1);
     mk_range (TInt SizeT)
-  ] (mk_slice (TBound 0));
-  n_type_args = 1;
+  ] (mk_slice (TBound 1));
+  n_type_args = 2;
   arg_names = ["s"; "r"]
 }
 

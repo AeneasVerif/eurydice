@@ -113,7 +113,7 @@ module RustNames = struct
       true
 
   let is_slice_index_range env =
-    let slice_index_range = parse_pattern "core::slice::index<u32, core::ops::range::Range<usize>>::index" in
+    let slice_index_range = parse_pattern "core::slice::index::{Slice<@T>}::index" in
     match_trait_type env.name_ctx config slice_index_range
 end
 
@@ -520,7 +520,7 @@ let expression_of_assertion (env: env) ({ cond; expected }: C.assertion): K.expr
       with_type TAny (EAbort (None, Some "assert failure")),
       Krml.Helpers.eunit)))
 
-let lookup_fun (env: env) (f: C.fun_id_or_trait_method_ref): K.lident * int * K.typ list * K.typ =
+let lookup_fun (env: env) (f: C.fun_id_or_trait_method_ref) (args: K.typ list): K.lident * int * K.typ list * K.typ =
   let builtin_of_fun_id = function
     | C.SliceIndexShared | SliceIndexMut -> Builtin.slice_index
     | ArrayToSliceShared | ArrayToSliceMut -> Builtin.array_to_slice
@@ -542,10 +542,21 @@ let lookup_fun (env: env) (f: C.fun_id_or_trait_method_ref): K.lident * int * K.
       builtin (builtin_of_fun_id f)
 
   | TraitMethod (trait_ref, name, _) ->
-      if RustNames.is_slice_index_range env trait_ref name then
-        builtin Builtin.slice_subslice
-      else
-        Krml.Warn.fatal_error "Unknown trait ref: %s" name
+      let d = C.TraitDeclId.Map.find trait_ref.trait_decl_ref.trait_decl_id env.name_ctx.trait_decls in
+      let d = Charon.PrintTypes.name_to_string env.format_env d.name in
+      match d, args with
+      | ("core::ops::index::Index" | "core::ops::index::IndexMut"),
+        [ TBuf _; TApp ((["core"; "ops"; "range"], "Range"), _) ] ->
+          builtin Builtin.array_to_subslice
+      | ("core::ops::index::Index" | "core::ops::index::IndexMut"),
+        [ TApp ((["Eurydice"], "slice"), _); TApp ((["core"; "ops"; "range"], "Range"), _) ] ->
+          builtin Builtin.slice_subslice
+      | _ ->
+          Krml.Warn.fatal_error "Unknown trait ref: %s %s\n%s\n%a"
+          (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref) name
+          d
+          Krml.PrintAst.Ops.ptyps args
+          (* (C.show_trait_ref trait_ref) *)
 
 
 (* Runs after the adjustment above *)
@@ -595,22 +606,22 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
   | Assert a ->
       expression_of_assertion env a
 
-(*   | Call { *)
-(*       func = { func = FunId (FAssumed ArrayRepeat); generics = { types = [ ty ]; const_generics = [ c ]; _ } as generics; _ }; *)
-(*       args = [ e ]; *)
-(*       dest; *)
-(*       _ *)
-(*     } -> *)
-(*       let e = expression_of_operand env e in *)
-(*       let t = typ_of_ty env ty in *)
-(*       let dest, _ = expression_of_place env dest in *)
-(*       let n = match c with *)
-(*         | ConstGenericValue (Scalar n) -> n *)
-(*         | _ -> failwith "unexpected const generic for ArrayRepeat" in *)
-(*       let c = constant_of_scalar_value n in *)
-(*       let n = Z.to_int n.value in *)
-(*       Krml.Helpers.with_unit K.( *)
-(*         EAssign (dest, (with_type (TArray (t, c)) (EBufCreateL (Stack, List.init n (fun _ -> e)))))) *)
+  | Call {
+      func = { func = FunId (FAssumed ArrayRepeat); generics = { types = [ ty ]; const_generics = [ c ]; _ }; _ };
+      args = [ e ];
+      dest;
+      _
+    } ->
+      let e = expression_of_operand env e in
+      let t = typ_of_ty env ty in
+      let dest, _ = expression_of_place env dest in
+      let n = match c with
+        | CgValue (VScalar n) -> n
+        | _ -> failwith "unexpected const generic for ArrayRepeat" in
+      let c = constant_of_scalar_value n in
+      let n = Z.to_int n.value in
+      Krml.Helpers.with_unit K.(
+        EAssign (dest, (with_type (TArray (t, c)) (EBufCreateL (Stack, List.init n (fun _ -> e))))))
 
   | Call {
       func = { func = FunId (FAssumed (ArrayIndexShared | ArrayIndexMut)); generics = { types = [ ty ]; _ }; _ };
@@ -625,13 +636,22 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       Krml.Helpers.with_unit K.(EAssign (dest, maybe_addrof env ty (with_type t (EBufRead (e1, e2)))))
 
   | Call { func = { func; generics = { types = type_args; const_generics = const_generic_args; _ }; _ }; args; dest; _ } ->
+      print_endline "Translating call";
+      (* For now, we take trait type arguments to be part of the code-gen *)
+      let type_args, const_generic_args =
+        match func with
+        | FunId _ ->
+            type_args, const_generic_args
+        | TraitMethod ({ generics = { types; const_generics; _ }; _ }, _, _) ->
+            types @ type_args, const_generics @ const_generic_args
+      in
       let dest, _ = expression_of_place env dest in
       let args = List.map (expression_of_operand env) args in
       let original_type_args = type_args in
       let type_args = List.map (typ_of_ty env) type_args in
       let args = args @ args_of_const_generic_args func const_generic_args in
       let args = if args = [] then [ Krml.Helpers.eunit ] else args in
-      let name, n_type_params, inputs, output = lookup_fun env func in
+      let name, n_type_params, inputs, output = lookup_fun env func (List.map (fun x -> x.K.typ) args) in
       let inputs = if inputs = [] then [ K.TUnit ] else inputs in
       if not (n_type_params = List.length type_args) then
         Krml.Warn.fatal_error "%a: n_type_params %d != type_args %d"
