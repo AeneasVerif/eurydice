@@ -90,7 +90,11 @@ let mk_field_name f i =
 module RustNames = struct
   open Charon.NameMatcher
 
-  let config = { map_vars_to_vars = false }
+  let config = {
+    map_vars_to_vars = false;
+    match_with_trait_decl_refs = true;
+    (* use_trait_decl_refs = true; *)
+  }
 
   let is_vec env =
     let vec = parse_pattern "alloc::vec::Vec<@>" in
@@ -113,6 +117,7 @@ module RustNames = struct
       true
 
   let is_slice_index_range env =
+    (* match_fn_ptr et fn_ptr_to_pattern *)
     let slice_index_range = parse_pattern "core::slice::index::{Slice<@T>}::index" in
     match_trait_type env.name_ctx config slice_index_range
 end
@@ -635,8 +640,15 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let dest, _ = expression_of_place env dest in
       Krml.Helpers.with_unit K.(EAssign (dest, maybe_addrof env ty (with_type t (EBufRead (e1, e2)))))
 
-  | Call { func = { func; generics = { types = type_args; const_generics = const_generic_args; _ }; _ }; args; dest; _ } ->
-      print_endline "Translating call";
+  | Call { func = { func; generics = { types = type_args; const_generics = const_generic_args; _ }; _ } as fn_ptr; args; dest; _ } ->
+      L.log "Calls" "Visiting call: %s" (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
+      L.log "Calls" "--> pattern: %s" Charon.NameMatcher.(
+        pattern_to_string { tgt = TkPattern } (fn_ptr_to_pattern env.name_ctx {
+          tgt = TkPattern; use_trait_decl_refs = true
+        } {
+          regions = []; types = []; const_generics = []; trait_clauses = []
+        } fn_ptr
+      ));
       (* For now, we take trait type arguments to be part of the code-gen *)
       let type_args, const_generic_args =
         match func with
@@ -848,11 +860,13 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
         (Charon.PrintLlbcAst.Ast.global_decl_to_string env.format_env "  "  "  " def);
       let ty = typ_of_ty env ty in
       let body = env.get_nth_function def.body in
+      L.log "AstOfLlbc" "Corresponding body:%s"
+        (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " body);
       begin match body.body with
       | Some body ->
-          let ret_var = Krml.KList.one body.locals in
+          let ret_var = List.hd body.locals in
           let body =
-            with_locals env ty [ ret_var ] (fun env ->
+            with_locals env ty body.locals (fun env ->
               expression_of_raw_statement env ret_var.index body.body.content)
           in
           [ K.DGlobal ([], lid_of_name env name, 0, ty, body) ]
@@ -866,12 +880,12 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
       []
 
 let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
-  let { C.name; declarations; type_decls; fun_decls; global_decls; trait_decls; _ } = crate in
+  let { C.name; declarations; type_decls; fun_decls; global_decls; trait_decls; trait_impls } = crate in
   let get_nth_function = fun id -> C.FunDeclId.Map.find id fun_decls in
   let get_nth_type = fun id -> C.TypeDeclId.Map.find id type_decls in
   let get_nth_global = fun id -> C.GlobalDeclId.Map.find id global_decls in
   let format_env = Charon.PrintLlbcAst.Crate.crate_to_fmt_env crate in
-  let name_ctx: Charon.NameMatcher.ctx = { type_decls; global_decls; trait_decls } in
+  let name_ctx: Charon.NameMatcher.ctx = { type_decls; global_decls; trait_decls; fun_decls; trait_impls } in
   let env = {
     get_nth_function;
     get_nth_type;

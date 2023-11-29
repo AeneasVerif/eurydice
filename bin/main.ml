@@ -51,8 +51,7 @@ Supported options:|}
     add_include := [ All, "\"eurydice_glue.h\"" ];
     (* header := "/* This file compiled from Rust to C by Eurydice \ *)
     (*   <http://github.com/aeneasverif/eurydice> */"; *)
-    parentheses := true;
-    backend := Rust
+    parentheses := true
   );
 
   Krml.Helpers.is_readonly_builtin_lid_ :=
@@ -98,6 +97,7 @@ Supported options:|}
   let files = Krml.Simplify.optimize_lets files in
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
   let files = Krml.Simplify.hoist#visit_files [] files in
+  let files = Krml.Simplify.fixup_hoist#visit_files () files in
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
   let files = Krml.Inlining.cross_call_analysis files in

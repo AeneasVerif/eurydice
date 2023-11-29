@@ -27,7 +27,7 @@ charon-test-%: $(CHARON_HOME)/tests/llbc/%.llbc | out/test-% all
 
 # Tests checked into the current repository
 test/%/out.llbc: | $(wildcard test/%/*.rs) all
-	cd test/$* && $(CHARON_HOME)/bin/charon --crate $* --input lib.rs --no-code-duplication --dest .
+	cd test/$* && $(CHARON_HOME)/bin/charon --crate $* --input lib.rs --no-code-duplication --dest . && mv $*.llbc out.llbc
 
 .PRECIOUS: test/%/out.llbc
 test-%: test/%/out.llbc

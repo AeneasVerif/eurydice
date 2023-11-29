@@ -233,7 +233,7 @@ let remove_terminal_continues = object(self)
 
   method! visit_EContinue (terminal, t) =
     if terminal then begin
-      assert (t = TUnit || t = TBottom);
+      assert (t = TUnit);
       EUnit
     end else
       EContinue
