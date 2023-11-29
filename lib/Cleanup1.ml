@@ -233,9 +233,7 @@ let remove_terminal_continues = object(self)
 
   method! visit_EContinue (terminal, t) =
     if terminal then begin
-      (* Rust managed to type-check a loop as infinite, therefore having type
-         bottom...? *)
-      assert (t = TUnit);
+      assert (t = TUnit || t = TBottom);
       EUnit
     end else
       EContinue

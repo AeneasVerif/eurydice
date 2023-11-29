@@ -52,6 +52,7 @@ Supported options:|}
     (* header := "/* This file compiled from Rust to C by Eurydice \ *)
     (*   <http://github.com/aeneasverif/eurydice> */"; *)
     parentheses := true;
+    backend := Rust
   );
 
   Krml.Helpers.is_readonly_builtin_lid_ :=
@@ -73,8 +74,7 @@ Supported options:|}
   ) !files in
 
   Printf.printf "1️⃣ LLBC ➡️  AST\n";
-  let files = Eurydice.PreCleanup.expand_array_copies files in
-  let files = Eurydice.PreCleanup.flatten_sequences files in
+  let files = Eurydice.PreCleanup.precleanup files in
 
   Eurydice.Logging.log "Phase1" "%a" pfiles files;
   let errors, files = Krml.Checker.check_everything ~warn:true files in

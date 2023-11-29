@@ -42,3 +42,8 @@ let expand_array_copies files =
       else
         super#visit_EApp env hd args
   end)#visit_files () files
+
+let precleanup files =
+  let files = expand_array_copies files in
+  let files = flatten_sequences files in
+  files
