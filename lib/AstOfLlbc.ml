@@ -646,7 +646,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       L.log "Calls" "--> pattern: %s" Charon.NameMatcher.(
         pattern_to_string { tgt = TkPattern } (fn_ptr_to_pattern env.name_ctx {
           tgt = TkPattern; use_trait_decl_refs = true
-        } env.generic_params fn_ptr
+        } Charon.TypesUtils.empty_generic_params fn_ptr
       ));
       (* For now, we take trait type arguments to be part of the code-gen *)
       let type_args, const_generic_args =
