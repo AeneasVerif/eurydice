@@ -16,11 +16,11 @@ typedef struct {
 
 #define EURYDICE_SLICE(x, start, end, t) ((Eurydice_slice){ .ptr = (void*)(x + start), .len = end - start })
 #define EURYDICE_SLICE_LEN(s, _) s.len
-#define EURYDICE_SLICE_INDEX(s, i, t) (((t*) s.ptr)[i])
-#define EURYDICE_SLICE_SUBSLICE(s, r, t) EURYDICE_SLICE(((t*)s.ptr), r.start, r.end, t)
-#define EURYDICE_ARRAY_TO_SLICE(x, end, t) EURYDICE_SLICE(x, 0, end, t)
-#define EURYDICE_ARRAY_TO_SUBSLICE(x, r, t) EURYDICE_SLICE(x, r.start, r.end, t)
-#define CORE_SLICE__T__0_LEN(s, t) EURYDICE_SLICE_LEN(s, t)
+#define Eurydice_slice_index(s, i, t) (((t*) s.ptr)[i])
+#define Eurydice_slice_subslice(s, r, t, _) EURYDICE_SLICE(((t*)s.ptr), r.start, r.end, t)
+#define Eurydice_array_to_slice(x, end, t) EURYDICE_SLICE(x, 0, end, t)
+#define Eurydice_array_to_subslice(x, r, t, _) EURYDICE_SLICE(x, r.start, r.end, t)
+#define core_slice___Slice_T___len(s, t) EURYDICE_SLICE_LEN(s, t)
 
 /* For now these are passed by value -- three words. We could conceivably change
  * the representation to heap-allocate this struct and only pass around the
@@ -70,4 +70,4 @@ typedef struct {
 
 #define EURYDICE_REPLACE(ptr, new_v, t) ({ t old_v = *ptr; *ptr = new_v; old_v; })
 
-#define LOWSTAR_IGNORE_IGNORE(e, t) ((void)e)
+#define LowStar_Ignore_ignore(e, t) ((void)e)
