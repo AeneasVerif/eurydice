@@ -32,6 +32,7 @@ type env = {
 
   (* Needed by the name matching logic *)
   name_ctx: Charon.NameMatcher.ctx;
+  generic_params: C.generic_params;
 
   (* To compute DeBruijn indices *)
   binders: (C.var_id * K.typ * C.ety) list;
@@ -645,9 +646,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       L.log "Calls" "--> pattern: %s" Charon.NameMatcher.(
         pattern_to_string { tgt = TkPattern } (fn_ptr_to_pattern env.name_ctx {
           tgt = TkPattern; use_trait_decl_refs = true
-        } {
-          regions = []; types = []; const_generics = []; trait_clauses = []
-        } fn_ptr
+        } env.generic_params fn_ptr
       ));
       (* For now, we take trait type arguments to be part of the code-gen *)
       let type_args, const_generic_args =
@@ -803,6 +802,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
       of_declaration_group dg (fun (id: C.FunDeclId.id) ->
         let decl = env.get_nth_function id in
         let { C.def_id; name; signature; body; is_global_decl_body; _ } = decl in
+        let env = { env with generic_params = signature.generics } in
         L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
           (if body = None then "opaque " else "")
           (string_of_name env name)
@@ -895,5 +895,6 @@ let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
     format_env;
     crate_name = name;
     name_ctx;
+    generic_params = { regions = []; types = []; const_generics = []; trait_clauses = [] }
   } in
   name, List.concat_map (decls_of_declarations env) declarations
