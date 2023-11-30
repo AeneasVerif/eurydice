@@ -37,7 +37,7 @@ pub(crate) fn to_unsigned_representative(fe: KyberFieldElement) -> u16 {
     (fe + ((fe >> 15) & FIELD_MODULUS)) as u16
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy)]
 pub struct KyberPolynomialRingElement {
     pub(crate) coefficients: [KyberFieldElement; COEFFICIENTS_IN_RING_ELEMENT],
 }

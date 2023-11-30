@@ -117,6 +117,24 @@ module RustNames = struct
     parse_pattern "SliceIndexShared<'_, @T>"
   let slice_index_mut =
     parse_pattern "SliceIndexMut<'_, @T>"
+  let from_u16 =
+    parse_pattern "core::convert::From<u16, @U>::from"
+  let from_u32 =
+    parse_pattern "core::convert::From<u32, @U>::from"
+  let from_u64 =
+    parse_pattern "core::convert::From<u64, @U>::from"
+  let from_u128 =
+    parse_pattern "core::convert::From<u128, @U>::from"
+  let from_i16 =
+    parse_pattern "core::convert::From<i16, @U>::from"
+  let from_i32 =
+    parse_pattern "core::convert::From<i32, @U>::from"
+  let from_i64 =
+    parse_pattern "core::convert::From<i64, @U>::from"
+  let from_i128 =
+    parse_pattern "core::convert::From<i128, @U>::from"
+  let from =
+    parse_pattern "core::convert::From<@T, @U>::from"
 
   let index = parse_pattern "core::slice::index::{@}::index"
   let get_unchecked = parse_pattern "core::slice::index::{@}::get_unchecked"
@@ -134,12 +152,14 @@ module RustNames = struct
     match_name env.name_ctx config index name ||
     match_name env.name_ctx config get_unchecked name ||
     true
-
-  let is_slice_index_range env =
-    (* match_fn_ptr et fn_ptr_to_pattern *)
-    let slice_index_range = parse_pattern "core::slice::index::{Slice<@T>}::index" in
-    match_trait_type env.name_ctx config slice_index_range
 end
+
+let string_of_fn_ptr env fn_ptr =
+  Charon.NameMatcher.(
+    pattern_to_string { tgt = TkPattern } (fn_ptr_to_pattern env.name_ctx {
+      tgt = TkPattern; use_trait_decl_refs = true
+    } Charon.TypesUtils.empty_generic_params fn_ptr
+  ))
 
 (** Translation of types *)
 
@@ -564,13 +584,14 @@ let lookup_fun (env: env) (f: C.fn_ptr): K.lident * int * K.typ list * K.typ =
     match f.func with
     | FunId (FRegular f) ->
         let { C.name; signature = { generics = { types = type_params; _ }; inputs; output; _ }; _ } = env.get_nth_function f in
+        L.log "Calls" "--> name: %s" (string_of_name env name);
         let env = push_type_binders env type_params in
         lid_of_name env name, List.length type_params, List.map (typ_of_ty env) inputs, typ_of_ty env output
 
     | FunId (FAssumed f) ->
         Krml.Warn.fatal_error "unknown assumed function: %s" (C.show_assumed_fun_id f)
 
-    | TraitMethod (trait_ref, name, _) ->
+    | TraitMethod (trait_ref, name, _trait_opaque_signature) ->
         Krml.Warn.fatal_error "Unknown trait ref: %s %s"
           (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref) name
 
@@ -652,14 +673,27 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let dest, _ = expression_of_place env dest in
       Krml.Helpers.with_unit K.(EAssign (dest, maybe_addrof env ty (with_type t (EBufRead (e1, e2)))))
 
+  | Call { func = fn_ptr; args; dest; _ }
+    when Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from fn_ptr ->
+      let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p fn_ptr in
+      let w: Krml.Constant.width =
+        if matches RustNames.from_u16 then UInt16
+        else if matches RustNames.from_u32 then UInt32
+        else if matches RustNames.from_u64 then UInt64
+        else if matches RustNames.from_i16 then Int16
+        else if matches RustNames.from_i32 then Int32
+        else if matches RustNames.from_i64 then Int64
+        else Krml.Warn.fatal_error "Unknown from-cast: %s" (string_of_fn_ptr env fn_ptr)
+      in
+      let dest, _ = expression_of_place env dest in
+      let e = expression_of_operand env (Krml.KList.one args) in
+      Krml.Helpers.with_unit K.(EAssign (dest, with_type (TInt w) (ECast (e, TInt w))))
+
   | Call { func = { func; generics = { types = type_args; const_generics = const_generic_args; _ }; _ } as fn_ptr; args; dest; _ } ->
       (* General case for function calls and trait method calls. *)
       L.log "Calls" "Visiting call: %s" (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
-      L.log "Calls" "--> pattern: %s" Charon.NameMatcher.(
-        pattern_to_string { tgt = TkPattern } (fn_ptr_to_pattern env.name_ctx {
-          tgt = TkPattern; use_trait_decl_refs = true
-        } Charon.TypesUtils.empty_generic_params fn_ptr
-      ));
+      L.log "Calls" "--> pattern: %s" (string_of_fn_ptr env fn_ptr);
+      L.log "Calls" "--> %d type_args, %d const_generics" (List.length type_args) (List.length const_generic_args);
 
       (* For now, we take trait type arguments to be part of the code-gen *)
       let type_args, const_generic_args =
