@@ -97,25 +97,43 @@ module RustNames = struct
     (* use_trait_decl_refs = true; *)
   }
 
+  let vec = parse_pattern "alloc::vec::Vec<@>"
+  let range = parse_pattern "core::ops::range::Range<@>"
+  let option = parse_pattern "core::option::Option<@>"
+
+  let slice_subslice =
+    parse_pattern "core::ops::index::Index<[@T], core::ops::range::Range<usize>>::index"
+  let slice_subslice_mut =
+    parse_pattern "core::ops::index::IndexMut<[@T], core::ops::range::Range<usize>>::index_mut"
+  let array_subslice =
+    parse_pattern "core::ops::index::Index<[@T; @N], core::ops::range::Range<usize>>::index"
+  let array_subslice_mut =
+    parse_pattern "core::ops::index::IndexMut<[@T; @N], core::ops::range::Range<usize>>::index_mut"
+  let array_to_slice =
+    parse_pattern "ArrayToSliceShared<'_, @T, @N>"
+  let array_to_slice_mut =
+    parse_pattern "ArrayToSliceMut<'_, @T, @N>"
+  let slice_index =
+    parse_pattern "SliceIndexShared<'_, @T>"
+  let slice_index_mut =
+    parse_pattern "SliceIndexMut<'_, @T>"
+
+  let index = parse_pattern "core::slice::index::{@}::index"
+  let get_unchecked = parse_pattern "core::slice::index::{@}::get_unchecked"
+
   let is_vec env =
-    let vec = parse_pattern "alloc::vec::Vec<@>" in
     match_pattern_with_type_id env.name_ctx config (mk_empty_maps ()) vec
 
   let is_range env =
-    let range = parse_pattern "core::ops::range::Range<@>" in
     match_pattern_with_type_id env.name_ctx config (mk_empty_maps ()) range
 
   let is_option env =
-    let option = parse_pattern "core::option::Option<@>" in
     match_pattern_with_type_id env.name_ctx config (mk_empty_maps ()) option
 
-  let is_builtin env =
-    let index = parse_pattern "core::slice::index::{@}::index" in
-    let get_unchecked = parse_pattern "core::slice::index::{@}::get_unchecked" in
-    fun name ->
-      match_name env.name_ctx config index name ||
-      match_name env.name_ctx config get_unchecked name ||
-      true
+  let is_builtin env name =
+    match_name env.name_ctx config index name ||
+    match_name env.name_ctx config get_unchecked name ||
+    true
 
   let is_slice_index_range env =
     (* match_fn_ptr et fn_ptr_to_pattern *)
@@ -526,44 +544,35 @@ let expression_of_assertion (env: env) ({ cond; expected }: C.assertion): K.expr
       with_type TAny (EAbort (None, Some "assert failure")),
       Krml.Helpers.eunit)))
 
-let lookup_fun (env: env) (f: C.fun_id_or_trait_method_ref) (args: K.typ list): K.lident * int * K.typ list * K.typ =
-  let builtin_of_fun_id = function
-    | C.SliceIndexShared | SliceIndexMut -> Builtin.slice_index
-    | ArrayToSliceShared | ArrayToSliceMut -> Builtin.array_to_slice
-    | BoxNew -> Builtin.box_new
-    | f -> Krml.Warn.fatal_error "unknown assumed function: %s" (C.show_assumed_fun_id f)
-  in
+let lookup_fun (env: env) (f: C.fn_ptr): K.lident * int * K.typ list * K.typ =
+  let open RustNames in
+  let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p f in
   let builtin b =
     let { Builtin.name; typ; n_type_args; _ } = b in
     let ret, args = Krml.Helpers.flatten_arrow typ in
     name, n_type_args, args, ret
   in
-  match f with
-  | FunId (FRegular f) ->
-      let { C.name; signature = { generics = { types = type_params; _ }; inputs; output; _ }; _ } = env.get_nth_function f in
-      let env = push_type_binders env type_params in
-      lid_of_name env name, List.length type_params, List.map (typ_of_ty env) inputs, typ_of_ty env output
+  if matches slice_subslice || matches slice_subslice_mut then
+    builtin Builtin.slice_subslice
+  else if matches array_subslice || matches array_subslice_mut then
+    builtin Builtin.array_to_subslice
+  else if matches array_to_slice || matches array_to_slice_mut then
+    builtin Builtin.array_to_slice
+  else if matches slice_index || matches slice_index_mut then
+    builtin Builtin.slice_index
+  else
+    match f.func with
+    | FunId (FRegular f) ->
+        let { C.name; signature = { generics = { types = type_params; _ }; inputs; output; _ }; _ } = env.get_nth_function f in
+        let env = push_type_binders env type_params in
+        lid_of_name env name, List.length type_params, List.map (typ_of_ty env) inputs, typ_of_ty env output
 
-  | FunId (FAssumed f) ->
-      builtin (builtin_of_fun_id f)
+    | FunId (FAssumed f) ->
+        Krml.Warn.fatal_error "unknown assumed function: %s" (C.show_assumed_fun_id f)
 
-  | TraitMethod (trait_ref, name, _) ->
-      let d = C.TraitDeclId.Map.find trait_ref.trait_decl_ref.trait_decl_id env.name_ctx.trait_decls in
-      let d = Charon.PrintTypes.name_to_string env.format_env d.name in
-      match d, args with
-      | ("core::ops::index::Index" | "core::ops::index::IndexMut"),
-        [ TBuf _; TApp ((["core"; "ops"; "range"], "Range"), _) ] ->
-          builtin Builtin.array_to_subslice
-      | ("core::ops::index::Index" | "core::ops::index::IndexMut"),
-        [ TApp ((["Eurydice"], "slice"), _); TApp ((["core"; "ops"; "range"], "Range"), _) ] ->
-          builtin Builtin.slice_subslice
-      | _ ->
-          Krml.Warn.fatal_error "Unknown trait ref: %s %s\n%s\n%a"
+    | TraitMethod (trait_ref, name, _) ->
+        Krml.Warn.fatal_error "Unknown trait ref: %s %s"
           (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref) name
-          d
-          Krml.PrintAst.Ops.ptyps args
-          (* (C.show_trait_ref trait_ref) *)
-
 
 (* Runs after the adjustment above *)
 let args_of_const_generic_args (f: C.fun_id_or_trait_method_ref) (const_generic_args: C.const_generic list): K.expr list =
@@ -618,6 +627,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       dest;
       _
     } ->
+      (* Special treatment because of the insertion of a CreateL *)
       let e = expression_of_operand env e in
       let t = typ_of_ty env ty in
       let dest, _ = expression_of_place env dest in
@@ -635,6 +645,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       dest;
       _
     } ->
+      (* Special treatment because of the usage of maybe_addrof *)
       let e1 = expression_of_operand env e1 in
       let e2 = expression_of_operand env e2 in
       let t = typ_of_ty env ty in
@@ -642,12 +653,14 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       Krml.Helpers.with_unit K.(EAssign (dest, maybe_addrof env ty (with_type t (EBufRead (e1, e2)))))
 
   | Call { func = { func; generics = { types = type_args; const_generics = const_generic_args; _ }; _ } as fn_ptr; args; dest; _ } ->
+      (* General case for function calls and trait method calls. *)
       L.log "Calls" "Visiting call: %s" (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
       L.log "Calls" "--> pattern: %s" Charon.NameMatcher.(
         pattern_to_string { tgt = TkPattern } (fn_ptr_to_pattern env.name_ctx {
           tgt = TkPattern; use_trait_decl_refs = true
         } Charon.TypesUtils.empty_generic_params fn_ptr
       ));
+
       (* For now, we take trait type arguments to be part of the code-gen *)
       let type_args, const_generic_args =
         match func with
@@ -662,7 +675,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let type_args = List.map (typ_of_ty env) type_args in
       let args = args @ args_of_const_generic_args func const_generic_args in
       let args = if args = [] then [ Krml.Helpers.eunit ] else args in
-      let name, n_type_params, inputs, output = lookup_fun env func (List.map (fun x -> x.K.typ) args) in
+      let name, n_type_params, inputs, output = lookup_fun env fn_ptr in
       let inputs = if inputs = [] then [ K.TUnit ] else inputs in
       if not (n_type_params = List.length type_args) then
         Krml.Warn.fatal_error "%a: n_type_params %d != type_args %d"
