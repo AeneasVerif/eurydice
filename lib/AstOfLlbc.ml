@@ -152,6 +152,19 @@ module RustNames = struct
 
   let is_option env =
     match_pattern_with_type_id env.name_ctx config (mk_empty_maps ()) option
+
+  (* TODO: use a pattern, right now getting an error "unimplemented" *)
+  let is_array_map env (fn_ptr: C.fn_ptr) =
+    match fn_ptr.func with
+    | FunId (FRegular id) ->
+        let decl = env.get_nth_function id in
+        begin match decl.name with
+        | [ PeIdent ("core", _); PeIdent ("array", _); _; PeIdent ("map", _) ] ->
+            true
+        | _ ->
+            false
+        end
+    | _ -> false
 end
 
 let string_of_pattern pattern =
@@ -215,6 +228,10 @@ let constant_of_scalar_value { C.value; int_ty } =
   let w = width_of_integer_type int_ty in
   w, Z.to_string value
 
+let assert_cg_scalar = function
+  | C.CgValue (VScalar n) -> n
+  | _ -> failwith "Unsupported: non-constant const generic"
+
 let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
   match ty with
   | TVar id ->
@@ -273,8 +290,8 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
         TTuple (List.map (typ_of_ty env) args)
       end
 
-  | TAdt (TAssumed TArray, { types = [ t ]; const_generics = [ CgValue (VScalar n) ]; _ }) ->
-      K.TArray (typ_of_ty env t, constant_of_scalar_value n)
+  | TAdt (TAssumed TArray, { types = [ t ]; const_generics = [ cg ]; _ }) ->
+      K.TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))
 
   | TAdt (TAssumed TSlice, _) ->
       (* Slice values cannot be materialized since their storage space cannot be computed at
@@ -471,7 +488,8 @@ let expression_of_operand (env: env) (p: C.operand): K.expr =
   | Constant ({ value = CLiteral (VBool b); _ }) ->
       K.(with_type TBool (EBool b))
   | Constant _ ->
-      failwith "expression_of_operand Constant"
+      Krml.Warn.fatal_error "expression_of_operand Constant: %s"
+        (Charon.PrintExpressions.operand_to_string env.format_env p)
 
 let op_of_unop (op: C.unop): Krml.Constant.op =
   match op with
@@ -717,6 +735,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
 
   | Call { func = fn_ptr; args; dest; _ }
     when Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from fn_ptr ->
+      (* Special treatment: From<T, U> becomes a cast. *)
       let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p fn_ptr in
       let w: Krml.Constant.width =
         if matches RustNames.from_u16 then UInt16
@@ -731,20 +750,46 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let e = expression_of_operand env (Krml.KList.one args) in
       Krml.Helpers.with_unit K.(EAssign (dest, with_type (TInt w) (ECast (e, TInt w))))
 
-  | Call { func = { func; generics = { types = type_args; const_generics = const_generic_args; _ }; _ } as fn_ptr; args; dest; _ } ->
+  | Call { func = fn_ptr; args; dest; _ } when RustNames.is_array_map env fn_ptr ->
+      (* Special treatment: bug in NameMatcher + avoid allocating a temporary array and directly
+         write the result in the destination. *)
+      let t = List.hd fn_ptr.generics.types in
+      let n = List.hd fn_ptr.generics.const_generics in
+      let src = List.hd args in
+
+      let n = expression_of_scalar_value (assert_cg_scalar n) in
+      let t = typ_of_ty env t in
+      let dest, _ = expression_of_place env dest in
+      let src = expression_of_operand env src in
+
+      (* for (let i = 0; i < n; ++i)
+           dst[i] = f(src[i]);
+      *)
+      let module H = Krml.Helpers in
+      H.with_unit (K.EFor (Krml.Helpers.fresh_binder ~mut:true "i" H.usize, H.zero_usize (* i = 0 *),
+        H.mk_lt_usize n (* i < n *),
+        H.mk_incr_usize (* i++ *),
+        let i = K.with_type H.usize (K.EBound 0) in
+        H.with_unit (K.EBufWrite (Krml.DeBruijn.lift 1 dest, i,
+          K.with_type t (K.EBufRead (Krml.DeBruijn.lift 1 src, i))))))
+
+  | Call { func = { func; generics = { types = type_args; const_generics = const_generic_args; _ }; trait_and_method_generic_args } as fn_ptr; args; dest; _ } ->
       (* General case for function calls and trait method calls. *)
       L.log "Calls" "Visiting call: %s" (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
-      L.log "Calls" "--> pattern: %s" (string_of_fn_ptr env fn_ptr);
+      L.log "Calls" "is_array_map: %b" (RustNames.is_array_map env fn_ptr);
       L.log "Calls" "--> %d type_args, %d const_generics" (List.length type_args) (List.length const_generic_args);
 
       (* For now, we take trait type arguments to be part of the code-gen *)
       let type_args, const_generic_args =
-        match func with
-        | FunId _ ->
+        match trait_and_method_generic_args with
+        | None ->
             type_args, const_generic_args
-        | TraitMethod ({ generics = { types; const_generics; _ }; _ }, _, _) ->
+        | Some { types; const_generics; _ } ->
             types @ type_args, const_generics @ const_generic_args
       in
+      L.log "Calls" "--> %d type_args, %d const_generics" (List.length type_args) (List.length const_generic_args);
+      L.log "Calls" "--> pattern: %s" (string_of_fn_ptr env fn_ptr);
+
       let dest, _ = expression_of_place env dest in
       let args = List.map (expression_of_operand env) args in
       let original_type_args = type_args in

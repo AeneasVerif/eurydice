@@ -218,6 +218,8 @@ fn ntt_multiply(
     out
 }
 
+/*
+
 // v := NTT^{−1}(tˆT ◦ rˆ) + e_2 + Decompress_q(Decode_1(m),1)
 #[inline(always)]
 pub(crate) fn compute_message<const K: usize>(
@@ -342,3 +344,5 @@ pub(crate) fn compute_As_plus_e<const K: usize>(
 
     result
 }
+
+*/
