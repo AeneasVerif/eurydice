@@ -30,6 +30,7 @@ type env = {
   get_nth_function: C.FunDeclId.id -> C.fun_decl;
   get_nth_type: C.TypeDeclId.id -> C.type_decl;
   get_nth_global: C.GlobalDeclId.id -> C.global_decl;
+  get_nth_trait_impl: C.TraitImplId.id -> C.trait_impl;
 
   (* Needed by the name matching logic *)
   name_ctx: Charon.NameMatcher.ctx;
@@ -143,9 +144,6 @@ module RustNames = struct
   let from =
     parse_pattern "core::convert::From<@T, @U>::from"
 
-  let index = parse_pattern "core::slice::index::{@}::index"
-  let get_unchecked = parse_pattern "core::slice::index::{@}::get_unchecked"
-
   let is_vec env =
     match_pattern_with_type_id env.name_ctx config (mk_empty_maps ()) vec
 
@@ -154,11 +152,6 @@ module RustNames = struct
 
   let is_option env =
     match_pattern_with_type_id env.name_ctx config (mk_empty_maps ()) option
-
-  let is_builtin env name =
-    match_name env.name_ctx config index name ||
-    match_name env.name_ctx config get_unchecked name ||
-    true
 end
 
 let string_of_pattern pattern =
@@ -175,7 +168,9 @@ let string_of_fn_ptr env fn_ptr =
 
 let find_name env pattern =
   let matches = NameMap.filter (fun n _ ->
-    string_of_name env n = pattern
+    let r = string_of_name env n = pattern in
+    L.log "Calls" "Matching %s against %s: %b" (string_of_name env n) pattern r;
+    r
     (* let r = Charon.NameMatcher.match_name env.name_ctx RustNames.config pattern n in *)
     (* L.log "Calls" "Matching %s against %s: %b" (string_of_name env n) (string_of_pattern pattern) r; *)
     (* r *)
@@ -295,10 +290,10 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
         (List.length const_generics)
 
   | TRawPtr _ ->
-      Krml.Warn.fatal_error "TODO: TRawPtr"
+      failwith "TODO: TRawPtr"
 
   | TTraitType _ ->
-      Krml.Warn.fatal_error "TODO: TraitTypes"
+      failwith "TODO: TraitTypes"
 
   | TArrow (ts, t) ->
       Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
@@ -627,7 +622,9 @@ let lookup_fun (env: env) (f: C.fn_ptr): K.lident * int * K.typ list * K.typ =
     | TraitMethod (trait_ref, method_name, _trait_opaque_signature) ->
         let pp_name = Charon.PrintTypes.trait_instance_id_to_string env.format_env trait_ref.trait_id ^ "::" ^ method_name in
         begin match trait_ref.trait_id with
-        | TraitImpl id -> L.log "Calls" "trait id: %d" (C.TraitImplId.to_int id)
+        | TraitImpl id ->
+            L.log "Calls" "trait id: %d" (C.TraitImplId.to_int id);
+            L.log "Calls" "trait name: %s" (string_of_name env (env.get_nth_trait_impl id).name)
         | _ -> ()
         end;
         match find_name env pp_name with
@@ -909,9 +906,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): env * K.decl list
         assert (def_id = id);
         match body with
         | None ->
-            if RustNames.is_builtin env name then
-              env0, None
-            else
+            begin try
               (* Opaque function *)
               let { C.generics = { types = type_params; _ }; inputs; output ; _ } = signature in
               let env = push_type_binders env type_params in
@@ -923,6 +918,11 @@ let decls_of_declarations (env: env) (d: C.declaration_group): env * K.decl list
                 List.map (fun (x: (_, _) Charon.Types.indexed_var) -> x.name) type_params
               in
               push_name env0 decl.name id, Some (K.DExternal (None, [], List.length type_params, name, t, name_hints))
+            with _ ->
+              L.log "AstOfLLbc" "ERROR translating %s:\n%s" (string_of_name env decl.name)
+                (Printexc.get_backtrace ());
+              env0, None
+            end
         | Some { arg_count; locals; body; _ } ->
             if is_global_decl_body then
               failwith "TODO: C.Fun is_global decl"
@@ -982,12 +982,14 @@ let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
   let get_nth_function = fun id -> C.FunDeclId.Map.find id fun_decls in
   let get_nth_type = fun id -> C.TypeDeclId.Map.find id type_decls in
   let get_nth_global = fun id -> C.GlobalDeclId.Map.find id global_decls in
+  let get_nth_trait_impl = fun id -> C.TraitImplId.Map.find id trait_impls in
   let format_env = Charon.PrintLlbcAst.Crate.crate_to_fmt_env crate in
   let name_ctx: Charon.NameMatcher.ctx = { type_decls; global_decls; trait_decls; fun_decls; trait_impls } in
   let env = {
     get_nth_function;
     get_nth_type;
     get_nth_global;
+    get_nth_trait_impl;
     binders = [];
     type_binders = [];
     format_env;

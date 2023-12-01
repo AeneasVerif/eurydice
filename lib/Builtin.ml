@@ -25,7 +25,7 @@ let mk_option (t: K.typ): K.typ =
 let array_copy = ["Eurydice"], "array_copy"
 
 let macros = Krml.Idents.LidSet.of_list [
-  [ "core"; "slice"; "[T]"; "{0}" ], "len"
+  ["core"; "slice"; "{@Slice<T>}"], "len"
 ]
 
 (* A record to hold a builtin function with all relevant information for both
@@ -36,13 +36,6 @@ type builtin = {
   typ: K.typ;
   n_type_args: int;
   arg_names: string list;
-}
-
-let slice_len = {
-  name = ["core"; "slice"; "{@Slice<T>}"], "len";
-  typ = K.(TArrow (mk_slice (TBound 0), TInt SizeT));
-  n_type_args = 1;
-  arg_names = [ "s" ]
 }
 
 let array_to_slice = {
@@ -158,7 +151,6 @@ let files = [
     ) [
       array_to_slice;
       array_to_subslice;
-      slice_len;
       slice_index;
       slice_subslice;
       vec_push;
