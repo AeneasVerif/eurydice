@@ -31,7 +31,7 @@ let expand_array_copies files =
 
     method! visit_EAssign env lhs rhs =
       match lhs, rhs.node with
-      | { node = EBound _; typ = TArray (_, n) },
+      | { node = _; typ = TArray (_, n) },
         EApp ({ node = EQualified lid; _ }, [ rhs ]) when lid = Builtin.array_copy ->
           (* Krml.Helpers.mk_copy_assignment (t, n) lhs.node rhs *)
           let zero = Krml.(Helpers.zero Constant.SizeT) in

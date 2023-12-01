@@ -18,7 +18,7 @@ let range: K.lident = ["core"; "ops"; "range"], "Range"
 let mk_range (t: K.typ): K.typ =
   K.TApp (range, [ t ])
 
-let option: K.lident = ["core"; "ops"; "option"], "Option"
+let option: K.lident = ["core"; "option"], "Option"
 let mk_option (t: K.typ): K.typ =
   K.TApp (option, [ t ])
 
@@ -161,15 +161,6 @@ let files = [
       box_new;
       replace;
   ] in
-  "Eurydice", externals @ [
-    K.DType (range, [], 1, Flat [
-      Some "start", (TBound 0, true);
-      Some "end", (TBound 0, true);
-    ]);
-    K.DType (option, [], 1, Variant [
-      "None", [];
-      "Some", [ "x", (TBound 0, true) ]
-    ]);
-  ]
+  "Eurydice", externals
 ]
 

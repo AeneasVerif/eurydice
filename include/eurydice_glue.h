@@ -71,3 +71,14 @@ typedef struct {
 #define EURYDICE_REPLACE(ptr, new_v, t) ({ t old_v = *ptr; *ptr = new_v; old_v; })
 
 #define LowStar_Ignore_ignore(e, t) ((void)e)
+
+/* Support for iterators */
+
+#define core_num_nonzero_NonZeroUsize size_t
+#define core_iter_range__core__ops__range__Range_A__3__next(iter_ptr, t) ( \
+  ((iter_ptr)->start == (iter_ptr)->end) ? \
+    ((core_option_Option__##t) { .tag = core_option_None }) : \
+    ((core_option_Option__##t) { .tag = core_option_Some, .f0 = (iter_ptr)->start++ }) \
+  )
+
+#define core_iter_traits_collect__I__into_iter(x, t) (x)

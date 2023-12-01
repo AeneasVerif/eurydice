@@ -267,12 +267,6 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
   | TAdt (id, ({ types = [ t ]; _ } as generics)) when RustNames.is_vec env id generics ->
       Builtin.mk_vec (typ_of_ty env t)
 
-  | TAdt (id, ({ types = [ t ]; _ } as generics)) when RustNames.is_range env id generics->
-      Builtin.mk_range (typ_of_ty env t)
-
-  | TAdt (id, ({ types = [ t ]; _ } as generics)) when RustNames.is_option env id generics ->
-      Builtin.mk_option (typ_of_ty env t)
-
   | TAdt (TAdtId id, { types = []; const_generics = []; _ }) ->
       TQualified (lid_of_type_decl_id env id)
 
