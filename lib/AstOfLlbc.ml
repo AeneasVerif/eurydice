@@ -21,6 +21,7 @@ module K = Krml.Ast
 
 module L = Logging
 
+module NameMap = Map.Make(struct type t = C.name let compare = compare end)
 
 (** Environment *)
 
@@ -33,6 +34,7 @@ type env = {
   (* Needed by the name matching logic *)
   name_ctx: Charon.NameMatcher.ctx;
   generic_params: C.generic_params;
+  names: C.fun_decl_id NameMap.t;
 
   (* To compute DeBruijn indices *)
   binders: (C.var_id * K.typ * C.ety) list;
@@ -87,6 +89,11 @@ let mk_field_name f i =
   match f with
   | Some f -> f
   | None -> "f" ^ string_of_int i
+
+(* Helpers: traits finding & matching *)
+
+let push_name env name id =
+  { env with names = NameMap.add name id env.names }
 
 module RustNames = struct
   open Charon.NameMatcher
@@ -154,12 +161,35 @@ module RustNames = struct
     true
 end
 
-let string_of_fn_ptr env fn_ptr =
-  Charon.NameMatcher.(
-    pattern_to_string { tgt = TkPattern } (fn_ptr_to_pattern env.name_ctx {
+let string_of_pattern pattern =
+  Charon.NameMatcher.(pattern_to_string { tgt = TkPattern } pattern)
+
+let pattern_of_fn_ptr env fn_ptr =
+  Charon.NameMatcher.(fn_ptr_to_pattern env.name_ctx {
       tgt = TkPattern; use_trait_decl_refs = true
     } Charon.TypesUtils.empty_generic_params fn_ptr
-  ))
+  )
+
+let string_of_fn_ptr env fn_ptr =
+  string_of_pattern (pattern_of_fn_ptr env fn_ptr)
+
+let find_name env pattern =
+  let matches = NameMap.filter (fun n _ ->
+    string_of_name env n = pattern
+    (* let r = Charon.NameMatcher.match_name env.name_ctx RustNames.config pattern n in *)
+    (* L.log "Calls" "Matching %s against %s: %b" (string_of_name env n) (string_of_pattern pattern) r; *)
+    (* r *)
+  ) env.names in
+  let n = NameMap.cardinal matches in
+  if n = 1 then
+    Some (snd (NameMap.choose matches))
+  else if n = 0 then begin
+    L.log "Calls" "No matches for %s" pattern;
+    None
+  end else begin
+    L.log "Calls" "Too many matches for %s" pattern;
+    None
+  end
 
 (** Translation of types *)
 
@@ -581,19 +611,34 @@ let lookup_fun (env: env) (f: C.fn_ptr): K.lident * int * K.typ list * K.typ =
   else if matches slice_index || matches slice_index_mut then
     builtin Builtin.slice_index
   else
+    let regular f =
+      let { C.name; signature = { generics = { types = type_params; _ }; inputs; output; _ }; _ } = env.get_nth_function f in
+      L.log "Calls" "--> name: %s" (string_of_name env name);
+      let env = push_type_binders env type_params in
+      lid_of_name env name, List.length type_params, List.map (typ_of_ty env) inputs, typ_of_ty env output
+    in
     match f.func with
     | FunId (FRegular f) ->
-        let { C.name; signature = { generics = { types = type_params; _ }; inputs; output; _ }; _ } = env.get_nth_function f in
-        L.log "Calls" "--> name: %s" (string_of_name env name);
-        let env = push_type_binders env type_params in
-        lid_of_name env name, List.length type_params, List.map (typ_of_ty env) inputs, typ_of_ty env output
+        regular f
 
     | FunId (FAssumed f) ->
         Krml.Warn.fatal_error "unknown assumed function: %s" (C.show_assumed_fun_id f)
 
-    | TraitMethod (trait_ref, name, _trait_opaque_signature) ->
-        Krml.Warn.fatal_error "Unknown trait ref: %s %s"
-          (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref) name
+    | TraitMethod (trait_ref, method_name, _trait_opaque_signature) ->
+        let pp_name = Charon.PrintTypes.trait_instance_id_to_string env.format_env trait_ref.trait_id ^ "::" ^ method_name in
+        begin match trait_ref.trait_id with
+        | TraitImpl id -> L.log "Calls" "trait id: %d" (C.TraitImplId.to_int id)
+        | _ -> ()
+        end;
+        match find_name env pp_name with
+        | Some f ->
+            L.log "Calls" "fun id: %d" (C.FunDeclId.to_int f);
+            L.log "Calls" "FOUND trait ref: %s %s"
+              (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref) method_name;
+            regular f
+        | _ ->
+            Krml.Warn.fatal_error "Error looking trait ref: %s %s"
+              (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref) method_name
 
 (* Runs after the adjustment above *)
 let args_of_const_generic_args (f: C.fun_id_or_trait_method_ref) (const_generic_args: C.const_generic list): K.expr list =
@@ -806,50 +851,56 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
 
 (** Top-level declarations: orchestration *)
 
-let of_declaration_group (dg: 'id C.g_declaration_group) (f: 'id -> 'a): 'a list =
+let of_declaration_group (env: 'env) (dg: 'id C.g_declaration_group) (f: 'env -> 'id -> 'env * 'a option): 'env * 'a list =
   (* We do not care about recursion as in C, everything is mutually recursive
      thanks to header inclusion. *)
   match dg with
-  | NonRecGroup id -> [ f id ]
-  | RecGroup ids -> List.map f ids
+  | NonRecGroup id ->
+      let env, x = f env id in
+      env, Option.to_list x
+  | RecGroup ids ->
+      let env, xs = List.fold_left (fun (env, xs) id ->
+        let env, x = f env id in
+        env, Option.to_list x @ xs
+      ) (env, []) ids in
+      env, List.rev xs
 
-let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
+let decls_of_declarations (env: env) (d: C.declaration_group): env * K.decl list =
   match d with
   | TypeGroup dg ->
-      Krml.KList.filter_some @@
-      of_declaration_group dg (fun (id: C.TypeDeclId.id) ->
-        let decl = env.get_nth_type id in
+      of_declaration_group env dg (fun env0 (id: C.TypeDeclId.id) ->
+        let decl = env0.get_nth_type id in
         let { C.name; def_id; kind; generics = { types = type_params; _ }; _ } = decl in
-        L.log "AstOfLlbc" "Visiting type: %s\n%s" (string_of_name env name)
-          (Charon.PrintTypes.type_decl_to_string env.format_env decl);
+        L.log "AstOfLlbc" "Visiting type: %s\n%s" (string_of_name env0 name)
+          (Charon.PrintTypes.type_decl_to_string env0.format_env decl);
 
         assert (def_id = id);
-        let name = lid_of_name env name in
+        let name = lid_of_name env0 name in
 
         match kind with
-        | Opaque -> None
+        | Opaque ->
+            env0, None
         | Struct fields ->
-            let env = push_type_binders env type_params in
+            let env = push_type_binders env0 type_params in
             let fields = List.map (fun { C.field_name; field_ty; _ } ->
               field_name, (typ_of_ty env field_ty, true)
             ) fields in
-            Some (K.DType (name, [], List.length type_params, Flat fields))
+            env0, Some (K.DType (name, [], List.length type_params, Flat fields))
         | Enum branches ->
-            let env = push_type_binders env type_params in
+            let env = push_type_binders env0 type_params in
             let branches = List.map (fun { C.variant_name; fields; _ } ->
               variant_name, List.mapi (fun i { C.field_name; field_ty; _ } ->
                 mk_field_name field_name i,
                 (typ_of_ty env field_ty, true)
               ) fields
             ) branches in
-            Some (K.DType (name, [], List.length type_params, Variant branches))
+            env0, Some (K.DType (name, [], List.length type_params, Variant branches))
       )
   | FunGroup dg ->
-      Krml.KList.filter_some @@
-      of_declaration_group dg (fun (id: C.FunDeclId.id) ->
-        let decl = env.get_nth_function id in
+      of_declaration_group env dg (fun env0 (id: C.FunDeclId.id) ->
+        let decl = env0.get_nth_function id in
         let { C.def_id; name; signature; body; is_global_decl_body; _ } = decl in
-        let env = { env with generic_params = signature.generics } in
+        let env = { env0 with generic_params = signature.generics } in
         L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
           (if body = None then "opaque " else "")
           (string_of_name env name)
@@ -859,7 +910,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
         match body with
         | None ->
             if RustNames.is_builtin env name then
-              None
+              env0, None
             else
               (* Opaque function *)
               let { C.generics = { types = type_params; _ }; inputs; output ; _ } = signature in
@@ -871,7 +922,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
               let name_hints: string list =
                 List.map (fun (x: (_, _) Charon.Types.indexed_var) -> x.name) type_params
               in
-              Some (K.DExternal (None, [], List.length type_params, name, t, name_hints))
+              push_name env0 decl.name id, Some (K.DExternal (None, [], List.length type_params, name, t, name_hints))
         | Some { arg_count; locals; body; _ } ->
             if is_global_decl_body then
               failwith "TODO: C.Fun is_global decl"
@@ -897,7 +948,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                 with_locals env return_type (return_var :: locals) (fun env ->
                   expression_of_raw_statement env return_var.index body.content)
               in
-              Some (K.DFunction (None, [], List.length signature.C.generics.types, return_type, name, arg_binders, body))
+              push_name env0 decl.name id, Some (K.DFunction (None, [], List.length signature.C.generics.types, return_type, name, arg_binders, body))
       )
   | GlobalGroup id ->
       let global = env.get_nth_global id in
@@ -916,15 +967,15 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
             with_locals env ty body.locals (fun env ->
               expression_of_raw_statement env ret_var.index body.body.content)
           in
-          [ K.DGlobal ([], lid_of_name env name, 0, ty, body) ]
+          env, [ K.DGlobal ([], lid_of_name env name, 0, ty, body) ]
       | None ->
-          [ K.DExternal (None, [], 0, lid_of_name env name, ty, []) ]
+          env, [ K.DExternal (None, [], 0, lid_of_name env name, ty, []) ]
       end
 
   | TraitDeclGroup _ ->
-      []
+      env, []
   | TraitImplGroup _ ->
-      []
+      env, []
 
 let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
   let { C.name; declarations; type_decls; fun_decls; global_decls; trait_decls; trait_impls } = crate in
@@ -942,6 +993,11 @@ let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
     format_env;
     crate_name = name;
     name_ctx;
-    generic_params = { regions = []; types = []; const_generics = []; trait_clauses = [] }
+    generic_params = { regions = []; types = []; const_generics = []; trait_clauses = [] };
+    names = NameMap.empty;
   } in
-  name, List.concat_map (decls_of_declarations env) declarations
+  let _, decls = List.fold_left (fun (env, dss) d ->
+    let env, ds = decls_of_declarations env d in
+    env, ds :: dss
+  ) (env, []) declarations in
+  name, List.concat (List.rev decls)

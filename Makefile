@@ -21,6 +21,7 @@ $(CHARON_HOME)/tests/llbc/%.llbc: $(CHARON_HOME)/tests/src/%.rs
 
 .PRECIOUS: $(CHARON_HOME)/tests/llbc/%.llbc
 charon-test-%: $(CHARON_HOME)/tests/llbc/%.llbc | out/test-% all
+	mkdir -p out/test-$*
 	$(EURYDICE) --output out/test-$* $<
 	# These tests do not have a main
 	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $*.c -c
@@ -31,6 +32,7 @@ test/%/out.llbc: | $(wildcard test/%/*.rs) all
 
 .PRECIOUS: test/%/out.llbc
 test-%: test/%/out.llbc
+	mkdir -p out/test-$*
 	$(EURYDICE) --output out/test-$* $<
 	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $*.c -c
 
