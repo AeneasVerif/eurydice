@@ -27,11 +27,11 @@ charon-test-%: $(CHARON_HOME)/tests/llbc/%.llbc | out/test-% all
 	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $*.c -c
 
 # Tests checked into the current repository
-test/%/out.llbc: | $(wildcard test/%/*.rs) all
+.PHONY: phony
+test/%/out.llbc: phony
 	cd test/$* && $(CHARON_HOME)/bin/charon && mv $*.llbc out.llbc
 
-.PRECIOUS: test/%/out.llbc
-test-%: test/%/out.llbc
+test-%: test/%/out.llbc | all
 	mkdir -p out/test-$*
 	$(EURYDICE) --output out/test-$* $<
 	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $*.c -c
