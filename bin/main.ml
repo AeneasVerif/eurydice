@@ -95,6 +95,7 @@ Supported options:|}
   let files = Krml.DataTypes.optimize files in
   let _, files = Krml.DataTypes.everything files in
   let files = Krml.Structs.pass_by_ref files in
+  let files = Eurydice.Cleanup1.remove_implicit_array_copies#visit_files () files in
   let files = Krml.Simplify.optimize_lets files in
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
   let files = Krml.Simplify.hoist#visit_files [] files in
@@ -102,21 +103,6 @@ Supported options:|}
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
   let files = Krml.Inlining.cross_call_analysis files in
-
-  (* Quick cleanup. TODO move somewhere suitable. *)
-  let files =
-    let open Krml.Ast in
-    (object
-      inherit [ _ ] map as super
-      method! visit_EAssign env lhs rhs =
-        match lhs.typ with
-        | TArray (_, n) ->
-            let zero = Krml.(Helpers.zero Constant.SizeT) in
-            EBufBlit (rhs, zero, lhs, zero, Eurydice.PreCleanup.expr_of_constant n)
-        | _ ->
-            super#visit_EAssign env lhs rhs
-    end)#visit_files () files
-  in
 
   Eurydice.Logging.log "Phase3" "%a" pfiles files;
   let errors, files = Krml.Checker.check_everything ~warn:true files in

@@ -583,8 +583,8 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       end
   | Aggregate (AggregatedAdt (TAssumed _, _, _), _) ->
       failwith "unsupported: AggregatedAdt / TAssume"
-  | Aggregate (AggregatedArray (t, _), ops) ->
-      K.with_type (typ_of_ty env t) (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
+  | Aggregate (AggregatedArray (t, cg), ops) ->
+      K.with_type (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))) (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
   | Global id ->
       let global = env.get_nth_global id in
       K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.name))
@@ -1006,7 +1006,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): env * K.decl list
             with_locals env ty body.locals (fun env ->
               expression_of_raw_statement env ret_var.index body.body.content)
           in
-          env, [ K.DGlobal ([], lid_of_name env name, 0, ty, body) ]
+          env, [ K.DGlobal ([Krml.Common.Const ""], lid_of_name env name, 0, ty, body) ]
       | None ->
           env, [ K.DExternal (None, [], 0, lid_of_name env name, ty, []) ]
       end
