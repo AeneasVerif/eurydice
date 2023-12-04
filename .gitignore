@@ -3,3 +3,6 @@ lib/krml
 lib/charon
 out
 test/*/target
+*.DS_Store
+*.orig
+*.llbc
