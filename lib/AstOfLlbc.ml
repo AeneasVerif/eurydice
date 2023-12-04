@@ -481,6 +481,9 @@ let expression_of_operand (env: env) (p: C.operand): K.expr =
       expression_of_scalar_value sv
   | Constant ({ value = CLiteral (VBool b); _ }) ->
       K.(with_type TBool (EBool b))
+  | Constant ({ value = CVar _; _ }) ->
+      Krml.Warn.fatal_error "expression_of_operand Constant/CVar: %s"
+        (Charon.PrintExpressions.operand_to_string env.format_env p)
   | Constant _ ->
       Krml.Warn.fatal_error "expression_of_operand Constant: %s"
         (Charon.PrintExpressions.operand_to_string env.format_env p)
