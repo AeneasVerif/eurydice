@@ -306,7 +306,7 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
   | TTraitType _ ->
       failwith "TODO: TraitTypes"
 
-  | TArrow (ts, t) ->
+  | TArrow (_, ts, t) ->
       Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
 
 (* Helpers: expressions *)
@@ -586,6 +586,8 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       end
   | Aggregate (AggregatedAdt (TAssumed _, _, _), _) ->
       failwith "unsupported: AggregatedAdt / TAssume"
+  | Aggregate (AggregatedClosure _, _) ->
+      failwith "unsupported: AggregatedClosure"
   | Aggregate (AggregatedArray (t, cg), ops) ->
       K.with_type (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))) (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
   | Global id ->
@@ -700,7 +702,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       expression_of_assertion env a
 
   | Call {
-      func = { func = FunId (FAssumed ArrayRepeat); generics = { types = [ ty ]; const_generics = [ c ]; _ }; _ };
+      func = FnOpRegular { func = FunId (FAssumed ArrayRepeat); generics = { types = [ ty ]; const_generics = [ c ]; _ }; _ };
       args = [ e ];
       dest;
       _
@@ -718,7 +720,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
         EAssign (dest, (with_type (TArray (t, c)) (EBufCreateL (Stack, List.init n (fun _ -> e))))))
 
   | Call {
-      func = { func = FunId (FAssumed (ArrayIndexShared | ArrayIndexMut)); generics = { types = [ ty ]; _ }; _ };
+      func = FnOpRegular { func = FunId (FAssumed (ArrayIndexShared | ArrayIndexMut)); generics = { types = [ ty ]; _ }; _ };
       args = [ e1; e2 ];
       dest;
       _
@@ -730,7 +732,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let dest, _ = expression_of_place env dest in
       Krml.Helpers.with_unit K.(EAssign (dest, maybe_addrof env ty (with_type t (EBufRead (e1, e2)))))
 
-  | Call { func = fn_ptr; args; dest; _ }
+  | Call { func = FnOpRegular fn_ptr; args; dest; _ }
     when Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from fn_ptr ->
       (* Special treatment: From<T, U> becomes a cast. *)
       let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p fn_ptr in
@@ -747,7 +749,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let e = expression_of_operand env (Krml.KList.one args) in
       Krml.Helpers.with_unit K.(EAssign (dest, with_type (TInt w) (ECast (e, TInt w))))
 
-  | Call { func = fn_ptr; args; dest; _ } when RustNames.is_array_map env fn_ptr ->
+  | Call { func = FnOpRegular fn_ptr; args; dest; _ } when RustNames.is_array_map env fn_ptr ->
       (* Special treatment: bug in NameMatcher + avoid allocating a temporary array and directly
          write the result in the destination. *)
       let t = List.hd fn_ptr.generics.types in
@@ -770,7 +772,12 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
         H.with_unit (K.EBufWrite (Krml.DeBruijn.lift 1 dest, i,
           K.with_type t (K.EBufRead (Krml.DeBruijn.lift 1 src, i))))))
 
-  | Call { func = { func; generics = { types = type_args; const_generics = const_generic_args; _ }; trait_and_method_generic_args } as fn_ptr; args; dest; _ } ->
+  | Call { func = FnOpRegular ({
+        func;
+        generics = { types = type_args; const_generics = const_generic_args; _ };
+        trait_and_method_generic_args
+      } as fn_ptr); args; dest; _ }
+  ->
       (* General case for function calls and trait method calls. *)
       L.log "Calls" "Visiting call: %s" (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
       L.log "Calls" "is_array_map: %b" (RustNames.is_array_map env fn_ptr);
@@ -826,6 +833,9 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
             rhs
       in
       Krml.Helpers.with_unit K.(EAssign (dest, rhs))
+
+  | Call { func = FnOpMove _; _ } ->
+      failwith "TODO: Call/FnOpMove"
 
   | Panic ->
       with_any (K.EAbort (None, Some "panic!"))
