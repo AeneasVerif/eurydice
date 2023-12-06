@@ -36,10 +36,10 @@ let remove_assignments = object(self)
         (* Krml.(KPrint.bprintf "after peeling:\n%a" PrintAst.Ops.ppexpr e); *)
         self#visit_expr_w to_close e
 
-  method! visit_DFunction to_close cc flags n t name bs e =
+  method! visit_DFunction to_close cc flags n_cgs n t name bs e =
     (* Krml.(KPrint.bprintf "visiting %a\n" PrintAst.Ops.plid name); *)
     assert (AtomMap.is_empty to_close);
-    DFunction (cc, flags, n, t, name, bs, self#peel_lets to_close e)
+    DFunction (cc, flags, n_cgs, n, t, name, bs, self#peel_lets to_close e)
 
   method! visit_DGlobal to_close flags n t name e =
     assert (AtomMap.is_empty to_close);

@@ -38,8 +38,9 @@ type env = {
   names: C.fun_decl_id NameMap.t;
 
   (* To compute DeBruijn indices *)
-  binders: (C.var_id * K.typ * C.ety) list;
+  cg_binders: (C.const_generic_var_id * K.typ * C.ety) list;
   type_binders: C.type_var_id list;
+  binders: (C.var_id * K.typ * C.ety) list;
 
   (* For printing. *)
   format_env: Charon.PrintLlbcAst.fmt_env;
@@ -320,20 +321,28 @@ let mk_deep_copy (e: K.expr) (t: K.typ) (l: K.constant) =
 
 (* Environment: expressions *)
 
-let lookup_with_original_type env (v1: C.var_id) =
+let lookup_with_original_type_in_binders binders (v1: 'a) =
   let exception Found of int * K.typ * C.ety in
   try
     List.iteri (fun i (v2, t, ty) ->
       if v1 = v2 then
         raise (Found (i, t, ty))
-    ) env.binders;
+    ) binders;
     raise Not_found
   with Found (i, t, ty) ->
     i, t, ty
 
-let lookup env v1 =
-  let i, t, _ = lookup_with_original_type env v1 in
+let lookup_cg env v1 =
+  let i, t, _ = lookup_with_original_type_in_binders env.cg_binders v1 in
   i, t
+
+let lookup env v1 =
+  let i, t, _ = lookup_with_original_type_in_binders env.binders v1 in
+  List.length env.cg_binders + i, t
+
+let lookup_with_original_type env v1 =
+  let i, t, ty = lookup_with_original_type_in_binders env.binders v1 in
+  List.length env.cg_binders + i, t, ty
 
 let push_binder env (t: C.var) =
   { env with binders = (t.index, typ_of_ty env t.var_ty, t.var_ty) :: env.binders }
@@ -369,6 +378,10 @@ let rec with_locals (env: env) (t: K.typ) (locals: C.var list) (k: env -> 'a): '
       let env = push_binder env l in
       let b = binder_of_var env l in
       K.(with_type t (ELet (b, Krml.Helpers.any, with_locals env t locals k)))
+
+let expression_of_cg_var_id (env: env) (v: C.const_generic_var_id): K.expr =
+  let i, t = lookup_cg env v in
+  K.(with_type t (EBound i))
 
 let expression_of_var_id (env: env) (v: C.var_id): K.expr =
   let i, t = lookup env v in
@@ -464,6 +477,15 @@ let expression_of_scalar_value ({ C.int_ty; _ } as sv) =
   let w = width_of_integer_type int_ty in
   K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
 
+let expression_of_literal (_env: env) (l: C.literal): K.expr =
+  match l with
+  | VScalar sv ->
+      expression_of_scalar_value sv
+  | VBool b ->
+      K.(with_type TBool (EBool b))
+  | _ ->
+      failwith "TODO: expression_of_literal"
+
 let expression_of_operand (env: env) (p: C.operand): K.expr =
   match p with
   | Copy p ->
@@ -477,10 +499,8 @@ let expression_of_operand (env: env) (p: C.operand): K.expr =
 
   | Move p ->
       fst (expression_of_place env p)
-  | Constant ({ value = CLiteral (VScalar sv); _ }) ->
-      expression_of_scalar_value sv
-  | Constant ({ value = CLiteral (VBool b); _ }) ->
-      K.(with_type TBool (EBool b))
+  | Constant ({ value = CLiteral l; _ }) ->
+      expression_of_literal env l
   | Constant ({ value = CVar _; _ }) ->
       Krml.Warn.fatal_error "expression_of_operand Constant/CVar: %s"
         (Charon.PrintExpressions.operand_to_string env.format_env p)
@@ -798,7 +818,12 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let args = List.map (expression_of_operand env) args in
       let original_type_args = type_args in
       let type_args = List.map (typ_of_ty env) type_args in
-      let args = args @ args_of_const_generic_args func const_generic_args in
+      let const_generic_args = List.map (fun (cg: C.const_generic) ->
+        match cg with
+        | C.CgGlobal _ -> failwith "TODO: CgGLobal"
+        | C.CgVar id -> expression_of_cg_var_id env id
+        | C.CgValue l -> expression_of_literal env l
+      ) const_generic_args in
       let args = if args = [] then [ Krml.Helpers.eunit ] else args in
       let name, n_type_params, inputs, output = lookup_fun env fn_ptr in
       let inputs = if inputs = [] then [ K.TUnit ] else inputs in
@@ -812,8 +837,8 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       in
       let hd =
         let hd = K.with_type poly_t (K.EQualified name) in
-        if type_args <> [] then
-          K.with_type t (K.ETApp (hd, type_args))
+        if type_args <> [] || const_generic_args <> [] then
+          K.with_type t (K.ETApp (hd, const_generic_args, type_args))
         else
           hd
       in
@@ -919,11 +944,12 @@ let decls_of_declarations (env: env) (d: C.declaration_group): env * K.decl list
   | TypeGroup dg ->
       of_declaration_group env dg (fun env0 (id: C.TypeDeclId.id) ->
         let decl = env0.get_nth_type id in
-        let { C.name; def_id; kind; generics = { types = type_params; _ }; _ } = decl in
+        let { C.name; def_id; kind; generics = { types = type_params; const_generics; _ }; _ } = decl in
         L.log "AstOfLlbc" "Visiting type: %s\n%s" (string_of_name env0 name)
           (Charon.PrintTypes.type_decl_to_string env0.format_env decl);
 
         assert (def_id = id);
+        assert (const_generics = []);
         let name = lid_of_name env0 name in
 
         match kind with
@@ -934,7 +960,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): env * K.decl list
             let fields = List.map (fun { C.field_name; field_ty; _ } ->
               field_name, (typ_of_ty env field_ty, true)
             ) fields in
-            env0, Some (K.DType (name, [], List.length type_params, Flat fields))
+            env0, Some (K.DType (name, [], 0, List.length type_params, Flat fields))
         | Enum branches ->
             let env = push_type_binders env0 type_params in
             let branches = List.map (fun { C.variant_name; fields; _ } ->
@@ -943,7 +969,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): env * K.decl list
                 (typ_of_ty env field_ty, true)
               ) fields
             ) branches in
-            env0, Some (K.DType (name, [], List.length type_params, Variant branches))
+            env0, Some (K.DType (name, [], 0, List.length type_params, Variant branches))
       )
   | FunGroup dg ->
       of_declaration_group env dg (fun env0 (id: C.FunDeclId.id) ->
@@ -980,6 +1006,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): env * K.decl list
               failwith "TODO: C.Fun is_global decl"
             else
               let env = push_type_binders env signature.C.generics.types in
+              assert (signature.C.generics.const_generics = []);
               let name = lid_of_name env name in
               (* `locals` contains, in order: special return variable; function arguments;
                  local variables *)
@@ -1000,7 +1027,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): env * K.decl list
                 with_locals env return_type (return_var :: locals) (fun env ->
                   expression_of_raw_statement env return_var.index body.content)
               in
-              push_name env0 decl.name id, Some (K.DFunction (None, [], List.length signature.C.generics.types, return_type, name, arg_binders, body))
+              push_name env0 decl.name id, Some (K.DFunction (None, [], 0, List.length signature.C.generics.types, return_type, name, arg_binders, body))
       )
   | GlobalGroup id ->
       let global = env.get_nth_global id in
@@ -1042,6 +1069,7 @@ let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
     get_nth_type;
     get_nth_global;
     get_nth_trait_impl;
+    cg_binders = [];
     binders = [];
     type_binders = [];
     format_env;
