@@ -95,6 +95,7 @@ Supported options:|}
   let files = Krml.DataTypes.optimize files in
   let _, files = Krml.DataTypes.everything files in
   let files = Krml.Structs.pass_by_ref files in
+  let files = Krml.Structs.remove_literals files in
   let files = Eurydice.Cleanup1.remove_implicit_array_copies#visit_files () files in
   let files = Krml.Simplify.optimize_lets files in
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
