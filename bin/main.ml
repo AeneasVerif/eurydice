@@ -115,8 +115,8 @@ Supported options:|}
       inherit [_] Krml.Ast.reduce
       method private zero = Krml.Idents.LidSet.empty
       method private plus = Krml.Idents.LidSet.union
-      method! visit_DExternal _ _ _ n name _ _ =
-        if n > 0 then
+      method! visit_DExternal _ _ _ n_cgs n name _ _ =
+        if n > 0 || n_cgs > 0 then
           Krml.Idents.LidSet.singleton name
         else
           self#zero

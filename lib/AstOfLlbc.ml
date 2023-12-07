@@ -38,7 +38,7 @@ type env = {
   names: C.fun_decl_id NameMap.t;
 
   (* To compute DeBruijn indices *)
-  cg_binders: (C.const_generic_var_id * K.typ * C.ety) list;
+  cg_binders: (C.const_generic_var_id * K.typ) list;
   type_binders: C.type_var_id list;
   binders: (C.var_id * K.typ * C.ety) list;
 
@@ -233,18 +233,23 @@ let assert_cg_scalar = function
   | C.CgValue (VScalar n) -> n
   | _ -> failwith "Unsupported: non-constant const generic"
 
+let typ_of_literal_ty (_env: env) (ty: Charon.Types.literal_type): K.typ =
+  match ty with
+  | TBool ->
+      K.TBool
+  | TChar ->
+      failwith "TODO: Char"
+  | TInteger k ->
+      K.TInt (width_of_integer_type k)
+
 let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
   match ty with
   | TVar id ->
       K.TBound (lookup_typ env id)
-  | TLiteral TBool ->
-      K.TBool
-  | TLiteral TChar ->
-      failwith "TODO: Char"
+  | TLiteral t ->
+      typ_of_literal_ty env t
   | TNever ->
       failwith "Impossible: Never"
-  | TLiteral (TInteger k) ->
-      K.TInt (width_of_integer_type k)
 
   | TRef (_, TAdt (id, ({ types = [ t ]; _ } as generics)), _) when RustNames.is_vec env id generics ->
       (* We compile vecs to fat pointers, which hold the pointer underneath -- no need for an
@@ -321,28 +326,36 @@ let mk_deep_copy (e: K.expr) (t: K.typ) (l: K.constant) =
 
 (* Environment: expressions *)
 
-let lookup_with_original_type_in_binders binders (v1: 'a) =
-  let exception Found of int * K.typ * C.ety in
-  try
-    List.iteri (fun i (v2, t, ty) ->
-      if v1 = v2 then
-        raise (Found (i, t, ty))
-    ) binders;
-    raise Not_found
-  with Found (i, t, ty) ->
-    i, t, ty
+let findi p l =
+  let rec findi i l =
+    match l with
+    | hd :: tl ->
+        if p hd then
+          i, hd
+        else
+          findi (i + 1) tl
+    | [] ->
+        raise Not_found
+  in
+  findi 0 l
 
 let lookup_cg env v1 =
-  let i, t, _ = lookup_with_original_type_in_binders env.cg_binders v1 in
+  let i, (_, t) = findi (fun (v2, _) -> v1 = v2) env.cg_binders in
   i, t
 
 let lookup env v1 =
-  let i, t, _ = lookup_with_original_type_in_binders env.binders v1 in
+  let i, (_, t, _) = findi (fun (v2, _, _) -> v1 = v2) env.binders in
   List.length env.cg_binders + i, t
 
 let lookup_with_original_type env v1 =
-  let i, t, ty = lookup_with_original_type_in_binders env.binders v1 in
+  let i, (_, t, ty) = findi (fun (v2, _, _) -> v1 = v2) env.binders in
   List.length env.cg_binders + i, t, ty
+
+let push_cg_binder env (t: C.const_generic_var) =
+  { env with cg_binders = (t.index, typ_of_literal_ty env t.ty) :: env.cg_binders }
+
+let push_cg_binders env (ts: C.const_generic_var list) =
+  List.fold_left push_cg_binder env ts
 
 let push_binder env (t: C.var) =
   { env with binders = (t.index, typ_of_ty env t.var_ty, t.var_ty) :: env.binders }
@@ -626,13 +639,22 @@ let expression_of_assertion (env: env) ({ cond; expected }: C.assertion): K.expr
       with_type TAny (EAbort (None, Some "assert failure")),
       Krml.Helpers.eunit)))
 
-let lookup_fun (env: env) (f: C.fn_ptr): K.lident * int * K.typ list * K.typ =
+type lookup_result = {
+  name: K.lident;
+  n_type_args: int; (* just for a sanity check *)
+  cg_types: K.typ list;
+  arg_types: K.typ list;
+  ret_type: K.typ;
+  is_assumed: bool;
+}
+
+let lookup_fun (env: env) (f: C.fn_ptr): lookup_result =
   let open RustNames in
   let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p f in
   let builtin b =
-    let { Builtin.name; typ; n_type_args; _ } = b in
-    let ret, args = Krml.Helpers.flatten_arrow typ in
-    name, n_type_args, args, ret
+    let { Builtin.name; typ; n_type_args; cg_args; _ } = b in
+    let ret_type, arg_types = Krml.Helpers.flatten_arrow typ in
+    { name; n_type_args; arg_types; ret_type; cg_types = cg_args; is_assumed = true }
   in
   if matches slice_subslice || matches slice_subslice_mut then
     builtin Builtin.slice_subslice
@@ -644,10 +666,17 @@ let lookup_fun (env: env) (f: C.fn_ptr): K.lident * int * K.typ list * K.typ =
     builtin Builtin.slice_index
   else
     let regular f =
-      let { C.name; signature = { generics = { types = type_params; _ }; inputs; output; _ }; _ } = env.get_nth_function f in
+      let { C.name; signature = { generics = { types = type_params; const_generics; _ }; inputs; output; _ }; _ } = env.get_nth_function f in
       L.log "Calls" "--> name: %s" (string_of_name env name);
       let env = push_type_binders env type_params in
-      lid_of_name env name, List.length type_params, List.map (typ_of_ty env) inputs, typ_of_ty env output
+      {
+        name = lid_of_name env name;
+        n_type_args = List.length type_params;
+        cg_types = List.map (fun (v: C.const_generic_var) -> typ_of_literal_ty env v.ty) const_generics;
+        arg_types = List.map (typ_of_ty env) inputs;
+        ret_type = typ_of_ty env output;
+        is_assumed = false
+      }
     in
     match f.func with
     | FunId (FRegular f) ->
@@ -824,16 +853,20 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
         | C.CgVar id -> expression_of_cg_var_id env id
         | C.CgValue l -> expression_of_literal env l
       ) const_generic_args in
-      let args = if args = [] then [ Krml.Helpers.eunit ] else args in
-      let name, n_type_params, inputs, output = lookup_fun env fn_ptr in
-      let inputs = if inputs = [] then [ K.TUnit ] else inputs in
+      let { name; n_type_args = n_type_params; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_assumed } =
+        lookup_fun env fn_ptr
+      in
+      let args = if args = [] && not is_assumed then [ Krml.Helpers.eunit ] else args in
+      let inputs = if inputs = [] && not is_assumed then [ K.TUnit ] else inputs in
       if not (n_type_params = List.length type_args) then
         Krml.Warn.fatal_error "%a: n_type_params %d != type_args %d"
           Krml.PrintAst.Ops.plid name
           n_type_params (List.length type_args);
-      let poly_t = Krml.Helpers.fold_arrow inputs output in
+      let poly_t_sans_cgs = Krml.Helpers.fold_arrow inputs output in
+      let poly_t = Krml.Helpers.fold_arrow cg_inputs poly_t_sans_cgs in
       let output, t =
-        Krml.DeBruijn.subst_tn type_args output, Krml.DeBruijn.subst_tn type_args poly_t
+        Krml.DeBruijn.subst_tn type_args output,
+        Krml.DeBruijn.(subst_ctn (List.length env.binders) const_generic_args (subst_tn type_args poly_t_sans_cgs))
       in
       let hd =
         let hd = K.with_type poly_t (K.EQualified name) in
@@ -986,16 +1019,16 @@ let decls_of_declarations (env: env) (d: C.declaration_group): env * K.decl list
         | None ->
             begin try
               (* Opaque function *)
-              let { C.generics = { types = type_params; _ }; inputs; output ; _ } = signature in
+              let { C.generics = { types = type_params; const_generics; _ }; inputs; output ; _ } = signature in
+              let const_generics_ts = List.map (fun (c: C.const_generic_var) -> typ_of_literal_ty env c.ty) const_generics in
+              let env = push_cg_binders env const_generics in
               let env = push_type_binders env type_params in
               let inputs = List.map (typ_of_ty env) inputs in
               let output = typ_of_ty env output in
-              let t = Krml.Helpers.fold_arrow inputs output in
+              let t = Krml.Helpers.fold_arrow (const_generics_ts @ inputs) output in
               let name = lid_of_name env name in
-              let name_hints: string list =
-                List.map (fun (x: (_, _) Charon.Types.indexed_var) -> x.name) type_params
-              in
-              push_name env0 decl.name id, Some (K.DExternal (None, [], List.length type_params, name, t, name_hints))
+              push_name env0 decl.name id,
+              Some (K.DExternal (None, [], List.length const_generics_ts, List.length type_params, name, t, []))
             with _ ->
               L.log "AstOfLLbc" "ERROR translating %s:\n%s" (string_of_name env decl.name)
                 (Printexc.get_backtrace ());
@@ -1005,6 +1038,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): env * K.decl list
             if is_global_decl_body then
               failwith "TODO: C.Fun is_global decl"
             else
+              let env = push_cg_binders env signature.C.generics.const_generics in
               let env = push_type_binders env signature.C.generics.types in
               assert (signature.C.generics.const_generics = []);
               let name = lid_of_name env name in
@@ -1027,7 +1061,9 @@ let decls_of_declarations (env: env) (d: C.declaration_group): env * K.decl list
                 with_locals env return_type (return_var :: locals) (fun env ->
                   expression_of_raw_statement env return_var.index body.content)
               in
-              push_name env0 decl.name id, Some (K.DFunction (None, [], 0, List.length signature.C.generics.types, return_type, name, arg_binders, body))
+              push_name env0 decl.name id,
+              Some (K.DFunction (None, [], List.length signature.C.generics.const_generics,
+                List.length signature.C.generics.types, return_type, name, arg_binders, body))
       )
   | GlobalGroup id ->
       let global = env.get_nth_global id in
@@ -1048,7 +1084,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): env * K.decl list
           in
           env, [ K.DGlobal ([Krml.Common.Const ""], lid_of_name env name, 0, ty, body) ]
       | None ->
-          env, [ K.DExternal (None, [], 0, lid_of_name env name, ty, []) ]
+          env, [ K.DExternal (None, [], 0, 0, lid_of_name env name, ty, []) ]
       end
 
   | TraitDeclGroup _ ->

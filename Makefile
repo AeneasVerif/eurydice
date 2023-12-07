@@ -21,10 +21,10 @@ $(CHARON_HOME)/tests/llbc/%.llbc: $(CHARON_HOME)/tests/src/%.rs
 
 .PRECIOUS: $(CHARON_HOME)/tests/llbc/%.llbc
 charon-test-%: $(CHARON_HOME)/tests/llbc/%.llbc | out/test-% all
-	mkdir -p out/test-$*
-	$(EURYDICE) --output out/test-$* $<
+	mkdir -p out/charon-test-$*
+	$(EURYDICE) --output out/charon-test-$* $<
 	# These tests do not have a main
-	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $*.c -c
+	cd out/charon-test-$* && $(CC) $(CFLAGS) -I. -I../../include $*.c -c
 
 # Tests checked into the current repository
 .PHONY: phony

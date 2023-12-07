@@ -18,8 +18,8 @@ typedef struct {
 #define EURYDICE_SLICE_LEN(s, _) s.len
 #define Eurydice_slice_index(s, i, t) (((t*) s.ptr)[i])
 #define Eurydice_slice_subslice(s, r, t, _) EURYDICE_SLICE(((t*)s.ptr), r.start, r.end, t)
-#define Eurydice_array_to_slice(x, end, t) EURYDICE_SLICE(x, 0, end, t)
-#define Eurydice_array_to_subslice(x, r, t, _) EURYDICE_SLICE(x, r.start, r.end, t)
+#define Eurydice_array_to_slice(end, x, t) EURYDICE_SLICE(x, 0, end, t)
+#define Eurydice_array_to_subslice(_size, x, r, t, _range_t) EURYDICE_SLICE(x, r.start, r.end, t)
 #define core_slice___Slice_T___len(s, t) EURYDICE_SLICE_LEN(s, t)
 
 /* For now these are passed by value -- three words. We could conceivably change
