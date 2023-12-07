@@ -53,9 +53,9 @@ fn f<const FOO: usize, const BAR: u32>(x: u32, y: usize) -> bool {
 }
 
 fn g<const BAR: usize, const FOO: u32>(x: u32, y: usize) -> bool {
-    x == FOO && y == BAR
+    f::<BAR, FOO>(x, y) && x == FOO && y == BAR
 }
 
 fn main() {
-    let x = f::<1, 1>(0, 0) && g::<1, 1>(0, 0);
+    let x = f::<1, 2>(0, 0) && g::<3, 4>(0, 0);
 }
