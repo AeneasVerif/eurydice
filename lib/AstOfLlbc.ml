@@ -316,11 +316,11 @@ and maybe_cg_array env t cg =
 (* Helpers: expressions *)
 
 (* To be desugared later into variable hoisting, allocating suitable storage space, followed by a
-   memcpy. *)
-let mk_deep_copy (e: K.expr) (t: K.typ) (l: K.constant) =
+   memcpy -- this is just a placeholder and isn't even type-checked. *)
+let mk_deep_copy (e: K.expr) (l: K.expr) =
   let builtin_copy_operator = K.EQualified Builtin.array_copy in
-  let builtin_copy_operator_t = K.TArrow (TArray (t, l), TArray (t, l)) in
-  K.(with_type (TArray (t, l)) (EApp (with_type builtin_copy_operator_t builtin_copy_operator, [ e ])))
+  let builtin_copy_operator_t = K.TArrow (TAny, TAny) in
+  K.(with_type TAny (EApp (with_type builtin_copy_operator_t builtin_copy_operator, [ e; l])))
 
 (* Environment: expressions *)
 
@@ -491,8 +491,8 @@ let expression_of_operand (env: env) (p: C.operand): K.expr =
   | Copy p ->
       let p, ty = expression_of_place env p in
       begin match ty with
-      | C.TAdt (TAssumed TArray, { types = [ t ]; const_generics = [ CgValue (VScalar n) ]; _ }) ->
-          mk_deep_copy p (typ_of_ty env t) (constant_of_scalar_value n)
+      | C.TAdt (TAssumed TArray, { const_generics = [ cg ]; _ }) ->
+          mk_deep_copy p (expression_of_const_generic env cg)
       | _ ->
           p
       end
@@ -680,14 +680,6 @@ let lookup_fun (env: env) (f: C.fn_ptr): lookup_result =
         | _ ->
             Krml.Warn.fatal_error "Error looking trait ref: %s %s"
               (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref) method_name
-
-(* Runs after the adjustment above *)
-let args_of_const_generic_args (f: C.fun_id_or_trait_method_ref) (const_generic_args: C.const_generic list): K.expr list =
-  match f, const_generic_args with
-  | FunId (FAssumed (ArrayToSliceShared | ArrayToSliceMut)), [ CgValue (VScalar n) ] ->
-      [ expression_of_scalar_value n ]
-  | _ ->
-      []
 
 let lesser t1 t2 =
   if t1 = K.TAny then

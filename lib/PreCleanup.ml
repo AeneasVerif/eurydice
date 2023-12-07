@@ -30,12 +30,11 @@ let expand_array_copies files =
     inherit [_] map as super
 
     method! visit_EAssign env lhs rhs =
-      match lhs, rhs.node with
-      | { node = _; typ = TArray (_, n) },
-        EApp ({ node = EQualified lid; _ }, [ rhs ]) when lid = Builtin.array_copy ->
+      match rhs.node with
+      | EApp ({ node = EQualified lid; _ }, [ src; len ]) when lid = Builtin.array_copy ->
           (* Krml.Helpers.mk_copy_assignment (t, n) lhs.node rhs *)
           let zero = Krml.(Helpers.zero Constant.SizeT) in
-          EBufBlit (rhs, zero, lhs, zero, expr_of_constant n)
+          EBufBlit (src, zero, lhs, zero, len)
       | _ ->
           super#visit_EAssign env lhs rhs
 
