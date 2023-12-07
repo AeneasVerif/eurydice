@@ -62,6 +62,18 @@ let array_to_subslice = {
   arg_names = [ "a"; "r" ]
 }
 
+let array_repeat = {
+  name = ["Eurydice"], "array_repeat";
+  typ = Krml.Helpers.fold_arrow [
+    TBuf (TBound 0, false);
+    TInt SizeT;
+    TBound 0
+  ] TUnit;
+  n_type_args = 1;
+  cg_args = [];
+  arg_names = [ "dst"; "len"; "init" ]
+}
+
 let slice_index = {
   name = ["Eurydice"], "slice_index";
   typ = Krml.Helpers.fold_arrow [
@@ -165,6 +177,7 @@ let files = [
     ) [
       array_to_slice;
       array_to_subslice;
+      array_repeat;
       slice_index;
       slice_subslice;
       vec_push;

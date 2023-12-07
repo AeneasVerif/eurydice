@@ -301,16 +301,7 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
       end
 
   | TAdt (TAssumed TArray, { types = [ t ]; const_generics = [ cg ]; _ }) ->
-      begin match cg with
-      | CgValue _ ->
-          K.TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))
-      | CgVar id ->
-          let id, cg_t = lookup_cg env id in
-          assert (cg_t = K.TInt SizeT);
-          K.TCgArray (typ_of_ty env t, id)
-      | _ ->
-          failwith "TODO: CgGlobal"
-      end
+      maybe_cg_array env t cg
 
   | TAdt (TAssumed TSlice, _) ->
       (* Slice values cannot be materialized since their storage space cannot be computed at
@@ -333,6 +324,18 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
 
   | TArrow (_, ts, t) ->
       Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
+
+and maybe_cg_array env t cg =
+  match cg with
+  | CgValue _ ->
+      K.TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))
+  | CgVar id ->
+      let id, cg_t = lookup_cg env id in
+      assert (cg_t = K.TInt SizeT);
+      K.TCgArray (typ_of_ty env t, id)
+  | _ ->
+      failwith "TODO: CgGlobal"
+
 
 (* Helpers: expressions *)
 
@@ -396,7 +399,7 @@ let rec with_locals (env: env) (t: K.typ) (locals: C.var list) (k: env -> 'a): '
 
 let expression_of_cg_var_id (env: env) (v: C.const_generic_var_id): K.expr =
   let i, t = lookup_cg env v in
-  K.(with_type t (EBound i))
+  K.(with_type t (EBound (i + List.length env.binders)))
 
 let expression_of_var_id (env: env) (v: C.var_id): K.expr =
   let i, t = lookup env v in
@@ -405,6 +408,25 @@ let expression_of_var_id (env: env) (v: C.var_id): K.expr =
 let expression_and_original_type_of_var_id (env: env) (v: C.var_id): K.expr * C.ety =
   let i, t, ty = lookup_with_original_type env v in
   K.(with_type t (EBound i)), ty
+
+let expression_of_scalar_value ({ C.int_ty; _ } as sv) =
+  let w = width_of_integer_type int_ty in
+  K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
+
+let expression_of_literal (_env: env) (l: C.literal): K.expr =
+  match l with
+  | VScalar sv ->
+      expression_of_scalar_value sv
+  | VBool b ->
+      K.(with_type TBool (EBool b))
+  | _ ->
+      failwith "TODO: expression_of_literal"
+
+let expression_of_const_generic env cg =
+  match cg with
+  | C.CgGlobal _ -> failwith "TODO: CgGLobal"
+  | C.CgVar id -> expression_of_cg_var_id env id
+  | C.CgValue l -> expression_of_literal env l
 
 let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
   let { C.var_id; projection } = p in
@@ -487,19 +509,6 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
     | _ ->
         failwith "unexpected / ill-typed projection"
   ) (e, ty) projection
-
-let expression_of_scalar_value ({ C.int_ty; _ } as sv) =
-  let w = width_of_integer_type int_ty in
-  K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
-
-let expression_of_literal (_env: env) (l: C.literal): K.expr =
-  match l with
-  | VScalar sv ->
-      expression_of_scalar_value sv
-  | VBool b ->
-      K.(with_type TBool (EBool b))
-  | _ ->
-      failwith "TODO: expression_of_literal"
 
 let expression_of_operand (env: env) (p: C.operand): K.expr =
   match p with
@@ -758,17 +767,14 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       dest;
       _
     } ->
-      (* Special treatment because of the insertion of a CreateL *)
+      (* Special treatment *)
       let e = expression_of_operand env e in
       let t = typ_of_ty env ty in
+      let len = expression_of_const_generic env c in
       let dest, _ = expression_of_place env dest in
-      let n = match c with
-        | CgValue (VScalar n) -> n
-        | _ -> failwith "unexpected const generic for ArrayRepeat" in
-      let c = constant_of_scalar_value n in
-      let n = Z.to_int n.value in
-      Krml.Helpers.with_unit K.(
-        EAssign (dest, (with_type (TArray (t, c)) (EBufCreateL (Stack, List.init n (fun _ -> e))))))
+      let repeat = K.(with_type Builtin.array_repeat.typ (EQualified Builtin.array_repeat.name)) in
+      let repeat = K.(with_type (Krml.DeBruijn.subst_t t 0 Builtin.array_repeat.typ) (ETApp (repeat, [], [ t ]))) in
+      Krml.Helpers.with_unit K.(EApp (repeat, [ dest; len; e ]))
 
   | Call {
       func = FnOpRegular { func = FunId (FAssumed (ArrayIndexShared | ArrayIndexMut)); generics = { types = [ ty ]; _ }; _ };
@@ -849,12 +855,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let args = List.map (expression_of_operand env) args in
       let original_type_args = type_args in
       let type_args = List.map (typ_of_ty env) type_args in
-      let const_generic_args = List.map (fun (cg: C.const_generic) ->
-        match cg with
-        | C.CgGlobal _ -> failwith "TODO: CgGLobal"
-        | C.CgVar id -> expression_of_cg_var_id env id
-        | C.CgValue l -> expression_of_literal env l
-      ) const_generic_args in
+      let const_generic_args = List.map (expression_of_const_generic env) const_generic_args in
       let { name; n_type_args = n_type_params; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_assumed } =
         lookup_fun env fn_ptr
       in
