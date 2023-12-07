@@ -51,16 +51,26 @@ type env = {
 
 (* Environment: types *)
 
+let findi p l =
+  let rec findi i l =
+    match l with
+    | hd :: tl ->
+        if p hd then
+          i, hd
+        else
+          findi (i + 1) tl
+    | [] ->
+        raise Not_found
+  in
+  findi 0 l
+
+let lookup_cg env v1 =
+  let i, (_, t) = findi (fun (v2, _) -> v1 = v2) env.cg_binders in
+  i, t
+
 let lookup_typ env (v1: C.type_var_id) =
-  let exception Found of int in
-  try
-    List.iteri (fun i v2 ->
-      if v1 = v2 then
-        raise (Found i)
-    ) env.type_binders;
-    raise Not_found
-  with Found i ->
-    i
+  let i, _  = findi ((=) v1) env.type_binders in
+  i
 
 let push_type_binder env (t: C.type_var) =
   { env with type_binders = t.index :: env.type_binders }
@@ -291,7 +301,16 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
       end
 
   | TAdt (TAssumed TArray, { types = [ t ]; const_generics = [ cg ]; _ }) ->
-      K.TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))
+      begin match cg with
+      | CgValue _ ->
+          K.TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))
+      | CgVar id ->
+          let id, cg_t = lookup_cg env id in
+          assert (cg_t = K.TInt SizeT);
+          K.TCgArray (typ_of_ty env t, id)
+      | _ ->
+          failwith "TODO: CgGlobal"
+      end
 
   | TAdt (TAssumed TSlice, _) ->
       (* Slice values cannot be materialized since their storage space cannot be computed at
@@ -325,23 +344,6 @@ let mk_deep_copy (e: K.expr) (t: K.typ) (l: K.constant) =
   K.(with_type (TArray (t, l)) (EApp (with_type builtin_copy_operator_t builtin_copy_operator, [ e ])))
 
 (* Environment: expressions *)
-
-let findi p l =
-  let rec findi i l =
-    match l with
-    | hd :: tl ->
-        if p hd then
-          i, hd
-        else
-          findi (i + 1) tl
-    | [] ->
-        raise Not_found
-  in
-  findi 0 l
-
-let lookup_cg env v1 =
-  let i, (_, t) = findi (fun (v2, _) -> v1 = v2) env.cg_binders in
-  i, t
 
 let lookup env v1 =
   let i, (_, t, _) = findi (fun (v2, _, _) -> v1 = v2) env.binders in
@@ -982,27 +984,26 @@ let decls_of_declarations (env: env) (d: C.declaration_group): env * K.decl list
           (Charon.PrintTypes.type_decl_to_string env0.format_env decl);
 
         assert (def_id = id);
-        assert (const_generics = []);
         let name = lid_of_name env0 name in
+        let env = push_cg_binders env0 const_generics in
+        let env = push_type_binders env type_params in
 
         match kind with
         | Opaque ->
             env0, None
         | Struct fields ->
-            let env = push_type_binders env0 type_params in
             let fields = List.map (fun { C.field_name; field_ty; _ } ->
               field_name, (typ_of_ty env field_ty, true)
             ) fields in
-            env0, Some (K.DType (name, [], 0, List.length type_params, Flat fields))
+            env0, Some (K.DType (name, [], List.length const_generics, List.length type_params, Flat fields))
         | Enum branches ->
-            let env = push_type_binders env0 type_params in
             let branches = List.map (fun { C.variant_name; fields; _ } ->
               variant_name, List.mapi (fun i { C.field_name; field_ty; _ } ->
                 mk_field_name field_name i,
                 (typ_of_ty env field_ty, true)
               ) fields
             ) branches in
-            env0, Some (K.DType (name, [], 0, List.length type_params, Variant branches))
+            env0, Some (K.DType (name, [], List.length const_generics, List.length type_params, Variant branches))
       )
   | FunGroup dg ->
       of_declaration_group env dg (fun env0 (id: C.FunDeclId.id) ->
@@ -1040,7 +1041,6 @@ let decls_of_declarations (env: env) (d: C.declaration_group): env * K.decl list
             else
               let env = push_cg_binders env signature.C.generics.const_generics in
               let env = push_type_binders env signature.C.generics.types in
-              assert (signature.C.generics.const_generics = []);
               let name = lid_of_name env name in
               (* `locals` contains, in order: special return variable; function arguments;
                  local variables *)
