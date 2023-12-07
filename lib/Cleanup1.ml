@@ -275,31 +275,6 @@ end
 (* PPrint.(Krml.Print.(print (Krml.PrintAst.print_files files ^^ hardline))); *)
 
 
-let remove_implicit_array_copies = object(self)
-  inherit [ _ ] map as super
-  method! visit_ELet ((), _ as env) b e1 e2 =
-    match b.typ with
-    | TArray (_, n) when e1.node <> EAny ->
-        let zero = Krml.(Helpers.zero Constant.SizeT) in
-        (* let b = <uninitialized> in *)
-        ELet (b, H.any, with_type e2.typ (
-          ELet (H.sequence_binding (),
-            (* let _ = blit e1 (a.k.a. src) b (a.k.a. dst) in *)
-            H.with_unit (EBufBlit (lift 1 e1, zero, with_type b.typ (EBound 0), zero, PreCleanup.expr_of_constant n)),
-            (* e2 *)
-            lift 1 (self#visit_expr env e2))))
-    | _ ->
-        super#visit_ELet env b e1 e2
-
-  method! visit_EAssign env lhs rhs =
-    match lhs.typ with
-    | TArray (_, n) ->
-        let zero = Krml.(Helpers.zero Constant.SizeT) in
-        EBufBlit (rhs, zero, lhs, zero, PreCleanup.expr_of_constant n)
-    | _ ->
-        super#visit_EAssign env lhs rhs
-end
-
 let cleanup files =
   let files = remove_units#visit_files () files in
   let files = remove_assignments#visit_files AtomMap.empty files in

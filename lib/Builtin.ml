@@ -65,13 +65,11 @@ let array_to_subslice = {
 let array_repeat = {
   name = ["Eurydice"], "array_repeat";
   typ = Krml.Helpers.fold_arrow [
-    TBuf (TBound 0, false);
-    TInt SizeT;
     TBound 0
-  ] TUnit;
+  ] (TCgArray (TBound 0, 0));
   n_type_args = 1;
-  cg_args = [];
-  arg_names = [ "dst"; "len"; "init" ]
+  cg_args = [ TInt SizeT ];
+  arg_names = [ "init" ]
 }
 
 let slice_index = {
