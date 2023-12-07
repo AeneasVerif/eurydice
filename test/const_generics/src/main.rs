@@ -56,6 +56,20 @@ fn g<const BAR: usize, const FOO: u32>(x: u32, y: usize) -> bool {
     f::<BAR, FOO>(x, y) && x == FOO && y == BAR
 }
 
-fn main() {
+fn main3() {
     let x = f::<1, 2>(0, 0) && g::<3, 4>(0, 0);
+}
+
+/* TEST 4 (Franziskus) */
+fn serialize<const OUT_LEN: usize>(re: &[u32]) -> [u8; OUT_LEN] {
+  let mut out = [0u8; OUT_LEN];
+  out[..4].copy_from_slice(&re[0].to_be_bytes());
+  out[4..].copy_from_slice(&re[1].to_be_bytes());
+  out
+}
+
+fn main() {
+    let s: [u8; 8] = serialize(&[1, 2]);
+    assert!(s[3] == 1);
+    assert!(s[7] == 2);
 }

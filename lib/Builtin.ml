@@ -18,6 +18,14 @@ let range: K.lident = ["core"; "ops"; "range"], "Range"
 let mk_range (t: K.typ): K.typ =
   K.TApp (range, [ t ])
 
+let range_to: K.lident = ["core"; "ops"; "range"], "RangeTo"
+let mk_range_to (t: K.typ): K.typ =
+  K.TApp (range_to, [ t ])
+
+let range_from: K.lident = ["core"; "ops"; "range"], "RangeFrom"
+let mk_range_from (t: K.typ): K.typ =
+  K.TApp (range_from, [ t ])
+
 let option: K.lident = ["core"; "option"], "Option"
 let mk_option (t: K.typ): K.typ =
   K.TApp (option, [ t ])
@@ -56,6 +64,28 @@ let array_to_subslice = {
   typ = Krml.Helpers.fold_arrow [
     TBuf (TBound 1, false);
     mk_range (TInt SizeT)
+  ] (mk_slice (TBound 1));
+  n_type_args = 2;
+  cg_args = [ TInt SizeT ];
+  arg_names = [ "a"; "r" ]
+}
+
+let array_to_subslice_to = {
+  name = ["Eurydice"], "array_to_subslice_to";
+  typ = Krml.Helpers.fold_arrow [
+    TBuf (TBound 1, false);
+    mk_range_to (TInt SizeT)
+  ] (mk_slice (TBound 1));
+  n_type_args = 2;
+  cg_args = [ TInt SizeT ];
+  arg_names = [ "a"; "r" ]
+}
+
+let array_to_subslice_from = {
+  name = ["Eurydice"], "array_to_subslice_from";
+  typ = Krml.Helpers.fold_arrow [
+    TBuf (TBound 1, false);
+    mk_range_from (TInt SizeT)
   ] (mk_slice (TBound 1));
   n_type_args = 2;
   cg_args = [ TInt SizeT ];
@@ -175,6 +205,8 @@ let files = [
     ) [
       array_to_slice;
       array_to_subslice;
+      array_to_subslice_to;
+      array_to_subslice_from;
       array_repeat;
       slice_index;
       slice_subslice;

@@ -124,6 +124,14 @@ module RustNames = struct
     parse_pattern "core::ops::index::Index<[@T; @N], core::ops::range::Range<usize>>::index"
   let array_subslice_mut =
     parse_pattern "core::ops::index::IndexMut<[@T; @N], core::ops::range::Range<usize>>::index_mut"
+  let array_subslice_to =
+    parse_pattern "core::ops::index::Index<[@T; @N], core::ops::range::RangeTo<usize>>::index"
+  let array_subslice_to_mut =
+    parse_pattern "core::ops::index::IndexMut<[@T; @N], core::ops::range::RangeTo<usize>>::index_mut"
+  let array_subslice_from =
+    parse_pattern "core::ops::index::Index<[@T; @N], core::ops::range::RangeFrom<usize>>::index"
+  let array_subslice_from_mut =
+    parse_pattern "core::ops::index::IndexMut<[@T; @N], core::ops::range::RangeFrom<usize>>::index_mut"
   let array_to_slice =
     parse_pattern "ArrayToSliceShared<'_, @T, @N>"
   let array_to_slice_mut =
@@ -644,16 +652,27 @@ let lookup_fun (env: env) (f: C.fn_ptr): lookup_result =
   in
   if matches slice_subslice || matches slice_subslice_mut then
     builtin Builtin.slice_subslice
+
   else if matches array_subslice || matches array_subslice_mut then
     builtin Builtin.array_to_subslice
+
+  else if matches array_subslice_to || matches array_subslice_to_mut then
+    builtin Builtin.array_to_subslice_to
+
+  else if matches array_subslice_from || matches array_subslice_from_mut then
+    builtin Builtin.array_to_subslice_from
+
   else if matches array_to_slice || matches array_to_slice_mut then
     builtin Builtin.array_to_slice
+
   else if matches slice_index || matches slice_index_mut then
     builtin Builtin.slice_index
+
   else
     let regular f =
       let { C.name; signature = { generics = { types = type_params; const_generics; _ }; inputs; output; _ }; _ } = env.get_nth_function f in
       L.log "Calls" "--> name: %s" (string_of_name env name);
+      let env = push_cg_binders env const_generics in
       let env = push_type_binders env type_params in
       {
         name = lid_of_name env name;
@@ -832,7 +851,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let poly_t_sans_cgs = Krml.Helpers.fold_arrow inputs output in
       let poly_t = Krml.Helpers.fold_arrow cg_inputs poly_t_sans_cgs in
       let output, t =
-        Krml.DeBruijn.subst_tn type_args output,
+        Krml.DeBruijn.(subst_ctn (List.length env.binders) const_generic_args (subst_tn type_args output)),
         Krml.DeBruijn.(subst_ctn (List.length env.binders) const_generic_args (subst_tn type_args poly_t_sans_cgs))
       in
       let hd =
