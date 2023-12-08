@@ -6,12 +6,15 @@ module C = struct
   include Charon.Expressions
   include Charon.Values
 
-  let tsubst args ty =
+  let tsubst cgs ts ty =
     (object
       inherit [_] map_ty
 
       method! visit_TVar _ v =
-        TypeVarId.nth args v
+        TypeVarId.nth ts v
+
+      method! visit_CgVar _ v =
+        ConstGenericVarId.nth cgs v
 
       method visit_'r _ x = x
     end)#visit_ty () ty
@@ -227,6 +230,12 @@ let assert_cg_scalar = function
   | C.CgValue (VScalar n) -> n
   | _ -> failwith "Unsupported: non-constant const generic"
 
+let cg_of_const_generic env cg =
+  match cg with
+  | C.CgVar id -> K.CgVar (fst (lookup_cg env id))
+  | C.CgValue (VScalar sv) -> CgConst (constant_of_scalar_value sv)
+  | _ -> failwith ("cg_of_const_generic: " ^ Charon.PrintTypes.const_generic_to_string env.format_env cg)
+
 let typ_of_literal_ty (_env: env) (ty: Charon.Types.literal_type): K.typ =
   match ty with
   | TBool ->
@@ -267,13 +276,11 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
   | TAdt (id, ({ types = [ t ]; _ } as generics)) when RustNames.is_vec env id generics ->
       Builtin.mk_vec (typ_of_ty env t)
 
-  | TAdt (TAdtId id, { types = []; const_generics = []; _ }) ->
-      TQualified (lid_of_type_decl_id env id)
-
   | TAdt (TAdtId id, { types = args; const_generics = generic_args; _ }) ->
-      if List.length generic_args > 0 then
-        failwith "TODO: Adt/generic_args";
-      TApp (lid_of_type_decl_id env id, List.map (typ_of_ty env) args)
+      let ts = List.map (typ_of_ty env) args in
+      let cgs = List.map (cg_of_const_generic env) generic_args in
+      let lid = lid_of_type_decl_id env id in
+      K.fold_tapp (lid, ts, cgs)
 
   | TAdt (TTuple, { types = args; const_generics; _ }) ->
       assert (const_generics = []);
@@ -436,7 +443,7 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
     | DerefBox, TAdt (TAssumed TBox, { types = [ ty ]; _ }) ->
         Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e.K.typ) e.K.node), ty
 
-    | Field (ProjAdt (typ_id, variant_id), field_id), C.TAdt (_, { types; _ }) ->
+    | Field (ProjAdt (typ_id, variant_id), field_id), C.TAdt (_, { types; const_generics; _ }) ->
         begin match variant_id with
         | None ->
             let { C.kind; _ } = env.get_nth_type typ_id in
@@ -444,7 +451,7 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
             let field_name, field_ty =
               let field = List.nth fields (C.FieldId.to_int field_id) in
               match field.C.field_name with
-              | Some field_name -> field_name, C.tsubst types field.C.field_ty
+              | Some field_name -> field_name, C.tsubst const_generics types field.C.field_ty
               | None -> failwith "TODO: understand what empty field name means"
             in
             K.with_type (typ_of_ty env field_ty) (K.EField (e, field_name)),
@@ -453,7 +460,7 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
             let variant = find_nth_variant env typ_id variant_id in
             let field_id = C.FieldId.to_int field_id in
             let field = List.nth variant.fields field_id in
-            let field_ty = C.tsubst types field.C.field_ty in
+            let field_ty = C.tsubst const_generics types field.C.field_ty in
             let field_t = typ_of_ty env field_ty in
             let b = Krml.Helpers.fresh_binder (mk_field_name field.C.field_name field_id) field_t in
             K.with_type field_t K.(EMatch (Unchecked,
@@ -597,11 +604,12 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
         assert (List.length ops > 1);
         K.with_type (TTuple ts) (K.ETuple ops)
       end
-  | Aggregate (AggregatedAdt (TAdtId typ_id, variant_id, { types = typ_args; _ }), args) ->
+  | Aggregate (AggregatedAdt (TAdtId typ_id, variant_id, { types = typ_args; const_generics; _ }), args) ->
       let { C.name; kind; _ } = env.get_nth_type typ_id in
       let typ_lid = lid_of_name env name in
       let typ_args = List.map (typ_of_ty env) typ_args in
-      let t = if typ_args = [] then K.TQualified typ_lid else TApp (typ_lid, typ_args) in
+      let cg_args = List.map (cg_of_const_generic env) const_generics in
+      let t = K.fold_tapp (typ_lid, typ_args, cg_args) in
       let args = List.map (expression_of_operand env) args in
       begin match variant_id with
       | Some variant_id ->

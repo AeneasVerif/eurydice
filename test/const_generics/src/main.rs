@@ -1,5 +1,4 @@
 /* TEST 1, with data types -- doesn't work yet */
-/*
 struct Pair<T, U, const N: usize, const M: usize> {
     left: [ T; N ],
     right: [ U; M ]
@@ -13,14 +12,14 @@ fn mk_pairs<T: Copy, U: Copy, const N: usize, const M: usize> (x: T, y: U) -> Pa
     Pair { left: p1.left, right: p2.right }
 }
 
-fn main() {
+fn main1() {
     let Pair { left, right } = mk_pairs::<u32,u64,2,4>(0u32, 0u64);
-    assert_eq!(left[0], 0u32);
-    assert_eq!(left[1], 0u32);
-    assert_eq!(right[0], 0u32);
-    assert_eq!(right[1], 0u32);
+    let expected = 0u32;
+    assert_eq!(left[0], expected);
+    assert_eq!(left[1], expected);
+    assert_eq!(right[0], expected);
+    assert_eq!(right[1], expected);
 }
-*/
 
 /* TEST 2, too many trait bounds -- doesn't work yet */
 /*

@@ -93,6 +93,7 @@ Supported options:|}
 
   Printf.printf "3️⃣ Monomorphization, datatypes\n";
   let files = Krml.Monomorphization.functions files in
+  Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files = Krml.Monomorphization.datatypes files in
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
   let files = Krml.DataTypes.simplify files in
