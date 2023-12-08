@@ -45,14 +45,17 @@ Supported options:|}
   (* This is where the action happens *)
   Eurydice.Logging.enable_logging !O.log_level;
   (* Type applications are compiled as a regular external type. *)
-  Krml.Options.(
+  Krml.(Options.(
     allow_tapps := true;
     minimal := true;
     add_include := [ All, "\"eurydice_glue.h\"" ];
     (* header := "/* This file compiled from Rust to C by Eurydice \ *)
     (*   <http://github.com/aeneasverif/eurydice> */"; *)
-    parentheses := true
-  );
+    parentheses := true;
+    static_header := [
+      Bundle.Prefix [ "core" ]
+    ]
+  ));
 
   Krml.Helpers.is_readonly_builtin_lid_ :=
     (let is_readonly_pure_lid_ = !Krml.Helpers.is_readonly_builtin_lid_ in

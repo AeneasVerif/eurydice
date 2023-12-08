@@ -9,6 +9,28 @@
 #define KRML_HOST_EXIT exit
 #define KRML_HOST_EPRINTF(...) fprintf(stderr, __VA_ARGS__)
 
+#if defined(__linux__) || defined(__CYGWIN__) || defined (__USE_SYSTEM_ENDIAN_H__) || defined(__GLIBC__)
+#  include <endian.h>
+
+/* ... for OSX */
+#elif defined(__APPLE__)
+#  include <libkern/OSByteOrder.h>
+#  define htole64(x) OSSwapHostToLittleInt64(x)
+#  define le64toh(x) OSSwapLittleToHostInt64(x)
+#  define htobe64(x) OSSwapHostToBigInt64(x)
+#  define be64toh(x) OSSwapBigToHostInt64(x)
+
+#  define htole16(x) OSSwapHostToLittleInt16(x)
+#  define le16toh(x) OSSwapLittleToHostInt16(x)
+#  define htobe16(x) OSSwapHostToBigInt16(x)
+#  define be16toh(x) OSSwapBigToHostInt16(x)
+
+#  define htole32(x) OSSwapHostToLittleInt32(x)
+#  define le32toh(x) OSSwapLittleToHostInt32(x)
+#  define htobe32(x) OSSwapHostToBigInt32(x)
+#  define be32toh(x) OSSwapBigToHostInt32(x)
+#endif
+
 typedef struct {
   void *ptr;
   size_t len;
@@ -20,8 +42,16 @@ typedef struct {
 #define Eurydice_slice_subslice(s, r, t, _) EURYDICE_SLICE(((t*)s.ptr), r.start, r.end, t)
 #define Eurydice_array_to_slice(end, x, t) EURYDICE_SLICE(x, 0, end, t)
 #define Eurydice_array_to_subslice(_size, x, r, t, _range_t) EURYDICE_SLICE(x, r.start, r.end, t)
+#define Eurydice_array_to_subslice_to(_size, x, r, t, _range_t) EURYDICE_SLICE(x, 0, r, t)
+#define Eurydice_array_to_subslice_from(size, x, r, t, _range_t) EURYDICE_SLICE(x, r, size, t)
 #define Eurydice_array_repeat(dst, len, init, t) ERROR "should've been desugared"
 #define core_slice___Slice_T___len(s, t) EURYDICE_SLICE_LEN(s, t)
+#define core_slice___Slice_T___copy_from_slice(dst, src, t) memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
+
+static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
+  uint32_t x = htobe32(src);
+  memcpy(dst, &x, 4);
+}
 
 /* For now these are passed by value -- three words. We could conceivably change
  * the representation to heap-allocate this struct and only pass around the
