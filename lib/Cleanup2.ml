@@ -130,3 +130,20 @@ let remove_trivial_into = object(self)
     | _ ->
         EApp (e, es)
 end
+
+let remove_trivial_ite = object(self)
+  inherit [_] map as super
+
+  method! visit_EIfThenElse ((), _ as env) e1 e2 e3 =
+    match e1.node with
+    | EApp ({ node = EOp (Eq, _); _ }, [
+      { node = EConstant (w1, c1); _ };
+      { node = EConstant (w2, c2); _ };
+    ]) when w1 = w2 ->
+      if int_of_string c1 = int_of_string c2 then
+        (self#visit_expr env e2).node
+      else
+        (self#visit_expr env e3).node
+    | _ ->
+        super#visit_EIfThenElse env e1 e2 e3
+end
