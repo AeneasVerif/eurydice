@@ -93,12 +93,12 @@ Supported options:|}
 
   Printf.printf "3️⃣ Monomorphization, datatypes\n";
   let files = Krml.Monomorphization.functions files in
-  Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files = Krml.Monomorphization.datatypes files in
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
   let files = Krml.DataTypes.simplify files in
   let files = Krml.DataTypes.optimize files in
   let _, files = Krml.DataTypes.everything files in
+  let files = Eurydice.Cleanup2.remove_trivial_into#visit_files () files in
   let files = Krml.Structs.pass_by_ref files in
   let files = Krml.Structs.remove_literals files in
   let files = Eurydice.Cleanup2.remove_implicit_array_copies#visit_files () files in
@@ -132,6 +132,19 @@ Supported options:|}
   let file_of_map = Bundle.mk_file_of files in
   let c_name_map = Simplify.allocate_c_names files in
   let deps = Bundles.direct_dependencies_with_internal files file_of_map in
+  let files = List.map (fun (f, ds) ->
+    f, KList.filter_map (fun d ->
+      match d with
+      | Krml.Ast.DExternal (_, _, _, _, lid, t, _) when Krml.Monomorphization.(
+        has_variables [ t ] || has_cg_array [ t ]
+      ) ->
+          KPrint.bprintf "Warning: %a is a type/const-polymorhic assumed function, \
+            must be implemented with a macro, dropping it\n" Krml.PrintAst.Ops.plid lid;
+          None
+      | _ ->
+          Some d
+    ) ds
+  ) files in
   let files = AstToCStar.mk_files files c_name_map Idents.LidSet.empty macros in
 
   let headers = CStarToC11.mk_headers c_name_map files in

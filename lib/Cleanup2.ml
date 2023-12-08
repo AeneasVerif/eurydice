@@ -8,6 +8,7 @@ module H = Krml.Helpers
 let remove_implicit_array_copies = object(self)
   inherit [ _ ] map as super
   method! visit_ELet ((), _ as env) b e1 e2 =
+    (* let b: TArray (_, n) = e1 in e2 *)
     match b.typ with
     | TArray (_, n) when e1.node <> EAny ->
         let zero = Krml.(Helpers.zero Constant.SizeT) in
@@ -42,4 +43,17 @@ let remove_array_repeats = object(self)
         EBufCreateL (Stack, List.init l (fun _ -> init))
     | _ ->
         super#visit_EApp env e es
+end
+
+let remove_trivial_into = object(self)
+  inherit [_] map as _super
+
+  method! visit_EApp env e es =
+    let e = self#visit_expr_w () e in
+    let es = List.map (self#visit_expr env) es in
+    match e.node, es with
+    | ETApp ({ node = EQualified (["core"; "convert"; _ ], "into"); _ }, [], [ t1; t2 ]), [ e1 ] when t1 = t2 ->
+        e1.node
+    | _ ->
+        EApp (e, es)
 end
