@@ -48,10 +48,15 @@ typedef struct {
 #define core_slice___Slice_T___len(s, t) EURYDICE_SLICE_LEN(s, t)
 #define core_slice___Slice_T___copy_from_slice(dst, src, t) memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 
+#define core_array_TryFromSliceError uint8_t
+#define core_array_equality___Array_A__N___eq(sz, a1, a2, t, _) (memcmp(a1, a2, sz * sizeof(t)) == 0)
+
 static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   uint32_t x = htobe32(src);
   memcpy(dst, &x, 4);
 }
+
+static inline int32_t core_convert_num__i32_56__from(int16_t x) { return x; }
 
 /* For now these are passed by value -- three words. We could conceivably change
  * the representation to heap-allocate this struct and only pass around the

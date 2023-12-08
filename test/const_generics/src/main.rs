@@ -57,6 +57,8 @@ fn g<const BAR: usize, const FOO: u32>(x: u32, y: usize) -> bool {
 
 fn main3() {
     let x = f::<1, 2>(0, 0) && g::<3, 4>(0, 0);
+    let expected = false;
+    assert_eq!(x, expected);
 }
 
 /* TEST 4 (Franziskus) */
