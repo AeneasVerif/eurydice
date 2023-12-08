@@ -119,30 +119,40 @@ module RustNames = struct
   let range = parse_pattern "core::ops::range::Range<@>"
   let option = parse_pattern "core::option::Option<@>"
 
-  let slice_subslice =
-    parse_pattern "core::ops::index::Index<[@T], core::ops::range::Range<usize>>::index"
-  let slice_subslice_mut =
-    parse_pattern "core::ops::index::IndexMut<[@T], core::ops::range::Range<usize>>::index_mut"
-  let array_subslice =
-    parse_pattern "core::ops::index::Index<[@T; @N], core::ops::range::Range<usize>>::index"
-  let array_subslice_mut =
-    parse_pattern "core::ops::index::IndexMut<[@T; @N], core::ops::range::Range<usize>>::index_mut"
-  let array_subslice_to =
-    parse_pattern "core::ops::index::Index<[@T; @N], core::ops::range::RangeTo<usize>>::index"
-  let array_subslice_to_mut =
-    parse_pattern "core::ops::index::IndexMut<[@T; @N], core::ops::range::RangeTo<usize>>::index_mut"
-  let array_subslice_from =
-    parse_pattern "core::ops::index::Index<[@T; @N], core::ops::range::RangeFrom<usize>>::index"
-  let array_subslice_from_mut =
-    parse_pattern "core::ops::index::IndexMut<[@T; @N], core::ops::range::RangeFrom<usize>>::index_mut"
-  let array_to_slice =
-    parse_pattern "ArrayToSliceShared<'_, @T, @N>"
-  let array_to_slice_mut =
-    parse_pattern "ArrayToSliceMut<'_, @T, @N>"
-  let slice_index =
-    parse_pattern "SliceIndexShared<'_, @T>"
-  let slice_index_mut =
-    parse_pattern "SliceIndexMut<'_, @T>"
+  let known_builtins = [
+    (* slices *)
+    parse_pattern "SliceIndexShared<'_, @T>", Builtin.slice_index;
+    parse_pattern "SliceIndexMut<'_, @T>", Builtin.slice_index;
+    parse_pattern "core::ops::index::Index<[@T], core::ops::range::Range<usize>>::index", Builtin.slice_subslice;
+    parse_pattern "core::ops::index::IndexMut<[@T], core::ops::range::Range<usize>>::index_mut", Builtin.slice_subslice;
+    parse_pattern "core::ops::index::Index<[@], core::ops::range::RangeTo<usize>>::index", Builtin.slice_subslice_to;
+    parse_pattern "core::ops::index::IndexMut<[@], core::ops::range::RangeTo<usize>>::index_mut", Builtin.slice_subslice_to;
+    parse_pattern "core::ops::index::Index<[@], core::ops::range::RangeFrom<usize>>::index", Builtin.slice_subslice_from;
+    parse_pattern "core::ops::index::IndexMut<[@], core::ops::range::RangeFrom<usize>>::index_mut", Builtin.slice_subslice_from;
+
+    (* arrays *)
+    parse_pattern "core::ops::index::Index<[@T; @N], core::ops::range::Range<usize>>::index", Builtin.array_to_subslice;
+    parse_pattern "core::ops::index::IndexMut<[@T; @N], core::ops::range::Range<usize>>::index_mut", Builtin.array_to_subslice;
+    parse_pattern "core::ops::index::Index<[@T; @N], core::ops::range::RangeTo<usize>>::index", Builtin.array_to_subslice_to;
+    parse_pattern "core::ops::index::IndexMut<[@T; @N], core::ops::range::RangeTo<usize>>::index_mut", Builtin.array_to_subslice_to;
+    parse_pattern "core::ops::index::Index<[@T; @N], core::ops::range::RangeFrom<usize>>::index", Builtin.array_to_subslice_from;
+    parse_pattern "core::ops::index::IndexMut<[@T; @N], core::ops::range::RangeFrom<usize>>::index_mut", Builtin.array_to_subslice_from;
+
+    (* slices <-> arrays *)
+    parse_pattern "ArrayToSliceShared<'_, @T, @N>", Builtin.array_to_slice;
+    parse_pattern "ArrayToSliceMut<'_, @T, @N>", Builtin.array_to_slice;
+    parse_pattern "core::convert::TryInto<&'_ [@T], [@T; @]>::try_into", Builtin.slice_to_array;
+
+    (* iterators *)
+    parse_pattern "core::iter::traits::collect::IntoIterator<[@; @]>::into_iter", Builtin.array_into_iter;
+    parse_pattern "core::iter::traits::iterator::Iterator<core::ops::range::Range<@>>::step_by", Builtin.range_iterator_step_by;
+    parse_pattern "core::iter::traits::iterator::Iterator<core::iter::adapters::step_by::StepBy<core::ops::range::Range<@>>>::next", Builtin.range_step_by_iterator_next;
+
+    (* bitwise & arithmetic operations *)
+    parse_pattern "core::ops::bit::BitAnd<&'_ u8, u8>::bitand", Builtin.bitand_pv_u8;
+    parse_pattern "core::ops::bit::Shr<&'_ u8, i32>::shr", Builtin.shr_pv_u8;
+  ]
+
   let from_u16 =
     parse_pattern "core::convert::From<u16, @U>::from"
   let from_u32 =
@@ -311,7 +321,7 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
       failwith "TODO: TRawPtr"
 
   | TTraitType _ ->
-      failwith "TODO: TraitTypes"
+      failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
 
   | TArrow (_, ts, t) ->
       Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
@@ -553,6 +563,7 @@ let mk_op_app (op: K.op) (first: K.expr) (rest: K.expr list): K.expr =
     | K.TBool -> Bool
     | t -> Krml.Warn.fatal_error "Not an operator type: %a" Krml.PrintAst.Ops.ptyp t
   in
+  let op = if op = Not && first.typ <> K.TBool then Krml.Constant.BNot else op in
   let op_t = Krml.Helpers.type_of_op op w in
   let op = K.(with_type op_t (EOp (op, w))) in
   let ret_t, _ = Krml.Helpers.flatten_arrow op_t in
@@ -658,55 +669,43 @@ let lookup_fun (env: env) (f: C.fn_ptr): lookup_result =
     let ret_type, arg_types = Krml.Helpers.flatten_arrow typ in
     { name; n_type_args; arg_types; ret_type; cg_types = cg_args; is_assumed = true }
   in
-  if matches slice_subslice || matches slice_subslice_mut then
-    builtin Builtin.slice_subslice
+  match List.find_opt (fun (p, _) -> matches p) known_builtins with
+  | Some (_, b) ->
+      builtin b
+  | None ->
+      let regular f =
+        let { C.name; signature = { generics = { types = type_params; const_generics; _ }; inputs; output; _ }; _ } = env.get_nth_function f in
+        L.log "Calls" "--> name: %s" (string_of_name env name);
+        L.log "Calls" "--> args: %s, ret: %s"
+          (String.concat " ++ " (List.map (Charon.PrintTypes.ty_to_string env.format_env) inputs))
+          (Charon.PrintTypes.ty_to_string env.format_env output);
+        let env = push_cg_binders env const_generics in
+        let env = push_type_binders env type_params in
+        {
+          name = lid_of_name env name;
+          n_type_args = List.length type_params;
+          cg_types = List.map (fun (v: C.const_generic_var) -> typ_of_literal_ty env v.ty) const_generics;
+          arg_types = List.map (typ_of_ty env) inputs;
+          ret_type = typ_of_ty env output;
+          is_assumed = false
+        }
+      in
+      match f.func with
+      | FunId (FRegular f) ->
+          regular f
 
-  else if matches array_subslice || matches array_subslice_mut then
-    builtin Builtin.array_to_subslice
+      | FunId (FAssumed f) ->
+          Krml.Warn.fatal_error "unknown assumed function: %s" (C.show_assumed_fun_id f)
 
-  else if matches array_subslice_to || matches array_subslice_to_mut then
-    builtin Builtin.array_to_subslice_to
-
-  else if matches array_subslice_from || matches array_subslice_from_mut then
-    builtin Builtin.array_to_subslice_from
-
-  else if matches array_to_slice || matches array_to_slice_mut then
-    builtin Builtin.array_to_slice
-
-  else if matches slice_index || matches slice_index_mut then
-    builtin Builtin.slice_index
-
-  else
-    let regular f =
-      let { C.name; signature = { generics = { types = type_params; const_generics; _ }; inputs; output; _ }; _ } = env.get_nth_function f in
-      L.log "Calls" "--> name: %s" (string_of_name env name);
-      let env = push_cg_binders env const_generics in
-      let env = push_type_binders env type_params in
-      {
-        name = lid_of_name env name;
-        n_type_args = List.length type_params;
-        cg_types = List.map (fun (v: C.const_generic_var) -> typ_of_literal_ty env v.ty) const_generics;
-        arg_types = List.map (typ_of_ty env) inputs;
-        ret_type = typ_of_ty env output;
-        is_assumed = false
-      }
-    in
-    match f.func with
-    | FunId (FRegular f) ->
-        regular f
-
-    | FunId (FAssumed f) ->
-        Krml.Warn.fatal_error "unknown assumed function: %s" (C.show_assumed_fun_id f)
-
-    | TraitMethod (trait_ref, method_name, _trait_opaque_signature) ->
-        match trait_ref.trait_id with
-        | TraitImpl id ->
-            let trait = env.get_nth_trait_impl id in
-            let f = List.assoc method_name trait.required_methods in
-            regular f
-        | _ ->
-            Krml.Warn.fatal_error "Error looking trait ref: %s %s"
-              (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref) method_name
+      | TraitMethod (trait_ref, method_name, _trait_opaque_signature) ->
+          match trait_ref.trait_id with
+          | TraitImpl id ->
+              let trait = env.get_nth_trait_impl id in
+              let f = List.assoc method_name trait.required_methods in
+              regular f
+          | _ ->
+              Krml.Warn.fatal_error "Error looking trait ref: %s %s"
+                (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref) method_name
 
 let lesser t1 t2 =
   if t1 = K.TAny then
@@ -781,7 +780,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       Krml.Helpers.with_unit K.(EAssign (dest, maybe_addrof env ty (with_type t (EBufRead (e1, e2)))))
 
   | Call { func = FnOpRegular fn_ptr; args; dest; _ }
-    when Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from fn_ptr ->
+    when false && Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from fn_ptr ->
       (* Special treatment: From<T, U> becomes a cast. *)
       let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p fn_ptr in
       let w: Krml.Constant.width =
@@ -959,7 +958,12 @@ let of_declaration_group (dg: 'id C.g_declaration_group) (f: 'id -> 'a): 'a list
   | NonRecGroup id -> [ f id ]
   | RecGroup ids -> List.map f ids
 
+let seen = ref 0
+let total = ref 0
+
 let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
+  incr seen;
+  L.log "Progress" "%d/%d" !seen !total;
   match d with
   | TypeGroup dg ->
       Krml.KList.filter_some @@
@@ -1012,11 +1016,13 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
               let env = push_type_binders env type_params in
               let inputs = List.map (typ_of_ty env) inputs in
               let output = typ_of_ty env output in
-              let t = Krml.Helpers.fold_arrow (const_generics_ts @ inputs) output in
+              let adjusted_inputs = if const_generics_ts = [] && inputs = [] then [ K.TUnit ] else const_generics_ts @ inputs in
+              let t = Krml.Helpers.fold_arrow adjusted_inputs output in
               let name = lid_of_name env name in
               Some (K.DExternal (None, [], List.length const_generics_ts, List.length type_params, name, t, []))
-            with _ ->
-              L.log "AstOfLLbc" "ERROR translating %s:\n%s" (string_of_name env decl.name)
+            with e ->
+              L.log "AstOfLLbc" "ERROR translating %s: %s\n%s" (string_of_name env decl.name)
+                (Printexc.to_string e)
                 (Printexc.get_backtrace ());
               None
             end
@@ -1080,6 +1086,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
 
 let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
   let { C.name; declarations; type_decls; fun_decls; global_decls; trait_decls; trait_impls } = crate in
+  total := List.length declarations;
   let get_nth_function = fun id -> C.FunDeclId.Map.find id fun_decls in
   let get_nth_type = fun id -> C.TypeDeclId.Map.find id type_decls in
   let get_nth_global = fun id -> C.GlobalDeclId.Map.find id global_decls in
