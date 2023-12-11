@@ -2,7 +2,7 @@ CHARON_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../charon
 EURYDICE	= ./eurydice $(EURYDICE_FLAGS)
 
 CHARON_TEST_FILES	= array
-TEST_DIRS		= kyber768 array const_generics traits array2d
+TEST_DIRS		= kyber768 array const_generics traits array2d step_by
 
 .PHONY: all
 all:
