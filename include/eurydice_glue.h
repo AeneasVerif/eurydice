@@ -51,21 +51,21 @@ typedef struct {
 } Eurydice_slice;
 
 // Helper macro to create a slice out of a pointer x, a start index in x (included), and an end
-// index in x (excluded). The macro also needs the type of the *elements* in order to perform
-// suitable pointer casts (see remark above about how pointer arithmetic works in C).
-#define EURYDICE_SLICE(x, start, end, t) ((Eurydice_slice){ .ptr = (void*)((t*)x + start), .len = end - start })
+// index in x (excluded). The argument x must be suitably cast to something that can decay (see
+// remark above about how pointer arithmetic works in C), meaning either pointer or array type.
+#define EURYDICE_SLICE(x, start, end) ((Eurydice_slice){ .ptr = (void*)(x + start), .len = end - start })
 #define EURYDICE_SLICE_LEN(s, _) s.len
 #define Eurydice_slice_index(s, i, t) (((t*) s.ptr)[i])
-#define Eurydice_slice_subslice(s, r, t, _) EURYDICE_SLICE(s.ptr, r.start, r.end, t)
-#define Eurydice_slice_subslice_from(s, subslice_start_pos, t, _) EURYDICE_SLICE(s.ptr, subslice_start_pos, s.len, t)
-#define Eurydice_array_to_slice(end, x, t) EURYDICE_SLICE(x, 0, end, t)
-#define Eurydice_array_to_subslice(_arraylen, x, r, t, _) EURYDICE_SLICE(x, r.start, r.end, t)
-#define Eurydice_array_to_subslice_to(_size, x, r, t, _range_t) EURYDICE_SLICE(x, 0, r, t)
-#define Eurydice_array_to_subslice_from(size, x, r, t, _range_t) EURYDICE_SLICE(x, r, size, t)
+#define Eurydice_slice_subslice(s, r, t, _) EURYDICE_SLICE((t*)s.ptr, r.start, r.end)
+#define Eurydice_slice_subslice_from(s, subslice_start_pos, t, _) EURYDICE_SLICE((t*)s.ptr, subslice_start_pos, s.len)
+#define Eurydice_array_to_slice(end, x, t) EURYDICE_SLICE(x, 0, end)
+#define Eurydice_array_to_subslice(_arraylen, x, r, t, _) EURYDICE_SLICE((t*)x, r.start, r.end)
+#define Eurydice_array_to_subslice_to(_size, x, r, t, _range_t) EURYDICE_SLICE((t*)x, 0, r)
+#define Eurydice_array_to_subslice_from(size, x, r, t, _range_t) EURYDICE_SLICE((t*)x, r, size)
 #define Eurydice_array_repeat(dst, len, init, t) ERROR "should've been desugared"
 #define core_slice___Slice_T___len(s, t) EURYDICE_SLICE_LEN(s, t)
 #define core_slice___Slice_T___copy_from_slice(dst, src, t) memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
-#define core_array___Array_T__N__23__as_slice(len, ptr, t) ((Eurydice_slice){ .ptr = ptr, .len = len })
+#define core_array___Array_T__N__23__as_slice(len_, ptr_, t) ((Eurydice_slice){ .ptr = ptr_, .len = len_ })
 
 #define core_array_TryFromSliceError uint8_t
 
@@ -73,8 +73,8 @@ typedef struct {
 
 #define core_slice___Slice_T___split_at(slice, mid, element_type) \
   ((K___Eurydice_slice_##element_type##_Eurydice_slice_##element_type){ \
-    .fst = EURYDICE_SLICE(slice.ptr, 0, mid, element_type), \
-    .snd = EURYDICE_SLICE(slice.ptr, mid, slice.len, element_type)})
+    .fst = EURYDICE_SLICE((element_type*)slice.ptr, 0, mid), \
+    .snd = EURYDICE_SLICE((element_type*)slice.ptr, mid, slice.len)})
 
 
 // CORE STUFF (conversions, endianness, ...)
@@ -97,6 +97,10 @@ static inline int32_t core_convert_num__i32_56__from(int16_t x) { return x; }
   )
 
 #define core_iter_traits_collect__I__into_iter(x, t) (x)
+
+// MISC
+
+#define core_fmt_Formatter void
 
 
 // VECTORS
