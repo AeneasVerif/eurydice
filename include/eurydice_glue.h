@@ -77,6 +77,20 @@ typedef struct {
     .fst = EURYDICE_SLICE((element_type*)slice.ptr, 0, mid), \
     .snd = EURYDICE_SLICE((element_type*)slice.ptr, mid, slice.len)})
 
+// Can't have a flexible array as a member of a union -- this violates strict aliasing rules.
+typedef struct
+{
+  uint8_t tag;
+  uint8_t case_Ok[];
+}
+result_tryfromslice_flexible;
+
+#define Eurydice_slice_to_array2(dst, src, _, t_arr) Eurydice_slice_to_array3((result_tryfromslice_flexible *)dst, src, sizeof(t_arr))
+
+static inline void Eurydice_slice_to_array3(result_tryfromslice_flexible *dst, Eurydice_slice src, size_t sz) {
+  dst->tag = 0;
+  memcpy(dst->case_Ok, src.ptr, sz);
+}
 
 // CORE STUFF (conversions, endianness, ...)
 
@@ -85,7 +99,11 @@ static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   memcpy(dst, &x, 4);
 }
 
+static inline int64_t core_convert_num__i64_59__from(int32_t x) { return x; }
 static inline int32_t core_convert_num__i32_56__from(int16_t x) { return x; }
+// unsigned overflow wraparound semantics in C
+static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) { return x + y; }
+static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) { return x - y; }
 
 
 // ITERATORS

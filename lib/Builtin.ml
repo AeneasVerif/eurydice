@@ -189,6 +189,7 @@ let slice_subslice_from = {
   arg_names = ["s"; "r"]
 }
 
+(* This one comes out naturally of MIR but can't be implemented in C for obvious reasons. *)
 let slice_to_array = {
   name = ["Eurydice"], "slice_to_array";
   typ = Krml.Helpers.fold_arrow [
@@ -197,6 +198,18 @@ let slice_to_array = {
   n_type_args = 2;
   cg_args = [ ];
   arg_names = ["s"]
+}
+
+(* This one can be implemented by hand. *)
+let slice_to_array2 = {
+  name = ["Eurydice"], "slice_to_array2";
+  typ = Krml.Helpers.fold_arrow [
+    TBuf (mk_result (TBound 0) (TQualified (["core"; "array"], "TryFromSliceError")), false);
+    TBound 1;
+  ] TUnit;
+  n_type_args = 2;
+  cg_args = [ ];
+  arg_names = ["dst";"s"]
 }
 
 let vec_new = {
@@ -312,6 +325,7 @@ let files = [
       slice_subslice_to;
       slice_subslice_from;
       slice_to_array;
+      slice_to_array2;
       range_iterator_step_by;
       range_step_by_iterator_next;
       vec_push;
