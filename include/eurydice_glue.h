@@ -105,6 +105,9 @@ static inline int32_t core_convert_num__i32_56__from(int16_t x) { return x; }
 static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) { return x + y; }
 static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) { return x - y; }
 
+static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) { return (*p) & v; }
+static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) { return (*p) >> v; }
+
 
 // ITERATORS
 
