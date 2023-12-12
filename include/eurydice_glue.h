@@ -140,13 +140,19 @@ static inline Eurydice_slice chunk_next(Eurydice_chunks *chunks, size_t element_
 }
 
 #define core_slice___Slice_T___chunks(slice_, sz_, t) ((Eurydice_chunks){ .slice = slice_, .chunk_size = sz_ })
+#define core_slice___Slice_T___chunks_exact(slice_, sz_, t) ((Eurydice_chunks){ \
+    .slice = { .ptr = slice_.ptr, .len = slice_.len - (slice_.len % sz_) }, \
+    .chunk_size = sz_ })
 #define core_slice_iter_Chunks Eurydice_chunks
+#define core_slice_iter_ChunksExact Eurydice_chunks
 #define core_slice_iter__core__slice__iter__Chunks__a__T__70__next(iter, t) \
   (((iter)->slice.len == 0) ? \
     ((core_option_Option__Eurydice_slice_##t) { .tag = core_option_None }) : \
     ((core_option_Option__Eurydice_slice_##t){ \
        .tag = core_option_Some, \
        .f0 = chunk_next(iter, sizeof(t)) }))
+#define core_slice_iter__core__slice__iter__ChunksExact__a__T__89__next(iter, t) \
+  core_slice_iter__core__slice__iter__Chunks__a__T__70__next(iter, t)
 
 // MISC
 

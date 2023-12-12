@@ -2,7 +2,7 @@ CHARON_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../charon
 EURYDICE	= ./eurydice $(EURYDICE_FLAGS)
 
 CHARON_TEST_FILES	= array
-TEST_DIRS		= kyber768 array const_generics traits array2d int_switch nested_arrays # step_by 
+TEST_DIRS		= array const_generics traits array2d int_switch nested_arrays # step_by
 
 .PHONY: all
 all:
@@ -31,10 +31,13 @@ charon-test-%: $(CHARON_HOME)/tests/llbc/%.llbc | out/test-% all
 test/%/out.llbc: phony
 	cd test/$* && $(CHARON_HOME)/bin/charon && mv $*.llbc out.llbc
 
-test-%: test/%/out.llbc | all
+out/test-%/main.c: test/main.c
+	sed 's/__NAME__/$*/g' $< > $@
+
+test-%: test/%/out.llbc out/test-%/main.c | all
 	mkdir -p out/test-$*
 	$(EURYDICE) --output out/test-$* $<
-	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $*.c -c
+	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $*.c main.c && ./a.out
 
 .PRECIOUS: out/%
 out/%:
