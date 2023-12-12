@@ -112,6 +112,7 @@ static inline void core_ops_arith__i32_319__add_assign(int32_t *x0, int32_t *x1)
 static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) { return (*p) & v; }
 static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) { return (*p) >> v; }
 
+static uint32_t core_num__u32_8__BITS = 32;
 
 // ITERATORS
 
