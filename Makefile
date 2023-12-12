@@ -29,7 +29,7 @@ charon-test-%: $(CHARON_HOME)/tests/llbc/%.llbc | out/test-% all
 # Tests checked into the current repository
 .PHONY: phony
 test/%/out.llbc: phony
-	cd test/$* && $(CHARON_HOME)/bin/charon && mv $*.llbc out.llbc
+	cd test/$* && $(CHARON_HOME)/bin/charon --errors-as-warnings && mv $*.llbc out.llbc
 
 out/test-%/main.c: test/main.c
 	sed 's/__NAME__/$*/g' $< > $@

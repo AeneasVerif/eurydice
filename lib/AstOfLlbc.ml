@@ -1006,65 +1006,68 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
   | FunGroup dg ->
       Krml.KList.filter_some @@
       of_declaration_group dg (fun (id: C.FunDeclId.id) ->
-        let decl = env.get_nth_function id in
-        let { C.def_id; name; signature; body; is_global_decl_body; _ } = decl in
-        let env = { env with generic_params = signature.generics } in
-        L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
-          (if body = None then "opaque " else "")
-          (string_of_name env name)
-          (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " decl);
+        let decl = try Some (env.get_nth_function id) with Not_found -> None in
+        match decl with
+        | None -> None
+        | Some decl ->
+            let { C.def_id; name; signature; body; is_global_decl_body; _ } = decl in
+            let env = { env with generic_params = signature.generics } in
+            L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
+              (if body = None then "opaque " else "")
+              (string_of_name env name)
+              (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " decl);
 
-        assert (def_id = id);
-        match body with
-        | None ->
-            begin try
-              (* Opaque function *)
-              let { C.generics = { types = type_params; const_generics; _ }; inputs; output ; _ } = signature in
-              let const_generics_ts = List.map (fun (c: C.const_generic_var) -> typ_of_literal_ty env c.ty) const_generics in
-              let env = push_cg_binders env const_generics in
-              let env = push_type_binders env type_params in
-              let inputs = List.map (typ_of_ty env) inputs in
-              let output = typ_of_ty env output in
-              let adjusted_inputs = if const_generics_ts = [] && inputs = [] then [ K.TUnit ] else const_generics_ts @ inputs in
-              let t = Krml.Helpers.fold_arrow adjusted_inputs output in
-              let name = lid_of_name env name in
-              Some (K.DExternal (None, [], List.length const_generics_ts, List.length type_params, name, t, []))
-            with e ->
-              L.log "AstOfLLbc" "ERROR translating %s: %s\n%s" (string_of_name env decl.name)
-                (Printexc.to_string e)
-                (Printexc.get_backtrace ());
-              None
-            end
-        | Some { arg_count; locals; body; _ } ->
-            if is_global_decl_body then
-              failwith "TODO: C.Fun is_global decl"
-            else
-              let env = push_cg_binders env signature.C.generics.const_generics in
-              let env = push_type_binders env signature.C.generics.types in
-              let name = lid_of_name env name in
-              (* `locals` contains, in order: special return variable; function arguments;
-                 local variables *)
-              let args, locals = Krml.KList.split (arg_count + 1) locals in
-              let return_var = List.hd args in
-              let args = List.tl args in
+            assert (def_id = id);
+            match body with
+            | None ->
+                begin try
+                  (* Opaque function *)
+                  let { C.generics = { types = type_params; const_generics; _ }; inputs; output ; _ } = signature in
+                  let const_generics_ts = List.map (fun (c: C.const_generic_var) -> typ_of_literal_ty env c.ty) const_generics in
+                  let env = push_cg_binders env const_generics in
+                  let env = push_type_binders env type_params in
+                  let inputs = List.map (typ_of_ty env) inputs in
+                  let output = typ_of_ty env output in
+                  let adjusted_inputs = if const_generics_ts = [] && inputs = [] then [ K.TUnit ] else const_generics_ts @ inputs in
+                  let t = Krml.Helpers.fold_arrow adjusted_inputs output in
+                  let name = lid_of_name env name in
+                  Some (K.DExternal (None, [], List.length const_generics_ts, List.length type_params, name, t, []))
+                with e ->
+                  L.log "AstOfLLbc" "ERROR translating %s: %s\n%s" (string_of_name env decl.name)
+                    (Printexc.to_string e)
+                    (Printexc.get_backtrace ());
+                  None
+                end
+            | Some { arg_count; locals; body; _ } ->
+                if is_global_decl_body then
+                  failwith "TODO: C.Fun is_global decl"
+                else
+                  let env = push_cg_binders env signature.C.generics.const_generics in
+                  let env = push_type_binders env signature.C.generics.types in
+                  let name = lid_of_name env name in
+                  (* `locals` contains, in order: special return variable; function arguments;
+                     local variables *)
+                  let args, locals = Krml.KList.split (arg_count + 1) locals in
+                  let return_var = List.hd args in
+                  let args = List.tl args in
 
-              let return_type = typ_of_ty env return_var.var_ty in
-              let arg_binders = List.map (fun (arg: C.const_generic_var) ->
-                Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty)
-              ) signature.C.generics.const_generics @ List.map (fun (arg: C.var) ->
-                let name = Option.value ~default:"_" arg.name in
-                Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty)
-              ) args in
-              (* Note: Rust allows zero-argument functions but the krml internal
-                 representation wants a unit there. *)
-              let arg_binders = if arg_binders = [] then [ Krml.Helpers.fresh_binder "dummy" K.TUnit ] else arg_binders in
-              let env = push_binders env args in
-              let body =
-                with_locals env return_type (return_var :: locals) (fun env ->
-                  expression_of_raw_statement env return_var.index body.content)
-              in
-              Some (K.DFunction (None, [], List.length signature.C.generics.const_generics,
-                List.length signature.C.generics.types, return_type, name, arg_binders, body))
+                  let return_type = typ_of_ty env return_var.var_ty in
+                  let arg_binders = List.map (fun (arg: C.const_generic_var) ->
+                    Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty)
+                  ) signature.C.generics.const_generics @ List.map (fun (arg: C.var) ->
+                    let name = Option.value ~default:"_" arg.name in
+                    Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty)
+                  ) args in
+                  (* Note: Rust allows zero-argument functions but the krml internal
+                     representation wants a unit there. *)
+                  let arg_binders = if arg_binders = [] then [ Krml.Helpers.fresh_binder "dummy" K.TUnit ] else arg_binders in
+                  let env = push_binders env args in
+                  let body =
+                    with_locals env return_type (return_var :: locals) (fun env ->
+                      expression_of_raw_statement env return_var.index body.content)
+                  in
+                  Some (K.DFunction (None, [], List.length signature.C.generics.const_generics,
+                    List.length signature.C.generics.types, return_type, name, arg_binders, body))
       )
   | GlobalGroup id ->
       let global = env.get_nth_global id in

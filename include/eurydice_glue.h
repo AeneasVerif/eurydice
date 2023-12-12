@@ -105,6 +105,10 @@ static inline int32_t core_convert_num__i32_56__from(int16_t x) { return x; }
 static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) { return x + y; }
 static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) { return x - y; }
 
+static inline void core_ops_arith__i32_319__add_assign(int32_t *x0, int32_t *x1) {
+  *x0 = *x0 + *x1;
+}
+
 static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) { return (*p) & v; }
 static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) { return (*p) >> v; }
 
@@ -153,6 +157,20 @@ static inline Eurydice_slice chunk_next(Eurydice_chunks *chunks, size_t element_
        .f0 = chunk_next(iter, sizeof(t)) }))
 #define core_slice_iter__core__slice__iter__ChunksExact__a__T__89__next(iter, t) \
   core_slice_iter__core__slice__iter__Chunks__a__T__70__next(iter, t)
+
+typedef struct {
+  Eurydice_slice s;
+  size_t index;
+} Eurydice_slice_iterator;
+
+#define core_slice___Slice_T___iter(x, t) ((Eurydice_slice_iterator){ .s = x, .index = 0 })
+#define core_slice_iter_Iter Eurydice_slice_iterator
+#define core_slice_iter__core__slice__iter__Iter__a__T__181__next(iter, t) \
+  (((iter)->index == (iter)->s.len) ? \
+    ((core_option_Option___##t##_) { .tag = core_option_None }) : \
+    ((core_option_Option___##t##_){ \
+       .tag = core_option_Some, \
+       .f0 = ((iter)->index++, &((t*)((iter)->s.ptr))[(iter)->index-1]) }))
 
 // MISC
 
