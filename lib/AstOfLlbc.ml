@@ -1040,7 +1040,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                 end
             | Some { arg_count; locals; body; _ } ->
                 if is_global_decl_body then
-                  failwith "TODO: C.Fun is_global decl"
+                  None
                 else
                   let env = push_cg_binders env signature.C.generics.const_generics in
                   let env = push_type_binders env signature.C.generics.types in

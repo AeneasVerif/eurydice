@@ -1,6 +1,9 @@
 fn main() {
     let a = [ 0, 1, 2, 3, 4, 5, 6 ];
     let mut i = 0;
+    for v in a.into_iter() {
+        i += v;
+    }
     for v in a.iter() {
         i += v;
     }
