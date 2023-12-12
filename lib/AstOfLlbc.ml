@@ -915,8 +915,17 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let t = lesser e1.typ e2.typ in
       K.(with_type t (EIfThenElse (expression_of_operand env op, e1, e2 )))
 
-  | Switch (SwitchInt (_, _, _, _)) ->
-      failwith "expression_of_raw_statement SwitchInt"
+  | Switch (SwitchInt (scrutinee, _int_ty, branches, default)) ->
+      let scrutinee = expression_of_operand env scrutinee in
+      let branches = Krml.KList.map_flatten (fun (svs, stmt) ->
+        List.map (fun sv ->
+          K.SConstant (constant_of_scalar_value sv), expression_of_raw_statement env ret_var stmt.C.content
+        ) svs
+      ) branches @ [
+        K.SWild, expression_of_raw_statement env ret_var default.C.content
+      ] in
+      let t = Krml.KList.reduce lesser (List.map (fun (_, e) -> e.K.typ) branches) in
+      K.(with_type t (ESwitch (scrutinee, branches)))
 
   | Switch (Match (p, branches, default)) ->
       let p, ty = expression_of_place env p in
