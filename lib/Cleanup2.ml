@@ -174,3 +174,36 @@ let remove_trivial_ite = object(self)
     | _ ->
         super#visit_EIfThenElse env e1 e2 e3
 end
+
+let contains_array t = object(_self)
+  inherit [_] reduce as _super
+
+  method zero = false
+  method plus = (||)
+
+  method! visit_TBuf _ _ _ =
+    false
+
+  method! visit_TArray _ _ _ =
+    true
+
+  method! visit_TCgArray _ _ _ =
+    true
+end#visit_expr_w () t
+
+let remove_literals = object(_self)
+  inherit [_] map as super_map
+  inherit! Krml.Structs.remove_literals as super_krml
+
+  method! visit_ELet env b e1 e2 =
+    if contains_array e1 then
+      super_krml#visit_ELet env b e1 e2
+    else
+      super_map#visit_ELet env b e1 e2
+
+  method! visit_EFlat ((), t as env) fields =
+    if contains_array (with_type t (EFlat fields)) then
+      super_krml#visit_EFlat env fields
+    else
+      super_map#visit_EFlat env fields
+end
