@@ -47,7 +47,10 @@ let remove_implicit_array_copies = object(self)
         (nest 0 es).node
     | _ ->
         let zero = Krml.(Helpers.zero Constant.SizeT) in
-        EBufBlit (rhs, zero, lhs, zero, PreCleanup.expr_of_constant n)
+        (* let _ = *)
+        ELet (H.sequence_binding (),
+          H.with_unit (EBufBlit (rhs, zero, lhs, zero, PreCleanup.expr_of_constant n)),
+          lift 1 (self#visit_expr_w () e2))
 
   method! visit_ELet ((), _ as env) b e1 e2 =
     let is_suitable_initializer = function EAny | EBufCreate _ | EBufCreateL _ -> true | _ -> false in
@@ -67,7 +70,7 @@ let remove_implicit_array_copies = object(self)
     | _, EAssign (lhs, rhs) when H.is_array lhs.typ ->
         let n = match lhs.typ with TArray (_, n) -> n | _ -> failwith "impossible" in
         (* Fixpoint here for multi-dimensional arrays. *)
-        (self#visit_expr env (with_type e2.typ (self#remove_assign n lhs rhs e2))).node
+        (self#visit_expr env (with_type e2.typ (self#remove_assign n lhs rhs (subst H.eunit 0 e2)))).node
     | _ ->
         super#visit_ELet env b e1 e2
 
