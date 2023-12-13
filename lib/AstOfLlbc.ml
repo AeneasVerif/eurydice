@@ -505,7 +505,7 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
             K.with_type t (if i = i' then K.PBound 0 else PWild)) ts))
         in
         let expr = K.with_type t_i (K.EBound 0) in
-        K.with_type t_i (K.EMatch (Checked, e, [ binders, pattern, expr ])), List.nth tys i
+        K.with_type t_i (K.EMatch (Unchecked, e, [ binders, pattern, expr ])), List.nth tys i
 
     | _ ->
         failwith "unexpected / ill-typed projection"
@@ -949,9 +949,14 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
           [], pat, expression_of_raw_statement env ret_var e.C.content
         ) variant_ids
       ) branches in
-      let branches = branches @ [ [], K.with_type p.typ K.PWild, expression_of_raw_statement env ret_var default.C.content ] in
+      let branches = branches @ match default with
+        | Some default ->
+            [ [], K.with_type p.typ K.PWild, expression_of_raw_statement env ret_var default.C.content ]
+        | None ->
+            []
+      in
       let t = Krml.KList.reduce lesser (List.map (fun (_, _, e) -> e.K.typ) branches) in
-      K.(with_type t (EMatch (Checked, p, branches)))
+      K.(with_type t (EMatch (Unchecked, p, branches)))
 
   | Loop s ->
       K.(with_type TUnit (EWhile (Krml.Helpers.etrue,
