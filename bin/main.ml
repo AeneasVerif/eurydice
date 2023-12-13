@@ -75,6 +75,7 @@ Supported options:|}
     Eurydice.AstOfLlbc.file_of_crate llbc
   ) !files in
 
+  flush stdout; flush stderr;
   Printf.printf "1️⃣ LLBC ➡️  AST\n";
   let files = Eurydice.PreCleanup.precleanup files in
 
@@ -83,6 +84,7 @@ Supported options:|}
   if errors then
     exit 1;
 
+  flush stdout; flush stderr;
   Printf.printf "2️⃣ Cleanup\n";
   let files = Eurydice.Cleanup1.cleanup files in
 
@@ -91,6 +93,7 @@ Supported options:|}
   if errors then
     exit 1;
 
+  flush stdout; flush stderr;
   Printf.printf "3️⃣ Monomorphization, datatypes\n";
   let files = Krml.Monomorphization.functions files in
   let files = Krml.Monomorphization.datatypes files in
@@ -143,7 +146,7 @@ Supported options:|}
       | Krml.Ast.DExternal (_, _, _, _, lid, t, _) when Krml.Monomorphization.(
         has_variables [ t ] || has_cg_array [ t ]
       ) ->
-          KPrint.bprintf "Warning: %a is a type/const-polymorhic assumed function, \
+          KPrint.bprintf "Warning: %a is a type/const-polymorphic assumed function, \
             must be implemented with a macro, dropping it\n" Krml.PrintAst.Ops.plid lid;
           None
       | _ ->

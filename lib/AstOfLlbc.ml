@@ -144,9 +144,9 @@ module RustNames = struct
     parse_pattern "core::convert::TryInto<&'_ [@T], [@T; @]>::try_into", Builtin.slice_to_array;
 
     (* iterators *)
-    parse_pattern "core::iter::traits::collect::IntoIterator<[@; @]>::into_iter", Builtin.array_into_iter;
-    parse_pattern "core::iter::traits::iterator::Iterator<core::ops::range::Range<@>>::step_by", Builtin.range_iterator_step_by;
-    parse_pattern "core::iter::traits::iterator::Iterator<core::iter::adapters::step_by::StepBy<core::ops::range::Range<@>>>::next", Builtin.range_step_by_iterator_next;
+    (* parse_pattern "core::iter::traits::collect::IntoIterator<[@; @]>::into_iter", Builtin.array_into_iter; *)
+    (* parse_pattern "core::iter::traits::iterator::Iterator<core::ops::range::Range<@>>::step_by", Builtin.range_iterator_step_by; *)
+    (* parse_pattern "core::iter::traits::iterator::Iterator<core::iter::adapters::step_by::StepBy<core::ops::range::Range<@>>>::next", Builtin.range_step_by_iterator_next; *)
 
     (* bitwise & arithmetic operations *)
     parse_pattern "core::ops::bit::BitAnd<&'_ u8, u8>::bitand", Builtin.bitand_pv_u8;
@@ -320,8 +320,17 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
   | TRawPtr _ ->
       failwith "TODO: TRawPtr"
 
-  | TTraitType _ ->
-      failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
+  | TTraitType (trait_ref, _args, type_name) ->
+      begin match trait_ref.trait_id with
+      | TraitImpl id ->
+          let args = trait_ref.generics in
+          let trait = env.get_nth_trait_impl id in
+          let _, t = List.assoc type_name trait.types in
+          typ_of_ty env (C.tsubst args.const_generics args.types t)
+      | _ ->
+          Krml.Warn.fatal_error "Error looking trait ref (in types): %s %s"
+            (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref) type_name
+      end
 
   | TArrow (_, ts, t) ->
       Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
@@ -698,6 +707,7 @@ let lookup_fun (env: env) (f: C.fn_ptr): lookup_result =
           Krml.Warn.fatal_error "unknown assumed function: %s" (C.show_assumed_fun_id f)
 
       | TraitMethod (trait_ref, method_name, _trait_opaque_signature) ->
+          L.log "Calls" "--> traitmethod";
           match trait_ref.trait_id with
           | TraitImpl id ->
               let trait = env.get_nth_trait_impl id in
@@ -1008,7 +1018,9 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
       of_declaration_group dg (fun (id: C.FunDeclId.id) ->
         let decl = try Some (env.get_nth_function id) with Not_found -> None in
         match decl with
-        | None -> None
+        | None ->
+            L.log "AstOfLlbc" "Skipping untranslated (by Charon) function";
+            None
         | Some decl ->
             let { C.def_id; name; signature; body; is_global_decl_body; _ } = decl in
             let env = { env with generic_params = signature.generics } in
@@ -1092,8 +1104,10 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
       end
 
   | TraitDeclGroup _ ->
+      L.log "AstOfLlbc" "Visiting unspecified TraitDeclGroup";
       []
   | TraitImplGroup _ ->
+      L.log "AstOfLlbc" "Visiting unspecified TraitImplGroup";
       []
 
 let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =

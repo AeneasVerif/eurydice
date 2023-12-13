@@ -106,45 +106,6 @@ let array_repeat = {
   arg_names = [ "init" ]
 }
 
-let iterator: K.lident = ["core"; "iter"; "traits"; "iterator"], "Iterator"
-let mk_iterator t = K.TApp (iterator, [ t ])
-
-let array_into_iter = {
-  name = ["Eurydice"], "array_into_iter";
-  typ = Krml.Helpers.fold_arrow [
-    TCgArray (TBound 0, 0)
-  ] (mk_iterator (TCgArray (TBound 0, 0)));
-  n_type_args = 1;
-  cg_args = [ TInt SizeT ];
-  arg_names = [ "arr" ]
-}
-
-let step_by: K.lident = ["core"; "iter"; "adapters"; "step_by"], "StepBy"
-let mk_step_by t = K.TApp (step_by, [ t ])
-let mk_range_step_by_iterator t =
-  mk_iterator (mk_step_by t)
-
-let range_iterator_step_by = {
-  name = ["Eurydice"], "range_iterator_step_by";
-  typ = Krml.Helpers.fold_arrow [
-    mk_range (TBound 0);
-    TInt SizeT
-  ] (mk_step_by (mk_range (TBound 0)));
-  n_type_args = 1;
-  cg_args = [];
-  arg_names = [ "iter" ]
-}
-
-let range_step_by_iterator_next = {
-  name = ["Eurydice"], "range_step_by_iterator_next";
-  typ = Krml.Helpers.fold_arrow [
-    TBuf (mk_range_step_by_iterator (TBound 0), false)
-  ] (mk_option (TBound 0));
-  n_type_args = 1;
-  cg_args = [];
-  arg_names = [ "iter" ]
-}
-
 let slice_index = {
   name = ["Eurydice"], "slice_index";
   typ = Krml.Helpers.fold_arrow [
@@ -319,15 +280,12 @@ let files = [
       array_to_subslice_to;
       array_to_subslice_from;
       array_repeat;
-      array_into_iter;
       slice_index;
       slice_subslice;
       slice_subslice_to;
       slice_subslice_from;
       slice_to_array;
       slice_to_array2;
-      range_iterator_step_by;
-      range_step_by_iterator_next;
       vec_push;
       vec_new;
       vec_len;
@@ -338,6 +296,9 @@ let files = [
       bitand_pv_u8;
       shr_pv_u8;
   ] in
-  "Eurydice", externals
+  let other = [
+    K.DType ((["core"; "array"; "iter"],"IntoIter"), [], 1, 1, Abbrev (TBound 0))
+  ] in
+  "Eurydice", externals @ other
 ]
 
