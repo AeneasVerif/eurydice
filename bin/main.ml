@@ -97,17 +97,18 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
   let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
   let files = Krml.DataTypes.simplify files in
+  Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files = Krml.DataTypes.optimize files in
+  Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
   let _, files = Krml.DataTypes.everything files in
+  Eurydice.Logging.log "Phase2.7" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_ite#visit_files () files in
   let files = Eurydice.Cleanup2.remove_trivial_into#visit_files () files in
   let files = Krml.Structs.pass_by_ref files in
   let files = Eurydice.Cleanup2.remove_literals#visit_files () files in
   let files = Krml.Simplify.optimize_lets files in
   let files = Eurydice.Cleanup2.break_down_nested_arrays#visit_files () files in
-  Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_implicit_array_copies#visit_files () files in
-  Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
   let files = Krml.Simplify.hoist#visit_files [] files in
   let files = Krml.Simplify.fixup_hoist#visit_files () files in

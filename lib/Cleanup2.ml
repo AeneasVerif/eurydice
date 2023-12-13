@@ -174,8 +174,46 @@ let remove_trivial_ite = object(self)
         (self#visit_expr env e2).node
       else
         (self#visit_expr env e3).node
+    | EBool true ->
+        (self#visit_expr env e2).node
+    | EBool false ->
+        (self#visit_expr env e3).node
     | _ ->
         super#visit_EIfThenElse env e1 e2 e3
+
+  method! visit_ESwitch env scrut branches =
+    let const_eq (w1, s1) (w2, s2) = w1 = w2 && int_of_string s1 = int_of_string s2 in
+    let fits s (w': K.width) =
+      let s = Z.of_string s in
+      match w' with
+      | UInt8 -> Z.leq s (Z.of_string "0xff")
+      | UInt16 -> Z.leq s (Z.of_string "0xffff")
+      | UInt32 -> Z.leq s (Z.of_string "0xffffffff")
+      | UInt64 -> Z.leq s (Z.of_string "0xffffffffffffffff")
+      | _ -> false (* conservative decision *)
+    in
+    let normalize = function
+      | ECast ({ node = EConstant (_, s); _ }, TInt w') when fits s w' ->
+          EConstant (w', s)
+      | c ->
+          c
+    in
+    match normalize scrut.node with
+    | EConstant c ->
+        begin match List.find_opt (function (SConstant c', _) -> const_eq c c' | _ -> false) branches with
+        | Some (_, b) ->
+            (self#visit_expr env b).node
+        | None ->
+            begin match List.find_opt (fun (sv, _) -> sv = SWild) branches with
+            | Some (_, b) ->
+                (self#visit_expr env b).node
+            | None ->
+                assert (snd env = TUnit);
+                EUnit
+            end
+        end
+    | _ ->
+        super#visit_ESwitch env scrut branches
 end
 
 let contains_array t = object(_self)
