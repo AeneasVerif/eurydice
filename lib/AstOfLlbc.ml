@@ -597,7 +597,7 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
          pass one for the other *)
       maybe_addrof env ty e
 
-  | UnaryOp (Cast (CastInteger (_, dst)), e) ->
+  | UnaryOp (Cast (CastScalar (_, TInteger dst)), e) ->
       let dst = K.TInt (width_of_integer_type dst) in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
   | UnaryOp (op, o1) ->
