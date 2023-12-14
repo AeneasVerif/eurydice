@@ -95,6 +95,21 @@ let remove_assignments = object(self)
             (count e)
             (fun not_yet_closed ->
               EWhile (self#visit_expr_w not_yet_closed e, recurse_or_close not_yet_closed e'))
+      | ESwitch (e, branches) ->
+          with_type e.typ @@ close_now_over not_yet_closed (
+            (* We must now bind: *)
+              (count e) ++
+                (* i.e., whichever variables were in the condition *)
+              (Krml.KList.reduce AtomSet.inter (List.map (fun (_p, e) -> count e) branches)))
+                (* i.e., variables that appear in all branches -- note that
+                   switches don't bind variables in their branches so it's simpler
+                   than the match below*)
+            (fun not_yet_closed ->
+              ESwitch (
+                self#visit_expr_w not_yet_closed e,
+                List.map (fun (p, e) ->
+                  p, recurse_or_close not_yet_closed e
+                ) branches))
       | EMatch (c, e, branches) ->
           with_type e.typ @@ close_now_over not_yet_closed (
             (* We must now bind: *)
@@ -149,6 +164,25 @@ let remove_assignments = object(self)
           ELet (b,
             with_type TUnit (EWhile (self#visit_expr_w not_yet_closed e, recurse_or_close not_yet_closed e')),
             recurse_or_close not_yet_closed e2))
+    | ESwitch (e, branches) ->
+        assert (b.node.meta = Some MetaSequence);
+        close_now_over not_yet_closed (
+          (* We must now bind: *)
+            (count e) ++
+              (* i.e., whichever variables were in the condition *)
+            (Krml.KList.reduce AtomSet.inter (List.map (fun (_p, e) -> count e) branches)) ++
+              (* i.e., variables that appear in all branches -- note that
+                 switches don't bind variables in their branches so it's simpler
+                 than the match below*)
+            (AtomSet.inter
+              (Krml.KList.reduce (++) (List.map (fun (_, e) -> count e) branches))
+              (count e2)))
+              (* i.e., variables in either one of the branches *and* used later *)
+          (fun not_yet_closed ->
+            ELet (b, with_type e1.typ (ESwitch (
+                self#visit_expr_w not_yet_closed e,
+                List.map (fun (p, e) -> p, recurse_or_close not_yet_closed e) branches)),
+              recurse_or_close not_yet_closed e2))
     | EMatch (c, e, branches) ->
         assert (b.node.meta = Some MetaSequence);
         close_now_over not_yet_closed (
