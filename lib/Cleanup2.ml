@@ -248,3 +248,27 @@ let remove_literals = object(_self)
     else
       super_map#visit_EFlat env fields
 end
+
+let remove_constants map = object(_self)
+  inherit [_] map as super
+
+  method! visit_DGlobal _env flags name n t body =
+    super#visit_DGlobal true flags name n t body
+
+  method! visit_EQualified env lid =
+    (* In constant definition *)
+    if fst env && Hashtbl.mem map lid then
+      (Hashtbl.find map lid).node
+    else
+      EQualified lid
+end
+
+let remove_constants files =
+  let map = Krml.Helpers.build_map files (fun map decl ->
+    match decl with
+    | DGlobal (_, name, _, _, body) ->
+        Hashtbl.add map name body
+    | _ ->
+        ()
+  ) in
+  (remove_constants map)#visit_files false files
