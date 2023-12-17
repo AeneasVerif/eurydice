@@ -101,7 +101,6 @@ Supported options:|}
   let _, files = Krml.DataTypes.everything files in
   let files = Eurydice.Cleanup2.remove_trivial_ite#visit_files () files in
   let files = Eurydice.Cleanup2.remove_trivial_into#visit_files () files in
-  let files = Eurydice.Cleanup2.remove_constants files in
   let files = Krml.Structs.pass_by_ref files in
   let files = Eurydice.Cleanup2.remove_literals#visit_files () files in
   let files = Krml.Simplify.optimize_lets files in
@@ -113,6 +112,7 @@ Supported options:|}
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
   let files = Krml.Inlining.cross_call_analysis files in
+  let files, macros = Eurydice.Cleanup2.build_macros files in
 
   Eurydice.Logging.log "Phase3" "%a" pfiles files;
   let errors, files = Krml.Checker.check_everything ~warn:true files in
@@ -120,16 +120,18 @@ Supported options:|}
     exit 1;
 
   let macros =
-    (object(self)
-      inherit [_] Krml.Ast.reduce
-      method private zero = Krml.Idents.LidSet.empty
-      method private plus = Krml.Idents.LidSet.union
-      method! visit_DExternal _ _ _ n_cgs n name _ _ =
-        if n > 0 || n_cgs > 0 then
-          Krml.Idents.LidSet.singleton name
-        else
-          self#zero
-    end)#visit_files () files
+    Krml.Idents.LidSet.union
+      macros
+      ((object(self)
+        inherit [_] Krml.Ast.reduce
+        method private zero = Krml.Idents.LidSet.empty
+        method private plus = Krml.Idents.LidSet.union
+        method! visit_DExternal _ _ _ n_cgs n name _ _ =
+          if n > 0 || n_cgs > 0 then
+            Krml.Idents.LidSet.singleton name
+          else
+            self#zero
+      end)#visit_files () files)
   in
   let macros = Krml.Idents.LidSet.union macros Eurydice.Builtin.macros in
   let open Krml in
