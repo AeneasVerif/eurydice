@@ -85,6 +85,18 @@ Supported options:|}
     exit 1;
 
   Printf.printf "2️⃣ Cleanup\n";
+  let files =
+    (* Custom bundling, for now -- since our bundling operates based on
+       declaration lids, not their original file. *)
+    let prefix, (f, decls) = Krml.KList.split_at_last files in
+    let core, decls = List.fold_left (fun (core, decls) decl ->
+      match Krml.Ast.lid_of_decl decl with
+      | "core" :: _, _ -> Krml.Bundles.mark_private decl :: core, decls
+      | _ -> core, decl :: decls
+    ) ([], []) decls in
+    prefix @ [ "core", List.rev core; f, List.rev decls ]
+  in
+  let files = Krml.Inlining.drop_unused files in
   let files = Eurydice.Cleanup1.cleanup files in
 
   Eurydice.Logging.log "Phase2" "%a" pfiles files;
@@ -163,6 +175,7 @@ Supported options:|}
     (List.filter_map (function (name, C11.Public _) -> Some name | _ -> None) headers)
   in
   let files = CStarToC11.mk_files c_name_map files in
+  Krml.Output.maybe_create_internal_dir headers;
   ignore (Output.write_c files internal_headers deps);
   ignore (Output.write_h headers public_headers deps);
 
