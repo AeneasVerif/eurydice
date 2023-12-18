@@ -4,7 +4,7 @@
      style=""/>
 <figcaption>
 Nicolas Poussin, <i>Orphée et Eurydice</i>.
-Musée du Louvre, digital image from Michael Lahanis.
+Musée du Louvre.
 <a href="https://commons.wikimedia.org/wiki/File:Orph%C3%A9e_et_Eurydice_-_Nicolas_Poussin_-_Mus%C3%A9e_du_Louvre_Peintures_INV_7307.jpg">Source</a>
 </figcaption>
 </div></p>
