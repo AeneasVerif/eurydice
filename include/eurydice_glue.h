@@ -11,7 +11,7 @@
 #define KRML_HOST_EXIT exit
 #define KRML_HOST_EPRINTF(...) fprintf(stderr, __VA_ARGS__)
 
-#define LowStar_Ignore_ignore(e, t) ((void)e)
+#define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
 
 #if defined(__linux__) || defined(__CYGWIN__) || defined (__USE_SYSTEM_ENDIAN_H__) || defined(__GLIBC__)
 #  include <endian.h>
