@@ -1,6 +1,15 @@
 #pragma once
 
-#include "krmllib.h"
+#include <inttypes.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+
+#include "krml/lowstar_endianness.h"
+#include "krml/internal/target.h"
+
+#define LowStar_Ignore_ignore(e, t) ((void)e)
 
 // SLICES, ARRAYS, ETC.
 
