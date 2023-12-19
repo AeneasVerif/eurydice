@@ -1,40 +1,6 @@
 #pragma once
 
-#include <inttypes.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
-
-// SYSTEM DEFINITIONS (taken from krml...)
-
-#define KRML_HOST_EXIT exit
-#define KRML_HOST_EPRINTF(...) fprintf(stderr, __VA_ARGS__)
-
-#define LowStar_Ignore_ignore(e, t) ((void)e)
-
-#if defined(__linux__) || defined(__CYGWIN__) || defined (__USE_SYSTEM_ENDIAN_H__) || defined(__GLIBC__)
-#  include <endian.h>
-
-/* ... for OSX */
-#elif defined(__APPLE__)
-#  include <libkern/OSByteOrder.h>
-#  define htole64(x) OSSwapHostToLittleInt64(x)
-#  define le64toh(x) OSSwapLittleToHostInt64(x)
-#  define htobe64(x) OSSwapHostToBigInt64(x)
-#  define be64toh(x) OSSwapBigToHostInt64(x)
-
-#  define htole16(x) OSSwapHostToLittleInt16(x)
-#  define le16toh(x) OSSwapLittleToHostInt16(x)
-#  define htobe16(x) OSSwapHostToBigInt16(x)
-#  define be16toh(x) OSSwapBigToHostInt16(x)
-
-#  define htole32(x) OSSwapHostToLittleInt32(x)
-#  define le32toh(x) OSSwapLittleToHostInt32(x)
-#  define htobe32(x) OSSwapHostToBigInt32(x)
-#  define be32toh(x) OSSwapBigToHostInt32(x)
-#endif
-
+#include "krmllib.h"
 
 // SLICES, ARRAYS, ETC.
 
