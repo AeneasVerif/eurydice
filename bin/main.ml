@@ -54,7 +54,8 @@ Supported options:|}
     parentheses := true;
     no_shadow := true;
     static_header := [
-      Bundle.Prefix [ "core" ]
+      Bundle.Prefix [ "core"; "convert" ];
+      Bundle.Prefix [ "core"; "num" ]
     ]
   ));
 
@@ -96,7 +97,6 @@ Supported options:|}
     ) ([], []) decls in
     prefix @ [ "core", List.rev core; f, List.rev decls ]
   in
-  let files = Krml.Inlining.drop_unused files in
   let files = Eurydice.Cleanup1.cleanup files in
 
   Eurydice.Logging.log "Phase2" "%a" pfiles files;
@@ -107,6 +107,7 @@ Supported options:|}
   Printf.printf "3️⃣ Monomorphization, datatypes\n";
   let files = Krml.Monomorphization.functions files in
   let files = Krml.Monomorphization.datatypes files in
+  let files = Krml.Inlining.drop_unused files in
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
   let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
   let files = Krml.DataTypes.simplify files in
@@ -125,6 +126,7 @@ Supported options:|}
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
   let files = Krml.Inlining.cross_call_analysis files in
+  let files = Krml.Simplify.remove_unused files in
   let files, macros = Eurydice.Cleanup2.build_macros files in
 
   Eurydice.Logging.log "Phase3" "%a" pfiles files;
@@ -157,7 +159,7 @@ Supported options:|}
       | Krml.Ast.DExternal (_, _, _, _, lid, t, _) when Krml.Monomorphization.(
         has_variables [ t ] || has_cg_array [ t ]
       ) ->
-          KPrint.bprintf "Warning: %a is a type/const-polymorhic assumed function, \
+          KPrint.bprintf "Warning: %a is a type/const-polymorphic assumed function, \
             must be implemented with a macro, dropping it\n" Krml.PrintAst.Ops.plid lid;
           None
       | _ ->
@@ -175,6 +177,7 @@ Supported options:|}
     (List.filter_map (function (name, C11.Public _) -> Some name | _ -> None) headers)
   in
   let files = CStarToC11.mk_files c_name_map files in
+  let files = List.filter (fun (_, decls) -> List.length decls > 0) files in
   Krml.Output.maybe_create_internal_dir headers;
   ignore (Output.write_c files internal_headers deps);
   ignore (Output.write_h headers public_headers deps);
