@@ -74,7 +74,7 @@ Supported options:|}
 
   let files = Eurydice.Builtin.files @ List.map (fun filename ->
     let llbc = Eurydice.LoadLlbc.load_file filename in
-    Eurydice.AstOfLlbc.file_of_crate llbc
+    Eurydice.Builtin.adjust (Eurydice.AstOfLlbc.file_of_crate llbc)
   ) !files in
 
   Printf.printf "1️⃣ LLBC ➡️  AST\n";
