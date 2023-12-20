@@ -346,8 +346,5 @@ let adjust (f, decls) =
     | Krml.Ast.DExternal (_, _, _, _, (["core"; "num"; mid], "BITS" as lid), _, _) when Krml.KString.starts_with mid "{u32" ->
         Krml.Ast.DGlobal ([], lid, 0, Krml.Helpers.uint32, Krml.Helpers.mk_uint32 32)
     | d ->
-        Printf.printf "skipping %s // %s\n"
-          (String.concat " -- " (fst (Krml.Ast.lid_of_decl d)))
-          (snd (Krml.Ast.lid_of_decl d));
         d
   ) decls
