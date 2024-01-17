@@ -1,6 +1,6 @@
 CHARON_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../charon
 KRML_HOME 		?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../karamel
-EURYDICE	= ./eurydice $(EURYDICE_FLAGS)
+EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
 
 CHARON_TEST_FILES	= array
 TEST_DIRS		= array const_generics traits array2d int_switch nested_arrays # step_by
