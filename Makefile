@@ -34,10 +34,10 @@ test/%/out.llbc: phony
 	cd test/$* && $(CHARON) --errors-as-warnings && mv $*.llbc out.llbc
 
 out/test-%/main.c: test/main.c
+	mkdir -p out/test-$*
 	sed 's/__NAME__/$*/g' $< > $@
 
 test-%: test/%/out.llbc out/test-%/main.c | all
-	mkdir -p out/test-$*
 	$(EURYDICE) --output out/test-$* $<
 	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $*.c main.c && ./a.out
 
