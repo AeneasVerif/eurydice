@@ -478,7 +478,7 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
               [[ b ],
               with_type e.typ (
                 PCons (variant.C.variant_name,
-                Krml.KList.make (List.length variant.fields) (fun i ->
+                List.init (List.length variant.fields) (fun i ->
                   if i = field_id then
                     with_type field_t (PBound 0)
                   else
@@ -917,7 +917,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
 
   | Switch (SwitchInt (scrutinee, _int_ty, branches, default)) ->
       let scrutinee = expression_of_operand env scrutinee in
-      let branches = Krml.KList.map_flatten (fun (svs, stmt) ->
+      let branches = List.concat_map (fun (svs, stmt) ->
         List.map (fun sv ->
           K.SConstant (constant_of_scalar_value sv), expression_of_raw_statement env ret_var stmt.C.content
         ) svs
@@ -944,7 +944,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let branches = List.concat_map (fun (variant_ids, e) ->
         List.map (fun variant_id ->
           let variant_name, n_fields = variant_name_of_variant_id variant_id in
-          let dummies = Krml.KList.make n_fields (fun _ -> K.(with_type TAny PWild)) in
+          let dummies = List.init n_fields (fun _ -> K.(with_type TAny PWild)) in
           let pat = K.with_type p.typ (K.PCons (variant_name, dummies)) in
           [], pat, expression_of_raw_statement env ret_var e.C.content
         ) variant_ids

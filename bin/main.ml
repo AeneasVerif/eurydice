@@ -154,7 +154,7 @@ Supported options:|}
   let c_name_map = Simplify.allocate_c_names files in
   let deps = Bundles.direct_dependencies_with_internal files file_of_map in
   let files = List.map (fun (f, ds) ->
-    f, KList.filter_map (fun d ->
+    f, List.filter_map (fun d ->
       match d with
       | Krml.Ast.DExternal (_, _, _, _, lid, t, _) when Krml.Monomorphization.(
         has_variables [ t ] || has_cg_array [ t ]
