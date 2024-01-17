@@ -1,6 +1,7 @@
 CHARON_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../charon
 KRML_HOME 		?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../karamel
 EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
+CHARON		?= $(CHARON_HOME)/bin/charon
 
 CHARON_TEST_FILES	= array
 TEST_DIRS		= array const_generics traits array2d int_switch nested_arrays # step_by
@@ -30,7 +31,7 @@ charon-test-%: $(CHARON_HOME)/tests/llbc/%.llbc | out/test-% all
 # Tests checked into the current repository
 .PHONY: phony
 test/%/out.llbc: phony
-	cd test/$* && $(CHARON_HOME)/bin/charon --errors-as-warnings && mv $*.llbc out.llbc
+	cd test/$* && $(CHARON) --errors-as-warnings && mv $*.llbc out.llbc
 
 out/test-%/main.c: test/main.c
 	sed 's/__NAME__/$*/g' $< > $@
