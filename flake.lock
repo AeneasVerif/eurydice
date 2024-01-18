@@ -167,16 +167,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1705484823,
+        "lastModified": 1705542599,
         "narHash": "sha256-wNtuRRvMzRzBE2xKreNSM9uJecDHFUXyug1+O9t+eyQ=",
         "owner": "FStarLang",
         "repo": "karamel",
-        "rev": "91952a800a030ed6b87d523811e953f1983eb2ea",
+        "rev": "fdf6a10aa22f9b1b3effffeeb270229447b5bb9b",
         "type": "github"
       },
       "original": {
         "owner": "FStarLang",
-        "ref": "nix-expose-lib",
         "repo": "karamel",
         "type": "github"
       }
