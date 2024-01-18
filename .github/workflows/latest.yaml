@@ -17,4 +17,4 @@ jobs:
               nix flake update --update-input $input
           done
       - name: Build and test
-        run: nix flake check
+        run: nix flake check -L

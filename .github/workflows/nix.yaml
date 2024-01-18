@@ -12,4 +12,4 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Build and test
-        run: nix flake check
+        run: nix flake check -L
