@@ -30,6 +30,7 @@ charon-test-%: $(CHARON_HOME)/tests/llbc/%.llbc | out/test-% all
 
 # Tests checked into the current repository
 .PHONY: phony
+.PRECIOUS: test/%/out.llbc
 test/%/out.llbc: phony
 	cd test/$* && $(CHARON) --errors-as-warnings && mv $*.llbc out.llbc
 

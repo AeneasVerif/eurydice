@@ -118,10 +118,11 @@ Supported options:|}
   let files = Krml.Structs.pass_by_ref files in
   let files = Eurydice.Cleanup2.remove_literals#visit_files () files in
   let files = Krml.Simplify.optimize_lets files in
-  let files = Eurydice.Cleanup2.break_down_nested_arrays#visit_files () files in
+  (* let files = Eurydice.Cleanup2.break_down_nested_arrays#visit_files () files in *)
   let files = Eurydice.Cleanup2.remove_implicit_array_copies#visit_files () files in
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
   let files = Krml.Simplify.hoist#visit_files [] files in
+  Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files = Krml.Simplify.fixup_hoist#visit_files () files in
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
