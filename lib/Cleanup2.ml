@@ -90,32 +90,48 @@ let remove_array_repeats = object(self)
     match e.node, es with
     | ETApp ({ node = EQualified lid; _ }, [ len ], [ _ ]), [ init ] when lid = Builtin.array_repeat.name ->
         let l = match len.node with EConstant (_, s) -> int_of_string s | _ -> failwith "impossible" in
+        let init = self#visit_expr env init in
         EBufCreateL (Stack, List.init l (fun _ -> init))
     | _ ->
         super#visit_EApp env e es
 
   method! visit_ELet (((), _) as env) b e1 e2 =
+    let rec all_repeats e =
+      match e.node with
+      | EConstant _ ->
+          true
+      | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ _ ], [ _ ]); _ }, [ init ]) when lid = Builtin.array_repeat.name ->
+          all_repeats init
+      | _ ->
+          false
+    in
     match e1.node with
     | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], [ _ ]); _ }, [ init ]) when lid = Builtin.array_repeat.name ->
-        (* let b = [ init; len ] *)
-        let module H = Krml.Helpers in
-        let len = self#visit_expr env len in
-        let init = self#visit_expr env init in
-        (* let b; *)
-        ELet (b, H.any,
-        (* let _ = *)
-        with_type e2.typ (ELet (H.sequence_binding (),
-          (* for *)
-          H.with_unit (EFor (Krml.Helpers.fresh_binder ~mut:true "i" H.usize, H.zero_usize (* i = 0 *),
-            H.mk_lt_usize (Krml.DeBruijn.lift 2 len) (* i < len *),
-            H.mk_incr_usize (* i++ *),
-            let i = with_type H.usize (EBound 0) in
-            let b = with_type b.typ (EBound 1) in
-            let b_i = with_type (H.assert_tbuf_or_tarray b.typ) (EBufRead (b, i)) in
-            (* b[i] := init *)
-            H.with_unit (EAssign (b_i, Krml.DeBruijn.lift 2 init)))),
-        (* e2 *)
-        Krml.DeBruijn.lift 1 (self#visit_expr env e2))))
+        if all_repeats e1 then
+          (* Further code-gen can handle nested ebufcreatel's by using nested
+             static initializer lists, possiblye shortening to { 0 } if
+             applicable. *)
+          super#visit_ELet env b e1 e2
+        else
+          (* let b = [ init; len ] *)
+          let module H = Krml.Helpers in
+          let len = self#visit_expr env len in
+          let init = self#visit_expr env init in
+          (* let b; *)
+          ELet (b, H.any,
+          (* let _ = *)
+          with_type e2.typ (ELet (H.sequence_binding (),
+            (* for *)
+            H.with_unit (EFor (Krml.Helpers.fresh_binder ~mut:true "i" H.usize, H.zero_usize (* i = 0 *),
+              H.mk_lt_usize (Krml.DeBruijn.lift 2 len) (* i < len *),
+              H.mk_incr_usize (* i++ *),
+              let i = with_type H.usize (EBound 0) in
+              let b = with_type b.typ (EBound 1) in
+              let b_i = with_type (H.assert_tbuf_or_tarray b.typ) (EBufRead (b, i)) in
+              (* b[i] := init *)
+              H.with_unit (EAssign (b_i, Krml.DeBruijn.lift 2 init)))),
+          (* e2 *)
+          Krml.DeBruijn.lift 1 (self#visit_expr env e2))))
 
     | _ ->
         super#visit_ELet env b e1 e2

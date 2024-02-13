@@ -821,24 +821,28 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
 
   | Call { func = FnOpRegular ({
         func;
-        generics = { types = type_args; const_generics = const_generic_args; _ };
+        generics = { types = type_args; const_generics = const_generic_args; trait_refs; _ };
         trait_and_method_generic_args
       } as fn_ptr); args; dest; _ }
   ->
       (* General case for function calls and trait method calls. *)
       L.log "Calls" "Visiting call: %s" (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
       L.log "Calls" "is_array_map: %b" (RustNames.is_array_map env fn_ptr);
-      L.log "Calls" "--> %d type_args, %d const_generics" (List.length type_args) (List.length const_generic_args);
+      L.log "Calls" "--> %d type_args, %d const_generics, %d trait_refs"
+        (List.length type_args) (List.length const_generic_args) (List.length trait_refs);
 
       (* For now, we take trait type arguments to be part of the code-gen *)
-      let type_args, const_generic_args =
+      let type_args, const_generic_args, trait_refs =
         match trait_and_method_generic_args with
         | None ->
-            type_args, const_generic_args
-        | Some { types; const_generics; _ } ->
-            types @ type_args, const_generics @ const_generic_args
+            type_args, const_generic_args, trait_refs
+        | Some { types; const_generics; trait_refs; _ } ->
+            types @ type_args, const_generics @ const_generic_args, trait_refs @ trait_refs
       in
-      L.log "Calls" "--> %d type_args, %d const_generics" (List.length type_args) (List.length const_generic_args);
+      L.log "Calls" "--> %d type_args, %d const_generics, %d trait_refs"
+        (List.length type_args) (List.length const_generic_args) (List.length trait_refs);
+      L.log "Calls" "--> trait_refs: %s\n"
+        (String.concat " ++ " (List.map (Charon.PrintTypes.trait_ref_to_string env.format_env) trait_refs));
       L.log "Calls" "--> pattern: %s" (string_of_fn_ptr env fn_ptr);
 
       let dest, _ = expression_of_place env dest in
