@@ -18,7 +18,6 @@ type config = file list
 let load_config (path: string): Yaml.value =
   (* TODO: library not found: Yaml_unix *)
   let contents = Krml.Utils.file_get_contents path in
-  print_endline contents;
   match Yaml.of_string contents with
   | Error (`Msg s) ->
       Krml.Warn.fatal_error "Issue reading configuration file: %s" s
@@ -64,8 +63,21 @@ let parse_file (v: Yaml.value): file =
         | Some (`A private_) -> List.map parse_pattern private_
         | Some _ -> parsing_error "private not a list"
       in
+      let include_ =
+        match lookup "include" with
+        | None -> []
+        | Some (`A include_) -> List.map (function `String s -> Krml.Options.HeaderOnly name, s | _ -> parsing_error "include must be a string") include_
+        | Some _ -> parsing_error "include must be a list"
+      in
+      let c_include_ =
+        match lookup "include_in_c" with
+        | None -> []
+        | Some (`A include_) -> List.map (function `String s -> Krml.Options.COnly name, s | _ -> parsing_error "include_in_c must be a string") include_
+        | Some _ -> parsing_error "include_in_c must be a list"
+      in
       if !count < List.length ls then
         parsing_error "extraneous fields in file";
+      Krml.Options.(add_include := include_ @ c_include_ @ !add_include);
       { name; api; private_ }
   | _ ->
       parsing_error "file must be an object"
@@ -115,11 +127,11 @@ let bundle (files: file list) (c: config): files =
             false
         | { name; api; private_ } :: files ->
             if List.exists (matches lid) api then begin
-              Krml.(KPrint.bprintf "%a goes (api) into %s\n" PrintAst.Ops.plid lid name);
+              (* Krml.(KPrint.bprintf "%a goes (api) into %s\n" PrintAst.Ops.plid lid name); *)
               bundle name decl;
               true
             end else if List.exists (matches lid) private_ then begin
-              Krml.(KPrint.bprintf "%a goes (private) into %s\n" PrintAst.Ops.plid lid name);
+              (* Krml.(KPrint.bprintf "%a goes (private) into %s\n" PrintAst.Ops.plid lid name); *)
               bundle name (Krml.Bundles.mark_private decl);
               true
             end else
