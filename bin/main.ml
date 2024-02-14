@@ -16,6 +16,7 @@ Supported options:|}
     "--log", Arg.Set_string O.log_level, " log level, use * for everything";
     "--debug", Arg.String debug, " debug options, to be passed to krml";
     "--output", Arg.Set_string Krml.Options.tmpdir, " output directory in which to write files";
+    "--config", Arg.Set_string O.config, " YAML configuration file";
   ] in
   let spec = Arg.align spec in
   let files = ref [] in
@@ -87,15 +88,16 @@ Supported options:|}
 
   Printf.printf "2️⃣ Cleanup\n";
   let files =
-    (* Custom bundling, for now -- since our bundling operates based on
-       declaration lids, not their original file. *)
-    let prefix, (f, decls) = Krml.KList.split_at_last files in
-    let core, decls = List.fold_left (fun (core, decls) decl ->
-      match Krml.Ast.lid_of_decl decl with
-      | "core" :: _, _ -> Krml.Bundles.mark_private decl :: core, decls
-      | _ -> core, decl :: decls
-    ) ([], []) decls in
-    prefix @ [ "core", List.rev core; f, List.rev decls ]
+    if !O.config = "" then
+      files
+    else
+      let config = Eurydice.Bundles.load_config !O.config in
+      let config = Eurydice.Bundles.parse_config config in
+      let files = Eurydice.Bundles.bundle files config in
+      let files = Krml.Bundles.topological_sort files in
+      Krml.KPrint.bprintf "File order after topological sort: %s\n"
+        (String.concat ", " (List.map fst files));
+      files
   in
   let files = Eurydice.Cleanup1.cleanup files in
 
@@ -154,10 +156,18 @@ Supported options:|}
   let c_name_map = Simplify.allocate_c_names files in
   let deps = Bundles.direct_dependencies_with_internal files file_of_map in
   let files = List.map (fun (f, ds) ->
+    let is_fine = function
+      | ["LowStar"; "Ignore"], "ignore"
+      | "Eurydice" :: _, _ ->
+      (* | "core" :: _, _ -> *)
+          true
+      | _ ->
+          false
+    in
     f, List.filter_map (fun d ->
       match d with
       | Krml.Ast.DExternal (_, _, _, _, lid, t, _) when Krml.Monomorphization.(
-        has_variables [ t ] || has_cg_array [ t ]
+        (has_variables [ t ] || has_cg_array [ t ]) && not (is_fine lid)
       ) ->
           KPrint.bprintf "Warning: %a is a type/const-polymorphic assumed function, \
             must be implemented with a macro, dropping it\n" Krml.PrintAst.Ops.plid lid;
