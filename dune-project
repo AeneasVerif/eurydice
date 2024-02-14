@@ -18,6 +18,6 @@
  (synopsis "A Rust to C translator")
  (description "Eurydice builds upon Charon to take existing Rust code and
               translate it to C")
- (depends ocaml dune terminal))
+ (depends ocaml dune terminal yaml))
 
 (using menhir 2.1)
