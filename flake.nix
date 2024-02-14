@@ -49,7 +49,7 @@
 
           nativeBuildInputs = [gnugrep];
 
-          propagatedBuildInputs = [krml charon-ml ocamlPackages.terminal];
+          propagatedBuildInputs = [krml charon-ml ocamlPackages.terminal ocamlPackages.yaml];
 
           passthru = {
             tests = stdenv.mkDerivation {
