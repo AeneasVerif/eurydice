@@ -127,8 +127,10 @@ Supported options:|}
   let files = Krml.Simplify.fixup_hoist#visit_files () files in
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
+  Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files = Krml.Inlining.cross_call_analysis files in
   let files = Krml.Simplify.remove_unused files in
+  (* Macros stemming from globals *)
   let files, macros = Eurydice.Cleanup2.build_macros files in
 
   Eurydice.Logging.log "Phase3" "%a" pfiles files;
@@ -136,24 +138,16 @@ Supported options:|}
   if errors then
     exit 1;
 
+  let scope_env = Krml.Simplify.allocate_c_env files in
+  let files = Eurydice.Cleanup3.decay_cg_externals#visit_files (scope_env, false) files in
   let macros =
-    Krml.Idents.LidSet.union
-      macros
-      ((object(self)
-        inherit [_] Krml.Ast.reduce
-        method private zero = Krml.Idents.LidSet.empty
-        method private plus = Krml.Idents.LidSet.union
-        method! visit_DExternal _ _ _ n_cgs n name _ _ =
-          if n > 0 || n_cgs > 0 then
-            Krml.Idents.LidSet.singleton name
-          else
-            self#zero
-      end)#visit_files () files)
+    let cg_macros = Eurydice.Cleanup3.build_cg_macros#visit_files () files in
+    Krml.Idents.LidSet.(union (union macros cg_macros) Eurydice.Builtin.macros)
   in
-  let macros = Krml.Idents.LidSet.union macros Eurydice.Builtin.macros in
+  let c_name_map = Krml.GlobalNames.mapping (fst scope_env) in
+
   let open Krml in
   let file_of_map = Bundle.mk_file_of files in
-  let c_name_map = Simplify.allocate_c_names files in
   let deps = Bundles.direct_dependencies_with_internal files file_of_map in
   let files = List.map (fun (f, ds) ->
     let is_fine = function
