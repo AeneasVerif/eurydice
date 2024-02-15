@@ -64,10 +64,10 @@ let parse_file (v: Yaml.value): file =
         | Some _ -> parsing_error "private not a list"
       in
       let include_ =
-        match lookup "include" with
+        match lookup "include_in_h" with
         | None -> []
-        | Some (`A include_) -> List.map (function `String s -> Krml.Options.HeaderOnly name, s | _ -> parsing_error "include must be a string") include_
-        | Some _ -> parsing_error "include must be a list"
+        | Some (`A include_) -> List.map (function `String s -> Krml.Options.HeaderOnly name, s | _ -> parsing_error "include_in_h must be a string") include_
+        | Some _ -> parsing_error "include_in_h must be a list"
       in
       let c_include_ =
         match lookup "include_in_c" with
