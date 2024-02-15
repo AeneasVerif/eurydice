@@ -49,6 +49,7 @@ Supported options:|}
   Krml.(Options.(
     allow_tapps := true;
     minimal := true;
+    curly_braces := true;
     add_include := [ All, "\"eurydice_glue.h\"" ];
     (* header := "/* This file compiled from Rust to C by Eurydice \ *)
     (*   <http://github.com/aeneasverif/eurydice> */"; *)
