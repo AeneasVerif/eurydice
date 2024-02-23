@@ -238,7 +238,7 @@ let constant_of_scalar_value { C.value; int_ty } =
 
 let assert_cg_scalar = function
   | C.CgValue (VScalar n) -> n
-  | _ -> failwith "Unsupported: non-constant const generic"
+  | cg -> failwith ("Unsupported: non-constant const generic: " ^ C.show_const_generic cg)
 
 let cg_of_const_generic env cg =
   match cg with
@@ -510,27 +510,6 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
         failwith "unexpected / ill-typed projection"
   ) (e, ty) projection
 
-let expression_of_operand (env: env) (p: C.operand): K.expr =
-  match p with
-  | Copy p ->
-      let p, ty = expression_of_place env p in
-      begin match ty with
-      | C.TAdt (TAssumed TArray, { const_generics = [ cg ]; _ }) ->
-          mk_deep_copy p (expression_of_const_generic env cg)
-      | _ ->
-          p
-      end
-
-  | Move p ->
-      fst (expression_of_place env p)
-  | Constant ({ value = CLiteral l; _ }) ->
-      expression_of_literal env l
-  | Constant ({ value = CVar id; _ }) ->
-      expression_of_cg_var_id env id
-  | Constant _ ->
-      Krml.Warn.fatal_error "expression_of_operand Constant: %s"
-        (Charon.PrintExpressions.operand_to_string env.format_env p)
-
 let op_of_unop (op: C.unop): Krml.Constant.op =
   match op with
   | C.Not -> Not
@@ -692,6 +671,31 @@ let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
       hd
   in
   hd, is_assumed, output
+
+
+let expression_of_operand (env: env) (p: C.operand): K.expr =
+  match p with
+  | Copy p ->
+      let p, ty = expression_of_place env p in
+      begin match ty with
+      | C.TAdt (TAssumed TArray, { const_generics = [ cg ]; _ }) ->
+          mk_deep_copy p (expression_of_const_generic env cg)
+      | _ ->
+          p
+      end
+
+  | Move p ->
+      fst (expression_of_place env p)
+  | Constant ({ value = CLiteral l; _ }) ->
+      expression_of_literal env l
+  | Constant ({ value = CVar id; _ }) ->
+      expression_of_cg_var_id env id
+  | Constant ({ value = CFnPtr fn_ptr; _ }) ->
+      let e, _, _ = expression_of_fn_ptr env fn_ptr in
+      e
+  | Constant _ ->
+      Krml.Warn.fatal_error "expression_of_operand Constant: %s"
+        (Charon.PrintExpressions.operand_to_string env.format_env p)
 
 
 let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
@@ -864,25 +868,31 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
   | Call { func = FnOpRegular fn_ptr; args; dest; _ } when RustNames.is_array_map env fn_ptr ->
       (* Special treatment: bug in NameMatcher + avoid allocating a temporary array and directly
          write the result in the destination. *)
-      let t = List.hd fn_ptr.generics.types in
+      let t_src = List.hd fn_ptr.generics.types in
+      let t_fun = List.nth fn_ptr.generics.types 1 in
       let n = List.hd fn_ptr.generics.const_generics in
       let src = List.hd args in
+      let f = List.nth args 1 in
 
-      let n = expression_of_scalar_value (assert_cg_scalar n) in
-      let t = typ_of_ty env t in
+      let n = expression_of_const_generic env n in
+      let t_src = typ_of_ty env t_src in
+      let t_fun = typ_of_ty env t_fun in
+      let t_dst = match t_fun with TArrow (t_src', t_dst) when t_src = t_src' -> t_dst | _ -> assert false in
       let dest, _ = expression_of_place env dest in
       let src = expression_of_operand env src in
+      let f = expression_of_operand env f in
 
       (* for (let i = 0; i < n; ++i)
            dst[i] = f(src[i]);
       *)
       let module H = Krml.Helpers in
       H.with_unit (K.EFor (Krml.Helpers.fresh_binder ~mut:true "i" H.usize, H.zero_usize (* i = 0 *),
-        H.mk_lt_usize n (* i < n *),
+        H.mk_lt_usize (Krml.DeBruijn.lift 1 n) (* i < n *),
         H.mk_incr_usize (* i++ *),
         let i = K.with_type H.usize (K.EBound 0) in
         H.with_unit (K.EBufWrite (Krml.DeBruijn.lift 1 dest, i,
-          K.with_type t (K.EBufRead (Krml.DeBruijn.lift 1 src, i))))))
+          K.with_type t_dst (
+            K.EApp (f, [ K.with_type t_src (K.EBufRead (Krml.DeBruijn.lift 1 src, i))]))))))
 
   | Call { func = FnOpRegular fn_ptr; args; dest; _ } ->
 
