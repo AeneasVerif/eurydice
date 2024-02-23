@@ -131,6 +131,7 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files = Krml.Inlining.cross_call_analysis files in
   let files = Krml.Simplify.remove_unused files in
+  let files = Eurydice.Cleanup2.remove_array_from_fn#visit_files () files in
   (* Macros stemming from globals *)
   let files, macros = Eurydice.Cleanup2.build_macros files in
 

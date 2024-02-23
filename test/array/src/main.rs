@@ -23,10 +23,25 @@ fn mk_foo2() -> Foo {
     mk_foo()
 }
 
+// fn mk_incr2<const K: usize>() -> [ u32; K ] {
+//     let j = 1;
+//     core::array::from_fn(|i| i as u32 + j)
+// }
+
+fn mk_incr<const K: usize>() -> [ u32; K ] {
+    core::array::from_fn(|i| i as u32)
+}
+
 fn main() {
     let Foo { x, y } = mk_foo2();
     let expected = 0u32;
     mut_array(x);
     mut_foo(Foo { x, y });
     assert_eq!(x[0], expected);
+    let a: [ u32; 10 ] = mk_incr();
+    let expected = 9;
+    assert_eq!(a[9], expected);
+    // let a: [ u32; 10 ] = mk_incr2();
+    // let expected = 10;
+    // assert_eq!(a[9], expected);
 }

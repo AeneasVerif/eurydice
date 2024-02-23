@@ -294,11 +294,10 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
 
   | TAdt (TTuple, { types = args; const_generics; _ }) ->
       assert (const_generics = []);
-      if args = [] then
-        TUnit
-      else begin
-        assert (List.length args > 1);
-        TTuple (List.map (typ_of_ty env) args)
+      begin match args with
+      | [] -> TUnit
+      | [ t ] -> typ_of_ty env t (* happens with closures *)
+      | _ -> TTuple (List.map (typ_of_ty env) args)
       end
 
   | TAdt (TAssumed TArray, { types = [ t ]; const_generics = [ cg ]; _ }) ->
@@ -587,71 +586,6 @@ let maybe_addrof (env: env) (ty: C.ty) (e: K.expr) =
   | _ ->
       K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
 
-let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
-  match p with
-  | Use op ->
-      expression_of_operand env op
-  | RvRef (p, _) ->
-      let e, ty = expression_of_place env p in
-      (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
-         pass one for the other *)
-      maybe_addrof env ty e
-
-  | UnaryOp (Cast (CastScalar (_, TInteger dst)), e) ->
-      let dst = K.TInt (width_of_integer_type dst) in
-      K.with_type dst (K.ECast (expression_of_operand env e, dst))
-  | UnaryOp (op, o1) ->
-      mk_op_app (op_of_unop op) (expression_of_operand env o1) []
-  | BinaryOp (op, o1, o2) ->
-      mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
-  | Discriminant _ ->
-      failwith "expression_of_rvalue Discriminant"
-  | Aggregate (AggregatedAdt (TTuple, _, _), ops) ->
-      let ops = List.map (expression_of_operand env) ops in
-      let ts = List.map (fun x -> x.K.typ) ops in
-      if ops = [] then
-        K.with_type TUnit K.EUnit
-      else begin
-        assert (List.length ops > 1);
-        K.with_type (TTuple ts) (K.ETuple ops)
-      end
-  | Aggregate (AggregatedAdt (TAdtId typ_id, variant_id, { types = typ_args; const_generics; _ }), args) ->
-      let { C.name; kind; _ } = env.get_nth_type typ_id in
-      let typ_lid = lid_of_name env name in
-      let typ_args = List.map (typ_of_ty env) typ_args in
-      let cg_args = List.map (cg_of_const_generic env) const_generics in
-      let t = K.fold_tapp (typ_lid, typ_args, cg_args) in
-      let args = List.map (expression_of_operand env) args in
-      begin match variant_id with
-      | Some variant_id ->
-          let variant_id = (find_nth_variant env typ_id variant_id).variant_name in
-          K.with_type t (K.ECons (variant_id, args))
-      | None ->
-          let fields = match kind with Struct fields -> fields | _ -> failwith "not a struct" in
-          K.with_type t (K.EFlat (List.map2 (fun f a -> f.C.field_name, a) fields args))
-      end
-  | Aggregate (AggregatedAdt (TAssumed _, _, _), _) ->
-      failwith "unsupported: AggregatedAdt / TAssume"
-  | Aggregate (AggregatedClosure _, _) ->
-      failwith "unsupported: AggregatedClosure"
-  | Aggregate (AggregatedArray (t, cg), ops) ->
-      K.with_type (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))) (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
-  | Global id ->
-      let global = env.get_nth_global id in
-      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.name))
-
-let expression_of_assertion (env: env) ({ cond; expected }: C.assertion): K.expr =
-  let cond =
-    if not expected then
-      expression_of_operand env cond
-    else
-      Krml.Helpers.mk_not (expression_of_operand env cond)
-  in
-  K.(with_type TAny (
-    EIfThenElse (cond,
-      with_type TAny (EAbort (None, Some "assert failure")),
-      Krml.Helpers.eunit)))
-
 type lookup_result = {
   name: K.lident;
   n_type_args: int; (* just for a sanity check *)
@@ -706,6 +640,137 @@ let lookup_fun (env: env) (f: C.fn_ptr): lookup_result =
           | _ ->
               Krml.Warn.fatal_error "Error looking trait ref: %s %s"
                 (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref) method_name
+
+let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
+  let {
+    C.generics = { types = type_args; const_generics = const_generic_args; trait_refs; _ };
+    trait_and_method_generic_args;
+    _
+  } = fn_ptr in
+
+  (* General case for function calls and trait method calls. *)
+  L.log "Calls" "Visiting call: %s" (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
+  L.log "Calls" "is_array_map: %b" (RustNames.is_array_map env fn_ptr);
+  L.log "Calls" "--> %d type_args, %d const_generics, %d trait_refs"
+    (List.length type_args) (List.length const_generic_args) (List.length trait_refs);
+
+  let type_args, const_generic_args, trait_refs =
+    match trait_and_method_generic_args with
+    | None ->
+        type_args, const_generic_args, trait_refs
+    | Some { types; const_generics; trait_refs; _ } ->
+        types @ type_args, const_generics @ const_generic_args, trait_refs @ trait_refs
+  in
+  L.log "Calls" "--> %d type_args, %d const_generics, %d trait_refs"
+    (List.length type_args) (List.length const_generic_args) (List.length trait_refs);
+  L.log "Calls" "--> trait_refs: %s\n"
+    (String.concat " ++ " (List.map (Charon.PrintTypes.trait_ref_to_string env.format_env) trait_refs));
+  L.log "Calls" "--> pattern: %s" (string_of_fn_ptr env fn_ptr);
+
+  let type_args = List.map (typ_of_ty env) type_args in
+  let const_generic_args = List.map (expression_of_const_generic env) const_generic_args in
+  let { name; n_type_args = n_type_params; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_assumed } =
+    lookup_fun env fn_ptr
+  in
+
+  let inputs = if inputs = [] && not is_assumed then [ K.TUnit ] else inputs in
+  if not (n_type_params = List.length type_args) then
+    Krml.Warn.fatal_error "%a: n_type_params %d != type_args %d"
+      Krml.PrintAst.Ops.plid name
+      n_type_params (List.length type_args);
+  let poly_t_sans_cgs = Krml.Helpers.fold_arrow inputs output in
+  let poly_t = Krml.Helpers.fold_arrow cg_inputs poly_t_sans_cgs in
+  let output, t =
+    Krml.DeBruijn.(subst_ctn (List.length env.binders) const_generic_args (subst_tn type_args output)),
+    Krml.DeBruijn.(subst_ctn (List.length env.binders) const_generic_args (subst_tn type_args poly_t_sans_cgs))
+  in
+  let hd =
+    let hd = K.with_type poly_t (K.EQualified name) in
+    if type_args <> [] || const_generic_args <> [] then
+      K.with_type t (K.ETApp (hd, const_generic_args, type_args))
+    else
+      hd
+  in
+  hd, is_assumed, output
+
+
+let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
+  match p with
+  | Use op ->
+      expression_of_operand env op
+  | RvRef (p, _) ->
+      let e, ty = expression_of_place env p in
+      (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
+         pass one for the other *)
+      maybe_addrof env ty e
+
+  | UnaryOp (Cast (CastScalar (_, TInteger dst)), e) ->
+      let dst = K.TInt (width_of_integer_type dst) in
+      K.with_type dst (K.ECast (expression_of_operand env e, dst))
+  | UnaryOp (op, o1) ->
+      mk_op_app (op_of_unop op) (expression_of_operand env o1) []
+  | BinaryOp (op, o1, o2) ->
+      mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
+  | Discriminant _ ->
+      failwith "expression_of_rvalue Discriminant"
+  | Aggregate (AggregatedAdt (TTuple, _, _), ops) ->
+      let ops = List.map (expression_of_operand env) ops in
+      let ts = List.map (fun x -> x.K.typ) ops in
+      if ops = [] then
+        K.with_type TUnit K.EUnit
+      else begin
+        assert (List.length ops > 1);
+        K.with_type (TTuple ts) (K.ETuple ops)
+      end
+  | Aggregate (AggregatedAdt (TAdtId typ_id, variant_id, { types = typ_args; const_generics; _ }), args) ->
+      let { C.name; kind; _ } = env.get_nth_type typ_id in
+      let typ_lid = lid_of_name env name in
+      let typ_args = List.map (typ_of_ty env) typ_args in
+      let cg_args = List.map (cg_of_const_generic env) const_generics in
+      let t = K.fold_tapp (typ_lid, typ_args, cg_args) in
+      let args = List.map (expression_of_operand env) args in
+      begin match variant_id with
+      | Some variant_id ->
+          let variant_id = (find_nth_variant env typ_id variant_id).variant_name in
+          K.with_type t (K.ECons (variant_id, args))
+      | None ->
+          let fields = match kind with Struct fields -> fields | _ -> failwith "not a struct" in
+          K.with_type t (K.EFlat (List.map2 (fun f a -> f.C.field_name, a) fields args))
+      end
+  | Aggregate (AggregatedAdt (TAssumed _, _, _), _) ->
+      failwith "unsupported: AggregatedAdt / TAssume"
+
+  | Aggregate (AggregatedClosure (func, generics), ops) ->
+      if ops <> [] then
+        failwith (Printf.sprintf "unsupported: AggregatedClosure (TODO: closure conversion): %d" (List.length ops))
+      else
+        let fun_ptr = { C.func = C.FunId (FRegular func); generics; trait_and_method_generic_args = None } in
+        let e, _, _ = expression_of_fn_ptr env fun_ptr in
+        begin match e.typ with
+        | TArrow (TBuf (TUnit, _) as t_state, t) ->
+            (* Empty closure block, passed by address...? TBD *)
+            K.(with_type t (EApp (e, [ with_type t_state (EAddrOf Krml.Helpers.eunit) ])))
+        | _ ->
+            assert false
+        end
+
+  | Aggregate (AggregatedArray (t, cg), ops) ->
+      K.with_type (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))) (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
+  | Global id ->
+      let global = env.get_nth_global id in
+      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.name))
+
+let expression_of_assertion (env: env) ({ cond; expected }: C.assertion): K.expr =
+  let cond =
+    if not expected then
+      expression_of_operand env cond
+    else
+      Krml.Helpers.mk_not (expression_of_operand env cond)
+  in
+  K.(with_type TAny (
+    EIfThenElse (cond,
+      with_type TAny (EAbort (None, Some "assert failure")),
+      Krml.Helpers.eunit)))
 
 let lesser t1 t2 =
   if t1 = K.TAny then
@@ -819,63 +884,19 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
         H.with_unit (K.EBufWrite (Krml.DeBruijn.lift 1 dest, i,
           K.with_type t (K.EBufRead (Krml.DeBruijn.lift 1 src, i))))))
 
-  | Call { func = FnOpRegular ({
-        func;
-        generics = { types = type_args; const_generics = const_generic_args; trait_refs; _ };
-        trait_and_method_generic_args
-      } as fn_ptr); args; dest; _ }
-  ->
-      (* General case for function calls and trait method calls. *)
-      L.log "Calls" "Visiting call: %s" (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
-      L.log "Calls" "is_array_map: %b" (RustNames.is_array_map env fn_ptr);
-      L.log "Calls" "--> %d type_args, %d const_generics, %d trait_refs"
-        (List.length type_args) (List.length const_generic_args) (List.length trait_refs);
+  | Call { func = FnOpRegular fn_ptr; args; dest; _ } ->
 
       (* For now, we take trait type arguments to be part of the code-gen *)
-      let type_args, const_generic_args, trait_refs =
-        match trait_and_method_generic_args with
-        | None ->
-            type_args, const_generic_args, trait_refs
-        | Some { types; const_generics; trait_refs; _ } ->
-            types @ type_args, const_generics @ const_generic_args, trait_refs @ trait_refs
-      in
-      L.log "Calls" "--> %d type_args, %d const_generics, %d trait_refs"
-        (List.length type_args) (List.length const_generic_args) (List.length trait_refs);
-      L.log "Calls" "--> trait_refs: %s\n"
-        (String.concat " ++ " (List.map (Charon.PrintTypes.trait_ref_to_string env.format_env) trait_refs));
-      L.log "Calls" "--> pattern: %s" (string_of_fn_ptr env fn_ptr);
-
+      let hd, is_assumed, output_t = expression_of_fn_ptr env fn_ptr in
       let dest, _ = expression_of_place env dest in
       let args = List.map (expression_of_operand env) args in
-      let original_type_args = type_args in
-      let type_args = List.map (typ_of_ty env) type_args in
-      let const_generic_args = List.map (expression_of_const_generic env) const_generic_args in
-      let { name; n_type_args = n_type_params; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_assumed } =
-        lookup_fun env fn_ptr
-      in
       let args = if args = [] && not is_assumed then [ Krml.Helpers.eunit ] else args in
-      let inputs = if inputs = [] && not is_assumed then [ K.TUnit ] else inputs in
-      if not (n_type_params = List.length type_args) then
-        Krml.Warn.fatal_error "%a: n_type_params %d != type_args %d"
-          Krml.PrintAst.Ops.plid name
-          n_type_params (List.length type_args);
-      let poly_t_sans_cgs = Krml.Helpers.fold_arrow inputs output in
-      let poly_t = Krml.Helpers.fold_arrow cg_inputs poly_t_sans_cgs in
-      let output, t =
-        Krml.DeBruijn.(subst_ctn (List.length env.binders) const_generic_args (subst_tn type_args output)),
-        Krml.DeBruijn.(subst_ctn (List.length env.binders) const_generic_args (subst_tn type_args poly_t_sans_cgs))
-      in
-      let hd =
-        let hd = K.with_type poly_t (K.EQualified name) in
-        if type_args <> [] || const_generic_args <> [] then
-          K.with_type t (K.ETApp (hd, const_generic_args, type_args))
-        else
-          hd
-      in
-      let rhs = K.with_type output (K.EApp (hd, args)) in
+      let rhs = K.with_type output_t (K.EApp (hd, args)) in
       (* This does something similar to maybe_addrof *)
       let rhs =
-        match func, original_type_args with
+        (* TODO: determine whether extra_types is necessary *)
+        let extra_types = match fn_ptr.trait_and_method_generic_args with Some { types; _ } -> types | None -> [] in
+        match fn_ptr.func, fn_ptr.generics.types @ extra_types with
         | FunId (FAssumed (SliceIndexShared | SliceIndexMut)), [ TAdt (TAssumed (TArray | TSlice), _) ] ->
             (* Will decay. See comment above maybe_addrof *)
             rhs
@@ -966,7 +987,6 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       K.(with_type TUnit (EWhile (Krml.Helpers.etrue,
         expression_of_raw_statement env ret_var s.content)))
 
-
 (** Top-level declarations: orchestration *)
 
 let of_declaration_group (dg: 'id C.g_declaration_group) (f: 'id -> 'a): 'a list =
@@ -1047,6 +1067,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                     (Printexc.get_backtrace ());
                   None
                 end
+
             | Some { arg_count; locals; body; _ } ->
                 if is_global_decl_body then
                   None
@@ -1061,15 +1082,19 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                   let args = List.tl args in
 
                   let return_type = typ_of_ty env return_var.var_ty in
+
+                  (* Note: Rust allows zero-argument functions but the krml internal
+                     representation wants a unit there. *)
+                  let t_unit = C.(TAdt (TTuple, { types = []; const_generics = []; regions = []; trait_refs = [] })) in
+                  let v_unit = { C.index = Charon.Expressions.VarId.of_int max_int; name = None; var_ty = t_unit } in
+                  let args = if args = [] then [ v_unit ] else args in
+
                   let arg_binders = List.map (fun (arg: C.const_generic_var) ->
                     Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty)
                   ) signature.C.generics.const_generics @ List.map (fun (arg: C.var) ->
                     let name = Option.value ~default:"_" arg.name in
                     Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty)
                   ) args in
-                  (* Note: Rust allows zero-argument functions but the krml internal
-                     representation wants a unit there. *)
-                  let arg_binders = if arg_binders = [] then [ Krml.Helpers.fresh_binder "dummy" K.TUnit ] else arg_binders in
                   let env = push_binders env args in
                   let body =
                     with_locals env return_type (return_var :: locals) (fun env ->
@@ -1077,6 +1102,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                   in
                   Some (K.DFunction (None, [], List.length signature.C.generics.const_generics,
                     List.length signature.C.generics.types, return_type, name, arg_binders, body))
+
       )
   | GlobalGroup id ->
       let global = env.get_nth_global id in

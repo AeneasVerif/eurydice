@@ -137,6 +137,42 @@ let remove_array_repeats = object(self)
         super#visit_ELet env b e1 e2
 end
 
+let remove_array_from_fn = object
+  inherit [_] map as super
+
+  val mutable defs = Hashtbl.create 41
+
+  method! visit_DFunction _ cc flags n_cgs n t name bs e =
+    assert (n_cgs = 0 && n = 0);
+    match bs with
+    | [{ typ = TInt SizeT; _ }] ->
+        Hashtbl.add defs name e
+    | _ ->
+        ()
+    ; ;
+    super#visit_DFunction () cc flags n_cgs n t name bs e
+
+  method! visit_EApp env e es =
+    match e.node with
+    | ETApp ({ node = EQualified (["core"; "array"], "from_fn"); _ },
+      [ len ],
+      [ t_elements; TArrow (t_index, t_elements') ]) ->
+        assert (t_elements' = t_elements);
+        assert (t_index = TInt SizeT);
+        assert (List.length es = 2);
+        let closure = Krml.Helpers.assert_elid (List.nth es 0).node in
+        assert (Hashtbl.mem defs closure);
+        let dst = List.nth es 1 in
+        EFor (Krml.Helpers.fresh_binder ~mut:true "i" H.usize, H.zero_usize (* i = 0 *),
+          H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
+          H.mk_incr_usize (* i++ *),
+          let i = with_type H.usize (EBound 0) in
+          Krml.Helpers.with_unit (EBufWrite (Krml.DeBruijn.lift 1 dst, i, Hashtbl.find defs closure)))
+    | _ ->
+        super#visit_EApp env e es
+end
+
+
 let rewrite_slice_to_array = object(_self)
   inherit [_] map as super
 
