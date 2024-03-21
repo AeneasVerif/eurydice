@@ -623,7 +623,7 @@ let lookup_fun (env: env) (f: C.fn_ptr): lookup_result =
 let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
   let {
     C.generics = { types = type_args; const_generics = const_generic_args; trait_refs; _ };
-    trait_and_method_generic_args;
+    func;
     _
   } = fn_ptr in
 
@@ -634,17 +634,19 @@ let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
     (List.length type_args) (List.length const_generic_args) (List.length trait_refs);
 
   let type_args, const_generic_args, trait_refs =
-    match trait_and_method_generic_args with
-    | None ->
-        type_args, const_generic_args, trait_refs
-    | Some { types; const_generics; trait_refs; _ } ->
+    match func with
+    | TraitMethod ({ generics = { types; const_generics; trait_refs; _ }; _ }, _, _) ->
         types @ type_args, const_generics @ const_generic_args, trait_refs @ trait_refs
+    | _ ->
+        type_args, const_generic_args, trait_refs
   in
+
   L.log "Calls" "--> %d type_args, %d const_generics, %d trait_refs"
     (List.length type_args) (List.length const_generic_args) (List.length trait_refs);
   L.log "Calls" "--> trait_refs: %s\n"
     (String.concat " ++ " (List.map (Charon.PrintTypes.trait_ref_to_string env.format_env) trait_refs));
   L.log "Calls" "--> pattern: %s" (string_of_fn_ptr env fn_ptr);
+  L.log "Calls" "--> type_args: %s" (String.concat ", " (List.map (Charon.PrintTypes.ty_to_string env.format_env) type_args));
 
   let type_args = List.map (typ_of_ty env) type_args in
   let const_generic_args = List.map (expression_of_const_generic env) const_generic_args in
@@ -748,7 +750,7 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       if ops <> [] then
         failwith (Printf.sprintf "unsupported: AggregatedClosure (TODO: closure conversion): %d" (List.length ops))
       else
-        let fun_ptr = { C.func = C.FunId (FRegular func); generics; trait_and_method_generic_args = None } in
+        let fun_ptr = { C.func = C.FunId (FRegular func); generics } in
         let e, _, _ = expression_of_fn_ptr env fun_ptr in
         begin match e.typ with
         | TArrow (TBuf (TUnit, _) as t_state, t) ->
@@ -760,7 +762,7 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
 
   | Aggregate (AggregatedArray (t, cg), ops) ->
       K.with_type (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))) (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
-  | Global id ->
+  | Global (id, _generic_args) ->
       let global = env.get_nth_global id in
       K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.name))
 
@@ -905,7 +907,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       (* This does something similar to maybe_addrof *)
       let rhs =
         (* TODO: determine whether extra_types is necessary *)
-        let extra_types = match fn_ptr.trait_and_method_generic_args with Some { types; _ } -> types | None -> [] in
+        let extra_types = match fn_ptr.func with TraitMethod ({ generics = { types; _ }; _ }, _, _) -> types | _ -> [] in
         match fn_ptr.func, fn_ptr.generics.types @ extra_types with
         | FunId (FAssumed (SliceIndexShared | SliceIndexMut)), [ TAdt (TAssumed (TArray | TSlice), _) ] ->
             (* Will decay. See comment above maybe_addrof *)
