@@ -17,6 +17,13 @@ Supported options:|}
     "--debug", Arg.String debug, " debug options, to be passed to krml";
     "--output", Arg.Set_string Krml.Options.tmpdir, " output directory in which to write files";
     "--config", Arg.Set_string O.config, " YAML configuration file";
+    "--const_generics", Arg.String (fun s ->
+      match String.lowercase_ascii s with
+      | "runtime" -> O.cg := Runtime
+      | "static" -> O.cg := Static
+      | _ -> failwith "Unrecognized value for option --const_generics"
+    ), " runtime, or static (default): pass const-generic arguments at runtime, \
+      or perform whole-program static monomorphization (larger code size)";
   ] in
   let spec = Arg.align spec in
   let files = ref [] in
@@ -58,8 +65,9 @@ Supported options:|}
     static_header := [
       Bundle.Prefix [ "core"; "convert" ];
       Bundle.Prefix [ "core"; "num" ]
-    ]
+    ];
   ));
+  Krml.(Warn.parse_warn_error !Options.warn_error);
 
   Krml.Helpers.is_readonly_builtin_lid_ :=
     (let is_readonly_pure_lid_ = !Krml.Helpers.is_readonly_builtin_lid_ in
@@ -108,12 +116,19 @@ Supported options:|}
     exit 1;
 
   Printf.printf "3️⃣ Monomorphization, datatypes\n";
+  let files =
+    if Eurydice.Options.runtime_cg () then
+      Eurydice.Cleanup2.disable_cg_monomorphization#visit_files () files
+    else
+      files
+  in
   let files = Krml.Monomorphization.functions files in
   let files = Krml.Monomorphization.datatypes files in
   let files = Krml.Inlining.drop_unused files in
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
   let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
   let files = Krml.DataTypes.simplify files in
+  Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files = Krml.DataTypes.optimize files in
   let _, files = Krml.DataTypes.everything files in
   let files = Eurydice.Cleanup2.remove_trivial_ite#visit_files () files in
@@ -122,7 +137,7 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_literals#visit_files () files in
   let files = Krml.Simplify.optimize_lets files in
   (* let files = Eurydice.Cleanup2.break_down_nested_arrays#visit_files () files in *)
-  let files = Eurydice.Cleanup2.remove_implicit_array_copies#visit_files () files in
+  let files = Eurydice.Cleanup2.remove_implicit_array_copies#visit_files (0, 0) files in
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
   let files = Krml.Simplify.hoist#visit_files [] files in
   let files = Krml.Simplify.fixup_hoist#visit_files () files in
@@ -134,6 +149,13 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_array_from_fn#visit_files () files in
   (* Macros stemming from globals *)
   let files, macros = Eurydice.Cleanup2.build_macros files in
+  let files =
+    if Eurydice.Options.runtime_cg () then
+      Eurydice.Cleanup2.erase_and_decay_cgs#visit_files (0, 0) files
+    else
+      files
+  in
+
 
   Eurydice.Logging.log "Phase3" "%a" pfiles files;
   let errors, files = Krml.Checker.check_everything ~warn:true files in

@@ -38,8 +38,10 @@ out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
 	sed 's/__NAME__/$*/g' $< > $@
 
+test-const_generics_runtime: EXTRA=--const_generics runtime
+
 test-%: test/%/out.llbc out/test-%/main.c | all
-	$(EURYDICE) --output out/test-$* $<
+	$(EURYDICE) $(EXTRA) --output out/test-$* $<
 	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $*.c main.c && ./a.out
 
 .PRECIOUS: out/%

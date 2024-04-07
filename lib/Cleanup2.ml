@@ -23,20 +23,27 @@ let break_down_nested_arrays = object(self)
         super#visit_ELet env b e1 e2
 end
 
+let expr_of_cg n_cgs n i_cg =
+  EBound (n - n_cgs + i_cg)
+
+let expr_of_array_length (n_cgs, i) = function
+  | TArray (_, n) -> PreCleanup.expr_of_constant n
+  | TCgArray (_, n) -> with_type (TInt SizeT) (expr_of_cg n_cgs i n)
+  | _ -> failwith "impossible"
 
 let remove_implicit_array_copies = object(self)
 
-  inherit [ _ ] map as super
+  inherit Krml.DeBruijn.map_counting_cg as super
 
-  method private remove_assign n lhs rhs e2 =
+  method private remove_assign env n lhs rhs e2 =
     match rhs.node with
     | EBufCreateL (Stack, es) ->
         (* let _ = lhs := bufcreatel e1, e2, ... lhs[0] := e1, lhs[1] := e2, ... *)
-        assert (List.length es = int_of_string (snd n));
+        (* assert (List.length es = int_of_string (snd n)); *)
         let lift = Krml.DeBruijn.lift in
         let rec nest i es =
           match es with
-          | [] -> lift i (self#visit_expr_w () e2)
+          | [] -> lift i (self#visit_expr_w env e2)
           | e :: es ->
               let i_ = with_type H.usize (EConstant (SizeT, string_of_int i)) in
               let lhs_i = with_type (H.assert_tbuf_or_tarray lhs.typ) (EBufRead (lhs, i_)) in
@@ -49,38 +56,49 @@ let remove_implicit_array_copies = object(self)
         let zero = Krml.(Helpers.zero Constant.SizeT) in
         (* let _ = *)
         ELet (H.sequence_binding (),
-          H.with_unit (EBufBlit (rhs, zero, lhs, zero, PreCleanup.expr_of_constant n)),
-          lift 1 (self#visit_expr_w () e2))
+          H.with_unit (EBufBlit (rhs, zero, lhs, zero, n)),
+          lift 1 (self#visit_expr_w env e2))
 
-  method! visit_ELet ((), _ as env) b e1 e2 =
+  method! visit_ELet env b e1 e2 =
     let is_suitable_initializer = function EAny | EBufCreate _ | EBufCreateL _ -> true | _ -> false in
     match b.typ, e1.node with
     (* COPY: let b: TArray (_, n) = e1 in e2 *)
-    | TArray (_, n), _ when not (is_suitable_initializer e1.node) ->
+    | (TArray _ | TCgArray _), _ when not (is_suitable_initializer e1.node) ->
+        let n = expr_of_array_length (fst env) b.typ in
         let zero = Krml.(Helpers.zero Constant.SizeT) in
         (* let b = <uninitialized> in *)
         ELet (b, H.any, with_type e2.typ (
+          (* -- crossing first binder *)
+          let env = self#extend (fst env) b in
+          (* let _ = blit e1 (a.k.a. src) b (a.k.a. dst) in *)
           ELet (H.sequence_binding (),
-            (* let _ = blit e1 (a.k.a. src) b (a.k.a. dst) in *)
-            H.with_unit (EBufBlit (lift 1 e1, zero, with_type b.typ (EBound 0), zero, PreCleanup.expr_of_constant n)),
+            H.with_unit (EBufBlit (lift 1 e1, zero, with_type b.typ (EBound 0), zero, n)),
+            (* -- crossing second binder, not #extending since this is going to be lifted by one *)
             (* e2 *)
-            lift 1 (self#visit_expr env e2))))
+            lift 1 (self#visit_expr_w env e2))))
 
     (* COPY: let _ = lhs := rhs with lhs.typ == TArray _ ... *)
     | _, EAssign (lhs, rhs) when H.is_array lhs.typ ->
-        let n = match lhs.typ with TArray (_, n) -> n | _ -> failwith "impossible" in
+        let n = expr_of_array_length (fst env) lhs.typ in
         (* Fixpoint here for multi-dimensional arrays. *)
-        (self#visit_expr env (with_type e2.typ (self#remove_assign n lhs rhs (subst H.eunit 0 e2)))).node
+        (* -- not #extending since we operate on e2 where b has already been
+           substituted away *)
+        (self#visit_expr env (with_type e2.typ (self#remove_assign (fst env) n lhs rhs (subst H.eunit 0 e2)))).node
     | _ ->
         super#visit_ELet env b e1 e2
 
   method! visit_EAssign env lhs rhs =
     match lhs.typ with
-    | TArray (_, n) ->
+    | TArray _ | TCgArray _ ->
+        let n = expr_of_array_length (fst env) lhs.typ in
         (* Fixpoint here for multi-dimensional arrays. *)
-        (self#visit_expr env (H.with_unit (self#remove_assign n lhs rhs H.eunit))).node
+        (self#visit_expr env (H.with_unit (self#remove_assign (fst env) n lhs rhs H.eunit))).node
+
     | _ ->
         super#visit_EAssign env lhs rhs
+
+  method! visit_DFunction _ cc flags n_cgs n t name bs e =
+    super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t name bs e
 end
 
 let remove_array_repeats = object(self)
@@ -89,9 +107,14 @@ let remove_array_repeats = object(self)
   method! visit_EApp env e es =
     match e.node, es with
     | ETApp ({ node = EQualified lid; _ }, [ len ], [ _ ]), [ init ] when lid = Builtin.array_repeat.name ->
-        let l = match len.node with EConstant (_, s) -> int_of_string s | _ -> failwith "impossible" in
         let init = self#visit_expr env init in
-        EBufCreateL (Stack, List.init l (fun _ -> init))
+        begin match len.node with
+        | EConstant (_, s) ->
+            let l = int_of_string s in
+            EBufCreateL (Stack, List.init l (fun _ -> init))
+        | _ ->
+            EBufCreate (Stack, init, len)
+        end
     | _ ->
         super#visit_EApp env e es
 
@@ -143,7 +166,7 @@ let remove_array_from_fn = object
   val mutable defs = Hashtbl.create 41
 
   method! visit_DFunction _ cc flags n_cgs n t name bs e =
-    assert (n_cgs = 0 && n = 0);
+    (* assert (n_cgs = 0 && n = 0); *)
     match bs with
     | [{ typ = TInt SizeT; _ }] ->
         Hashtbl.add defs name e
@@ -317,3 +340,60 @@ let build_macros files =
   let map = ref Krml.Idents.LidSet.empty in
   let files = (build_macros map)#visit_files () files in
   files, !map
+
+(* In some cases, we wish to disable const-generic monomorphization to e.g.
+   avoid code-size bloat. For the moment, this is a global switch, but in the
+   future, one could conceivably use an attribute, or a pass a list of functions
+   that should opt-out of monomorphization via the command-line. *)
+let disable_cg_monomorphization = object(self)
+  inherit [_] map as super
+
+  method! visit_EApp env e es =
+    match e.node with
+    | ETApp ({ node = EQualified (("Eurydice"|"core") :: _,_); _ }, _, _) ->
+        super#visit_EApp env e es
+    | ETApp (e, es', ts')  ->
+        let e = self#visit_expr_w () e in
+        let es = List.map (self#visit_expr_w ()) es in
+        let es' = List.map (self#visit_expr_w ()) es' in
+        EApp (with_type e.typ (ETApp (e, [], ts')), es' @ es)
+    | _ ->
+        super#visit_EApp env e es
+
+  method! visit_ETApp ((), t) e es ts =
+    let e = self#visit_expr_w () e in
+    let es = List.map (self#visit_expr_w ()) es in
+    match e.node with
+    | EQualified (("Eurydice"|"core") :: _,_) ->
+        ETApp (e, es, ts)
+    | _ ->
+        EApp (with_type t (ETApp (e, [], ts)), es)
+end
+
+
+(* The previous phase left n_cgs in place over DFunctions so that
+   remove_implicit_array_copies could convert length arguments of TCgArray's to
+   runtime expressions, in order to implement blit operations to materialize
+   array copies. We now remove those, and manually decay TCgArrays into TBufs,
+   relying on Checker to validate this pass. *)
+let erase_and_decay_cgs = object(self)
+  inherit Krml.DeBruijn.map_counting_cg as super
+
+  method! visit_ELet env b e1 e2 =
+    match b.typ, e1.node with
+    | TCgArray (t, _), EAny ->
+        let n = expr_of_array_length (fst env) b.typ in
+        let typ = TBuf (t, false) in
+        ELet ({ b with typ }, with_type typ (EBufCreate (Stack, H.any, n)),
+          self#visit_expr_w (self#extend (fst env) { b with typ }) e2)
+    | _ ->
+        super#visit_ELet env b e1 e2
+
+  method! visit_TCgArray env t _ =
+    super#visit_TBuf env t false
+
+  method! visit_DFunction _ cc flags n_cgs n t name bs e =
+    super#visit_DFunction (n_cgs, 0) cc flags 0 n t name bs e
+
+end
+
