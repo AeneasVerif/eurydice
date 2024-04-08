@@ -127,6 +127,12 @@ Supported options:|}
       let missing = Eurydice.RuntimeCg.enumerate_cg_monomorphizations files in
       Eurydice.RuntimeCg.debug missing;
       Krml.MonomorphizationState.debug ();
+      let extra_file = [ Eurydice.RuntimeCg.build_missing_decls missing ] in
+      let extra_file = List.hd (Krml.Monomorphization.datatypes extra_file) in
+      let files, last_file = Krml.KList.split_at_last files in
+      let files = files @ [ fst last_file, snd last_file @ snd extra_file ] in
+      let files = Eurydice.RuntimeCg.replace#visit_files () files in
+      Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
       files
     else
       files
