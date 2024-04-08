@@ -31,6 +31,11 @@ let expr_of_array_length (n_cgs, i) = function
   | TCgArray (_, n) -> with_type (TInt SizeT) (expr_of_cg n_cgs i n)
   | _ -> failwith "impossible"
 
+let decay x =
+  match x.typ with
+  | TArray (t, _) | TCgArray (t, _) -> { x with typ = TBuf (t, false) }
+  | _ -> x
+
 let remove_implicit_array_copies = object(self)
 
   inherit Krml.DeBruijn.map_counting_cg as super
@@ -53,10 +58,16 @@ let remove_implicit_array_copies = object(self)
         in
         (nest 0 es).node
     | _ ->
+        (* We need to decay the types because the cg-runtime compilation scheme
+           sometimes is too smart for its own good, and ends up finding the only
+           suitable monomorphization, which combined with single-field data type
+           elimination, tells us *statically* that we have an array for this
+           subexpression, which is stronger than what the type-checker
+           concludes... *)
         let zero = Krml.(Helpers.zero Constant.SizeT) in
         (* let _ = *)
         ELet (H.sequence_binding (),
-          H.with_unit (EBufBlit (rhs, zero, lhs, zero, n)),
+          H.with_unit (EBufBlit (decay rhs, zero, decay lhs, zero, n)),
           lift 1 (self#visit_expr_w env e2))
 
   method! visit_ELet env b e1 e2 =
@@ -72,6 +83,7 @@ let remove_implicit_array_copies = object(self)
           let env = self#extend (fst env) b in
           (* let _ = blit e1 (a.k.a. src) b (a.k.a. dst) in *)
           ELet (H.sequence_binding (),
+            (* TODO: possibly need decay here *)
             H.with_unit (EBufBlit (lift 1 e1, zero, with_type b.typ (EBound 0), zero, n)),
             (* -- crossing second binder, not #extending since this is going to be lifted by one *)
             (* e2 *)
@@ -230,8 +242,18 @@ let remove_trivial_into = object(self)
     let e = self#visit_expr_w () e in
     let es = List.map (self#visit_expr env) es in
     match e.node, es with
-    | ETApp ({ node = EQualified (["core"; "convert"; _ ], "into"); _ }, [], [ t1; t2 ]), [ e1 ] when t1 = t2 ->
-        e1.node
+    | ETApp ({ node = EQualified (["core"; "convert"; _ ], "into"); _ }, [], [ t1; t2 ]), [ e1 ] ->
+        begin match t1, t2 with
+        | _ when t1 = t2 ->
+            e1.node
+        | TCgArray (t1', _), TArray (t2', _) when t1' = t2' ->
+            (* Resolution of runtime cg found only a single choice that,
+               in combination with single-element data type elimination, now
+               gives us knowledge that there's only possible choice... *)
+            ECast (e1, t2)
+        | _ ->
+            EApp (e, es)
+        end
     | _ ->
         EApp (e, es)
 end

@@ -2,6 +2,7 @@
 
 
 open Krml.Ast
+open Krml.PrintAst.Ops
 
 module H = Krml.Helpers
 
@@ -72,9 +73,9 @@ let enumerate_cg_monomorphizations files =
     let known = Hashtbl.mem Krml.MonomorphizationState.state (t, ts, cgs) in
     let builtin = match List.hd (fst t) with "Eurydice" | "core" -> true | _ -> false in
     if known then
-      Krml.(let open PrintAst.Ops in KPrint.bprintf "KNOWN: %a: %a ++ %a\n" plid t ptyps ts pcgs cgs)
+      Krml.(KPrint.bprintf "KNOWN: %a: %a ++ %a\n" plid t ptyps ts pcgs cgs)
     else if not builtin then begin
-      Krml.(let open PrintAst.Ops in KPrint.bprintf "RUNTIME_MONOMORPHIZATION: %a: %a ++ %a\n" plid t ptyps ts pcgs cgs);
+      Krml.(KPrint.bprintf "RUNTIME_MONOMORPHIZATION: %a: %a ++ %a\n" plid t ptyps ts pcgs cgs);
       if Hashtbl.mem known_concrete_arguments t then begin
         let existing = Hashtbl.find known_concrete_arguments t in
         if not (List.mem (ts, cgs) existing) then
@@ -98,11 +99,11 @@ let enumerate_cg_monomorphizations files =
       match decl with
       | DFunction (_, _, n_cgs, n, _, _, _, _) ->
           if n_cgs = 0 && n = 0 then
-            let _ = Krml.(KPrint.bprintf "Visiting %a\n" PrintAst.Ops.plid (lid_of_decl decl)) in
+            let _ = Krml.(KPrint.bprintf "Visiting %a\n" plid (lid_of_decl decl)) in
             super#visit_decl env decl
       | DGlobal (_, _, n, _, _) ->
           if n = 0 then
-            let _ = Krml.(KPrint.bprintf "Visiting %a\n" PrintAst.Ops.plid (lid_of_decl decl)) in
+            let _ = Krml.(KPrint.bprintf "Visiting %a\n" plid (lid_of_decl decl)) in
             super#visit_decl env decl
       | _ ->
           ()
@@ -124,7 +125,7 @@ let enumerate_cg_monomorphizations files =
                 let cgs, _ = Krml.KList.split n_cgs es in
                 if not (Hashtbl.mem seen (lid, (cgs, ts))) then begin
                   Krml.KPrint.bprintf "Visiting (recursive): %a\n"
-                    Krml.PrintAst.Ops.pexpr (with_type TUnit (ETApp (e, cgs, ts)));
+                    pexpr (with_type TUnit (ETApp (e, cgs, ts)));
                   assert (n_cgs = List.length cgs && n = List.length ts);
                   Hashtbl.add seen (lid, (cgs, ts)) ();
                   let body = Krml.DeBruijn.(subst_cen (List.length binders - n_cgs) cgs (subst_ten ts body)) in
@@ -174,7 +175,6 @@ let debug missing =
   Krml.KPrint.bprintf "DEBUG RUNTIME MONOMORPHIZATION:\n";
   Hashtbl.iter (fun lid args ->
     let open Krml in
-    let open PrintAst.Ops in
     KPrint.bprintf "%a:\n" plid lid;
     List.iter (fun (ts, cgs) ->
       KPrint.bprintf "  %a ++ %a\n" ptyps ts pcgs cgs
@@ -211,7 +211,7 @@ let replace =
       | TCgArray (t1, cg1), TCgArray (t2, cg2) ->
           matches_t t1 t2 && cg1 = cg2
       | TArray (t1, _), TCgArray (t2, _) ->
-          (* TODO: compute mappings and check they coincide *)
+          (* TODO: compute mgus and check they coincide *)
           matches_t t1 t2
       | TCgApp (t1, cg1), TCgApp (t2, cg2) ->
           matches_t t1 t2 && matches_cg cg1 cg2
@@ -222,7 +222,7 @@ let replace =
       | t1, t2 ->
           t1 = t2
     in
-    Krml.(let open PrintAst.Ops in KPrint.bprintf "  MATCH: %a | %a ? %b\n" ptyp t1 ptyp t2 r);
+    Krml.(KPrint.bprintf "  MATCH: %a | %a ? %b\n" ptyp t1 ptyp t2 r);
     r
 
   and matches_cg cg1 cg2 =
@@ -235,7 +235,7 @@ let replace =
   let replace t ts cgs =
     let builtin = match List.hd (fst t) with "Eurydice" | "core" -> true | _ -> false in
     if not builtin then begin
-      Krml.(let open PrintAst.Ops in KPrint.bprintf "REPLACE: %a: %a ++ %a\n" plid t ptyps ts pcgs cgs);
+      Krml.(KPrint.bprintf "REPLACE: %a: %a ++ %a\n" plid t ptyps ts pcgs cgs);
       (* let candidates = Hashtbl.find missing t in *)
       (* Pull ALL the candidates from monomorphization *)
       let candidates = Hashtbl.fold (fun (lid, ts, cgs) (_, mono_lid) acc ->
@@ -248,12 +248,12 @@ let replace =
       match candidates with
       | [] -> fold_tapp (t, ts, cgs)
       | [ ts', cgs', lid ] ->
-          Krml.(let open PrintAst.Ops in KPrint.bprintf "  FOUND: %a: %a ++ %a\n" plid t ptyps ts' pcgs cgs');
-          Krml.(let open PrintAst.Ops in KPrint.bprintf "  AKA: %a\n" plid lid);
+          Krml.(KPrint.bprintf "  FOUND: %a: %a ++ %a\n" plid t ptyps ts' pcgs cgs');
+          Krml.(KPrint.bprintf "  AKA: %a\n" plid lid);
           TQualified lid
       | _ ->
           List.iter (fun (ts, cgs, _) ->
-            Krml.(let open PrintAst.Ops in KPrint.bprintf "  CANDIDATE: %a: %a ++ %a\n" plid t ptyps ts pcgs cgs)
+            Krml.(KPrint.bprintf "  CANDIDATE: %a: %a ++ %a\n" plid t ptyps ts pcgs cgs)
           ) candidates;
           failwith "TODO: multiple candidates, need to be subtler"
     end else
@@ -279,15 +279,28 @@ let replace =
    arguments of TCgArray's to runtime expressions, in order to implement blit
    operations to materialize array copies. We now remove those, and manually
    decay TCgArrays into TBufs, relying on Checker to validate this pass. *)
-let erase_and_decay_cgs = object(self)
+let decay_cgs = object(self)
   inherit Krml.DeBruijn.map_counting_cg as super
 
   method! visit_ELet env b e1 e2 =
     match b.typ, e1.node with
-    | TCgArray (t, _), EAny ->
-        let n = Cleanup2.expr_of_array_length (fst env) b.typ in
-        let typ = TBuf (t, false) in
-        ELet ({ b with typ }, with_type typ (EBufCreate (Stack, H.any, n)),
+    | TCgArray _, EAny ->
+        let rec convert t0 =
+          match t0 with
+          | TCgArray (t, _) ->
+              (* Krml.KPrint.bprintf "n_cgs=%d, n=%d, i_cg=%d\n" (fst (fst env)) (snd (fst env)) i_cg; *)
+              let n = Cleanup2.expr_of_array_length (fst env) t0 in
+              let t, init = convert t in
+              let typ = TBuf (t, false) in
+              typ, with_type typ (EBufCreate (Stack, init, n))
+          | TArray (_, _) ->
+              let n = Cleanup2.expr_of_array_length (fst env) t0 in
+              t0, with_type t0 (EBufCreate (Stack, H.any, n))
+          | _ ->
+              t0, H.any
+        in
+        let typ, init = convert b.typ in
+        ELet ({ b with typ }, init,
           self#visit_expr_w (self#extend (fst env) { b with typ }) e2)
     | _ ->
         super#visit_ELet env b e1 e2
@@ -296,6 +309,21 @@ let erase_and_decay_cgs = object(self)
     super#visit_TBuf env t false
 
   method! visit_DFunction _ cc flags n_cgs n t name bs e =
+    (* Setting up environment properly *)
+    super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t name bs e
+end
+
+
+(* This happens much later. The previous phases left n_cgs in place over
+   DFunctions so that remove_implicit_array_copies could convert length
+   arguments of TCgArray's to runtime expressions, in order to implement blit
+   operations to materialize array copies. We now remove those, and manually
+   decay TCgArrays into TBufs, relying on Checker to validate this pass. *)
+let erase_cgs = object(_self)
+  inherit Krml.DeBruijn.map_counting_cg as super
+
+  method! visit_DFunction _ cc flags n_cgs n t name bs e =
+    (* Discarding n_cgs *)
     super#visit_DFunction (n_cgs, 0) cc flags 0 n t name bs e
 
 end

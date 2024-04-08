@@ -68,6 +68,7 @@ Supported options:|}
     ];
   ));
   Krml.(Warn.parse_warn_error !Options.warn_error);
+  Krml.(Warn.parse_warn_error "-6");
 
   Krml.Helpers.is_readonly_builtin_lid_ :=
     (let is_readonly_pure_lid_ = !Krml.Helpers.is_readonly_builtin_lid_ in
@@ -120,6 +121,7 @@ Supported options:|}
   Printf.printf "3️⃣ Monomorphization, datatypes\n";
   let files = if runtime_cg then Eurydice.RuntimeCg.disable_cg_monomorphization#visit_files () files else files in
   let files = Krml.Monomorphization.functions files in
+  Eurydice.Logging.log "Phase2.4" "%a" pfiles files;
   let files = Krml.Monomorphization.datatypes files in
   Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files =
@@ -144,29 +146,38 @@ Supported options:|}
   let files = Krml.DataTypes.optimize files in
   let _, files = Krml.DataTypes.everything files in
   let files = Eurydice.Cleanup2.remove_trivial_ite#visit_files () files in
+  Eurydice.Logging.log "Phase2.65" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_into#visit_files () files in
   let files = Krml.Structs.pass_by_ref files in
   let files = Eurydice.Cleanup2.remove_literals#visit_files () files in
   let files = Krml.Simplify.optimize_lets files in
   (* let files = Eurydice.Cleanup2.break_down_nested_arrays#visit_files () files in *)
+  Eurydice.Logging.log "Phase2.7" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_implicit_array_copies#visit_files (0, 0) files in
+  Eurydice.Logging.log "Phase2.71" "%a" pfiles files;
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
+  Eurydice.Logging.log "Phase2.72" "%a" pfiles files;
   let files = Krml.Simplify.hoist#visit_files [] files in
   let files = Krml.Simplify.fixup_hoist#visit_files () files in
+  Eurydice.Logging.log "Phase2.75" "%a" pfiles files;
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
   let files = Krml.Inlining.cross_call_analysis files in
+  Eurydice.Logging.log "Phase2.8" "%a" pfiles files;
   let files = Krml.Simplify.remove_unused files in
   let files = Eurydice.Cleanup2.remove_array_from_fn#visit_files () files in
   (* Macros stemming from globals *)
   let files, macros = Eurydice.Cleanup2.build_macros files in
-  let files = if runtime_cg then Eurydice.RuntimeCg.erase_and_decay_cgs#visit_files (0, 0) files else files in
+  Eurydice.Logging.log "Phase2.9" "%a" pfiles files;
+  let files = if runtime_cg then Eurydice.RuntimeCg.decay_cgs#visit_files (0, 0) files else files in
 
 
   Eurydice.Logging.log "Phase3" "%a" pfiles files;
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
     exit 1;
+
+  let files = if runtime_cg then Eurydice.RuntimeCg.erase_cgs#visit_files (0, 0) files else files in
 
   let scope_env = Krml.Simplify.allocate_c_env files in
   let files = Eurydice.Cleanup3.decay_cg_externals#visit_files (scope_env, false) files in
