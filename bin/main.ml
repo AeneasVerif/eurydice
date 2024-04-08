@@ -115,20 +115,25 @@ Supported options:|}
   if errors then
     exit 1;
 
+  let runtime_cg = Eurydice.Options.runtime_cg () in
+
   Printf.printf "3️⃣ Monomorphization, datatypes\n";
+  let files = if runtime_cg then Eurydice.RuntimeCg.disable_cg_monomorphization#visit_files () files else files in
+  let files = Krml.Monomorphization.functions files in
+  let files = Krml.Monomorphization.datatypes files in
+  Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files =
-    if Eurydice.Options.runtime_cg () then
-      Eurydice.Cleanup2.disable_cg_monomorphization#visit_files () files
+    if runtime_cg then
+      let missing = Eurydice.RuntimeCg.enumerate_cg_monomorphizations files in
+      Eurydice.RuntimeCg.debug missing;
+      files
     else
       files
   in
-  let files = Krml.Monomorphization.functions files in
-  let files = Krml.Monomorphization.datatypes files in
   let files = Krml.Inlining.drop_unused files in
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
   let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
   let files = Krml.DataTypes.simplify files in
-  Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files = Krml.DataTypes.optimize files in
   let _, files = Krml.DataTypes.everything files in
   let files = Eurydice.Cleanup2.remove_trivial_ite#visit_files () files in
@@ -143,18 +148,12 @@ Supported options:|}
   let files = Krml.Simplify.fixup_hoist#visit_files () files in
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
-  Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files = Krml.Inlining.cross_call_analysis files in
   let files = Krml.Simplify.remove_unused files in
   let files = Eurydice.Cleanup2.remove_array_from_fn#visit_files () files in
   (* Macros stemming from globals *)
   let files, macros = Eurydice.Cleanup2.build_macros files in
-  let files =
-    if Eurydice.Options.runtime_cg () then
-      Eurydice.Cleanup2.erase_and_decay_cgs#visit_files (0, 0) files
-    else
-      files
-  in
+  let files = if runtime_cg then Eurydice.RuntimeCg.erase_and_decay_cgs#visit_files (0, 0) files else files in
 
 
   Eurydice.Logging.log "Phase3" "%a" pfiles files;
