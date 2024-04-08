@@ -126,6 +126,7 @@ Supported options:|}
     if runtime_cg then
       let missing = Eurydice.RuntimeCg.enumerate_cg_monomorphizations files in
       Eurydice.RuntimeCg.debug missing;
+      Krml.MonomorphizationState.debug ();
       files
     else
       files

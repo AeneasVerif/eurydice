@@ -59,23 +59,18 @@ let enumerate_cg_monomorphizations files =
   let record t ts cgs =
     assert (List.for_all (function CgConst _ -> true | CgVar _ -> false) cgs);
     let known = Hashtbl.mem Krml.MonomorphizationState.state (t, ts, cgs) in
+    let builtin = match List.hd (fst t) with "Eurydice" | "core" -> true | _ -> false in
     if known then
-      let open Krml in
-      let open PrintAst.Ops in
-      KPrint.bprintf "KNOWN: %a: %a ++ %a\n" plid t ptyps ts pcgs cgs;
-    if not (Hashtbl.mem Krml.MonomorphizationState.state (t, ts, cgs)) &&
-      match List.hd (fst t) with "Eurydice" | "core" -> false | _ -> true
-    then
-      let _ = Krml.(
-        let open PrintAst.Ops in
-        KPrint.bprintf "RUNTIME_MONOMORPHIZATION: %a: %a ++ %a\n" plid t ptyps ts pcgs cgs
-      ) in
-      if Hashtbl.mem known_concrete_arguments t then
+      Krml.(let open PrintAst.Ops in KPrint.bprintf "KNOWN: %a: %a ++ %a\n" plid t ptyps ts pcgs cgs)
+    else if not builtin then begin
+      Krml.(let open PrintAst.Ops in KPrint.bprintf "RUNTIME_MONOMORPHIZATION: %a: %a ++ %a\n" plid t ptyps ts pcgs cgs);
+      if Hashtbl.mem known_concrete_arguments t then begin
         let existing = Hashtbl.find known_concrete_arguments t in
         if not (List.mem (ts, cgs) existing) then
           Hashtbl.replace known_concrete_arguments t ((ts, cgs) :: existing)
-      else
+      end else
         Hashtbl.add known_concrete_arguments t [ ts, cgs ]
+    end
   in
 
   let seen = Hashtbl.create 41 in
