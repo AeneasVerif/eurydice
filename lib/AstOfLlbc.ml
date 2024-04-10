@@ -620,6 +620,13 @@ let lookup_fun (env: env) (f: C.fn_ptr): lookup_result =
               Krml.Warn.fatal_error "Error looking trait ref: %s %s"
                 (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref) method_name
 
+let fn_ptr_is_opaque env (fn_ptr: C.fn_ptr) =
+  match fn_ptr.func with
+  | FunId (FRegular id) ->
+      (try (env.get_nth_function id).body = None with Not_found -> false)
+  | _ ->
+      false
+
 let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
   let {
     C.generics = { types = type_args; const_generics = const_generic_args; trait_refs; _ };
@@ -654,7 +661,16 @@ let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
     lookup_fun env fn_ptr
   in
 
-  let inputs = if inputs = [] && not is_assumed then [ K.TUnit ] else inputs in
+  (* This needs to match what is done in the FunGroup case (i.e. when we extract
+     a definition). There are two behaviors depending on whether the function is
+     assumed or not. *)
+  let inputs =
+    if fn_ptr_is_opaque env fn_ptr then
+      if const_generic_args = [] && inputs = [] then [ K.TUnit ] else inputs
+    else
+      if inputs = [] then [ K.TUnit ] else inputs
+  in
+
   if not (n_type_params = List.length type_args) then
     Krml.Warn.fatal_error "%a: n_type_params %d != type_args %d"
       Krml.PrintAst.Ops.plid name
@@ -902,8 +918,18 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let hd, is_assumed, output_t = expression_of_fn_ptr env fn_ptr in
       let dest, _ = expression_of_place env dest in
       let args = List.map (expression_of_operand env) args in
-      let args = if args = [] && not is_assumed then [ Krml.Helpers.eunit ] else args in
-      let rhs = K.with_type output_t (K.EApp (hd, args)) in
+      (* This needs to match what is done in the FunGroup case (i.e. when we extract
+         a definition). There are two behaviors depending on whether the function is
+         assumed or not. *)
+      Krml.KPrint.bprintf "Call to %s is assumed %b\n" (string_of_fn_ptr env fn_ptr) is_assumed;
+      let args =
+        if fn_ptr_is_opaque env fn_ptr then
+          if fn_ptr.generics.const_generics = [] && args = [] then [ Krml.Helpers.eunit ] else args
+        else
+          if args = [] then [ Krml.Helpers.eunit ] else args
+      in
+
+      let rhs = if args = [] then hd else K.with_type output_t (K.EApp (hd, args)) in
       (* This does something similar to maybe_addrof *)
       let rhs =
         (* TODO: determine whether extra_types is necessary *)
