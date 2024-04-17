@@ -385,5 +385,5 @@ let check () =
   List.iter (fun (lid, (_, seen)) ->
     if !seen = Unused then
       let open Krml in
-      Warn.fatal_error "Unused replacement: %a" PrintAst.Ops.plid lid
+      KPrint.bprintf "Unused replacement: %a" PrintAst.Ops.plid lid
   ) replacements
