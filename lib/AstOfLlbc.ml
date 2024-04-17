@@ -915,13 +915,13 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
   | Call { func = FnOpRegular fn_ptr; args; dest; _ } ->
 
       (* For now, we take trait type arguments to be part of the code-gen *)
-      let hd, is_assumed, output_t = expression_of_fn_ptr env fn_ptr in
+      let hd, _is_assumed, output_t = expression_of_fn_ptr env fn_ptr in
       let dest, _ = expression_of_place env dest in
       let args = List.map (expression_of_operand env) args in
       (* This needs to match what is done in the FunGroup case (i.e. when we extract
          a definition). There are two behaviors depending on whether the function is
          assumed or not. *)
-      Krml.KPrint.bprintf "Call to %s is assumed %b\n" (string_of_fn_ptr env fn_ptr) is_assumed;
+      (* Krml.KPrint.bprintf "Call to %s is assumed %b\n" (string_of_fn_ptr env fn_ptr) is_assumed; *)
       let args =
         if fn_ptr_is_opaque env fn_ptr then
           if fn_ptr.generics.const_generics = [] && args = [] then [ Krml.Helpers.eunit ] else args

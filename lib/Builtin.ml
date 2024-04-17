@@ -308,35 +308,62 @@ let shr_pv_u8 = {
   arg_names = ["x"; "y"]
 }
 
+let unwrap: K.decl =
+  let open Krml in
+  let open Ast in
+  let lid = ["core";"result";"{core::result::Result<T, E>}"], "unwrap" in
+  let t_T = TBound 1 in
+  let t_E = TBound 0 in
+  let t_result = mk_result t_T t_E in
+  let binders = [ Helpers.fresh_binder "self" t_result ] in
+  DFunction (None, [], 0, 2, t_T, lid, binders,
+    with_type t_T (EMatch (Unchecked, with_type t_result (EBound 0), [
+      [ Helpers.fresh_binder "f0" t_T ],
+      with_type t_result (PCons ("Ok", [ with_type t_T (PBound 0) ])),
+      with_type t_T (EBound 0);
+
+      [],
+      with_type t_result PWild,
+      with_type t_T (EAbort (Some t_T, Some "unwrap not Ok"))
+    ])))
+
+type usage = Used | Unused
+
+let replacements = List.map (fun decl ->
+  K.lid_of_decl decl, (decl, ref Unused)
+) [
+  unwrap;
+]
+
 let files = [
   Krml.Builtin.lowstar_ignore;
   let externals = List.map (fun { name; typ; cg_args; n_type_args; arg_names } ->
-      let typ = Krml.Helpers.fold_arrow cg_args typ in
-      K.DExternal (None, [], List.length cg_args, n_type_args, name, typ, arg_names)
-    ) [
-      array_to_slice;
-      array_to_subslice;
-      array_to_subslice_to;
-      array_to_subslice_from;
-      array_repeat;
-      array_into_iter;
-      slice_index;
-      slice_subslice;
-      slice_subslice_to;
-      slice_subslice_from;
-      slice_to_array;
-      slice_to_array2;
-      range_iterator_step_by;
-      range_step_by_iterator_next;
-      vec_push;
-      vec_new;
-      vec_len;
-      vec_drop;
-      vec_index;
-      box_new;
-      replace;
-      bitand_pv_u8;
-      shr_pv_u8;
+    let typ = Krml.Helpers.fold_arrow cg_args typ in
+    K.DExternal (None, [], List.length cg_args, n_type_args, name, typ, arg_names)
+  ) [
+    array_to_slice;
+    array_to_subslice;
+    array_to_subslice_to;
+    array_to_subslice_from;
+    array_repeat;
+    array_into_iter;
+    slice_index;
+    slice_subslice;
+    slice_subslice_to;
+    slice_subslice_from;
+    slice_to_array;
+    slice_to_array2;
+    range_iterator_step_by;
+    range_step_by_iterator_next;
+    vec_push;
+    vec_new;
+    vec_len;
+    vec_drop;
+    vec_index;
+    box_new;
+    replace;
+    bitand_pv_u8;
+    shr_pv_u8;
   ] in
   "Eurydice", externals
 ]
@@ -346,5 +373,17 @@ let adjust (f, decls) =
     | Krml.Ast.DExternal (_, _, _, _, (["core"; "num"; mid], "BITS" as lid), _, _) when Krml.KString.starts_with mid "{u32" ->
         Krml.Ast.DGlobal ([], lid, 0, Krml.Helpers.uint32, Krml.Helpers.mk_uint32 32)
     | d ->
-        d
+        try
+          let d, seen = List.assoc (K.lid_of_decl d) replacements in
+          seen := Used;
+          d
+        with Not_found ->
+          d
   ) decls
+
+let check () =
+  List.iter (fun (lid, (_, seen)) ->
+    if !seen = Unused then
+      let open Krml in
+      Warn.fatal_error "Unused replacement: %a" PrintAst.Ops.plid lid
+  ) replacements

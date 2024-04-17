@@ -78,6 +78,7 @@ Supported options:|}
     let llbc = Eurydice.LoadLlbc.load_file filename in
     Eurydice.Builtin.adjust (Eurydice.AstOfLlbc.file_of_crate llbc)
   ) !files in
+  Eurydice.Builtin.check ();
 
   Printf.printf "1️⃣ LLBC ➡️  AST\n";
   let files = Eurydice.PreCleanup.precleanup files in
