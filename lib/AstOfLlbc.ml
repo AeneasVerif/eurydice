@@ -1077,7 +1077,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
         match decl with
         | None -> None
         | Some decl ->
-            let { C.def_id; name; signature; body; is_global_decl_body; _ } = decl in
+            let { C.def_id; name; signature; body; is_global_decl_body; item_meta; _ } = decl in
             let env = { env with generic_params = signature.generics } in
             L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
               (if body = None then "opaque " else "")
@@ -1138,7 +1138,12 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                     with_locals env return_type (return_var :: locals) (fun env ->
                       expression_of_raw_statement env return_var.index body.content)
                   in
-                  Some (K.DFunction (None, [], List.length signature.C.generics.const_generics,
+                  let flags =
+                    match item_meta.inline with
+                    | Some (Hint | Always) -> [ Krml.Common.Inline ]
+                    | _ -> []
+                  in
+                  Some (K.DFunction (None, flags, List.length signature.C.generics.const_generics,
                     List.length signature.C.generics.types, return_type, name, arg_binders, body))
 
       )
