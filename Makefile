@@ -45,3 +45,6 @@ test-%: test/%/out.llbc out/test-%/main.c | all
 .PRECIOUS: out/%
 out/%:
 	mkdir -p $@
+
+nix-magic:
+	nix flake update --extra-experimental-features nix-command --extra-experimental-features flakes
