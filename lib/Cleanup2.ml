@@ -83,6 +83,29 @@ let remove_implicit_array_copies = object(self)
         super#visit_EAssign env lhs rhs
 end
 
+let remove_array_temporaries = object(self)
+  inherit [_] map as _super
+
+  method! visit_ELet ((), _ as env) b e1 e2 =
+    (* let x: TArray (t, n) = any;
+       blit (src, 0, dst, 0, n); // same length
+       x
+       ~~>
+       src
+    *)
+    match snd !(b.node.mark), b.typ, e1.node, e2.node with
+    | AtMost 2, TArray (_, l), EAny, ESequence [
+      { node = EBufBlit (
+        src, { node = EConstant (_,"0"); _ },
+        { node = EBound 0; _ }, { node = EConstant (_, "0"); _ },
+        { node = EConstant l'; _ }); _ };
+      { node = EBound 0; _ }
+    ] when l = l' ->
+        (subst H.eunit 0 src).node
+    | _ ->
+        ELet (b, self#visit_expr env e1, self#visit_expr env e2)
+end
+
 let remove_array_repeats = object(self)
   inherit [_] map as super
 

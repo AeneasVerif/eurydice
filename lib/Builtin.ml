@@ -316,7 +316,7 @@ let unwrap: K.decl =
   let t_E = TBound 0 in
   let t_result = mk_result t_T t_E in
   let binders = [ Helpers.fresh_binder "self" t_result ] in
-  DFunction (None, [], 0, 2, t_T, lid, binders,
+  DFunction (None, [ Private ], 0, 2, t_T, lid, binders,
     with_type t_T (EMatch (Unchecked, with_type t_result (EBound 0), [
       [ Helpers.fresh_binder "f0" t_T ],
       with_type t_result (PCons ("Ok", [ with_type t_T (PBound 0) ])),

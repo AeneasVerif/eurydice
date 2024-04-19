@@ -112,6 +112,8 @@ Supported options:|}
   let files = Krml.Monomorphization.functions files in
   let files = Krml.Monomorphization.datatypes files in
   let files = Krml.Inlining.drop_unused files in
+  Eurydice.Logging.log "Phase2.3" "%a" pfiles files;
+  let files = Eurydice.Cleanup2.remove_array_temporaries#visit_files () files in
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
   let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
   let files = Krml.DataTypes.simplify files in
