@@ -6,7 +6,7 @@
 
     nixpkgs.follows = "karamel/nixpkgs";
 
-    charon.url = "github:AeneasVerif/charon";
+    charon.url = "github:AeneasVerif/charon/fix-rustup-detection";
     charon.inputs.nixpkgs.follows = "nixpkgs";
   };
   outputs = {
@@ -61,8 +61,7 @@
               buildInputs = [charon.buildInputs eurydice];
               nativeBuildInputs = [charon.nativeBuildInputs fstar clang];
               buildPhase = ''
-                # we need to tell `charon` not to use `rustup`
-                export CHARON="${charon}/bin/charon --cargo-no-rust-version"
+                export CHARON="${charon}/bin/charon"
 
                 # setup CHARON_HOME: it is expected to be writtable, hence the `cp --no-preserve`
                 cp --no-preserve=mode,ownership -rf ${inputs.charon.sourceInfo.outPath} ./charon
