@@ -1,5 +1,9 @@
 #pragma once
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -211,3 +215,6 @@ typedef struct {
 
 #define EURYDICE_REPLACE(ptr, new_v, t) ({ t old_v = *ptr; *ptr = new_v; old_v; })
 
+#if defined(__cplusplus)
+}
+#endif
