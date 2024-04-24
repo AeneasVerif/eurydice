@@ -9,6 +9,7 @@ type file = {
   name: string;
   api: pattern list;
   private_: pattern list;
+  inline_static: bool;
 }
 
 type config = file list
@@ -51,6 +52,12 @@ let parse_file (v: Yaml.value): file =
         | Some _ -> parsing_error "name not a string"
         | None -> parsing_error "missing name"
       in
+      let inline_static =
+        match lookup "inline_static" with
+        | Some (`Bool inline_static) -> inline_static
+        | Some _ -> parsing_error "inline_static not a bool"
+        | None -> false
+      in
       let api =
         match lookup "api" with
         | None -> []
@@ -78,7 +85,7 @@ let parse_file (v: Yaml.value): file =
       if !count < List.length ls then
         parsing_error "extraneous fields in file";
       Krml.Options.(add_include := include_ @ c_include_ @ !add_include);
-      { name; api; private_ }
+      { name; api; private_; inline_static }
   | _ ->
       parsing_error "file must be an object"
 
@@ -117,6 +124,9 @@ let bundle (files: file list) (c: config): files =
     else
       Hashtbl.add bundled name [ decl ]
   in
+  let record_inline_static lid =
+    Krml.Options.(static_header := Lid lid :: !static_header)
+  in
   let files = List.map (fun (filename, decls) ->
     filename, List.filter_map (fun decl ->
       let lid = lid_of_decl decl in
@@ -125,14 +135,18 @@ let bundle (files: file list) (c: config): files =
         | [] ->
             Krml.(KPrint.bprintf "%a doesn't go anywhere\n" PrintAst.Ops.plid lid);
             false
-        | { name; api; private_ } :: files ->
+        | { name; api; private_; inline_static } :: files ->
             if List.exists (matches lid) api then begin
               (* Krml.(KPrint.bprintf "%a goes (api) into %s\n" PrintAst.Ops.plid lid name); *)
               bundle name decl;
+              if inline_static then
+                record_inline_static lid;
               true
             end else if List.exists (matches lid) private_ then begin
               (* Krml.(KPrint.bprintf "%a goes (private) into %s\n" PrintAst.Ops.plid lid name); *)
               bundle name (Krml.Bundles.mark_private decl);
+              if inline_static then
+                record_inline_static lid;
               true
             end else
               find files

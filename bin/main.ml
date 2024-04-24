@@ -58,8 +58,9 @@ Supported options:|}
     extern_c := true;
     static_header := [
       Bundle.Prefix [ "core"; "convert" ];
-      Bundle.Prefix [ "core"; "num" ]
-    ]
+      Bundle.Prefix [ "core"; "num" ];
+    ];
+    Warn.parse_warn_error (!warn_error ^ "+8");
   ));
 
   Krml.Helpers.is_readonly_builtin_lid_ :=
