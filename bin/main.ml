@@ -38,7 +38,7 @@ Supported options:|}
   if !files = [] then
     fatal_error "%s" (Arg.usage_string spec usage);
 
-  let terminal_width = Terminal.Size.(match get_dimensions () with Some d -> d.columns | None -> 80) in
+  let terminal_width = (* Terminal.Size.(match get_dimensions () with Some d -> d.columns | None -> 80) *) 100 in
   let pfiles b files =
     PPrint.(ToBuffer.pretty 0.95 terminal_width b (Krml.PrintAst.print_files files ^^ hardline))
   in
