@@ -116,8 +116,8 @@ Supported options:|}
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
     exit 1;
-  let files = Krml.Monomorphization.functions files in
   Eurydice.Logging.log "Phase2.1" "%a" pfiles files;
+  let files = Krml.Monomorphization.functions files in
   let files = Krml.Monomorphization.datatypes files in
   Eurydice.Logging.log "Phase2.2" "%a" pfiles files;
   let files = Krml.Inlining.drop_unused files in
