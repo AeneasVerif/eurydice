@@ -340,3 +340,60 @@ let build_macros files =
   let map = ref Krml.Idents.LidSet.empty in
   let files = (build_macros map)#visit_files () files in
   files, !map
+
+let resugar_loops = object(_self)
+  inherit [_] map as super
+
+  method! visit_ELet ((), _ as env) b e1 e2 =
+    match e1.node, e2.node with
+    (* Terminal position *)
+    |
+    (* let iter = core::iter::traits::collect<t>({ start = e_start; end = e_end }) in *)
+    EApp ({ node = ETApp (
+      { node = EQualified (["core"; "iter"; "traits"; "collect"; _], "into_iter"); _ },
+      [],
+      [ _t ]
+    ); _ }, [
+      { node = EFlat [ Some "start", e_start; Some "end", e_end ]; _ }
+    ]),
+    (* while (true) *)
+    EWhile ({ node = EBool true; _ }, {
+      (* let next = core::iter::range::next<t>(&(&iter[0])) in *)
+      node = ELet (_, {
+        node = EApp ({
+          node = ETApp ({
+            node = EQualified (["core";"iter";"range";_], "next"); _
+          }, [], [ t' ]);
+          _
+        }, [{
+          node = EAddrOf({
+            node = EBufRead ({
+              node = EAddrOf ({
+                node = EBound 0;
+                _
+              }); _
+            }, {
+              node = EConstant (_, "0"); _
+            }); _
+          }
+          ); _ }]); _ },
+        (* match next with None -> break | Some _ -> e_body *)
+        {
+          node = EMatch (Unchecked, { node = EBound 0; _ }, [
+            [], { node = PCons ("None", _); _ }, { node = EBreak; _ };
+            [], { node = PCons ("Some", _); _ }, e_body;
+          ]); _
+        }
+
+    ); _ }) ->
+      let open Krml.Helpers in
+      let w = match t' with TInt w -> w | _ -> assert false in
+      let e_some_i = with_type (Builtin.mk_option t') (ECons ("Some", [with_type t' (EBound 0)])) in
+      EFor (fresh_binder ~mut:true "i" t',
+        e_start,
+        mk_lt w (Krml.DeBruijn.lift 1 e_end),
+        mk_incr w,
+        Krml.DeBruijn.subst e_some_i 0 e_body)
+    | _ ->
+      super#visit_ELet env b e1 e2
+end
