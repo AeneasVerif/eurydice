@@ -352,7 +352,7 @@ let resugar_loops = object(self)
     EApp ({ node = ETApp (
       { node = EQualified (["core"; "iter"; "traits"; "collect"; _], "into_iter"); _ },
       [],
-      [ _t ]
+      [ TApp ((["core"; "ops"; "range"], "Range"), _t')  ]
     ); _ }, [
       { node = EFlat [ Some "start", e_start; Some "end", e_end ]; _ }
     ]),
@@ -393,7 +393,7 @@ let resugar_loops = object(self)
         e_start,
         mk_lt w (Krml.DeBruijn.lift 1 e_end),
         mk_incr w,
-        Krml.DeBruijn.subst e_some_i 0 e_body)
+        self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body))
 
     (* Non-terminal position *)
     |
@@ -401,7 +401,7 @@ let resugar_loops = object(self)
     EApp ({ node = ETApp (
       { node = EQualified (["core"; "iter"; "traits"; "collect"; _], "into_iter"); _ },
       [],
-      [ _t ]
+      [ TApp ((["core"; "ops"; "range"], "Range"), _t')  ]
     ); _ }, [
       { node = EFlat [ Some "start", e_start; Some "end", e_end ]; _ }
     ]),
@@ -443,8 +443,10 @@ let resugar_loops = object(self)
         e_start,
         mk_lt w (Krml.DeBruijn.lift 1 e_end),
         mk_incr w,
-        Krml.DeBruijn.subst e_some_i 0 e_body)
+        self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body))
       ) :: List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest)
     | _ ->
       super#visit_ELet env b e1 e2
+
+
 end

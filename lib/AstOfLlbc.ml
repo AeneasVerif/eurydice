@@ -534,6 +534,7 @@ let op_of_binop (op: C.binop): Krml.Constant.op =
   | C.Mul -> Mult
   | C.Shl -> BShiftL
   | C.Shr -> BShiftR
+  | _ -> Krml.Warn.fatal_error "unsupported operator: %s" (C.show_binop op)
 
 let mk_op_app (op: K.op) (first: K.expr) (rest: K.expr list): K.expr =
   let w = match first.typ with
