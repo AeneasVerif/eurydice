@@ -32,6 +32,7 @@ type env = {
   get_nth_type: C.TypeDeclId.id -> C.type_decl;
   get_nth_global: C.GlobalDeclId.id -> C.global_decl;
   get_nth_trait_impl: C.TraitImplId.id -> C.trait_impl;
+  get_nth_trait_decl: C.TraitDeclId.id -> C.trait_decl;
 
   (* Needed by the name matching logic *)
   name_ctx: Charon.NameMatcher.ctx;
@@ -1028,6 +1029,71 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
 
 (** Top-level declarations: orchestration *)
 
+let typ_of_signature env signature =
+  let { C.generics = { types = type_params; const_generics; _ }; inputs; output ; _ } = signature in
+  let const_generics_ts = List.map (fun (c: C.const_generic_var) -> typ_of_literal_ty env c.ty) const_generics in
+  let env = push_cg_binders env const_generics in
+  let env = push_type_binders env type_params in
+  let inputs = List.map (typ_of_ty env) inputs in
+  let output = typ_of_ty env output in
+  let adjusted_inputs = if const_generics_ts = [] && inputs = [] then [ K.TUnit ] else const_generics_ts @ inputs in
+  let t = Krml.Helpers.fold_arrow adjusted_inputs output in
+  List.length const_generics_ts, List.length type_params, t
+
+
+(* Using tests/where_clauses_simple as an example.
+
+   fn double<T: Ops + Copy, U: Ops+Copy> (...)
+
+   this gets desugared to fn double<T,U> where
+     T: Ops,      <-- ClauseId 0 (required_methods: add, of_u32)
+     T: Copy,     <-- ClauseId 1 (builtin, so neither required nor provided methods)
+     U: Ops,      <-- ClauseId 2 (required_methods: add, of_u32)
+     U: Copy,     <-- ClauseId 3 (builtin, so neither required nor provided methods)
+
+   the types we obtain by looking up the trait declaration have Self as 0
+   (DeBruijn).
+*)
+let build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
+  List.concat_map (fun tc ->
+    let { C.clause_id; trait_id; clause_generics; _ } = tc in
+    let trait_decl = env.get_nth_trait_decl trait_id in
+
+    (* FYI, some clauses like Copy have neither required nor provided methods. *)
+    Krml.KPrint.bprintf "clause id %d: FYI, clause_generic type is %s (required: %d) (provided: %d)\n"
+      (C.TraitClauseId.to_int clause_id)
+      (C.show_ty (Krml.KList.one clause_generics.C.types))
+      (List.length trait_decl.C.required_methods)
+      (List.length trait_decl.C.provided_methods);
+
+    List.map (fun (item_name, decl_id) ->
+      let decl = env.get_nth_function decl_id in
+      let _, _, t = typ_of_signature env decl.C.signature in
+      (clause_id, item_name), (trait_decl.C.name, t)
+    ) trait_decl.C.required_methods @
+    List.map (fun (item_name, decl_id) ->
+      match decl_id with
+      | Some decl_id ->
+          let decl = env.get_nth_function decl_id in
+          let _, _, t = typ_of_signature env decl.C.signature in
+          (clause_id, item_name), (trait_decl.C.name, t)
+      | None ->
+          failwith ("TODO: handle provided trait methods, like " ^ item_name)
+    ) trait_decl.C.provided_methods
+  ) trait_clauses
+
+
+
+let debug_trait_clause_mapping env mapping =
+  let open Krml in
+  if mapping <> [] then
+    KPrint.bprintf "In this function, calls to trait bound methods are as follows:\n";
+  List.iter (fun ((clause_id, item_name), (trait_name, t)) ->
+    KPrint.bprintf "TraitClause %d (a.k.a. %s)::%s: %a\n"
+      (C.TraitClauseId.to_int clause_id) (string_of_name env trait_name) item_name PrintAst.Ops.ptyp t
+  ) mapping
+
+
 let of_declaration_group (dg: 'id C.g_declaration_group) (f: 'id -> 'a): 'a list =
   (* We do not care about recursion as in C, everything is mutually recursive
      thanks to header inclusion. *)
@@ -1090,16 +1156,9 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
             | None ->
                 begin try
                   (* Opaque function *)
-                  let { C.generics = { types = type_params; const_generics; _ }; inputs; output ; _ } = signature in
-                  let const_generics_ts = List.map (fun (c: C.const_generic_var) -> typ_of_literal_ty env c.ty) const_generics in
-                  let env = push_cg_binders env const_generics in
-                  let env = push_type_binders env type_params in
-                  let inputs = List.map (typ_of_ty env) inputs in
-                  let output = typ_of_ty env output in
-                  let adjusted_inputs = if const_generics_ts = [] && inputs = [] then [ K.TUnit ] else const_generics_ts @ inputs in
-                  let t = Krml.Helpers.fold_arrow adjusted_inputs output in
+                  let n_cgs, n, t = typ_of_signature env signature in
                   let name = lid_of_name env name in
-                  Some (K.DExternal (None, [], List.length const_generics_ts, List.length type_params, name, t, []))
+                  Some (K.DExternal (None, [], n_cgs, n, name, t, []))
                 with e ->
                   L.log "AstOfLLbc" "ERROR translating %s: %s\n%s" (string_of_name env decl.name)
                     (Printexc.to_string e)
@@ -1113,6 +1172,10 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                 else
                   let env = push_cg_binders env signature.C.generics.const_generics in
                   let env = push_type_binders env signature.C.generics.types in
+
+                  let clause_mapping = build_trait_clause_mapping env signature.C.generics.trait_clauses in
+                  debug_trait_clause_mapping env clause_mapping;
+
                   let name = lid_of_name env name in
                   (* `locals` contains, in order: special return variable; function arguments;
                      local variables *)
@@ -1128,12 +1191,15 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                   let v_unit = { C.index = Charon.Expressions.VarId.of_int max_int; name = None; var_ty = t_unit } in
                   let args = if args = [] then [ v_unit ] else args in
 
-                  let arg_binders = List.map (fun (arg: C.const_generic_var) ->
-                    Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty)
-                  ) signature.C.generics.const_generics @ List.map (fun (arg: C.var) ->
-                    let name = Option.value ~default:"_" arg.name in
-                    Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty)
-                  ) args in
+                  let arg_binders =
+                    List.map (fun (arg: C.const_generic_var) ->
+                        Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty)
+                      ) signature.C.generics.const_generics @
+                    List.map (fun (arg: C.var) ->
+                      let name = Option.value ~default:"_" arg.name in
+                      Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty)
+                    ) args
+                  in
                   let env = push_binders env args in
                   let body =
                     with_locals env return_type (return_var :: locals) (fun env ->
@@ -1182,6 +1248,7 @@ let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
   let get_nth_type = fun id -> C.TypeDeclId.Map.find id type_decls in
   let get_nth_global = fun id -> C.GlobalDeclId.Map.find id global_decls in
   let get_nth_trait_impl = fun id -> C.TraitImplId.Map.find id trait_impls in
+  let get_nth_trait_decl = fun id -> C.TraitDeclId.Map.find id trait_decls in
   let format_env = Charon.PrintLlbcAst.Crate.crate_to_fmt_env crate in
   let name_ctx: Charon.NameMatcher.ctx = { type_decls; global_decls; trait_decls; fun_decls; trait_impls } in
   let env = {
@@ -1189,6 +1256,7 @@ let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
     get_nth_type;
     get_nth_global;
     get_nth_trait_impl;
+    get_nth_trait_decl;
     cg_binders = [];
     binders = [];
     type_binders = [];
