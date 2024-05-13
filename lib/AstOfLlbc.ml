@@ -31,7 +31,7 @@ module L = Logging
    definition. *)
 type evar_id =
   | ConstGenericVar of C.const_generic_var_id
-  | TraitClauseMethod of C.trait_clause_id * string
+  | TraitClauseMethod of C.trait_clause_id * string * C.fun_sig
   | Var of C.var_id * C.ety (* the ety aids code-generation, sometimes *)
 
 type env = {
@@ -97,8 +97,11 @@ let findi p l =
   in
   findi 0 l
 
-(* Suitable in types -- in expressions, add List.length env.binders to get a correct de bruijn index
-   suitable in expressions. *)
+let fst3 (x, _, _) = x
+let snd3 (_, x, _) = x
+let thd3 (_, _, x) = x
+
+(* Suitable in types -- in expressions, use lookup_cg_in_expressions. *)
 let lookup_cg_in_types env v1 =
   let i, (_, t) = findi (fun (v2, _) -> v1 = v2) env.cg_binders in
   i, t
@@ -390,6 +393,12 @@ let assert_var = function
   | Var (v2, ty) -> v2, ty
   | _ -> assert false
 
+let assert_trait_clause_method = function
+  | TraitClauseMethod (clause_id, item_name, signature) -> clause_id, item_name, signature
+  | _ -> assert false
+
+(* Regular binders *)
+
 let lookup env v1 =
   let i, (_, t) = findi (fun (v2, _) -> is_var v2 v1) env.binders in
   i, t
@@ -398,6 +407,8 @@ let lookup_with_original_type env v1 =
   let i, (v, t) = findi (fun (v2, _) -> is_var v2 v1) env.binders in
   let _, ty = assert_var v in
   i, t, ty
+
+(* Const generic binders *)
 
 let push_cg_binder env (t: C.const_generic_var) =
   { env with
@@ -414,6 +425,32 @@ let push_binder env (t: C.var) =
 let push_binders env (ts: C.var list) =
   List.fold_left push_binder env ts
 
+(* Clause binders, which only appear as function parameters, and hold an unknown
+   trait method (dictionary-style). *)
+
+type clause_binder = {
+  pretty_name: string;
+  signature: C.fun_sig;
+  (* The signature above, translated as a type *)
+  t: K.typ;
+  clause_id: C.trait_clause_id;
+  item_name: string;
+}
+
+let push_clause_binder env { signature; t; clause_id; item_name; _ } =
+  { env with binders = (TraitClauseMethod (clause_id, item_name, signature), t) :: env.binders }
+
+let push_clause_binders env bs =
+  List.fold_left push_clause_binder env bs
+
+let lookup_clause_binder env clause_id item_name =
+  let i, (v, _) =
+    findi (function
+      | TraitClauseMethod (clause_id2, item_name2, _), _ -> clause_id2 = clause_id && item_name2 = item_name
+      | _ -> false
+    ) env.binders
+  in
+  i, thd3 (assert_trait_clause_method v)
 
 (** Translation of expressions (statements, operands, rvalues, places) *)
 
@@ -667,6 +704,8 @@ let lookup_fun (env: env) (f: C.fn_ptr): lookup_result =
               let trait = env.get_nth_trait_impl id in
               let f = List.assoc method_name trait.required_methods in
               regular f
+          | Clause _tcid ->
+              assert false
           | _ ->
               Krml.Warn.fatal_error "Error looking trait ref: %s %s"
                 (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref) method_name
@@ -1112,36 +1151,52 @@ let build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
     (* FYI, some clauses like Copy have neither required nor provided methods. *)
     Krml.KPrint.bprintf "clause id %d: FYI, clause_generic type is %s (required: %d) (provided: %d)\n"
       (C.TraitClauseId.to_int clause_id)
-      (C.show_ty (Krml.KList.one clause_generics.C.types))
+      (String.concat " ++ " (List.map C.show_ty (clause_generics.C.types)))
       (List.length trait_decl.C.required_methods)
       (List.length trait_decl.C.provided_methods);
 
+    (* The type variable from the function that the trait clause is applied to *)
+    let tvarid =
+      match clause_generics.C.types with
+      | [ TVar tvarid ] -> tvarid
+      | _ -> failwith "Clause above does not refer to a type var? confused"
+    in
+
     List.map (fun (item_name, decl_id) ->
       let decl = env.get_nth_function decl_id in
-      let _, _, t = typ_of_signature env decl.C.signature in
-      (clause_id, item_name), (trait_decl.C.name, t)
+      (clause_id, item_name), (tvarid, trait_decl.C.name, decl.C.signature)
     ) trait_decl.C.required_methods @
     List.map (fun (item_name, decl_id) ->
       match decl_id with
       | Some decl_id ->
           let decl = env.get_nth_function decl_id in
-          let _, _, t = typ_of_signature env decl.C.signature in
-          (clause_id, item_name), (trait_decl.C.name, t)
+          (clause_id, item_name), (tvarid, trait_decl.C.name, decl.C.signature)
       | None ->
           failwith ("TODO: handle provided trait methods, like " ^ item_name)
     ) trait_decl.C.provided_methods
   ) trait_clauses
 
 
-
 let debug_trait_clause_mapping env mapping =
   let open Krml in
   if mapping <> [] then
     KPrint.bprintf "In this function, calls to trait bound methods are as follows:\n";
-  List.iter (fun ((clause_id, item_name), (trait_name, t)) ->
+  List.iter (fun ((clause_id, item_name), (_, trait_name, signature)) ->
+    let t = thd3 (typ_of_signature env signature) in
     KPrint.bprintf "TraitClause %d (a.k.a. %s)::%s: %a\n"
       (C.TraitClauseId.to_int clause_id) (string_of_name env trait_name) item_name PrintAst.Ops.ptyp t
   ) mapping
+
+
+(* Assumes type variables have been suitably bound in the environment *)
+let mk_clause_binders_and_args env clause_mapping =
+  List.map (fun ((clause_id, item_name), (tvarid, trait_name, signature)) ->
+    let tvar = lookup_typ env tvarid in
+    let t = thd3 (typ_of_signature env signature) in
+    let t = Krml.DeBruijn.subst_t (TBound tvar) 0 t in
+    let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
+    { pretty_name; t; clause_id; item_name; signature }
+  ) clause_mapping
 
 
 let of_declaration_group (dg: 'id C.g_declaration_group) (f: 'id -> 'a): 'a list =
@@ -1241,16 +1296,30 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                   let v_unit = { C.index = Charon.Expressions.VarId.of_int max_int; name = None; var_ty = t_unit } in
                   let args = if args = [] then [ v_unit ] else args in
 
+                  (* At this stage, env has:
+                     cg_binders = <<all cg binders>>
+                     type_binders = <<all type binders>>
+                     binders = <<all cg binders>>
+                  *)
+                  let clause_binders = mk_clause_binders_and_args env clause_mapping in
+                  (* Now we turn it into:
+                     binders = <<all cg binders>> ++ <<all clause binders>> ++ <<regular function args>>
+                  *)
+                  let env = push_clause_binders env clause_binders in
+                  let env = push_binders env args in
+
                   let arg_binders =
                     List.map (fun (arg: C.const_generic_var) ->
                         Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty)
                       ) signature.C.generics.const_generics @
+                    List.map (fun { pretty_name; t; _ } ->
+                      Krml.Helpers.fresh_binder pretty_name t
+                    ) clause_binders @
                     List.map (fun (arg: C.var) ->
                       let name = Option.value ~default:"_" arg.name in
                       Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty)
                     ) args
                   in
-                  let env = push_binders env args in
                   let body =
                     with_locals env return_type (return_var :: locals) (fun env ->
                       expression_of_raw_statement env return_var.index body.content)
