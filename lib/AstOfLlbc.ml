@@ -26,6 +26,14 @@ module L = Logging
 
 (** Environment *)
 
+(* The various kinds of binders we insert in the expression scope. Usually come
+   in this order, the first two being only ever inserted upon entering a function
+   definition. *)
+type evar_id =
+  | ConstGenericVar of C.const_generic_var_id
+  | TraitClauseMethod of C.trait_clause_id * string
+  | Var of C.var_id * C.ety (* the ety aids code-generation, sometimes *)
+
 type env = {
   (* Lookup functions to resolve various id's into actual declarations. *)
   get_nth_function: C.FunDeclId.id -> C.fun_decl;
@@ -38,10 +46,34 @@ type env = {
   name_ctx: Charon.NameMatcher.ctx;
   generic_params: C.generic_params;
 
-  (* To compute DeBruijn indices *)
+  (* We have three binding scopes, all in DeBruijn indices.
+     - const-generic ("cg") binders
+     - type binders
+     - expression binders, which typically starts with a repeat of the cg
+       binders (at the top-level function), followed by trait bounds method
+       binders, followed by regular expression binders (function arguments, local
+       variables, etc.)
+     In the target AST, we retain these three binding scopes. However,
+     - in types, CgVar and TCgArray contain DeBruijn indices referring to the cg
+       scope, while
+     - in expressions, there is no ECgVar, and we rely on a regular EBound node
+       that refers to the repeat of the cg var as a regular argument var.
+
+     Example: fn f<N: usize, T: Copy>(x: [T; N]) -> usize { N }
+     Upon entering the body of f, we have:
+     - cg_binders: [ N, usize ]
+     - type_binders: [ T ]
+     - binders: [ `Cg (N, usize); `Clause (T: Copy, "copy"); `Var (x: [T; N]) ]
+
+     After translation, we get:
+     DFunction (..., 1 (* one type var *), 1 (* one cg var *), [
+       "N": TInt usize;
+       "x": TCgArray (TBound 0, 0); (* types use the cg scope *)
+     ], EBound 1 (* expressions refer to the copy of the cg var as an expression var *)
+     *)
   cg_binders: (C.const_generic_var_id * K.typ) list;
   type_binders: C.type_var_id list;
-  binders: (C.var_id * K.typ * C.ety) list;
+  binders: (evar_id * K.typ) list;
 
   (* For printing. *)
   format_env: Charon.PrintLlbcAst.fmt_env;
@@ -67,7 +99,7 @@ let findi p l =
 
 (* Suitable in types -- in expressions, add List.length env.binders to get a correct de bruijn index
    suitable in expressions. *)
-let lookup_cg env v1 =
+let lookup_cg_in_types env v1 =
   let i, (_, t) = findi (fun (v2, _) -> v1 = v2) env.cg_binders in
   i, t
 
@@ -243,7 +275,7 @@ let assert_cg_scalar = function
 
 let cg_of_const_generic env cg =
   match cg with
-  | C.CgVar id -> K.CgVar (fst (lookup_cg env id))
+  | C.CgVar id -> K.CgVar (fst (lookup_cg_in_types env id))
   | C.CgValue (VScalar sv) -> CgConst (constant_of_scalar_value sv)
   | _ -> failwith ("cg_of_const_generic: " ^ Charon.PrintTypes.const_generic_to_string env.format_env cg)
 
@@ -331,7 +363,7 @@ and maybe_cg_array env t cg =
   | CgValue _ ->
       K.TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))
   | CgVar id ->
-      let id, cg_t = lookup_cg env id in
+      let id, cg_t = lookup_cg_in_types env id in
       assert (cg_t = K.TInt SizeT);
       K.TCgArray (typ_of_ty env t, id)
   | _ ->
@@ -349,22 +381,35 @@ let mk_deep_copy (e: K.expr) (l: K.expr) =
 
 (* Environment: expressions *)
 
+let is_var v2 v1 =
+  match v2 with
+  | Var (v2, _) -> v2 = v1
+  | _ -> false
+
+let assert_var = function
+  | Var (v2, ty) -> v2, ty
+  | _ -> assert false
+
 let lookup env v1 =
-  let i, (_, t, _) = findi (fun (v2, _, _) -> v1 = v2) env.binders in
+  let i, (_, t) = findi (fun (v2, _) -> is_var v2 v1) env.binders in
   i, t
 
 let lookup_with_original_type env v1 =
-  let i, (_, t, ty) = findi (fun (v2, _, _) -> v1 = v2) env.binders in
+  let i, (v, t) = findi (fun (v2, _) -> is_var v2 v1) env.binders in
+  let _, ty = assert_var v in
   i, t, ty
 
 let push_cg_binder env (t: C.const_generic_var) =
-  { env with cg_binders = (t.index, typ_of_literal_ty env t.ty) :: env.cg_binders }
+  { env with
+    cg_binders = (t.index, typ_of_literal_ty env t.ty) :: env.cg_binders;
+    binders = (ConstGenericVar t.index, typ_of_literal_ty env t.ty) :: env.binders;
+  }
 
 let push_cg_binders env (ts: C.const_generic_var list) =
   List.fold_left push_cg_binder env ts
 
 let push_binder env (t: C.var) =
-  { env with binders = (t.index, typ_of_ty env t.var_ty, t.var_ty) :: env.binders }
+  { env with binders = (Var (t.index, t.var_ty), typ_of_ty env t.var_ty) :: env.binders }
 
 let push_binders env (ts: C.var list) =
   List.fold_left push_binder env ts
@@ -398,9 +443,13 @@ let rec with_locals (env: env) (t: K.typ) (locals: C.var list) (k: env -> 'a): '
       let b = binder_of_var env l in
       K.(with_type t (ELet (b, Krml.Helpers.any, with_locals env t locals k)))
 
-let expression_of_cg_var_id (env: env) (v: C.const_generic_var_id): K.expr =
-  let i, t = lookup_cg env v in
-  K.(with_type t (EBound (i + List.length env.binders)))
+let lookup_cg_in_expressions (env: env) (v1: C.const_generic_var_id) =
+  let i, (_, t) = findi (fun (v2, _) -> v2 = ConstGenericVar v1) env.binders in
+  i, t
+
+let expression_of_cg_var_id env v =
+  let i, t = lookup_cg_in_expressions env v in
+  K.(with_type t (EBound i))
 
 let expression_of_var_id (env: env) (v: C.var_id): K.expr =
   let i, t = lookup env v in
@@ -680,8 +729,9 @@ let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
   let poly_t_sans_cgs = Krml.Helpers.fold_arrow inputs output in
   let poly_t = Krml.Helpers.fold_arrow cg_inputs poly_t_sans_cgs in
   let output, t =
-    Krml.DeBruijn.(subst_ctn (List.length env.binders) const_generic_args (subst_tn type_args output)),
-    Krml.DeBruijn.(subst_ctn (List.length env.binders) const_generic_args (subst_tn type_args poly_t_sans_cgs))
+    let offset = List.length env.binders - List.length env.cg_binders in
+    Krml.DeBruijn.(subst_ctn offset const_generic_args (subst_tn type_args output)),
+    Krml.DeBruijn.(subst_ctn offset const_generic_args (subst_tn type_args poly_t_sans_cgs))
   in
   let hd =
     let hd = K.with_type poly_t (K.EQualified name) in
@@ -847,7 +897,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let len = expression_of_const_generic env c in
       let dest, _ = expression_of_place env dest in
       let repeat = K.(with_type (Krml.Helpers.fold_arrow Builtin.array_repeat.cg_args Builtin.array_repeat.typ) (EQualified Builtin.array_repeat.name)) in
-      let diff = List.length env.binders in
+      let diff = List.length env.binders - List.length env.cg_binders in
       let repeat = K.(with_type (Krml.DeBruijn.(
         subst_ct diff len 0 (
           subst_t t 0 (Builtin.array_repeat.typ))))
