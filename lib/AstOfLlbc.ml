@@ -26,12 +26,17 @@ module L = Logging
 
 (** Environment *)
 
+type sig_info = {
+  n_type_args: int;
+  n_cg_args: int;
+}
+
 (* The various kinds of binders we insert in the expression scope. Usually come
    in this order, the first two being only ever inserted upon entering a function
    definition. *)
-type evar_id =
+type var_id =
+  | TraitClauseMethod of C.trait_clause_id * string * sig_info
   | ConstGenericVar of C.const_generic_var_id
-  | TraitClauseMethod of C.trait_clause_id * string * C.fun_sig
   | Var of C.var_id * C.ety (* the ety aids code-generation, sometimes *)
 
 type env = {
@@ -73,7 +78,7 @@ type env = {
      *)
   cg_binders: (C.const_generic_var_id * K.typ) list;
   type_binders: C.type_var_id list;
-  binders: (evar_id * K.typ) list;
+  binders: (var_id * K.typ) list;
 
   (* For printing. *)
   format_env: Charon.PrintLlbcAst.fmt_env;
@@ -429,28 +434,27 @@ let push_binders env (ts: C.var list) =
    trait method (dictionary-style). *)
 
 type clause_binder = {
-  pretty_name: string;
-  signature: C.fun_sig;
-  (* The signature above, translated as a type *)
-  t: K.typ;
   clause_id: C.trait_clause_id;
   item_name: string;
+  pretty_name: string;
+  sig_info: sig_info;
+  t: K.typ;
 }
 
-let push_clause_binder env { signature; t; clause_id; item_name; _ } =
-  { env with binders = (TraitClauseMethod (clause_id, item_name, signature), t) :: env.binders }
+let push_clause_binder env { clause_id; item_name; t; sig_info; _ } =
+  { env with binders = (TraitClauseMethod (clause_id, item_name, sig_info), t) :: env.binders }
 
 let push_clause_binders env bs =
   List.fold_left push_clause_binder env bs
 
 let lookup_clause_binder env clause_id item_name =
-  let i, (v, _) =
+  let i, (v, t) =
     findi (function
       | TraitClauseMethod (clause_id2, item_name2, _), _ -> clause_id2 = clause_id && item_name2 = item_name
       | _ -> false
     ) env.binders
   in
-  i, thd3 (assert_trait_clause_method v)
+  i, t, thd3 (assert_trait_clause_method v)
 
 (** Translation of expressions (statements, operands, rvalues, places) *)
 
@@ -654,7 +658,7 @@ let maybe_addrof (env: env) (ty: C.ty) (e: K.expr) =
       K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
 
 type lookup_result = {
-  name: K.lident;
+  f: K.expr';
   n_type_args: int; (* just for a sanity check *)
   cg_types: K.typ list;
   arg_types: K.typ list;
@@ -668,22 +672,22 @@ let lookup_fun (env: env) (f: C.fn_ptr): lookup_result =
   let builtin b =
     let { Builtin.name; typ; n_type_args; cg_args; _ } = b in
     let ret_type, arg_types = Krml.Helpers.flatten_arrow typ in
-    { name; n_type_args; arg_types; ret_type; cg_types = cg_args; is_assumed = true }
+    { f = EQualified name; n_type_args; arg_types; ret_type; cg_types = cg_args; is_assumed = true }
   in
   match List.find_opt (fun (p, _) -> matches p) known_builtins with
   | Some (_, b) ->
       builtin b
   | None ->
-      let regular f =
-        let { C.name; signature = { generics = { types = type_params; const_generics; _ }; inputs; output; _ }; _ } = env.get_nth_function f in
-        L.log "Calls" "--> name: %s" (string_of_name env name);
+      let lookup_result_of_signature f signature =
+        let { C.generics = { types = type_params; const_generics; _ }; inputs; output; _ } = signature in
+        L.log "Calls" "--> name: %a" Krml.PrintAst.Ops.pexpr (K.with_type TUnit f);
         L.log "Calls" "--> args: %s, ret: %s"
           (String.concat " ++ " (List.map (Charon.PrintTypes.ty_to_string env.format_env) inputs))
           (Charon.PrintTypes.ty_to_string env.format_env output);
         let env = push_cg_binders env const_generics in
         let env = push_type_binders env type_params in
         {
-          name = lid_of_name env name;
+          f;
           n_type_args = List.length type_params;
           cg_types = List.map (fun (v: C.const_generic_var) -> typ_of_literal_ty env v.ty) const_generics;
           arg_types = List.map (typ_of_ty env) inputs;
@@ -691,9 +695,15 @@ let lookup_fun (env: env) (f: C.fn_ptr): lookup_result =
           is_assumed = false
         }
       in
+
+      let lookup_result_of_fun_id fun_id =
+        let { C.name; signature; _ } = env.get_nth_function fun_id in
+        lookup_result_of_signature (EQualified (lid_of_name env name)) signature
+      in
+
       match f.func with
       | FunId (FRegular f) ->
-          regular f
+          lookup_result_of_fun_id f
 
       | FunId (FAssumed f) ->
           Krml.Warn.fatal_error "unknown assumed function: %s" (C.show_assumed_fun_id f)
@@ -703,9 +713,19 @@ let lookup_fun (env: env) (f: C.fn_ptr): lookup_result =
           | TraitImpl id ->
               let trait = env.get_nth_trait_impl id in
               let f = List.assoc method_name trait.required_methods in
-              regular f
-          | Clause _tcid ->
-              assert false
+              lookup_result_of_fun_id f
+          | Clause tcid ->
+              let f, t, sig_info = lookup_clause_binder env tcid method_name in
+              let ret_type, arg_types = Krml.Helpers.flatten_arrow t in
+              let cg_types, arg_types = Krml.KList.split sig_info.n_cg_args arg_types in
+              {
+                f = EBound f;
+                n_type_args = sig_info.n_type_args;
+                cg_types;
+                arg_types;
+                ret_type;
+                is_assumed = false
+              }
           | _ ->
               Krml.Warn.fatal_error "Error looking trait ref: %s %s"
                 (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref) method_name
@@ -747,7 +767,7 @@ let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
 
   let type_args = List.map (typ_of_ty env) type_args in
   let const_generic_args = List.map (expression_of_const_generic env) const_generic_args in
-  let { name; n_type_args = n_type_params; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_assumed } =
+  let { f; n_type_args = n_type_params; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_assumed } =
     lookup_fun env fn_ptr
   in
 
@@ -763,7 +783,7 @@ let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
 
   if not (n_type_params = List.length type_args) then
     Krml.Warn.fatal_error "%a: n_type_params %d != type_args %d"
-      Krml.PrintAst.Ops.plid name
+      Krml.PrintAst.Ops.pexpr (K.with_type TUnit f)
       n_type_params (List.length type_args);
   let poly_t_sans_cgs = Krml.Helpers.fold_arrow inputs output in
   let poly_t = Krml.Helpers.fold_arrow cg_inputs poly_t_sans_cgs in
@@ -773,7 +793,7 @@ let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
     Krml.DeBruijn.(subst_ctn offset const_generic_args (subst_tn type_args poly_t_sans_cgs))
   in
   let hd =
-    let hd = K.with_type poly_t (K.EQualified name) in
+    let hd = K.with_type poly_t f in
     if type_args <> [] || const_generic_args <> [] then
       K.with_type t (K.ETApp (hd, const_generic_args, type_args))
     else
@@ -1130,7 +1150,7 @@ let typ_of_signature env signature =
   List.length const_generics_ts, List.length type_params, t
 
 
-(* Using tests/where_clauses_simple as an example.
+  (* Using tests/where_clauses_simple as an example.
 
    fn double<T: Ops + Copy, U: Ops+Copy> (...)
 
@@ -1142,7 +1162,7 @@ let typ_of_signature env signature =
 
    the types we obtain by looking up the trait declaration have Self as 0
    (DeBruijn).
-*)
+   *)
 let build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
   List.concat_map (fun tc ->
     let { C.clause_id; trait_id; clause_generics; _ } = tc in
@@ -1165,7 +1185,7 @@ let build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
     List.map (fun (item_name, decl_id) ->
       let decl = env.get_nth_function decl_id in
       (clause_id, item_name), (tvarid, trait_decl.C.name, decl.C.signature)
-    ) trait_decl.C.required_methods @
+      ) trait_decl.C.required_methods @
     List.map (fun (item_name, decl_id) ->
       match decl_id with
       | Some decl_id ->
@@ -1173,8 +1193,8 @@ let build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
           (clause_id, item_name), (tvarid, trait_decl.C.name, decl.C.signature)
       | None ->
           failwith ("TODO: handle provided trait methods, like " ^ item_name)
-    ) trait_decl.C.provided_methods
-  ) trait_clauses
+          ) trait_decl.C.provided_methods
+    ) trait_clauses
 
 
 let debug_trait_clause_mapping env mapping =
@@ -1195,7 +1215,11 @@ let mk_clause_binders_and_args env clause_mapping =
     let t = thd3 (typ_of_signature env signature) in
     let t = Krml.DeBruijn.subst_t (TBound tvar) 0 t in
     let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
-    { pretty_name; t; clause_id; item_name; signature }
+    let sig_info = {
+      n_type_args = List.length signature.generics.types - 1;
+      n_cg_args = List.length signature.generics.const_generics;
+    } in
+    { pretty_name; t; clause_id; item_name; sig_info }
   ) clause_mapping
 
 
