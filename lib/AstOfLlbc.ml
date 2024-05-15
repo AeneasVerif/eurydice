@@ -931,19 +931,20 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
     Krml.Warn.fatal_error "%a: n_type_params %d != type_args %d"
       Krml.PrintAst.Ops.pexpr (K.with_type TUnit f)
       n_type_params (List.length type_args);
-  let poly_t_sans_cgs = Krml.Helpers.fold_arrow inputs output in
-  let poly_t = Krml.Helpers.fold_arrow cg_inputs poly_t_sans_cgs in
-  L.log "Calls" "%s--> poly_t_sans_cgs: %a" depth Krml.PrintAst.Ops.ptyp poly_t_sans_cgs;
-  L.log "Calls" "%s--> poly_t: %a" depth Krml.PrintAst.Ops.ptyp poly_t;
-  let output, t =
-    let offset = List.length env.binders - List.length env.cg_binders in
-    Krml.DeBruijn.(subst_ctn offset const_generic_args (subst_tn type_args output)),
-    Krml.DeBruijn.(subst_ctn offset const_generic_args (subst_tn type_args poly_t_sans_cgs))
-  in
+
+  let t_hd = Krml.Helpers.fold_arrow (cg_inputs @ inputs) output in
+  L.log "Calls" "%s--> t_hd: %a" depth Krml.PrintAst.Ops.ptyp t_hd;
+  let offset = List.length env.binders - List.length env.cg_binders in
+  let output = Krml.DeBruijn.(subst_ctn offset const_generic_args (subst_tn type_args output)) in
   let hd =
-    let hd = K.with_type poly_t f in
+    let hd = K.with_type t_hd f in
     if type_args <> [] || const_generic_args <> [] then
-      K.with_type t (K.ETApp (hd, const_generic_args, type_args))
+      let t_applied =
+        let _, inputs = Krml.KList.split (List.length const_generic_args) inputs in
+        Krml.DeBruijn.(subst_ctn offset const_generic_args (subst_tn type_args (Krml.Helpers.fold_arrow inputs output)))
+      in
+      L.log "Calls" "%s--> t_applied: %a" depth Krml.PrintAst.Ops.ptyp t_applied;
+      K.with_type t_applied (K.ETApp (hd, const_generic_args, type_args))
     else
       hd
   in
