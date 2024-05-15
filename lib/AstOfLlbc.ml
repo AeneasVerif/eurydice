@@ -214,23 +214,23 @@ module RustNames = struct
     parse_pattern "core::convert::From<@T, @U>::from"
 
   let into_u16 =
-    parse_pattern "core::convert::Into<u16, @U>::into"
+    parse_pattern "core::convert::Into<@U, u16>::into"
   let into_u32 =
-    parse_pattern "core::convert::Into<u32, @U>::into"
+    parse_pattern "core::convert::Into<@U, u32>::into"
   let into_u64 =
-    parse_pattern "core::convert::Into<u64, @U>::into"
+    parse_pattern "core::convert::Into<@U, u64>::into"
   let into_u128 =
-    parse_pattern "core::convert::Into<u128, @U>::into"
+    parse_pattern "core::convert::Into<@U, u128>::into"
   let into_i16 =
-    parse_pattern "core::convert::Into<i16, @U>::into"
+    parse_pattern "core::convert::Into<@U, i16>::into"
   let into_i32 =
-    parse_pattern "core::convert::Into<i32, @U>::into"
+    parse_pattern "core::convert::Into<@U, i32>::into"
   let into_i64 =
-    parse_pattern "core::convert::Into<i64, @U>::into"
+    parse_pattern "core::convert::Into<@U, i64>::into"
   let into_i128 =
-    parse_pattern "core::convert::Into<i128, @U>::into"
+    parse_pattern "core::convert::Into<@U, i128>::into"
   let into =
-    parse_pattern "core::convert::Into<@T, @U>::into"
+    parse_pattern "core::convert::Into<@U, @T>::into"
 
   let is_vec env =
     match_pattern_with_type_id env.name_ctx config (mk_empty_maps ()) vec
