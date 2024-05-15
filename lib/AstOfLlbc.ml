@@ -715,7 +715,7 @@ let lookup_fun (env: env) depth (f: C.fn_ptr): lookup_result =
           match trait_ref.trait_id with
           | TraitImpl id ->
               let trait = env.get_nth_trait_impl id in
-              let f = List.assoc method_name trait.required_methods in
+              let f = List.assoc method_name (trait.required_methods @ trait.provided_methods) in
               lookup_result_of_fun_id f
           | Clause tcid ->
               let f, t, sig_info = lookup_clause_binder env tcid method_name in
@@ -783,7 +783,10 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
     in
     (* This must be in agreement, and in the same order as build_trait_clause_mapping *)
     List.map (fun (item_name, decl_id) ->
-      let fn_ptr: C.fn_ptr = { func = TraitMethod (trait_ref, item_name, decl_id); generics = trait_ref.generics } in
+      let fn_ptr: C.fn_ptr = {
+        func = TraitMethod (trait_ref, item_name, decl_id);
+        generics = Charon.TypesUtils.empty_generic_args
+    } in
       fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr)
     ) (trait_impl.required_methods @ trait_impl.provided_methods)
   ) trait_refs in
