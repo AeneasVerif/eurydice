@@ -19,6 +19,8 @@ fn double<T: Ops + Copy, U: Ops+Copy> (x: T, y: U) -> (T, U) {
 
 fn main() {
     let x = double(1u64, 1u32);
-    assert_eq!(x.0, 2u64);
-    assert_eq!(x.1, 2u32);
+    let x_0 = 2u64;
+    let x_1 = 2u32;
+    assert_eq!(x.0, x_0);
+    assert_eq!(x.1, x_1);
 }
