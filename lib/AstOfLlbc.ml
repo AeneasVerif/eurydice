@@ -442,7 +442,10 @@ type clause_binder = {
 }
 
 let push_clause_binder env { clause_id; item_name; t; sig_info; _ } =
-  { env with binders = (TraitClauseMethod (clause_id, item_name, sig_info), t) :: env.binders }
+  { env with
+    (* (1* important for diff calculations *1) *)
+    (* cg_binders = (C.ConstGenericVarId.of_int max_int, t) :: env.cg_binders; *)
+    binders = (TraitClauseMethod (clause_id, item_name, sig_info), t) :: env.binders }
 
 let push_clause_binders env bs =
   List.fold_left push_clause_binder env bs
@@ -666,7 +669,7 @@ type lookup_result = {
   is_assumed: bool;
 }
 
-let lookup_fun (env: env) (f: C.fn_ptr): lookup_result =
+let lookup_fun (env: env) depth (f: C.fn_ptr): lookup_result =
   let open RustNames in
   let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p f in
   let builtin b =
@@ -680,8 +683,8 @@ let lookup_fun (env: env) (f: C.fn_ptr): lookup_result =
   | None ->
       let lookup_result_of_signature f signature =
         let { C.generics = { types = type_params; const_generics; _ }; inputs; output; _ } = signature in
-        L.log "Calls" "--> name: %a" Krml.PrintAst.Ops.pexpr (K.with_type TUnit f);
-        L.log "Calls" "--> args: %s, ret: %s"
+        L.log "Calls" "%s--> name: %a" depth Krml.PrintAst.Ops.pexpr (K.with_type TUnit f);
+        L.log "Calls" "%s--> args: %s, ret: %s" depth
           (String.concat " ++ " (List.map (Charon.PrintTypes.ty_to_string env.format_env) inputs))
           (Charon.PrintTypes.ty_to_string env.format_env output);
         let env = push_cg_binders env const_generics in
@@ -737,7 +740,7 @@ let fn_ptr_is_opaque env (fn_ptr: C.fn_ptr) =
   | _ ->
       false
 
-let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
+let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
   let {
     C.generics = { types = type_args; const_generics = const_generic_args; trait_refs; _ };
     func;
@@ -745,9 +748,9 @@ let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
   } = fn_ptr in
 
   (* General case for function calls and trait method calls. *)
-  L.log "Calls" "Visiting call: %s" (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
-  L.log "Calls" "is_array_map: %b" (RustNames.is_array_map env fn_ptr);
-  L.log "Calls" "--> %d type_args, %d const_generics, %d trait_refs"
+  L.log "Calls" "%sVisiting call: %s" depth (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
+  L.log "Calls" "%sis_array_map: %b" depth (RustNames.is_array_map env fn_ptr);
+  L.log "Calls" "%s--> %d type_args, %d const_generics, %d trait_refs" depth
     (List.length type_args) (List.length const_generic_args) (List.length trait_refs);
 
   let type_args, const_generic_args, trait_refs =
@@ -758,18 +761,34 @@ let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
         type_args, const_generic_args, trait_refs
   in
 
-  L.log "Calls" "--> %d type_args, %d const_generics, %d trait_refs"
+  L.log "Calls" "%s--> %d type_args, %d const_generics, %d trait_refs" depth
     (List.length type_args) (List.length const_generic_args) (List.length trait_refs);
-  L.log "Calls" "--> trait_refs: %s\n"
+  L.log "Calls" "%s--> trait_refs: %s\n" depth
     (String.concat " ++ " (List.map (Charon.PrintTypes.trait_ref_to_string env.format_env) trait_refs));
-  L.log "Calls" "--> pattern: %s" (string_of_fn_ptr env fn_ptr);
-  L.log "Calls" "--> type_args: %s" (String.concat ", " (List.map (Charon.PrintTypes.ty_to_string env.format_env) type_args));
+  L.log "Calls" "%s--> pattern: %s" depth (string_of_fn_ptr env fn_ptr);
+  L.log "Calls" "%s--> type_args: %s" depth (String.concat ", " (List.map (Charon.PrintTypes.ty_to_string env.format_env) type_args));
 
   let type_args = List.map (typ_of_ty env) type_args in
   let const_generic_args = List.map (expression_of_const_generic env) const_generic_args in
   let { f; n_type_args = n_type_params; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_assumed } =
-    lookup_fun env fn_ptr
+    lookup_fun env depth fn_ptr
   in
+
+  (* Handling trait implementations for generic trait bounds in the callee. *)
+  let fn_ptrs = List.concat_map (fun (trait_ref: C.trait_ref) ->
+    let trait_impl: C.trait_impl =
+      match trait_ref.trait_id with
+      | TraitImpl impl_id -> env.get_nth_trait_impl impl_id
+      | _ -> failwith ("impossible: " ^ C.show_trait_ref trait_ref)
+    in
+    (* This must be in agreement, and in the same order as build_trait_clause_mapping *)
+    List.map (fun (item_name, decl_id) ->
+      let fn_ptr: C.fn_ptr = { func = TraitMethod (trait_ref, item_name, decl_id); generics = trait_ref.generics } in
+      fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr)
+    ) (trait_impl.required_methods @ trait_impl.provided_methods)
+  ) trait_refs in
+  L.log "Calls" "%s--> trait method impls: %d\n" depth (List.length fn_ptrs);
+  let const_generic_args = const_generic_args @ fn_ptrs in
 
   (* This needs to match what is done in the FunGroup case (i.e. when we extract
      a definition). There are two behaviors depending on whether the function is
@@ -801,6 +820,8 @@ let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
   in
   hd, is_assumed, output
 
+let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
+  expression_of_fn_ptr env "" fn_ptr
 
 let expression_of_operand (env: env) (p: C.operand): K.expr =
   match p with
@@ -1353,8 +1374,14 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                     | Some (Hint | Always) -> [ Krml.Common.Inline ]
                     | _ -> []
                   in
-                  Some (K.DFunction (None, flags, List.length signature.C.generics.const_generics,
-                    List.length signature.C.generics.types, return_type, name, arg_binders, body))
+                  (* This is kind of a hack here: we indicate that this function is intended to be
+                     specialized, at monomorphization-time (which happens quite early on), on the cg
+                     binders but also on the clause binders... This is ok because even though the
+                     clause binders are not in env.cg_binders, well, types don't refer to clause
+                     binders, so we won't have translation errors. *)
+                  let n_cg = List.length signature.C.generics.const_generics + List.length clause_binders in
+                  let n = List.length signature.C.generics.types in
+                  Some (K.DFunction (None, flags, n_cg, n, return_type, name, arg_binders, body))
 
       )
   | GlobalGroup id ->
