@@ -755,8 +755,8 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
 
   let type_args, const_generic_args, trait_refs =
     match func with
-    | TraitMethod ({ generics = { types; const_generics; trait_refs; _ }; _ }, _, _) ->
-        types @ type_args, const_generics @ const_generic_args, trait_refs @ trait_refs
+    | TraitMethod ({ generics = { types; const_generics; trait_refs = trait_refs'; _ }; _ }, _, _) ->
+        types @ type_args, const_generics @ const_generic_args, trait_refs @ trait_refs'
     | _ ->
         type_args, const_generic_args, trait_refs
   in
@@ -1059,6 +1059,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       (* Krml.KPrint.bprintf "Call to %s is assumed %b\n" (string_of_fn_ptr env fn_ptr) is_assumed; *)
       let args =
         if fn_ptr_is_opaque env fn_ptr then
+          (* typ_of_signature behavior *)
           if fn_ptr.generics.const_generics = [] && args = [] then [ Krml.Helpers.eunit ] else args
         else
           if args = [] then [ Krml.Helpers.eunit ] else args
@@ -1162,31 +1163,19 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
 
 (** Top-level declarations: orchestration *)
 
-let typ_of_signature env signature =
-  let { C.generics = { types = type_params; const_generics; _ }; inputs; output ; _ } = signature in
-  let const_generics_ts = List.map (fun (c: C.const_generic_var) -> typ_of_literal_ty env c.ty) const_generics in
-  let env = push_cg_binders env const_generics in
-  let env = push_type_binders env type_params in
-  let inputs = List.map (typ_of_ty env) inputs in
-  let output = typ_of_ty env output in
-  let adjusted_inputs = if const_generics_ts = [] && inputs = [] then [ K.TUnit ] else const_generics_ts @ inputs in
-  let t = Krml.Helpers.fold_arrow adjusted_inputs output in
-  List.length const_generics_ts, List.length type_params, t
+(* Using tests/where_clauses_simple as an example.
 
+ fn double<T: Ops + Copy, U: Ops+Copy> (...)
 
-  (* Using tests/where_clauses_simple as an example.
+ this gets desugared to fn double<T,U> where
+   T: Ops,      <-- ClauseId 0 (required_methods: add, of_u32)
+   T: Copy,     <-- ClauseId 1 (builtin, so neither required nor provided methods)
+   U: Ops,      <-- ClauseId 2 (required_methods: add, of_u32)
+   U: Copy,     <-- ClauseId 3 (builtin, so neither required nor provided methods)
 
-   fn double<T: Ops + Copy, U: Ops+Copy> (...)
-
-   this gets desugared to fn double<T,U> where
-     T: Ops,      <-- ClauseId 0 (required_methods: add, of_u32)
-     T: Copy,     <-- ClauseId 1 (builtin, so neither required nor provided methods)
-     U: Ops,      <-- ClauseId 2 (required_methods: add, of_u32)
-     U: Copy,     <-- ClauseId 3 (builtin, so neither required nor provided methods)
-
-   the types we obtain by looking up the trait declaration have Self as 0
-   (DeBruijn).
-   *)
+ the types we obtain by looking up the trait declaration have Self as 0
+ (DeBruijn).
+ *)
 let build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
   List.concat_map (fun tc ->
     let { C.clause_id; trait_id; clause_generics; _ } = tc in
@@ -1221,20 +1210,9 @@ let build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
     ) trait_clauses
 
 
-let debug_trait_clause_mapping env mapping =
-  let open Krml in
-  if mapping <> [] then
-    KPrint.bprintf "In this function, calls to trait bound methods are as follows:\n";
-  List.iter (fun ((clause_id, item_name), (_, trait_name, signature)) ->
-    let t = thd3 (typ_of_signature env signature) in
-    KPrint.bprintf "TraitClause %d (a.k.a. %s)::%s: %a\n"
-      (C.TraitClauseId.to_int clause_id) (string_of_name env trait_name) item_name PrintAst.Ops.ptyp t
-  ) mapping
-
-
 (* Assumes type variables have been suitably bound in the environment *)
-let mk_clause_binders_and_args env clause_mapping =
-  List.map (fun ((clause_id, item_name), (tvarid, trait_name, signature)) ->
+let rec mk_clause_binders_and_args env clause_mapping: clause_binder list =
+  List.map (fun ((clause_id, item_name), (tvarid, trait_name, (signature: C.fun_sig))) ->
     let tvar = lookup_typ env tvarid in
     let t = thd3 (typ_of_signature env signature) in
     let t = Krml.DeBruijn.subst_t (TBound tvar) 0 t in
@@ -1245,6 +1223,39 @@ let mk_clause_binders_and_args env clause_mapping =
     } in
     { pretty_name; t; clause_id; item_name; sig_info }
   ) clause_mapping
+
+
+and typ_of_signature env signature =
+  let { C.generics = { types = type_params; const_generics; _ }; inputs; output ; _ } = signature in
+  let const_generics_ts = List.map (fun (c: C.const_generic_var) -> typ_of_literal_ty env c.ty) const_generics in
+  let env = push_cg_binders env const_generics in
+  let env = push_type_binders env type_params in
+
+  let clause_mapping = build_trait_clause_mapping env signature.C.generics.trait_clauses in
+  debug_trait_clause_mapping env clause_mapping;
+  let clause_binders = mk_clause_binders_and_args env clause_mapping in
+  let clause_ts = List.map (fun { t; _ } -> t) clause_binders in
+
+  let inputs = List.map (typ_of_ty env) inputs in
+  let output = typ_of_ty env output in
+  let adjusted_inputs =
+    if const_generics_ts = [] && inputs = [] then [ K.TUnit ] else const_generics_ts @ clause_ts @ inputs
+  in
+
+  let t = Krml.Helpers.fold_arrow adjusted_inputs output in
+  List.length const_generics_ts, List.length type_params, t
+
+
+and debug_trait_clause_mapping env mapping =
+  let open Krml in
+  if mapping <> [] then
+    KPrint.bprintf "In this function, calls to trait bound methods are as follows:\n";
+  List.iter (fun ((clause_id, item_name), (_, trait_name, signature)) ->
+    let t = thd3 (typ_of_signature env signature) in
+    KPrint.bprintf "TraitClause %d (a.k.a. %s)::%s: %a\n"
+      (C.TraitClauseId.to_int clause_id) (string_of_name env trait_name) item_name PrintAst.Ops.ptyp t
+  ) mapping
+
 
 
 let of_declaration_group (dg: 'id C.g_declaration_group) (f: 'id -> 'a): 'a list =
