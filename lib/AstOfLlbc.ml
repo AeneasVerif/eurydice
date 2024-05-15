@@ -213,6 +213,25 @@ module RustNames = struct
   let from =
     parse_pattern "core::convert::From<@T, @U>::from"
 
+  let into_u16 =
+    parse_pattern "core::convert::Into<u16, @U>::into"
+  let into_u32 =
+    parse_pattern "core::convert::Into<u32, @U>::into"
+  let into_u64 =
+    parse_pattern "core::convert::Into<u64, @U>::into"
+  let into_u128 =
+    parse_pattern "core::convert::Into<u128, @U>::into"
+  let into_i16 =
+    parse_pattern "core::convert::Into<i16, @U>::into"
+  let into_i32 =
+    parse_pattern "core::convert::Into<i32, @U>::into"
+  let into_i64 =
+    parse_pattern "core::convert::Into<i64, @U>::into"
+  let into_i128 =
+    parse_pattern "core::convert::Into<i128, @U>::into"
+  let into =
+    parse_pattern "core::convert::Into<@T, @U>::into"
+
   let is_vec env =
     match_pattern_with_type_id env.name_ctx config (mk_empty_maps ()) vec
 
@@ -1002,16 +1021,19 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       Krml.Helpers.with_unit K.(EAssign (dest, maybe_addrof env ty (with_type t (EBufRead (e1, e2)))))
 
   | Call { func = FnOpRegular fn_ptr; args; dest; _ }
-    when false && Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from fn_ptr ->
+    when (
+      Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from fn_ptr ||
+      Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.into fn_ptr
+    ) ->
       (* Special treatment: From<T, U> becomes a cast. *)
       let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p fn_ptr in
       let w: Krml.Constant.width =
-        if matches RustNames.from_u16 then UInt16
-        else if matches RustNames.from_u32 then UInt32
-        else if matches RustNames.from_u64 then UInt64
-        else if matches RustNames.from_i16 then Int16
-        else if matches RustNames.from_i32 then Int32
-        else if matches RustNames.from_i64 then Int64
+        if matches RustNames.from_u16 || matches RustNames.from_u32 then UInt16
+        else if matches RustNames.from_u32 || matches RustNames.into_u32 then UInt32
+        else if matches RustNames.from_u64 || matches RustNames.into_u64 then UInt64
+        else if matches RustNames.from_i16 || matches RustNames.into_i16 then Int16
+        else if matches RustNames.from_i32 || matches RustNames.into_i32 then Int32
+        else if matches RustNames.from_i64 || matches RustNames.into_i64 then Int64
         else Krml.Warn.fatal_error "Unknown from-cast: %s" (string_of_fn_ptr env fn_ptr)
       in
       let dest, _ = expression_of_place env dest in
