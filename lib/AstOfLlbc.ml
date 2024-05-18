@@ -703,6 +703,7 @@ let blocklisted_trait_decls = [
   "core::convert::From";
   (* TODO: figure out what to do with those *)
   "core::clone::Clone";
+  "core::fmt::Debug";
 ]
 
 (* Using tests/where_clauses_simple as an example.
@@ -982,22 +983,22 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
       Krml.PrintAst.Ops.pexpr (K.with_type TUnit f)
       n_type_params (List.length type_args);
 
-  let t_hd = Krml.Helpers.fold_arrow (cg_inputs @ inputs) output in
-  L.log "Calls" "%s--> t_hd: %a" depth Krml.PrintAst.Ops.ptyp t_hd;
+  let t_unapplied = Krml.Helpers.fold_arrow (cg_inputs @ inputs) output in
+  L.log "Calls" "%s--> t_unapplied: %a" depth Krml.PrintAst.Ops.ptyp t_unapplied;
   L.log "Calls" "%s--> inputs: %a" depth Krml.PrintAst.Ops.ptyps inputs;
+  L.log "Calls" "%s--> const_generic_args: %a" depth Krml.PrintAst.Ops.pexprs const_generic_args;
   let offset = List.length env.binders - List.length env.cg_binders in
-  let output = Krml.DeBruijn.(subst_ctn offset const_generic_args (subst_tn type_args output)) in
+  let subst t = Krml.DeBruijn.(subst_ctn offset const_generic_args (subst_tn type_args t)) in
   let hd =
-    let hd = K.with_type t_hd f in
+    let hd = K.with_type t_unapplied f in
     if type_args <> [] || const_generic_args <> [] then
-      let t_applied =
-        Krml.DeBruijn.(subst_ctn offset const_generic_args (subst_tn type_args (Krml.Helpers.fold_arrow inputs output)))
-      in
+      let t_applied = subst (Krml.Helpers.fold_arrow inputs output) in
       L.log "Calls" "%s--> t_applied: %a" depth Krml.PrintAst.Ops.ptyp t_applied;
       K.with_type t_applied (K.ETApp (hd, const_generic_args, type_args))
     else
       hd
   in
+  let output = subst output in
   L.log "Calls" "%s--> hd: %a" depth Krml.PrintAst.Ops.pexpr hd;
   hd, is_known_builtin, output
 
