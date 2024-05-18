@@ -727,9 +727,44 @@ let build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
           ) trait_decl.C.provided_methods
     ) trait_clauses
 
+(* Interpret a Rust function type, with trait bounds, as an internal Ast expression, which
+   identifies:
+   - the number of polymorphic type variables
+   - the cg types, which only contains the original Rust const generic variables (not trait methods)
+   - the argument types, prefixed by the dictionary-style passing of trait clause methods
+   - the return type
+   - whether the function is assumed, or not. *)
+type lookup_result = {
+  n_type_args: int; (* just for a sanity check *)
+  cg_types: K.typ list;
+  arg_types: K.typ list;
+  ret_type: K.typ;
+  is_assumed: bool;
+}
+
+let rec lookup_signature env depth signature =
+  let { C.generics = { types = type_params; const_generics; trait_clauses; _ }; inputs; output; _ } = signature in
+  L.log "Calls" "%s--> args: %s, ret: %s" depth
+    (String.concat " ++ " (List.map (Charon.PrintTypes.ty_to_string env.format_env) inputs))
+    (Charon.PrintTypes.ty_to_string env.format_env output);
+  let env = push_cg_binders env const_generics in
+  let env = push_type_binders env type_params in
+
+  let clause_mapping = build_trait_clause_mapping env trait_clauses in
+  debug_trait_clause_mapping env clause_mapping;
+  let clause_binders = mk_clause_binders_and_args env clause_mapping in
+  let clause_ts = List.map (fun { t; _ } -> t) clause_binders in
+
+  {
+    n_type_args = List.length type_params;
+    cg_types = List.map (fun (v: C.const_generic_var) -> typ_of_literal_ty env v.ty) const_generics;
+    arg_types = clause_ts @ List.map (typ_of_ty env) inputs;
+    ret_type = typ_of_ty env output;
+    is_assumed = false
+  }
 
 (* Assumes type variables have been suitably bound in the environment *)
-let rec mk_clause_binders_and_args env clause_mapping: clause_binder list =
+and mk_clause_binders_and_args env clause_mapping: clause_binder list =
   List.map (fun ((clause_id, item_name), (tvarid, trait_name, (signature: C.fun_sig))) ->
     let tvar = lookup_typ env tvarid in
     let t = thd3 (typ_of_signature env signature) in
@@ -743,25 +778,17 @@ let rec mk_clause_binders_and_args env clause_mapping: clause_binder list =
   ) clause_mapping
 
 
+(* Transforms a lookup result into a usable type, taking into account the fact that the internal Ast
+   is ML-style and does not have zero-argument functions. *)
 and typ_of_signature env signature =
-  let { C.generics = { types = type_params; const_generics; _ }; inputs; output ; _ } = signature in
-  let const_generics_ts = List.map (fun (c: C.const_generic_var) -> typ_of_literal_ty env c.ty) const_generics in
-  let env = push_cg_binders env const_generics in
-  let env = push_type_binders env type_params in
+  let { cg_types = const_generics_ts; arg_types = inputs; ret_type = output; n_type_args; _ } = lookup_signature env "" signature in
 
-  let clause_mapping = build_trait_clause_mapping env signature.C.generics.trait_clauses in
-  debug_trait_clause_mapping env clause_mapping;
-  let clause_binders = mk_clause_binders_and_args env clause_mapping in
-  let clause_ts = List.map (fun { t; _ } -> t) clause_binders in
-
-  let inputs = List.map (typ_of_ty env) inputs in
-  let output = typ_of_ty env output in
   let adjusted_inputs =
-    if const_generics_ts = [] && inputs = [] then [ K.TUnit ] else const_generics_ts @ clause_ts @ inputs
+    if const_generics_ts = [] && inputs = [] then [ K.TUnit ] else const_generics_ts @ inputs
   in
 
   let t = Krml.Helpers.fold_arrow adjusted_inputs output in
-  List.length const_generics_ts, List.length type_params, t
+  List.length const_generics_ts, n_type_args, t
 
 
 and debug_trait_clause_mapping env mapping =
@@ -778,54 +805,24 @@ and debug_trait_clause_mapping env mapping =
 (* Compilation function instantiations *)
 
 
-type lookup_result = {
-  f: K.expr';
-  n_type_args: int; (* just for a sanity check *)
-  cg_types: K.typ list;
-  arg_types: K.typ list;
-  ret_type: K.typ;
-  is_assumed: bool;
-}
-
-let lookup_fun (env: env) depth (f: C.fn_ptr): lookup_result =
+let lookup_fun (env: env) depth (f: C.fn_ptr): K.expr' * lookup_result =
   let open RustNames in
   let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p f in
   let builtin b =
     let { Builtin.name; typ; n_type_args; cg_args; _ } = b in
     let ret_type, arg_types = Krml.Helpers.flatten_arrow typ in
-    { f = EQualified name; n_type_args; arg_types; ret_type; cg_types = cg_args; is_assumed = true }
+    K.EQualified name, { n_type_args; arg_types; ret_type; cg_types = cg_args; is_assumed = true }
   in
   match List.find_opt (fun (p, _) -> matches p) known_builtins with
   | Some (_, b) ->
       builtin b
   | None ->
-      let lookup_result_of_signature f signature =
-        let { C.generics = { types = type_params; const_generics; trait_clauses; _ }; inputs; output; _ } = signature in
-        L.log "Calls" "%s--> name: %a" depth Krml.PrintAst.Ops.pexpr (K.with_type TUnit f);
-        L.log "Calls" "%s--> args: %s, ret: %s" depth
-          (String.concat " ++ " (List.map (Charon.PrintTypes.ty_to_string env.format_env) inputs))
-          (Charon.PrintTypes.ty_to_string env.format_env output);
-        let env = push_cg_binders env const_generics in
-        let env = push_type_binders env type_params in
-
-        let clause_mapping = build_trait_clause_mapping env trait_clauses in
-        debug_trait_clause_mapping env clause_mapping;
-        let clause_binders = mk_clause_binders_and_args env clause_mapping in
-        let clause_ts = List.map (fun { t; _ } -> t) clause_binders in
-
-        {
-          f;
-          n_type_args = List.length type_params;
-          cg_types = List.map (fun (v: C.const_generic_var) -> typ_of_literal_ty env v.ty) const_generics;
-          arg_types = clause_ts @ List.map (typ_of_ty env) inputs;
-          ret_type = typ_of_ty env output;
-          is_assumed = false
-        }
-      in
 
       let lookup_result_of_fun_id fun_id =
         let { C.name; signature; _ } = env.get_nth_function fun_id in
-        lookup_result_of_signature (EQualified (lid_of_name env name)) signature
+        let lid = lid_of_name env name in
+        L.log "Calls" "%s--> name: %a" depth Krml.PrintAst.Ops.plid lid;
+        K.EQualified lid, lookup_signature env depth signature
       in
 
       match f.func with
@@ -845,8 +842,7 @@ let lookup_fun (env: env) depth (f: C.fn_ptr): lookup_result =
               let f, t, sig_info = lookup_clause_binder env tcid method_name in
               let ret_type, arg_types = Krml.Helpers.flatten_arrow t in
               let cg_types, arg_types = Krml.KList.split sig_info.n_cg_args arg_types in
-              {
-                f = EBound f;
+              EBound f, {
                 n_type_args = sig_info.n_type_args;
                 cg_types;
                 arg_types;
@@ -880,6 +876,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
   let type_args, const_generic_args, trait_refs =
     match func with
     | TraitMethod ({ generics = { types; const_generics; trait_refs = trait_refs'; _ }; _ }, _, _) ->
+        (* TODO: why is the order fumbled here? *)
         types @ type_args, const_generics @ const_generic_args, trait_refs @ trait_refs'
     | _ ->
         type_args, const_generic_args, trait_refs
@@ -894,7 +891,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
 
   let type_args = List.map (typ_of_ty env) type_args in
   let const_generic_args = List.map (expression_of_const_generic env) const_generic_args in
-  let { f; n_type_args = n_type_params; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_assumed } =
+  let f, { n_type_args = n_type_params; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_assumed } =
     lookup_fun env depth fn_ptr
   in
 
