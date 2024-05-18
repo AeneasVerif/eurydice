@@ -680,7 +680,17 @@ let maybe_addrof (env: env) (ty: C.ty) (e: K.expr) =
   | _ ->
       K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
 
+
 (** Handling trait clauses as dictionaries *)
+
+(* There are two ways that we skip synthesis of trait methods in function calls. The first one is if
+  a trait declaration is blocklisted. This happens if the trait has built-in support (e.g.
+  FnMut), or if the trait relies on unsupported features. The second way we skip trait methods
+  (further down) is if the function is a known builtin implementation. *)
+let blocklisted_trait_decls = [
+  "core::ops::function::FnMut";
+  "core::cmp::PartialEq";
+]
 
 (* Using tests/where_clauses_simple as an example.
 
@@ -700,36 +710,42 @@ let build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
     let { C.clause_id; trait_id; clause_generics; _ } = tc in
     let trait_decl = env.get_nth_trait_decl trait_id in
 
-    (* FYI, some clauses like Copy have neither required nor provided methods. *)
-    Krml.KPrint.bprintf "clause id %d: FYI, clause_generic type is %s (required: %d) (provided: %d)\n"
-      (C.TraitClauseId.to_int clause_id)
-      (String.concat " ++ " (List.map C.show_ty (clause_generics.C.types)))
-      (List.length trait_decl.C.required_methods)
-      (List.length trait_decl.C.provided_methods);
+    let name = string_of_name env trait_decl.name in
+    if List.mem name blocklisted_trait_decls then
+      []
 
-    (* The type variable from the function that the trait clause is applied to *)
-    let tvarid =
-      match clause_generics.C.types with
-      | [ TVar tvarid ] -> tvarid
-      | _ -> failwith "Clause above does not refer to a type var? confused"
-    in
+    else begin
+      (* FYI, some clauses like Copy have neither required nor provided methods. *)
+      Krml.KPrint.bprintf "clause decl %s id %d: FYI, clause_generic type is %s (required: %d) (provided: %d)\n"
+        name
+        (C.TraitClauseId.to_int clause_id)
+        (String.concat " ++ " (List.map C.show_ty (clause_generics.C.types)))
+        (List.length trait_decl.C.required_methods)
+        (List.length trait_decl.C.provided_methods);
 
-    List.map (fun (item_name, decl_id) ->
-      let decl = env.get_nth_function decl_id in
-      (clause_id, item_name), (tvarid, trait_decl.C.name, decl.C.signature)
-      ) trait_decl.C.required_methods @
-    List.map (fun (item_name, decl_id) ->
-      match decl_id with
-      | Some decl_id ->
-          let decl = env.get_nth_function decl_id in
-          (clause_id, item_name), (tvarid, trait_decl.C.name, decl.C.signature)
-      | None ->
-          failwith ("TODO: handle provided trait methods, like " ^ item_name)
-          ) trait_decl.C.provided_methods
-    ) trait_clauses
+      (* The type variable from the function that the trait clause is applied to *)
+      let tvarid =
+        match clause_generics.C.types with
+        | [ TVar tvarid ] -> tvarid
+        | _ -> failwith "Clause above does not refer to a type var? confused"
+      in
 
-(* Interpret a Rust function type, with trait bounds, as an internal Ast expression, which
-   identifies:
+      List.map (fun (item_name, decl_id) ->
+        let decl = env.get_nth_function decl_id in
+        (clause_id, item_name), (tvarid, trait_decl.C.name, decl.C.signature)
+        ) trait_decl.C.required_methods @
+      List.map (fun (item_name, decl_id) ->
+        match decl_id with
+        | Some decl_id ->
+            let decl = env.get_nth_function decl_id in
+            (clause_id, item_name), (tvarid, trait_decl.C.name, decl.C.signature)
+        | None ->
+            failwith ("TODO: handle provided trait methods, like " ^ item_name)
+            ) trait_decl.C.provided_methods
+    end
+  ) trait_clauses
+
+(* Interpret a Rust function type, with trait bounds, into the krml Ast, providing:
    - the number of polymorphic type variables
    - the cg types, which only contains the original Rust const generic variables (not trait methods)
    - the argument types, prefixed by the dictionary-style passing of trait clause methods
@@ -805,9 +821,12 @@ and debug_trait_clause_mapping env mapping =
   ) mapping
 
 
-(* Compilation function instantiations *)
+(** Compiling function instantiations into krml application nodes. *)
 
-
+(* First step: produce an expression for the un-instantiated function reference, along with all the
+  type information required to build a proper instantiation. The function reference is an expression
+  that is either a reference to a variable in scope (trait methods), or to a top-level qualified
+  name, which encompasses both externally-defined function (builtins), or regular functions. *)
 let lookup_fun (env: env) depth (f: C.fn_ptr): K.expr' * lookup_result =
   let open RustNames in
   let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p f in
@@ -863,6 +882,9 @@ let fn_ptr_is_opaque env (fn_ptr: C.fn_ptr) =
   | _ ->
       false
 
+(* This is a very core piece of logic that transforms a Rust fn_ptr into a krml AST node that
+   contains type application, const generic applications, and application of trait methods to
+   implement the dictionary-passing style. *)
 let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
   let {
     C.generics = { types = type_args; const_generics = const_generic_args; trait_refs; _ };
@@ -908,19 +930,25 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
       []
     else
       List.concat_map (fun (trait_ref: C.trait_ref) ->
-        let trait_impl: C.trait_impl =
-          match trait_ref.trait_id with
-          | TraitImpl impl_id -> env.get_nth_trait_impl impl_id
-          | _ -> failwith ("impossible: " ^ C.show_trait_ref trait_ref)
-        in
-        (* This must be in agreement, and in the same order as build_trait_clause_mapping *)
-        List.map (fun (item_name, decl_id) ->
-          let fn_ptr: C.fn_ptr = {
-            func = TraitMethod (trait_ref, item_name, decl_id);
-            generics = Charon.TypesUtils.empty_generic_args
-        } in
-          fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr)
-        ) (trait_impl.required_methods @ trait_impl.provided_methods)
+        let name = string_of_name env (env.get_nth_trait_decl trait_ref.trait_decl_ref.trait_decl_id).name in
+
+        if List.mem name blocklisted_trait_decls then
+          []
+
+        else
+          let trait_impl: C.trait_impl =
+            match trait_ref.trait_id with
+            | TraitImpl impl_id -> env.get_nth_trait_impl impl_id
+            | _ -> failwith ("impossible: " ^ C.show_trait_ref trait_ref)
+          in
+          (* This must be in agreement, and in the same order as build_trait_clause_mapping *)
+          List.map (fun (item_name, decl_id) ->
+            let fn_ptr: C.fn_ptr = {
+              func = TraitMethod (trait_ref, item_name, decl_id);
+              generics = Charon.TypesUtils.empty_generic_args
+          } in
+            fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr)
+          ) (trait_impl.required_methods @ trait_impl.provided_methods)
       ) trait_refs
   in
   L.log "Calls" "%s--> trait method impls: %d" depth (List.length fn_ptrs);
