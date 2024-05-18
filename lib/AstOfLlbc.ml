@@ -363,7 +363,7 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
   | TAdt (TAssumed TArray, { types = [ t ]; const_generics = [ cg ]; _ }) ->
       maybe_cg_array env t cg
 
-  | TAdt (TAssumed TSlice, _) ->
+  | TAdt (TAssumed TSlice, { types = [ _t ]; _ }) ->
       (* Slice values cannot be materialized since their storage space cannot be computed at
          compile-time; we should never encounter this case. *)
       assert false
@@ -376,8 +376,9 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
       Krml.Warn.fatal_error "TODO: Adt/Assumed %s (%d) %d " (C.show_assumed_ty f) (List.length args)
         (List.length const_generics)
 
-  | TRawPtr _ ->
-      failwith "TODO: TRawPtr"
+  | TRawPtr (t, _) ->
+      (* Appears in some trait methods, so let's try to handle that. *)
+      K.TBuf (typ_of_ty env t, false)
 
   | TTraitType _ ->
       failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
@@ -739,7 +740,7 @@ type lookup_result = {
   cg_types: K.typ list;
   arg_types: K.typ list;
   ret_type: K.typ;
-  is_assumed: bool;
+  is_known_builtin: bool;
 }
 
 let rec lookup_signature env depth signature =
@@ -760,7 +761,7 @@ let rec lookup_signature env depth signature =
     cg_types = List.map (fun (v: C.const_generic_var) -> typ_of_literal_ty env v.ty) const_generics;
     arg_types = clause_ts @ List.map (typ_of_ty env) inputs;
     ret_type = typ_of_ty env output;
-    is_assumed = false
+    is_known_builtin = false
   }
 
 (* Assumes type variables have been suitably bound in the environment *)
@@ -781,7 +782,9 @@ and mk_clause_binders_and_args env clause_mapping: clause_binder list =
 (* Transforms a lookup result into a usable type, taking into account the fact that the internal Ast
    is ML-style and does not have zero-argument functions. *)
 and typ_of_signature env signature =
-  let { cg_types = const_generics_ts; arg_types = inputs; ret_type = output; n_type_args; _ } = lookup_signature env "" signature in
+  let { cg_types = const_generics_ts; arg_types = inputs; ret_type = output; n_type_args; _ } =
+    lookup_signature env "" signature
+  in
 
   let adjusted_inputs =
     if const_generics_ts = [] && inputs = [] then [ K.TUnit ] else const_generics_ts @ inputs
@@ -811,7 +814,7 @@ let lookup_fun (env: env) depth (f: C.fn_ptr): K.expr' * lookup_result =
   let builtin b =
     let { Builtin.name; typ; n_type_args; cg_args; _ } = b in
     let ret_type, arg_types = Krml.Helpers.flatten_arrow typ in
-    K.EQualified name, { n_type_args; arg_types; ret_type; cg_types = cg_args; is_assumed = true }
+    K.EQualified name, { n_type_args; arg_types; ret_type; cg_types = cg_args; is_known_builtin = true }
   in
   match List.find_opt (fun (p, _) -> matches p) known_builtins with
   | Some (_, b) ->
@@ -847,7 +850,7 @@ let lookup_fun (env: env) depth (f: C.fn_ptr): K.expr' * lookup_result =
                 cg_types;
                 arg_types;
                 ret_type;
-                is_assumed = false
+                is_known_builtin = false
               }
           | _ ->
               Krml.Warn.fatal_error "Error looking trait ref: %s %s"
@@ -891,26 +894,35 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
 
   let type_args = List.map (typ_of_ty env) type_args in
   let const_generic_args = List.map (expression_of_const_generic env) const_generic_args in
-  let f, { n_type_args = n_type_params; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_assumed } =
+  let f, { n_type_args = n_type_params; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_known_builtin } =
     lookup_fun env depth fn_ptr
   in
 
   (* Handling trait implementations for generic trait bounds in the callee. *)
-  let fn_ptrs = List.concat_map (fun (trait_ref: C.trait_ref) ->
-    let trait_impl: C.trait_impl =
-      match trait_ref.trait_id with
-      | TraitImpl impl_id -> env.get_nth_trait_impl impl_id
-      | _ -> failwith ("impossible: " ^ C.show_trait_ref trait_ref)
-    in
-    (* This must be in agreement, and in the same order as build_trait_clause_mapping *)
-    List.map (fun (item_name, decl_id) ->
-      let fn_ptr: C.fn_ptr = {
-        func = TraitMethod (trait_ref, item_name, decl_id);
-        generics = Charon.TypesUtils.empty_generic_args
-    } in
-      fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr)
-    ) (trait_impl.required_methods @ trait_impl.provided_methods)
-  ) trait_refs in
+  let fn_ptrs =
+    if is_known_builtin then
+      (* If this is a known builtin implementation, we do not materialize trait methods, on the
+         basis that this is likely something from the standard library that exercises more features
+         that we can support, and that since we hand-write it, we don't need this level of precision
+         anyhow. *)
+      []
+    else
+      List.concat_map (fun (trait_ref: C.trait_ref) ->
+        let trait_impl: C.trait_impl =
+          match trait_ref.trait_id with
+          | TraitImpl impl_id -> env.get_nth_trait_impl impl_id
+          | _ -> failwith ("impossible: " ^ C.show_trait_ref trait_ref)
+        in
+        (* This must be in agreement, and in the same order as build_trait_clause_mapping *)
+        List.map (fun (item_name, decl_id) ->
+          let fn_ptr: C.fn_ptr = {
+            func = TraitMethod (trait_ref, item_name, decl_id);
+            generics = Charon.TypesUtils.empty_generic_args
+        } in
+          fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr)
+        ) (trait_impl.required_methods @ trait_impl.provided_methods)
+      ) trait_refs
+  in
   L.log "Calls" "%s--> trait method impls: %d" depth (List.length fn_ptrs);
   let const_generic_args = const_generic_args @ fn_ptrs in
 
@@ -931,13 +943,13 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
 
   let t_hd = Krml.Helpers.fold_arrow (cg_inputs @ inputs) output in
   L.log "Calls" "%s--> t_hd: %a" depth Krml.PrintAst.Ops.ptyp t_hd;
+  L.log "Calls" "%s--> inputs: %a" depth Krml.PrintAst.Ops.ptyps inputs;
   let offset = List.length env.binders - List.length env.cg_binders in
   let output = Krml.DeBruijn.(subst_ctn offset const_generic_args (subst_tn type_args output)) in
   let hd =
     let hd = K.with_type t_hd f in
     if type_args <> [] || const_generic_args <> [] then
       let t_applied =
-        let _, inputs = Krml.KList.split (List.length const_generic_args) inputs in
         Krml.DeBruijn.(subst_ctn offset const_generic_args (subst_tn type_args (Krml.Helpers.fold_arrow inputs output)))
       in
       L.log "Calls" "%s--> t_applied: %a" depth Krml.PrintAst.Ops.ptyp t_applied;
@@ -946,7 +958,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
       hd
   in
   L.log "Calls" "%s--> hd: %a" depth Krml.PrintAst.Ops.pexpr hd;
-  hd, is_assumed, output
+  hd, is_known_builtin, output
 
 let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
   expression_of_fn_ptr env "" fn_ptr
@@ -1178,7 +1190,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
   | Call { func = FnOpRegular fn_ptr; args; dest; _ } ->
 
       (* For now, we take trait type arguments to be part of the code-gen *)
-      let hd, _is_assumed, output_t = expression_of_fn_ptr env fn_ptr in
+      let hd, _is_known_builtin, output_t = expression_of_fn_ptr env fn_ptr in
       let dest, _ = expression_of_place env dest in
       let args = List.map (expression_of_operand env) args in
       (* This needs to match what is done in the FunGroup case (i.e. when we extract
@@ -1385,7 +1397,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                   let return_type = typ_of_ty env return_var.var_ty in
 
                   (* Note: Rust allows zero-argument functions but the krml internal
-                     representation wants a unit there. *)
+                     representation wants a unit there. This is aligned with typ_of_signature. *)
                   let t_unit = C.(TAdt (TTuple, { types = []; const_generics = []; regions = []; trait_refs = [] })) in
                   let v_unit = { C.index = Charon.Expressions.VarId.of_int max_int; name = None; var_ty = t_unit } in
                   let args = if args = [] then [ v_unit ] else args in
