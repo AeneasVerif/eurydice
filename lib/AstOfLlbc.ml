@@ -688,8 +688,21 @@ let maybe_addrof (env: env) (ty: C.ty) (e: K.expr) =
   FnMut), or if the trait relies on unsupported features. The second way we skip trait methods
   (further down) is if the function is a known builtin implementation. *)
 let blocklisted_trait_decls = [
+  (* Handled primitively. *)
   "core::ops::function::FnMut";
   "core::cmp::PartialEq";
+  (* The traits below *should* be handled properly ASAP. But for now, we have specific *instances*
+     of those trait methods in the builtin lookup table, which we then implement by hand with
+     macros. *)
+  "core::iter::traits::iterator::Iterator";
+  "core::iter::range::Step";
+  (* TODO: for now, we leave into as-is in the AST, do a later pass that eliminates all identity
+     calls to into (post-monomorphization), and error our if there are any left that do not operate
+     on primitive types. We should probably remove the special-case in this file and treat it
+     generically with a dedicated pass over the krml ast. *)
+  "core::convert::From";
+  (* TODO: figure out what to do with those *)
+  "core::clone::Clone";
 ]
 
 (* Using tests/where_clauses_simple as an example.
@@ -1168,13 +1181,24 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
 
   | Call { func = FnOpRegular fn_ptr; args; dest; _ }
     when (
-      Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from fn_ptr ||
-      Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.into fn_ptr
+      Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u16 fn_ptr ||
+      Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u32 fn_ptr ||
+      Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u64 fn_ptr ||
+      Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_i16 fn_ptr ||
+      Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_i32 fn_ptr ||
+      Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_i64 fn_ptr ||
+      Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.into_u16 fn_ptr ||
+      Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.into_u32 fn_ptr ||
+      Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.into_u64 fn_ptr ||
+      Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.into_i16 fn_ptr ||
+      Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.into_i32 fn_ptr ||
+      Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.into_i64 fn_ptr ||
+      false
     ) ->
       (* Special treatment: From<T, U> becomes a cast. *)
       let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p fn_ptr in
       let w: Krml.Constant.width =
-        if matches RustNames.from_u16 || matches RustNames.from_u32 then UInt16
+        if      matches RustNames.from_u16 || matches RustNames.into_u16 then UInt16
         else if matches RustNames.from_u32 || matches RustNames.into_u32 then UInt32
         else if matches RustNames.from_u64 || matches RustNames.into_u64 then UInt64
         else if matches RustNames.from_i16 || matches RustNames.into_i16 then Int16
