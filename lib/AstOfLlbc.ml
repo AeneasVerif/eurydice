@@ -371,6 +371,9 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
   | TAdt (TAssumed TBox, { types = [ t ]; _ }) ->
       K.TBuf (typ_of_ty env t, false)
 
+  | TAdt (TAssumed TStr, { types = []; _ }) ->
+      Krml.Checker.c_string
+
   | TAdt (TAssumed f, { types = args; const_generics; _ }) ->
       List.iter (fun x -> print_endline (C.show_const_generic x)) const_generics;
       Krml.Warn.fatal_error "TODO: Adt/Assumed %s (%d) %d " (C.show_assumed_ty f) (List.length args)
@@ -533,6 +536,8 @@ let expression_of_literal (_env: env) (l: C.literal): K.expr =
       expression_of_scalar_value sv
   | VBool b ->
       K.(with_type TBool (EBool b))
+  | VStr s ->
+      K.(with_type Krml.Checker.c_string (EString s))
   | _ ->
       failwith "TODO: expression_of_literal"
 
@@ -946,23 +951,38 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
       List.concat_map (fun (trait_ref: C.trait_ref) ->
         let name = string_of_name env (env.get_nth_trait_decl trait_ref.trait_decl_ref.trait_decl_id).name in
 
-        if List.mem name blocklisted_trait_decls then
-          []
+        match trait_ref.trait_id with
+        | _ when List.mem name blocklisted_trait_decls ->
+            (* Trait not supported -- don't synthesize arguments *)
+            []
 
-        else
-          let trait_impl: C.trait_impl =
-            match trait_ref.trait_id with
-            | TraitImpl impl_id -> env.get_nth_trait_impl impl_id
-            | _ -> failwith ("impossible: " ^ C.show_trait_ref trait_ref)
-          in
-          (* This must be in agreement, and in the same order as build_trait_clause_mapping *)
-          List.map (fun (item_name, decl_id) ->
-            let fn_ptr: C.fn_ptr = {
-              func = TraitMethod (trait_ref, item_name, decl_id);
-              generics = Charon.TypesUtils.empty_generic_args
-          } in
-            fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr)
-          ) (trait_impl.required_methods @ trait_impl.provided_methods)
+        | TraitImpl impl_id ->
+            (* Call-site has resolved trait clauses into a concrete trait implementation. *)
+            let trait_impl: C.trait_impl = env.get_nth_trait_impl impl_id in
+
+            (* This must be in agreement, and in the same order as build_trait_clause_mapping *)
+            List.map (fun (item_name, decl_id) ->
+              let fn_ptr: C.fn_ptr = {
+                func = TraitMethod (trait_ref, item_name, decl_id);
+                generics = Charon.TypesUtils.empty_generic_args
+            } in
+              fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr)
+            ) (trait_impl.required_methods @ trait_impl.provided_methods)
+
+        | Clause clause_id ->
+            (* Caller it itself polymorphic and refers to one of its own clauses to synthesize
+               the clause arguments at call-site. *)
+            List.rev (Krml.KList.filter_mapi (fun i (var, t) ->
+              match var with
+              | TraitClauseMethod (clause_id', _, _) when clause_id = clause_id' ->
+                  Some K.(with_type t (EBound i))
+              | _ ->
+                  None
+            ) env.binders)
+
+        | _ ->
+            failwith ("Don't know how to resolve trait_ref " ^ C.show_trait_ref trait_ref)
+
       ) trait_refs
   in
   L.log "Calls" "%s--> trait method impls: %d" depth (List.length fn_ptrs);
@@ -1087,7 +1107,10 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
             (* Empty closure block, passed by address...? TBD *)
             K.(with_type t (EApp (e, [ with_type t_state (EAddrOf Krml.Helpers.eunit) ])))
         | _ ->
-            assert false
+            Krml.KPrint.bprintf "Unknown closure\ntype: %a\nexpr: %a"
+              Krml.PrintAst.Ops.ptyp e.typ
+              Krml.PrintAst.Ops.pexpr e;
+            failwith "Can't handle arbitrary closures"
         end
 
   | Aggregate (AggregatedArray (t, cg), ops) ->
