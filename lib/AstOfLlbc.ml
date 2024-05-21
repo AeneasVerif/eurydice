@@ -339,6 +339,9 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
          types and pointer types. *)
       K.TBuf (typ_of_ty env t, false)
 
+  | TRef (_, TAdt (TAssumed TStr, { types = []; _ }), _) ->
+      Krml.Checker.c_string
+
   | TRef (_, t, _) ->
       (* Normal reference *)
       K.TBuf (typ_of_ty env t, false)
@@ -372,7 +375,7 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
       K.TBuf (typ_of_ty env t, false)
 
   | TAdt (TAssumed TStr, { types = []; _ }) ->
-      Krml.Checker.c_string
+      failwith "Impossible -- strings always behind a pointer"
 
   | TAdt (TAssumed f, { types = args; const_generics; _ }) ->
       List.iter (fun x -> print_endline (C.show_const_generic x)) const_generics;
