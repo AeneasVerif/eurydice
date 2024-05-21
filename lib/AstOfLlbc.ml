@@ -64,17 +64,17 @@ type env = {
      - in expressions, there is no ECgVar, and we rely on a regular EBound node
        that refers to the repeat of the cg var as a regular argument var.
 
-     Example: fn f<N: usize, T: Copy>(x: [T; N]) -> usize { N }
+     Example: fn f<const N: usize, T: Copy>(x: [T; N]) -> usize { N }
      Upon entering the body of f, we have:
      - cg_binders: [ N, usize ]
      - type_binders: [ T ]
      - binders: [ `Cg (N, usize); `Clause (T: Copy, "copy"); `Var (x: [T; N]) ]
 
      After translation, we get:
-     DFunction (..., 1 (* one type var *), 1 (* one cg var *), [
+     DFunction (..., 1 (* one type var *), 2 (* one cg var *), [
        "N": TInt usize;
        "x": TCgArray (TBound 0, 0); (* types use the cg scope *)
-     ], EBound 1 (* expressions refer to the copy of the cg var as an expression var *)
+     ], EBound 2 (* expressions refer to the copy of the cg var as an expression var *)
      *)
   cg_binders: (C.const_generic_var_id * K.typ) list;
   type_binders: C.type_var_id list;
