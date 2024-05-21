@@ -708,6 +708,7 @@ let blocklisted_trait_decls = [
   "core::convert::From";
   (* TODO: figure out what to do with those *)
   "core::clone::Clone";
+  "core::marker::Copy";
   "core::fmt::Debug";
 ]
 
@@ -980,6 +981,20 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
                   None
             ) env.binders)
 
+        | ParentClause (_instance_id, decl_id, clause_id) ->
+            let trait_decl = env.get_nth_trait_decl decl_id in
+            let name = string_of_name env trait_decl.name in
+            let clause_id = C.TraitClauseId.to_int clause_id in
+            let parent_clause = List.nth trait_decl.parent_clauses clause_id in
+            let parent_clause_decl = env.get_nth_trait_decl parent_clause.trait_id in
+            let parent_name = string_of_name env parent_clause_decl.name in
+            Krml.KPrint.bprintf "looking up parent clause #%d of decl=%s = %s\n" clause_id name
+              parent_name;
+            if List.mem parent_name blocklisted_trait_decls then
+              []
+            else
+              failwith ("Don't know how to resolve trait_ref " ^ C.show_trait_ref trait_ref)
+
         | _ ->
             failwith ("Don't know how to resolve trait_ref " ^ C.show_trait_ref trait_ref)
 
@@ -1006,12 +1021,17 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
   let t_unapplied = Krml.Helpers.fold_arrow (cg_inputs @ inputs) output in
   L.log "Calls" "%s--> t_unapplied: %a" depth Krml.PrintAst.Ops.ptyp t_unapplied;
   L.log "Calls" "%s--> inputs: %a" depth Krml.PrintAst.Ops.ptyps inputs;
-  L.log "Calls" "%s--> const_generic_args: %a" depth Krml.PrintAst.Ops.pexprs const_generic_args;
   let offset = List.length env.binders - List.length env.cg_binders in
-  let subst t = Krml.DeBruijn.(subst_ctn offset const_generic_args (subst_tn type_args t)) in
+  L.log "Calls" "%s--> const_generic_args: %a (offset: %d)" depth Krml.PrintAst.Ops.pexprs const_generic_args offset;
+  let subst t =
+    let const_generic_args, _ = Krml.KList.split (List.length const_generic_args - List.length fn_ptrs) const_generic_args in
+    L.log "Calls" "%s--> const_generic_args: %a (offset: %d)" depth Krml.PrintAst.Ops.pexprs const_generic_args offset;
+    Krml.DeBruijn.(subst_tn type_args (subst_ctn offset const_generic_args t))
+  in
   let hd =
     let hd = K.with_type t_unapplied f in
     if type_args <> [] || const_generic_args <> [] then
+      let _, inputs = Krml.KList.split (List.length fn_ptrs) inputs in
       let t_applied = subst (Krml.Helpers.fold_arrow inputs output) in
       L.log "Calls" "%s--> t_applied: %a" depth Krml.PrintAst.Ops.ptyp t_applied;
       K.with_type t_applied (K.ETApp (hd, const_generic_args, type_args))
@@ -1184,8 +1204,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let repeat = K.(with_type (Krml.Helpers.fold_arrow Builtin.array_repeat.cg_args Builtin.array_repeat.typ) (EQualified Builtin.array_repeat.name)) in
       let diff = List.length env.binders - List.length env.cg_binders in
       let repeat = K.(with_type (Krml.DeBruijn.(
-        subst_ct diff len 0 (
-          subst_t t 0 (Builtin.array_repeat.typ))))
+          subst_t t 0 (subst_ct diff len 0 (Builtin.array_repeat.typ))))
         (ETApp (repeat, [ len ], [ t ]))) in
       Krml.Helpers.with_unit K.(
         EAssign (dest, with_type dest.typ (EApp (repeat, [ e ]))))
