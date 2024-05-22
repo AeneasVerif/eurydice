@@ -475,8 +475,6 @@ type clause_binder = {
 
 let push_clause_binder env { clause_id; item_name; t; sig_info; _ } =
   { env with
-    (* Perhaps (?) important for diff calculations *)
-    cg_binders = (C.ConstGenericVarId.of_int max_int, t) :: env.cg_binders;
     binders = (TraitClauseMethod (clause_id, item_name, sig_info), t) :: env.binders }
 
 let push_clause_binders env bs =
@@ -1557,7 +1555,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                      binders but also on the clause binders... This is ok because even though the
                      clause binders are not in env.cg_binders, well, types don't refer to clause
                      binders, so we won't have translation errors. *)
-                  let n_cg = List.length signature.C.generics.const_generics + List.length clause_binders in
+                  let n_cg = List.length signature.C.generics.const_generics in
                   let n = List.length signature.C.generics.types in
                   Some (K.DFunction (None, flags, n_cg, n, return_type, name, arg_binders, body))
 
