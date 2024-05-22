@@ -51,6 +51,10 @@ type env = {
   name_ctx: Charon.NameMatcher.ctx;
   generic_params: C.generic_params;
 
+  (* When in a function such as fn f<T: Foo<42>>, we need to remember that Foo is instantiated over
+     42 so as to pass the correct arguments. *)
+  clause_arguments: (C.TraitClauseId.id * C.const_generic list) list;
+
   (* We have three binding scopes, all in DeBruijn indices.
      - const-generic ("cg") binders
      - type binders
@@ -798,7 +802,7 @@ let rec lookup_signature env depth ?(extra_const_generics=[]) signature =
   {
     n_type_args = List.length type_params;
     cg_types = List.map (fun (v: C.const_generic_var) -> typ_of_literal_ty env v.ty) const_generics;
-    arg_types = clause_ts @ List.map (typ_of_ty env) inputs;
+    arg_types = clause_ts @ List.map (typ_of_ty env) inputs @ (if inputs = [] then [ K.TUnit ] else []);
     ret_type = typ_of_ty env output;
     is_known_builtin = false
   }
@@ -825,9 +829,7 @@ and typ_of_signature env signature =
     lookup_signature env "" signature
   in
 
-  let adjusted_inputs =
-    if const_generics_ts = [] && inputs = [] then [ K.TUnit ] else const_generics_ts @ inputs
-  in
+  let adjusted_inputs = const_generics_ts @ inputs in
 
   let t = Krml.Helpers.fold_arrow adjusted_inputs output in
   List.length const_generics_ts, n_type_args, t
@@ -846,12 +848,13 @@ and debug_trait_clause_mapping env mapping =
 
 (** Compiling function instantiations into krml application nodes. *)
 
-let compute_supplemental_cgs env { C.name; signature; kind; _ } =
+let compute_supplemental_cgs env { C.name; signature = _; kind; _ } =
   match kind with
-  | TraitItemImpl (_, trait_decl, _, _) ->
+  | TraitItemImpl (trait_impl, trait_decl, _, _) ->
       let trait_decl = env.get_nth_trait_decl trait_decl in
       let trait_generics = trait_decl.generics.const_generics in
-      let signature_generics = signature.C.generics.const_generics in
+      let trait_impl = env.get_nth_trait_impl trait_impl in
+      let signature_generics = trait_impl.generics.const_generics in
       let n_trait_generics = List.length trait_generics in
       let n_signature_generics = List.length signature_generics in
       if n_trait_generics > n_signature_generics then begin
@@ -951,9 +954,16 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
 
   let type_args, const_generic_args, trait_refs =
     match func with
-    | TraitMethod ({ generics = { types; const_generics; trait_refs = trait_refs'; _ }; _ }, _, _) ->
-        (* TODO: why is the order fumbled here? *)
-        types @ type_args, const_generics @ const_generic_args, trait_refs @ trait_refs'
+    | TraitMethod ({ trait_id; generics = { types; const_generics; trait_refs = trait_refs'; _ }; _ }, _, _) ->
+        L.log "Calls" "%s--> this is a trait method" depth;
+        let clause_const_generics =
+          match trait_id with
+          | Clause id ->
+              List.assoc id env.clause_arguments
+          | _ ->
+              []
+        in
+        types @ type_args, clause_const_generics @ const_generics @ const_generic_args, trait_refs' @ trait_refs
     | _ ->
         type_args, const_generic_args, trait_refs
   in
@@ -970,6 +980,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
   let f, { n_type_args = n_type_params; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_known_builtin } =
     lookup_fun env depth fn_ptr
   in
+  L.log "Calls" "%s--> inputs: %a" depth Krml.PrintAst.Ops.ptyps inputs;
 
   (* Handling trait implementations for generic trait bounds in the callee. *)
   let fn_ptrs =
@@ -1042,6 +1053,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
     if fn_ptr_is_opaque env fn_ptr then
       if const_generic_args = [] && inputs = [] then [ K.TUnit ] else inputs
     else
+      (* if List.length inputs = List.length fn_ptrs then inputs @ [ K.TUnit ] else inputs *)
       if inputs = [] then [ K.TUnit ] else inputs
   in
 
@@ -1514,6 +1526,13 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                   let clause_mapping = build_trait_clause_mapping env signature.C.generics.trait_clauses in
                   debug_trait_clause_mapping env clause_mapping;
 
+                  (* In definition fn f<T: Foo<42>>, associates [ 42 ] to clause Foo *)
+                  let env = { env with clause_arguments =
+                    List.map (fun (tc: C.trait_clause) ->
+                      tc.clause_id, tc.clause_generics.const_generics
+                    ) signature.C.generics.trait_clauses
+                  } in
+
                   (* `locals` contains, in order: special return variable; function arguments;
                      local variables *)
                   let args, locals = Krml.KList.split (arg_count + 1) locals in
@@ -1620,6 +1639,7 @@ let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
     format_env;
     crate_name = name;
     name_ctx;
-    generic_params = { regions = []; types = []; const_generics = []; trait_clauses = [] }
+    generic_params = { regions = []; types = []; const_generics = []; trait_clauses = [] };
+    clause_arguments = [];
   } in
   name, List.concat_map (decls_of_declarations env) declarations
