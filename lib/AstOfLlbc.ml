@@ -24,6 +24,8 @@ module K = Krml.Ast
 
 module L = Logging
 
+open Krml.PrintAst.Ops
+
 (** Environment *)
 
 type sig_info = {
@@ -135,7 +137,7 @@ let assert_slice (t: K.typ) =
   | TApp (lid, [ t ]) when lid = Builtin.slice ->
       t
   | _ ->
-      Krml.Warn.fatal_error "Not a slice: %a" Krml.PrintAst.Ops.ptyp t
+      Krml.Warn.fatal_error "Not a slice: %a" ptyp t
 
 let string_of_path_elem (env: env) (p: Charon.Types.path_elem): string =
   match p with
@@ -666,7 +668,7 @@ let mk_op_app (op: K.op) (first: K.expr) (rest: K.expr list): K.expr =
   let w = match first.typ with
     | K.TInt w -> w
     | K.TBool -> Bool
-    | t -> Krml.Warn.fatal_error "Not an operator type: %a" Krml.PrintAst.Ops.ptyp t
+    | t -> Krml.Warn.fatal_error "Not an operator type: %a" ptyp t
   in
   let op = if op = Not && first.typ <> K.TBool then Krml.Constant.BNot else op in
   let op_t = Krml.Helpers.type_of_op op w in
@@ -743,29 +745,28 @@ let build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
 
     else begin
       (* FYI, some clauses like Copy have neither required nor provided methods. *)
-      Krml.KPrint.bprintf "clause decl %s id %d: FYI, clause_generic type is %s (required: %d) (provided: %d)\n"
+      Krml.KPrint.bprintf "clause decl %s\n  \
+        id %d:\n  \
+        clause_generic type is %s\n  \
+        clause_generic const_generics is %s\n  \
+        required: %d\n  \
+        provided: %d\n"
         name
         (C.TraitClauseId.to_int clause_id)
         (String.concat " ++ " (List.map C.show_ty (clause_generics.C.types)))
+        (String.concat " ++ " (List.map C.show_const_generic (clause_generics.C.const_generics)))
         (List.length trait_decl.C.required_methods)
         (List.length trait_decl.C.provided_methods);
 
-      (* The type variable from the function that the trait clause is applied to *)
-      let tvarid =
-        match clause_generics.C.types with
-        | [ TVar tvarid ] -> tvarid
-        | _ -> failwith "Clause above does not refer to a type var? confused"
-      in
-
       List.map (fun (item_name, decl_id) ->
         let decl = env.get_nth_function decl_id in
-        (clause_id, item_name), (tvarid, trait_decl.C.name, decl.C.signature)
+        (clause_id, item_name), (clause_generics, trait_decl.C.name, decl.C.signature)
         ) trait_decl.C.required_methods @
       List.map (fun (item_name, decl_id) ->
         match decl_id with
         | Some decl_id ->
             let decl = env.get_nth_function decl_id in
-            (clause_id, item_name), (tvarid, trait_decl.C.name, decl.C.signature)
+            (clause_id, item_name), (clause_generics, trait_decl.C.name, decl.C.signature)
         | None ->
             failwith ("TODO: handle provided trait methods, like " ^ item_name)
             ) trait_decl.C.provided_methods
@@ -786,12 +787,12 @@ type lookup_result = {
   is_known_builtin: bool;
 }
 
-let rec lookup_signature env depth ?(extra_const_generics=[]) signature =
+let rec lookup_signature env depth signature =
   let { C.generics = { types = type_params; const_generics; trait_clauses; _ }; inputs; output; _ } = signature in
   L.log "Calls" "%s--> args: %s, ret: %s" depth
     (String.concat " ++ " (List.map (Charon.PrintTypes.ty_to_string env.format_env) inputs))
     (Charon.PrintTypes.ty_to_string env.format_env output);
-  let env = push_cg_binders env (extra_const_generics @ const_generics) in
+  let env = push_cg_binders env const_generics in
   let env = push_type_binders env type_params in
 
   let clause_mapping = build_trait_clause_mapping env trait_clauses in
@@ -809,10 +810,14 @@ let rec lookup_signature env depth ?(extra_const_generics=[]) signature =
 
 (* Assumes type variables have been suitably bound in the environment *)
 and mk_clause_binders_and_args env clause_mapping: clause_binder list =
-  List.map (fun ((clause_id, item_name), (tvarid, trait_name, (signature: C.fun_sig))) ->
-    let tvar = lookup_typ env tvarid in
+  List.map (fun ((clause_id, item_name), ((clause_generics: C.generic_args), trait_name, (signature: C.fun_sig))) ->
     let t = thd3 (typ_of_signature env signature) in
-    let t = Krml.DeBruijn.subst_t (TBound tvar) 0 t in
+    let cgs = List.map (cg_of_const_generic env) clause_generics.C.const_generics in
+    let ts = List.map (typ_of_ty env) clause_generics.C.types in
+    L.log "TraitClauses" "About to substitute cgs=%a, ts=%a into %a" pcgs cgs ptyps ts ptyp t;
+    let t = Krml.DeBruijn.(subst_tn ts (subst_ctn' cgs t)) in
+    L.log "TraitClauses" "After subtitution t=%a" ptyp t;
+
     let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
     let sig_info = {
       n_type_args = List.length signature.generics.types - 1;
@@ -836,45 +841,16 @@ and typ_of_signature env signature =
 
 
 and debug_trait_clause_mapping env mapping =
-  let open Krml in
   if mapping <> [] then
-    KPrint.bprintf "In this function, calls to trait bound methods are as follows:\n";
+    L.log "TraitClauses" "In this function, calls to trait bound methods are as follows:";
   List.iter (fun ((clause_id, item_name), (_, trait_name, signature)) ->
     let t = thd3 (typ_of_signature env signature) in
-    KPrint.bprintf "TraitClause %d (a.k.a. %s)::%s: %a\n"
-      (C.TraitClauseId.to_int clause_id) (string_of_name env trait_name) item_name PrintAst.Ops.ptyp t
+    L.log "TraitClauses" "TraitClause %d (a.k.a. %s)::%s: %a"
+      (C.TraitClauseId.to_int clause_id) (string_of_name env trait_name) item_name ptyp t
   ) mapping
 
 
 (** Compiling function instantiations into krml application nodes. *)
-
-let compute_supplemental_cgs env { C.name; signature = _; kind; _ } =
-  match kind with
-  | TraitItemImpl (trait_impl, trait_decl, _, _) ->
-      let trait_decl = env.get_nth_trait_decl trait_decl in
-      let trait_generics = trait_decl.generics.const_generics in
-      let trait_impl = env.get_nth_trait_impl trait_impl in
-      let signature_generics = trait_impl.generics.const_generics in
-      let n_trait_generics = List.length trait_generics in
-      let n_signature_generics = List.length signature_generics in
-      if n_trait_generics > n_signature_generics then begin
-        (* The trait impl item has fewer generics than the trait declaration --
-           for uniformity of our dictionary-passing style implementation, we wish
-           for it to have the same signature as in the trait declaration. *)
-        L.log "Defs" "%s: adjusting signature for additional cg parameters (trait decl has %d, trait impl has %d)\n"
-          (string_of_name env name) n_trait_generics n_signature_generics;
-        if signature_generics <> [] then
-          (* Traits can instantiate a subset of the const generic parameters. We
-             don't deal with that yet. *)
-          failwith "TODO: partially cg-specialized trait impl"
-        else
-          trait_generics
-      end else begin
-        assert (n_trait_generics = n_signature_generics);
-        []
-      end
-  | _ ->
-      []
 
 (* First step: produce an expression for the un-instantiated function reference, along with all the
   type information required to build a proper instantiation. The function reference is an expression
@@ -894,11 +870,11 @@ let lookup_fun (env: env) depth (f: C.fn_ptr): K.expr' * lookup_result =
   | None ->
 
       let lookup_result_of_fun_id fun_id =
-        let { C.name; signature; _ } as decl = env.get_nth_function fun_id in
+        let { C.name; signature; _ } = env.get_nth_function fun_id in
         let lid = lid_of_name env name in
-        L.log "Calls" "%s--> name: %a" depth Krml.PrintAst.Ops.plid lid;
+        L.log "Calls" "%s--> name: %a" depth plid lid;
         K.EQualified lid,
-        lookup_signature env depth ~extra_const_generics:(compute_supplemental_cgs env decl) signature
+        lookup_signature env depth signature
       in
 
       match f.func with
@@ -980,7 +956,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
   let f, { n_type_args = n_type_params; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_known_builtin } =
     lookup_fun env depth fn_ptr
   in
-  L.log "Calls" "%s--> inputs: %a" depth Krml.PrintAst.Ops.ptyps inputs;
+  L.log "Calls" "%s--> inputs: %a" depth ptyps inputs;
 
   (* Handling trait implementations for generic trait bounds in the callee. *)
   let fn_ptrs =
@@ -1059,17 +1035,17 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
 
   if not (n_type_params = List.length type_args) then
     Krml.Warn.fatal_error "%a: n_type_params %d != type_args %d"
-      Krml.PrintAst.Ops.pexpr (K.with_type TUnit f)
+      pexpr (K.with_type TUnit f)
       n_type_params (List.length type_args);
 
   let t_unapplied = Krml.Helpers.fold_arrow (cg_inputs @ inputs) output in
-  L.log "Calls" "%s--> t_unapplied: %a" depth Krml.PrintAst.Ops.ptyp t_unapplied;
-  L.log "Calls" "%s--> inputs: %a" depth Krml.PrintAst.Ops.ptyps inputs;
+  L.log "Calls" "%s--> t_unapplied: %a" depth ptyp t_unapplied;
+  L.log "Calls" "%s--> inputs: %a" depth ptyps inputs;
   let offset = List.length env.binders - List.length env.cg_binders in
-  L.log "Calls" "%s--> const_generic_args: %a (offset: %d)" depth Krml.PrintAst.Ops.pexprs const_generic_args offset;
+  L.log "Calls" "%s--> const_generic_args: %a (offset: %d)" depth pexprs const_generic_args offset;
   let subst t =
     let const_generic_args, _ = Krml.KList.split (List.length const_generic_args - List.length fn_ptrs) const_generic_args in
-    L.log "Calls" "%s--> const_generic_args: %a (offset: %d)" depth Krml.PrintAst.Ops.pexprs const_generic_args offset;
+    L.log "Calls" "%s--> const_generic_args: %a (offset: %d)" depth pexprs const_generic_args offset;
     Krml.DeBruijn.(subst_tn type_args (subst_ctn offset const_generic_args t))
   in
   let hd =
@@ -1077,13 +1053,13 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
     if type_args <> [] || const_generic_args <> [] then
       let _, inputs = Krml.KList.split (List.length fn_ptrs) inputs in
       let t_applied = subst (Krml.Helpers.fold_arrow inputs output) in
-      L.log "Calls" "%s--> t_applied: %a" depth Krml.PrintAst.Ops.ptyp t_applied;
+      L.log "Calls" "%s--> t_applied: %a" depth ptyp t_applied;
       K.with_type t_applied (K.ETApp (hd, const_generic_args, type_args))
     else
       hd
   in
   let output = subst output in
-  L.log "Calls" "%s--> hd: %a" depth Krml.PrintAst.Ops.pexpr hd;
+  L.log "Calls" "%s--> hd: %a" depth pexpr hd;
   hd, is_known_builtin, output
 
 let expression_of_fn_ptr env (fn_ptr: C.fn_ptr) =
@@ -1172,8 +1148,8 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
             K.(with_type t (EApp (e, [ with_type t_state (EAddrOf Krml.Helpers.eunit) ])))
         | _ ->
             Krml.KPrint.bprintf "Unknown closure\ntype: %a\nexpr: %a"
-              Krml.PrintAst.Ops.ptyp e.typ
-              Krml.PrintAst.Ops.pexpr e;
+              ptyp e.typ
+              pexpr e;
             failwith "Can't handle arbitrary closures"
         end
 
@@ -1201,7 +1177,7 @@ let lesser t1 t2 =
   else if t2 = K.TAny then
     t2
   else if t1 <> t2 then
-    Krml.Warn.fatal_error "lesser t1=%a t2=%a" Krml.PrintAst.Ops.ptyp t1 Krml.PrintAst.Ops.ptyp t2
+    Krml.Warn.fatal_error "lesser t1=%a t2=%a" ptyp t1 ptyp t2
   else
     t1
 
@@ -1520,7 +1496,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                 if is_global_decl_body then
                   None
                 else
-                  let env = push_cg_binders env (compute_supplemental_cgs env decl @ signature.C.generics.const_generics) in
+                  let env = push_cg_binders env signature.C.generics.const_generics in
                   let env = push_type_binders env signature.C.generics.types in
 
                   let clause_mapping = build_trait_clause_mapping env signature.C.generics.trait_clauses in
