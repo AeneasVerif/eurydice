@@ -111,7 +111,7 @@ let remove_array_repeats = object(self)
 
   method! visit_EApp env e es =
     match e.node, es with
-    | ETApp ({ node = EQualified lid; _ }, [ len ], [ _ ]), [ init ] when lid = Builtin.array_repeat.name ->
+    | ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]), [ init ] when lid = Builtin.array_repeat.name ->
         let l = match len.node with EConstant (_, s) -> int_of_string s | _ -> failwith "impossible" in
         let init = self#visit_expr env init in
         EBufCreateL (Stack, List.init l (fun _ -> init))
@@ -123,13 +123,13 @@ let remove_array_repeats = object(self)
       match e.node with
       | EConstant _ ->
           true
-      | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ _ ], [ _ ]); _ }, [ init ]) when lid = Builtin.array_repeat.name ->
+      | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ _ ], _, [ _ ]); _ }, [ init ]) when lid = Builtin.array_repeat.name ->
           all_repeats init
       | _ ->
           false
     in
     match e1.node with
-    | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], [ _ ]); _ }, [ init ]) when lid = Builtin.array_repeat.name ->
+    | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ]) when lid = Builtin.array_repeat.name ->
         if all_repeats e1 then
           (* Further code-gen can handle nested ebufcreatel's by using nested
              static initializer lists, possiblye shortening to { 0 } if
@@ -179,6 +179,7 @@ let remove_array_from_fn = object
     match e.node with
     | ETApp ({ node = EQualified (["core"; "array"], "from_fn"); _ },
       [ len ],
+      _,
       [ t_elements; TArrow (t_index, t_elements') ]) ->
         assert (t_elements' = t_elements);
         assert (t_index = TInt SizeT);
@@ -201,12 +202,12 @@ let rewrite_slice_to_array = object(_self)
 
   method! visit_expr ((), _ as env) e =
     match e.node with
-    | EApp ({ node = ETApp ({ node = EQualified lid; _ }, _, ts); _ }, es) when lid = Builtin.slice_to_array.name ->
+    | EApp ({ node = ETApp ({ node = EQualified lid; _ }, _, _, ts); _ }, es) when lid = Builtin.slice_to_array.name ->
         let src = Krml.KList.one es in
         (* src = slice ..., dst = array ... *)
         let result_t = e.typ in
         let slice_to_array2 = with_type Builtin.slice_to_array2.typ (EQualified Builtin.slice_to_array2.name) in
-        let slice_to_array2 = with_type (subst_tn ts Builtin.slice_to_array2.typ) (ETApp (slice_to_array2, [], ts)) in
+        let slice_to_array2 = with_type (subst_tn ts Builtin.slice_to_array2.typ) (ETApp (slice_to_array2, [], [], ts)) in
         (* let dst = *)
         with_type result_t (ELet (H.fresh_binder "dst" result_t, H.any,
         (* let _ = *)
@@ -230,7 +231,7 @@ let remove_trivial_into = object(self)
     let e = self#visit_expr_w () e in
     let es = List.map (self#visit_expr env) es in
     match e.node, es with
-    | ETApp ({ node = EQualified (["core"; "convert"; _ ], "into"); _ }, [], [ t1; t2 ]), [ e1 ] when t1 = t2 ->
+    | ETApp ({ node = EQualified (["core"; "convert"; _ ], "into"); _ }, [], _, [ t1; t2 ]), [ e1 ] when t1 = t2 ->
         e1.node
     | _ ->
         EApp (e, es)
@@ -352,6 +353,7 @@ let resugar_loops = object(self)
     EApp ({ node = ETApp (
       { node = EQualified (["core"; "iter"; "traits"; "collect"; _], "into_iter"); _ },
       [],
+      _,
       [ TApp ((["core"; "ops"; "range"], "Range"), _t')  ]
     ); _ }, [
       { node = EFlat [ Some "start", e_start; Some "end", e_end ]; _ }
@@ -363,7 +365,7 @@ let resugar_loops = object(self)
         node = EApp ({
           node = ETApp ({
             node = EQualified (["core";"iter";"range";_], "next"); _
-          }, [], [ t' ]);
+          }, [], [], [ t' ]);
           _
         }, [{
           node = EAddrOf({
@@ -401,6 +403,7 @@ let resugar_loops = object(self)
     EApp ({ node = ETApp (
       { node = EQualified (["core"; "iter"; "traits"; "collect"; _], "into_iter"); _ },
       [],
+      _,
       [ TApp ((["core"; "ops"; "range"], "Range"), _t')  ]
     ); _ }, [
       { node = EFlat [ Some "start", e_start; Some "end", e_end ]; _ }
@@ -412,7 +415,7 @@ let resugar_loops = object(self)
         node = EApp ({
           node = ETApp ({
             node = EQualified (["core";"iter";"range";_], "next"); _
-          }, [], [ t' ]);
+          }, [], [], [ t' ]);
           _
         }, [{
           node = EAddrOf({

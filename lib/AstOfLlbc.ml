@@ -760,13 +760,13 @@ let build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
 
       List.map (fun (item_name, decl_id) ->
         let decl = env.get_nth_function decl_id in
-        (clause_id, item_name), (clause_generics, trait_decl.C.name, decl.C.signature)
+        (clause_id, item_name), (clause_generics, List.length trait_decl.generics.const_generics, trait_decl.C.name, decl.C.signature)
         ) trait_decl.C.required_methods @
       List.map (fun (item_name, decl_id) ->
         match decl_id with
         | Some decl_id ->
             let decl = env.get_nth_function decl_id in
-            (clause_id, item_name), (clause_generics, trait_decl.C.name, decl.C.signature)
+            (clause_id, item_name), (clause_generics, List.length trait_decl.generics.const_generics, trait_decl.C.name, decl.C.signature)
         | None ->
             failwith ("TODO: handle provided trait methods, like " ^ item_name)
             ) trait_decl.C.provided_methods
@@ -810,13 +810,17 @@ let rec lookup_signature env depth signature =
 
 (* Assumes type variables have been suitably bound in the environment *)
 and mk_clause_binders_and_args env clause_mapping: clause_binder list =
-  List.map (fun ((clause_id, item_name), ((clause_generics: C.generic_args), trait_name, (signature: C.fun_sig))) ->
+  List.map (fun ((clause_id, item_name), ((clause_generics: C.generic_args), n_trait_cgs, trait_name, (signature: C.fun_sig))) ->
     let t = thd3 (typ_of_signature env signature) in
     let cgs = List.map (cg_of_const_generic env) clause_generics.C.const_generics in
     let ts = List.map (typ_of_ty env) clause_generics.C.types in
     L.log "TraitClauses" "About to substitute cgs=%a, ts=%a into %a" pcgs cgs ptyps ts ptyp t;
     let t = Krml.DeBruijn.(subst_tn ts (subst_ctn' cgs t)) in
     L.log "TraitClauses" "After subtitution t=%a" ptyp t;
+    let ret, args = Krml.Helpers.flatten_arrow t in
+    let _, args = Krml.KList.split n_trait_cgs args in
+    let t = Krml.Helpers.fold_arrow args ret in
+    L.log "TraitClauses" "After chopping t=%a" ptyp t;
 
     let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
     let sig_info = {
@@ -843,10 +847,10 @@ and typ_of_signature env signature =
 and debug_trait_clause_mapping env mapping =
   if mapping <> [] then
     L.log "TraitClauses" "In this function, calls to trait bound methods are as follows:";
-  List.iter (fun ((clause_id, item_name), (_, trait_name, signature)) ->
+  List.iter (fun ((clause_id, item_name), (_, n, trait_name, signature)) ->
     let t = thd3 (typ_of_signature env signature) in
-    L.log "TraitClauses" "TraitClause %d (a.k.a. %s)::%s: %a"
-      (C.TraitClauseId.to_int clause_id) (string_of_name env trait_name) item_name ptyp t
+    L.log "TraitClauses" "TraitClause %d (a.k.a. %s)::%s: %a has %d trait-level const generics"
+      (C.TraitClauseId.to_int clause_id) (string_of_name env trait_name) item_name ptyp t n
   ) mapping
 
 
@@ -934,7 +938,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
         L.log "Calls" "%s--> this is a trait method" depth;
         let clause_const_generics =
           match trait_id with
-          | Clause id ->
+          | Clause id when false ->
               List.assoc id env.clause_arguments
           | _ ->
               []
@@ -1020,7 +1024,6 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
       ) trait_refs
   in
   L.log "Calls" "%s--> trait method impls: %d" depth (List.length fn_ptrs);
-  let const_generic_args = const_generic_args @ fn_ptrs in
 
   (* This needs to match what is done in the FunGroup case (i.e. when we extract
      a definition). There are two behaviors depending on whether the function is
@@ -1043,18 +1046,18 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
   L.log "Calls" "%s--> inputs: %a" depth ptyps inputs;
   let offset = List.length env.binders - List.length env.cg_binders in
   L.log "Calls" "%s--> const_generic_args: %a (offset: %d)" depth pexprs const_generic_args offset;
+  L.log "Calls" "%s--> fn_ptrs: %a (offset: %d)" depth pexprs fn_ptrs offset;
   let subst t =
-    let const_generic_args, _ = Krml.KList.split (List.length const_generic_args - List.length fn_ptrs) const_generic_args in
     L.log "Calls" "%s--> const_generic_args: %a (offset: %d)" depth pexprs const_generic_args offset;
     Krml.DeBruijn.(subst_tn type_args (subst_ctn offset const_generic_args t))
   in
   let hd =
     let hd = K.with_type t_unapplied f in
-    if type_args <> [] || const_generic_args <> [] then
+    if type_args <> [] || const_generic_args <> [] || fn_ptrs <> [] then
       let _, inputs = Krml.KList.split (List.length fn_ptrs) inputs in
       let t_applied = subst (Krml.Helpers.fold_arrow inputs output) in
       L.log "Calls" "%s--> t_applied: %a" depth ptyp t_applied;
-      K.with_type t_applied (K.ETApp (hd, const_generic_args, type_args))
+      K.with_type t_applied (K.ETApp (hd, const_generic_args, fn_ptrs, type_args))
     else
       hd
   in
@@ -1225,7 +1228,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let diff = List.length env.binders - List.length env.cg_binders in
       let repeat = K.(with_type (Krml.DeBruijn.(
           subst_t t 0 (subst_ct diff len 0 (Builtin.array_repeat.typ))))
-        (ETApp (repeat, [ len ], [ t ]))) in
+        (ETApp (repeat, [ len ], [], [ t ]))) in
       Krml.Helpers.with_unit K.(
         EAssign (dest, with_type dest.typ (EApp (repeat, [ e ]))))
 
