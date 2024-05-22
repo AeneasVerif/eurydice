@@ -969,8 +969,24 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
               let fn_ptr: C.fn_ptr = {
                 func = TraitMethod (trait_ref, item_name, decl_id);
                 generics = Charon.TypesUtils.empty_generic_args
-            } in
-              fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr)
+              } in
+              let fn_ptr = fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr) in
+              (* let instance_generics = trait_ref.generics in *)
+              (* let decl_generics = (env.get_nth_trait_decl trait_ref.trait_decl_ref.trait_decl_id).generics in *)
+              (* if List.length decl_generics.const_generics > List.length instance_generics.const_generics then begin *)
+              (*   (1* The instance is not as generic as the declaration. We are at call-site; the *)
+              (*      function itself was written against a *generic* trait, so expects potentially all *)
+              (*      the parameters. *1) *)
+              (*   if instance_generics.const_generics <> [] then *)
+              (*     failwith (Printf.sprintf "TODO: %d > %d, need to pick only the const generics needed" *)
+              (*       (List.length decl_generics.const_generics) (List.length instance_generics.const_generics)); *)
+              (*   let binders = List.map (fun ({ name; ty; _ }: C.const_generic_var) -> *)
+              (*     Krml.Helpers.fresh_binder name (typ_of_literal_ty env ty) *)
+              (*   ) decl_generics.const_generics in *)
+              (*   let full_ty = Krml.Helpers.fold_arrow (List.map (fun x -> x.K.typ) binders) fn_ptr.K.typ in *)
+              (*   K.with_type full_ty (K.EFun (binders, fn_ptr, fn_ptr.typ)) *)
+              (* end else *)
+                fn_ptr
             ) (trait_impl.required_methods @ trait_impl.provided_methods)
 
         | Clause clause_id ->
