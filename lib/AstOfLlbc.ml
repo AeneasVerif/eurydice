@@ -760,13 +760,14 @@ let build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
 
       List.map (fun (item_name, decl_id) ->
         let decl = env.get_nth_function decl_id in
-        (clause_id, item_name), (clause_generics, List.length trait_decl.generics.const_generics, trait_decl.C.name, decl.C.signature)
+        (clause_id, item_name), (clause_generics, List.length trait_decl.generics.const_generics, List.length trait_decl.generics.types, trait_decl.C.name, decl.C.signature)
         ) trait_decl.C.required_methods @
       List.map (fun (item_name, decl_id) ->
         match decl_id with
         | Some decl_id ->
             let decl = env.get_nth_function decl_id in
-            (clause_id, item_name), (clause_generics, List.length trait_decl.generics.const_generics, trait_decl.C.name, decl.C.signature)
+            (clause_id, item_name), (clause_generics, List.length
+            trait_decl.generics.const_generics, List.length trait_decl.generics.types, trait_decl.C.name, decl.C.signature)
         | None ->
             failwith ("TODO: handle provided trait methods, like " ^ item_name)
             ) trait_decl.C.provided_methods
@@ -810,7 +811,7 @@ let rec lookup_signature env depth signature =
 
 (* Assumes type variables have been suitably bound in the environment *)
 and mk_clause_binders_and_args env clause_mapping: clause_binder list =
-  List.map (fun ((clause_id, item_name), ((clause_generics: C.generic_args), n_trait_cgs, trait_name, (signature: C.fun_sig))) ->
+  List.map (fun ((clause_id, item_name), ((clause_generics: C.generic_args), n_trait_cgs, n_trait_type_params, trait_name, (signature: C.fun_sig))) ->
     let t = thd3 (typ_of_signature env signature) in
     let cgs = List.map (cg_of_const_generic env) clause_generics.C.const_generics in
     let ts = List.map (typ_of_ty env) clause_generics.C.types in
@@ -824,8 +825,8 @@ and mk_clause_binders_and_args env clause_mapping: clause_binder list =
 
     let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
     let sig_info = {
-      n_type_args = List.length signature.generics.types - 1;
-      n_cg_args = List.length signature.generics.const_generics;
+      n_type_args = List.length signature.generics.types - n_trait_type_params;
+      n_cg_args = List.length signature.generics.const_generics - n_trait_cgs;
     } in
     { pretty_name; t; clause_id; item_name; sig_info }
   ) clause_mapping
@@ -847,10 +848,10 @@ and typ_of_signature env signature =
 and debug_trait_clause_mapping env mapping =
   if mapping <> [] then
     L.log "TraitClauses" "In this function, calls to trait bound methods are as follows:";
-  List.iter (fun ((clause_id, item_name), (_, n, trait_name, signature)) ->
+  List.iter (fun ((clause_id, item_name), (_, n_cgs, n_tvars, trait_name, signature)) ->
     let t = thd3 (typ_of_signature env signature) in
-    L.log "TraitClauses" "TraitClause %d (a.k.a. %s)::%s: %a has %d trait-level const generics"
-      (C.TraitClauseId.to_int clause_id) (string_of_name env trait_name) item_name ptyp t n
+    L.log "TraitClauses" "TraitClause %d (a.k.a. %s)::%s: %a has %d trait-level const generics, %d type vars"
+      (C.TraitClauseId.to_int clause_id) (string_of_name env trait_name) item_name ptyp t n_cgs n_tvars
   ) mapping
 
 
@@ -1029,11 +1030,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
      a definition). There are two behaviors depending on whether the function is
      assumed or not. *)
   let inputs =
-    if fn_ptr_is_opaque env fn_ptr then
-      if const_generic_args = [] && inputs = [] then [ K.TUnit ] else inputs
-    else
-      (* if List.length inputs = List.length fn_ptrs then inputs @ [ K.TUnit ] else inputs *)
-      if inputs = [] then [ K.TUnit ] else inputs
+    if inputs = [] then [ K.TUnit ] else inputs
   in
 
   if not (n_type_params = List.length type_args) then
@@ -1316,11 +1313,7 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
          assumed or not. *)
       (* Krml.KPrint.bprintf "Call to %s is assumed %b\n" (string_of_fn_ptr env fn_ptr) is_assumed; *)
       let args =
-        if fn_ptr_is_opaque env fn_ptr then
-          (* typ_of_signature behavior *)
-          if fn_ptr.generics.const_generics = [] && args = [] then [ Krml.Helpers.eunit ] else args
-        else
-          if args = [] then [ Krml.Helpers.eunit ] else args
+        if args = [] then [ Krml.Helpers.eunit ] else args
       in
 
       let rhs = if args = [] then hd else K.with_type output_t (K.EApp (hd, args)) in
