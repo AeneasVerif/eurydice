@@ -782,12 +782,12 @@ type lookup_result = {
   is_known_builtin: bool;
 }
 
-let rec lookup_signature env depth signature =
+let rec lookup_signature env depth ?(extra_const_generics=[]) signature =
   let { C.generics = { types = type_params; const_generics; trait_clauses; _ }; inputs; output; _ } = signature in
   L.log "Calls" "%s--> args: %s, ret: %s" depth
     (String.concat " ++ " (List.map (Charon.PrintTypes.ty_to_string env.format_env) inputs))
     (Charon.PrintTypes.ty_to_string env.format_env output);
-  let env = push_cg_binders env const_generics in
+  let env = push_cg_binders env (extra_const_generics @ const_generics) in
   let env = push_type_binders env type_params in
 
   let clause_mapping = build_trait_clause_mapping env trait_clauses in
@@ -846,6 +846,33 @@ and debug_trait_clause_mapping env mapping =
 
 (** Compiling function instantiations into krml application nodes. *)
 
+let compute_supplemental_cgs env { C.name; signature; kind; _ } =
+  match kind with
+  | TraitItemImpl (_, trait_decl, _, _) ->
+      let trait_decl = env.get_nth_trait_decl trait_decl in
+      let trait_generics = trait_decl.generics.const_generics in
+      let signature_generics = signature.C.generics.const_generics in
+      let n_trait_generics = List.length trait_generics in
+      let n_signature_generics = List.length signature_generics in
+      if n_trait_generics > n_signature_generics then begin
+        (* The trait impl item has fewer generics than the trait declaration --
+           for uniformity of our dictionary-passing style implementation, we wish
+           for it to have the same signature as in the trait declaration. *)
+        L.log "Defs" "%s: adjusting signature for additional cg parameters (trait decl has %d, trait impl has %d)\n"
+          (string_of_name env name) n_trait_generics n_signature_generics;
+        if signature_generics <> [] then
+          (* Traits can instantiate a subset of the const generic parameters. We
+             don't deal with that yet. *)
+          failwith "TODO: partially cg-specialized trait impl"
+        else
+          trait_generics
+      end else begin
+        assert (n_trait_generics = n_signature_generics);
+        []
+      end
+  | _ ->
+      []
+
 (* First step: produce an expression for the un-instantiated function reference, along with all the
   type information required to build a proper instantiation. The function reference is an expression
   that is either a reference to a variable in scope (trait methods), or to a top-level qualified
@@ -864,10 +891,11 @@ let lookup_fun (env: env) depth (f: C.fn_ptr): K.expr' * lookup_result =
   | None ->
 
       let lookup_result_of_fun_id fun_id =
-        let { C.name; signature; _ } = env.get_nth_function fun_id in
+        let { C.name; signature; _ } as decl = env.get_nth_function fun_id in
         let lid = lid_of_name env name in
         L.log "Calls" "%s--> name: %a" depth Krml.PrintAst.Ops.plid lid;
-        K.EQualified lid, lookup_signature env depth signature
+        K.EQualified lid,
+        lookup_signature env depth ~extra_const_generics:(compute_supplemental_cgs env decl) signature
       in
 
       match f.func with
@@ -971,22 +999,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
                 generics = Charon.TypesUtils.empty_generic_args
               } in
               let fn_ptr = fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr) in
-              (* let instance_generics = trait_ref.generics in *)
-              (* let decl_generics = (env.get_nth_trait_decl trait_ref.trait_decl_ref.trait_decl_id).generics in *)
-              (* if List.length decl_generics.const_generics > List.length instance_generics.const_generics then begin *)
-              (*   (1* The instance is not as generic as the declaration. We are at call-site; the *)
-              (*      function itself was written against a *generic* trait, so expects potentially all *)
-              (*      the parameters. *1) *)
-              (*   if instance_generics.const_generics <> [] then *)
-              (*     failwith (Printf.sprintf "TODO: %d > %d, need to pick only the const generics needed" *)
-              (*       (List.length decl_generics.const_generics) (List.length instance_generics.const_generics)); *)
-              (*   let binders = List.map (fun ({ name; ty; _ }: C.const_generic_var) -> *)
-              (*     Krml.Helpers.fresh_binder name (typ_of_literal_ty env ty) *)
-              (*   ) decl_generics.const_generics in *)
-              (*   let full_ty = Krml.Helpers.fold_arrow (List.map (fun x -> x.K.typ) binders) fn_ptr.K.typ in *)
-              (*   K.with_type full_ty (K.EFun (binders, fn_ptr, fn_ptr.typ)) *)
-              (* end else *)
-                fn_ptr
+              fn_ptr
             ) (trait_impl.required_methods @ trait_impl.provided_methods)
 
         | Clause clause_id ->
@@ -1477,12 +1490,12 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
               (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " decl);
 
             assert (def_id = id);
+            let name = lid_of_name env name in
             match body with
             | None ->
                 begin try
                   (* Opaque function *)
                   let n_cgs, n, t = typ_of_signature env signature in
-                  let name = lid_of_name env name in
                   Some (K.DExternal (None, [], n_cgs, n, name, t, []))
                 with e ->
                   L.log "AstOfLLbc" "ERROR translating %s: %s\n%s" (string_of_name env decl.name)
@@ -1495,13 +1508,12 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                 if is_global_decl_body then
                   None
                 else
-                  let env = push_cg_binders env signature.C.generics.const_generics in
+                  let env = push_cg_binders env (compute_supplemental_cgs env decl @ signature.C.generics.const_generics) in
                   let env = push_type_binders env signature.C.generics.types in
 
                   let clause_mapping = build_trait_clause_mapping env signature.C.generics.trait_clauses in
                   debug_trait_clause_mapping env clause_mapping;
 
-                  let name = lid_of_name env name in
                   (* `locals` contains, in order: special return variable; function arguments;
                      local variables *)
                   let args, locals = Krml.KList.split (arg_count + 1) locals in
