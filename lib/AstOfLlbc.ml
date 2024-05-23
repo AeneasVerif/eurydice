@@ -1292,13 +1292,13 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
            dst[i] = f(src[i]);
       *)
       let module H = Krml.Helpers in
-      H.with_unit (K.EFor (Krml.Helpers.fresh_binder ~mut:true "i" H.usize, H.zero_usize (* i = 0 *),
+      H.with_unit (K.EFor (Krml.Helpers.fresh_binder ~mut:true "i_array_map" H.usize, H.zero_usize (* i = 0 *),
         H.mk_lt_usize (Krml.DeBruijn.lift 1 n) (* i < n *),
         H.mk_incr_usize (* i++ *),
         let i = K.with_type H.usize (K.EBound 0) in
         H.with_unit (K.EBufWrite (Krml.DeBruijn.lift 1 dest, i,
           K.with_type t_dst (
-            K.EApp (f, [ K.with_type t_src (K.EBufRead (Krml.DeBruijn.lift 1 src, i))]))))))
+            K.EApp (Krml.DeBruijn.lift 1 f, [ K.with_type t_src (K.EBufRead (Krml.DeBruijn.lift 1 src, i))]))))))
 
   | Call { func = FnOpRegular fn_ptr; args; dest; _ } ->
 
