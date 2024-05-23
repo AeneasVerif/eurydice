@@ -12,5 +12,6 @@ fn f<const K: usize, T: Foo<K>>() -> T {
 
 fn main() {
     let r = f::<8, u64>();
-    assert_eq!(r, 0);
+    let expected = 0;
+    assert_eq!(r, expected);
 }

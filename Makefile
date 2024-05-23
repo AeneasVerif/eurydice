@@ -4,7 +4,8 @@ EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
 CHARON		?= $(CHARON_HOME)/bin/charon
 
 CHARON_TEST_FILES	= arrays
-TEST_DIRS		= array const_generics traits array2d int_switch nested_arrays # step_by
+BROKEN_TESTS		= step_by where_clauses chunks
+TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(subst test/,,$(shell find test -maxdepth 1 -mindepth 1 -type d)))
 
 .PHONY: all
 all:
