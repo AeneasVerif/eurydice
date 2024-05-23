@@ -120,6 +120,10 @@ Supported options:|}
   let files = Krml.Monomorphization.functions files in
   let files = Krml.Monomorphization.datatypes files in
   Eurydice.Logging.log "Phase2.2" "%a" pfiles files;
+  (* Sanity check for the big rewriting above. *)
+  let errors, files = Krml.Checker.check_everything ~warn:true files in
+  if errors then
+    exit 1;
   let files = Krml.Inlining.drop_unused files in
   Eurydice.Logging.log "Phase2.3" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_array_temporaries#visit_files () files in

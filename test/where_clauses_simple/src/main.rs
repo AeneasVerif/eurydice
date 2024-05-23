@@ -82,12 +82,12 @@ fn main() {
     // Slightly more involved tests.
     let x = double(1u64, 1usize);
     let y = double_k::<3usize, usize, u64>(1usize, 1u64);
-    let x_0 = 2u64;
-    let x_1 = 3usize;
+    let x_0 = 1u64;
+    let x_1 = 2usize;
     assert_eq!(x.0, x_0);
     assert_eq!(x.1, x_1);
-    let y_0 = 5usize;
-    let y_1 = 2u64;
+    let y_0 = 4usize;
+    let y_1 = 1u64;
     assert_eq!(y.0, y_0);
     assert_eq!(y.1, y_1);
 }

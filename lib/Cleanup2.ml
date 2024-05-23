@@ -233,6 +233,8 @@ let remove_trivial_into = object(self)
     match e.node, es with
     | ETApp ({ node = EQualified (["core"; "convert"; _ ], "into"); _ }, [], _, [ t1; t2 ]), [ e1 ] when t1 = t2 ->
         e1.node
+    | ETApp ({ node = EQualified (["core"; "convert"; _ ], "into"); _ }, [], _, [ TInt _ ; TInt _ as t2 ]), [ e1 ] ->
+        ECast (e1, t2)
     | _ ->
         EApp (e, es)
 end
