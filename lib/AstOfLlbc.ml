@@ -810,11 +810,25 @@ let rec lookup_signature env depth signature =
 (* Assumes type variables have been suitably bound in the environment *)
 and mk_clause_binders_and_args env clause_mapping: clause_binder list =
   List.map (fun ((clause_id, item_name), ((clause_generics: C.generic_args), n_trait_cgs, n_trait_type_params, trait_name, (signature: C.fun_sig))) ->
+    (* Polymorphic signature for trait method has const generic for BOTH
+       trait-level generics and fn-level generics. Consider:
+
+       trait Hash<K>
+         fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K];
+
+       which gives the signature:
+
+       size_t -> size_t ->  uint8_t[33size_t]* -> uint8_t[$0][$1]
+    *)
     let t = thd3 (typ_of_signature env signature) in
+    (* We are in a function that has a trait clause of the form e.g. Hash<FOO>.
+       cgs contains FOO, that's it. *)
     let cgs = List.map (cg_of_const_generic env) clause_generics.C.const_generics in
+    let n_fn_cgs = List.length signature.C.generics.const_generics - List.length cgs in
+    L.log "TraitClauses" "%s has %d fn-level const generics" item_name n_fn_cgs;
     let ts = List.map (typ_of_ty env) clause_generics.C.types in
     L.log "TraitClauses" "About to substitute cgs=%a, ts=%a into %a" pcgs cgs ptyps ts ptyp t;
-    let t = Krml.DeBruijn.(subst_tn ts (subst_ctn' cgs t)) in
+    let t = Krml.DeBruijn.(subst_tn ts (subst_ctn'' n_fn_cgs cgs t)) in
     L.log "TraitClauses" "After subtitution t=%a" ptyp t;
     let ret, args = Krml.Helpers.flatten_arrow t in
     let _, args = Krml.KList.split n_trait_cgs args in
