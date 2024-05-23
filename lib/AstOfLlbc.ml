@@ -1064,7 +1064,8 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
     let hd = K.with_type t_unapplied f in
     if type_args <> [] || const_generic_args <> [] || fn_ptrs <> [] then
       let _, inputs = Krml.KList.split (List.length fn_ptrs) inputs in
-      let t_applied = subst (Krml.Helpers.fold_arrow inputs output) in
+      let _, remaining_cg_args = Krml.KList.split (List.length const_generic_args) cg_inputs in
+      let t_applied = subst (Krml.Helpers.fold_arrow (remaining_cg_args @ inputs) output) in
       L.log "Calls" "%s--> t_applied: %a" depth ptyp t_applied;
       K.with_type t_applied (K.ETApp (hd, const_generic_args, fn_ptrs, type_args))
     else
