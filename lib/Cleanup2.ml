@@ -227,7 +227,8 @@ let rewrite_slice_to_array = object(_self)
         (* src = slice ..., dst = array ... *)
         let result_t = e.typ in
         let slice_to_array2 = with_type Builtin.slice_to_array2.typ (EQualified Builtin.slice_to_array2.name) in
-        let slice_to_array2 = with_type (subst_tn ts Builtin.slice_to_array2.typ) (ETApp (slice_to_array2, [], [], ts)) in
+        let slice_to_array2 = with_type
+          (Krml.MonomorphizationState.resolve (subst_tn ts Builtin.slice_to_array2.typ)) (ETApp (slice_to_array2, [], [], ts)) in
         (* let dst = *)
         with_type result_t (ELet (H.fresh_binder "dst" result_t, H.any,
         (* let _ = *)
