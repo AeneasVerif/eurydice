@@ -125,16 +125,18 @@ Supported options:|}
   if errors then
     exit 1;
   let files = Krml.Inlining.drop_unused files in
-  Eurydice.Logging.log "Phase2.3" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_array_temporaries#visit_files () files in
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
   let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
   let files = Krml.DataTypes.simplify files in
   let files = Krml.DataTypes.optimize files in
   let _, files = Krml.DataTypes.everything files in
+  Eurydice.Logging.log "Phase2.3" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_ite#visit_files () files in
+  Eurydice.Logging.log "Phase2.4" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_into#visit_files () files in
   let files = Krml.Structs.pass_by_ref files in
+  Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_literals#visit_files () files in
   let files = Krml.Simplify.optimize_lets files in
   (* let files = Eurydice.Cleanup2.break_down_nested_arrays#visit_files () files in *)
@@ -143,13 +145,13 @@ Supported options:|}
   let files = Krml.Simplify.hoist#visit_files [] files in
   let files = Krml.Simplify.fixup_hoist#visit_files () files in
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
-  Eurydice.Logging.log "Phase2.4" "%a" pfiles files;
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
-  Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files = Krml.Inlining.cross_call_analysis files in
   Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
   let files = Krml.Simplify.remove_unused files in
+  Eurydice.Logging.log "Phase2.7" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_array_from_fn#visit_files () files in
+  Eurydice.Logging.log "Phase2.8" "%a" pfiles files;
   (* Macros stemming from globals *)
   let files, macros = Eurydice.Cleanup2.build_macros files in
 

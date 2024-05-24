@@ -738,7 +738,7 @@ let build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
 
     else begin
       (* FYI, some clauses like Copy have neither required nor provided methods. *)
-      Krml.KPrint.bprintf "clause decl %s\n  \
+      L.log "TraitClauses" "clause decl %s\n  \
         id %d:\n  \
         clause_generic type is %s\n  \
         clause_generic const_generics is %s\n  \

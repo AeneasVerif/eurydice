@@ -77,12 +77,13 @@ let remove_assignments = object(self)
        control-flow (match, if, while); otherwise, just close everything now and
        move on (wildcard case). *)
     let rec recurse_or_close not_yet_closed e =
+      let t = e.typ in
       match e.node with
       | ELet _ ->
           (* let node: restart logic and jump back to match below *)
           self#visit_expr_w not_yet_closed e
       | EIfThenElse (e, e', e'') ->
-          with_type e.typ @@ close_now_over not_yet_closed (
+          with_type t @@ close_now_over not_yet_closed (
             (* We must now bind: *)
               (count e) ++ (* whichever variables were in the condition *)
               AtomSet.empty) (* unlike below, we are in terminal position, so we do not need to
@@ -94,12 +95,12 @@ let remove_assignments = object(self)
                 recurse_or_close not_yet_closed e',
                 recurse_or_close not_yet_closed e''))
       | EWhile (e, e') ->
-          with_type e.typ @@ close_now_over not_yet_closed
+          with_type t @@ close_now_over not_yet_closed
             (count e)
             (fun not_yet_closed ->
               EWhile (self#visit_expr_w not_yet_closed e, recurse_or_close not_yet_closed e'))
       | ESwitch (e, branches) ->
-          with_type e.typ @@ close_now_over not_yet_closed (
+          with_type t @@ close_now_over not_yet_closed (
             (* We must now bind: *)
               (count e) ++ (* i.e., whichever variables were in the condition *)
               AtomSet.empty) (* see above *)
@@ -110,7 +111,7 @@ let remove_assignments = object(self)
                   p, recurse_or_close not_yet_closed e
                 ) branches))
       | EMatch (c, e, branches) ->
-          with_type e.typ @@ close_now_over not_yet_closed (
+          with_type t @@ close_now_over not_yet_closed (
             (* We must now bind: *)
               (count e) ++ (* i.e., whichever variables were in the condition *)
               AtomSet.empty) (* see above *)

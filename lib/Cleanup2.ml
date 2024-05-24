@@ -2,6 +2,9 @@ open Krml.Ast
 open Krml.DeBruijn
 
 module H = Krml.Helpers
+module L = Logging
+
+open Krml.PrintAst.Ops
 
 (* Target cleanups invoked from bin/main.ml *)
 
@@ -167,12 +170,7 @@ let remove_array_from_fn = object
 
   method! visit_DFunction _ cc flags n_cgs n t name bs e =
     assert (n_cgs = 0 && n = 0);
-    match bs with
-    | [{ typ = TInt SizeT; _ }] ->
-        Hashtbl.add defs name e
-    | _ ->
-        ()
-    ; ;
+    Hashtbl.add defs name e;
     super#visit_DFunction () cc flags n_cgs n t name bs e
 
   method! visit_EApp env e es =
@@ -180,7 +178,28 @@ let remove_array_from_fn = object
     | ETApp ({ node = EQualified (["core"; "array"], "from_fn"); _ },
       [ len ],
       _,
+      [ t_elements; TArrow (t_index, TArrow (t_elements', TUnit)) ]) ->
+        (* Same as below, but catching the case where the type of elements is an
+           array and has undergone outparam optimization. *)
+        L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements';
+        assert (t_elements' = t_elements);
+        assert (t_index = TInt SizeT);
+        assert (List.length es = 2);
+        (* First argument = closure, second argument = destination *)
+        let closure = Krml.Helpers.assert_elid (List.nth es 0).node in
+        let dst = List.nth es 1 in
+        assert (Hashtbl.mem defs closure);
+        EFor (Krml.Helpers.fresh_binder ~mut:true "i" H.usize, H.zero_usize (* i = 0 *),
+          H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
+          H.mk_incr_usize (* i++ *),
+          let i = with_type H.usize (EBound 0) in
+          Krml.Helpers.with_unit (EApp (List.hd es, [ i; with_type t_elements (EBufRead (Krml.DeBruijn.lift 1 dst, i)) ])))
+
+    | ETApp ({ node = EQualified (["core"; "array"], "from_fn"); _ },
+      [ len ],
+      _,
       [ t_elements; TArrow (t_index, t_elements') ]) ->
+        L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements';
         assert (t_elements' = t_elements);
         assert (t_index = TInt SizeT);
         assert (List.length es = 2);
@@ -192,6 +211,7 @@ let remove_array_from_fn = object
           H.mk_incr_usize (* i++ *),
           let i = with_type H.usize (EBound 0) in
           Krml.Helpers.with_unit (EBufWrite (Krml.DeBruijn.lift 1 dst, i, Hashtbl.find defs closure)))
+
     | _ ->
         super#visit_EApp env e es
 end
