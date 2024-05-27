@@ -10,6 +10,7 @@ type file = {
   api: pattern list;
   private_: pattern list;
   inline_static: bool;
+  library: bool;
 }
 
 type config = file list
@@ -58,6 +59,12 @@ let parse_file (v: Yaml.value): file =
         | Some _ -> parsing_error "inline_static not a bool"
         | None -> false
       in
+      let library =
+        match lookup "library" with
+        | Some (`Bool library) -> library
+        | Some _ -> parsing_error "library not a bool"
+        | None -> false
+      in
       let api =
         match lookup "api" with
         | None -> []
@@ -85,7 +92,7 @@ let parse_file (v: Yaml.value): file =
       if !count < List.length ls then
         parsing_error "extraneous fields in file";
       Krml.Options.(add_include := include_ @ c_include_ @ !add_include);
-      { name; api; private_; inline_static }
+      { name; api; private_; inline_static; library }
   | _ ->
       parsing_error "file must be an object"
 
@@ -124,6 +131,9 @@ let bundle (files: file list) (c: config): files =
     else
       Hashtbl.add bundled name [ decl ]
   in
+  let record_library lid =
+    Krml.Options.(library := Lid lid :: !library)
+  in
   let record_inline_static lid =
     Krml.Options.(static_header := Lid lid :: !static_header)
   in
@@ -135,18 +145,22 @@ let bundle (files: file list) (c: config): files =
         | [] ->
             Krml.(KPrint.bprintf "%a doesn't go anywhere\n" PrintAst.Ops.plid lid);
             false
-        | { name; api; private_; inline_static } :: files ->
+        | { name; api; private_; inline_static; library } :: files ->
             if List.exists (matches lid) api then begin
               (* Krml.(KPrint.bprintf "%a goes (api) into %s\n" PrintAst.Ops.plid lid name); *)
               bundle name decl;
               if inline_static then
                 record_inline_static lid;
+              if library then
+                record_library lid;
               true
             end else if List.exists (matches lid) private_ then begin
               (* Krml.(KPrint.bprintf "%a goes (private) into %s\n" PrintAst.Ops.plid lid name); *)
               bundle name (Krml.Bundles.mark_private decl);
               if inline_static then
                 record_inline_static lid;
+              if library then
+                record_library lid;
               true
             end else
               find files
@@ -171,3 +185,20 @@ let bundle (files: file list) (c: config): files =
   ) bundled (List.filter (fun (_, decls) -> decls <> []) files)
 
 
+let libraries (files: file list): files =
+  List.map (fun (f, decls) ->
+    f, List.filter_map (fun d ->
+      let lid = Krml.Ast.lid_of_decl d in
+      if List.exists (fun p -> Krml.(Bundle.pattern_matches_lid p lid)) !Krml.Options.library then begin
+        Logging.log "Libraries" "%a becomes abstract\n" Krml.PrintAst.Ops.plid lid;
+        match d with
+        | DType (_, _, _, _, Abbrev _) as t ->
+            Some t
+        | DType _ ->
+            None
+        | d ->
+            Krml.Builtin.make_abstract_function_or_global d
+      end else
+        Some d
+    ) decls
+  ) files

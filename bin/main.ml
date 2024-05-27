@@ -98,6 +98,7 @@ Supported options:|}
       let config = Eurydice.Bundles.load_config !O.config in
       let config = Eurydice.Bundles.parse_config config in
       let files = Eurydice.Bundles.bundle files config in
+      let files = Eurydice.Bundles.libraries files in
       let files = Krml.Bundles.topological_sort files in
       Krml.KPrint.bprintf "File order after topological sort: %s\n"
         (String.concat ", " (List.map fst files));
@@ -162,6 +163,7 @@ Supported options:|}
 
   let scope_env = Krml.Simplify.allocate_c_env files in
   let files = Eurydice.Cleanup3.decay_cg_externals#visit_files (scope_env, false) files in
+  Eurydice.Logging.log "Phase3.1" "%a" pfiles files;
   let macros =
     let cg_macros = Eurydice.Cleanup3.build_cg_macros#visit_files () files in
     Krml.Idents.LidSet.(union (union macros cg_macros) Eurydice.Builtin.macros)
