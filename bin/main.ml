@@ -165,7 +165,7 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
   let files = Krml.Simplify.remove_unused files in
   Eurydice.Logging.log "Phase2.7" "%a" pfiles files;
-  let files = Eurydice.Cleanup2.remove_array_from_fn#visit_files () files in
+  let files = Eurydice.Cleanup2.remove_array_from_fn files in
   Eurydice.Logging.log "Phase2.8" "%a" pfiles files;
   (* Macros stemming from globals *)
   let files, macros = Eurydice.Cleanup2.build_macros files in

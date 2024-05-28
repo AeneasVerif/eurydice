@@ -3,6 +3,8 @@
 
 module L = Logging
 
+open Krml.Ast
+
 type pattern =
   | Prefix of string list
   | Exact of string list
@@ -15,6 +17,7 @@ type file = {
   library: bool;
   monomorphizations_using: pattern list;
   monomorphizations_of: pattern list;
+  monomorphizations_exact: lident list;
 }
 
 type config = file list
@@ -45,6 +48,12 @@ let parse_pattern (v: Yaml.value): pattern =
       parse [] vs
   | _ ->
       parsing_error "pattern not a list"
+
+let parse_exact v: lident =
+  match parse_pattern v with
+  | Exact lid -> Krml.KList.split_at_last lid
+  | _ -> parsing_error "monomorphizations_exact does not take wildcards"
+
 
 let parse_file (v: Yaml.value): file =
   match v with
@@ -87,6 +96,12 @@ let parse_file (v: Yaml.value): file =
         | Some (`A monomorphizations_using) -> List.map parse_pattern monomorphizations_using
         | Some _ -> parsing_error "monomorphizations_using not a list"
       in
+      let monomorphizations_exact =
+        match lookup "monomorphizations_exact" with
+        | None -> []
+        | Some (`A monomorphizations_exact) -> List.map parse_exact monomorphizations_exact
+        | Some _ -> parsing_error "monomorphizations_exact not a list"
+      in
       let private_ =
         match lookup "private" with
         | None -> []
@@ -108,7 +123,7 @@ let parse_file (v: Yaml.value): file =
       if !count < List.length ls then
         parsing_error "extraneous fields in file";
       Krml.Options.(add_include := include_ @ c_include_ @ !add_include);
-      { name; api; private_; inline_static; library; monomorphizations_using; monomorphizations_of }
+      { name; api; private_; inline_static; library; monomorphizations_using; monomorphizations_of; monomorphizations_exact }
   | _ ->
       parsing_error "file must be an object"
 
@@ -225,20 +240,38 @@ let libraries (files: file list): files =
 let reassign_monomorphizations files (config: config) =
   let open Krml.Ast in
   let open Krml.PrintAst.Ops in
+  (* Pure sanity check *)
+  let count_decls files =
+    List.fold_left (fun acc (_, decls) -> List.length decls + acc) 0 files
+  in
+  let c0 = count_decls files in
   (* Review the function monomorphization state; if `lid`, below, is the result
      of a (function) monomorphization that *uses* (in its arguments, `cgs`, below)
      an `lid'` that matches a `monomorphizations_using` clause of file `name`,
      then `lid` moves to `name`. *)
   let target_of_lid = Hashtbl.create 41 in
-  Hashtbl.iter (fun (generic_lid, cgs, _) monomorphized_lid ->
-    match List.find_map (fun { name; monomorphizations_using; monomorphizations_of; _ } ->
+  let uses monomorphizations_using t =
+    object
+      inherit [_] reduce as super
+      method zero = false
+      method plus = (||)
+      method! visit_TQualified _ lid' =
+        List.exists (matches lid') monomorphizations_using
+      method! visit_TApp _ lid' ts =
+        List.exists (matches lid') monomorphizations_using || super#visit_TApp () lid' ts
+    end#visit_typ () t
+  in
+  Hashtbl.iter (fun (generic_lid, cgs, ts) monomorphized_lid ->
+    match List.find_map (fun { name; monomorphizations_using; monomorphizations_of; monomorphizations_exact; _ } ->
       if List.exists (fun e ->
         match e.node with
         | EQualified lid' -> List.exists (matches lid') monomorphizations_using
         | _ -> false
-      ) cgs then
+      ) cgs || List.exists (uses monomorphizations_using) ts then
         Some name
       else if List.exists (matches generic_lid) monomorphizations_of then
+        Some name
+      else if List.mem monomorphized_lid monomorphizations_exact then
         Some name
       else
         None
@@ -253,20 +286,14 @@ let reassign_monomorphizations files (config: config) =
      go into a single file). *)
   Hashtbl.iter (fun (generic_lid, ts, _) (_, monomorphized_lid) ->
     (* Krml.KPrint.bprintf "generic=%a, monomorphized=%a\n" plid generic_lid plid monomorphized_lid; *)
-    match List.find_map (fun { name; monomorphizations_of; monomorphizations_using; _ } ->
+    match List.find_map (fun { name; monomorphizations_of; monomorphizations_using; monomorphizations_exact; _ } ->
       if List.exists (fun t ->
-        object
-          inherit [_] reduce as super
-          method zero = false
-          method plus = (||)
-          method! visit_TQualified _ lid' =
-            List.exists (matches lid') monomorphizations_using
-          method! visit_TApp _ lid' ts =
-            List.exists (matches lid') monomorphizations_using || super#visit_TApp () lid' ts
-        end#visit_typ () t
+        uses monomorphizations_using t
       ) ts then
         Some name
       else if List.exists (matches generic_lid) monomorphizations_of then
+        Some name
+      else if List.mem monomorphized_lid monomorphizations_exact then
         Some name
       else
         None
@@ -310,4 +337,6 @@ let reassign_monomorphizations files (config: config) =
   ) files in
   (* Deal with files that did not exist previously. *)
   let files = files @ Hashtbl.fold (fun f reassigned acc -> (f, reassigned) :: acc) reassigned [] in
+  let c1 = count_decls files in
+  assert (c0 = c1);
   files

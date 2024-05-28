@@ -163,58 +163,63 @@ let remove_array_repeats = object(self)
         super#visit_ELet env b e1 e2
 end
 
-let remove_array_from_fn = object
-  inherit [_] map as super
+let remove_array_from_fn files =
+  let defs = Krml.Helpers.build_map files (fun tbl d ->
+    match d with
+    | DFunction (_, _, _, _, _, name, _, body) -> Hashtbl.add tbl name body
+    | _ -> ())
+  in
+  object
+    inherit [_] map as super
 
-  val mutable defs = Hashtbl.create 41
+    method! visit_DFunction _ cc flags n_cgs n t name bs e =
+      assert (n_cgs = 0 && n = 0);
+      Hashtbl.add defs name e;
+      super#visit_DFunction () cc flags n_cgs n t name bs e
 
-  method! visit_DFunction _ cc flags n_cgs n t name bs e =
-    assert (n_cgs = 0 && n = 0);
-    Hashtbl.add defs name e;
-    super#visit_DFunction () cc flags n_cgs n t name bs e
+    method! visit_EApp env e es =
+      match e.node with
+      | ETApp ({ node = EQualified (["core"; "array"], "from_fn"); _ },
+        [ len ],
+        _,
+        [ t_elements; TArrow (t_index, TArrow (t_elements', TUnit)) ]) ->
+          (* Same as below, but catching the case where the type of elements is an
+             array and has undergone outparam optimization. *)
+          L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements';
+          assert (t_elements' = t_elements);
+          assert (t_index = TInt SizeT);
+          assert (List.length es = 2);
+          (* First argument = closure, second argument = destination *)
+          let closure = Krml.Helpers.assert_elid (List.nth es 0).node in
+          let dst = List.nth es 1 in
+          assert (Hashtbl.mem defs closure);
+          EFor (Krml.Helpers.fresh_binder ~mut:true "i" H.usize, H.zero_usize (* i = 0 *),
+            H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
+            H.mk_incr_usize (* i++ *),
+            let i = with_type H.usize (EBound 0) in
+            Krml.Helpers.with_unit (EApp (List.hd es, [ i; with_type t_elements (EBufRead (Krml.DeBruijn.lift 1 dst, i)) ])))
 
-  method! visit_EApp env e es =
-    match e.node with
-    | ETApp ({ node = EQualified (["core"; "array"], "from_fn"); _ },
-      [ len ],
-      _,
-      [ t_elements; TArrow (t_index, TArrow (t_elements', TUnit)) ]) ->
-        (* Same as below, but catching the case where the type of elements is an
-           array and has undergone outparam optimization. *)
-        L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements';
-        assert (t_elements' = t_elements);
-        assert (t_index = TInt SizeT);
-        assert (List.length es = 2);
-        (* First argument = closure, second argument = destination *)
-        let closure = Krml.Helpers.assert_elid (List.nth es 0).node in
-        let dst = List.nth es 1 in
-        assert (Hashtbl.mem defs closure);
-        EFor (Krml.Helpers.fresh_binder ~mut:true "i" H.usize, H.zero_usize (* i = 0 *),
-          H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
-          H.mk_incr_usize (* i++ *),
-          let i = with_type H.usize (EBound 0) in
-          Krml.Helpers.with_unit (EApp (List.hd es, [ i; with_type t_elements (EBufRead (Krml.DeBruijn.lift 1 dst, i)) ])))
+      | ETApp ({ node = EQualified (["core"; "array"], "from_fn"); _ },
+        [ len ],
+        _,
+        [ t_elements; TArrow (t_index, t_elements') ]) ->
+          L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements';
+          assert (t_elements' = t_elements);
+          assert (t_index = TInt SizeT);
+          assert (List.length es = 2);
+          let closure = Krml.Helpers.assert_elid (List.nth es 0).node in
+          L.log "Cleanup2" "closure=%a" plid closure;
+          assert (Hashtbl.mem defs closure);
+          let dst = List.nth es 1 in
+          EFor (Krml.Helpers.fresh_binder ~mut:true "i" H.usize, H.zero_usize (* i = 0 *),
+            H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
+            H.mk_incr_usize (* i++ *),
+            let i = with_type H.usize (EBound 0) in
+            Krml.Helpers.with_unit (EBufWrite (Krml.DeBruijn.lift 1 dst, i, Hashtbl.find defs closure)))
 
-    | ETApp ({ node = EQualified (["core"; "array"], "from_fn"); _ },
-      [ len ],
-      _,
-      [ t_elements; TArrow (t_index, t_elements') ]) ->
-        L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements';
-        assert (t_elements' = t_elements);
-        assert (t_index = TInt SizeT);
-        assert (List.length es = 2);
-        let closure = Krml.Helpers.assert_elid (List.nth es 0).node in
-        assert (Hashtbl.mem defs closure);
-        let dst = List.nth es 1 in
-        EFor (Krml.Helpers.fresh_binder ~mut:true "i" H.usize, H.zero_usize (* i = 0 *),
-          H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
-          H.mk_incr_usize (* i++ *),
-          let i = with_type H.usize (EBound 0) in
-          Krml.Helpers.with_unit (EBufWrite (Krml.DeBruijn.lift 1 dst, i, Hashtbl.find defs closure)))
-
-    | _ ->
-        super#visit_EApp env e es
-end
+      | _ ->
+          super#visit_EApp env e es
+  end#visit_files () files
 
 
 let rewrite_slice_to_array = object(_self)
