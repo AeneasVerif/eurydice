@@ -341,6 +341,9 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
       K.TBuf (typ_of_ty env t, false)
 
   | TRef (_, TAdt (TAssumed TStr, { types = []; _ }), _) ->
+      (* We perform on-the-fly elimination of addresses of strings (just like we
+         do for arrays) so as to type-check them correctly vis à vis krml's
+         Checker expectations. This means &'str translates to c_string *)
       Krml.Checker.c_string
 
   | TRef (_, t, _) ->
@@ -1135,11 +1138,25 @@ let expression_of_operand (env: env) (p: C.operand): K.expr =
       Krml.Warn.fatal_error "expression_of_operand Constant: %s"
         (Charon.PrintExpressions.operand_to_string env.format_env p)
 
+let is_str env var_id =
+  match lookup_with_original_type env var_id with
+  | _, _, TRef (_, TAdt (TAssumed TStr, { types = []; _ }), _) ->
+      true
+  | _ ->
+      false
 
 let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
   match p with
   | Use op ->
       expression_of_operand env op
+
+  | RvRef ({ var_id; projection = [ Deref ]}, _) when is_str env var_id ->
+      (* Because we do not materialize the address of a string, we also have to
+         avoid dereferencing it. For now, we simply avoid reborrows and treat
+         them as simply passing the same constant string around (which in C is
+         passed by address naturally). *)
+      expression_of_var_id env var_id
+
   | RvRef (p, _) ->
       let e, ty = expression_of_place env p in
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
