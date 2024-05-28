@@ -160,12 +160,15 @@ typedef struct {
        .tag = core_option_Some, \
        .f0 = ((iter)->index++, &((t*)((iter)->s.ptr))[(iter)->index-1]) }))
 
-// MISC
+// STRINGS
+
+typedef const char *Prims_string;
+
+// MISC (UNTESTED)
 
 #define core_fmt_Formatter void
 
-
-// VECTORS
+// VECTORS (ANCIENT, POSSIBLY UNTESTED)
 
 /* For now these are passed by value -- three words. We could conceivably change
  * the representation to heap-allocate this struct and only pass around the

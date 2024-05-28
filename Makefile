@@ -39,9 +39,11 @@ out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
 	sed 's/__NAME__/$*/g' $< > $@
 
+test-partial_eq: EXTRA_C = ../../test/partial_eq/stubs.c
+
 test-%: test/%/out.llbc out/test-%/main.c | all
 	$(EURYDICE) --output out/test-$* $<
-	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $*.c main.c && ./a.out
+	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $(EXTRA_C) $*.c main.c && ./a.out
 
 .PRECIOUS: out/%
 out/%:
