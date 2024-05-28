@@ -91,18 +91,23 @@ Supported options:|}
     exit 1;
 
   Printf.printf "2️⃣ Cleanup\n";
-  let files =
+  let config =
     if !O.config = "" then
-      files
+      None
     else
-      let config = Eurydice.Bundles.load_config !O.config in
-      let config = Eurydice.Bundles.parse_config config in
-      let files = Eurydice.Bundles.bundle files config in
-      let files = Eurydice.Bundles.libraries files in
-      let files = Krml.Bundles.topological_sort files in
-      Krml.KPrint.bprintf "File order after topological sort: %s\n"
-        (String.concat ", " (List.map fst files));
-      files
+      Some (Eurydice.Bundles.parse_config (Eurydice.Bundles.load_config !O.config))
+  in
+  let files =
+    match config with
+    | None -> files
+    | Some config ->
+        let config = config in
+        let files = Eurydice.Bundles.bundle files config in
+        let files = Eurydice.Bundles.libraries files in
+        let files = Krml.Bundles.topological_sort files in
+        Krml.KPrint.bprintf "File order after topological sort: %s\n"
+          (String.concat ", " (List.map fst files));
+        files
   in
   let files = Eurydice.Cleanup1.cleanup files in
 
@@ -120,6 +125,14 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.1" "%a" pfiles files;
   let files = Krml.Monomorphization.functions files in
   let files = Krml.Monomorphization.datatypes files in
+  let files =
+    match config with
+    | None -> files
+    | Some config ->
+        let files = Eurydice.Bundles.reassign_monomorphizations files config in
+        let files = Krml.Bundles.topological_sort files in
+        files
+  in
   Eurydice.Logging.log "Phase2.2" "%a" pfiles files;
   (* Sanity check for the big rewriting above. *)
   let errors, files = Krml.Checker.check_everything ~warn:true files in
