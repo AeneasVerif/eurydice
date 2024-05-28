@@ -130,6 +130,7 @@ Supported options:|}
     | None -> files
     | Some config ->
         let files = Eurydice.Bundles.reassign_monomorphizations files config in
+        Eurydice.Logging.log "Phase2.15" "%a" pfiles files;
         let files = Krml.Bundles.topological_sort files in
         files
   in
