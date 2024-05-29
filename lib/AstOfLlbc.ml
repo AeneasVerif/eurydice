@@ -363,9 +363,7 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
       assert (const_generics = []);
       begin match args with
       | [] -> TUnit
-      (* closures do generate single-argument tuples... which we leave as-is
-         (urgh!!) because the LLBC will also contain a projection for the
-         0-th (single) field of the tuple *)
+      | [ t ] -> typ_of_ty env t (* charon issue #205 *)
       | _ -> TTuple (List.map (typ_of_ty env) args)
       end
 
@@ -560,9 +558,9 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
   (* We construct a target expression, but retain the original type so that callers can tell arrays
      and references apart, since their *uses* (e.g. addr-of) compile in a type-directed way based on
      the *original* rust type *)
-  (* L.log "AstOfLlbc" "expression of place: %s" (C.show_place p); *)
+  L.log "AstOfLlbc" "expression of place: %s" (C.show_place p);
   List.fold_left (fun (e, (ty: C.ety)) pe ->
-    (* L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr e (C.show_ty ty) (C.show_projection_elem pe); *)
+    L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr e (C.show_ty ty) (C.show_projection_elem pe);
     match pe, ty with
     | C.Deref, TRef (_, (TAdt (TAssumed TArray, { types = [ t ]; _ }) as ty), _) ->
         (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
@@ -618,22 +616,28 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
         assert (cgs = []);
         (* match e with (_, ..., _, x, _, ..., _) -> x *)
         let i = Charon.Types.FieldId.to_int i in
-        let ts, t_i =
-          match e.typ with
-          | TTuple ts ->
-              assert (List.length ts = n);
-              ts, List.nth ts i
-          | _ ->
-              L.log "AstOfLlbc" "typ is: %a" ptyp e.typ;
-              failwith "impossible: mismatch ProjTuple/TTuple"
-        in
-        let binders = [ Krml.Helpers.fresh_binder (uu ()) t_i ] in
-        let pattern =
-          K.with_type e.typ (K.PTuple (List.mapi (fun i' t ->
-            K.with_type t (if i = i' then K.PBound 0 else PWild)) ts))
-        in
-        let expr = K.with_type t_i (K.EBound 0) in
-        K.with_type t_i (K.EMatch (Unchecked, e, [ binders, pattern, expr ])), List.nth tys i
+        if List.length tys = 1 then begin
+          assert (i = 0);
+          (* Normalized one-element tuple *)
+          e, List.hd tys
+        end else
+          let ts, t_i =
+            match e.typ with
+            | TTuple ts ->
+                assert (List.length ts = n);
+                ts, List.nth ts i
+            | _ ->
+                assert (List.length tys = 1);
+                L.log "AstOfLlbc" "typ is: %a" ptyp e.typ;
+                failwith "impossible: mismatch ProjTuple/TTuple"
+          in
+          let binders = [ Krml.Helpers.fresh_binder (uu ()) t_i ] in
+          let pattern =
+            K.with_type e.typ (K.PTuple (List.mapi (fun i' t ->
+              K.with_type t (if i = i' then K.PBound 0 else PWild)) ts))
+          in
+          let expr = K.with_type t_i (K.EBound 0) in
+          K.with_type t_i (K.EMatch (Unchecked, e, [ binders, pattern, expr ])), List.nth tys i
 
     | _ ->
         failwith "unexpected / ill-typed projection"
@@ -1213,7 +1217,12 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
           K.(with_type t (EApp (e, [ with_type t_state (EAddrOf Krml.Helpers.eunit) ])))
       | TArrow (TBuf _ as t', t) ->
           let ops = List.map (expression_of_operand env) ops in
-          let ops = K.(with_type (TTuple (List.map (fun o -> o.typ) ops)) (ETuple ops)) in
+          let ops =
+            if List.length ops > 1 then
+              K.(with_type (TTuple (List.map (fun o -> o.typ) ops)) (ETuple ops))
+            else
+              List.hd ops
+          in
           let ops = [ K.(with_type t' (EAddrOf ops)) ] in
           L.log "AstOfLlbc" "t'=%a t=%a closure ops are %a (typ: %a)"
             ptyp t' ptyp t pexprs ops ptyp (List.hd ops).typ;
