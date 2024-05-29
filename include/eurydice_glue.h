@@ -88,6 +88,13 @@ static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   memcpy(dst, &x, 4);
 }
 
+static inline void core_num__u64_9__to_le_bytes(uint64_t v,uint8_t buf[8]) {
+        store64_le(buf,v);
+}
+static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
+        return load64_le(buf);
+}
+
 static inline int64_t
 core_convert_num___core__convert__From_i32__for_i64__59__from(int32_t x)
 {
