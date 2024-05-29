@@ -536,3 +536,19 @@ let resugar_loops = object(self)
 
 
 end
+
+let detect_array_returning_builtins = object
+  inherit [_] map as super
+  
+  method! visit_EApp ((), _ as env) e es =
+    match e.node, es with
+    | ETApp ({ node = EQualified (["Eurydice"], "slice_index"); _ }, [], [], [ t_elements ]),
+      [ _e_slice; _e_index; e_dst ] ->
+        assert (Krml.Helpers.is_array e_dst.typ);
+        let t_inst = Krml.DeBruijn.subst_t t_elements 0 Builtin.slice_index_outparam.typ in
+        let hd = with_type t_inst (ETApp (Builtin.(expr_of_builtin slice_index_outparam), [], [], [ t_elements ])) in
+        EApp (hd, es)
+    | _ ->
+        super#visit_EApp env e es
+end
+

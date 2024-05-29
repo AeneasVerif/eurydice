@@ -51,6 +51,9 @@ type builtin = {
   arg_names: string list;
 }
 
+let expr_of_builtin { name; typ; _ } =
+  K.(with_type typ (EQualified name))
+
 let array_to_slice = {
   name = ["Eurydice"], "array_to_slice";
   typ = Krml.Helpers.fold_arrow [
@@ -154,6 +157,18 @@ let slice_index = {
   n_type_args = 1;
   cg_args = [];
   arg_names = ["s"; "i"]
+}
+
+let slice_index_outparam = {
+  name = ["Eurydice"], "slice_index_outparam";
+  typ = Krml.Helpers.fold_arrow [
+    mk_slice (TBound 0);
+    TInt SizeT;
+    TBound 0
+  ] TUnit;
+  n_type_args = 1;
+  cg_args = [];
+  arg_names = ["s"; "i"; "dst"]
 }
 
 let slice_subslice = {
@@ -348,6 +363,7 @@ let files = [
     array_repeat;
     array_into_iter;
     slice_index;
+    slice_index_outparam;
     slice_subslice;
     slice_subslice_to;
     slice_subslice_from;

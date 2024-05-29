@@ -42,6 +42,10 @@ Supported options:|}
   let pfiles b files =
     PPrint.(ToBuffer.pretty 0.95 terminal_width b (Krml.PrintAst.print_files files ^^ hardline))
   in
+  let fail file line =
+    Printf.printf "%s:%d exiting" file line;
+    exit 1
+  in
 
   (* This is where the action happens *)
   Eurydice.Logging.enable_logging !O.log_level;
@@ -88,7 +92,7 @@ Supported options:|}
   Eurydice.Logging.log "Phase1" "%a" pfiles files;
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
-    exit 1;
+    fail __FILE__ __LINE__;
 
   Printf.printf "2️⃣ Cleanup\n";
   let config =
@@ -114,14 +118,14 @@ Supported options:|}
   Eurydice.Logging.log "Phase2" "%a" pfiles files;
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
-    exit 1;
+    fail __FILE__ __LINE__;
 
   Printf.printf "3️⃣ Monomorphization, datatypes\n";
   let files = Eurydice.Cleanup2.resugar_loops#visit_files () files in
   (* Sanity check for the big rewriting above. *)
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
-    exit 1;
+    fail __FILE__ __LINE__;
   Eurydice.Logging.log "Phase2.1" "%a" pfiles files;
   let files = Krml.Monomorphization.functions files in
   let files = Krml.Monomorphization.datatypes files in
@@ -138,7 +142,7 @@ Supported options:|}
   (* Sanity check for the big rewriting above. *)
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
-    exit 1;
+    fail __FILE__ __LINE__;
   let files = Krml.Inlining.drop_unused files in
   let files = Eurydice.Cleanup2.remove_array_temporaries#visit_files () files in
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
@@ -151,6 +155,7 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.4" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_into#visit_files () files in
   let files = Krml.Structs.pass_by_ref files in
+  let files = Eurydice.Cleanup2.detect_array_returning_builtins#visit_files () files in
   Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_literals#visit_files () files in
   let files = Krml.Simplify.optimize_lets files in
@@ -173,7 +178,7 @@ Supported options:|}
   Eurydice.Logging.log "Phase3" "%a" pfiles files;
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
-    exit 1;
+    fail __FILE__ __LINE__;
 
   let scope_env = Krml.Simplify.allocate_c_env files in
   let files = Eurydice.Cleanup3.decay_cg_externals#visit_files (scope_env, false) files in

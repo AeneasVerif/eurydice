@@ -35,6 +35,7 @@ typedef struct {
 #define EURYDICE_SLICE(x, start, end) ((Eurydice_slice){ .ptr = (void*)(x + start), .len = end - start })
 #define EURYDICE_SLICE_LEN(s, _) s.len
 #define Eurydice_slice_index(s, i, t, _ret_t) (((t*) s.ptr)[i])
+#define Eurydice_slice_index_outparam(s, i, dst, t, _ret_t) (memcpy(dst, ((t*) s.ptr)[i], sizeof(t)))
 #define Eurydice_slice_subslice(s, r, t, _, _ret_t) EURYDICE_SLICE((t*)s.ptr, r.start, r.end)
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _, _ret_t) EURYDICE_SLICE((t*)s.ptr, 0, subslice_end_pos)
 #define Eurydice_slice_subslice_from(s, subslice_start_pos, t, _, _ret_t) EURYDICE_SLICE((t*)s.ptr, subslice_start_pos, s.len)
