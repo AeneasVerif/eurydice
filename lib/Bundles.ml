@@ -245,10 +245,6 @@ let reassign_monomorphizations files (config: config) =
     List.fold_left (fun acc (_, decls) -> List.length decls + acc) 0 files
   in
   let c0 = count_decls files in
-  (* Review the function monomorphization state; if `lid`, below, is the result
-     of a (function) monomorphization that *uses* (in its arguments, `cgs`, below)
-     an `lid'` that matches a `monomorphizations_using` clause of file `name`,
-     then `lid` moves to `name`. *)
   let target_of_lid = Hashtbl.create 41 in
   let uses monomorphizations_using t =
     object
@@ -261,6 +257,17 @@ let reassign_monomorphizations files (config: config) =
         List.exists (matches lid') monomorphizations_using || super#visit_TApp () lid' ts
     end#visit_typ () t
   in
+  (* Review the function monomorphization state.
+     Semantics of `monomorphizations_using`:
+       if `lid`, below, is the result of a (function) monomorphization that
+       *uses* (in its arguments, `cgs`, below) an `lid'` that matches a
+       `monomorphizations_using` clause of file `name`, then `lid` moves to
+       `name`.
+     Semantics of `monomorphizations_of`: unlike above, this matches a
+       generic lid (e.g., we want all the monomorphized instances of `Result` to
+       go into a single file)
+     Semantics of `monomorphizations_exact`: self-explanatory
+  *)
   Hashtbl.iter (fun (generic_lid, cgs, ts) monomorphized_lid ->
     match List.find_map (fun { name; monomorphizations_using; monomorphizations_of; monomorphizations_exact; _ } ->
       if List.exists (fun e ->
@@ -281,9 +288,7 @@ let reassign_monomorphizations files (config: config) =
     | None ->
         ()
   ) Krml.MonomorphizationState.generated_lids;
-  (* Review the type monomorphization state. Unlike above, the pattern matches a
-     generic lid (e.g., we want all the monomorphized instances of `Result` to
-     go into a single file). *)
+  (* Review the type monomorphization state. *)
   Hashtbl.iter (fun (generic_lid, ts, _) (_, monomorphized_lid) ->
     (* Krml.KPrint.bprintf "generic=%a, monomorphized=%a\n" plid generic_lid plid monomorphized_lid; *)
     match List.find_map (fun { name; monomorphizations_of; monomorphizations_using; monomorphizations_exact; _ } ->
@@ -335,6 +340,42 @@ let reassign_monomorphizations files (config: config) =
     in
     f, decls @ reassigned
   ) files in
+  (* A quick topological sort to make sure type declarations come *before*
+     functions that use them. *)
+  let files = List.map (fun (f, decls) ->
+    let module T = struct type color = White | Gray | Black end in
+    let open T in
+    let graph = Hashtbl.create 41 in
+    List.iter (fun decl ->
+      let deps = object (self)
+          inherit [_] reduce
+          method zero = []
+          method plus = (@)
+          method! visit_TQualified _ lid =
+            [ lid ]
+          method! visit_TApp _ lid ts =
+            [ lid ] @ List.concat_map (self#visit_typ ()) ts
+        end#visit_decl () decl
+      in
+      Hashtbl.add graph (lid_of_decl decl) (ref White, deps, decl)
+    ) decls;
+    let stack = ref [] in
+    let rec dfs lid =
+      if Hashtbl.mem graph lid then
+        let r, deps, decl = Hashtbl.find graph lid in
+        match !r with
+        | Black -> ()
+        | Gray -> failwith "dependency cycle"
+        | White ->
+            r := Gray;
+            List.iter dfs deps;
+            r := Black;
+            stack := decl :: !stack
+    in
+    List.iter (fun decl -> dfs (lid_of_decl decl)) decls;
+    f, List.rev !stack
+  ) files in
+
   (* Deal with files that did not exist previously. *)
   let files = files @ Hashtbl.fold (fun f reassigned acc -> (f, reassigned) :: acc) reassigned [] in
   let c1 = count_decls files in
