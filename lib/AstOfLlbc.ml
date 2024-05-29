@@ -363,7 +363,9 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
       assert (const_generics = []);
       begin match args with
       | [] -> TUnit
-      | [ t ] -> typ_of_ty env t (* happens with closures *)
+      (* closures do generate single-argument tuples... which we leave as-is
+         (urgh!!) because the LLBC will also contain a projection for the
+         0-th (single) field of the tuple *)
       | _ -> TTuple (List.map (typ_of_ty env) args)
       end
 
@@ -558,7 +560,9 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
   (* We construct a target expression, but retain the original type so that callers can tell arrays
      and references apart, since their *uses* (e.g. addr-of) compile in a type-directed way based on
      the *original* rust type *)
+  L.log "AstOfLlbc" "expression of place: %s" (C.show_place p);
   List.fold_left (fun (e, (ty: C.ety)) pe ->
+    L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr e (C.show_ty ty) (C.show_projection_elem pe);
     match pe, ty with
     | C.Deref, TRef (_, (TAdt (TAssumed TArray, { types = [ t ]; _ }) as ty), _) ->
         (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
@@ -620,6 +624,7 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
               assert (List.length ts = n);
               ts, List.nth ts i
           | _ ->
+              L.log "AstOfLlbc" "typ is: %a" ptyp e.typ;
               failwith "impossible: mismatch ProjTuple/TTuple"
         in
         let binders = [ Krml.Helpers.fresh_binder (uu ()) t_i ] in
@@ -1545,7 +1550,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                   let { K.n_cgs; n }, t = typ_of_signature env signature in
                   Some (K.DExternal (None, [], n_cgs, n, name, t, []))
                 with e ->
-                  L.log "AstOfLLbc" "ERROR translating %s: %s\n%s" (string_of_name env decl.name)
+                  L.log "AstOfLlbc" "ERROR translating %s: %s\n%s" (string_of_name env decl.name)
                     (Printexc.to_string e)
                     (Printexc.get_backtrace ());
                   None
