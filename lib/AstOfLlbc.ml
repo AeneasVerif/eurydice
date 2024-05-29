@@ -1339,7 +1339,9 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.into_i64 fn_ptr ||
       false
     ) ->
-      (* Special treatment: From<T, U> becomes a cast. *)
+      (* TODO: this can now be properly represented in the AST, this should go
+         away! there is *one* case in Kyber that is not caught by
+         Cleanup2.remove_trivial_into, and we need to figure out why. *)
       let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p fn_ptr in
       let w: Krml.Constant.width =
         if      matches RustNames.from_u16 || matches RustNames.into_u16 then UInt16
@@ -1353,35 +1355,6 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       let dest, _ = expression_of_place env dest in
       let e = expression_of_operand env (Krml.KList.one args) in
       Krml.Helpers.with_unit K.(EAssign (dest, with_type (TInt w) (ECast (e, TInt w))))
-
-  | Call { func = FnOpRegular fn_ptr; args; dest; _ } when RustNames.is_array_map env fn_ptr ->
-      (* Special treatment: bug in NameMatcher + avoid allocating a temporary array and directly
-         write the result in the destination. *)
-      let t_src = List.hd fn_ptr.generics.types in
-      let t_fun = List.nth fn_ptr.generics.types 1 in
-      let n = List.hd fn_ptr.generics.const_generics in
-      let src = List.hd args in
-      let f = List.nth args 1 in
-
-      let n = expression_of_const_generic env n in
-      let t_src = typ_of_ty env t_src in
-      let t_fun = typ_of_ty env t_fun in
-      let t_dst = match t_fun with TArrow (t_src', t_dst) when t_src = t_src' -> t_dst | _ -> assert false in
-      let dest, _ = expression_of_place env dest in
-      let src = expression_of_operand env src in
-      let f = expression_of_operand env f in
-
-      (* for (let i = 0; i < n; ++i)
-           dst[i] = f(src[i]);
-      *)
-      let module H = Krml.Helpers in
-      H.with_unit (K.EFor (Krml.Helpers.fresh_binder ~mut:true "i_array_map" H.usize, H.zero_usize (* i = 0 *),
-        H.mk_lt_usize (Krml.DeBruijn.lift 1 n) (* i < n *),
-        H.mk_incr_usize (* i++ *),
-        let i = K.with_type H.usize (K.EBound 0) in
-        H.with_unit (K.EBufWrite (Krml.DeBruijn.lift 1 dest, i,
-          K.with_type t_dst (
-            K.EApp (Krml.DeBruijn.lift 1 f, [ K.with_type t_src (K.EBufRead (Krml.DeBruijn.lift 1 src, i))]))))))
 
   | Call { func = FnOpRegular fn_ptr; args; dest; _ } ->
 

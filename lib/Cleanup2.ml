@@ -238,6 +238,40 @@ let remove_array_from_fn files =
             let i = with_type H.usize (EBound 0) in
             Krml.Helpers.with_unit (EBufWrite (Krml.DeBruijn.lift 1 dst, i, closure)))
 
+      | ETApp ({ node = EQualified ("core" :: "array" :: _, "map"); _ },
+        [ len ],
+        _,
+        ts) ->
+          let t_src, t_dst = match ts with
+            | [ t_src; t_closure; t_dst ] ->
+                assert (t_closure = TArrow (t_src, t_dst));
+                L.log "Cleanup2" "found array map from %a to %a" ptyp t_src ptyp t_dst;
+                t_src, t_dst
+            | _ ->
+                failwith "TODO: unknown map closure shape; is it an array outparam? (see above)"
+          in
+          let e_src, e_closure, e_dst = match es with
+            | [ e_src; e_closure; e_dst ] -> e_src, e_closure, e_dst
+            | _ -> failwith "unknown shape of arguments to array map"
+          in
+          let closure_lid, state = match e_closure.node with
+            | EQualified _ ->
+                e_closure, []
+            | EApp ({ node = EQualified lid; _ } as hd, [ e_state ]) ->
+                L.log "Cleanup2" "map closure=%a" pexpr (Krml.DeBruijn.subst e_state 0 (Hashtbl.find defs lid));
+                hd, [ e_state ]
+            | _ ->
+                L.log "Cleanup2" "map closure=%a" pexpr (List.hd es);
+                failwith "unexpected map closure shape"
+          in
+          EFor (Krml.Helpers.fresh_binder ~mut:true "i" H.usize, H.zero_usize (* i = 0 *),
+            H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
+            H.mk_incr_usize (* i++ *),
+            let i = with_type H.usize (EBound 0) in
+            let e_src_i = with_type t_src (EBufRead (Krml.DeBruijn.lift 1 e_src, i)) in
+            Krml.Helpers.with_unit (EBufWrite (Krml.DeBruijn.lift 1 e_dst, i,
+              with_type t_dst (EApp (closure_lid, state @ [ e_src_i ])))))
+
       | _ ->
           super#visit_EApp env e es
   end#visit_files () files
