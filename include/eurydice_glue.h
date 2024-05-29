@@ -48,6 +48,8 @@ typedef struct {
 #define core_slice___Slice_T___copy_from_slice(dst, src, t, _ret_t) memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 #define core_array___Array_T__N__23__as_slice(len_, ptr_, t, _ret_t) ((Eurydice_slice){ .ptr = ptr_, .len = len_ })
 
+#define core_array___core__clone__Clone_for__Array_T__N___20__clone(len, src, dst, elem_type, _ret_t) \
+  (memcpy(dst, src, len * sizeof(elem_type)))
 #define core_array_TryFromSliceError uint8_t
 
 #define Eurydice_array_eq(sz, a1, a2, t, _, _ret_t) (memcmp(a1, a2, sz * sizeof(t)) == 0)
@@ -57,6 +59,11 @@ typedef struct {
   ((ret_t){ \
     .fst = EURYDICE_SLICE((element_type*)slice.ptr, 0, mid), \
     .snd = EURYDICE_SLICE((element_type*)slice.ptr, mid, slice.len)})
+#define core_slice___Slice_T___split_at_mut(slice, mid, element_type, ret_t) \
+  ((ret_t){ \
+    .fst = EURYDICE_SLICE((element_type*)slice.ptr, 0, mid), \
+    .snd = EURYDICE_SLICE((element_type*)slice.ptr, mid, slice.len)})
+
 
 // Can't have a flexible array as a member of a union -- this violates strict aliasing rules.
 typedef struct
@@ -167,7 +174,10 @@ typedef const char *Prims_string;
 
 // MISC (UNTESTED)
 
-#define core_fmt_Formatter void
+typedef void *core_fmt_Formatter;
+typedef void *core_fmt_Arguments;
+typedef void *core_fmt_rt_Argument;
+#define core_fmt_rt__core__fmt__rt__Argument__a__1__new_display(x1, x2, x3, x4) NULL
 
 // VECTORS (ANCIENT, POSSIBLY UNTESTED)
 

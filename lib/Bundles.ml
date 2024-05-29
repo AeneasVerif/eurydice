@@ -122,7 +122,7 @@ let parse_file (v: Yaml.value): file =
       in
       if !count < List.length ls then
         parsing_error "extraneous fields in file";
-      Krml.Options.(add_include := include_ @ c_include_ @ !add_include);
+      Krml.Options.(add_early_include := include_ @ c_include_ @ !add_early_include);
       { name; api; private_; inline_static; library; monomorphizations_using; monomorphizations_of; monomorphizations_exact }
   | _ ->
       parsing_error "file must be an object"
