@@ -560,9 +560,9 @@ let expression_of_place (env: env) (p: C.place): K.expr * C.ety =
   (* We construct a target expression, but retain the original type so that callers can tell arrays
      and references apart, since their *uses* (e.g. addr-of) compile in a type-directed way based on
      the *original* rust type *)
-  L.log "AstOfLlbc" "expression of place: %s" (C.show_place p);
+  (* L.log "AstOfLlbc" "expression of place: %s" (C.show_place p); *)
   List.fold_left (fun (e, (ty: C.ety)) pe ->
-    L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr e (C.show_ty ty) (C.show_projection_elem pe);
+    (* L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr e (C.show_ty ty) (C.show_projection_elem pe); *)
     match pe, ty with
     | C.Deref, TRef (_, (TAdt (TAssumed TArray, { types = [ t ]; _ }) as ty), _) ->
         (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
@@ -1205,21 +1205,25 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       failwith "unsupported: AggregatedAdt / TAssume"
 
   | Aggregate (AggregatedClosure (func, generics), ops) ->
-      if ops <> [] then
-        failwith (Printf.sprintf "unsupported: AggregatedClosure (TODO: closure conversion): %d" (List.length ops))
-      else
-        let fun_ptr = { C.func = C.FunId (FRegular func); generics } in
-        let e, _, _ = expression_of_fn_ptr env fun_ptr in
-        begin match e.typ with
-        | TArrow (TBuf (TUnit, _) as t_state, t) ->
-            (* Empty closure block, passed by address...? TBD *)
-            K.(with_type t (EApp (e, [ with_type t_state (EAddrOf Krml.Helpers.eunit) ])))
-        | _ ->
-            Krml.KPrint.bprintf "Unknown closure\ntype: %a\nexpr: %a"
-              ptyp e.typ
-              pexpr e;
-            failwith "Can't handle arbitrary closures"
-        end
+      let fun_ptr = { C.func = C.FunId (FRegular func); generics } in
+      let e, _, _ = expression_of_fn_ptr env fun_ptr in
+      begin match e.typ with
+      | TArrow (TBuf (TUnit, _) as t_state, t) ->
+          (* Empty closure block, passed by address...? TBD *)
+          K.(with_type t (EApp (e, [ with_type t_state (EAddrOf Krml.Helpers.eunit) ])))
+      | TArrow (TBuf _ as t', t) ->
+          let ops = List.map (expression_of_operand env) ops in
+          let ops = K.(with_type (TTuple (List.map (fun o -> o.typ) ops)) (ETuple ops)) in
+          let ops = [ K.(with_type t' (EAddrOf ops)) ] in
+          L.log "AstOfLlbc" "t'=%a t=%a closure ops are %a (typ: %a)"
+            ptyp t' ptyp t pexprs ops ptyp (List.hd ops).typ;
+          K.(with_type t (EApp (e, ops)))
+      | _ ->
+          Krml.KPrint.bprintf "Unknown closure\ntype: %a\nexpr: %a"
+            ptyp e.typ
+            pexpr e;
+          failwith "Can't handle arbitrary closures"
+      end
 
   | Aggregate (AggregatedArray (t, cg), ops) ->
       K.with_type (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))) (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
@@ -1563,6 +1567,13 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                   let env = push_cg_binders env signature.C.generics.const_generics in
                   let env = push_type_binders env signature.C.generics.types in
 
+                  L.log "AstOfLlbc" "ty of locals: %s"
+                    (String.concat " ++ " (List.map (fun (local: C.var) ->
+                      Charon.PrintTypes.ty_to_string env.format_env local.var_ty) locals));
+                  L.log "AstOfLlbc" "ty of inputs: %s"
+                    (String.concat " ++ " (List.map (fun t ->
+                      Charon.PrintTypes.ty_to_string env.format_env t) signature.C.inputs));
+
                   let clause_mapping = build_trait_clause_mapping env signature.C.generics.trait_clauses in
                   debug_trait_clause_mapping env clause_mapping;
 
@@ -1611,6 +1622,7 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                       Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty)
                     ) args
                   in
+                  L.log "AstOfLlbc" "type of binders: %a" ptyps (List.map (fun o -> o.K.typ) arg_binders);
                   let body =
                     with_locals env return_type (return_var :: locals) (fun env ->
                       expression_of_raw_statement env return_var.index body.content)
