@@ -35,7 +35,7 @@ typedef struct {
 #define EURYDICE_SLICE(x, start, end) ((Eurydice_slice){ .ptr = (void*)(x + start), .len = end - start })
 #define EURYDICE_SLICE_LEN(s, _) s.len
 #define Eurydice_slice_index(s, i, t, _ret_t) (((t*) s.ptr)[i])
-#define Eurydice_slice_index_outparam(s, i, dst, t, _ret_t) (memcpy(dst, ((t*) s.ptr)[i], sizeof(t)))
+#define Eurydice_slice_index_outparam(s, i, dst, t, _ret_t) (memcpy(dst, (s.ptr + i * sizeof(t)), sizeof(t)))
 #define Eurydice_slice_subslice(s, r, t, _, _ret_t) EURYDICE_SLICE((t*)s.ptr, r.start, r.end)
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _, _ret_t) EURYDICE_SLICE((t*)s.ptr, 0, subslice_end_pos)
 #define Eurydice_slice_subslice_from(s, subslice_start_pos, t, _, _ret_t) EURYDICE_SLICE((t*)s.ptr, subslice_start_pos, s.len)
@@ -61,8 +61,8 @@ typedef struct {
     .snd = EURYDICE_SLICE((element_type*)slice.ptr, mid, slice.len)})
 #define core_slice___Slice_T___split_at_mut(slice, mid, element_type, ret_t) \
   ((ret_t){ \
-    .fst = EURYDICE_SLICE((element_type*)slice.ptr, 0, mid), \
-    .snd = EURYDICE_SLICE((element_type*)slice.ptr, mid, slice.len)})
+    .fst = { .ptr = slice.ptr, .len = mid }, \
+    .snd = { .ptr = slice.ptr + mid * sizeof(element_type), .len = slice.len - mid }})
 
 
 // Can't have a flexible array as a member of a union -- this violates strict aliasing rules.
@@ -99,6 +99,8 @@ static inline int64_t
 core_convert_num___core__convert__From_i32__for_i64__59__from(int32_t x) {
   return x;
 }
+
+static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) { return __builtin_popcount(x0); }
 
 // unsigned overflow wraparound semantics in C
 static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) { return x + y; }
