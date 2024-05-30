@@ -234,6 +234,41 @@ let libraries (files: file list): files =
     ) decls
   ) files
 
+let topological_sort decls =
+  let module T = struct type color = White | Gray | Black end in
+  let open T in
+  let graph = Hashtbl.create 41 in
+  List.iter (fun decl ->
+    let deps = object (self)
+        inherit [_] reduce
+        method zero = []
+        method plus = (@)
+        method! visit_EQualified _ lid =
+          [ lid ]
+        method! visit_TQualified _ lid =
+          [ lid ]
+        method! visit_TApp _ lid ts =
+          [ lid ] @ List.concat_map (self#visit_typ ()) ts
+      end#visit_decl () decl
+    in
+    Hashtbl.add graph (lid_of_decl decl) (ref White, deps, decl)
+  ) decls;
+  let stack = ref [] in
+  let rec dfs lid =
+    if Hashtbl.mem graph lid then
+      let r, deps, decl = Hashtbl.find graph lid in
+      match !r with
+      | Black -> ()
+      | Gray -> failwith "dependency cycle"
+      | White ->
+          r := Gray;
+          List.iter dfs deps;
+          r := Black;
+          stack := decl :: !stack
+  in
+  List.iter (fun decl -> dfs (lid_of_decl decl)) decls;
+  List.rev !stack
+
 (* Second phase of bundling, post-monomorphization. This is Eurydice-specific,
    as we oftentimes need to move definitions that have been /specialized/ using
    e.g. a platform-specific trait into their own file. *)
@@ -342,39 +377,7 @@ let reassign_monomorphizations files (config: config) =
   ) files in
   (* A quick topological sort to make sure type declarations come *before*
      functions that use them. *)
-  let files = List.map (fun (f, decls) ->
-    let module T = struct type color = White | Gray | Black end in
-    let open T in
-    let graph = Hashtbl.create 41 in
-    List.iter (fun decl ->
-      let deps = object (self)
-          inherit [_] reduce
-          method zero = []
-          method plus = (@)
-          method! visit_TQualified _ lid =
-            [ lid ]
-          method! visit_TApp _ lid ts =
-            [ lid ] @ List.concat_map (self#visit_typ ()) ts
-        end#visit_decl () decl
-      in
-      Hashtbl.add graph (lid_of_decl decl) (ref White, deps, decl)
-    ) decls;
-    let stack = ref [] in
-    let rec dfs lid =
-      if Hashtbl.mem graph lid then
-        let r, deps, decl = Hashtbl.find graph lid in
-        match !r with
-        | Black -> ()
-        | Gray -> failwith "dependency cycle"
-        | White ->
-            r := Gray;
-            List.iter dfs deps;
-            r := Black;
-            stack := decl :: !stack
-    in
-    List.iter (fun decl -> dfs (lid_of_decl decl)) decls;
-    f, List.rev !stack
-  ) files in
+  let files = List.map (fun (f, decls) -> f, topological_sort decls) files in
 
   (* Deal with files that did not exist previously. *)
   let files = files @ Hashtbl.fold (fun f reassigned acc -> (f, reassigned) :: acc) reassigned [] in
