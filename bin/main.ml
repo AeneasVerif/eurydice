@@ -155,8 +155,8 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.4" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_into#visit_files () files in
   let files = Krml.Structs.pass_by_ref files in
-  let files = Eurydice.Cleanup2.detect_array_returning_builtins#visit_files () files in
   Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
+  let files = Eurydice.Cleanup2.detect_array_returning_builtins#visit_files () files in
   let files = Eurydice.Cleanup2.remove_literals#visit_files () files in
   let files = Krml.Simplify.optimize_lets files in
   (* let files = Eurydice.Cleanup2.break_down_nested_arrays#visit_files () files in *)
@@ -182,6 +182,7 @@ Supported options:|}
 
   let scope_env = Krml.Simplify.allocate_c_env files in
   let files = Eurydice.Cleanup3.decay_cg_externals#visit_files (scope_env, false) files in
+  let files = Eurydice.Cleanup3.add_extra_type_to_slice_index#visit_files () files in
   Eurydice.Logging.log "Phase3.1" "%a" pfiles files;
   let macros =
     let cg_macros = Eurydice.Cleanup3.build_cg_macros#visit_files () files in

@@ -34,8 +34,12 @@ typedef struct {
 // remark above about how pointer arithmetic works in C), meaning either pointer or array type.
 #define EURYDICE_SLICE(x, start, end) ((Eurydice_slice){ .ptr = (void*)(x + start), .len = end - start })
 #define EURYDICE_SLICE_LEN(s, _) s.len
-#define Eurydice_slice_index(s, i, t, _ret_t) (((t*) s.ptr)[i])
-#define Eurydice_slice_index_outparam(s, i, dst, t, _ret_t) (memcpy(dst, (s.ptr + i * sizeof(t)), sizeof(t)))
+// This macro is a pain because in case the dereferenced element type is an
+// array, you cannot simply write `t x` as it would yield `int[4] x` instead,
+// which is NOT correct C syntax, so we add a dedicated phase in Eurydice that
+// adds an extra argument to this macro at the last minute so that we have the
+// correct type of *pointers* to elements.
+#define Eurydice_slice_index(s, i, t, t_ptr_t, _ret_t) (((t_ptr_t) s.ptr)[i])
 #define Eurydice_slice_subslice(s, r, t, _, _ret_t) EURYDICE_SLICE((t*)s.ptr, r.start, r.end)
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _, _ret_t) EURYDICE_SLICE((t*)s.ptr, 0, subslice_end_pos)
 #define Eurydice_slice_subslice_from(s, subslice_start_pos, t, _, _ret_t) EURYDICE_SLICE((t*)s.ptr, subslice_start_pos, s.len)

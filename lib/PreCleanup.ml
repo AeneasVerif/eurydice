@@ -107,8 +107,11 @@ let merge files =
   let merge_decls decls1 decls2 =
     LidMap.merge merge_decl decls1 decls2
   in
+  let concat_filenames f1 f2 =
+    if f1 = "" then f2 else f1 ^ "_" ^ f2
+  in
   let merge_files (f1, decls1) (f2, decls2) =
-    f1 ^ "_" ^ f2, merge_decls decls1 (decl_map decls2)
+    concat_filenames f1 f2, merge_decls decls1 (decl_map decls2)
   in
   let f, decls =
     List.fold_left merge_files ("", LidMap.empty) files
