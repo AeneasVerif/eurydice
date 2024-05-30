@@ -60,6 +60,7 @@ Supported options:|}
     parentheses := true;
     no_shadow := true;
     extern_c := true;
+    unroll_loops := 16;
     static_header := [
       Bundle.Prefix [ "core"; "convert" ];
       Bundle.Prefix [ "core"; "num" ];
