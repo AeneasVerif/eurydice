@@ -1,3 +1,8 @@
 (library
  (name eurydice)
- (libraries charon krml yaml))
+ (libraries charon krml yaml)
+
+  (preprocess
+    (pps ppx_deriving.std)
+  )
+)

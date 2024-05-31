@@ -215,6 +215,7 @@ Supported options:|}
           Some d
     ) ds
   ) files in
+  Eurydice.Logging.log "Phase3.2" "%a" pfiles files;
   let files = AstToCStar.mk_files files c_name_map Idents.LidSet.empty macros in
 
   let headers = CStarToC11.mk_headers c_name_map files in
