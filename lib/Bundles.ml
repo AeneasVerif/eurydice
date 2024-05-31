@@ -92,44 +92,30 @@ let parse_file (v: Yaml.value): file =
         | Some _ -> failwith (k ^ " is not a list")
       in
       (* TODO: fix copy-pasting *)
-      let parse_pattern_api p = parse_pattern p, Api in
-      let parse_exact_api p = parse_exact p, Api in
       let definitions, monomorphizations_of, monomorphizations_using, monomorphizations_exact =
-        match lookup "api" with
-        | None -> [], [], [], []
-        | Some (`A api) -> List.map parse_pattern_api api, [], [], []
-        | Some (`O o) ->
-            map_or parse_pattern_api o "patterns" @ map_or parse_exact_api o "exact",
-            map_or parse_pattern_api o "monomorphizations_of",
-            map_or parse_pattern_api o "monomorphizations_using",
-            map_or parse_exact_api o "monomorphizations_exact"
-        | Some _ -> parsing_error "api neither a list or a dictionary"
-      in
-      let parse_pattern_internal p = parse_pattern p, Internal in
-      let parse_exact_internal p = parse_exact p, Internal in
-      let definitions, monomorphizations_of, monomorphizations_using, monomorphizations_exact =
-        match lookup "internal" with
-        | None -> definitions, monomorphizations_of, monomorphizations_using, monomorphizations_exact
-        | Some (`A internal_) -> definitions @ List.map parse_pattern_internal internal_, [], [], []
-        | Some (`O o) ->
-            definitions @ map_or parse_pattern_internal o "patterns" @ map_or parse_exact_internal o "exact",
-            monomorphizations_of @ map_or parse_pattern_internal o "monomorphizations_of",
-            monomorphizations_using @ map_or parse_pattern_internal o "monomorphizations_using",
-            monomorphizations_exact @ map_or parse_exact_internal o "monomorphizations_exact"
-        | Some _ -> parsing_error "internal neither a list or a dictionary"
-      in
-      let parse_pattern_private p = parse_pattern p, Private in
-      let parse_exact_private p = parse_exact p, Private in
-      let definitions, monomorphizations_of, monomorphizations_using, monomorphizations_exact =
-        match lookup "private" with
-        | None -> definitions, monomorphizations_of, monomorphizations_using, monomorphizations_exact
-        | Some (`A private_) -> definitions @ List.map parse_pattern_private private_, [], [], []
-        | Some (`O o) ->
-            definitions @ map_or parse_pattern_private o "patterns" @ map_or parse_exact_private o "exact",
-            monomorphizations_of @ map_or parse_pattern_private o "monomorphizations_of",
-            monomorphizations_using @ map_or parse_pattern_private o "monomorphizations_using",
-            monomorphizations_exact @ map_or parse_exact_private o "monomorphizations_exact"
-        | Some _ -> parsing_error "private neither a list or a dictionary"
+        (* Preserve order *)
+        let rec parse ls =
+          match ls with
+          | [] -> [], [], [], []
+          | (("api" | "internal" | "private") as k, o) :: ls ->
+              incr count;
+              let vis = match k with "api" -> Api | "internal" -> Internal | "private" -> Private | _ -> assert false in
+              let parse_pattern_vis p = parse_pattern p, vis in
+              let parse_exact_vis p = parse_exact p, vis in
+              let defs, m_of, m_using, m_exact = parse ls in
+              begin match o with
+              | `A pats -> List.map parse_pattern_vis pats @ defs, m_of, m_using, m_exact
+              | `O o ->
+                  map_or parse_pattern_vis o "patterns" @ map_or parse_exact_vis o "exact" @ defs,
+                  map_or parse_pattern_vis o "monomorphizations_of" @ m_of,
+                  map_or parse_pattern_vis o "monomorphizations_using" @ m_using,
+                  map_or parse_exact_vis o "monomorphizations_exact" @ m_exact
+              | _ -> failwith (k ^ " neither a list nor object")
+              end
+          | _ :: ls ->
+              parse ls
+        in
+        parse ls
       in
       let include_ =
         match lookup "include_in_h" with
@@ -186,10 +172,11 @@ let mark_internal =
     if not is_internal && not (Krml.Inlining.always_live name) then
       Krml.Common.Internal :: List.filter ((<>) Krml.Common.Private) flags
     else
-      flags
+      List.filter ((<>) Krml.Common.Private) flags
   in
   function
   | DFunction (cc, flags, n_cgs, n, typ, name, binders, body) ->
+      Krml.KPrint.bprintf "Marking %a as internal\n" Krml.PrintAst.Ops.plid name;
       DFunction (cc, add_if name flags, n_cgs, n, typ, name, binders, body)
   | DGlobal (flags, name, n, typ, body) ->
       DGlobal (add_if name flags, name, n, typ, body)
@@ -204,12 +191,8 @@ let adjust vis decl =
   | Private -> Krml.Bundles.mark_private decl
   | Internal -> mark_internal decl
 
-let smaller acc vis =
-  match acc, vis with
-  | Api, _ -> vis
-  | Private, Api -> Private
-  | Private, _ -> vis
-  | Internal, _ -> Internal
+let record_inline_static lid =
+  Krml.Options.(static_header := Lid lid :: !static_header)
 
 let bundle (files: Krml.Ast.file list) (c: config): files =
   let bundled = Hashtbl.create 137 in
@@ -221,9 +204,6 @@ let bundle (files: Krml.Ast.file list) (c: config): files =
   in
   let record_library lid =
     Krml.Options.(library := Lid lid :: !library)
-  in
-  let record_inline_static lid =
-    Krml.Options.(static_header := Lid lid :: !static_header)
   in
   let files = List.map (fun ((filename: string), (decls: Krml.Ast.decl list)) ->
     filename, List.filter_map (fun decl ->
@@ -238,12 +218,10 @@ let bundle (files: Krml.Ast.file list) (c: config): files =
             (* List.iter (fun (p, vis) -> *)
             (*   Krml.KPrint.bprintf "%s: %s\n" (show_visibility vis) (show_pattern p) *)
             (* ) definitions; *)
-            match List.filter_map (fun (pat, vis) -> if matches lid pat then Some vis else None) definitions with
-            | [] ->
+            match List.find_map (fun (pat, vis) -> if matches lid pat then Some vis else None) definitions with
+            | None ->
               find config
-            | vis_ ->
-                (* Not sure this is the right semantics, oh well *)
-                let vis = List.fold_left smaller Api vis_ in
+            | Some vis ->
                 (* Krml.(KPrint.bprintf "%a goes into %s at vis %s\n" PrintAst.Ops.plid lid name (show_visibility vis)); *)
                 (* if List.length vis_ > 1 then *)
                 (*   Krml.(KPrint.bprintf "vis_ was: %s\n" (String.concat ", " (List.map show_visibility vis_))); *)
@@ -341,11 +319,9 @@ let reassign_monomorphizations (files: Krml.Ast.file list) (config: config) =
   let c0 = count_decls files in
   let target_of_lid = Hashtbl.create 41 in
   let (|||) o1 o2 =
-    match o1, o2 with
-    | Some o1, Some o2 -> Some (smaller o1 o2)
-    | Some o1, None
-    | None, Some o1 -> Some o1
-    | None, None -> None
+    match o1 with
+    | Some _ -> o1
+    | None -> o2
   in
   let uses monomorphizations_using t =
     object
@@ -370,7 +346,9 @@ let reassign_monomorphizations (files: Krml.Ast.file list) (config: config) =
      Semantics of `monomorphizations_exact`: self-explanatory
   *)
   Hashtbl.iter (fun (generic_lid, cgs, ts) monomorphized_lid ->
-    match List.find_map (fun { name; monomorphizations_using; monomorphizations_of; monomorphizations_exact; _ } ->
+    match List.find_map (fun { name; inline_static; monomorphizations_using; monomorphizations_of; monomorphizations_exact; _ } ->
+      (* Monomorphization resulting in exactly this name *)
+      find_map (matches monomorphized_lid) monomorphizations_exact |||
       (* Monomorphization using given trait name, amongst the arguments *)
       List.find_map (fun e ->
         match e.node with
@@ -380,10 +358,8 @@ let reassign_monomorphizations (files: Krml.Ast.file list) (config: config) =
       (* Monomorphization using given type name *)
       List.find_map (uses monomorphizations_using) ts |||
       (* Monomorphization of a given polymorphic name *)
-      find_map (matches generic_lid) monomorphizations_of |||
-      (* Monomorphization resulting in exactly this name *)
-      find_map (matches monomorphized_lid) monomorphizations_exact |>
-      Option.map (fun vis -> name, vis)
+      find_map (matches generic_lid) monomorphizations_of |>
+      Option.map (fun vis -> name, inline_static, vis)
     ) config with
     | Some name ->
         Hashtbl.add target_of_lid monomorphized_lid name
@@ -393,11 +369,11 @@ let reassign_monomorphizations (files: Krml.Ast.file list) (config: config) =
   (* Review the type monomorphization state. *)
   Hashtbl.iter (fun (generic_lid, ts, _) (_, monomorphized_lid) ->
     (* Krml.KPrint.bprintf "generic=%a, monomorphized=%a\n" plid generic_lid plid monomorphized_lid; *)
-    match List.find_map (fun { name; monomorphizations_of; monomorphizations_using; monomorphizations_exact; _ } ->
+    match List.find_map (fun { name; inline_static; monomorphizations_of; monomorphizations_using; monomorphizations_exact; _ } ->
+      find_map (matches monomorphized_lid) monomorphizations_exact |||
       List.find_map (uses monomorphizations_using) ts |||
-      find_map (matches generic_lid) monomorphizations_of |||
-      find_map (matches monomorphized_lid) monomorphizations_exact |>
-      Option.map (fun vis -> name, vis)
+      find_map (matches generic_lid) monomorphizations_of |>
+      Option.map (fun vis -> name, inline_static, vis)
     ) config with
     | Some name ->
         Hashtbl.add target_of_lid monomorphized_lid name
@@ -405,7 +381,7 @@ let reassign_monomorphizations (files: Krml.Ast.file list) (config: config) =
         ()
   ) Krml.Monomorphization.state;
   (* Debug *)
-  Hashtbl.iter (fun lid (target, vis) ->
+  Hashtbl.iter (fun lid (target, _inline_static, vis) ->
     L.log "Reassign" "%a goes into %s (vis: %s)" plid lid target (show_visibility vis)
   ) target_of_lid;
   (* Filter the files, plucking out those that move and registering them under
@@ -414,10 +390,13 @@ let reassign_monomorphizations (files: Krml.Ast.file list) (config: config) =
   let reassigned = Hashtbl.create 41 in
   let files = List.map (fun (f, decls) ->
     f, List.filter (fun decl ->
-      match Hashtbl.find_opt target_of_lid (lid_of_decl decl) with
+      let lid = lid_of_decl decl in
+      match Hashtbl.find_opt target_of_lid lid with
       | None -> true
-      | Some (target, vis) ->
+      | Some (target, inline_static, vis) ->
           let decl = adjust vis decl in
+          if inline_static then
+            record_inline_static lid;
           if Hashtbl.mem reassigned target then
             Hashtbl.replace reassigned target (decl :: Hashtbl.find reassigned target)
           else
