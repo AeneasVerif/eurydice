@@ -1,5 +1,5 @@
 CHARON_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../charon
-KRML_HOME 		?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../karamel
+KRML_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../karamel
 EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
 CHARON		?= $(CHARON_HOME)/bin/charon
 
@@ -26,9 +26,10 @@ out/test-%/main.c: test/main.c
 	sed 's/__NAME__/$*/g' $< > $@
 
 test-partial_eq: EXTRA_C = ../../test/partial_eq/stubs.c
+test-nested_arrays: EXTRA = -funroll-loops 0
 
 test-%: test/%/out.llbc out/test-%/main.c | all
-	$(EURYDICE) --output out/test-$* $<
+	$(EURYDICE) $(EXTRA) --output out/test-$* $<
 	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $(EXTRA_C) $*.c main.c && ./a.out
 
 .PRECIOUS: out/%

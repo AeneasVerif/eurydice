@@ -12,11 +12,13 @@ Supported options:|}
   in
   let module O = Eurydice.Options in
   let debug s = Krml.Options.debug_modules := Krml.KString.split_on_char ',' s @ !Krml.Options.debug_modules in
+  let funroll_loops = ref 16 in
   let spec = [
     "--log", Arg.Set_string O.log_level, " log level, use * for everything";
     "--debug", Arg.String debug, " debug options, to be passed to krml";
     "--output", Arg.Set_string Krml.Options.tmpdir, " output directory in which to write files";
     "--config", Arg.Set_string O.config, " YAML configuration file";
+    "-funroll-loops", Arg.Set_int funroll_loops, " unrool loops up to N";
   ] in
   let spec = Arg.align spec in
   let files = ref [] in
@@ -60,7 +62,7 @@ Supported options:|}
     parentheses := true;
     no_shadow := true;
     extern_c := true;
-    unroll_loops := 16;
+    unroll_loops := !funroll_loops;
     static_header := [
       Bundle.Prefix [ "core"; "convert" ];
       Bundle.Prefix [ "core"; "num" ];
