@@ -81,5 +81,16 @@
         version = self.rev or "dirty";
       };
       checks.default = packages.default.tests;
+      devShells.default = pkgs.mkShell {
+        packages = [
+          pkgs.ocamlPackages.ocaml
+          pkgs.ocamlPackages.ocamlformat
+          pkgs.ocamlPackages.menhir
+        ];
+
+        inputsFrom = [
+          self.packages.${system}.default
+        ];
+      };
     });
 }
