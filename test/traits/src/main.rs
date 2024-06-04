@@ -19,7 +19,27 @@ impl ToInt for &[Foo] {
     }
 }
 
+trait Stupid {
+    fn stupid(&self) -> Self;
+}
+
+impl<T> Stupid for T {
+    fn stupid(&self) -> T {
+        todo!()
+    }
+}
+
+fn jesus<T: Stupid>(x: T) -> (T, T) {
+    (x.stupid(), todo!())
+    // (x.clone(), x.clone())
+}
+
 fn main() {
+    jesus(3u8);
+    jesus(3u16);
+    jesus(3u32);
+    // println!("tee 3u8   = {:?}", tee(3u8));
+    // println!("tee 31u16 = {:?}", tee(31u16));
     let foos = [Foo::Foo1, Foo::Foo2];
     // TODO: [..] (full range)
     // TODO: assert_eq -- interesting pattern where some intermediary computations need to be

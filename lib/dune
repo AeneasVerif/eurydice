@@ -3,6 +3,6 @@
  (libraries charon krml yaml)
 
   (preprocess
-    (pps ppx_deriving.std)
+    (pps ppx_deriving.show ppx_deriving.std)
   )
 )

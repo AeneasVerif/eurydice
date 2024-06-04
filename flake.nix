@@ -1,7 +1,8 @@
 {
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
-    karamel.url = "github:FStarLang/karamel";
+    karamel.url = "github:FStarLang/karamel/protz_trait_methods";
+    # karamel.url = "/home/lucas/repos/karamel/protz_trait_methods";
     fstar.url = "github:FStarLang/fstar";
 
     nixpkgs.follows = "karamel/nixpkgs";
@@ -81,6 +82,22 @@
       packages.default = pkgs.callPackage package {
         inherit charon-ml krml;
         version = self.rev or "dirty";
+      };
+      devShells = {
+        default = pkgs.mkShell {
+          CHARON = "${charon}/bin/charon";
+          CHARON_HOME = "${charon}/bin";
+          inputsFrom = [packages.default];
+          packages = [
+            pkgs.ocamlPackages.ocaml-lsp
+            pkgs.ocamlPackages.ocamlformat-rpc-lib
+            pkgs.ocamlPackages.ocamlformat
+            pkgs.ocamlPackages.odoc
+            pkgs.ocamlPackages.utop
+
+            charon
+          ];
+        };
       };
       checks.default = packages.default.tests;
       devShells.default = pkgs.mkShell {
