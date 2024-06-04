@@ -1484,6 +1484,9 @@ let rec expression_of_raw_statement (env: env) (ret_var: C.var_id) (s: C.raw_sta
       K.(with_type TUnit (EWhile (Krml.Helpers.etrue,
         expression_of_raw_statement env ret_var s.content)))
 
+  | Error _ ->
+      failwith "TODO: error"
+
 (** Top-level declarations: orchestration *)
 
 
