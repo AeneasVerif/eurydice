@@ -52,18 +52,32 @@ type env = {
      42 so as to pass the correct arguments. *)
   clause_arguments: (C.TraitClauseId.id * C.const_generic list) list;
 
-  (* We have three binding scopes, all in DeBruijn indices.
-     - const-generic ("cg") binders
-     - type binders
-     - expression binders, which typically starts with a repeat of the cg
-       binders (at the top-level function), followed by trait bounds method
-       binders, followed by regular expression binders (function arguments, local
-       variables, etc.)
-     In the target AST, we retain these three binding scopes. However,
+  (* We have three lists of binders, which allow us to go from a Rust variable
+     to a corresponding krml AST variable; everything is in De Bruijn, so
+     looking up a variable is essentially List.nth. To understand why we have
+     three lists here, we review the binding structure of the target (krml) AST.
+
+     The target AST has three binding scopes: cg vars, type vars and expression
+     vars. Type vars and type expressions are standard and have their own
+     scopes, and corresponding variable nodes (TBound for type variables, Bound
+     for expression variables). Const-generic variables are more complicted,
+     because they appear in *both* types and expressions; there is a *third*
+     scope of cg variables, with the following behavior:
      - in types, CgVar and TCgArray contain DeBruijn indices referring to the cg
-       scope, while
-     - in expressions, there is no ECgVar, and we rely on a regular EBound node
-       that refers to the repeat of the cg var as a regular argument var.
+       scope (standard), while
+     - in expressions, there is no ECgVar, so we repeat cg vars at the beginning
+       of the expression scope, and we rely on a regular EBound node to refer to
+       cg variables (trick). This trick avoids a combinatorial explosion of
+       substitution functions and makes sure all 60+ existing passes of krml do
+       *not* need to be aware of the addition of const-generics (except for
+       monomorphization, of course).
+     In short, the third scope for cg variables only applies for CgVar and
+     TCgArray; for expressions, cg variables masquerade as expression variables
+     and live as the first N variables of that scope.
+
+     To implement this, we rely on the corresponding three lists of binders,
+     with the additional caveat that push_cg_binder pushes in both cg_binders
+     and binders (see rationale above).
 
      Example: fn f<const N: usize, T: Copy>(x: [T; N]) -> usize { N }
      Upon entering the body of f, we have:
@@ -76,7 +90,7 @@ type env = {
        "N": TInt usize;
        "x": TCgArray (TBound 0, 0); (* types use the cg scope *)
      ], EBound 2 (* expressions refer to the copy of the cg var as an expression var *)
-     *)
+  *)
   cg_binders: (C.const_generic_var_id * K.typ) list;
   type_binders: C.type_var_id list;
   binders: (var_id * K.typ) list;
@@ -704,8 +718,10 @@ let maybe_addrof (env: env) (ty: C.ty) (e: K.expr) =
 
 (* There are two ways that we skip synthesis of trait methods in function calls. The first one is if
   a trait declaration is blocklisted. This happens if the trait has built-in support (e.g.
-  FnMut), or if the trait relies on unsupported features. The second way we skip trait methods
-  (further down) is if the function is a known builtin implementation. *)
+  FnMut), or if the trait relies on unsupported features (e.g. provided methods,
+  used by Iterator's chunk_next, for instance; or associated types; or parent
+  clauses). The second way we skip trait methods (further down) is if the
+  function is a known builtin implementation. *)
 let blocklisted_trait_decls = [
   (* Handled primitively. *)
   "core::ops::function::FnMut";
@@ -782,7 +798,7 @@ let build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
 
 (* Interpret a Rust function type, with trait bounds, into the krml Ast, providing:
    - the type scheme (fields may be zero)
-   - the cg types, which only contains the original Rust const generic variables (not trait methods)
+   - the cg types, which only contains the original Rust const generic variables
    - the argument types, prefixed by the dictionary-style passing of trait clause methods
    - the return type
    - whether the function is assumed, or not. *)
