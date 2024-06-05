@@ -1533,6 +1533,8 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
               ) fields
             ) branches in
             Some (K.DType (name, [], List.length const_generics, List.length type_params, Variant branches))
+        | Alias ty ->
+            Some (K.DType (name, [], List.length const_generics, List.length type_params, Abbrev (typ_of_ty env ty)))
       )
   | FunGroup dg ->
       Krml.KList.filter_some @@
