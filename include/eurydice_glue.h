@@ -10,6 +10,10 @@ extern "C" {
 #include <stdbool.h>
 #include <string.h>
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
 #include "krml/lowstar_endianness.h"
 #include "krml/internal/target.h"
 
@@ -104,7 +108,13 @@ core_convert_num___core__convert__From_i32__for_i64__59__from(int32_t x) {
   return x;
 }
 
-static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) { return __builtin_popcount(x0); }
+static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
+#ifdef _MSC_VER
+  return __popcnt(x0);
+#else
+  return __builtin_popcount(x0);
+#endif
+}
 
 // unsigned overflow wraparound semantics in C
 static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) { return x + y; }
