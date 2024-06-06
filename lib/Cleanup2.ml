@@ -206,11 +206,12 @@ let remove_array_from_fn files =
            (but not always... is this unit argument elimination kicking in? not
            sure). *)
           let dst = List.nth es 1 in
+          let lift1 = Krml.DeBruijn.lift 1 in
           EFor (Krml.Helpers.fresh_binder ~mut:true "i" H.usize, H.zero_usize (* i = 0 *),
             H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
             H.mk_incr_usize (* i++ *),
             let i = with_type H.usize (EBound 0) in
-            Krml.Helpers.with_unit (EApp (closure_lid, state @ [ i; with_type t_elements (EBufRead (Krml.DeBruijn.lift 1 dst, i)) ])))
+            Krml.Helpers.with_unit (EApp (closure_lid, List.map lift1 state @ [ i; with_type t_elements (EBufRead (lift1 dst, i)) ])))
 
       | ETApp ({ node = EQualified (["core"; "array"], "from_fn"); _ },
         [ len ],
@@ -264,13 +265,14 @@ let remove_array_from_fn files =
                 L.log "Cleanup2" "map closure=%a" pexpr (List.hd es);
                 failwith "unexpected map closure shape"
           in
+          let lift1 = Krml.DeBruijn.lift 1 in
           EFor (Krml.Helpers.fresh_binder ~mut:true "i" H.usize, H.zero_usize (* i = 0 *),
             H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
             H.mk_incr_usize (* i++ *),
             let i = with_type H.usize (EBound 0) in
-            let e_src_i = with_type t_src (EBufRead (Krml.DeBruijn.lift 1 e_src, i)) in
-            Krml.Helpers.with_unit (EBufWrite (Krml.DeBruijn.lift 1 e_dst, i,
-              with_type t_dst (EApp (closure_lid, state @ [ e_src_i ])))))
+            let e_src_i = with_type t_src (EBufRead (lift1 e_src, i)) in
+            Krml.Helpers.with_unit (EBufWrite (lift1 e_dst, i,
+              with_type t_dst (EApp (closure_lid, List.map lift1 state @ [ e_src_i ])))))
 
       | _ ->
           super#visit_EApp env e es
