@@ -38,3 +38,8 @@ out/%:
 
 nix-magic:
 	nix flake update --extra-experimental-features nix-command --extra-experimental-features flakes
+
+# Updates `flake.lock` with the latest commit from our local charon clone (the one that is symlinked into `lib/charon`).
+.PHONY: update-charon-pin
+update-charon-pin:
+	nix-shell -p jq --run ./scripts/update-charon-pin.sh
