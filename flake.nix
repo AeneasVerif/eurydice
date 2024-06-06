@@ -47,6 +47,8 @@
 
           src = ./.;
 
+          OCAMLPARAM = "_,warn-error=+A"; # Turn all warnings into errors.
+
           nativeBuildInputs = [gnugrep];
 
           propagatedBuildInputs = [krml charon-ml ocamlPackages.terminal ocamlPackages.yaml];
@@ -81,5 +83,16 @@
         version = self.rev or "dirty";
       };
       checks.default = packages.default.tests;
+      devShells.default = pkgs.mkShell {
+        packages = [
+          pkgs.ocamlPackages.ocaml
+          pkgs.ocamlPackages.ocamlformat
+          pkgs.ocamlPackages.menhir
+        ];
+
+        inputsFrom = [
+          self.packages.${system}.default
+        ];
+      };
     });
 }
