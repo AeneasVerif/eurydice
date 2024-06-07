@@ -72,21 +72,15 @@ typedef struct {
     .fst = { .ptr = slice.ptr, .len = mid }, \
     .snd = { .ptr = (char*)slice.ptr + mid * sizeof(element_type), .len = slice.len - mid }})
 
+// Conversion of slice to an array, rewritten (by Eurydice) to name the
+// destination array, since arrays are not values in C.
+// N.B.: see note in karamel/lib/Inlining.ml if you change this.
+#define Eurydice_slice_to_array2(dst, src, _, t_arr, _ret_t) \
+  Eurydice_slice_to_array3(&(dst)->tag, (char*) &(dst)->val.case_Ok, src, sizeof(t_arr))
 
-// Can't have a flexible array as a member of a union -- this violates strict aliasing rules.
-typedef struct
-{
-  uint8_t tag;
-  uint8_t case_Ok[];
-}
-result_tryfromslice_flexible;
-
-// See note in karamel/lib/Inlining.ml if you change this
-#define Eurydice_slice_to_array2(dst, src, _, t_arr, _ret_t) Eurydice_slice_to_array3((result_tryfromslice_flexible *)dst, src, sizeof(t_arr))
-
-static inline void Eurydice_slice_to_array3(result_tryfromslice_flexible *dst, Eurydice_slice src, size_t sz) {
-  dst->tag = 0;
-  memcpy(dst->case_Ok, src.ptr, sz);
+static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok, Eurydice_slice src, size_t sz) {
+  *dst_tag = 0;
+  memcpy(dst_ok, src.ptr, sz);
 }
 
 // CORE STUFF (conversions, endianness, ...)
