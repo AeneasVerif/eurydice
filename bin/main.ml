@@ -165,6 +165,8 @@ Supported options:|}
   (* let files = Eurydice.Cleanup2.break_down_nested_arrays#visit_files () files in *)
   Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_array_from_fn files in
+  (* remove_array_from_fn, above, creates further opportunities for removing unused functions. *)
+  let files = Krml.Inlining.drop_unused files in
   let files = Eurydice.Cleanup2.remove_implicit_array_copies#visit_files () files in
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
   let files = Krml.Simplify.hoist#visit_files [] files in
