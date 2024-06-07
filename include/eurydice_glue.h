@@ -92,8 +92,13 @@ static inline void Eurydice_slice_to_array3(result_tryfromslice_flexible *dst, E
 // CORE STUFF (conversions, endianness, ...)
 
 static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
+  // TODO: why not store32_be?
   uint32_t x = htobe32(src);
   memcpy(dst, &x, 4);
+}
+
+static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
+  return load32_le(buf);
 }
 
 static inline void core_num__u64_9__to_le_bytes(uint64_t v,uint8_t buf[8]) {
