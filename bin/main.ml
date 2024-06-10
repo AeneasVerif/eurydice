@@ -62,6 +62,7 @@ Supported options:|}
     parentheses := true;
     no_shadow := true;
     extern_c := true;
+    cxx_compat := true;
     unroll_loops := !funroll_loops;
     static_header := [
       Bundle.Prefix [ "core"; "convert" ];
