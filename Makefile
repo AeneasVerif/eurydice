@@ -7,7 +7,7 @@ BROKEN_TESTS		= step_by where_clauses chunks mutable_slice_range
 TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(subst test/,,$(shell find test -maxdepth 1 -mindepth 1 -type d)))
 
 .PHONY: all
-all:
+all: format-check
 	@ocamlfind list | grep -q charon || test -L lib/charon || echo "⚠️⚠️⚠️ Charon not found; we suggest cd lib && ln -s path/to/charon-ml charon"
 	@ocamlfind list | grep -q krml || test -L lib/krml || echo "⚠️⚠️⚠️ krml not found; we suggest cd lib && ln -s path/to/karamel/lib krml"
 	dune build && ln -sf _build/default/bin/main.exe eurydice
@@ -43,3 +43,13 @@ nix-magic:
 .PHONY: update-charon-pin
 update-charon-pin:
 	nix-shell -p jq --run ./scripts/update-charon-pin.sh
+
+FORMAT_FILE=include/eurydice_glue.h
+
+format-check: phony
+	@F=$$(mktemp); clang-format $(FORMAT_FILE) > $$F; \
+	  if ! diff -q $(FORMAT_FILE) $$F >/dev/null; then \echo "\033[0;31m⚠️⚠️⚠️ SUGGESTED: $(MAKE) format-apply\033[0;m"; fi; \
+	  rm -rf $$F
+
+format-apply: phony
+	clang-format -i $(FORMAT_FILE)
