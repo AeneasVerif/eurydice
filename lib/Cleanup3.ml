@@ -35,6 +35,13 @@ let decay_cg_externals = object(self)
 
   method! visit_DExternal (scope_env, _) cc flags n_cgs n name t hints =
     let t_ret, t_args = Helpers.flatten_arrow t in
+    (* MSVC throws a tantrum if it receives a zero-sized array parameter,
+       interpreting this as a stack allocation instead of an array type that
+       ought to decay to pointer. *)
+    let t_args = List.map (function
+      | TArray (t, (_, "0")) -> TBuf (t, false)
+      | t -> t
+    ) t_args in
     if t_ret = TUnit && n_cgs > 0 then
       let t_args = List.map (function
         | TCgArray (t, _) -> TBuf (t, false)
@@ -67,9 +74,9 @@ let decay_cg_externals = object(self)
         in
         DExternal (cc, [ Common.Prologue prelude ] @ flags, 0, n, new_name, Helpers.fold_arrow t_args t_ret, hints)
       with Exit ->
-        DExternal (cc, flags, n_cgs, n, name, t, hints)
+        DExternal (cc, flags, n_cgs, n, name, Helpers.fold_arrow t_args t_ret, hints)
     else
-      DExternal (cc, flags, n_cgs, n, name, t, hints)
+      DExternal (cc, flags, n_cgs, n, name, Helpers.fold_arrow t_args t_ret, hints)
 end
 
 let build_cg_macros = object(self)
