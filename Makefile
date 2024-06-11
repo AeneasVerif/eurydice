@@ -30,6 +30,8 @@ test-nested_arrays: EXTRA = -funroll-loops 0
 
 test-%: test/%/out.llbc out/test-%/main.c | all
 	$(EURYDICE) $(EXTRA) --output out/test-$* $<
+	rm -rf /tmp/eurydice
+	cp -rf out/ /tmp/eurydice
 	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $(EXTRA_C) $*.c main.c && ./a.out
 
 .PRECIOUS: out/%

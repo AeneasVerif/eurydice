@@ -130,7 +130,13 @@ module List = struct
     in
     aux lists
 
-  let drop n = function _ :: tl when n > 0 -> tl | _ -> []
+  let rec drop n list =
+    if n <= 0 then list
+    else match list with _ :: tl -> drop (n - 1) tl | _ -> []
+
+  let rec take n list =
+    if n <= 0 then []
+    else match list with hd :: tl -> hd :: take (n - 1) tl | [] -> []
 
   let strip_common_prefix ~(eq : 'a -> 'a -> bool) (lists : 'a list list) :
       'a list list =
@@ -156,7 +162,61 @@ module List = struct
 
   let group_by (projection : 'a -> 'g) (l : 'a list) : 'a list list =
     group_by' projection l |> List.map snd
+
+  let unzip (l : ('a * 'b) list) : 'a list * 'b list =
+    (List.map fst l, List.map snd l)
+
+  let rec split_at n acc (list : 'a list) : 'a list * 'a list =
+    if n <= 0 then (List.rev acc, list)
+    else
+      match list with
+      | hd :: tl -> split_at (n - 1) (hd :: acc) tl
+      | [] -> (List.rev acc, [])
 end
+
+(** Check wether two arrays share a same prefix of size `len` *)
+let share_common_prefix (len : int) (a : 'a array) (b : 'a array) : bool =
+  if len > Array.length a || len > Array.length b then false
+  else
+    let exception NotEqual in
+    try
+      for i = 0 to len - 1 do
+        if not (Array.get a i = Array.get b i) then raise NotEqual
+      done;
+      true
+    with NotEqual -> false
+
+(** Check wether n arrays have unique prefix of size `len` *)
+let unique_prefix (len : int) (arrays : 'a array array) : bool =
+  let n = Array.length arrays in
+  let exception NotUnique in
+  try
+    for j = 0 to n - 1 do
+      let a = Array.get arrays j in
+      for k = j + 1 to n - 1 do
+        let b = Array.get arrays k in
+        if share_common_prefix len a b then raise NotUnique
+      done
+    done;
+    true
+  with NotUnique -> false
+
+let smallest_unique_prefix_len (arrays : 'a array array) : int option =
+  if Array.length arrays = 0 then Some 0
+  else
+    let max = Array.get arrays 0 |> Array.length in
+    let exception Found of int in
+    try
+      for len = 1 to max do
+        if unique_prefix len arrays then raise (Found len)
+      done;
+      None
+    with Found len -> Some len
+
+let smallest_unique_prefixes (l : 'a list list) : 'a list list =
+  match Array.(List.map of_list l |> of_list) |> smallest_unique_prefix_len with
+  | None -> l
+  | Some len -> List.map (List.take len) l
 
 (** Given a list of monorphizations (a pair of a monomorphized
 identifier and a monomorphization source), generates a replacement map
@@ -165,7 +225,7 @@ let minimize_names_strip_prefixes
     (names : (K.lident * MonomorphizationSource.t) list) : K.lident LidentMap.t
     =
   let reduced_types =
-    List.strip_common_prefix ~eq:( == )
+    smallest_unique_prefixes
       (List.map (fun (_, src) -> src.MonomorphizationSource.types) names)
     |> List.(map hd_opt >> transpose)
   in
@@ -178,7 +238,7 @@ let minimize_names_strip_prefixes
                  { src with types = [ typ ]; const_generics = [] } ))
   | None -> (
       let reduced_cgs =
-        List.strip_common_prefix ~eq:( == )
+        smallest_unique_prefixes
           (List.map
              (fun (_, src) -> src.MonomorphizationSource.const_generics)
              names)
@@ -192,8 +252,8 @@ let minimize_names_strip_prefixes
                    MonomorphizationSource.
                      { src with const_generics = [ cg ]; types = [] } ))
       | None -> names))
-  |> List.map (fun (name, src) ->
-         (name, (fst name, MonomorphizationSource.to_id src)))
+  |> List.map (fun (name, src) -> (name, MonomorphizationSource.to_lid src))
+     (* (name, (fst name, MonomorphizationSource.to_id src))) *)
   |> List.to_seq |> LidentMap.of_seq
 
 let rename_visitor map =
@@ -207,11 +267,17 @@ let rename_visitor map =
 let minimize_names (files : Krml.Ast.file list) : Krml.Ast.file list =
   let mono_map = compute_monomorphization_source_lookup () in
   let visitor =
-    LidentMap.bindings mono_map
-    |> List.group_by (fun (_, src) -> src.MonomorphizationSource.original_lid)
-    |> List.map minimize_names_strip_prefixes
-    |> List.fold_left (LidentMap.union (fun _ x _ -> Some x)) LidentMap.empty
-    |> rename_visitor
+    let map =
+      LidentMap.bindings mono_map
+      |> List.group_by (fun (_, src) -> src.MonomorphizationSource.original_lid)
+      |> List.map minimize_names_strip_prefixes
+      |> List.fold_left (LidentMap.union (fun _ x _ -> Some x)) LidentMap.empty
+    in
+    prerr_endline "------------";
+    prerr_endline ([%show: (K.lident * K.lident) list] (LidentMap.bindings map));
+    prerr_endline "------------";
+    (* let map = LidentMap.empty in *)
+    rename_visitor map
   in
   visitor#visit_files () files
 

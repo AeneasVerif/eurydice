@@ -1,7 +1,8 @@
 {
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
-    karamel.url = "github:FStarLang/karamel/protz_trait_methods";
+    # karamel.url = "github:FStarLang/karamel/protz_trait_methods";
+    karamel.url = "github:FStarLang/karamel";
     # karamel.url = "/home/lucas/repos/karamel/protz_trait_methods";
     fstar.url = "github:FStarLang/fstar";
 
@@ -52,7 +53,7 @@
 
           nativeBuildInputs = [gnugrep];
 
-          propagatedBuildInputs = [krml charon-ml ocamlPackages.terminal ocamlPackages.yaml];
+          propagatedBuildInputs = [krml charon-ml ocamlPackages.base ocamlPackages.terminal ocamlPackages.yaml];
 
           passthru = {
             tests = stdenv.mkDerivation {
@@ -100,16 +101,16 @@
         };
       };
       checks.default = packages.default.tests;
-      devShells.default = pkgs.mkShell {
-        packages = [
-          pkgs.ocamlPackages.ocaml
-          pkgs.ocamlPackages.ocamlformat
-          pkgs.ocamlPackages.menhir
-        ];
+      # devShells.default = pkgs.mkShell {
+      #   packages = [
+      #     pkgs.ocamlPackages.ocaml
+      #     pkgs.ocamlPackages.ocamlformat
+      #     pkgs.ocamlPackages.menhir
+      #   ];
 
-        inputsFrom = [
-          self.packages.${system}.default
-        ];
-      };
+      #   inputsFrom = [
+      #     self.packages.${system}.default
+      #   ];
+      # };
     });
 }
