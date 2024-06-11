@@ -32,7 +32,7 @@ open Krml.PrintAst.Ops
    in this order, the first two being only ever inserted upon entering a function
    definition. *)
 type var_id =
-  | TraitClauseMethod of C.trait_clause_id * string * K.type_scheme
+  | TraitClauseMethod of C.trait_instance_id * string * K.type_scheme
   | ConstGenericVar of C.const_generic_var_id
   | Var of C.var_id * C.ety (* the ety aids code-generation, sometimes *)
 
@@ -47,10 +47,6 @@ type env = {
   (* Needed by the name matching logic *)
   name_ctx: Charon.NameMatcher.ctx;
   generic_params: C.generic_params;
-
-  (* When in a function such as fn f<T: Foo<42>>, we need to remember that Foo is instantiated over
-     42 so as to pass the correct arguments. *)
-  clause_arguments: (C.TraitClauseId.id * C.const_generic list) list;
 
   (* We have three lists of binders, which allow us to go from a Rust variable
      to a corresponding krml AST variable; everything is in De Bruijn, so
@@ -478,7 +474,7 @@ let push_binders env (ts: C.var list) =
    trait method (dictionary-style). *)
 
 type clause_binder = {
-  clause_id: C.trait_clause_id;
+  clause_id: C.trait_instance_id;
   item_name: string;
   pretty_name: string;
   ts: K.type_scheme;
@@ -755,7 +751,7 @@ let blocklisted_trait_decls = [
  the types we obtain by looking up the trait declaration have Self as 0
  (DeBruijn).
  *)
-let build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
+let rec build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
   List.concat_map (fun tc ->
     let { C.clause_id; trait_id; clause_generics; _ } = tc in
     let trait_decl = env.get_nth_trait_decl trait_id in
@@ -782,17 +778,26 @@ let build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
       List.map (fun (item_name, decl_id) ->
         let decl = env.get_nth_function decl_id in
         let ts = { K.n = List.length trait_decl.generics.types; n_cgs = List.length trait_decl.generics.const_generics } in
-        (clause_id, item_name), (clause_generics, ts, trait_decl.C.name, decl.C.signature)
+        (C.Clause clause_id, item_name), (clause_generics, ts, trait_decl.C.name, decl.C.signature)
         ) trait_decl.C.required_methods @
       List.map (fun (item_name, decl_id) ->
         match decl_id with
         | Some decl_id ->
             let decl = env.get_nth_function decl_id in
             let ts = { K.n = List.length trait_decl.generics.types; n_cgs = List.length trait_decl.generics.const_generics } in
-            (clause_id, item_name), (clause_generics, ts, trait_decl.C.name, decl.C.signature)
+            (C.Clause clause_id, item_name), (clause_generics, ts, trait_decl.C.name, decl.C.signature)
         | None ->
             failwith ("TODO: handle provided trait methods, like " ^ item_name)
-            ) trait_decl.C.provided_methods
+      ) trait_decl.C.provided_methods @
+      List.flatten (List.mapi (fun i (parent_clause: C.trait_clause) ->
+        (* Mapping of the methods of the parent clause *)
+        let m = build_trait_clause_mapping env [ parent_clause ] in
+        List.map (fun ((clause_id, m), v) ->
+          (* This is the parent clause `i` of `clause_id` -- see comments in charon/types.rs  *)
+          let id = C.(ParentClause (clause_id, trait_id, TraitClauseId.of_int i)) in
+          (id, m), v 
+        ) m
+      ) trait_decl.C.parent_clauses)
     end
   ) trait_clauses
 
@@ -896,12 +901,15 @@ and typ_of_signature env signature =
 
 
 and debug_trait_clause_mapping env mapping =
-  if mapping <> [] then
+  if mapping = [] then
+    L.log "TraitClauses" "In this function, trait clause mapping is empty"
+  else
     L.log "TraitClauses" "In this function, calls to trait bound methods are as follows:";
   List.iter (fun ((clause_id, item_name), (_, ts, trait_name, signature)) ->
     let _, t = typ_of_signature env signature in
-    L.log "TraitClauses" "TraitClause %d (a.k.a. %s)::%s: %a has trait-level %d const generics, %d type vars"
-      (C.TraitClauseId.to_int clause_id) (string_of_name env trait_name) item_name ptyp t ts.K.n_cgs ts.n
+    L.log "TraitClauses" "%s (a.k.a. %s)::%s: %a has trait-level %d const generics, %d type vars"
+      (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
+      (string_of_name env trait_name) item_name ptyp t ts.K.n_cgs ts.n
   ) mapping
 
 
@@ -946,7 +954,7 @@ let lookup_fun (env: env) depth (f: C.fn_ptr): K.expr' * lookup_result =
               let trait = env.get_nth_trait_impl id in
               let f = List.assoc method_name (trait.required_methods @ trait.provided_methods) in
               lookup_result_of_fun_id f
-          | Clause tcid ->
+          | (Clause _ | ParentClause _) as tcid ->
               let f, t, sig_info = lookup_clause_binder env tcid method_name in
               (* the sig_info is kind of redundant here *)
               let t = match t with TPoly (_, t) -> t | _ -> t in
@@ -988,16 +996,9 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
 
   let type_args, const_generic_args, trait_refs =
     match func with
-    | TraitMethod ({ trait_id; generics = { types; const_generics; trait_refs = trait_refs'; _ }; _ }, _, _) ->
+    | TraitMethod ({ generics = { types; const_generics; trait_refs = trait_refs'; _ }; _ }, _, _) ->
         L.log "Calls" "%s--> this is a trait method" depth;
-        let clause_const_generics =
-          match trait_id with
-          | Clause id when false ->
-              List.assoc id env.clause_arguments
-          | _ ->
-              []
-        in
-        types @ type_args, clause_const_generics @ const_generics @ const_generic_args, trait_refs' @ trait_refs
+        types @ type_args, const_generics @ const_generic_args, trait_refs' @ trait_refs
     | _ ->
         type_args, const_generic_args, trait_refs
   in
@@ -1025,57 +1026,68 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
          anyhow. *)
       []
     else
-      List.concat_map (fun (trait_ref: C.trait_ref) ->
-        let name = string_of_name env (env.get_nth_trait_decl trait_ref.trait_decl_ref.trait_decl_id).name in
+      (* MUST have the same structure as build_trait_clause_mapping *)
+      let rec build_trait_ref_mapping depth (trait_refs: C.trait_ref list) =
+        List.concat_map (fun (trait_ref: C.trait_ref) ->
+          let name = string_of_name env (env.get_nth_trait_decl trait_ref.trait_decl_ref.trait_decl_id).name in
+          L.log "Calls" "%s--> trait_ref: %s\n" depth (C.show_trait_ref trait_ref);
 
-        match trait_ref.trait_id with
-        | _ when List.mem name blocklisted_trait_decls ->
-            (* Trait not supported -- don't synthesize arguments *)
-            []
-
-        | TraitImpl impl_id ->
-            (* Call-site has resolved trait clauses into a concrete trait implementation. *)
-            let trait_impl: C.trait_impl = env.get_nth_trait_impl impl_id in
-
-            (* This must be in agreement, and in the same order as build_trait_clause_mapping *)
-            List.map (fun (item_name, decl_id) ->
-              let fn_ptr: C.fn_ptr = {
-                func = TraitMethod (trait_ref, item_name, decl_id);
-                generics = Charon.TypesUtils.empty_generic_args
-              } in
-              let fn_ptr = fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr) in
-              fn_ptr
-            ) (trait_impl.required_methods @ trait_impl.provided_methods)
-
-        | Clause clause_id ->
-            (* Caller it itself polymorphic and refers to one of its own clauses to synthesize
-               the clause arguments at call-site. *)
-            List.rev (Krml.KList.filter_mapi (fun i (var, t) ->
-              match var with
-              | TraitClauseMethod (clause_id', _, _) when clause_id = clause_id' ->
-                  Some K.(with_type t (EBound i))
-              | _ ->
-                  None
-            ) env.binders)
-
-        | ParentClause (_instance_id, decl_id, clause_id) ->
-            let trait_decl = env.get_nth_trait_decl decl_id in
-            let name = string_of_name env trait_decl.name in
-            let clause_id = C.TraitClauseId.to_int clause_id in
-            let parent_clause = List.nth trait_decl.parent_clauses clause_id in
-            let parent_clause_decl = env.get_nth_trait_decl parent_clause.trait_id in
-            let parent_name = string_of_name env parent_clause_decl.name in
-            Krml.KPrint.bprintf "looking up parent clause #%d of decl=%s = %s\n" clause_id name
-              parent_name;
-            if List.mem parent_name blocklisted_trait_decls then
+          match trait_ref.trait_id with
+          | _ when List.mem name blocklisted_trait_decls ->
+              (* Trait not supported -- don't synthesize arguments *)
               []
-            else
+
+          | TraitImpl impl_id ->
+              (* Call-site has resolved trait clauses into a concrete trait implementation. *)
+              let trait_impl: C.trait_impl = env.get_nth_trait_impl impl_id in
+
+              (* This must be in agreement, and in the same order as build_trait_clause_mapping *)
+              List.map (fun (item_name, decl_id) ->
+                let fn_ptr: C.fn_ptr = {
+                  func = TraitMethod (trait_ref, item_name, decl_id);
+                  generics = Charon.TypesUtils.empty_generic_args
+                } in
+                let fn_ptr = fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr) in
+                fn_ptr
+              ) (trait_impl.required_methods @ trait_impl.provided_methods) @
+              build_trait_ref_mapping ("  " ^ depth) trait_ref.generics.trait_refs
+
+          | Clause _ as clause_id ->
+              (* Caller it itself polymorphic and refers to one of its own clauses to synthesize
+                 the clause arguments at call-site. We must pass whatever is relevant for this
+                 clause, *transitively* (this means all the reachable parents). *)
+              let rec relevant = function
+                | C.ParentClause (clause_id', _, _) -> relevant clause_id'
+                | clause_id' -> clause_id = clause_id'
+              in
+              List.rev (Krml.KList.filter_mapi (fun i (var, t) ->
+                match var with
+                | TraitClauseMethod (clause_id', _, _) when relevant clause_id' ->
+                    Some K.(with_type t (EBound i))
+                | _ ->
+                    None
+              ) env.binders)
+
+          | ParentClause (_instance_id, decl_id, clause_id) ->
+              let trait_decl = env.get_nth_trait_decl decl_id in
+              let name = string_of_name env trait_decl.name in
+              let clause_id = C.TraitClauseId.to_int clause_id in
+              let parent_clause = List.nth trait_decl.parent_clauses clause_id in
+              let parent_clause_decl = env.get_nth_trait_decl parent_clause.trait_id in
+              let parent_name = string_of_name env parent_clause_decl.name in
+              Krml.KPrint.bprintf "looking up parent clause #%d of decl=%s = %s\n" clause_id name
+                parent_name;
+              if List.mem parent_name blocklisted_trait_decls then
+                []
+              else
+                failwith ("Don't know how to resolve trait_ref " ^ C.show_trait_ref trait_ref)
+
+          | _ ->
               failwith ("Don't know how to resolve trait_ref " ^ C.show_trait_ref trait_ref)
 
-        | _ ->
-            failwith ("Don't know how to resolve trait_ref " ^ C.show_trait_ref trait_ref)
-
-      ) trait_refs
+        ) trait_refs
+      in
+      build_trait_ref_mapping depth trait_refs
   in
   L.log "Calls" "%s--> trait method impls: %d" depth (List.length fn_ptrs);
 
@@ -1582,13 +1594,6 @@ let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
                   let clause_mapping = build_trait_clause_mapping env signature.C.generics.trait_clauses in
                   debug_trait_clause_mapping env clause_mapping;
 
-                  (* In definition fn f<T: Foo<42>>, associates [ 42 ] to clause Foo *)
-                  let env = { env with clause_arguments =
-                    List.map (fun (tc: C.trait_clause) ->
-                      tc.clause_id, tc.clause_generics.const_generics
-                    ) signature.C.generics.trait_clauses
-                  } in
-
                   (* `locals` contains, in order: special return variable; function arguments;
                      local variables *)
                   let args, locals = Krml.KList.split (arg_count + 1) locals in
@@ -1697,6 +1702,5 @@ let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
     crate_name = name;
     name_ctx;
     generic_params = { regions = []; types = []; const_generics = []; trait_clauses = [] };
-    clause_arguments = [];
   } in
   name, List.concat_map (decls_of_declarations env) declarations
