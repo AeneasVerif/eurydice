@@ -144,7 +144,8 @@ Supported options:|}
   in
 
   let files =
-    Eurydice.SimplifyMonomorphizedNames.add_monomorphization_comments files
+    Eurydice.SimplifyMonomorphizedNames.(
+      add_monomorphization_comments files |> minimize_names)
   in
 
   Eurydice.Logging.log "Phase2.2" "%a" pfiles files;

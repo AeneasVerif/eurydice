@@ -10,6 +10,10 @@ let lids_of_decls (decls : K.program) : (K.lident * Krml.Common.flag list) list
     =
   List.map (fun d -> (K.lid_of_decl d, K.flags_of_decl d)) decls
 
+open struct
+  let ( >> ) f g x = g (f x)
+end
+
 module MonomorphizationSource = struct
   type t = {
     original_lid : K.lident;
@@ -25,7 +29,6 @@ module MonomorphizationSource = struct
         f buf x;
         Buffer.contents buf
 
-      let ( >> ) f g x = g (f x)
       let drop_newlines = String.split_on_char '\n' >> String.concat " "
     end
 
@@ -47,6 +50,23 @@ module MonomorphizationSource = struct
     in
     print_list "Const generics and traits methods" src.const_generics pexpr;
     print_list "Types" src.types ptyp
+
+  let to_id (src : t) : string =
+    let obj =
+      Krml.Monomorphization.monomorphize_data_types (Hashtbl.create 0)
+    in
+    let { types = ts; const_generics = cgs; _ } = src in
+    let doc =
+      PPrint.(
+        separate_map underscore Krml.PrintAst.print_typ (List.map obj#pretty ts)
+        ^^
+        if cgs = [] then empty
+        else underscore ^^ separate_map underscore Krml.PrintAst.print_expr cgs)
+    in
+    Krml.KPrint.bsprintf "%s__%a" (snd src.original_lid) Krml.PrintCommon.pdoc
+      doc
+
+  let to_lid (src : t) : K.lident = (fst src.original_lid, to_id src)
 end
 
 (** Computes a lookup function that maps monomorphized identifiers to
@@ -54,16 +74,13 @@ their monomorphization sources. Note: this function is stateful, it
 reads {Krml.MonomorphizationState.generated_lids}. The map is
 constructed given that state at the moment of the call. *)
 let compute_monomorphization_source_lookup () :
-    K.lident -> MonomorphizationSource.t option =
-  let map =
-    Hashtbl.fold
-      (fun (original_lid, const_generics, types) lident acc ->
-        LidentMap.add lident
-          MonomorphizationSource.{ original_lid; const_generics; types }
-          acc)
-      Krml.MonomorphizationState.generated_lids LidentMap.empty
-  in
-  fun key -> LidentMap.find_opt key map
+    MonomorphizationSource.t LidentMap.t =
+  Hashtbl.fold
+    (fun (original_lid, const_generics, types) lident acc ->
+      LidentMap.add lident
+        MonomorphizationSource.{ original_lid; const_generics; types }
+        acc)
+    Krml.MonomorphizationState.generated_lids LidentMap.empty
 
 (** Tags a declaration with a comment. *)
 let add_comment_to_decl (comment : string) : K.decl -> K.decl =
@@ -76,12 +93,12 @@ let add_comment_to_decl (comment : string) : K.decl -> K.decl =
 
 (** Adds comments describing monomorphizations *)
 let add_monomorphization_comments (files : K.files) : K.files =
-  let lookup = compute_monomorphization_source_lookup () in
+  let mono_map = compute_monomorphization_source_lookup () in
   (object
      inherit [_] K.map
 
      method! visit_decl _ decl =
-       match lookup (K.lid_of_decl decl) with
+       match LidentMap.find_opt (K.lid_of_decl decl) mono_map with
        | None -> decl
        | Some source ->
            add_comment_to_decl ([%show: MonomorphizationSource.t] source) decl
@@ -89,27 +106,123 @@ let add_monomorphization_comments (files : K.files) : K.files =
     #visit_files
     () files
 
+module List = struct
+  include List
+
+  let hd_opt : 'a. 'a t -> 'a option = function hd :: _ -> Some hd | _ -> None
+  let snoc = function hd :: tl -> Some (hd, tl) | _ -> None
+
+  let rec transpose : 'a. 'a option t -> 'a t option = function
+    | Some hd :: tl -> (
+        match transpose tl with Some tl -> Some (hd :: tl) | None -> None)
+    | None :: _ -> None
+    | [] -> Some []
+
+  (** Finds the longest prefix in a list of lists *)
+  let common_prefix ~(eq : 'a -> 'a -> bool) (lists : 'a list list) =
+    let rec aux lists =
+      match List.map snoc lists |> transpose with
+      | None -> []
+      | Some ((first_hd, first_tl) :: rest)
+        when List.for_all (fun (hd, _) -> eq first_hd hd) rest ->
+          first_hd :: aux (first_tl :: List.map snd rest)
+      | _ -> []
+    in
+    aux lists
+
+  let drop n = function _ :: tl when n > 0 -> tl | _ -> []
+
+  let strip_common_prefix ~(eq : 'a -> 'a -> bool) (lists : 'a list list) :
+      'a list list =
+    let prefix_len = common_prefix ~eq lists |> length in
+    map (drop prefix_len) lists
+
+  let rec zip_exn l r =
+    match (l, r) with
+    | [], [] -> []
+    | lhd :: ltl, rhd :: rtl -> (lhd, rhd) :: zip_exn ltl rtl
+    | _ -> failwith "zip: left and right are not of the same size"
+
+  let group_by' (f : 'a -> 'g) (l : 'a list) : ('g * 'a list) list =
+    let ht = Hashtbl.create 40 in
+    List.iter
+      (fun x ->
+        let repr = f x in
+        let group = Hashtbl.find_opt ht repr |> Option.value ~default:[] in
+        Hashtbl.replace ht repr (x :: group))
+      l;
+    Hashtbl.to_seq ht |> List.of_seq
+    |> List.map (fun (repr, l) -> (repr, List.rev l))
+
+  let group_by (projection : 'a -> 'g) (l : 'a list) : 'a list list =
+    group_by' projection l |> List.map snd
+end
+
 (** Given a list of monorphizations (a pair of a monomorphized
-identifier and a monomorphization source), finds the minimal prefix of
-generics for each monomorphizations so that names are unique. *)
-let minimize_names (names : (K.lident * MonomorphizationSource.t) list) =
-  let _const_arities =
-    List.map
-      (fun (_, (src : MonomorphizationSource.t)) ->
-        List.length src.const_generics)
-      names
-    |> List.sort_uniq Int.compare
+identifier and a monomorphization source), generates a replacement map
+by stripping type or cg prefixes *)
+let minimize_names_strip_prefixes
+    (names : (K.lident * MonomorphizationSource.t) list) : K.lident LidentMap.t
+    =
+  let reduced_types =
+    List.strip_common_prefix ~eq:( == )
+      (List.map (fun (_, src) -> src.MonomorphizationSource.types) names)
+    |> List.(map hd_opt >> transpose)
   in
-  ()
+  (match reduced_types with
+  | Some l ->
+      List.zip_exn names l
+      |> List.map (fun ((name, src), typ) ->
+             ( name,
+               MonomorphizationSource.
+                 { src with types = [ typ ]; const_generics = [] } ))
+  | None -> (
+      let reduced_cgs =
+        List.strip_common_prefix ~eq:( == )
+          (List.map
+             (fun (_, src) -> src.MonomorphizationSource.const_generics)
+             names)
+        |> List.(map hd_opt >> transpose)
+      in
+      match reduced_cgs with
+      | Some l ->
+          List.zip_exn names l
+          |> List.map (fun ((name, src), cg) ->
+                 ( name,
+                   MonomorphizationSource.
+                     { src with const_generics = [ cg ]; types = [] } ))
+      | None -> names))
+  |> List.map (fun (name, src) ->
+         (name, (fst name, MonomorphizationSource.to_id src)))
+  |> List.to_seq |> LidentMap.of_seq
+
+let rename_visitor map =
+  object
+    inherit [_] K.map
+
+    method! visit_lident _ lid =
+      LidentMap.find_opt lid map |> Option.value ~default:lid
+  end
+
+let minimize_names (files : Krml.Ast.file list) : Krml.Ast.file list =
+  let mono_map = compute_monomorphization_source_lookup () in
+  let visitor =
+    LidentMap.bindings mono_map
+    |> List.group_by (fun (_, src) -> src.MonomorphizationSource.original_lid)
+    |> List.map minimize_names_strip_prefixes
+    |> List.fold_left (LidentMap.union (fun _ x _ -> Some x)) LidentMap.empty
+    |> rename_visitor
+  in
+  visitor#visit_files () files
 
 let rename (file : Krml.Ast.file) =
   let lids = lids_of_decls (snd file) in
-  let lookup = compute_monomorphization_source_lookup () in
+  let mono_map = compute_monomorphization_source_lookup () in
   let lid_to_olid, oname_counts =
     let list =
       List.filter_map
         (fun (lid, _) ->
-          lookup lid
+          LidentMap.find_opt lid mono_map
           |> Option.map (fun (mono : MonomorphizationSource.t) ->
                  (lid, mono.original_lid)))
         lids
@@ -137,16 +250,5 @@ let rename (file : Krml.Ast.file) =
     List.map (fun lid -> (lid, LidentMap.find lid lid_to_olid)) lids
     |> List.to_seq |> LidentMap.of_seq
   in
-  let result =
-    (object
-       inherit [_] K.map
-
-       method! visit_lident _ lid =
-         match LidentMap.find_opt lid renamings with
-         | Some lid -> lid
-         | _ -> lid
-    end)
-      #visit_file
-      () file
-  in
+  let result = (rename_visitor renamings)#visit_file () file in
   result
