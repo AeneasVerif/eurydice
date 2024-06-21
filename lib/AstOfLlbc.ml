@@ -5,6 +5,7 @@ module C = struct
   include Charon.Types
   include Charon.Expressions
   include Charon.Values
+  include Charon.GAstUtils
 
   let tsubst cgs ts ty =
     (object
@@ -1513,171 +1514,178 @@ let of_declaration_group (dg: 'id C.g_declaration_group) (f: 'id -> 'a): 'a list
 let seen = ref 0
 let total = ref 0
 
+(** List all the ids in this declaration group. *)
+let declaration_group_to_list (g : C.declaration_group) : C.any_decl_id list =
+  match g with
+  | FunGroup g -> List.map (fun id -> C.IdFun id) (C.g_declaration_group_to_list g)
+  | TypeGroup g ->
+      List.map (fun id -> C.IdType id) (C.g_declaration_group_to_list g)
+  | TraitDeclGroup g ->
+      List.map (fun id -> C.IdTraitDecl id) (C.g_declaration_group_to_list g)
+  | GlobalGroup id -> [ IdGlobal id ]
+  | TraitImplGroup id -> [ IdTraitImpl id ]
+  | MixedGroup g -> C.g_declaration_group_to_list g
+
+let decl_of_id (env: env) (id: C.any_decl_id): K.decl option = match id with
+  | IdType id -> (
+      let decl = env.get_nth_type id in
+      let { C.name; def_id; kind; generics = { types = type_params; const_generics; _ }; _ } = decl in
+      L.log "AstOfLlbc" "Visiting type: %s\n%s" (string_of_name env name)
+        (Charon.PrintTypes.type_decl_to_string env.format_env decl);
+
+      assert (def_id = id);
+      let name = lid_of_name env name in
+      let env = push_cg_binders env const_generics in
+      let env = push_type_binders env type_params in
+
+      match kind with
+      | Opaque -> None
+      | Struct fields ->
+          let fields = List.map (fun { C.field_name; field_ty; _ } ->
+            field_name, (typ_of_ty env field_ty, true)
+          ) fields in
+          Some (K.DType (name, [], List.length const_generics, List.length type_params, Flat fields))
+      | Enum branches ->
+          let branches = List.map (fun { C.variant_name; fields; _ } ->
+            variant_name, List.mapi (fun i { C.field_name; field_ty; _ } ->
+              mk_field_name field_name i,
+              (typ_of_ty env field_ty, true)
+            ) fields
+          ) branches in
+          Some (K.DType (name, [], List.length const_generics, List.length type_params, Variant branches))
+      | Alias ty ->
+          Some (K.DType (name, [], List.length const_generics, List.length type_params, Abbrev (typ_of_ty env ty)))
+    )
+  | IdFun id -> (
+      let decl = try Some (env.get_nth_function id) with Not_found -> None in
+      match decl with
+      | None -> None
+      | Some decl ->
+          let { C.def_id; name; signature; body; is_global_decl_body; item_meta; _ } = decl in
+          let env = { env with generic_params = signature.generics } in
+          L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
+            (if body = None then "opaque " else "")
+            (string_of_name env name)
+            (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " decl);
+
+          assert (def_id = id);
+          let name = lid_of_name env name in
+          match body with
+          | None ->
+              begin try
+                (* Opaque function *)
+                let { K.n_cgs; n }, t = typ_of_signature env signature in
+                Some (K.DExternal (None, [], n_cgs, n, name, t, []))
+              with e ->
+                L.log "AstOfLlbc" "ERROR translating %s: %s\n%s" (string_of_name env decl.name)
+                  (Printexc.to_string e)
+                  (Printexc.get_backtrace ());
+                None
+              end
+
+          | Some { arg_count; locals; body; _ } ->
+              if is_global_decl_body then
+                None
+              else
+                let env = push_cg_binders env signature.C.generics.const_generics in
+                let env = push_type_binders env signature.C.generics.types in
+
+                L.log "AstOfLlbc" "ty of locals: %s"
+                  (String.concat " ++ " (List.map (fun (local: C.var) ->
+                    Charon.PrintTypes.ty_to_string env.format_env local.var_ty) locals));
+                L.log "AstOfLlbc" "ty of inputs: %s"
+                  (String.concat " ++ " (List.map (fun t ->
+                    Charon.PrintTypes.ty_to_string env.format_env t) signature.C.inputs));
+
+                let clause_mapping = build_trait_clause_mapping env signature.C.generics.trait_clauses in
+                debug_trait_clause_mapping env clause_mapping;
+
+                (* `locals` contains, in order: special return variable; function arguments;
+                   local variables *)
+                let args, locals = Krml.KList.split (arg_count + 1) locals in
+                let return_var = List.hd args in
+                let args = List.tl args in
+
+                let return_type = typ_of_ty env return_var.var_ty in
+
+                (* Note: Rust allows zero-argument functions but the krml internal
+                   representation wants a unit there. This is aligned with typ_of_signature. *)
+                let t_unit = C.(TAdt (TTuple, { types = []; const_generics = []; regions = []; trait_refs = [] })) in
+                let v_unit = { C.index = Charon.Expressions.VarId.of_int max_int; name = None; var_ty = t_unit } in
+                let args = if args = [] then [ v_unit ] else args in
+
+                (* At this stage, env has:
+                   cg_binders = <<all cg binders>>
+                   type_binders = <<all type binders>>
+                   binders = <<all cg binders>>
+                *)
+                let clause_binders = mk_clause_binders_and_args env clause_mapping in
+                (* Now we turn it into:
+                   binders = <<all cg binders>> ++ <<all clause binders>> ++ <<regular function args>>
+                *)
+                let env = push_clause_binders env clause_binders in
+                let env = push_binders env args in
+
+                let arg_binders =
+                  List.map (fun (arg: C.const_generic_var) ->
+                      Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty)
+                    ) signature.C.generics.const_generics @
+                  List.map (fun { pretty_name; t; _ } ->
+                    Krml.Helpers.fresh_binder pretty_name t
+                  ) clause_binders @
+                  List.map (fun (arg: C.var) ->
+                    let name = Option.value ~default:"_" arg.name in
+                    Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty)
+                  ) args
+                in
+                L.log "AstOfLlbc" "type of binders: %a" ptyps (List.map (fun o -> o.K.typ) arg_binders);
+                let body =
+                  with_locals env return_type (return_var :: locals) (fun env ->
+                    expression_of_raw_statement env return_var.index body.content)
+                in
+                let flags =
+                  match item_meta.inline with
+                  | Some (Hint | Always) -> [ Krml.Common.Inline ]
+                  | _ -> []
+                in
+                (* This is kind of a hack here: we indicate that this function is intended to be
+                   specialized, at monomorphization-time (which happens quite early on), on the cg
+                   binders but also on the clause binders... This is ok because even though the
+                   clause binders are not in env.cg_binders, well, types don't refer to clause
+                   binders, so we won't have translation errors. *)
+                let n_cg = List.length signature.C.generics.const_generics in
+                let n = List.length signature.C.generics.types in
+                Some (K.DFunction (None, flags, n_cg, n, return_type, name, arg_binders, body))
+    )
+  | IdGlobal id ->
+    let global = env.get_nth_global id in
+    let { C.name; ty; def_id; _ } = global in
+    let def = env.get_nth_global def_id in
+    L.log "AstOfLlbc" "Visiting global: %s\n%s" (string_of_name env name)
+      (Charon.PrintLlbcAst.Ast.global_decl_to_string env.format_env "  "  "  " def);
+    let ty = typ_of_ty env ty in
+    let body = env.get_nth_function def.body in
+    L.log "AstOfLlbc" "Corresponding body:%s"
+      (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " body);
+    begin match body.body with
+    | Some body ->
+        let ret_var = List.hd body.locals in
+        let body =
+          with_locals env ty body.locals (fun env ->
+            expression_of_raw_statement env ret_var.index body.body.content)
+        in
+        Some ( K.DGlobal ([Krml.Common.Const ""], lid_of_name env name, 0, ty, body) )
+    | None ->
+        Some( K.DExternal (None, [], 0, 0, lid_of_name env name, ty, []) )
+    end
+  | IdTraitDecl _ | IdTraitImpl _ -> None
+
 let decls_of_declarations (env: env) (d: C.declaration_group): K.decl list =
   incr seen;
   L.log "Progress" "%d/%d" !seen !total;
-  match d with
-  | TypeGroup dg ->
-      Krml.KList.filter_some @@
-      of_declaration_group dg (fun (id: C.TypeDeclId.id) ->
-        let decl = env.get_nth_type id in
-        let { C.name; def_id; kind; generics = { types = type_params; const_generics; _ }; _ } = decl in
-        L.log "AstOfLlbc" "Visiting type: %s\n%s" (string_of_name env name)
-          (Charon.PrintTypes.type_decl_to_string env.format_env decl);
-
-        assert (def_id = id);
-        let name = lid_of_name env name in
-        let env = push_cg_binders env const_generics in
-        let env = push_type_binders env type_params in
-
-        match kind with
-        | Opaque -> None
-        | Struct fields ->
-            let fields = List.map (fun { C.field_name; field_ty; _ } ->
-              field_name, (typ_of_ty env field_ty, true)
-            ) fields in
-            Some (K.DType (name, [], List.length const_generics, List.length type_params, Flat fields))
-        | Enum branches ->
-            let branches = List.map (fun { C.variant_name; fields; _ } ->
-              variant_name, List.mapi (fun i { C.field_name; field_ty; _ } ->
-                mk_field_name field_name i,
-                (typ_of_ty env field_ty, true)
-              ) fields
-            ) branches in
-            Some (K.DType (name, [], List.length const_generics, List.length type_params, Variant branches))
-        | Alias ty ->
-            Some (K.DType (name, [], List.length const_generics, List.length type_params, Abbrev (typ_of_ty env ty)))
-      )
-  | FunGroup dg ->
-      Krml.KList.filter_some @@
-      of_declaration_group dg (fun (id: C.FunDeclId.id) ->
-        let decl = try Some (env.get_nth_function id) with Not_found -> None in
-        match decl with
-        | None -> None
-        | Some decl ->
-            let { C.def_id; name; signature; body; is_global_decl_body; item_meta; _ } = decl in
-            let env = { env with generic_params = signature.generics } in
-            L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
-              (if body = None then "opaque " else "")
-              (string_of_name env name)
-              (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " decl);
-
-            assert (def_id = id);
-            let name = lid_of_name env name in
-            match body with
-            | None ->
-                begin try
-                  (* Opaque function *)
-                  let { K.n_cgs; n }, t = typ_of_signature env signature in
-                  Some (K.DExternal (None, [], n_cgs, n, name, t, []))
-                with e ->
-                  L.log "AstOfLlbc" "ERROR translating %s: %s\n%s" (string_of_name env decl.name)
-                    (Printexc.to_string e)
-                    (Printexc.get_backtrace ());
-                  None
-                end
-
-            | Some { arg_count; locals; body; _ } ->
-                if is_global_decl_body then
-                  None
-                else
-                  let env = push_cg_binders env signature.C.generics.const_generics in
-                  let env = push_type_binders env signature.C.generics.types in
-
-                  L.log "AstOfLlbc" "ty of locals: %s"
-                    (String.concat " ++ " (List.map (fun (local: C.var) ->
-                      Charon.PrintTypes.ty_to_string env.format_env local.var_ty) locals));
-                  L.log "AstOfLlbc" "ty of inputs: %s"
-                    (String.concat " ++ " (List.map (fun t ->
-                      Charon.PrintTypes.ty_to_string env.format_env t) signature.C.inputs));
-
-                  let clause_mapping = build_trait_clause_mapping env signature.C.generics.trait_clauses in
-                  debug_trait_clause_mapping env clause_mapping;
-
-                  (* `locals` contains, in order: special return variable; function arguments;
-                     local variables *)
-                  let args, locals = Krml.KList.split (arg_count + 1) locals in
-                  let return_var = List.hd args in
-                  let args = List.tl args in
-
-                  let return_type = typ_of_ty env return_var.var_ty in
-
-                  (* Note: Rust allows zero-argument functions but the krml internal
-                     representation wants a unit there. This is aligned with typ_of_signature. *)
-                  let t_unit = C.(TAdt (TTuple, { types = []; const_generics = []; regions = []; trait_refs = [] })) in
-                  let v_unit = { C.index = Charon.Expressions.VarId.of_int max_int; name = None; var_ty = t_unit } in
-                  let args = if args = [] then [ v_unit ] else args in
-
-                  (* At this stage, env has:
-                     cg_binders = <<all cg binders>>
-                     type_binders = <<all type binders>>
-                     binders = <<all cg binders>>
-                  *)
-                  let clause_binders = mk_clause_binders_and_args env clause_mapping in
-                  (* Now we turn it into:
-                     binders = <<all cg binders>> ++ <<all clause binders>> ++ <<regular function args>>
-                  *)
-                  let env = push_clause_binders env clause_binders in
-                  let env = push_binders env args in
-
-                  let arg_binders =
-                    List.map (fun (arg: C.const_generic_var) ->
-                        Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty)
-                      ) signature.C.generics.const_generics @
-                    List.map (fun { pretty_name; t; _ } ->
-                      Krml.Helpers.fresh_binder pretty_name t
-                    ) clause_binders @
-                    List.map (fun (arg: C.var) ->
-                      let name = Option.value ~default:"_" arg.name in
-                      Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty)
-                    ) args
-                  in
-                  L.log "AstOfLlbc" "type of binders: %a" ptyps (List.map (fun o -> o.K.typ) arg_binders);
-                  let body =
-                    with_locals env return_type (return_var :: locals) (fun env ->
-                      expression_of_raw_statement env return_var.index body.content)
-                  in
-                  let flags =
-                    match item_meta.inline with
-                    | Some (Hint | Always) -> [ Krml.Common.Inline ]
-                    | _ -> []
-                  in
-                  (* This is kind of a hack here: we indicate that this function is intended to be
-                     specialized, at monomorphization-time (which happens quite early on), on the cg
-                     binders but also on the clause binders... This is ok because even though the
-                     clause binders are not in env.cg_binders, well, types don't refer to clause
-                     binders, so we won't have translation errors. *)
-                  let n_cg = List.length signature.C.generics.const_generics in
-                  let n = List.length signature.C.generics.types in
-                  Some (K.DFunction (None, flags, n_cg, n, return_type, name, arg_binders, body))
-
-      )
-  | GlobalGroup id ->
-      let global = env.get_nth_global id in
-      let { C.name; ty; def_id; _ } = global in
-      let def = env.get_nth_global def_id in
-      L.log "AstOfLlbc" "Visiting global: %s\n%s" (string_of_name env name)
-        (Charon.PrintLlbcAst.Ast.global_decl_to_string env.format_env "  "  "  " def);
-      let ty = typ_of_ty env ty in
-      let body = env.get_nth_function def.body in
-      L.log "AstOfLlbc" "Corresponding body:%s"
-        (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " body);
-      begin match body.body with
-      | Some body ->
-          let ret_var = List.hd body.locals in
-          let body =
-            with_locals env ty body.locals (fun env ->
-              expression_of_raw_statement env ret_var.index body.body.content)
-          in
-          [ K.DGlobal ([Krml.Common.Const ""], lid_of_name env name, 0, ty, body) ]
-      | None ->
-          [ K.DExternal (None, [], 0, 0, lid_of_name env name, ty, []) ]
-      end
-
-  | TraitDeclGroup _ ->
-      []
-  | TraitImplGroup _ ->
-      []
+  Krml.KList.filter_some @@
+    List.map (decl_of_id env) @@
+    declaration_group_to_list d
 
 let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
   let { C.name; declarations; type_decls; fun_decls; global_decls; trait_decls; trait_impls } = crate in
