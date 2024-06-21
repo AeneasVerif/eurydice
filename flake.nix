@@ -92,6 +92,7 @@
           pkgs.ocamlPackages.ocaml
           pkgs.ocamlPackages.ocamlformat
           pkgs.ocamlPackages.menhir
+          pkgs.clang-tools # For clang-format
         ];
 
         inputsFrom = [
