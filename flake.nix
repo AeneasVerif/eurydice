@@ -9,14 +9,15 @@
     charon.url = "github:AeneasVerif/charon";
     charon.inputs.nixpkgs.follows = "nixpkgs";
   };
-  outputs = {
-    self,
-    flake-utils,
-    nixpkgs,
-    ...
-  } @ inputs:
-    flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = import nixpkgs {inherit system;};
+  outputs =
+    { self
+    , flake-utils
+    , nixpkgs
+    , ...
+    } @ inputs:
+    flake-utils.lib.eachDefaultSystem (system:
+    let
+      pkgs = import nixpkgs { inherit system; };
 
       karamel = inputs.karamel.packages.${system}.default;
       krml = karamel.passthru.lib;
@@ -27,57 +28,60 @@
 
       fstar = inputs.fstar.packages.${system}.default;
 
-      package = {
-        ocamlPackages,
-        removeReferencesTo,
-        stdenv,
-        symlinks,
-        version,
-        which,
-        z3,
-        gnugrep,
-        charon-ml,
-        krml,
-        symlinkJoin,
-        clang,
-      }: let
-        eurydice = ocamlPackages.buildDunePackage {
-          pname = "eurydice";
-          inherit version;
+      package =
+        { ocamlPackages
+        , removeReferencesTo
+        , stdenv
+        , symlinks
+        , version
+        , which
+        , z3
+        , gnugrep
+        , charon-ml
+        , krml
+        , symlinkJoin
+        , clang
+        ,
+        }:
+        let
+          eurydice = ocamlPackages.buildDunePackage {
+            pname = "eurydice";
+            inherit version;
 
-          src = ./.;
+            src = ./.;
 
-          OCAMLPARAM = "_,warn-error=+A"; # Turn all warnings into errors.
+            OCAMLPARAM = "_,warn-error=+A"; # Turn all warnings into errors.
 
-          nativeBuildInputs = [gnugrep];
+            nativeBuildInputs = [ gnugrep ];
 
-          propagatedBuildInputs = [krml charon-ml ocamlPackages.terminal ocamlPackages.yaml];
+            propagatedBuildInputs = [ krml charon-ml ocamlPackages.terminal ocamlPackages.yaml ];
 
-          passthru = {
-            tests = stdenv.mkDerivation {
-              name = "tests";
-              src = ./.;
-              KRML_HOME = karamel;
-              FSTAR_HOME = fstar;
-              EURYDICE = "${eurydice}/bin/eurydice";
-              buildInputs = [charon.buildInputs eurydice];
-              nativeBuildInputs = [charon.nativeBuildInputs fstar clang];
-              buildPhase = ''
-                export CHARON="${charon}/bin/charon"
+            passthru = {
+              tests = stdenv.mkDerivation {
+                name = "tests";
+                src = ./.;
+                KRML_HOME = karamel;
+                FSTAR_HOME = fstar;
+                EURYDICE = "${eurydice}/bin/eurydice";
+                buildInputs = [ charon.buildInputs eurydice ];
+                nativeBuildInputs = [ charon.nativeBuildInputs fstar clang ];
+                buildPhase = ''
+                  export CHARON="${charon}/bin/charon"
 
-                # setup CHARON_HOME: it is expected to be writtable, hence the `cp --no-preserve`
-                cp --no-preserve=mode,ownership -rf ${inputs.charon.sourceInfo.outPath} ./charon
-                export CHARON_HOME=./charon
+                  # setup CHARON_HOME: it is expected to be writtable, hence the `cp --no-preserve`
+                  cp --no-preserve=mode,ownership -rf ${inputs.charon.sourceInfo.outPath} ./charon
+                  export CHARON_HOME=./charon
 
-                make -o all test
-              '';
-              installPhase = ''touch $out'';
+                  make -o all test
+                '';
+                installPhase = ''touch $out'';
+              };
             };
           };
-        };
-      in
+        in
         eurydice;
-    in rec {
+    in
+    rec {
       packages.default = pkgs.callPackage package {
         inherit charon-ml krml;
         version = self.rev or "dirty";
