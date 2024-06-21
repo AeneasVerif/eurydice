@@ -1701,6 +1701,6 @@ let file_of_crate (crate: Charon.LlbcAst.crate): Krml.Ast.file =
     format_env;
     crate_name = name;
     name_ctx;
-    generic_params = { regions = []; types = []; const_generics = []; trait_clauses = [] };
+    generic_params = Charon.TypesUtils.empty_generic_params;
   } in
   name, List.concat_map (decls_of_declarations env) declarations
