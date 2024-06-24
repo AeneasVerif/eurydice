@@ -1,0 +1,8 @@
+profile = default
+version = 0.26.0
+margin = 100
+
+break-cases = fit-or-vertical
+exp-grouping = preserve
+parens-tuple = multi-line-only
+parens-tuple-patterns = multi-line-only
