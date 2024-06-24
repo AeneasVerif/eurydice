@@ -258,7 +258,7 @@ module RustNames = struct
     match fn_ptr.func with
     | FunId (FRegular id) ->
         let decl = env.get_nth_function id in
-        begin match decl.name with
+        begin match decl.item_meta.name with
         | [ PeIdent ("core", _); PeIdent ("array", _); _; PeIdent ("map", _) ] ->
             true
         | _ ->
@@ -301,8 +301,8 @@ let width_of_integer_type (t: Charon.Types.integer_type): K.width =
   | U128 -> failwith "TODO: U128"
 
 let lid_of_type_decl_id (env: env) (id: C.type_decl_id) =
-  let { C.name; _ } = env.get_nth_type id in
-  lid_of_name env name
+  let { C.item_meta; _ } = env.get_nth_type id in
+  lid_of_name env item_meta.name
 
 let constant_of_scalar_value { C.value; int_ty } =
   let w = width_of_integer_type int_ty in
@@ -757,7 +757,7 @@ let rec build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
     let { C.clause_id; trait_id; clause_generics; _ } = tc in
     let trait_decl = env.get_nth_trait_decl trait_id in
 
-    let name = string_of_name env trait_decl.name in
+    let name = string_of_name env trait_decl.item_meta.name in
     if List.mem name blocklisted_trait_decls then
       []
 
@@ -779,14 +779,14 @@ let rec build_trait_clause_mapping env (trait_clauses: C.trait_clause list) =
       List.map (fun (item_name, decl_id) ->
         let decl = env.get_nth_function decl_id in
         let ts = { K.n = List.length trait_decl.generics.types; n_cgs = List.length trait_decl.generics.const_generics } in
-        (C.Clause clause_id, item_name), (clause_generics, ts, trait_decl.C.name, decl.C.signature)
+        (C.Clause clause_id, item_name), (clause_generics, ts, trait_decl.C.item_meta.name, decl.C.signature)
         ) trait_decl.C.required_methods @
       List.map (fun (item_name, decl_id) ->
         match decl_id with
         | Some decl_id ->
             let decl = env.get_nth_function decl_id in
             let ts = { K.n = List.length trait_decl.generics.types; n_cgs = List.length trait_decl.generics.const_generics } in
-            (C.Clause clause_id, item_name), (clause_generics, ts, trait_decl.C.name, decl.C.signature)
+            (C.Clause clause_id, item_name), (clause_generics, ts, trait_decl.C.item_meta.name, decl.C.signature)
         | None ->
             failwith ("TODO: handle provided trait methods, like " ^ item_name)
       ) trait_decl.C.provided_methods @
@@ -935,8 +935,8 @@ let lookup_fun (env: env) depth (f: C.fn_ptr): K.expr' * lookup_result =
   | None ->
 
       let lookup_result_of_fun_id fun_id =
-        let { C.name; signature; _ } = env.get_nth_function fun_id in
-        let lid = lid_of_name env name in
+        let { C.item_meta; signature; _ } = env.get_nth_function fun_id in
+        let lid = lid_of_name env item_meta.name in
         L.log "Calls" "%s--> name: %a" depth plid lid;
         K.EQualified lid,
         lookup_signature env depth signature
@@ -1030,7 +1030,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
       (* MUST have the same structure as build_trait_clause_mapping *)
       let rec build_trait_ref_mapping depth (trait_refs: C.trait_ref list) =
         List.concat_map (fun (trait_ref: C.trait_ref) ->
-          let name = string_of_name env (env.get_nth_trait_decl trait_ref.trait_decl_ref.trait_decl_id).name in
+          let name = string_of_name env (env.get_nth_trait_decl trait_ref.trait_decl_ref.trait_decl_id).item_meta.name in
           L.log "Calls" "%s--> trait_ref: %s\n" depth (C.show_trait_ref trait_ref);
 
           match trait_ref.trait_id with
@@ -1071,11 +1071,11 @@ let rec expression_of_fn_ptr env depth (fn_ptr: C.fn_ptr) =
 
           | ParentClause (_instance_id, decl_id, clause_id) ->
               let trait_decl = env.get_nth_trait_decl decl_id in
-              let name = string_of_name env trait_decl.name in
+              let name = string_of_name env trait_decl.item_meta.name in
               let clause_id = C.TraitClauseId.to_int clause_id in
               let parent_clause = List.nth trait_decl.parent_clauses clause_id in
               let parent_clause_decl = env.get_nth_trait_decl parent_clause.trait_id in
-              let parent_name = string_of_name env parent_clause_decl.name in
+              let parent_name = string_of_name env parent_clause_decl.item_meta.name in
               Krml.KPrint.bprintf "looking up parent clause #%d of decl=%s = %s\n" clause_id name
                 parent_name;
               if List.mem parent_name blocklisted_trait_decls then
@@ -1220,7 +1220,8 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
         K.with_type (TTuple ts) (K.ETuple ops)
       end
   | Aggregate (AggregatedAdt (TAdtId typ_id, variant_id, { types = typ_args; const_generics; _ }), args) ->
-      let { C.name; kind; _ } = env.get_nth_type typ_id in
+      let { C.item_meta; kind; _ } = env.get_nth_type typ_id in
+      let name = item_meta.name in
       let typ_lid = lid_of_name env name in
       let typ_args = List.map (typ_of_ty env) typ_args in
       let cg_args = List.map (cg_of_const_generic env) const_generics in
@@ -1267,7 +1268,7 @@ let expression_of_rvalue (env: env) (p: C.rvalue): K.expr =
       K.with_type (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))) (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
   | Global (id, _generic_args) ->
       let global = env.get_nth_global id in
-      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.name))
+      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
   | Len _ ->
       failwith "unsupported: Len"
 
@@ -1529,7 +1530,8 @@ let declaration_group_to_list (g : C.declaration_group) : C.any_decl_id list =
 let decl_of_id (env: env) (id: C.any_decl_id): K.decl option = match id with
   | IdType id -> (
       let decl = env.get_nth_type id in
-      let { C.name; def_id; kind; generics = { types = type_params; const_generics; _ }; _ } = decl in
+      let { C.item_meta; def_id; kind; generics = { types = type_params; const_generics; _ }; _ } = decl in
+      let name = item_meta.name in
       L.log "AstOfLlbc" "Visiting type: %s\n%s" (string_of_name env name)
         (Charon.PrintTypes.type_decl_to_string env.format_env decl);
 
@@ -1561,15 +1563,15 @@ let decl_of_id (env: env) (id: C.any_decl_id): K.decl option = match id with
       match decl with
       | None -> None
       | Some decl ->
-          let { C.def_id; name; signature; body; is_global_decl_body; item_meta; _ } = decl in
+          let { C.def_id; signature; body; is_global_decl_body; item_meta; _ } = decl in
           let env = { env with generic_params = signature.generics } in
           L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
             (if body = None then "opaque " else "")
-            (string_of_name env name)
+            (string_of_name env item_meta.name)
             (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " decl);
 
           assert (def_id = id);
-          let name = lid_of_name env name in
+          let name = lid_of_name env item_meta.name in
           match body with
           | None ->
               begin try
@@ -1577,7 +1579,7 @@ let decl_of_id (env: env) (id: C.any_decl_id): K.decl option = match id with
                 let { K.n_cgs; n }, t = typ_of_signature env signature in
                 Some (K.DExternal (None, [], n_cgs, n, name, t, []))
               with e ->
-                L.log "AstOfLlbc" "ERROR translating %s: %s\n%s" (string_of_name env decl.name)
+                L.log "AstOfLlbc" "ERROR translating %s: %s\n%s" (string_of_name env decl.item_meta.name)
                   (Printexc.to_string e)
                   (Printexc.get_backtrace ());
                 None
@@ -1644,7 +1646,7 @@ let decl_of_id (env: env) (id: C.any_decl_id): K.decl option = match id with
                     expression_of_raw_statement env return_var.index body.content)
                 in
                 let flags =
-                  match item_meta.inline with
+                  match item_meta.attr_info.inline with
                   | Some (Hint | Always) -> [ Krml.Common.Inline ]
                   | _ -> []
                 in
@@ -1659,7 +1661,8 @@ let decl_of_id (env: env) (id: C.any_decl_id): K.decl option = match id with
     )
   | IdGlobal id ->
     let global = env.get_nth_global id in
-    let { C.name; ty; def_id; _ } = global in
+    let { C.item_meta; ty; def_id; _ } = global in
+    let name = item_meta.name in
     let def = env.get_nth_global def_id in
     L.log "AstOfLlbc" "Visiting global: %s\n%s" (string_of_name env name)
       (Charon.PrintLlbcAst.Ast.global_decl_to_string env.format_env "  "  "  " def);
