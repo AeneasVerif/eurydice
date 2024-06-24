@@ -538,6 +538,7 @@ let resugar_loops = object(self)
 
 
 end
+[@ocamlformat "disable"]
 
 let detect_array_returning_builtins = object
   inherit [_] map as super
@@ -562,4 +563,4 @@ let detect_array_returning_builtins = object
     | _ ->
         super#visit_ELet env b e1 e2
 end
-
+[@ocamlformat "disable"]

@@ -206,6 +206,7 @@ module RustNames = struct
     parse_pattern "core::ops::bit::BitAnd<&'_ u8, u8>::bitand", Builtin.bitand_pv_u8;
     parse_pattern "core::ops::bit::Shr<&'_ u8, i32>::shr", Builtin.shr_pv_u8;
   ]
+  [@ocamlformat "disable"]
 
   let from_u16 =
     parse_pattern "core::convert::From<u16, @U>::from"
