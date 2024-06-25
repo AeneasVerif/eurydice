@@ -212,126 +212,130 @@ let remove_array_from_fn files =
         | DFunction (_, _, _, _, _, name, _, body) -> Hashtbl.add tbl name body
         | _ -> ())
   in
-  (object
-     inherit [_] map as super
+  begin
+    object
+      inherit [_] map as super
 
-     method! visit_DFunction _ cc flags n_cgs n t name bs e =
-       assert (n_cgs = 0 && n = 0);
-       Hashtbl.add defs name e;
-       super#visit_DFunction () cc flags n_cgs n t name bs e
+      method! visit_DFunction _ cc flags n_cgs n t name bs e =
+        assert (n_cgs = 0 && n = 0);
+        Hashtbl.add defs name e;
+        super#visit_DFunction () cc flags n_cgs n t name bs e
 
-     method! visit_EApp env e es =
-       match e.node with
-       | ETApp
-           ( { node = EQualified ([ "core"; "array" ], "from_fn"); _ },
-             [ len ],
-             _,
-             [ t_elements; TArrow (t_index, TArrow (t_elements', TUnit)) ] ) ->
-           (* Same as below, but catching the case where the type of elements is an
-              array and has undergone outparam optimization (i.e. the closure,
-              instead of having type size_t -> t_element, has type size_t -> t_element ->
-              unit *)
-           L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements';
-           assert (t_elements' = t_elements);
-           assert (t_index = TInt SizeT);
-           assert (List.length es = 2);
-           let closure_lid, state =
-             match (List.hd es).node with
-             | EQualified _ -> List.hd es, []
-             | EApp (({ node = EQualified lid; _ } as hd), [ e_state ]) ->
-                 L.log "Cleanup2" "closure=%a" pexpr
-                   (Krml.DeBruijn.subst e_state 0 (Hashtbl.find defs lid));
-                 hd, [ e_state ]
-             | _ ->
-                 L.log "Cleanup2" "closure=%a" pexpr (List.hd es);
-                 failwith "unexpected closure shape"
-           in
-           (* First argument = closure, second argument = destination. Note that
-              the closure may itself be an application of the closure to the state
-              (but not always... is this unit argument elimination kicking in? not
-              sure). *)
-           let dst = List.nth es 1 in
-           let lift1 = Krml.DeBruijn.lift 1 in
-           EFor
-             ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
-               H.zero_usize (* i = 0 *),
-               H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
-               H.mk_incr_usize (* i++ *),
-               let i = with_type H.usize (EBound 0) in
-               Krml.Helpers.with_unit
-                 (EApp
-                    ( closure_lid,
-                      List.map lift1 state @ [ i; with_type t_elements (EBufRead (lift1 dst, i)) ]
-                    )) )
-       | ETApp
-           ( { node = EQualified ([ "core"; "array" ], "from_fn"); _ },
-             [ len ],
-             _,
-             [ t_elements; TArrow (t_index, t_elements') ] ) ->
-           (* Not sure why this one inlines the body, but not above. *)
-           L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements';
-           assert (t_elements' = t_elements);
-           assert (t_index = TInt SizeT);
-           assert (List.length es = 2);
-           let closure =
-             match (List.hd es).node with
-             | EQualified lid -> Hashtbl.find defs lid
-             | EApp ({ node = EQualified lid; _ }, [ e_state ]) ->
-                 L.log "Cleanup2" "closure=%a" pexpr
-                   (Krml.DeBruijn.subst e_state 0 (Hashtbl.find defs lid));
-                 Krml.DeBruijn.subst e_state 1 (Hashtbl.find defs lid)
-             | _ ->
-                 L.log "Cleanup2" "closure=%a" pexpr (List.hd es);
-                 failwith "unexpected closure shape"
-           in
-           let dst = List.nth es 1 in
-           EFor
-             ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
-               H.zero_usize (* i = 0 *),
-               H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
-               H.mk_incr_usize (* i++ *),
-               let i = with_type H.usize (EBound 0) in
-               Krml.Helpers.with_unit (EBufWrite (Krml.DeBruijn.lift 1 dst, i, closure)) )
-       | ETApp ({ node = EQualified ("core" :: "array" :: _, "map"); _ }, [ len ], _, ts) ->
-           let t_src, t_dst =
-             match ts with
-             | [ t_src; t_closure; t_dst ] ->
-                 assert (t_closure = TArrow (t_src, t_dst));
-                 L.log "Cleanup2" "found array map from %a to %a" ptyp t_src ptyp t_dst;
-                 t_src, t_dst
-             | _ -> failwith "TODO: unknown map closure shape; is it an array outparam? (see above)"
-           in
-           let e_src, e_closure, e_dst =
-             match es with
-             | [ e_src; e_closure; e_dst ] -> e_src, e_closure, e_dst
-             | _ -> failwith "unknown shape of arguments to array map"
-           in
-           let closure_lid, state =
-             match e_closure.node with
-             | EQualified _ -> e_closure, []
-             | EApp (({ node = EQualified lid; _ } as hd), [ e_state ]) ->
-                 L.log "Cleanup2" "map closure=%a" pexpr
-                   (Krml.DeBruijn.subst e_state 0 (Hashtbl.find defs lid));
-                 hd, [ e_state ]
-             | _ ->
-                 L.log "Cleanup2" "map closure=%a" pexpr (List.hd es);
-                 failwith "unexpected map closure shape"
-           in
-           let lift1 = Krml.DeBruijn.lift 1 in
-           EFor
-             ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
-               H.zero_usize (* i = 0 *),
-               H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
-               H.mk_incr_usize (* i++ *),
-               let i = with_type H.usize (EBound 0) in
-               let e_src_i = with_type t_src (EBufRead (lift1 e_src, i)) in
-               Krml.Helpers.with_unit
-                 (EBufWrite
-                    ( lift1 e_dst,
-                      i,
-                      with_type t_dst (EApp (closure_lid, List.map lift1 state @ [ e_src_i ])) )) )
-       | _ -> super#visit_EApp env e es
-  end)
+      method! visit_EApp env e es =
+        match e.node with
+        | ETApp
+            ( { node = EQualified ([ "core"; "array" ], "from_fn"); _ },
+              [ len ],
+              _,
+              [ t_elements; TArrow (t_index, TArrow (t_elements', TUnit)) ] ) ->
+            (* Same as below, but catching the case where the type of elements is an
+               array and has undergone outparam optimization (i.e. the closure,
+               instead of having type size_t -> t_element, has type size_t -> t_element ->
+               unit *)
+            L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements';
+            assert (t_elements' = t_elements);
+            assert (t_index = TInt SizeT);
+            assert (List.length es = 2);
+            let closure_lid, state =
+              match (List.hd es).node with
+              | EQualified _ -> List.hd es, []
+              | EApp (({ node = EQualified lid; _ } as hd), [ e_state ]) ->
+                  L.log "Cleanup2" "closure=%a" pexpr
+                    (Krml.DeBruijn.subst e_state 0 (Hashtbl.find defs lid));
+                  hd, [ e_state ]
+              | _ ->
+                  L.log "Cleanup2" "closure=%a" pexpr (List.hd es);
+                  failwith "unexpected closure shape"
+            in
+            (* First argument = closure, second argument = destination. Note that
+               the closure may itself be an application of the closure to the state
+               (but not always... is this unit argument elimination kicking in? not
+               sure). *)
+            let dst = List.nth es 1 in
+            let lift1 = Krml.DeBruijn.lift 1 in
+            EFor
+              ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
+                H.zero_usize (* i = 0 *),
+                H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
+                H.mk_incr_usize (* i++ *),
+                let i = with_type H.usize (EBound 0) in
+                Krml.Helpers.with_unit
+                  (EApp
+                     ( closure_lid,
+                       List.map lift1 state @ [ i; with_type t_elements (EBufRead (lift1 dst, i)) ]
+                     )) )
+        | ETApp
+            ( { node = EQualified ([ "core"; "array" ], "from_fn"); _ },
+              [ len ],
+              _,
+              [ t_elements; TArrow (t_index, t_elements') ] ) ->
+            (* Not sure why this one inlines the body, but not above. *)
+            L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements';
+            assert (t_elements' = t_elements);
+            assert (t_index = TInt SizeT);
+            assert (List.length es = 2);
+            let closure =
+              match (List.hd es).node with
+              | EQualified lid -> Hashtbl.find defs lid
+              | EApp ({ node = EQualified lid; _ }, [ e_state ]) ->
+                  L.log "Cleanup2" "closure=%a" pexpr
+                    (Krml.DeBruijn.subst e_state 0 (Hashtbl.find defs lid));
+                  Krml.DeBruijn.subst e_state 1 (Hashtbl.find defs lid)
+              | _ ->
+                  L.log "Cleanup2" "closure=%a" pexpr (List.hd es);
+                  failwith "unexpected closure shape"
+            in
+            let dst = List.nth es 1 in
+            EFor
+              ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
+                H.zero_usize (* i = 0 *),
+                H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
+                H.mk_incr_usize (* i++ *),
+                let i = with_type H.usize (EBound 0) in
+                Krml.Helpers.with_unit (EBufWrite (Krml.DeBruijn.lift 1 dst, i, closure)) )
+        | ETApp ({ node = EQualified ("core" :: "array" :: _, "map"); _ }, [ len ], _, ts) ->
+            let t_src, t_dst =
+              match ts with
+              | [ t_src; t_closure; t_dst ] ->
+                  assert (t_closure = TArrow (t_src, t_dst));
+                  L.log "Cleanup2" "found array map from %a to %a" ptyp t_src ptyp t_dst;
+                  t_src, t_dst
+              | _ ->
+                  failwith "TODO: unknown map closure shape; is it an array outparam? (see above)"
+            in
+            let e_src, e_closure, e_dst =
+              match es with
+              | [ e_src; e_closure; e_dst ] -> e_src, e_closure, e_dst
+              | _ -> failwith "unknown shape of arguments to array map"
+            in
+            let closure_lid, state =
+              match e_closure.node with
+              | EQualified _ -> e_closure, []
+              | EApp (({ node = EQualified lid; _ } as hd), [ e_state ]) ->
+                  L.log "Cleanup2" "map closure=%a" pexpr
+                    (Krml.DeBruijn.subst e_state 0 (Hashtbl.find defs lid));
+                  hd, [ e_state ]
+              | _ ->
+                  L.log "Cleanup2" "map closure=%a" pexpr (List.hd es);
+                  failwith "unexpected map closure shape"
+            in
+            let lift1 = Krml.DeBruijn.lift 1 in
+            EFor
+              ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
+                H.zero_usize (* i = 0 *),
+                H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
+                H.mk_incr_usize (* i++ *),
+                let i = with_type H.usize (EBound 0) in
+                let e_src_i = with_type t_src (EBufRead (lift1 e_src, i)) in
+                Krml.Helpers.with_unit
+                  (EBufWrite
+                     ( lift1 e_dst,
+                       i,
+                       with_type t_dst (EApp (closure_lid, List.map lift1 state @ [ e_src_i ])) ))
+              )
+        | _ -> super#visit_EApp env e es
+    end
+  end
     #visit_files
     () files
 
@@ -449,14 +453,16 @@ let remove_trivial_ite =
   end
 
 let contains_array t =
-  (object (_self)
-     inherit [_] reduce as _super
-     method zero = false
-     method plus = ( || )
-     method! visit_TBuf _ _ _ = false
-     method! visit_TArray _ _ _ = true
-     method! visit_TCgArray _ _ _ = true
-  end)
+  begin
+    object (_self)
+      inherit [_] reduce as _super
+      method zero = false
+      method plus = ( || )
+      method! visit_TBuf _ _ _ = false
+      method! visit_TArray _ _ _ = true
+      method! visit_TCgArray _ _ _ = true
+    end
+  end
     #visit_expr_w
     () t
 
