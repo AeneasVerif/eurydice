@@ -36,6 +36,11 @@ test-%: test/%/out.llbc out/test-%/main.c | all
 out/%:
 	mkdir -p $@
 
+.PHONY: format
+format:
+	dune fmt || true
+
+.PHONY: nix-magic
 nix-magic:
 	nix flake update --extra-experimental-features nix-command --extra-experimental-features flakes
 
