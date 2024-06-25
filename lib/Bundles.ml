@@ -300,14 +300,16 @@ let topological_sort decls =
   List.iter
     (fun decl ->
       let deps =
-        (object (self)
-           inherit [_] reduce
-           method zero = []
-           method plus = ( @ )
-           method! visit_EQualified _ lid = [ lid ]
-           method! visit_TQualified _ lid = [ lid ]
-           method! visit_TApp _ lid ts = [ lid ] @ List.concat_map (self#visit_typ ()) ts
-        end)
+        begin
+          object (self)
+            inherit [_] reduce
+            method zero = []
+            method plus = ( @ )
+            method! visit_EQualified _ lid = [ lid ]
+            method! visit_TQualified _ lid = [ lid ]
+            method! visit_TApp _ lid ts = [ lid ] @ List.concat_map (self#visit_typ ()) ts
+          end
+        end
           #visit_decl
           () decl
       in
@@ -345,15 +347,17 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
     | None -> o2
   in
   let uses monomorphizations_using t =
-    (object
-       inherit [_] reduce as super
-       method zero = None
-       method plus o1 o2 = if o1 = None then o2 else o1
-       method! visit_TQualified _ lid' = find_map (matches lid') monomorphizations_using
+    begin
+      object
+        inherit [_] reduce as super
+        method zero = None
+        method plus o1 o2 = if o1 = None then o2 else o1
+        method! visit_TQualified _ lid' = find_map (matches lid') monomorphizations_using
 
-       method! visit_TApp _ lid' ts =
-         find_map (matches lid') monomorphizations_using ||| super#visit_TApp () lid' ts
-    end)
+        method! visit_TApp _ lid' ts =
+          find_map (matches lid') monomorphizations_using ||| super#visit_TApp () lid' ts
+      end
+    end
       #visit_typ
       () t
   in

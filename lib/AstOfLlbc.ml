@@ -9,12 +9,14 @@ module C = struct
   include Charon.GAstUtils
 
   let tsubst cgs ts ty =
-    (object
-       inherit [_] map_ty
-       method! visit_TVar _ v = TypeVarId.nth ts v
-       method! visit_CgVar _ v = ConstGenericVarId.nth cgs v
-       method visit_'r _ x = x
-    end)
+    begin
+      object
+        inherit [_] map_ty
+        method! visit_TVar _ v = TypeVarId.nth ts v
+        method! visit_CgVar _ v = ConstGenericVarId.nth cgs v
+        method visit_'r _ x = x
+      end
+    end
       #visit_ty
       () ty
 end
