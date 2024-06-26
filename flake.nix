@@ -89,10 +89,12 @@
       checks.default = packages.default.tests;
       devShells.default = pkgs.mkShell {
         packages = [
+          pkgs.fstar
+          pkgs.clang
+          pkgs.clang-tools # For clang-format
           pkgs.ocamlPackages.ocaml
           pkgs.ocamlPackages.ocamlformat
           pkgs.ocamlPackages.menhir
-          pkgs.clang-tools # For clang-format
         ];
 
         inputsFrom = [
