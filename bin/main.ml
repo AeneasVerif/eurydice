@@ -78,6 +78,7 @@ Supported options:|}
         match lid with
         | [ "Eurydice" ], "vec_len"
         | [ "Eurydice" ], "vec_index"
+        | [ "Eurydice" ], "array_to_slice"
         | [ "core"; "num"; "u32"; _ ], "rotate_left" ->
             true
         | _ ->
@@ -169,13 +170,15 @@ Supported options:|}
   (* remove_array_from_fn, above, creates further opportunities for removing unused functions. *)
   let files = Krml.Inlining.drop_unused files in
   let files = Eurydice.Cleanup2.remove_implicit_array_copies#visit_files () files in
+  (* These two need to come before... *)
+  let files = Krml.Inlining.cross_call_analysis files in
+  let files = Krml.Simplify.remove_unused files in
+  (* This chunk which reuses key elements of simplify2 *)
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
   let files = Krml.Simplify.hoist#visit_files [] files in
   let files = Krml.Simplify.fixup_hoist#visit_files () files in
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
-  let files = Krml.Inlining.cross_call_analysis files in
-  let files = Krml.Simplify.remove_unused files in
   Eurydice.Logging.log "Phase2.7" "%a" pfiles files;
   Eurydice.Logging.log "Phase2.8" "%a" pfiles files;
   (* Macros stemming from globals *)
