@@ -40,6 +40,10 @@ let result = ["core"; "result"], "Result"
 let mk_result t1 t2 =
   K.TApp (result, [ t1; t2 ])
 
+let nonzero = ["core"; "num"; "nonzero"], "NonZero"
+let mk_nonzero t =
+  K.TApp (nonzero, [ t ])
+
 (* A record to hold a builtin function with all relevant information for both
    krml and the transpilation phase in AstOfLlbc *)
 
@@ -342,6 +346,10 @@ let unwrap: K.decl =
       with_type t_T (EAbort (Some t_T, Some "unwrap not Ok"))
     ])))
 
+let nonzero_def = K.DType (nonzero, [], 0, 1, Abbrev (TBound 0))
+
+(* -------------------------------------------------------------------------- *)
+
 type usage = Used | Unused
 
 let replacements = List.map (fun decl ->
@@ -380,6 +388,8 @@ let files = [
     replace;
     bitand_pv_u8;
     shr_pv_u8;
+  ] @ [
+    nonzero_def
   ] in
   "Eurydice", externals
 ]
