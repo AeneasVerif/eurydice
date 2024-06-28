@@ -50,8 +50,6 @@
 
             src = ./.;
 
-            OCAMLPARAM = "_,warn-error=+A"; # Turn all warnings into errors.
-
             nativeBuildInputs = [ gnugrep ];
 
             propagatedBuildInputs = [ krml charon-ml ocamlPackages.terminal ocamlPackages.yaml ];

@@ -2,3 +2,7 @@
  (public_name eurydice)
  (name main)
  (libraries eurydice terminal))
+
+(env
+  (_
+    (flags (:standard -w @1-2@3-7@8..12@14..21@23..29-30@31..38-39-40-41@43@57))))
