@@ -335,6 +335,8 @@ let rec typ_of_ty (env: env) (ty: Charon.Types.ty): K.typ =
       typ_of_literal_ty env t
   | TNever ->
       failwith "Impossible: Never"
+  | TDynTrait _ ->
+      failwith "TODO: dyn Trait"
 
   | TRef (_, TAdt (id, ({ types = [ t ]; _ } as generics)), _) when RustNames.is_vec env id generics ->
       (* We compile vecs to fat pointers, which hold the pointer underneath -- no need for an
