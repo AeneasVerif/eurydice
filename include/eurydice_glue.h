@@ -181,8 +181,7 @@ static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
 #define core_num_nonzero_private_NonZeroUsizeInner size_t
 static inline core_num_nonzero_private_NonZeroUsizeInner
 core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__NonZeroUsizeInner__26__clone(
-  core_num_nonzero_private_NonZeroUsizeInner *x0
-) {
+    core_num_nonzero_private_NonZeroUsizeInner *x0) {
   return *x0;
 }
 
@@ -238,10 +237,9 @@ static inline Eurydice_slice chunk_next(Eurydice_chunks *chunks,
       .chunk_size = sz_})
 #define core_slice_iter_Chunks Eurydice_chunks
 #define core_slice_iter_ChunksExact Eurydice_chunks
-#define Eurydice_chunks_next( \
-    iter, t, ret_t)                                                                                              \
-  (((iter)->slice.len == 0) ? ((ret_t){.tag = core_option_None})                                                 \
-                            : ((ret_t){.tag = core_option_Some,                                                  \
+#define Eurydice_chunks_next(iter, t, ret_t)                                   \
+  (((iter)->slice.len == 0) ? ((ret_t){.tag = core_option_None})               \
+                            : ((ret_t){.tag = core_option_Some,                \
                                        .f0 = chunk_next(iter, sizeof(t))}))
 #define core_slice_iter___core__iter__traits__iterator__Iterator_for_core__slice__iter__Chunks__a__T___70__next \
   Eurydice_chunks_next

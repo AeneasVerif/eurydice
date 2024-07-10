@@ -1651,8 +1651,10 @@ let decl_of_id (env: env) (id: C.any_decl_id): K.decl option = match id with
                 in
                 let flags =
                   match item_meta.attr_info.inline with
-                  | Some (Hint | Always) -> [ Krml.Common.Inline ]
-                  | _ -> []
+                  | Some Hint -> [ Krml.Common.Inline ]
+                  | Some Always -> [ Krml.Common.MustInline ]
+                  | Some Never -> [ Krml.Common.NoInline ]
+                  | _ -> [ ]
                 in
                 (* This is kind of a hack here: we indicate that this function is intended to be
                    specialized, at monomorphization-time (which happens quite early on), on the cg
