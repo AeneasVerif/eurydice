@@ -224,6 +224,25 @@ Supported options:|}
     ) ds
   ) files in
   Eurydice.Logging.log "Phase3.2" "%a" pfiles files;
+  let files = List.map (fun (f, ds) ->
+    let open Eurydice.Bundles in
+    let target_attribute = 
+      match config with
+      | None -> ""
+      | Some c -> 
+	match List.find_opt (fun (x:file) -> x.name = f) c with
+	| None -> ""
+	| Some f -> f.target in
+    f, List.filter_map (fun d ->
+      match d with
+      | Krml.Ast.DFunction (cc,fl,x,y,t,l,b,e) when target_attribute <> "" ->
+          Some (Krml.Ast.DFunction (cc,fl@[Target(target_attribute)],x,y,t,l,b,e))
+      | _ ->
+          Some d
+    ) ds
+  ) files in
+
+  Eurydice.Logging.log "Phase3.3" "%a" pfiles files;
   let files = AstToCStar.mk_files files c_name_map Idents.LidSet.empty macros in
 
   let headers = CStarToC11.mk_headers c_name_map files in

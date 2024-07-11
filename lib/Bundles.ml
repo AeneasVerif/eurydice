@@ -18,6 +18,7 @@ type visibility = Api | Internal | Private
 
 type file = {
   name: string;
+  target: string;
   inline_static: bool;
   library: bool;
   definitions: (pattern * visibility) list;
@@ -72,6 +73,12 @@ let parse_file (v: Yaml.value): file =
         | Some (`String name) -> name
         | Some _ -> parsing_error "name not a string"
         | None -> parsing_error "missing name"
+      in
+      let target =
+        match lookup "target" with
+        | Some (`String target) -> target
+        | Some _ -> parsing_error "target not a string"
+        | None -> ""
       in
       let inline_static =
         match lookup "inline_static" with
@@ -132,7 +139,7 @@ let parse_file (v: Yaml.value): file =
       if !count < List.length ls then
         parsing_error "extraneous fields in file";
       Krml.Options.(add_early_include := include_ @ c_include_ @ !add_early_include);
-      { name; definitions; inline_static; library; monomorphizations_using; monomorphizations_of; monomorphizations_exact }
+      { name; definitions; inline_static; library; monomorphizations_using; monomorphizations_of; monomorphizations_exact; target }
   | _ ->
       parsing_error "file must be an object"
 
