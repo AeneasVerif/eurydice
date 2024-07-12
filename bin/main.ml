@@ -224,6 +224,11 @@ Supported options:|}
     ) ds
   ) files in
   Eurydice.Logging.log "Phase3.2" "%a" pfiles files;
+
+  (* The following phase reads the "target" parameter for each file, if any, from the config
+     and if set, then it adds the attribute `KRML_ATTRIBUTE_TARGET(target)` to each function
+     in the generate C file. This is used, in particular, to mark certain functions as only
+     to be compiled on target architectures like `avx2` *)
   let files = List.map (fun (f, ds) ->
     let open Eurydice.Bundles in
     let target_attribute = 
@@ -236,7 +241,7 @@ Supported options:|}
     f, List.filter_map (fun d ->
       match d with
       | Krml.Ast.DFunction (cc,fl,x,y,t,l,b,e) when target_attribute <> "" ->
-          Some (Krml.Ast.DFunction (cc,fl@[Target(target_attribute)],x,y,t,l,b,e))
+          Some (Krml.Ast.DFunction (cc,fl@[Target target_attribute],x,y,t,l,b,e))
       | _ ->
           Some d
     ) ds
