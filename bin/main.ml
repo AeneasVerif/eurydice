@@ -172,6 +172,7 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_implicit_array_copies#visit_files () files in
   (* These two need to come before... *)
   let files = Krml.Inlining.cross_call_analysis files in
+  Eurydice.Logging.log "Phase2.7" "%a" pfiles files;
   let files = Krml.Simplify.remove_unused files in
   (* This chunk which reuses key elements of simplify2 *)
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
@@ -179,7 +180,6 @@ Supported options:|}
   let files = Krml.Simplify.fixup_hoist#visit_files () files in
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
-  Eurydice.Logging.log "Phase2.7" "%a" pfiles files;
   Eurydice.Logging.log "Phase2.8" "%a" pfiles files;
   (* Macros stemming from globals *)
   let files, macros = Eurydice.Cleanup2.build_macros files in
@@ -227,7 +227,7 @@ Supported options:|}
 
   (* The following phase reads the "target" parameter for each file, if any, from the config
      and if set, then it adds the attribute `KRML_ATTRIBUTE_TARGET(target)` to each function
-     in the generate C file. This is used, in particular, to mark certain functions as only
+     in the generated C file. This is used, in particular, to mark certain functions as only
      to be compiled on target architectures like `avx2` *)
   let files = List.map (fun (f, ds) ->
     let open Eurydice.Bundles in
@@ -235,9 +235,9 @@ Supported options:|}
       match config with
       | None -> ""
       | Some c -> 
-	match List.find_opt (fun (x:file) -> x.name = f) c with
-	| None -> ""
-	| Some f -> f.target in
+        match List.find_opt (fun (x:file) -> x.name = f) c with
+        | None -> ""
+        | Some f -> f.target in
     f, List.filter_map (fun d ->
       match d with
       | Krml.Ast.DFunction (cc,fl,x,y,t,l,b,e) when target_attribute <> "" ->

@@ -1567,7 +1567,7 @@ let decl_of_id (env: env) (id: C.any_decl_id): K.decl option = match id with
       match decl with
       | None -> None
       | Some decl ->
-          let { C.def_id; signature; body; is_global_decl_body; item_meta; _ } = decl in
+          let { C.def_id; signature; body; is_global_decl_body; item_meta; kind; _ } = decl in
           let env = { env with generic_params = signature.generics } in
           L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
             (if body = None then "opaque " else "")
@@ -1576,8 +1576,12 @@ let decl_of_id (env: env) (id: C.any_decl_id): K.decl option = match id with
 
           assert (def_id = id);
           let name = lid_of_name env item_meta.name in
-          match body with
-          | None ->
+          match body, kind with
+          | _, TraitItemDecl _ ->
+              (* We skip those on the basis that they generate useless external prototypes, which we
+                 do not really need. *)
+              None
+          | None, _ ->
               begin try
                 (* Opaque function *)
                 let { K.n_cgs; n }, t = typ_of_signature env signature in
@@ -1589,7 +1593,7 @@ let decl_of_id (env: env) (id: C.any_decl_id): K.decl option = match id with
                 None
               end
 
-          | Some { arg_count; locals; body; _ } ->
+          | Some { arg_count; locals; body; _ }, _ ->
               if is_global_decl_body then
                 None
               else
