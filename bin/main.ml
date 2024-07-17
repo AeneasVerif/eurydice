@@ -17,6 +17,7 @@ Supported options:|}
     "--log", Arg.Set_string O.log_level, " log level, use * for everything";
     "--debug", Arg.String debug, " debug options, to be passed to krml";
     "--output", Arg.Set_string Krml.Options.tmpdir, " output directory in which to write files";
+    "--header", Arg.Set_string Krml.Options.header, " path to a header file to be prepended to the generated C";
     "--config", Arg.Set_string O.config, " YAML configuration file";
     "-funroll-loops", Arg.Set_int funroll_loops, " unrool loops up to N";
   ] in
@@ -57,8 +58,6 @@ Supported options:|}
     minimal := true;
     curly_braces := true;
     add_include := [ All, "\"eurydice_glue.h\"" ];
-    (* header := "/* This file compiled from Rust to C by Eurydice \ *)
-    (*   <http://github.com/aeneasverif/eurydice> */"; *)
     parentheses := true;
     no_shadow := true;
     extern_c := true;
