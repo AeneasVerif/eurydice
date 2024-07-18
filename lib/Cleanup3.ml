@@ -23,10 +23,16 @@ let decay_cg_externals =
       super#visit_file env f
 
     method! visit_TCgArray (env, under_external) t n =
-      if under_external then raise Exit else super#visit_TCgArray (env, under_external) t n
+      if under_external then
+        raise Exit
+      else
+        super#visit_TCgArray (env, under_external) t n
 
     method! visit_TCgApp (env, under_external) t n =
-      if under_external then raise Exit else super#visit_TCgApp (env, under_external) t n
+      if under_external then
+        raise Exit
+      else
+        super#visit_TCgApp (env, under_external) t n
 
     method! visit_DExternal (scope_env, _) cc flags n_cgs n name t hints =
       let t_ret, t_args = Helpers.flatten_arrow t in
@@ -64,8 +70,10 @@ let decay_cg_externals =
           let prelude =
             (* Names of the arguments *)
             let names =
-              if List.length hints = List.length t_args then hints
-              else List.init (List.length t_args) (fun i -> KPrint.bsprintf "x_%d" i)
+              if List.length hints = List.length t_args then
+                hints
+              else
+                List.init (List.length t_args) (fun i -> KPrint.bsprintf "x_%d" i)
             in
             KPrint.bsprintf "#define %s(%s) %s(%s)" c_name
               (String.concat ", " (names @ [ "_ret_t" ]))
@@ -80,7 +88,8 @@ let decay_cg_externals =
               Helpers.fold_arrow t_args t_ret,
               hints )
         with Exit -> DExternal (cc, flags, n_cgs, n, name, Helpers.fold_arrow t_args t_ret, hints)
-      else DExternal (cc, flags, n_cgs, n, name, Helpers.fold_arrow t_args t_ret, hints)
+      else
+        DExternal (cc, flags, n_cgs, n, name, Helpers.fold_arrow t_args t_ret, hints)
   end
 
 let build_cg_macros =
@@ -90,7 +99,10 @@ let build_cg_macros =
     method private plus = Krml.Idents.LidSet.union
 
     method! visit_DExternal () _ _ n_cgs n name _ _ =
-      if n > 0 || n_cgs > 0 then Krml.Idents.LidSet.singleton name else self#zero
+      if n > 0 || n_cgs > 0 then
+        Krml.Idents.LidSet.singleton name
+      else
+        self#zero
   end
 
 let add_extra_type_to_slice_index =

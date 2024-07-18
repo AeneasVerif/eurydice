@@ -98,7 +98,11 @@ type env = {
 let findi p l =
   let rec findi i l =
     match l with
-    | hd :: tl -> if p hd then i, hd else findi (i + 1) tl
+    | hd :: tl ->
+        if p hd then
+          i, hd
+        else
+          findi (i + 1) tl
     | [] -> raise Not_found
   in
   findi 0 l
@@ -548,8 +552,10 @@ let expression_of_place (env : env) (p : C.place) : K.expr * C.ety =
                               (PCons
                                  ( variant.C.variant_name,
                                    List.init (List.length variant.fields) (fun i ->
-                                       if i = field_id then with_type field_t (PBound 0)
-                                       else with_type TAny PWild) )),
+                                       if i = field_id then
+                                         with_type field_t (PBound 0)
+                                       else
+                                         with_type TAny PWild) )),
                             with_type field_t (EBound 0) );
                         ] )),
                 field_ty )
@@ -578,7 +584,14 @@ let expression_of_place (env : env) (p : C.place) : K.expr * C.ety =
             let pattern =
               K.with_type e.typ
                 (K.PTuple
-                   (List.mapi (fun i' t -> K.with_type t (if i = i' then K.PBound 0 else PWild)) ts))
+                   (List.mapi
+                      (fun i' t ->
+                        K.with_type t
+                          (if i = i' then
+                             K.PBound 0
+                           else
+                             PWild))
+                      ts))
             in
             let expr = K.with_type t_i (K.EBound 0) in
             K.with_type t_i (K.EMatch (Unchecked, e, [ binders, pattern, expr ])), List.nth tys i
@@ -618,7 +631,12 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
     | K.TBool -> Bool
     | t -> Krml.Warn.fatal_error "Not an operator type: %a" ptyp t
   in
-  let op = if op = Not && first.typ <> K.TBool then Krml.Constant.BNot else op in
+  let op =
+    if op = Not && first.typ <> K.TBool then
+      Krml.Constant.BNot
+    else
+      op
+  in
   let op_t = Krml.Helpers.type_of_op op w in
   let op = K.(with_type op_t (EOp (op, w))) in
   let ret_t, _ = Krml.Helpers.flatten_arrow op_t in
@@ -688,7 +706,8 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) =
       let trait_decl = env.get_nth_trait_decl trait_decl_id in
 
       let name = string_of_name env trait_decl.item_meta.name in
-      if List.mem name blocklisted_trait_decls then []
+      if List.mem name blocklisted_trait_decls then
+        []
       else begin
         (* FYI, some clauses like Copy have neither required nor provided methods. *)
         L.log "TraitClauses"
@@ -761,7 +780,11 @@ type lookup_result = {
   is_known_builtin : bool;
 }
 
-let maybe_ts ts t = if ts.K.n <> 0 || ts.n_cgs <> 0 then K.TPoly (ts, t) else t
+let maybe_ts ts t =
+  if ts.K.n <> 0 || ts.n_cgs <> 0 then
+    K.TPoly (ts, t)
+  else
+    t
 
 let rec lookup_signature env depth signature =
   let { C.generics = { types = type_params; const_generics; trait_clauses; _ }; inputs; output; _ }
@@ -783,7 +806,13 @@ let rec lookup_signature env depth signature =
     ts = { n = List.length type_params; n_cgs = List.length const_generics };
     cg_types = List.map (fun (v : C.const_generic_var) -> typ_of_literal_ty env v.ty) const_generics;
     arg_types =
-      (clause_ts @ List.map (typ_of_ty env) inputs @ if inputs = [] then [ K.TUnit ] else []);
+      (clause_ts
+      @ List.map (typ_of_ty env) inputs
+      @
+      if inputs = [] then
+        [ K.TUnit ]
+      else
+        []);
     ret_type = typ_of_ty env output;
     is_known_builtin = false;
   }
@@ -851,8 +880,10 @@ and typ_of_signature env signature =
   ts, t
 
 and debug_trait_clause_mapping env mapping =
-  if mapping = [] then L.log "TraitClauses" "In this function, trait clause mapping is empty"
-  else L.log "TraitClauses" "In this function, calls to trait bound methods are as follows:";
+  if mapping = [] then
+    L.log "TraitClauses" "In this function, trait clause mapping is empty"
+  else
+    L.log "TraitClauses" "In this function, calls to trait bound methods are as follows:";
   List.iter
     (fun ((clause_id, item_name), (_, ts, trait_name, signature)) ->
       let _, t = typ_of_signature env signature in
@@ -1030,8 +1061,10 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                 let parent_name = string_of_name env parent_clause_decl.item_meta.name in
                 Krml.KPrint.bprintf "looking up parent clause #%d of decl=%s = %s\n" clause_id name
                   parent_name;
-                if List.mem parent_name blocklisted_trait_decls then []
-                else failwith ("Don't know how to resolve trait_ref " ^ C.show_trait_ref trait_ref)
+                if List.mem parent_name blocklisted_trait_decls then
+                  []
+                else
+                  failwith ("Don't know how to resolve trait_ref " ^ C.show_trait_ref trait_ref)
             | _ -> failwith ("Don't know how to resolve trait_ref " ^ C.show_trait_ref trait_ref))
           trait_refs
       in
@@ -1042,7 +1075,12 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   (* This needs to match what is done in the FunGroup case (i.e. when we extract
      a definition). There are two behaviors depending on whether the function is
      assumed or not. *)
-  let inputs = if inputs = [] then [ K.TUnit ] else inputs in
+  let inputs =
+    if inputs = [] then
+      [ K.TUnit ]
+    else
+      inputs
+  in
 
   let t_unapplied = maybe_ts ts (Krml.Helpers.fold_arrow (cg_inputs @ inputs) output) in
   let offset = List.length env.binders - List.length env.cg_binders in
@@ -1065,7 +1103,10 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
         let ts =
           { K.n = n - List.length type_args; n_cgs = n_cgs - List.length const_generic_args }
         in
-        if ts.n > 0 || ts.n_cgs > 0 then K.TPoly (ts, t) else t
+        if ts.n > 0 || ts.n_cgs > 0 then
+          K.TPoly (ts, t)
+        else
+          t
     | t -> t
   in
   L.log "Calls" "%s--> t_applied (1): %a" depth ptyp t_applied;
@@ -1092,7 +1133,8 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
     let hd = K.with_type t_unapplied f in
     if type_args <> [] || const_generic_args <> [] || fn_ptrs <> [] then
       K.with_type t_applied (K.ETApp (hd, const_generic_args, fn_ptrs, type_args))
-    else hd
+    else
+      hd
   in
   L.log "Calls" "%s--> hd: %a" depth pexpr hd;
   ( hd,
@@ -1152,7 +1194,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | Aggregate (AggregatedAdt (TTuple, _, _), ops) ->
       let ops = List.map (expression_of_operand env) ops in
       let ts = List.map (fun x -> x.K.typ) ops in
-      if ops = [] then K.with_type TUnit K.EUnit
+      if ops = [] then
+        K.with_type TUnit K.EUnit
       else begin
         assert (List.length ops > 1);
         K.with_type (TTuple ts) (K.ETuple ops)
@@ -1194,7 +1237,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
             let ops =
               if List.length ops > 1 then
                 K.(with_type (TTuple (List.map (fun o -> o.typ) ops)) (ETuple ops))
-              else List.hd ops
+              else
+                List.hd ops
             in
             let ops = [ K.(with_type t' (EAddrOf ops)) ] in
             L.log "AstOfLlbc" "t'=%a t=%a closure ops are %a (typ: %a)" ptyp t' ptyp t pexprs ops
@@ -1215,18 +1259,24 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
 
 let expression_of_assertion (env : env) ({ cond; expected } : C.assertion) : K.expr =
   let cond =
-    if not expected then expression_of_operand env cond
-    else Krml.Helpers.mk_not (expression_of_operand env cond)
+    if not expected then
+      expression_of_operand env cond
+    else
+      Krml.Helpers.mk_not (expression_of_operand env cond)
   in
   K.(
     with_type TAny
       (EIfThenElse (cond, with_type TAny (EAbort (None, Some "assert failure")), Krml.Helpers.eunit)))
 
 let lesser t1 t2 =
-  if t1 = K.TAny then t2
-  else if t2 = K.TAny then t2
-  else if t1 <> t2 then Krml.Warn.fatal_error "lesser t1=%a t2=%a" ptyp t1 ptyp t2
-  else t1
+  if t1 = K.TAny then
+    t2
+  else if t2 = K.TAny then
+    t2
+  else if t1 <> t2 then
+    Krml.Warn.fatal_error "lesser t1=%a t2=%a" ptyp t1 ptyp t2
+  else
+    t1
 
 let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_statement) : K.expr
     =
@@ -1325,13 +1375,20 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
          Cleanup2.remove_trivial_into, and we need to figure out why. *)
       let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p fn_ptr in
       let w : Krml.Constant.width =
-        if matches RustNames.from_u16 || matches RustNames.into_u16 then UInt16
-        else if matches RustNames.from_u32 || matches RustNames.into_u32 then UInt32
-        else if matches RustNames.from_u64 || matches RustNames.into_u64 then UInt64
-        else if matches RustNames.from_i16 || matches RustNames.into_i16 then Int16
-        else if matches RustNames.from_i32 || matches RustNames.into_i32 then Int32
-        else if matches RustNames.from_i64 || matches RustNames.into_i64 then Int64
-        else Krml.Warn.fatal_error "Unknown from-cast: %s" (string_of_fn_ptr env fn_ptr)
+        if matches RustNames.from_u16 || matches RustNames.into_u16 then
+          UInt16
+        else if matches RustNames.from_u32 || matches RustNames.into_u32 then
+          UInt32
+        else if matches RustNames.from_u64 || matches RustNames.into_u64 then
+          UInt64
+        else if matches RustNames.from_i16 || matches RustNames.into_i16 then
+          Int16
+        else if matches RustNames.from_i32 || matches RustNames.into_i32 then
+          Int32
+        else if matches RustNames.from_i64 || matches RustNames.into_i64 then
+          Int64
+        else
+          Krml.Warn.fatal_error "Unknown from-cast: %s" (string_of_fn_ptr env fn_ptr)
       in
       let dest, _ = expression_of_place env dest in
       let e = expression_of_operand env (Krml.KList.one args) in
@@ -1345,9 +1402,19 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
          a definition). There are two behaviors depending on whether the function is
          assumed or not. *)
       (* Krml.KPrint.bprintf "Call to %s is assumed %b\n" (string_of_fn_ptr env fn_ptr) is_assumed; *)
-      let args = if args = [] then [ Krml.Helpers.eunit ] else args in
+      let args =
+        if args = [] then
+          [ Krml.Helpers.eunit ]
+        else
+          args
+      in
 
-      let rhs = if args = [] then hd else K.with_type output_t (K.EApp (hd, args)) in
+      let rhs =
+        if args = [] then
+          hd
+        else
+          K.with_type output_t (K.EApp (hd, args))
+      in
       (* This does something similar to maybe_addrof *)
       let rhs =
         (* TODO: determine whether extra_types is necessary *)
@@ -1529,7 +1596,10 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
           let { C.def_id; signature; body; is_global_decl_body; item_meta; kind; _ } = decl in
           let env = { env with generic_params = signature.generics } in
           L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
-            (if body = None then "opaque " else "")
+            (if body = None then
+               "opaque "
+             else
+               "")
             (string_of_name env item_meta.name)
             (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " decl);
 
@@ -1552,7 +1622,8 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                 None
             end
           | Some { arg_count; locals; body; _ }, _ ->
-              if is_global_decl_body then None
+              if is_global_decl_body then
+                None
               else
                 let env = push_cg_binders env signature.C.generics.const_generics in
                 let env = push_type_binders env signature.C.generics.types in
@@ -1595,7 +1666,12 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                     var_ty = t_unit;
                   }
                 in
-                let args = if args = [] then [ v_unit ] else args in
+                let args =
+                  if args = [] then
+                    [ v_unit ]
+                  else
+                    args
+                in
 
                 (* At this stage, env has:
                    cg_binders = <<all cg binders>>

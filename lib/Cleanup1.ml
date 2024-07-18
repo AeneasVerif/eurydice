@@ -57,7 +57,10 @@ let remove_assignments =
             (fun atom ->
               let name, typ = AtomMap.find atom not_yet_closed in
               ( { node = { atom; name; mut = true; mark = ref Krml.Mark.default; meta = None }; typ },
-                if typ = TUnit then Krml.Helpers.eunit else Krml.Helpers.any ))
+                if typ = TUnit then
+                  Krml.Helpers.eunit
+                else
+                  Krml.Helpers.any ))
             bs
         in
         (* For the subexpressions, we now need to insert declarations for those variables that we're
@@ -243,12 +246,14 @@ let remove_units =
     inherit [_] map as super
 
     method! visit_EAssign env e1 e2 =
-      if e1.typ = TUnit && Krml.Helpers.is_readonly_c_expression e2 then EUnit
+      if e1.typ = TUnit && Krml.Helpers.is_readonly_c_expression e2 then
+        EUnit
       else if e1.typ = TUnit && Krml.Helpers.is_readonly_c_expression e1 then
         (* Unit nodes have been initialized at declaration-time by
            remove_assignments above. So, e1 := e2 can safely become e2. *)
         (self#visit_expr env e2).node
-      else super#visit_EAssign env e1 e2
+      else
+        super#visit_EAssign env e1 e2
   end
 
 let remove_terminal_returns =
@@ -269,8 +274,10 @@ let remove_terminal_returns =
           self#visit_expr_w false e4 )
 
     method! visit_EReturn (terminal, _) e =
-      if terminal then (self#visit_expr_w terminal e).node
-      else EReturn (self#visit_expr_w terminal e)
+      if terminal then
+        (self#visit_expr_w terminal e).node
+      else
+        EReturn (self#visit_expr_w terminal e)
 
     method! visit_ESequence _ _ = assert false
 
@@ -307,7 +314,8 @@ let remove_terminal_continues =
         assert (t = TUnit);
         EUnit
       end
-      else EContinue
+      else
+        EContinue
 
     method! visit_ESequence _ _ = assert false
 

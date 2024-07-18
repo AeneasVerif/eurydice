@@ -410,8 +410,10 @@ let remove_trivial_ite =
           ( { node = EOp (Eq, _); _ },
             [ { node = EConstant (w1, c1); _ }; { node = EConstant (w2, c2); _ } ] )
         when w1 = w2 ->
-          if int_of_string c1 = int_of_string c2 then (self#visit_expr env e2).node
-          else (self#visit_expr env e3).node
+          if int_of_string c1 = int_of_string c2 then
+            (self#visit_expr env e2).node
+          else
+            (self#visit_expr env e3).node
       | EBool true -> (self#visit_expr env e2).node
       | EBool false -> (self#visit_expr env e3).node
       | _ -> super#visit_EIfThenElse env e1 e2 e3
@@ -472,12 +474,16 @@ let remove_literals =
     inherit! Krml.Structs.remove_literals as super_krml
 
     method! visit_ELet env b e1 e2 =
-      if contains_array e1 then super_krml#visit_ELet env b e1 e2
-      else super_map#visit_ELet env b e1 e2
+      if contains_array e1 then
+        super_krml#visit_ELet env b e1 e2
+      else
+        super_map#visit_ELet env b e1 e2
 
     method! visit_EFlat (((), t) as env) fields =
-      if contains_array (with_type t (EFlat fields)) then super_krml#visit_EFlat env fields
-      else super_map#visit_EFlat env fields
+      if contains_array (with_type t (EFlat fields)) then
+        super_krml#visit_EFlat env fields
+      else
+        super_map#visit_EFlat env fields
   end
 
 let build_macros (macros : Krml.Idents.LidSet.t ref) =
@@ -485,7 +491,8 @@ let build_macros (macros : Krml.Idents.LidSet.t ref) =
     inherit [_] map as super
 
     method! visit_DGlobal env flags name n t body =
-      if Krml.Helpers.is_bufcreate body then super#visit_DGlobal env flags name n t body
+      if Krml.Helpers.is_bufcreate body then
+        super#visit_DGlobal env flags name n t body
       else begin
         (macros := Krml.Idents.LidSet.(union !macros (singleton name)));
         DGlobal (flags @ [ Macro ], name, n, t, body)

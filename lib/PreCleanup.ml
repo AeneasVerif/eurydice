@@ -39,8 +39,10 @@ let expand_array_copies files =
         | _ -> super#visit_EAssign env lhs rhs
 
       method! visit_EApp env hd args =
-        if hd.node = EQualified Builtin.array_copy then Krml.Warn.fatal_error "Uncaught array copy"
-        else super#visit_EApp env hd args
+        if hd.node = EQualified Builtin.array_copy then
+          Krml.Warn.fatal_error "Uncaught array copy"
+        else
+          super#visit_EApp env hd args
     end
   end
     #visit_files
@@ -97,7 +99,8 @@ let merge files =
         in
         match d1, d2 with
         | DExternal _, d2 | d2, DExternal _ ->
-            if is_external d2 then check_equal ();
+            if is_external d2 then
+              check_equal ();
             Some d2
         | _ ->
             check_equal ();
@@ -105,7 +108,12 @@ let merge files =
   in
   let decl_map decls = LidMap.of_seq (List.to_seq (List.map (fun d -> lid_of_decl d, d) decls)) in
   let merge_decls decls1 decls2 = LidMap.merge merge_decl decls1 decls2 in
-  let concat_filenames f1 f2 = if f1 = "" then f2 else f1 ^ "_" ^ f2 in
+  let concat_filenames f1 f2 =
+    if f1 = "" then
+      f2
+    else
+      f1 ^ "_" ^ f2
+  in
   let merge_files (f1, decls1) (f2, decls2) =
     concat_filenames f1 f2, merge_decls decls1 (decl_map decls2)
   in

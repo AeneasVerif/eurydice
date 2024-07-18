@@ -152,7 +152,8 @@ let parse_file (v : Yaml.value) : file =
               include_
         | Some _ -> parsing_error "include_in_c must be a list"
       in
-      if !count < List.length ls then parsing_error "extraneous fields in file";
+      if !count < List.length ls then
+        parsing_error "extraneous fields in file";
       Krml.Options.(add_early_include := include_ @ c_include_ @ !add_early_include);
       {
         name;
@@ -185,14 +186,22 @@ let matches lid p =
   | Prefix prefix -> starts_with (fst lid) prefix
   | Lid lid' -> lid = lid'
 
-let find_map f l = List.find_map (fun (arg, ret) -> if f arg then Some ret else None) l
+let find_map f l =
+  List.find_map
+    (fun (arg, ret) ->
+      if f arg then
+        Some ret
+      else
+        None)
+    l
 
 let mark_internal =
   let add_if name flags =
     let is_internal = List.mem Krml.Common.Internal flags in
     if (not is_internal) && not (Krml.Inlining.always_live name) then
       Krml.Common.Internal :: List.filter (( <> ) Krml.Common.Private) flags
-    else List.filter (( <> ) Krml.Common.Private) flags
+    else
+      List.filter (( <> ) Krml.Common.Private) flags
   in
   function
   | DFunction (cc, flags, n_cgs, n, typ, name, binders, body) ->
@@ -214,8 +223,10 @@ let record_inline_static lid = Krml.Options.(static_header := Lid lid :: !static
 let bundle (files : Krml.Ast.file list) (c : config) : files =
   let bundled = Hashtbl.create 137 in
   let bundle name decl =
-    if Hashtbl.mem bundled name then Hashtbl.replace bundled name (decl :: Hashtbl.find bundled name)
-    else Hashtbl.add bundled name [ decl ]
+    if Hashtbl.mem bundled name then
+      Hashtbl.replace bundled name (decl :: Hashtbl.find bundled name)
+    else
+      Hashtbl.add bundled name [ decl ]
   in
   let record_library lid = Krml.Options.(library := Lid lid :: !library) in
   let files =
@@ -237,7 +248,11 @@ let bundle (files : Krml.Ast.file list) (c : config) : files =
                     (* ) definitions; *)
                     match
                       List.find_map
-                        (fun (pat, vis) -> if matches lid pat then Some vis else None)
+                        (fun (pat, vis) ->
+                          if matches lid pat then
+                            Some vis
+                          else
+                            None)
                         definitions
                     with
                     | None -> find config
@@ -247,11 +262,16 @@ let bundle (files : Krml.Ast.file list) (c : config) : files =
                         (*   Krml.(KPrint.bprintf "vis_ was: %s\n" (String.concat ", " (List.map show_visibility vis_))); *)
                         let decl = adjust vis decl in
                         bundle name decl;
-                        if inline_static then record_inline_static lid;
-                        if library then record_library lid;
+                        if inline_static then
+                          record_inline_static lid;
+                        if library then
+                          record_library lid;
                         true)
               in
-              if find c then None else Some decl)
+              if find c then
+                None
+              else
+                Some decl)
             decls ))
       files
   in
@@ -264,7 +284,8 @@ let bundle (files : Krml.Ast.file list) (c : config) : files =
           List.iter (bundle filename) decls;
           false
         end
-        else true)
+        else
+          true)
       files
   in
   Hashtbl.fold
@@ -287,7 +308,8 @@ let libraries (files : Krml.Ast.file list) : files =
               | DType _ -> None
               | d -> Krml.Builtin.make_abstract_function_or_global d
             end
-            else Some d)
+            else
+              Some d)
           decls ))
     files
 
@@ -351,7 +373,13 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
       object
         inherit [_] reduce as super
         method zero = None
-        method plus o1 o2 = if o1 = None then o2 else o1
+
+        method plus o1 o2 =
+          if o1 = None then
+            o2
+          else
+            o1
+
         method! visit_TQualified _ lid' = find_map (matches lid') monomorphizations_using
 
         method! visit_TApp _ lid' ts =
@@ -446,10 +474,12 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
               | None -> true
               | Some (target, inline_static, vis) ->
                   let decl = adjust vis decl in
-                  if inline_static then record_inline_static lid;
+                  if inline_static then
+                    record_inline_static lid;
                   if Hashtbl.mem reassigned target then
                     Hashtbl.replace reassigned target (decl :: Hashtbl.find reassigned target)
-                  else Hashtbl.add reassigned target [ decl ];
+                  else
+                    Hashtbl.add reassigned target [ decl ];
                   false)
             decls ))
       files
@@ -463,7 +493,8 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
             let r = Hashtbl.find reassigned f in
             Hashtbl.remove reassigned f;
             r)
-          else []
+          else
+            []
         in
         f, decls @ reassigned)
       files

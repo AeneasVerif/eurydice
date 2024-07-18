@@ -36,8 +36,10 @@ Supported options:|}
         exit 255)
   in
   let anon_fun f =
-    if Filename.check_suffix f ".llbc" then files := f :: !files
-    else fatal_error "Unknown file extension for %s" f
+    if Filename.check_suffix f ".llbc" then
+      files := f :: !files
+    else
+      fatal_error "Unknown file extension for %s" f
   in
   begin
     try Arg.parse spec anon_fun usage
@@ -47,7 +49,8 @@ Supported options:|}
       fatal_error "Incorrect invocation, was: %s\n" (String.concat "␣" (Array.to_list Sys.argv))
   end;
 
-  if !files = [] then fatal_error "%s" (Arg.usage_string spec usage);
+  if !files = [] then
+    fatal_error "%s" (Arg.usage_string spec usage);
 
   let terminal_width =
     Terminal.Size.(
@@ -110,12 +113,15 @@ Supported options:|}
 
   Eurydice.Logging.log "Phase1" "%a" pfiles files;
   let errors, files = Krml.Checker.check_everything ~warn:true files in
-  if errors then fail __FILE__ __LINE__;
+  if errors then
+    fail __FILE__ __LINE__;
 
   Printf.printf "2️⃣ Cleanup\n";
   let config =
-    if !O.config = "" then None
-    else Some (Eurydice.Bundles.parse_config (Eurydice.Bundles.load_config !O.config))
+    if !O.config = "" then
+      None
+    else
+      Some (Eurydice.Bundles.parse_config (Eurydice.Bundles.load_config !O.config))
   in
   let files =
     match config with
@@ -133,13 +139,15 @@ Supported options:|}
 
   Eurydice.Logging.log "Phase2" "%a" pfiles files;
   let errors, files = Krml.Checker.check_everything ~warn:true files in
-  if errors then fail __FILE__ __LINE__;
+  if errors then
+    fail __FILE__ __LINE__;
 
   Printf.printf "3️⃣ Monomorphization, datatypes\n";
   let files = Eurydice.Cleanup2.resugar_loops#visit_files () files in
   (* Sanity check for the big rewriting above. *)
   let errors, files = Krml.Checker.check_everything ~warn:true files in
-  if errors then fail __FILE__ __LINE__;
+  if errors then
+    fail __FILE__ __LINE__;
   Eurydice.Logging.log "Phase2.1" "%a" pfiles files;
   let files = Krml.Monomorphization.functions files in
   let files = Krml.Monomorphization.datatypes files in
@@ -155,7 +163,8 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.2" "%a" pfiles files;
   (* Sanity check for the big rewriting above. *)
   let errors, files = Krml.Checker.check_everything ~warn:true files in
-  if errors then fail __FILE__ __LINE__;
+  if errors then
+    fail __FILE__ __LINE__;
   let files = Krml.Inlining.drop_unused files in
   let files = Eurydice.Cleanup2.remove_array_temporaries#visit_files () files in
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
@@ -194,7 +203,8 @@ Supported options:|}
 
   Eurydice.Logging.log "Phase3" "%a" pfiles files;
   let errors, files = Krml.Checker.check_everything ~warn:true files in
-  if errors then fail __FILE__ __LINE__;
+  if errors then
+    fail __FILE__ __LINE__;
 
   let scope_env = Krml.Simplify.allocate_c_env files in
   let files = Eurydice.Cleanup3.decay_cg_externals#visit_files (scope_env, false) files in
