@@ -332,7 +332,16 @@ let files =
        List.map
          (fun { name; typ; cg_args; n_type_args; arg_names } ->
            let typ = Krml.Helpers.fold_arrow cg_args typ in
-           K.DExternal (None, [], List.length cg_args, n_type_args, name, typ, arg_names))
+           let flags =
+             (* FIXME: calls to this are generated *after* the reachability
+                analysis during one of the desugaring phases, so there's no good
+                way right now to prevent it from being eliminated *)
+             if name = (["Eurydice"], "slice_to_array2") then
+               []
+             else
+               [ Krml.Common.Private ]
+           in
+           K.DExternal (None, flags, List.length cg_args, n_type_args, name, typ, arg_names))
          [
            array_to_slice;
            array_to_subslice;
