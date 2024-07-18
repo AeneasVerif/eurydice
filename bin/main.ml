@@ -1,6 +1,7 @@
 let () =
-  let usage = Printf.sprintf
-{|Eurydice: from Rust to C
+  let usage =
+    Printf.sprintf
+      {|Eurydice: from Rust to C
 
 Usage: %s [OPTIONS] FILES
 
@@ -8,40 +9,55 @@ FILES are .llbc files produced by Charon. Eurydice will generate one C file per
 llbc file.
 
 Supported options:|}
-    Sys.argv.(0)
+      Sys.argv.(0)
   in
   let module O = Eurydice.Options in
-  let debug s = Krml.Options.debug_modules := Krml.KString.split_on_char ',' s @ !Krml.Options.debug_modules in
+  let debug s =
+    Krml.Options.debug_modules := Krml.KString.split_on_char ',' s @ !Krml.Options.debug_modules
+  in
   let funroll_loops = ref 16 in
-  let spec = [
-    "--log", Arg.Set_string O.log_level, " log level, use * for everything";
-    "--debug", Arg.String debug, " debug options, to be passed to krml";
-    "--output", Arg.Set_string Krml.Options.tmpdir, " output directory in which to write files";
-    "--header", Arg.Set_string Krml.Options.header, " path to a header file to be prepended to the generated C";
-    "--config", Arg.Set_string O.config, " YAML configuration file";
-    "-funroll-loops", Arg.Set_int funroll_loops, " unrool loops up to N";
-  ] in
+  let spec =
+    [
+      "--log", Arg.Set_string O.log_level, " log level, use * for everything";
+      "--debug", Arg.String debug, " debug options, to be passed to krml";
+      "--output", Arg.Set_string Krml.Options.tmpdir, " output directory in which to write files";
+      ( "--header",
+        Arg.Set_string Krml.Options.header,
+        " path to a header file to be prepended to the generated C" );
+      "--config", Arg.Set_string O.config, " YAML configuration file";
+      "-funroll-loops", Arg.Set_int funroll_loops, " unrool loops up to N";
+    ]
+  in
   let spec = Arg.align spec in
   let files = ref [] in
-  let fatal_error = Printf.kprintf (fun s -> print_endline s; exit 255) in
+  let fatal_error =
+    Printf.kprintf (fun s ->
+        print_endline s;
+        exit 255)
+  in
   let anon_fun f =
     if Filename.check_suffix f ".llbc" then
       files := f :: !files
     else
       fatal_error "Unknown file extension for %s" f
   in
-  begin try
-    Arg.parse spec anon_fun usage
-  with e ->
-    Printf.printf "Error parsing command-line: %s\n%s\n" (Printexc.get_backtrace ()) (Printexc.to_string e);
-    fatal_error "Incorrect invocation, was: %s\n"
-      (String.concat "␣" (Array.to_list Sys.argv))
+  begin
+    try Arg.parse spec anon_fun usage
+    with e ->
+      Printf.printf "Error parsing command-line: %s\n%s\n" (Printexc.get_backtrace ())
+        (Printexc.to_string e);
+      fatal_error "Incorrect invocation, was: %s\n" (String.concat "␣" (Array.to_list Sys.argv))
   end;
 
   if !files = [] then
     fatal_error "%s" (Arg.usage_string spec usage);
 
-  let terminal_width = Terminal.Size.(match get_dimensions () with Some d -> d.columns | None -> 80) in
+  let terminal_width =
+    Terminal.Size.(
+      match get_dimensions () with
+      | Some d -> d.columns
+      | None -> 80)
+  in
   let pfiles b files =
     PPrint.(ToBuffer.pretty 0.95 terminal_width b (Krml.PrintAst.print_files files ^^ hardline))
   in
@@ -53,41 +69,43 @@ Supported options:|}
   (* This is where the action happens *)
   Eurydice.Logging.enable_logging !O.log_level;
   (* Type applications are compiled as a regular external type. *)
-  Krml.(Options.(
-    allow_tapps := true;
-    minimal := true;
-    curly_braces := true;
-    add_include := [ All, "\"eurydice_glue.h\"" ];
-    parentheses := true;
-    no_shadow := true;
-    extern_c := true;
-    cxx_compat := true;
-    unroll_loops := !funroll_loops;
-    static_header := [
-      Bundle.Prefix [ "core"; "convert" ];
-      Bundle.Prefix [ "core"; "num" ];
-    ];
-    Warn.parse_warn_error (!warn_error ^ "+8");
-  ));
+  Krml.(
+    Options.(
+      allow_tapps := true;
+      minimal := true;
+      curly_braces := true;
+      add_include := [ All, "\"eurydice_glue.h\"" ];
+      parentheses := true;
+      no_shadow := true;
+      extern_c := true;
+      cxx_compat := true;
+      unroll_loops := !funroll_loops;
+      static_header := [ Bundle.Prefix [ "core"; "convert" ]; Bundle.Prefix [ "core"; "num" ] ];
+      Warn.parse_warn_error (!warn_error ^ "+8")));
 
-  Krml.Helpers.is_readonly_builtin_lid_ :=
-    (let is_readonly_pure_lid_ = !Krml.Helpers.is_readonly_builtin_lid_ in
-    fun lid ->
-      is_readonly_pure_lid_ lid ||
-        match lid with
-        | [ "Eurydice" ], "vec_len"
-        | [ "Eurydice" ], "vec_index"
-        | [ "Eurydice" ], "array_to_slice"
-        | [ "core"; "num"; "u32"; _ ], "rotate_left" ->
-            true
-        | _ ->
-            false
-    );
+  (Krml.Helpers.is_readonly_builtin_lid_ :=
+     let is_readonly_pure_lid_ = !Krml.Helpers.is_readonly_builtin_lid_ in
+     fun lid ->
+       is_readonly_pure_lid_ lid
+       ||
+       match lid with
+       | [ "Eurydice" ], "vec_len"
+       | [ "Eurydice" ], "vec_index"
+       | [ "Eurydice" ], "array_to_slice"
+       | [ "core"; "num"; "u32"; _ ], "rotate_left" -> true
+       | _ -> false);
 
-  let files = Eurydice.Builtin.files @ [ Eurydice.PreCleanup.merge (List.map (fun filename ->
-    let llbc = Eurydice.LoadLlbc.load_file filename in
-    Eurydice.Builtin.adjust (Eurydice.AstOfLlbc.file_of_crate llbc)
-  ) !files) ] in
+  let files =
+    Eurydice.Builtin.files
+    @ [
+        Eurydice.PreCleanup.merge
+          (List.map
+             (fun filename ->
+               let llbc = Eurydice.LoadLlbc.load_file filename in
+               Eurydice.Builtin.adjust (Eurydice.AstOfLlbc.file_of_crate llbc))
+             !files);
+      ]
+  in
   Eurydice.Builtin.check ();
 
   Printf.printf "1️⃣ LLBC ➡️  AST\n";
@@ -201,61 +219,80 @@ Supported options:|}
   let open Krml in
   let file_of_map = Bundle.mk_file_of files in
   let deps = Bundles.direct_dependencies_with_internal files file_of_map in
-  let files = List.map (fun (f, ds) ->
-    let is_fine = function
-      | ["LowStar"; "Ignore"], "ignore"
-      | "Eurydice" :: _, _ ->
-      (* | "core" :: _, _ -> *)
-          true
-      | _ ->
-          false
-    in
-    f, List.filter_map (fun d ->
-      match d with
-      | Krml.Ast.DExternal (_, _, _, _, lid, t, _) when Krml.Monomorphization.(
-        (has_variables [ t ] || has_cg_array [ t ]) && not (is_fine lid)
-      ) ->
-          KPrint.bprintf "Warning: %a is a type/const-polymorphic assumed function, \
-            must be implemented with a macro, dropping it\n" Krml.PrintAst.Ops.plid lid;
-          None
-      | _ ->
-          Some d
-    ) ds
-  ) files in
+  let files =
+    List.map
+      (fun (f, ds) ->
+        let is_fine = function
+          | [ "LowStar"; "Ignore" ], "ignore" | "Eurydice" :: _, _ ->
+              (* | "core" :: _, _ -> *)
+              true
+          | _ -> false
+        in
+        ( f,
+          List.filter_map
+            (fun d ->
+              match d with
+              | Krml.Ast.DExternal (_, _, _, _, lid, t, _)
+                when Krml.Monomorphization.(
+                       (has_variables [ t ] || has_cg_array [ t ]) && not (is_fine lid)) ->
+                  KPrint.bprintf
+                    "Warning: %a is a type/const-polymorphic assumed function, must be implemented \
+                     with a macro, dropping it\n"
+                    Krml.PrintAst.Ops.plid lid;
+                  None
+              | _ -> Some d)
+            ds ))
+      files
+  in
   Eurydice.Logging.log "Phase3.2" "%a" pfiles files;
 
   (* The following phase reads the "target" parameter for each file, if any, from the config
      and if set, then it adds the attribute `KRML_ATTRIBUTE_TARGET(target)` to each function
      in the generated C file. This is used, in particular, to mark certain functions as only
      to be compiled on target architectures like `avx2` *)
-  let files = List.map (fun (f, ds) ->
-    let open Eurydice.Bundles in
-    let target_attribute = 
-      match config with
-      | None -> ""
-      | Some c -> 
-        match List.find_opt (fun (x:file) -> x.name = f) c with
-        | None -> ""
-        | Some f -> f.target in
-    f, List.filter_map (fun d ->
-      match d with
-      | Krml.Ast.DFunction (cc,fl,x,y,t,l,b,e) when target_attribute <> "" ->
-          Some (Krml.Ast.DFunction (cc,fl@[Target target_attribute],x,y,t,l,b,e))
-      | _ ->
-          Some d
-    ) ds
-  ) files in
+  let files =
+    List.map
+      (fun (f, ds) ->
+        let open Eurydice.Bundles in
+        let target_attribute =
+          match config with
+          | None -> ""
+          | Some c -> (
+              match List.find_opt (fun (x : file) -> x.name = f) c with
+              | None -> ""
+              | Some f -> f.target)
+        in
+        ( f,
+          List.filter_map
+            (fun d ->
+              match d with
+              | Krml.Ast.DFunction (cc, fl, x, y, t, l, b, e) when target_attribute <> "" ->
+                  Some (Krml.Ast.DFunction (cc, fl @ [ Target target_attribute ], x, y, t, l, b, e))
+              | _ -> Some d)
+            ds ))
+      files
+  in
 
   Eurydice.Logging.log "Phase3.3" "%a" pfiles files;
   let files = AstToCStar.mk_files files c_name_map Idents.LidSet.empty macros in
 
   let headers = CStarToC11.mk_headers c_name_map files in
   let deps = CStarToC11.drop_empty_headers deps headers in
-  let internal_headers = Bundles.StringSet.of_list
-    (List.filter_map (function (name, C11.Internal _) -> Some name | _ -> None) headers)
+  let internal_headers =
+    Bundles.StringSet.of_list
+      (List.filter_map
+         (function
+           | name, C11.Internal _ -> Some name
+           | _ -> None)
+         headers)
   in
-  let public_headers = Bundles.StringSet.of_list
-    (List.filter_map (function (name, C11.Public _) -> Some name | _ -> None) headers)
+  let public_headers =
+    Bundles.StringSet.of_list
+      (List.filter_map
+         (function
+           | name, C11.Public _ -> Some name
+           | _ -> None)
+         headers)
   in
   let files = CStarToC11.mk_files c_name_map files in
   let files = List.filter (fun (_, decls) -> List.length decls > 0) files in

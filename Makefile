@@ -36,6 +36,7 @@ test-%: test/%/out.llbc out/test-%/main.c | all
 out/%:
 	mkdir -p $@
 
+.PHONY: nix-magic
 nix-magic:
 	nix flake update --extra-experimental-features nix-command --extra-experimental-features flakes
 
@@ -47,9 +48,11 @@ update-charon-pin:
 FORMAT_FILE=include/eurydice_glue.h
 
 format-check: phony
+	@if ! dune build @fmt >/dev/null; then \echo "\033[0;31m⚠️⚠️⚠️ SUGGESTED: $(MAKE) format-apply\033[0;m"; fi
 	@F=$$(mktemp); clang-format $(FORMAT_FILE) > $$F; \
 	  if ! diff -q $(FORMAT_FILE) $$F >/dev/null; then \echo "\033[0;31m⚠️⚠️⚠️ SUGGESTED: $(MAKE) format-apply\033[0;m"; fi; \
 	  rm -rf $$F
 
 format-apply: phony
+	dune fmt >/dev/null || true
 	clang-format -i $(FORMAT_FILE)

@@ -1,12 +1,10 @@
 (library
-  (name eurydice)
-  (libraries charon krml yaml)
-
-  (preprocess
-    (pps ppx_deriving.std)
-  )
-)
+ (name eurydice)
+ (libraries charon krml yaml)
+ (preprocess
+  (pps ppx_deriving.std)))
 
 (env
-  (_
-    (flags (:standard -w @1-2@3-7@8..12@14..21@23..29-30@31..38-39-40-41@43@57))))
+ (_
+  (flags
+   (:standard -w @1-2@3-7@8..12@14..21@23..29-30@31..38-39-40-41@43@57))))
