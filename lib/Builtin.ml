@@ -336,7 +336,7 @@ let files =
              (* FIXME: calls to this are generated *after* the reachability
                 analysis during one of the desugaring phases, so there's no good
                 way right now to prevent it from being eliminated *)
-             if name = (["Eurydice"], "slice_to_array2") then
+             if name = ([ "Eurydice" ], "slice_to_array2") then
                []
              else
                [ Krml.Common.Private ]
