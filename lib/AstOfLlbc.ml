@@ -135,7 +135,22 @@ let assert_slice (t : K.typ) =
 let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
   match p with
   | PeIdent (s, _) -> s
-  | PeImpl i -> Charon.PrintTypes.impl_elem_to_string env.format_env i
+  | PeImpl (i, d) ->
+      (* The default format changed slightly. This reproduces the old one so as
+         not to break existing symbol names. *)
+      let d =
+        if d = Charon.Types.Disambiguator.zero then
+          ""
+        else
+          "#" ^ Charon.Types.Disambiguator.to_string d
+      in
+      let i_as_str = Charon.PrintTypes.impl_elem_to_string env.format_env i in
+      let i_as_str =
+        match i with
+        | ImplElemTy _ -> i_as_str
+        | ImplElemTrait _ -> "(" ^ i_as_str ^ ")"
+      in
+      "{" ^ i_as_str ^ d ^ "}"
 
 let string_of_name env ps = String.concat "::" (List.map (string_of_path_elem env) ps)
 
