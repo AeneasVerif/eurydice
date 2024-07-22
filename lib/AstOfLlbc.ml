@@ -1252,8 +1252,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
       K.with_type
         (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
         (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
-  | Global (id, _generic_args) ->
-      let global = env.get_nth_global id in
+  | Global { global_id; global_generics = _ } ->
+      let global = env.get_nth_global global_id in
       K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
   | Len _ -> failwith "unsupported: Len"
 
@@ -1535,9 +1535,9 @@ let declaration_group_to_list (g : C.declaration_group) : C.any_decl_id list =
   match g with
   | FunGroup g -> List.map (fun id -> C.IdFun id) (C.g_declaration_group_to_list g)
   | TypeGroup g -> List.map (fun id -> C.IdType id) (C.g_declaration_group_to_list g)
+  | GlobalGroup g -> List.map (fun id -> C.IdGlobal id) (C.g_declaration_group_to_list g)
   | TraitDeclGroup g -> List.map (fun id -> C.IdTraitDecl id) (C.g_declaration_group_to_list g)
-  | GlobalGroup id -> [ IdGlobal id ]
-  | TraitImplGroup id -> [ IdTraitImpl id ]
+  | TraitImplGroup g -> List.map (fun id -> C.IdTraitImpl id) (C.g_declaration_group_to_list g)
   | MixedGroup g -> C.g_declaration_group_to_list g
 
 let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
