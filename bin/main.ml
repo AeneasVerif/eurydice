@@ -83,17 +83,45 @@ Supported options:|}
       static_header := [ Bundle.Prefix [ "core"; "convert" ]; Bundle.Prefix [ "core"; "num" ] ];
       Warn.parse_warn_error (!warn_error ^ "+8")));
 
-  (Krml.Helpers.is_readonly_builtin_lid_ :=
-     let is_readonly_pure_lid_ = !Krml.Helpers.is_readonly_builtin_lid_ in
-     fun lid ->
-       is_readonly_pure_lid_ lid
-       ||
-       match lid with
-       | [ "Eurydice" ], "vec_len"
-       | [ "Eurydice" ], "vec_index"
-       | [ "Eurydice" ], "array_to_slice"
-       | [ "core"; "num"; "u32"; _ ], "rotate_left" -> true
-       | _ -> false);
+  (* Some logic for more precisely tracking readonly functions, so as to remove
+     excessive uu__ variables. *)
+  let readonly_lids = Hashtbl.create 41 in
+  let readonly_map = Hashtbl.create 41 in
+  let fill_readonly_table files =
+    List.iter
+      (fun (_, decls) ->
+        List.iter
+          (function
+            | Krml.Ast.DFunction (_, _, _, _, _, name, _, body) ->
+                Hashtbl.add readonly_map name body
+            | _ -> ())
+          decls)
+      files
+  in
+
+  Krml.(
+    Helpers.is_readonly_builtin_lid_ :=
+      let is_readonly_pure_lid_ = !Helpers.is_readonly_builtin_lid_ in
+      fun lid t ->
+        let ret_t, _ = Helpers.flatten_arrow t in
+        is_readonly_pure_lid_ lid t
+        || (match lid with
+           | "libcrux_intrinsics" :: _, _ -> ret_t <> TUnit
+           | [ "Eurydice" ], "vec_len"
+           | [ "Eurydice" ], "vec_index"
+           | [ "Eurydice" ], "array_to_slice"
+           | [ "Eurydice" ], "slice_subslice"
+           | "core" :: "num" :: _, ("rotate_left" | "from_le_bytes") -> true
+           | _ -> false)
+        || Hashtbl.mem readonly_lids lid
+        ||
+        match Hashtbl.find_opt readonly_map lid with
+        | Some body ->
+            let ro = Helpers.is_readonly_c_expression body in
+            if ro then
+              Hashtbl.add readonly_lids lid ();
+            ro
+        | _ -> false);
 
   let files =
     Eurydice.Builtin.files
@@ -180,9 +208,13 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files = Eurydice.Cleanup2.detect_array_returning_builtins#visit_files () files in
   let files = Eurydice.Cleanup2.remove_literals#visit_files () files in
+  (* Eurydice does something more involved than krml and performs a conservative
+     approximation of functions that are known to be pure readonly (i.e.,
+     functions that do not write to memory). *)
+  Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
+  fill_readonly_table files;
   let files = Krml.Simplify.optimize_lets files in
   (* let files = Eurydice.Cleanup2.break_down_nested_arrays#visit_files () files in *)
-  Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_array_from_fn files in
   (* remove_array_from_fn, above, creates further opportunities for removing unused functions. *)
   let files = Krml.Inlining.drop_unused files in
