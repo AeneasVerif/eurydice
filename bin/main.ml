@@ -109,9 +109,10 @@ Supported options:|}
            | "libcrux_intrinsics" :: _, _ -> ret_t <> TUnit
            | [ "Eurydice" ], "vec_len"
            | [ "Eurydice" ], "vec_index"
-           | [ "Eurydice" ], "array_to_slice"
+           | [ "Eurydice" ], "slice_index"
            | [ "Eurydice" ], "slice_subslice"
-           | "core" :: "num" :: _, ("rotate_left" | "from_le_bytes") -> true
+           | [ "Eurydice" ], "array_to_slice"
+           | "core" :: "num" :: _, ("rotate_left" | "from_le_bytes" | "wrapping_add") -> true
            | _ -> false)
         || Hashtbl.mem readonly_lids lid
         ||

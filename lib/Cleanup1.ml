@@ -182,6 +182,8 @@ let remove_assignments =
       | EWhile (e, e') ->
           assert (b.node.meta = Some MetaSequence);
           close_now_over not_yet_closed
+            (* We must be here variables that are declared in the condition, and variables that
+               appear both in the loop body and its continuation. *)
             (count e ++ AtomSet.inter (count e') (count e2))
             (fun not_yet_closed ->
               ELet
