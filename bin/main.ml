@@ -82,7 +82,7 @@ Supported options:|}
       unroll_loops := !funroll_loops;
       static_header := [ Bundle.Prefix [ "core"; "convert" ]; Bundle.Prefix [ "core"; "num" ] ];
       Warn.parse_warn_error (!warn_error ^ "+8"));
-    Monomorphization.Gen.short_names := true);
+    Monomorphization.NameGen.short_names := true);
 
   (* Some logic for more precisely tracking readonly functions, so as to remove
      excessive uu__ variables. *)
