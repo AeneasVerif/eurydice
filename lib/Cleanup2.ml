@@ -643,3 +643,53 @@ let detect_array_returning_builtins =
         super#visit_ELet env b e1 e2
 end
 [@ocamlformat "disable"]
+
+let improve_names files =
+  let renamed = Hashtbl.create 41 in
+  let allocated = Hashtbl.create 41 in
+  (object (_self)
+     inherit [_] iter
+
+     method! visit_DFunction _ _ _ _ _ _ ((m, n) as lid) _ _ =
+       let trait_impl, m = List.partition (fun s -> s.[0] = '{') m in
+       match trait_impl with
+       | [ trait_impl ] ->
+           let hash = Hashtbl.hash trait_impl in
+           let n = Printf.sprintf "%s_%02x" n (hash land 0xFF) in
+           let n = Krml.Idents.mk_fresh n (fun n -> Hashtbl.mem allocated (m, n)) in
+           Hashtbl.add renamed lid ((m, n), trait_impl);
+           Hashtbl.add allocated (m, n) ()
+       | _ -> ()
+  end)
+    #visit_files
+    () files;
+  (* Hashtbl.iter (fun k (v, _) -> *)
+  (*   Krml.KPrint.bprintf "%a --> %a\n" plid k plid v *)
+  (* ) renamed; *)
+  (* TODO: are there other global maps like this whose lids need to be
+     updated??? *)
+  Krml.Options.static_header :=
+    List.map
+      (function
+        | Krml.Bundle.Lid lid when Hashtbl.mem renamed lid ->
+            Krml.Bundle.Lid (fst (Hashtbl.find renamed lid))
+        | x -> x)
+      !Krml.Options.static_header;
+  (object (self)
+     inherit [_] map
+
+     method! visit_DFunction env cc flags n_cgs n t lid bs e =
+       match Hashtbl.find_opt renamed lid with
+       | Some (lid, trait_impl) ->
+           let comment = Krml.KPrint.bsprintf "This function found in impl %s" trait_impl in
+           DFunction (cc, flags @ [ Comment comment ], n_cgs, n, t, lid, bs, self#visit_expr_w env e)
+       | None -> DFunction (cc, flags, n_cgs, n, t, lid, bs, self#visit_expr_w env e)
+
+     method! visit_EQualified _ lid =
+       EQualified
+         (match Hashtbl.find_opt renamed lid with
+         | Some (lid, _) -> lid
+         | None -> lid)
+  end)
+    #visit_files
+    () files

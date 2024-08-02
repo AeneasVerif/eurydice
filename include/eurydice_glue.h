@@ -57,6 +57,10 @@ typedef struct {
 #define Eurydice_slice_index(s, i, t, t_ptr_t, _ret_t) (((t_ptr_t)s.ptr)[i])
 #define Eurydice_slice_subslice(s, r, t, _, _ret_t)                            \
   EURYDICE_SLICE((t *)s.ptr, r.start, r.end)
+// Variant for when the start and end indices are statically known (i.e., the
+// range argument `r` is a literal).
+#define Eurydice_slice_subslice2(s, start, end, t, _)                          \
+  EURYDICE_SLICE((t *)s.ptr, start, end)
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _, _ret_t)          \
   EURYDICE_SLICE((t *)s.ptr, 0, subslice_end_pos)
 #define Eurydice_slice_subslice_from(s, subslice_start_pos, t, _, _ret_t)      \
@@ -66,6 +70,9 @@ typedef struct {
                  end) /* x is already at an array type, no need for cast */
 #define Eurydice_array_to_subslice(_arraylen, x, r, t, _, _ret_t)              \
   EURYDICE_SLICE((t *)x, r.start, r.end)
+// Same as above, variant for when start and end are statically known
+#define Eurydice_array_to_subslice2(x, start, end, t, _ret_t)                  \
+  EURYDICE_SLICE((t *)x, start, end)
 #define Eurydice_array_to_subslice_to(_size, x, r, t, _range_t, _ret_t)        \
   EURYDICE_SLICE((t *)x, 0, r)
 #define Eurydice_array_to_subslice_from(size, x, r, t, _range_t, _ret_t)       \

@@ -92,6 +92,19 @@ let decay_cg_externals =
         DExternal (cc, flags, n_cgs, n, name, Helpers.fold_arrow t_args t_ret, hints)
   end
 
+let bonus_cleanups =
+  object (_self)
+    inherit [_] map as super
+
+    method! visit_ELet (((), _) as env) b e1 e2 =
+      (* let x; x := e; return x *)
+      match e1.node, e2.node with
+      | ( EAny,
+          ESequence [ { node = EAssign ({ node = EBound 0; _ }, e3); _ }; { node = EBound 0; _ } ] )
+        -> (DeBruijn.subst Helpers.eunit 0 e3).node
+      | _ -> super#visit_ELet env b e1 e2
+  end
+
 let build_cg_macros =
   object (self)
     inherit [_] Krml.Ast.reduce
@@ -114,4 +127,47 @@ let add_extra_type_to_slice_index =
       | EQualified ([ "Eurydice" ], "slice_index"), [], [], [ t_elements ] ->
           ETApp (e, cgs, cgs', ts @ [ TBuf (t_elements, false) ])
       | _ -> super#visit_ETApp env e cgs cgs' ts
+
+    method! visit_EApp env e es =
+      match e.node, es with
+      | ( ETApp
+            ({ node = EQualified ([ "Eurydice" ], "slice_subslice"); _ }, [], [], [ t_elements; _ ]),
+          [
+            e_slice;
+            {
+              node = EFlat [ (Some "start", e_start); (Some "end", e_end) ];
+              typ = TQualified ([ "core"; "ops"; "range" ], id);
+            };
+          ] )
+        when KString.starts_with id "Range" ->
+          EApp
+            ( with_type TUnit
+                (ETApp
+                   ( with_type TUnit (EQualified ([ "Eurydice" ], "slice_subslice2")),
+                     [],
+                     [],
+                     [ t_elements ] )),
+              [ e_slice; e_start; e_end ] )
+      | ( ETApp
+            ( { node = EQualified ([ "Eurydice" ], "array_to_subslice"); _ },
+              _,
+              [],
+              [ t_elements; _ ] ),
+          [
+            e_slice;
+            {
+              node = EFlat [ (Some "start", e_start); (Some "end", e_end) ];
+              typ = TQualified ([ "core"; "ops"; "range" ], id);
+            };
+          ] )
+        when KString.starts_with id "Range" ->
+          EApp
+            ( with_type TUnit
+                (ETApp
+                   ( with_type TUnit (EQualified ([ "Eurydice" ], "array_to_subslice2")),
+                     [],
+                     [],
+                     [ t_elements ] )),
+              [ e_slice; e_start; e_end ] )
+      | _ -> super#visit_EApp env e es
   end
