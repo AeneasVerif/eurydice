@@ -52,7 +52,7 @@ update-charon-pin:
 FORMAT_FILE=include/eurydice_glue.h
 
 format-check: phony
-	@if ! dune build @fmt >/dev/null; then \echo "\033[0;31m⚠️⚠️⚠️ SUGGESTED: $(MAKE) format-apply\033[0;m"; fi
+	@if ! dune build @fmt >/dev/null 2>&1; then \echo "\033[0;31m⚠️⚠️⚠️ SUGGESTED: $(MAKE) format-apply\033[0;m"; fi
 	@F=$$(mktemp); clang-format $(FORMAT_FILE) > $$F; \
 	  if ! diff -q $(FORMAT_FILE) $$F >/dev/null; then \echo "\033[0;31m⚠️⚠️⚠️ SUGGESTED: $(MAKE) format-apply\033[0;m"; fi; \
 	  rm -rf $$F
