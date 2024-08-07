@@ -1628,7 +1628,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
           assert (def_id = id);
           let name = lid_of_name env item_meta.name in
           match body, kind with
-          | _, TraitItemDecl _ ->
+          | _, TraitDeclItem (_, _, false) ->
               (* We skip those on the basis that they generate useless external prototypes, which we
                  do not really need. *)
               None
