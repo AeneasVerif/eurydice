@@ -205,7 +205,6 @@ let mark_internal =
   in
   function
   | DFunction (cc, flags, n_cgs, n, typ, name, binders, body) ->
-      Krml.KPrint.bprintf "Marking %a as internal\n" Krml.PrintAst.Ops.plid name;
       DFunction (cc, add_if name flags, n_cgs, n, typ, name, binders, body)
   | DGlobal (flags, name, n, typ, body) -> DGlobal (add_if name flags, name, n, typ, body)
   | DType (lid, flags, n_cgs, n, def) -> DType (lid, add_if lid flags, n_cgs, n, def)
