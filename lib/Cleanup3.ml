@@ -93,15 +93,25 @@ let decay_cg_externals =
   end
 
 let bonus_cleanups =
-  object (_self)
+  object (self)
     inherit [_] map as super
 
     method! visit_ELet (((), _) as env) b e1 e2 =
-      (* let x; x := e; return x *)
       match e1.node, e2.node with
+      (* let x; x := e; return x *)
       | ( EAny,
           ESequence [ { node = EAssign ({ node = EBound 0; _ }, e3); _ }; { node = EBound 0; _ } ] )
         -> (DeBruijn.subst Helpers.eunit 0 e3).node
+      (* let uu = f(e); y = uu; e2 *)
+      | ( EApp ({ node = EQualified _; _ }, es),
+          ESequence
+            [ { node = EAssign (e2, { node = EBound 0; _ }); _ }; e3 ] )
+        when Helpers.is_uu b.node.name && List.for_all Helpers.is_readonly_c_expression es ->
+          ESequence
+            [
+              with_type TUnit (EAssign (DeBruijn.subst Helpers.eunit 0 e2, e1));
+              self#visit_expr env (DeBruijn.subst Helpers.eunit 0 e3);
+            ]
       | _ -> super#visit_ELet env b e1 e2
   end
 
