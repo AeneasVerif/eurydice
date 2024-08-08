@@ -180,3 +180,16 @@ let add_extra_type_to_slice_index =
               [ e_slice; e_start; e_end ] )
       | _ -> super#visit_EApp env e es
   end
+
+let also_skip_prefix_for_external_types (scope_env, _) =
+  let open Krml in
+  object(_self)
+    inherit [_] iter as _super
+
+    method! visit_TQualified () lid =
+      if GlobalNames.lookup scope_env lid = None && GlobalNames.skip_prefix lid then
+        let target = GlobalNames.target_c_name ~attempt_shortening:true ~kind:Type lid in
+        let actual = GlobalNames.extend scope_env scope_env false lid target in
+        if actual <> fst target then
+          KPrint.bprintf "Warning! The skip_prefix options generate name conflicts\n"
+  end

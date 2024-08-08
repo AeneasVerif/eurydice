@@ -243,6 +243,7 @@ Supported options:|}
     fail __FILE__ __LINE__;
 
   let scope_env = Krml.Simplify.allocate_c_env files in
+  Eurydice.Cleanup3.(also_skip_prefix_for_external_types scope_env)#visit_files () files;
   let files = Eurydice.Cleanup3.decay_cg_externals#visit_files (scope_env, false) files in
   let files = Eurydice.Cleanup3.add_extra_type_to_slice_index#visit_files () files in
   Eurydice.Logging.log "Phase3.1" "%a" pfiles files;
