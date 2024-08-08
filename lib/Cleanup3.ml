@@ -104,8 +104,7 @@ let bonus_cleanups =
         -> (DeBruijn.subst Helpers.eunit 0 e3).node
       (* let uu = f(e); y = uu; e2 *)
       | ( EApp ({ node = EQualified _; _ }, es),
-          ESequence
-            [ { node = EAssign (e2, { node = EBound 0; _ }); _ }; e3 ] )
+          ESequence [ { node = EAssign (e2, { node = EBound 0; _ }); _ }; e3 ] )
         when Helpers.is_uu b.node.name && List.for_all Helpers.is_readonly_c_expression es ->
           ESequence
             [

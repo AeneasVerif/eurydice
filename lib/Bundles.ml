@@ -169,9 +169,36 @@ let parse_file (v : Yaml.value) : file =
 
 let parse_config (v : Yaml.value) : config =
   match v with
-  | `O [ ("files", `A files) ] -> List.map parse_file files
-  | `O [ ("files", _) ] -> parsing_error "files is not a sequence"
-  | `O _ -> parsing_error "top-level object must be made of a single entry: files"
+  | `O entries ->
+      (match List.assoc_opt "naming" entries with
+      | None -> ()
+      | Some naming ->
+          let skip_prefix =
+            match naming with
+            | `O [ ("skip_prefix", `A prefixes) ] -> prefixes
+            | `O [ ("skip_prefix", _) ] -> parsing_error "skip_prefix must be a list"
+            | _ -> parsing_error "naming must be an object with the following keys: skip_prefix"
+          in
+          let skip_prefix =
+            List.map
+              (function
+                | `A m ->
+                    List.map
+                      (function
+                        | `String s -> s
+                        | _ -> parsing_error "skip_prefix component not a list of strings")
+                      m
+                | _ ->
+                    parsing_error "entries under skip prefix must be a list of strings")
+              skip_prefix
+          in
+          let skip_prefix = List.map (fun p -> Krml.Bundle.Module p) skip_prefix in
+          Krml.Options.(no_prefix := !no_prefix @ skip_prefix));
+      begin
+        match List.assoc_opt "files" entries with
+        | Some (`A files) -> List.map parse_file files
+        | _ -> parsing_error "files is not a sequence"
+      end
   | _ -> parsing_error "YAML file must be an object with key files"
 
 (** Constructing bundles *)
