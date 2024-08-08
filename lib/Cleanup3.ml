@@ -104,8 +104,7 @@ let bonus_cleanups =
         -> (DeBruijn.subst Helpers.eunit 0 e3).node
       (* let uu = f(e); y = uu; e2 *)
       | ( EApp ({ node = EQualified _; _ }, es),
-          ESequence
-            [ { node = EAssign (e2, { node = EBound 0; _ }); _ }; e3 ] )
+          ESequence [ { node = EAssign (e2, { node = EBound 0; _ }); _ }; e3 ] )
         when Helpers.is_uu b.node.name && List.for_all Helpers.is_readonly_c_expression es ->
           ESequence
             [
@@ -180,4 +179,17 @@ let add_extra_type_to_slice_index =
                      [ t_elements ] )),
               [ e_slice; e_start; e_end ] )
       | _ -> super#visit_EApp env e es
+  end
+
+let also_skip_prefix_for_external_types (scope_env, _) =
+  let open Krml in
+  object(_self)
+    inherit [_] iter as _super
+
+    method! visit_TQualified () lid =
+      if GlobalNames.lookup scope_env lid = None && GlobalNames.skip_prefix lid then
+        let target = GlobalNames.target_c_name ~attempt_shortening:true ~kind:Type lid in
+        let actual = GlobalNames.extend scope_env scope_env false lid target in
+        if actual <> fst target then
+          KPrint.bprintf "Warning! The skip_prefix options generate name conflicts\n"
   end

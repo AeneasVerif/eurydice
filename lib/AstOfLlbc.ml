@@ -1555,12 +1555,16 @@ let declaration_group_to_list (g : C.declaration_group) : C.any_decl_id list =
   | TraitImplGroup g -> List.map (fun id -> C.IdTraitImpl id) (C.g_declaration_group_to_list g)
   | MixedGroup g -> C.g_declaration_group_to_list g
 
-let flags_of_meta (meta: C.item_meta): K.flags =
-  [ Krml.Common.Comment (String.concat "\n" (
-    List.filter_map (function
-      | Charon.Meta.AttrDocComment s -> Some s
-      | _ -> None
-  ) meta.attr_info.attributes)) ]
+let flags_of_meta (meta : C.item_meta) : K.flags =
+  [
+    Krml.Common.Comment
+      (String.concat "\n"
+         (List.filter_map
+            (function
+              | Charon.Meta.AttrDocComment s -> Some s
+              | _ -> None)
+            meta.attr_info.attributes));
+  ]
 
 let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
   match id with
@@ -1741,7 +1745,16 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                    binders, so we won't have translation errors. *)
                 let n_cg = List.length signature.C.generics.const_generics in
                 let n = List.length signature.C.generics.types in
-                Some (K.DFunction (None, flags @ flags_of_meta item_meta, n_cg, n, return_type, name, arg_binders, body))))
+                Some
+                  (K.DFunction
+                     ( None,
+                       flags @ flags_of_meta item_meta,
+                       n_cg,
+                       n,
+                       return_type,
+                       name,
+                       arg_binders,
+                       body ))))
   | IdGlobal id ->
       let global = env.get_nth_global id in
       let { C.item_meta; ty; def_id; _ } = global in
