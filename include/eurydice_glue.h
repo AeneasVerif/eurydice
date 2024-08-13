@@ -79,8 +79,8 @@ typedef struct {
   EURYDICE_SLICE((t *)x, r, size)
 #define Eurydice_array_repeat(dst, len, init, t, _ret_t)                       \
   ERROR "should've been desugared"
-#define core_slice___Slice_T___len(s, t, _ret_t) EURYDICE_SLICE_LEN(s, t)
-#define core_slice___Slice_T___copy_from_slice(dst, src, t, _ret_t)            \
+#define Eurydice_slice_len(s, t, _ret_t) EURYDICE_SLICE_LEN(s, t)
+#define Eurydice_slice_copy(dst, src, t, _ret_t)            \
   memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 #define core_array___Array_T__N__23__as_slice(len_, ptr_, t, _ret_t)           \
   ((Eurydice_slice){.ptr = ptr_, .len = len_})
