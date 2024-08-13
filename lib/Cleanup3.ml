@@ -96,14 +96,30 @@ let bonus_cleanups =
   object (self)
     inherit [_] map as super
 
-    method! visit_ELet (((), _) as env) b e1 e2 =
-      match e1.node, e2.node with
+    method! extend env b =
+      b.node.name :: env
+
+    method! visit_ELet ((bs, _) as env) b e1 e2 =
+      match e1.node, e1.typ, e2.node with
       (* let x; x := e; return x *)
-      | ( EAny,
+      | ( EAny, _,
           ESequence [ { node = EAssign ({ node = EBound 0; _ }, e3); _ }; { node = EBound 0; _ } ] )
         -> (DeBruijn.subst Helpers.eunit 0 e3).node
+      (* let uu; memcpy(uu, ..., src, ...); e2 *)
+      | ( EAny, TArray (_, (_, n)),
+          ESequence [ { node = EBufBlit (
+            { node = EBound src; _ },
+            { node = EConstant (_, "0"); _ },
+            { node = EBound 0; _ },
+            { node = EConstant (_, "0"); _ },
+            { node = EConstant (_, n'); _ }); _ };
+          _] ) when n = n' && Krml.Helpers.is_uu b.node.name
+        -> EComment ("Passing arrays by value in Rust generates a copy in C",
+        with_type e2.typ (
+          super#visit_ELet env { b with node = { b.node with name = "copy_of_" ^
+          List.nth bs (src-1) } } e1 e2), "")
       (* let uu = f(e); y = uu; e2 *)
-      | ( EApp ({ node = EQualified _; _ }, es),
+      | ( EApp ({ node = EQualified _; _ }, es), _,
           ESequence [ { node = EAssign (e2, { node = EBound 0; _ }); _ }; e3 ] )
         when Helpers.is_uu b.node.name && List.for_all Helpers.is_readonly_c_expression es ->
           ESequence
