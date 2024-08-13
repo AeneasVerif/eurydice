@@ -95,11 +95,11 @@ typedef struct {
 #define core_array_equality___core__cmp__PartialEq__Array_U__N___for__Array_T__N____eq \
   Eurydice_array_eq
 
-#define core_slice___Slice_T___split_at(slice, mid, element_type, ret_t)       \
+#define Eurydice_slice_split_at(slice, mid, element_type, ret_t)       \
   (CLITERAL(ret_t){                                                            \
       .fst = EURYDICE_SLICE((element_type *)slice.ptr, 0, mid),                \
       .snd = EURYDICE_SLICE((element_type *)slice.ptr, mid, slice.len)})
-#define core_slice___Slice_T___split_at_mut(slice, mid, element_type, ret_t)   \
+#define Eurydice_slice_split_at_mut(slice, mid, element_type, ret_t)   \
   (CLITERAL(ret_t){                                                            \
       .fst = {.ptr = slice.ptr, .len = mid},                                   \
       .snd = {.ptr = (char *)slice.ptr + mid * sizeof(element_type),           \

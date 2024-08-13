@@ -105,6 +105,10 @@ let bonus_cleanups =
           ["Eurydice"], "slice_len"
       | [ "core"; "slice"; "{@Slice<T>}" ], "copy_from_slice" ->
           ["Eurydice"], "slice_copy"
+      | [ "core"; "slice"; "{@Slice<T>}" ], "split_at" ->
+          ["Eurydice"], "slice_split_at"
+      | [ "core"; "slice"; "{@Slice<T>}" ], "split_at_mut" ->
+          ["Eurydice"], "slice_split_at_mut"
       | _ ->
           lid
 
