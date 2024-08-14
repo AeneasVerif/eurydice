@@ -188,8 +188,7 @@ let parse_config (v : Yaml.value) : config =
                         | `String s -> s
                         | _ -> parsing_error "skip_prefix component not a list of strings")
                       m
-                | _ ->
-                    parsing_error "entries under skip prefix must be a list of strings")
+                | _ -> parsing_error "entries under skip prefix must be a list of strings")
               skip_prefix
           in
           let skip_prefix = List.map (fun p -> Krml.Bundle.Module p) skip_prefix in
