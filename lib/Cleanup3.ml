@@ -95,44 +95,51 @@ let decay_cg_externals =
 let bonus_cleanups =
   object (self)
     inherit [_] map as super
-
-    method! extend env b =
-      b.node.name :: env
+    method! extend env b = b.node.name :: env
 
     method! visit_lident _ lid =
       match lid with
-      | [ "core"; "slice"; "{@Slice<T>}" ], "len" ->
-          ["Eurydice"], "slice_len"
-      | [ "core"; "slice"; "{@Slice<T>}" ], "copy_from_slice" ->
-          ["Eurydice"], "slice_copy"
-      | [ "core"; "slice"; "{@Slice<T>}" ], "split_at" ->
-          ["Eurydice"], "slice_split_at"
-      | [ "core"; "slice"; "{@Slice<T>}" ], "split_at_mut" ->
-          ["Eurydice"], "slice_split_at_mut"
-      | _ ->
-          lid
+      | [ "core"; "slice"; "{@Slice<T>}" ], "len" -> [ "Eurydice" ], "slice_len"
+      | [ "core"; "slice"; "{@Slice<T>}" ], "copy_from_slice" -> [ "Eurydice" ], "slice_copy"
+      | [ "core"; "slice"; "{@Slice<T>}" ], "split_at" -> [ "Eurydice" ], "slice_split_at"
+      | [ "core"; "slice"; "{@Slice<T>}" ], "split_at_mut" -> [ "Eurydice" ], "slice_split_at_mut"
+      | _ -> lid
 
     method! visit_ELet ((bs, _) as env) b e1 e2 =
       match e1.node, e1.typ, e2.node with
       (* let x; x := e; return x  -->  x*)
-      | ( EAny, _,
+      | ( EAny,
+          _,
           ESequence [ { node = EAssign ({ node = EBound 0; _ }, e3); _ }; { node = EBound 0; _ } ] )
         -> (DeBruijn.subst Helpers.eunit 0 e3).node
       (* let uu; memcpy(uu, ..., src, ...); e2  -->  let copy_of_src; ... *)
-      | ( EAny, TArray (_, (_, n)),
-          ESequence [ { node = EBufBlit (
-            { node = EBound src; _ },
-            { node = EConstant (_, "0"); _ },
-            { node = EBound 0; _ },
-            { node = EConstant (_, "0"); _ },
-            { node = EConstant (_, n'); _ }); _ };
-          _] ) when n = n' && Krml.Helpers.is_uu b.node.name
-        -> EComment ("Passing arrays by value in Rust generates a copy in C",
-        with_type e2.typ (
-          super#visit_ELet env { b with node = { b.node with name = "copy_of_" ^
-          List.nth bs (src-1) } } e1 e2), "")
+      | ( EAny,
+          TArray (_, (_, n)),
+          ESequence
+            [
+              {
+                node =
+                  EBufBlit
+                    ( { node = EBound src; _ },
+                      { node = EConstant (_, "0"); _ },
+                      { node = EBound 0; _ },
+                      { node = EConstant (_, "0"); _ },
+                      { node = EConstant (_, n'); _ } );
+                _;
+              };
+              _;
+            ] )
+        when n = n' && Krml.Helpers.is_uu b.node.name ->
+          EComment
+            ( "Passing arrays by value in Rust generates a copy in C",
+              with_type e2.typ
+                (super#visit_ELet env
+                   { b with node = { b.node with name = "copy_of_" ^ List.nth bs (src - 1) } }
+                   e1 e2),
+              "" )
       (* let uu = f(e); y = uu; e2  -->  let y = f(e); e2 *)
-      | ( EApp ({ node = EQualified _; _ }, es), _,
+      | ( EApp ({ node = EQualified _; _ }, es),
+          _,
           ESequence [ { node = EAssign (e2, { node = EBound 0; _ }); _ }; e3 ] )
         when Helpers.is_uu b.node.name && List.for_all Helpers.is_readonly_c_expression es ->
           ESequence
@@ -212,7 +219,7 @@ let add_extra_type_to_slice_index =
 
 let also_skip_prefix_for_external_types (scope_env, _) =
   let open Krml in
-  object(_self)
+  object (_self)
     inherit [_] iter as _super
 
     method! visit_TQualified () lid =
