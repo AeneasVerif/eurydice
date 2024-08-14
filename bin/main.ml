@@ -82,7 +82,24 @@ Supported options:|}
       unroll_loops := !funroll_loops;
       static_header := [ Bundle.Prefix [ "core"; "convert" ]; Bundle.Prefix [ "core"; "num" ] ];
       Warn.parse_warn_error (!warn_error ^ "+8"));
-    Monomorphization.NameGen.short_names := true);
+    Monomorphization.NameGen.short_names := true;
+    AstToCStar.no_return_type_lids := [
+      [ "Eurydice" ], "slice_index";
+      [ "Eurydice" ], "slice_subslice";
+      [ "Eurydice" ], "slice_subslice2";
+      [ "Eurydice" ], "slice_subslice_to";
+      [ "Eurydice" ], "slice_subslice_from";
+      [ "Eurydice" ], "array_to_slice";
+      [ "Eurydice" ], "array_to_subslice";
+      [ "Eurydice" ], "array_to_subslice2";
+      [ "Eurydice" ], "array_to_subslice_to";
+      [ "Eurydice" ], "array_to_subslice_from";
+      [ "Eurydice" ], "array_repeat";
+      [ "Eurydice" ], "slice_len";
+      [ "Eurydice" ], "slice_copy";
+      [ "Eurydice" ], "array_eq";
+      [ "Eurydice" ], "slice_to_array2";
+    ]);
 
   (* Some logic for more precisely tracking readonly functions, so as to remove
      excessive uu__ variables. *)
