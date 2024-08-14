@@ -1583,7 +1583,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       let env = push_type_binders env type_params in
 
       match kind with
-      | Opaque -> None
+      | Opaque | Error _-> None
       | Struct fields ->
           let fields =
             List.map
