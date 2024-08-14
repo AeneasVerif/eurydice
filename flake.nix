@@ -91,6 +91,9 @@
           pkgs.ocamlPackages.ocaml
           pkgs.ocamlPackages.ocamlformat
           pkgs.ocamlPackages.menhir
+          # ocaml-lsp's version must match the ocaml version used. Pinning
+          # this here to save me a headache.
+          pkgs.ocamlPackages.ocaml-lsp
         ];
         buildInputs = [ charon.buildInputs ];
         nativeBuildInputs = [ charon.nativeBuildInputs fstar pkgs.clang ];
