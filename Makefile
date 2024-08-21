@@ -1,7 +1,7 @@
 CHARON_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../charon
 KRML_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../karamel
 EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
-CHARON		?= $(CHARON_HOME)/bin/charon --extract-opaque-bodies
+CHARON		?= $(CHARON_HOME)/bin/charon
 
 BROKEN_TESTS		= step_by where_clauses chunks mutable_slice_range closure
 TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(subst test/,,$(shell find test -maxdepth 1 -mindepth 1 -type d)))

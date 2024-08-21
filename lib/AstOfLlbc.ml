@@ -750,22 +750,7 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) =
             in
             ( (C.Clause clause_id, item_name),
               (decl_generics, ts, trait_decl.C.item_meta.name, decl.C.signature) ))
-          trait_decl.C.required_methods
-        @ List.map
-            (fun (item_name, decl_id) ->
-              match decl_id with
-              | Some decl_id ->
-                  let decl = env.get_nth_function decl_id in
-                  let ts =
-                    {
-                      K.n = List.length trait_decl.generics.types;
-                      n_cgs = List.length trait_decl.generics.const_generics;
-                    }
-                  in
-                  ( (C.Clause clause_id, item_name),
-                    (decl_generics, ts, trait_decl.C.item_meta.name, decl.C.signature) )
-              | None -> failwith ("TODO: handle provided trait methods, like " ^ item_name))
-            trait_decl.C.provided_methods
+          (trait_decl.C.required_methods @ trait_decl.C.provided_methods)
         @ List.flatten
             (List.mapi
                (fun i (parent_clause : C.trait_clause) ->
