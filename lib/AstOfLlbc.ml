@@ -25,6 +25,10 @@ module K = Krml.Ast
 module L = Logging
 open Krml.PrintAst.Ops
 
+let fail fmt =
+  let b = Buffer.create 256 in
+  Printf.kbprintf (fun b -> failwith (Buffer.contents b)) b fmt
+
 (** Environment *)
 
 (* The various kinds of binders we insert in the expression scope. Usually come
@@ -130,7 +134,7 @@ let with_any = K.(with_type TAny)
 let assert_slice (t : K.typ) =
   match t with
   | TApp (lid, [ t ]) when lid = Builtin.slice -> t
-  | _ -> Krml.Warn.fatal_error "Not a slice: %a" ptyp t
+  | _ -> fail "Not a slice: %a" ptyp t
 
 let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
   match p with
@@ -208,6 +212,9 @@ module RustNames = struct
     (* bitwise & arithmetic operations *)
     parse_pattern "core::ops::bit::BitAnd<&'_ u8, u8>::bitand", Builtin.bitand_pv_u8;
     parse_pattern "core::ops::bit::Shr<&'_ u8, i32>::shr", Builtin.shr_pv_u8;
+
+    (* misc *)
+    parse_pattern "core::cmp::Ord<u32>::min", Builtin.min_u32;
   ]
   [@ocamlformat "disable"]
 
@@ -355,7 +362,7 @@ let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       failwith "Impossible -- strings always behind a pointer"
   | TAdt (TAssumed f, { types = args; const_generics; _ }) ->
       List.iter (fun x -> print_endline (C.show_const_generic x)) const_generics;
-      Krml.Warn.fatal_error "TODO: Adt/Assumed %s (%d) %d " (C.show_assumed_ty f) (List.length args)
+      fail "TODO: Adt/Assumed %s (%d) %d " (C.show_assumed_ty f) (List.length args)
         (List.length const_generics)
   | TRawPtr (t, _) ->
       (* Appears in some trait methods, so let's try to handle that. *)
@@ -637,14 +644,14 @@ let op_of_binop (op : C.binop) : Krml.Constant.op =
   | C.Mul -> Mult
   | C.Shl -> BShiftL
   | C.Shr -> BShiftR
-  | _ -> Krml.Warn.fatal_error "unsupported operator: %s" (C.show_binop op)
+  | _ -> fail "unsupported operator: %s" (C.show_binop op)
 
 let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
   let w =
     match first.typ with
     | K.TInt w -> w
     | K.TBool -> Bool
-    | t -> Krml.Warn.fatal_error "Not an operator type: %a" ptyp t
+    | t -> fail "Not an operator type: %a" ptyp t
   in
   let op =
     if op = Not && first.typ <> K.TBool then
@@ -935,12 +942,19 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
       match f.func with
       | FunId (FRegular f) -> lookup_result_of_fun_id f
       | FunId (FAssumed f) ->
-          Krml.Warn.fatal_error "unknown assumed function: %s" (C.show_assumed_fun_id f)
+          fail "unknown assumed function: %s" (C.show_assumed_fun_id f)
       | TraitMethod (trait_ref, method_name, _trait_opaque_signature) -> (
           match trait_ref.trait_id with
           | TraitImpl (id, _) ->
               let trait = env.get_nth_trait_impl id in
-              let f = List.assoc method_name (trait.required_methods @ trait.provided_methods) in
+              let f =
+                try
+                  List.assoc method_name (trait.required_methods @ trait.provided_methods)
+                with Not_found ->
+                  fail "Error looking trait impl: %s %s%!"
+                    (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref)
+                    method_name
+              in
               lookup_result_of_fun_id f
           | (Clause _ | ParentClause _) as tcid ->
               let f, t, sig_info = lookup_clause_binder env tcid method_name in
@@ -954,7 +968,7 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
               let cg_types, arg_types = Krml.KList.split sig_info.n_cgs arg_types in
               EBound f, { ts = sig_info; cg_types; arg_types; ret_type; is_known_builtin = false }
           | _ ->
-              Krml.Warn.fatal_error "Error looking trait ref: %s %s"
+              fail "Error looking trait ref: %s %s%!"
                 (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref)
                 method_name))
 
@@ -1177,7 +1191,7 @@ let expression_of_operand (env : env) (p : C.operand) : K.expr =
       let e, _, _ = expression_of_fn_ptr env fn_ptr in
       e
   | Constant _ ->
-      Krml.Warn.fatal_error "expression_of_operand Constant: %s"
+      fail "expression_of_operand Constant: %s"
         (Charon.PrintExpressions.operand_to_string env.format_env p)
 
 let is_str env var_id =
@@ -1289,7 +1303,7 @@ let lesser t1 t2 =
   else if t2 = K.TAny then
     t2
   else if t1 <> t2 then
-    Krml.Warn.fatal_error "lesser t1=%a t2=%a" ptyp t1 ptyp t2
+    fail "lesser t1=%a t2=%a" ptyp t1 ptyp t2
   else
     t1
 
@@ -1403,7 +1417,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
         else if matches RustNames.from_i64 || matches RustNames.into_i64 then
           Int64
         else
-          Krml.Warn.fatal_error "Unknown from-cast: %s" (string_of_fn_ptr env fn_ptr)
+          fail "Unknown from-cast: %s" (string_of_fn_ptr env fn_ptr)
       in
       let dest, _ = expression_of_place env dest in
       let e = expression_of_operand env (Krml.KList.one args) in
@@ -1568,7 +1582,8 @@ let flags_of_meta (meta : C.item_meta) : K.flags =
 
 let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
   match id with
-  | IdType id -> (
+  | IdType id ->
+      begin
       let decl = env.get_nth_type id in
       let { C.item_meta; def_id; kind; generics = { types = type_params; const_generics; _ }; _ } =
         decl
@@ -1613,7 +1628,9 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                  [],
                  List.length const_generics,
                  List.length type_params,
-                 Abbrev (typ_of_ty env ty) )))
+                 Abbrev (typ_of_ty env ty) ))
+      end
+
   | IdFun id -> (
       let decl = try Some (env.get_nth_function id) with Not_found -> None in
       match decl with
@@ -1636,17 +1653,10 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               (* We skip those on the basis that they generate useless external prototypes, which we
                  do not really need. *)
               None
-          | None, _ -> begin
-              try
-                (* Opaque function *)
-                let { K.n_cgs; n }, t = typ_of_signature env signature in
-                Some (K.DExternal (None, [], n_cgs, n, name, t, []))
-              with e ->
-                L.log "AstOfLlbc" "ERROR translating %s: %s\n%s"
-                  (string_of_name env decl.item_meta.name)
-                  (Printexc.to_string e) (Printexc.get_backtrace ());
-                None
-            end
+          | None, _ ->
+              (* Opaque function *)
+              let { K.n_cgs; n }, t = typ_of_signature env signature in
+              Some (K.DExternal (None, [], n_cgs, n, name, t, []))
           | Some { arg_count; locals; body; _ }, _ ->
               if is_global_decl_body then
                 None
@@ -1728,8 +1738,12 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                 L.log "AstOfLlbc" "type of binders: %a" ptyps
                   (List.map (fun o -> o.K.typ) arg_binders);
                 let body =
-                  with_locals env return_type (return_var :: locals) (fun env ->
-                      expression_of_raw_statement env return_var.index body.content)
+                  try
+                    with_locals env return_type (return_var :: locals) (fun env ->
+                        expression_of_raw_statement env return_var.index body.content)
+                  with e ->
+                    let msg = Krml.KPrint.bsprintf "Eurydice error: %s\n%s" (Printexc.to_string e) (Printexc.get_backtrace ()) in
+                    K.(with_type return_type (EAbort (None, Some msg)))
                 in
                 let flags =
                   match item_meta.attr_info.inline with
@@ -1778,6 +1792,22 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
         | None -> Some (K.DExternal (None, [], 0, 0, lid_of_name env name, ty, []))
       end
   | IdTraitDecl _ | IdTraitImpl _ -> None
+
+let name_of_id env (id: C.any_decl_id) =
+  match id with
+  | IdType id -> (env.get_nth_type id).item_meta.name
+  | IdFun id -> (env.get_nth_function id).item_meta.name
+  | IdGlobal id -> (env.get_nth_global id).item_meta.name
+  | _ -> failwith "unsupported"
+
+(* Catch-all error handler (last resort) *)
+let decl_of_id env decl =
+  try decl_of_id env decl
+  with e ->
+    L.log "AstOfLlbc" "ERROR translating %s: %s\n%s"
+      (string_of_name env (name_of_id env decl))
+      (Printexc.to_string e) (Printexc.get_backtrace ());
+    None
 
 let decls_of_declarations (env : env) (d : C.declaration_group) : K.decl list =
   incr seen;

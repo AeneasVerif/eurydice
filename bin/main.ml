@@ -198,6 +198,7 @@ Supported options:|}
     fail __FILE__ __LINE__;
   Eurydice.Logging.log "Phase2.1" "%a" pfiles files;
   let files = Eurydice.Cleanup2.improve_names files in
+  let files = Eurydice.Cleanup2.recognize_asserts#visit_files () files in
   let files = Krml.Monomorphization.functions files in
   let files = Krml.Monomorphization.datatypes files in
   let files =

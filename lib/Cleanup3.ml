@@ -8,6 +8,8 @@
      argument
 *)
 
+module B = Builtin
+
 open Krml
 open Ast
 

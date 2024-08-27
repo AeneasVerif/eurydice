@@ -18,6 +18,7 @@ extern "C" {
 #include "krml/lowstar_endianness.h"
 
 #define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
+#define Eurydice_assert static_assert
 
 // SLICES, ARRAYS, ETC.
 
@@ -184,6 +185,9 @@ static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) {
 }
 static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
   return (*p) >> v;
+}
+static inline uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
+  return x < y ? x : y;
 }
 
 #define core_num_nonzero_private_NonZeroUsizeInner size_t

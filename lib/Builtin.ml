@@ -290,6 +290,25 @@ let shr_pv_u8 =
     arg_names = [ "x"; "y" ];
   }
 
+let min_u32 =
+  {
+    name = [ "Eurydice" ], "min_u32";
+    typ = Krml.Helpers.fold_arrow [ TInt UInt32; TInt UInt32 ] (TInt UInt32);
+    n_type_args = 0;
+    cg_args = [];
+    arg_names = [ "x"; "y" ];
+  }
+
+(* Not fully general *)
+let static_assert =
+  {
+    name = [ "Eurydice" ], "assert";
+    typ = Krml.Helpers.fold_arrow [ TBool; Krml.Checker.c_string ] TUnit;
+    n_type_args = 0;
+    cg_args = [];
+    arg_names = [ "x"; "y" ];
+  }
+
 let unwrap : K.decl =
   let open Krml in
   let open Ast in
@@ -367,6 +386,8 @@ let files =
            replace;
            bitand_pv_u8;
            shr_pv_u8;
+           min_u32;
+           static_assert;
          ]
        @ [ nonzero_def ]
      in
