@@ -301,6 +301,7 @@ let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
   match ty with
   | TBool -> K.TBool
   | TChar -> failwith "TODO: Char"
+  | TFloat _ -> failwith "TODO: Float"
   | TInteger k -> K.TInt (width_of_integer_type k)
 
 let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
