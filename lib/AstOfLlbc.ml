@@ -1256,7 +1256,11 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | Global { global_id; global_generics = _ } ->
       let global = env.get_nth_global global_id in
       K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
-  | Len _ -> failwith "unsupported: Len"
+  | rvalue ->
+      failwith
+        ("unsupported rvalue: `"
+        ^ Charon.PrintExpressions.rvalue_to_string env.format_env rvalue
+        ^ "`")
 
 let expression_of_assertion (env : env) ({ cond; expected } : C.assertion) : K.expr =
   let cond =
