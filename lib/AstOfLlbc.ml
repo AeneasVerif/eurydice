@@ -1264,7 +1264,11 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | Global { global_id; global_generics = _ } ->
       let global = env.get_nth_global global_id in
       K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
-  | Len _ -> failwith "unsupported: Len"
+  | rvalue ->
+      failwith
+        ("unsupported rvalue: `"
+        ^ Charon.PrintExpressions.rvalue_to_string env.format_env rvalue
+        ^ "`")
 
 let expression_of_assertion (env : env) ({ cond; expected } : C.assertion) : K.expr =
   let cond =
@@ -1350,7 +1354,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
         func =
           FnOpRegular
             {
-              func = FunId (FAssumed (ArrayIndexShared | ArrayIndexMut));
+              func = FunId (FAssumed (Index { is_array = true; mutability = _; is_range = false }));
               generics = { types = [ ty ]; _ };
               _;
             };
@@ -1433,15 +1437,16 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
           | _ -> []
         in
         match fn_ptr.func, fn_ptr.generics.types @ extra_types with
-        | ( FunId (FAssumed (SliceIndexShared | SliceIndexMut)),
+        | ( FunId (FAssumed (Index { is_array = false; mutability = _; is_range = false })),
             [ TAdt (TAssumed (TArray | TSlice), _) ] ) ->
             (* Will decay. See comment above maybe_addrof *)
             rhs
-        | FunId (FAssumed (SliceIndexShared | SliceIndexMut)), [ TAdt (id, generics) ]
+        | ( FunId (FAssumed (Index { is_array = false; mutability = _; is_range = false })),
+            [ TAdt (id, generics) ] )
           when RustNames.is_vec env id generics ->
             (* Will decay. See comment above maybe_addrof *)
             rhs
-        | FunId (FAssumed (SliceIndexShared | SliceIndexMut)), _ ->
+        | FunId (FAssumed (Index { is_array = false; mutability = _; is_range = false })), _ ->
             K.(with_type (TBuf (rhs.typ, false)) (EAddrOf rhs))
         | _ -> rhs
       in
@@ -1577,7 +1582,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       let env = push_type_binders env type_params in
 
       match kind with
-      | Opaque | Error _ -> None
+      | Union _ | Opaque | Error _ -> None
       | Struct fields ->
           let fields =
             List.map
