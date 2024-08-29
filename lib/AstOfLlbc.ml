@@ -1229,7 +1229,15 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
       let fun_ptr = { C.func = C.FunId (FRegular func); generics } in
       let e, _, _ = expression_of_fn_ptr env fun_ptr in
       begin
-        match e.typ with
+        let t, ts = Krml.Helpers.flatten_arrow e.typ in
+        let rec chop_trait_methods = function
+          | K.TBuf _ :: _ as ts -> ts
+          | _ :: ts -> chop_trait_methods ts
+          | _ -> failwith "impossible"
+        in
+        let ts = chop_trait_methods ts in
+        let t = Krml.Helpers.fold_arrow ts t in
+        match t with
         | TArrow ((TBuf (TUnit, _) as t_state), t) ->
             (* Empty closure block, passed by address...? TBD *)
             K.(with_type t (EApp (e, [ with_type t_state (EAddrOf Krml.Helpers.eunit) ])))
@@ -1246,7 +1254,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
               ptyp (List.hd ops).typ;
             K.(with_type t (EApp (e, ops)))
         | _ ->
-            Krml.KPrint.bprintf "Unknown closure\ntype: %a\nexpr: %a" ptyp e.typ pexpr e;
+            Krml.KPrint.bprintf "Unknown closure\ntype: %a\nexpr: %a\nops: %a" ptyp e.typ pexpr e pexprs (List.map (expression_of_operand env) ops);
             failwith "Can't handle arbitrary closures"
       end
   | Aggregate (AggregatedArray (t, cg), ops) ->
