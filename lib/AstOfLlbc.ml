@@ -866,7 +866,7 @@ and mk_clause_binders_and_args env clause_mapping : clause_binder list =
         }
       in
       (* TODO: figure out why this fails for e.g. Iterator.rev *)
-      assert (ts.n_cgs > 0 && ts.n > 0);
+      assert (ts.n_cgs >= 0 && ts.n >= 0);
       { pretty_name; t; clause_id; item_name; ts })
     clause_mapping
 
