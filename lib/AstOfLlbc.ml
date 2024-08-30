@@ -872,6 +872,8 @@ and mk_clause_binders_and_args env clause_mapping : clause_binder list =
           K.n_cgs = List.length signature.generics.const_generics - trait_ts.n_cgs;
         }
       in
+      (* TODO: figure out why this fails for e.g. Iterator.rev *)
+      assert (ts.n_cgs >= 0 && ts.n >= 0);
       { pretty_name; t; clause_id; item_name; ts })
     clause_mapping
 
@@ -1626,7 +1628,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       let decl = try Some (env.get_nth_function id) with Not_found -> None in
       match decl with
       | None -> None
-      | Some decl -> (
+      | Some decl ->
           let { C.def_id; signature; body; is_global_decl_body; item_meta; kind; _ } = decl in
           let env = { env with generic_params = signature.generics } in
           L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
@@ -1652,78 +1654,52 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               if is_global_decl_body then
                 None
               else
-                let env = push_cg_binders env signature.C.generics.const_generics in
-                let env = push_type_binders env signature.C.generics.types in
+                try
+                  let env = push_cg_binders env signature.C.generics.const_generics in
+                  let env = push_type_binders env signature.C.generics.types in
 
-                L.log "AstOfLlbc" "ty of locals: %s"
-                  (String.concat " ++ "
-                     (List.map
-                        (fun (local : C.var) ->
-                          Charon.PrintTypes.ty_to_string env.format_env local.var_ty)
-                        locals));
-                L.log "AstOfLlbc" "ty of inputs: %s"
-                  (String.concat " ++ "
-                     (List.map
-                        (fun t -> Charon.PrintTypes.ty_to_string env.format_env t)
-                        signature.C.inputs));
+                  L.log "AstOfLlbc" "ty of locals: %s"
+                    (String.concat " ++ "
+                       (List.map
+                          (fun (local : C.var) ->
+                            Charon.PrintTypes.ty_to_string env.format_env local.var_ty)
+                          locals));
+                  L.log "AstOfLlbc" "ty of inputs: %s"
+                    (String.concat " ++ "
+                       (List.map
+                          (fun t -> Charon.PrintTypes.ty_to_string env.format_env t)
+                          signature.C.inputs));
 
-                let clause_mapping =
-                  build_trait_clause_mapping env signature.C.generics.trait_clauses
-                in
-                debug_trait_clause_mapping env clause_mapping;
+                  let clause_mapping =
+                    build_trait_clause_mapping env signature.C.generics.trait_clauses
+                  in
+                  debug_trait_clause_mapping env clause_mapping;
 
-                (* `locals` contains, in order: special return variable; function arguments;
-                   local variables *)
-                let args, locals = Krml.KList.split (arg_count + 1) locals in
-                let return_var = List.hd args in
-                let args = List.tl args in
+                  (* `locals` contains, in order: special return variable; function arguments;
+                     local variables *)
+                  let args, locals = Krml.KList.split (arg_count + 1) locals in
+                  let return_var = List.hd args in
+                  let args = List.tl args in
 
-                let return_type = typ_of_ty env return_var.var_ty in
+                  let return_type = typ_of_ty env return_var.var_ty in
 
-                (* Note: Rust allows zero-argument functions but the krml internal
-                   representation wants a unit there. This is aligned with typ_of_signature. *)
-                let t_unit =
-                  C.(
-                    TAdt (TTuple, { types = []; const_generics = []; regions = []; trait_refs = [] }))
-                in
-                let v_unit =
-                  {
-                    C.index = Charon.Expressions.VarId.of_int max_int;
-                    name = None;
-                    var_ty = t_unit;
-                  }
-                in
-                let args =
-                  if args = [] then
-                    [ v_unit ]
-                  else
-                    args
-                in
-
-                (* At this stage, env has:
-                   cg_binders = <<all cg binders>>
-                   type_binders = <<all type binders>>
-                   binders = <<all cg binders>>
-                *)
-                let clause_binders = mk_clause_binders_and_args env clause_mapping in
-                (* Now we turn it into:
-                   binders = <<all cg binders>> ++ <<all clause binders>> ++ <<regular function args>>
-                *)
-                let env = push_clause_binders env clause_binders in
-                let env = push_binders env args in
-
-                let arg_binders =
-                  List.map
-                    (fun (arg : C.const_generic_var) ->
-                      Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty))
-                    signature.C.generics.const_generics
-                  @ List.map
-                      (fun { pretty_name; t; _ } -> Krml.Helpers.fresh_binder pretty_name t)
-                      clause_binders
-                  @ List.map
-                      (fun (arg : C.var) ->
-                        let name = Option.value ~default:"_" arg.name in
-                        Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty))
+                  (* Note: Rust allows zero-argument functions but the krml internal
+                     representation wants a unit there. This is aligned with typ_of_signature. *)
+                  let t_unit =
+                    C.(
+                      TAdt (TTuple, { types = []; const_generics = []; regions = []; trait_refs = [] }))
+                  in
+                  let v_unit =
+                    {
+                      C.index = Charon.Expressions.VarId.of_int max_int;
+                      name = None;
+                      var_ty = t_unit;
+                    }
+                  in
+                  let args =
+                    if args = [] then
+                      [ v_unit ]
+                    else
                       args
                 in
                 L.log "AstOfLlbc" "type of binders: %a" ptyps
@@ -1802,13 +1778,14 @@ let decl_of_id env decl =
 
 let decls_of_declarations (env : env) (d : C.declaration_group) : K.decl list =
   incr seen;
-  L.log "Progress" "%d/%d" !seen !total;
+  L.log "Progress" "%s: %d/%d" env.crate_name !seen !total;
   Krml.KList.filter_some @@ List.map (decl_of_id env) @@ declaration_group_to_list d
 
 let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   let { C.name; declarations; type_decls; fun_decls; global_decls; trait_decls; trait_impls } =
     crate
   in
+  seen := 0;
   total := List.length declarations;
   let get_nth_function id = C.FunDeclId.Map.find id fun_decls in
   let get_nth_type id = C.TypeDeclId.Map.find id type_decls in

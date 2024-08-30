@@ -1,0 +1,6 @@
+files:
+  - name: symcrust
+    api:
+      - [ symcrust, "*" ]
+    private:
+      - [ "*" ]
