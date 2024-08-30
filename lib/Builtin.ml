@@ -18,6 +18,9 @@ let option : K.lident = [ "core"; "option" ], "Option"
 let mk_option (t : K.typ) : K.typ = K.TApp (option, [ t ])
 let array_copy = [ "Eurydice" ], "array_copy"
 let macros = Krml.Idents.LidSet.of_list []
+(* Things that could otherwise be emitted as an extern prototype, but for some
+   reason ought to be skipped. *)
+let skip = Krml.Idents.LidSet.of_list [ ["Eurydice"], "assert" ]
 let result = [ "core"; "result" ], "Result"
 let mk_result t1 t2 = K.TApp (result, [ t1; t2 ])
 let nonzero = [ "core"; "num"; "nonzero" ], "NonZero"
@@ -290,6 +293,24 @@ let shr_pv_u8 =
     arg_names = [ "x"; "y" ];
   }
 
+let min_u32 =
+  {
+    name = [ "Eurydice" ], "min_u32";
+    typ = Krml.Helpers.fold_arrow [ TInt UInt32; TInt UInt32 ] (TInt UInt32);
+    n_type_args = 0;
+    cg_args = [];
+    arg_names = [ "x"; "y" ];
+  }
+
+(* Not fully general *)
+let static_assert, static_assert_ref =
+  let name = [ "Eurydice" ], "assert" in
+  let typ =Krml.Helpers.fold_arrow [ TBool;
+    Krml.Checker.c_string ] TUnit in
+  K.DExternal (None, [ Krml.Common.Private; Macro ], 0, 0,
+    name, typ,
+    [ "test"; "msg" ]), K.(with_type typ (EQualified name))
+
 let unwrap : K.decl =
   let open Krml in
   let open Ast in
@@ -367,8 +388,9 @@ let files =
            replace;
            bitand_pv_u8;
            shr_pv_u8;
+           min_u32;
          ]
-       @ [ nonzero_def ]
+       @ [ nonzero_def; static_assert ]
      in
      "Eurydice", externals);
   ]

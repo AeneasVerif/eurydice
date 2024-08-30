@@ -67,5 +67,6 @@ pub fn SymCrustMlKemPolyElementCompressAndEncode(
 }
 
 fn main() {
-    println!("Hello, world!");
+    // let mut dst = [0; 256];
+    // SymCrustMlKemPolyElementCompressAndEncode(&[0; 256], 1, &mut dst);
 }

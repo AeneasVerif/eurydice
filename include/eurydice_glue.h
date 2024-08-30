@@ -18,6 +18,13 @@ extern "C" {
 #include "krml/lowstar_endianness.h"
 
 #define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
+#define EURYDICE_ASSERT(test, msg) do { \
+  if (!(test)) { \
+    fprintf(stderr, \
+           "assertion \"%s\" failed: file \"%s\", line %d\n", \
+                               msg, __FILE__, __LINE__); \
+  } \
+} while (0)
 
 // SLICES, ARRAYS, ETC.
 
@@ -130,6 +137,10 @@ static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   memcpy(dst, &x, 4);
 }
 
+static inline void core_num__u32_8__to_le_bytes(uint32_t src, uint8_t dst[4]) {
+  store32_le(dst, src);
+}
+
 static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
   return load32_le(buf);
 }
@@ -137,6 +148,7 @@ static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
 static inline void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
   store64_le(buf, v);
 }
+
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
   return load64_le(buf);
 }
@@ -187,6 +199,9 @@ static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) {
 }
 static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
   return (*p) >> v;
+}
+static inline uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
+  return x < y ? x : y;
 }
 
 #define core_num_nonzero_private_NonZeroUsizeInner size_t
