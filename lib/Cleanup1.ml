@@ -56,7 +56,18 @@ let remove_assignments =
           List.map
             (fun atom ->
               let name, typ = AtomMap.find atom not_yet_closed in
-              ( { node = { atom; name; mut = true; mark = ref Krml.Mark.default; meta = None }; typ },
+              ( {
+                  node =
+                    {
+                      atom;
+                      name;
+                      mut = true;
+                      mark = ref Krml.Mark.default;
+                      meta = None;
+                      attempt_inline = false;
+                    };
+                  typ;
+                },
                 if typ = TUnit then
                   Krml.Helpers.eunit
                 else
@@ -153,7 +164,15 @@ let remove_assignments =
               let name, typ = AtomMap.find atom not_yet_closed in
               let b =
                 {
-                  node = { atom; name; mut = true; mark = ref Krml.Mark.default; meta = None };
+                  node =
+                    {
+                      atom;
+                      name;
+                      mut = true;
+                      mark = ref Krml.Mark.default;
+                      meta = None;
+                      attempt_inline = false;
+                    };
                   typ;
                 }
               in
