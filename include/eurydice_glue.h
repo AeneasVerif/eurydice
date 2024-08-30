@@ -18,7 +18,13 @@ extern "C" {
 #include "krml/lowstar_endianness.h"
 
 #define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
-#define Eurydice_assert static_assert
+#define EURYDICE_ASSERT(test, msg) do { \
+  if (!(test)) { \
+    fprintf(stderr, \
+           "assertion \"%s\" failed: file \"%s\", line %d\n", \
+                               msg, __FILE__, __LINE__); \
+  } \
+} while (0)
 
 // SLICES, ARRAYS, ETC.
 
@@ -131,6 +137,10 @@ static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   memcpy(dst, &x, 4);
 }
 
+static inline void core_num__u32_8__to_le_bytes(uint32_t src, uint8_t dst[4]) {
+  store32_le(dst, src);
+}
+
 static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
   return load32_le(buf);
 }
@@ -138,6 +148,7 @@ static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
 static inline void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
   store64_le(buf, v);
 }
+
 static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
   return load64_le(buf);
 }

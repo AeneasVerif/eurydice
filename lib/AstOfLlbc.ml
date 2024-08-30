@@ -1654,88 +1654,115 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               if is_global_decl_body then
                 None
               else
+                let env = push_cg_binders env signature.C.generics.const_generics in
+                let env = push_type_binders env signature.C.generics.types in
+
+                L.log "AstOfLlbc" "ty of locals: %s"
+                  (String.concat " ++ "
+                     (List.map
+                        (fun (local : C.var) ->
+                          Charon.PrintTypes.ty_to_string env.format_env local.var_ty)
+                        locals));
+                L.log "AstOfLlbc" "ty of inputs: %s"
+                  (String.concat " ++ "
+                     (List.map
+                        (fun t -> Charon.PrintTypes.ty_to_string env.format_env t)
+                        signature.C.inputs));
+
+                let clause_mapping =
+                  build_trait_clause_mapping env signature.C.generics.trait_clauses
+                in
+                debug_trait_clause_mapping env clause_mapping;
+
+                (* `locals` contains, in order: special return variable; function arguments;
+                   local variables *)
+                let args, locals = Krml.KList.split (arg_count + 1) locals in
+                let return_var = List.hd args in
+                let args = List.tl args in
+
+                let return_type = typ_of_ty env return_var.var_ty in
+
+                (* Note: Rust allows zero-argument functions but the krml internal
+                   representation wants a unit there. This is aligned with typ_of_signature. *)
+                let t_unit =
+                  C.(
+                    TAdt (TTuple, { types = []; const_generics = []; regions = []; trait_refs = [] }))
+                in
+                let v_unit =
+                  {
+                    C.index = Charon.Expressions.VarId.of_int max_int;
+                    name = None;
+                    var_ty = t_unit;
+                  }
+                in
+                let args =
+                  if args = [] then
+                    [ v_unit ]
+                  else
+                    args
+              in
+
+              (* At this stage, env has:
+                 cg_binders = <<all cg binders>>
+                 type_binders = <<all type binders>>
+                 binders = <<all cg binders>>
+              *)
+              let clause_binders = mk_clause_binders_and_args env clause_mapping in
+              (* Now we turn it into:
+                 binders = <<all cg binders>> ++ <<all clause binders>> ++ <<regular function args>>
+              *)
+              let env = push_clause_binders env clause_binders in
+              let env = push_binders env args in
+
+              let arg_binders =
+                List.map
+                  (fun (arg : C.const_generic_var) ->
+                    Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty))
+                  signature.C.generics.const_generics
+                @ List.map
+                    (fun { pretty_name; t; _ } -> Krml.Helpers.fresh_binder pretty_name t)
+                    clause_binders
+                @ List.map
+                    (fun (arg : C.var) ->
+                      let name = Option.value ~default:"_" arg.name in
+                      Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty))
+                    args
+              in
+
+              L.log "AstOfLlbc" "type of binders: %a" ptyps
+                (List.map (fun o -> o.K.typ) arg_binders);
+              let body =
                 try
-                  let env = push_cg_binders env signature.C.generics.const_generics in
-                  let env = push_type_binders env signature.C.generics.types in
-
-                  L.log "AstOfLlbc" "ty of locals: %s"
-                    (String.concat " ++ "
-                       (List.map
-                          (fun (local : C.var) ->
-                            Charon.PrintTypes.ty_to_string env.format_env local.var_ty)
-                          locals));
-                  L.log "AstOfLlbc" "ty of inputs: %s"
-                    (String.concat " ++ "
-                       (List.map
-                          (fun t -> Charon.PrintTypes.ty_to_string env.format_env t)
-                          signature.C.inputs));
-
-                  let clause_mapping =
-                    build_trait_clause_mapping env signature.C.generics.trait_clauses
-                  in
-                  debug_trait_clause_mapping env clause_mapping;
-
-                  (* `locals` contains, in order: special return variable; function arguments;
-                     local variables *)
-                  let args, locals = Krml.KList.split (arg_count + 1) locals in
-                  let return_var = List.hd args in
-                  let args = List.tl args in
-
-                  let return_type = typ_of_ty env return_var.var_ty in
-
-                  (* Note: Rust allows zero-argument functions but the krml internal
-                     representation wants a unit there. This is aligned with typ_of_signature. *)
-                  let t_unit =
-                    C.(
-                      TAdt (TTuple, { types = []; const_generics = []; regions = []; trait_refs = [] }))
-                  in
-                  let v_unit =
-                    {
-                      C.index = Charon.Expressions.VarId.of_int max_int;
-                      name = None;
-                      var_ty = t_unit;
-                    }
-                  in
-                  let args =
-                    if args = [] then
-                      [ v_unit ]
-                    else
-                      args
-                in
-                L.log "AstOfLlbc" "type of binders: %a" ptyps
-                  (List.map (fun o -> o.K.typ) arg_binders);
-                let body =
-                  try
-                    with_locals env return_type (return_var :: locals) (fun env ->
-                        expression_of_raw_statement env return_var.index body.content)
-                  with e ->
-                    let msg = Krml.KPrint.bsprintf "Eurydice error: %s\n%s" (Printexc.to_string e) (Printexc.get_backtrace ()) in
-                    K.(with_type return_type (EAbort (None, Some msg)))
-                in
-                let flags =
-                  match item_meta.attr_info.inline with
-                  | Some Hint -> [ Krml.Common.Inline ]
-                  | Some Always -> [ Krml.Common.MustInline ]
-                  | Some Never -> [ Krml.Common.NoInline ]
-                  | _ -> []
-                in
-                (* This is kind of a hack here: we indicate that this function is intended to be
-                   specialized, at monomorphization-time (which happens quite early on), on the cg
-                   binders but also on the clause binders... This is ok because even though the
-                   clause binders are not in env.cg_binders, well, types don't refer to clause
-                   binders, so we won't have translation errors. *)
-                let n_cg = List.length signature.C.generics.const_generics in
-                let n = List.length signature.C.generics.types in
-                Some
-                  (K.DFunction
-                     ( None,
-                       flags @ flags_of_meta item_meta,
-                       n_cg,
-                       n,
-                       return_type,
-                       name,
-                       arg_binders,
-                       body ))))
+                  with_locals env return_type (return_var :: locals) (fun env ->
+                      expression_of_raw_statement env return_var.index body.content)
+                with e ->
+                  let msg = Krml.KPrint.bsprintf "Eurydice error: %s\n%s" (Printexc.to_string e) (Printexc.get_backtrace ()) in
+                  K.(with_type return_type (EAbort (None, Some msg)))
+              in
+              let flags =
+                match item_meta.attr_info.inline with
+                | Some Hint -> [ Krml.Common.Inline ]
+                | Some Always -> [ Krml.Common.MustInline ]
+                | Some Never -> [ Krml.Common.NoInline ]
+                | _ -> []
+              in
+              (* This is kind of a hack here: we indicate that this function is intended to be
+                 specialized, at monomorphization-time (which happens quite early on), on the cg
+                 binders but also on the clause binders... This is ok because even though the
+                 clause binders are not in env.cg_binders, well, types don't refer to clause
+                 binders, so we won't have translation errors. *)
+              let n_cg = List.length signature.C.generics.const_generics in
+              let n = List.length signature.C.generics.types in
+              Some
+                (K.DFunction
+                   ( None,
+                     flags @ flags_of_meta item_meta,
+                     n_cg,
+                     n,
+                     return_type,
+                     name,
+                     arg_binders,
+                     body )))
   | IdGlobal id ->
       let global = env.get_nth_global id in
       let { C.item_meta; ty; def_id; _ } = global in
