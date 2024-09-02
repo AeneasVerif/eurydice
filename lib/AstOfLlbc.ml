@@ -933,15 +933,13 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
 
       match f.func with
       | FunId (FRegular f) -> lookup_result_of_fun_id f
-      | FunId (FAssumed f) ->
-          fail "unknown assumed function: %s" (C.show_assumed_fun_id f)
+      | FunId (FAssumed f) -> fail "unknown assumed function: %s" (C.show_assumed_fun_id f)
       | TraitMethod (trait_ref, method_name, _trait_opaque_signature) -> (
           match trait_ref.trait_id with
           | TraitImpl (id, _) ->
               let trait = env.get_nth_trait_impl id in
               let f =
-                try
-                  List.assoc method_name (trait.required_methods @ trait.provided_methods)
+                try List.assoc method_name (trait.required_methods @ trait.provided_methods)
                 with Not_found ->
                   fail "Error looking trait impl: %s %s%!"
                     (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref)
@@ -1579,8 +1577,7 @@ let flags_of_meta (meta : C.item_meta) : K.flags =
 
 let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
   match id with
-  | IdType id ->
-      begin
+  | IdType id -> begin
       let decl = env.get_nth_type id in
       let { C.item_meta; def_id; kind; generics = { types = type_params; const_generics; _ }; _ } =
         decl
@@ -1626,13 +1623,12 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                  List.length const_generics,
                  List.length type_params,
                  Abbrev (typ_of_ty env ty) ))
-      end
-
+    end
   | IdFun id -> (
       let decl = try Some (env.get_nth_function id) with Not_found -> None in
       match decl with
       | None -> None
-      | Some decl ->
+      | Some decl -> (
           let { C.def_id; signature; body; is_global_decl_body; item_meta; kind; _ } = decl in
           let env = { env with generic_params = signature.generics } in
           L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
@@ -1704,69 +1700,72 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                     [ v_unit ]
                   else
                     args
-              in
+                in
 
-              (* At this stage, env has:
-                 cg_binders = <<all cg binders>>
-                 type_binders = <<all type binders>>
-                 binders = <<all cg binders>>
-              *)
-              let clause_binders = mk_clause_binders_and_args env clause_mapping in
-              (* Now we turn it into:
-                 binders = <<all cg binders>> ++ <<all clause binders>> ++ <<regular function args>>
-              *)
-              let env = push_clause_binders env clause_binders in
-              let env = push_binders env args in
+                (* At this stage, env has:
+                   cg_binders = <<all cg binders>>
+                   type_binders = <<all type binders>>
+                   binders = <<all cg binders>>
+                *)
+                let clause_binders = mk_clause_binders_and_args env clause_mapping in
+                (* Now we turn it into:
+                   binders = <<all cg binders>> ++ <<all clause binders>> ++ <<regular function args>>
+                *)
+                let env = push_clause_binders env clause_binders in
+                let env = push_binders env args in
 
-              let arg_binders =
-                List.map
-                  (fun (arg : C.const_generic_var) ->
-                    Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty))
-                  signature.C.generics.const_generics
-                @ List.map
-                    (fun { pretty_name; t; _ } -> Krml.Helpers.fresh_binder pretty_name t)
-                    clause_binders
-                @ List.map
-                    (fun (arg : C.var) ->
-                      let name = Option.value ~default:"_" arg.name in
-                      Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty))
-                    args
-              in
+                let arg_binders =
+                  List.map
+                    (fun (arg : C.const_generic_var) ->
+                      Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty))
+                    signature.C.generics.const_generics
+                  @ List.map
+                      (fun { pretty_name; t; _ } -> Krml.Helpers.fresh_binder pretty_name t)
+                      clause_binders
+                  @ List.map
+                      (fun (arg : C.var) ->
+                        let name = Option.value ~default:"_" arg.name in
+                        Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty))
+                      args
+                in
 
-              L.log "AstOfLlbc" "type of binders: %a" ptyps
-                (List.map (fun o -> o.K.typ) arg_binders);
-              let body =
-                try
-                  with_locals env return_type (return_var :: locals) (fun env ->
-                      expression_of_raw_statement env return_var.index body.content)
-                with e ->
-                  let msg = Krml.KPrint.bsprintf "Eurydice error: %s\n%s" (Printexc.to_string e) (Printexc.get_backtrace ()) in
-                  K.(with_type return_type (EAbort (None, Some msg)))
-              in
-              let flags =
-                match item_meta.attr_info.inline with
-                | Some Hint -> [ Krml.Common.Inline ]
-                | Some Always -> [ Krml.Common.MustInline ]
-                | Some Never -> [ Krml.Common.NoInline ]
-                | _ -> []
-              in
-              (* This is kind of a hack here: we indicate that this function is intended to be
-                 specialized, at monomorphization-time (which happens quite early on), on the cg
-                 binders but also on the clause binders... This is ok because even though the
-                 clause binders are not in env.cg_binders, well, types don't refer to clause
-                 binders, so we won't have translation errors. *)
-              let n_cg = List.length signature.C.generics.const_generics in
-              let n = List.length signature.C.generics.types in
-              Some
-                (K.DFunction
-                   ( None,
-                     flags @ flags_of_meta item_meta,
-                     n_cg,
-                     n,
-                     return_type,
-                     name,
-                     arg_binders,
-                     body )))
+                L.log "AstOfLlbc" "type of binders: %a" ptyps
+                  (List.map (fun o -> o.K.typ) arg_binders);
+                let body =
+                  try
+                    with_locals env return_type (return_var :: locals) (fun env ->
+                        expression_of_raw_statement env return_var.index body.content)
+                  with e ->
+                    let msg =
+                      Krml.KPrint.bsprintf "Eurydice error: %s\n%s" (Printexc.to_string e)
+                        (Printexc.get_backtrace ())
+                    in
+                    K.(with_type return_type (EAbort (None, Some msg)))
+                in
+                let flags =
+                  match item_meta.attr_info.inline with
+                  | Some Hint -> [ Krml.Common.Inline ]
+                  | Some Always -> [ Krml.Common.MustInline ]
+                  | Some Never -> [ Krml.Common.NoInline ]
+                  | _ -> []
+                in
+                (* This is kind of a hack here: we indicate that this function is intended to be
+                   specialized, at monomorphization-time (which happens quite early on), on the cg
+                   binders but also on the clause binders... This is ok because even though the
+                   clause binders are not in env.cg_binders, well, types don't refer to clause
+                   binders, so we won't have translation errors. *)
+                let n_cg = List.length signature.C.generics.const_generics in
+                let n = List.length signature.C.generics.types in
+                Some
+                  (K.DFunction
+                     ( None,
+                       flags @ flags_of_meta item_meta,
+                       n_cg,
+                       n,
+                       return_type,
+                       name,
+                       arg_binders,
+                       body ))))
   | IdGlobal id ->
       let global = env.get_nth_global id in
       let { C.item_meta; ty; def_id; _ } = global in
@@ -1791,7 +1790,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       end
   | IdTraitDecl _ | IdTraitImpl _ -> None
 
-let name_of_id env (id: C.any_decl_id) =
+let name_of_id env (id : C.any_decl_id) =
   match id with
   | IdType id -> (env.get_nth_type id).item_meta.name
   | IdFun id -> (env.get_nth_function id).item_meta.name
