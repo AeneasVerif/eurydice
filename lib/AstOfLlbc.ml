@@ -693,6 +693,10 @@ let blocklisted_trait_decls =
     (* Handled primitively. *)
     "core::ops::function::FnMut";
     "core::cmp::PartialEq";
+    (* These don't have methods *)
+    "core::marker::Sized";
+    "core::marker::Send";
+    "core::marker::Sync";
     (* The traits below *should* be handled properly ASAP. But for now, we have specific *instances*
        of those trait methods in the builtin lookup table, which we then implement by hand with
        macros. *)
