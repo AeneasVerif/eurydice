@@ -198,6 +198,7 @@ Supported options:|}
     fail __FILE__ __LINE__;
   Eurydice.Logging.log "Phase2.1" "%a" pfiles files;
   let files = Eurydice.Cleanup2.improve_names files in
+  let files = Eurydice.Cleanup2.recognize_asserts#visit_files () files in
   let files = Krml.Monomorphization.functions files in
   let files = Krml.Monomorphization.datatypes files in
   let files =
@@ -329,6 +330,9 @@ Supported options:|}
   in
 
   Eurydice.Logging.log "Phase3.3" "%a" pfiles files;
+  let files = List.map (fun (f, ds) -> f, List.filter (fun d ->
+    not (Krml.Idents.LidSet.mem (Krml.Ast.lid_of_decl d) Eurydice.Builtin.skip))
+  ds) files in
   let files = AstToCStar.mk_files files c_name_map Idents.LidSet.empty macros in
 
   let headers = CStarToC11.mk_headers c_name_map files in
