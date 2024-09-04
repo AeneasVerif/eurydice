@@ -1210,7 +1210,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | BinaryOp (op, o1, o2) ->
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
   | Discriminant _ -> failwith "expression_of_rvalue Discriminant"
-  | Aggregate (AggregatedAdt (TTuple, _, _), ops) ->
+  | Aggregate (AggregatedAdt (TTuple, _, None, _), ops) ->
       let ops = List.map (expression_of_operand env) ops in
       let ts = List.map (fun x -> x.K.typ) ops in
       if ops = [] then
@@ -1220,7 +1220,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
         K.with_type (TTuple ts) (K.ETuple ops)
       end
   | Aggregate
-      (AggregatedAdt (TAdtId typ_id, variant_id, { types = typ_args; const_generics; _ }), args) ->
+      ( AggregatedAdt (TAdtId typ_id, variant_id, None, { types = typ_args; const_generics; _ }),
+        args ) ->
       let { C.item_meta; kind; _ } = env.get_nth_type typ_id in
       let name = item_meta.name in
       let typ_lid = lid_of_name env name in
@@ -1241,7 +1242,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
             in
             K.with_type t (K.EFlat (List.map2 (fun f a -> f.C.field_name, a) fields args))
       end
-  | Aggregate (AggregatedAdt (TAssumed _, _, _), _) ->
+  | Aggregate (AggregatedAdt (TAssumed _, _, _, _), _) ->
       failwith "unsupported: AggregatedAdt / TAssume"
   | Aggregate (AggregatedClosure (func, generics), ops) ->
       let fun_ptr = { C.func = C.FunId (FRegular func); generics } in
