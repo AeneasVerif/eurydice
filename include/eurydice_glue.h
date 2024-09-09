@@ -18,13 +18,13 @@ extern "C" {
 #include "krml/lowstar_endianness.h"
 
 #define LowStar_Ignore_ignore(e, t, _ret_t) ((void)e)
-#define EURYDICE_ASSERT(test, msg) do { \
-  if (!(test)) { \
-    fprintf(stderr, \
-           "assertion \"%s\" failed: file \"%s\", line %d\n", \
-                               msg, __FILE__, __LINE__); \
-  } \
-} while (0)
+#define EURYDICE_ASSERT(test, msg)                                             \
+  do {                                                                         \
+    if (!(test)) {                                                             \
+      fprintf(stderr, "assertion \"%s\" failed: file \"%s\", line %d\n", msg,  \
+              __FILE__, __LINE__);                                             \
+    }                                                                          \
+  } while (0)
 
 // SLICES, ARRAYS, ETC.
 

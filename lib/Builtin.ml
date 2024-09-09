@@ -18,9 +18,10 @@ let option : K.lident = [ "core"; "option" ], "Option"
 let mk_option (t : K.typ) : K.typ = K.TApp (option, [ t ])
 let array_copy = [ "Eurydice" ], "array_copy"
 let macros = Krml.Idents.LidSet.of_list []
+
 (* Things that could otherwise be emitted as an extern prototype, but for some
    reason ought to be skipped. *)
-let skip = Krml.Idents.LidSet.of_list [ ["Eurydice"], "assert" ]
+let skip = Krml.Idents.LidSet.of_list [ [ "Eurydice" ], "assert" ]
 let result = [ "core"; "result" ], "Result"
 let mk_result t1 t2 = K.TApp (result, [ t1; t2 ])
 let nonzero = [ "core"; "num"; "nonzero" ], "NonZero"
@@ -305,16 +306,16 @@ let min_u32 =
 (* Not fully general *)
 let static_assert, static_assert_ref =
   let name = [ "Eurydice" ], "assert" in
-  let typ =Krml.Helpers.fold_arrow [ TBool;
-    Krml.Checker.c_string ] TUnit in
-  K.DExternal (None, [ Krml.Common.Private; Macro ], 0, 0,
-    name, typ,
-    [ "test"; "msg" ]), K.(with_type typ (EQualified name))
+  let typ = Krml.Helpers.fold_arrow [ TBool; Krml.Checker.c_string ] TUnit in
+  ( K.DExternal (None, [ Krml.Common.Private; Macro ], 0, 0, name, typ, [ "test"; "msg" ]),
+    K.(with_type typ (EQualified name)) )
 
 let unwrap : K.decl =
   let open Krml in
   let open Ast in
-  let lid = [ "core"; "result"; "{core::result::Result<T, E>[TraitClause@0, TraitClause@1]}" ], "unwrap" in
+  let lid =
+    [ "core"; "result"; "{core::result::Result<T, E>[TraitClause@0, TraitClause@1]}" ], "unwrap"
+  in
   let t_T = TBound 1 in
   let t_E = TBound 0 in
   let t_result = mk_result t_T t_E in

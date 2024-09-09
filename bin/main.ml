@@ -330,9 +330,15 @@ Supported options:|}
   in
 
   Eurydice.Logging.log "Phase3.3" "%a" pfiles files;
-  let files = List.map (fun (f, ds) -> f, List.filter (fun d ->
-    not (Krml.Idents.LidSet.mem (Krml.Ast.lid_of_decl d) Eurydice.Builtin.skip))
-  ds) files in
+  let files =
+    List.map
+      (fun (f, ds) ->
+        ( f,
+          List.filter
+            (fun d -> not (Krml.Idents.LidSet.mem (Krml.Ast.lid_of_decl d) Eurydice.Builtin.skip))
+            ds ))
+      files
+  in
   let files = AstToCStar.mk_files files c_name_map Idents.LidSet.empty macros in
 
   let headers = CStarToC11.mk_headers c_name_map files in
