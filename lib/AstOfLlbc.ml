@@ -449,12 +449,16 @@ let push_clause_binders env bs = List.fold_left push_clause_binder env bs
 
 let lookup_clause_binder env clause_id item_name =
   let i, (v, t) =
-    findi
-      (function
-        | TraitClauseMethod (clause_id2, item_name2, _), _ ->
-            clause_id2 = clause_id && item_name2 = item_name
-        | _ -> false)
-      env.binders
+    try
+      findi
+        (function
+          | TraitClauseMethod (clause_id2, item_name2, _), _ ->
+              clause_id2 = clause_id && item_name2 = item_name
+          | _ -> false)
+        env.binders
+    with Not_found ->
+      Krml.KPrint.bprintf "Error looking up %s.%s\n" (C.show_trait_instance_id clause_id) item_name;
+      raise Not_found
   in
   i, t, thd3 (assert_trait_clause_method v)
 
@@ -726,7 +730,8 @@ let blocklisted_trait_decls =
    the types we obtain by looking up the trait declaration have Self as 0
    (DeBruijn).
 *)
-let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) =
+let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list): ((C.trait_instance_id
+* string) * (C.generic_args * K.type_scheme * Charon.Types.name * C.fun_sig)) list =
   List.concat_map
     (fun tc ->
       let { C.clause_id; trait = { trait_decl_id; decl_generics }; _ } = tc in
@@ -765,13 +770,14 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) =
           (trait_decl.C.required_methods @ trait_decl.C.provided_methods)
         @ List.flatten
             (List.mapi
-               (fun i (parent_clause : C.trait_clause) ->
+               (fun _i (parent_clause : C.trait_clause) ->
                  (* Mapping of the methods of the parent clause *)
                  let m = build_trait_clause_mapping env [ parent_clause ] in
                  List.map
-                   (fun ((clause_id, m), v) ->
-                     (* This is the parent clause `i` of `clause_id` -- see comments in charon/types.rs  *)
-                     let id = C.(ParentClause (clause_id, trait_decl_id, TraitClauseId.of_int i)) in
+                   (fun (((clause_id': C.trait_instance_id), m), v) ->
+                     (* This is the parent clause `clause_id'` of `clause_id` -- see comments in charon/types.rs  *)
+                     let clause_id' = match clause_id' with Clause clause_id' -> clause_id' | _ -> fail "not a clause??" in
+                     let id: C.trait_instance_id = ParentClause (Clause clause_id, trait_decl_id, clause_id') in
                      (id, m), v)
                    m)
                trait_decl.C.parent_clauses)
