@@ -225,6 +225,9 @@ core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__N
 #define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next \
   Eurydice_range_iter_next
 
+#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next \
+  Eurydice_range_iter_next
+
 // See note in karamel/lib/Inlining.ml if you change this
 #define Eurydice_into_iter(x, t, _ret_t) (x)
 #define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I___into_iter \
