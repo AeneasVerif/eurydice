@@ -540,7 +540,7 @@ let expression_of_place (env : env) (p : C.place) : K.expr * C.ety =
           e, t
       | C.Deref, TRef (_, ty, _) ->
           Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e.K.typ) e.K.node), ty
-      | DerefBox, TAdt (TAssumed TBox, { types = [ ty ]; _ }) ->
+      | C.Deref, TAdt (TAssumed TBox, { types = [ ty ]; _ }) ->
           Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e.K.typ) e.K.node), ty
       | Field (ProjAdt (typ_id, variant_id), field_id), C.TAdt (_, { types; const_generics; _ }) ->
       begin
