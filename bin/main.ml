@@ -243,15 +243,16 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_implicit_array_copies#visit_files () files in
   (* These two need to come before... *)
   let files = Krml.Inlining.cross_call_analysis files in
-  Eurydice.Logging.log "Phase2.7" "%a" pfiles files;
   let files = Krml.Simplify.remove_unused files in
   (* This chunk which reuses key elements of simplify2 *)
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
+  Eurydice.Logging.log "Phase2.7" "%a" pfiles files;
   let files = Krml.Simplify.hoist#visit_files [] files in
+  Eurydice.Logging.log "Phase2.75" "%a" pfiles files;
   let files = Krml.Simplify.fixup_hoist#visit_files () files in
+  Eurydice.Logging.log "Phase2.8" "%a" pfiles files;
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
-  Eurydice.Logging.log "Phase2.8" "%a" pfiles files;
   let files = Eurydice.Cleanup3.bonus_cleanups#visit_files [] files in
   (* Macros stemming from globals *)
   let files, macros = Eurydice.Cleanup2.build_macros files in
@@ -330,9 +331,15 @@ Supported options:|}
   in
 
   Eurydice.Logging.log "Phase3.3" "%a" pfiles files;
-  let files = List.map (fun (f, ds) -> f, List.filter (fun d ->
-    not (Krml.Idents.LidSet.mem (Krml.Ast.lid_of_decl d) Eurydice.Builtin.skip))
-  ds) files in
+  let files =
+    List.map
+      (fun (f, ds) ->
+        ( f,
+          List.filter
+            (fun d -> not (Krml.Idents.LidSet.mem (Krml.Ast.lid_of_decl d) Eurydice.Builtin.skip))
+            ds ))
+      files
+  in
   let files = AstToCStar.mk_files files c_name_map Idents.LidSet.empty macros in
 
   let headers = CStarToC11.mk_headers c_name_map files in
