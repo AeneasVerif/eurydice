@@ -6,20 +6,16 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-22.04
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Build and test
         run: nix flake check -L
 
   check-charon-pin:
-    runs-on: ubuntu-22.04
+    runs-on: self-hosted
     steps:
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # deep clone in order to get access to other commits
-      - run: nix-shell -p jq --run ./scripts/ci-check-charon-pin.sh
+      - run: nix develop '.#ci' --command ./scripts/ci-check-charon-pin.sh
