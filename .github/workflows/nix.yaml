@@ -6,20 +6,38 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-22.04
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Build and test
         run: nix flake check -L
 
   check-charon-pin:
-    runs-on: ubuntu-22.04
+    runs-on: self-hosted
     steps:
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # deep clone in order to get access to other commits
-      - run: nix-shell -p jq --run ./scripts/ci-check-charon-pin.sh
+      - run: nix develop '.#ci' --command ./scripts/ci-check-charon-pin.sh
+
+  kyber:
+    needs: [check]
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          # Flake overrides aren't recursive: if I want to use eurydice with
+          # all its dependencies, I must override each of them.
+          CHARON_REV="$(nix develop '.#ci' --command jq -r .nodes.charon.locked.rev flake.lock)"
+          KRML_REV="$(nix develop '.#ci' --command jq -r .nodes.karamel.locked.rev flake.lock)"
+          FSTAR_REV="$(nix develop '.#ci' --command jq -r .nodes.fstar.locked.rev flake.lock)"
+          nix build --refresh -L 'github:cryspen/libcrux#ml-kem' \
+              --override-input eurydice github:aeneasverif/eurydice/${{ github.sha }} \
+              --override-input charon github:aeneasverif/charon/$CHARON_REV \
+              --override-input karamel github:FStarLang/karamel/$KRML_REV \
+              --override-input fstar github:FStarLang/fstar/$FSTAR_REV \
+              --override-input eurydice/charon github:aeneasverif/charon/$CHARON_REV \
+              --override-input eurydice/karamel github:FStarLang/karamel/$KRML_REV \
+              --override-input eurydice/fstar github:FStarLang/fstar/$FSTAR_REV \
+              --update-input charon/rust-overlay \
+              --update-input crane

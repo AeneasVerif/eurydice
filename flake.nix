@@ -85,6 +85,7 @@
         version = self.rev or "dirty";
       };
       checks.default = packages.default.tests;
+      devShells.ci = pkgs.mkShell { packages = [ pkgs.jq ]; };
       devShells.default = pkgs.mkShell {
         packages = [
           pkgs.clang-tools # For clang-format
