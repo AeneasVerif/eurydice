@@ -524,12 +524,14 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
         f, decls @ reassigned)
       files
   in
+
+  (* Deal with files that did not exist previously. *)
+  let files = files @ Hashtbl.fold (fun f reassigned acc -> (f, reassigned) :: acc) reassigned [] in
+
   (* A quick topological sort to make sure type declarations come *before*
      functions that use them. *)
   let files = List.map (fun (f, decls) -> f, topological_sort decls) files in
 
-  (* Deal with files that did not exist previously. *)
-  let files = files @ Hashtbl.fold (fun f reassigned acc -> (f, reassigned) :: acc) reassigned [] in
   let c1 = count_decls files in
   assert (c0 = c1);
   files
