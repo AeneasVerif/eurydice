@@ -1485,12 +1485,12 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
   | Continue _ -> K.(with_type TAny EContinue)
   | Nop -> Krml.Helpers.eunit
   | Sequence (s1, s2) ->
-      let e1 = expression_of_raw_statement env ret_var s1.content in
-      let e2 = expression_of_raw_statement env ret_var s2.content in
+      let e1 = expression_of_statement env ret_var s1 in
+      let e2 = expression_of_statement env ret_var s2 in
       K.(with_type e2.typ (ESequence [ e1; e2 ]))
   | Switch (If (op, s1, s2)) ->
-      let e1 = expression_of_raw_statement env ret_var s1.content in
-      let e2 = expression_of_raw_statement env ret_var s2.content in
+      let e1 = expression_of_statement env ret_var s1 in
+      let e2 = expression_of_statement env ret_var s2 in
       let t = lesser e1.typ e2.typ in
       K.(with_type t (EIfThenElse (expression_of_operand env op, e1, e2)))
   | Switch (SwitchInt (scrutinee, _int_ty, branches, default)) ->
@@ -1501,10 +1501,10 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
             List.map
               (fun sv ->
                 ( K.SConstant (constant_of_scalar_value sv),
-                  expression_of_raw_statement env ret_var stmt.C.content ))
+                  expression_of_statement env ret_var stmt ))
               svs)
           branches
-        @ [ K.SWild, expression_of_raw_statement env ret_var default.C.content ]
+        @ [ K.SWild, expression_of_statement env ret_var default ]
       in
       let t = Krml.KList.reduce lesser (List.map (fun (_, e) -> e.K.typ) branches) in
       K.(with_type t (ESwitch (scrutinee, branches)))
@@ -1533,7 +1533,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
                 let variant_name, n_fields = variant_name_of_variant_id variant_id in
                 let dummies = List.init n_fields (fun _ -> K.(with_type TAny PWild)) in
                 let pat = K.with_type p.typ (K.PCons (variant_name, dummies)) in
-                [], pat, expression_of_raw_statement env ret_var e.C.content)
+                [], pat, expression_of_statement env ret_var e)
               variant_ids)
           branches
       in
@@ -1545,7 +1545,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
             [
               ( [],
                 K.with_type p.typ K.PWild,
-                expression_of_raw_statement env ret_var default.C.content );
+                expression_of_statement env ret_var default);
             ]
         | None -> []
       in
@@ -1554,8 +1554,12 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
   | Loop s ->
       K.(
         with_type TUnit
-          (EWhile (Krml.Helpers.etrue, expression_of_raw_statement env ret_var s.content)))
+          (EWhile (Krml.Helpers.etrue, expression_of_statement env ret_var s)))
   | Error _ -> failwith "TODO: error"
+
+and expression_of_statement (env: env) (ret_var: C.var_id) (s: C.statement): K.expr =
+  { (expression_of_raw_statement env ret_var s.content) with
+    meta = List.map (fun x -> K.CommentBefore x) s.comments_before }
 
 (** Top-level declarations: orchestration *)
 
@@ -1749,7 +1753,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                 let body =
                   try
                     with_locals env return_type (return_var :: locals) (fun env ->
-                        expression_of_raw_statement env return_var.index body.content)
+                        expression_of_statement env return_var.index body)
                   with e ->
                     let msg =
                       Krml.KPrint.bsprintf "Eurydice error: %s\n%s" (Printexc.to_string e)
@@ -1798,7 +1802,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
             let ret_var = List.hd body.locals in
             let body =
               with_locals env ty body.locals (fun env ->
-                  expression_of_raw_statement env ret_var.index body.body.content)
+                  expression_of_statement env ret_var.index body.body)
             in
             Some (K.DGlobal ([ Krml.Common.Const "" ], lid_of_name env name, 0, ty, body))
         | None -> Some (K.DExternal (None, [], 0, 0, lid_of_name env name, ty, []))
