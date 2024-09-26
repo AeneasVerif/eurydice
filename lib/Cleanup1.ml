@@ -14,34 +14,44 @@ let count_atoms =
     method! visit_EOpen _ _ a = AtomSet.singleton a
   end
 
+type remove_env = (string * typ * node_meta list) AtomMap.t
+
+let pmeta buf ({ meta; _ }: 'a with_type) =
+  List.iter (function
+    | CommentBefore s | CommentAfter s -> Buffer.add_string  buf s;
+    Buffer.add_char buf '\n') meta
+
+let mk typ meta node = { node; typ; meta }
+
 let remove_assignments =
   object (self)
     inherit [_] map
 
-    method private peel_lets to_close e =
+    method private peel_lets (to_close: remove_env) e =
       match e.node with
       | ELet (b, e1, e2) ->
           (if not (e1.node = EAny || e1.node = EUnit) then
              Krml.(Warn.fatal_error "Initializer of let-binding is %a" PrintAst.Ops.pexpr e1));
           (* Krml.(KPrint.bprintf "peeling %s\n" b.node.name); *)
           let b, e2 = open_binder b e2 in
-          let to_close = AtomMap.add b.node.atom (b.node.name, b.typ) to_close in
+          (* Krml.KPrint.bprintf "peel: let-binding meta %a\n" pmeta b; *)
+          let to_close = AtomMap.add b.node.atom (b.node.name, b.typ, b.meta) to_close in
           self#peel_lets to_close e2
       | _ ->
           let e = Krml.Simplify.sequence_to_let#visit_expr_w () e in
           (* Krml.(KPrint.bprintf "after peeling:\n%a" PrintAst.Ops.ppexpr e); *)
           self#visit_expr_w to_close e
 
-    method! visit_DFunction to_close cc flags n_cgs n t name bs e =
+    method! visit_DFunction (to_close: remove_env) cc flags n_cgs n t name bs e =
       (* Krml.(KPrint.bprintf "visiting %a\n" PrintAst.Ops.plid name); *)
       assert (AtomMap.is_empty to_close);
       DFunction (cc, flags, n_cgs, n, t, name, bs, self#peel_lets to_close e)
 
-    method! visit_DGlobal to_close flags n t name e =
+    method! visit_DGlobal (to_close: remove_env) flags n t name e =
       assert (AtomMap.is_empty to_close);
       DGlobal (flags, n, t, name, self#peel_lets to_close e)
 
-    method! visit_ELet (not_yet_closed, t) b e1 e2 =
+    method! visit_ELet ((not_yet_closed: remove_env), t) b e1 e2 =
       (* If [not_yet_closed] represents the set of bindings that have yet to be
          closed (i.e. for which we have yet to insert a let-binding, as close as
          possible to the first use-site), and [candidates] represents the atoms
@@ -49,13 +59,13 @@ let remove_assignments =
          inserts suitable let-bindings for the candidates that have not yet been
          closed, then calls the continuation with the remaining subset of
          not_yet_closed. *)
-      let close_now_over not_yet_closed candidates mk_node =
+      let close_now_over (not_yet_closed: remove_env) candidates mk_node =
         let to_close_now = AtomSet.inter candidates (set_of_map_keys not_yet_closed) in
         let bs = List.of_seq (AtomSet.to_seq to_close_now) in
         let bs =
           List.map
             (fun atom ->
-              let name, typ = AtomMap.find atom not_yet_closed in
+              let name, typ, meta = AtomMap.find atom not_yet_closed in
               ( {
                   node =
                     {
@@ -67,6 +77,7 @@ let remove_assignments =
                       attempt_inline = false;
                     };
                   typ;
+                  meta;
                 },
                 if typ = TUnit then
                   Krml.Helpers.eunit
@@ -80,6 +91,7 @@ let remove_assignments =
           AtomMap.filter (fun a _ -> not (AtomSet.mem a to_close_now)) not_yet_closed
         in
         let node = mk_node not_yet_closed in
+        (* XXX why is the with_type necessary here?? *)
         (Krml.Helpers.nest bs t (with_type t node)).node
       in
 
@@ -91,14 +103,14 @@ let remove_assignments =
          the general case if it's a let-node; special treatment if it's
          control-flow (match, if, while); otherwise, just close everything now and
          move on (wildcard case). *)
-      let rec recurse_or_close not_yet_closed e =
-        let t = e.typ in
-        match e.node with
+      let rec recurse_or_close (not_yet_closed: remove_env) e0 =
+        let t = e0.typ in
+        match e0.node with
         | ELet _ ->
             (* let node: restart logic and jump back to match below *)
-            self#visit_expr_w not_yet_closed e
+            self#visit_expr_w not_yet_closed e0
         | EIfThenElse (e, e', e'') ->
-            with_type t
+            mk t e0.meta
             @@ close_now_over not_yet_closed
                  ((* We must now bind: *)
                   count e
@@ -114,11 +126,11 @@ let remove_assignments =
                        recurse_or_close not_yet_closed e',
                        recurse_or_close not_yet_closed e'' ))
         | EWhile (e, e') ->
-            with_type t
+            mk t e0.meta
             @@ close_now_over not_yet_closed (count e) (fun not_yet_closed ->
                    EWhile (self#visit_expr_w not_yet_closed e, recurse_or_close not_yet_closed e'))
         | ESwitch (e, branches) ->
-            with_type t
+            mk t e0.meta
             @@ close_now_over not_yet_closed
                  ((* We must now bind: *)
                   count e
@@ -130,7 +142,7 @@ let remove_assignments =
                      ( self#visit_expr_w not_yet_closed e,
                        List.map (fun (p, e) -> p, recurse_or_close not_yet_closed e) branches ))
         | EMatch (c, e, branches) ->
-            with_type t
+            mk t e0.meta
             @@ close_now_over not_yet_closed
                  ((* We must now bind: *)
                   count e
@@ -149,19 +161,19 @@ let remove_assignments =
                an assignment in terminal position, *and* the variable has yet to
                be closed, it means that the assignment is useless since no one
                else will be using the variable after that. *)
-            with_type e.typ
-              (close_now_over not_yet_closed (count e) (fun not_yet_closed ->
+            mk t e0.meta
+            @@ close_now_over not_yet_closed (count e0) (fun not_yet_closed ->
                    (* not_yet_closed should be empty at this stage *)
-                   (self#visit_expr_w not_yet_closed e).node))
+                (self#visit_expr_w not_yet_closed e0).node)
       in
 
       match e1.node with
-      | EAssign ({ node = EOpen (_, atom); _ }, e1) when AtomMap.mem atom not_yet_closed ->
-          close_now_over not_yet_closed (count e1) (fun not_yet_closed ->
+      | EAssign ({ node = EOpen (_, atom); _ }, e_rhs) when AtomMap.mem atom not_yet_closed ->
+          close_now_over not_yet_closed (count e_rhs) (fun not_yet_closed ->
               (* Combined "close now" (above) + let-binding insertion in lieu of the assignment *)
               assert (b.node.meta = Some MetaSequence);
               let e2 = snd (open_binder b e2) in
-              let name, typ = AtomMap.find atom not_yet_closed in
+              let name, typ, meta = AtomMap.find atom not_yet_closed in
               let b =
                 {
                   node =
@@ -174,11 +186,13 @@ let remove_assignments =
                       attempt_inline = false;
                     };
                   typ;
+                  meta = meta @ e1.meta;
                 }
               in
               let not_yet_closed = AtomMap.remove atom not_yet_closed in
+              (* Krml.(KPrint.bprintf "rebuilt: %a\n" PrintAst.Ops.pexpr (with_type TUnit (ELet (b, e_rhs, e2)))); *)
               let e2 = self#visit_expr_w not_yet_closed (close_binder b e2) in
-              ELet (b, e1, e2))
+              ELet (b, e_rhs, e2))
       | EIfThenElse (e, e', e'') ->
           assert (b.node.meta = Some MetaSequence);
           close_now_over not_yet_closed
@@ -192,7 +206,7 @@ let remove_assignments =
               (fun not_yet_closed ->
               ELet
                 ( b,
-                  with_type e1.typ
+                  mk e1.typ e1.meta
                     (EIfThenElse
                        ( self#visit_expr_w not_yet_closed e,
                          recurse_or_close not_yet_closed e',
@@ -207,7 +221,7 @@ let remove_assignments =
             (fun not_yet_closed ->
               ELet
                 ( b,
-                  with_type TUnit
+                  mk e1.typ e1.meta
                     (EWhile (self#visit_expr_w not_yet_closed e, recurse_or_close not_yet_closed e')),
                   recurse_or_close not_yet_closed e2 ))
       | ESwitch (e, branches) ->
@@ -227,7 +241,7 @@ let remove_assignments =
               (fun not_yet_closed ->
               ELet
                 ( b,
-                  with_type e1.typ
+                  mk e1.typ e1.meta
                     (ESwitch
                        ( self#visit_expr_w not_yet_closed e,
                          List.map (fun (p, e) -> p, recurse_or_close not_yet_closed e) branches )),
@@ -248,7 +262,7 @@ let remove_assignments =
               (fun not_yet_closed ->
               ELet
                 ( b,
-                  with_type e1.typ
+                  mk e1.typ e1.meta
                     (EMatch
                        ( c,
                          self#visit_expr_w not_yet_closed e,

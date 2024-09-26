@@ -33,13 +33,16 @@ fn mk_incr<const K: usize>() -> [ u32; K ] {
 }
 
 fn main() {
+    // XXX1
     let Foo { x, y } = mk_foo2();
     let expected = 0u32;
     mut_array(x);
+    // XXX2
     mut_foo(Foo { x, y });
     assert_eq!(x[0], expected);
     let a: [ u32; 10 ] = mk_incr();
     let expected = 9;
+    // XXX3
     assert_eq!(a[9], expected);
     // let a: [ u32; 10 ] = mk_incr2();
     // let expected = 10;

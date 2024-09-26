@@ -656,6 +656,7 @@ let improve_names files =
        | [ trait_impl ] ->
            let hash = Hashtbl.hash trait_impl in
            let n = Printf.sprintf "%s_%02x" n (hash land 0xFF) in
+           Krml.Monomorphization.maybe_debug_hash hash (lazy PPrint.(string "trait impl:" ^/^ string trait_impl));
            let n = Krml.Idents.mk_fresh n (fun n -> Hashtbl.mem allocated (m, n)) in
            Hashtbl.add renamed lid ((m, n), trait_impl);
            Hashtbl.add allocated (m, n) ()

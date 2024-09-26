@@ -113,6 +113,7 @@ let bonus_cleanups =
           _,
           ESequence [ { node = EAssign ({ node = EBound 0; _ }, e3); _ }; { node = EBound 0; _ } ] )
         -> (DeBruijn.subst Helpers.eunit 0 e3).node
+
       (* let uu; memcpy(uu, ..., src, ...); e2  -->  let copy_of_src; ... *)
       | ( EAny,
           TArray (_, (_, n)),
@@ -131,13 +132,12 @@ let bonus_cleanups =
               _;
             ] )
         when n = n' && Krml.Helpers.is_uu b.node.name ->
-          EComment
-            ( "Passing arrays by value in Rust generates a copy in C",
-              with_type e2.typ
-                (super#visit_ELet env
-                   { b with node = { b.node with name = "copy_of_" ^ List.nth bs (src - 1) } }
-                   e1 e2),
-              "" )
+          super#visit_ELet env
+             { b with
+                node = { b.node with name = "copy_of_" ^ List.nth bs (src - 1) };
+                meta = [ CommentBefore "Passing arrays by value in Rust generates a copy in C" ] }
+             e1 e2
+
       (* let uu = f(e); y = uu; e2  -->  let y = f(e); e2 *)
       | ( EApp ({ node = EQualified _; _ }, es),
           _,
@@ -183,6 +183,7 @@ let add_extra_type_to_slice_index =
             {
               node = EFlat [ (Some "start", e_start); (Some "end", e_end) ];
               typ = TQualified ([ "core"; "ops"; "range" ], id);
+              _
             };
           ] )
         when KString.starts_with id "Range" ->
@@ -204,6 +205,7 @@ let add_extra_type_to_slice_index =
             {
               node = EFlat [ (Some "start", e_start); (Some "end", e_end) ];
               typ = TQualified ([ "core"; "ops"; "range" ], id);
+              _
             };
           ] )
         when KString.starts_with id "Range" ->
