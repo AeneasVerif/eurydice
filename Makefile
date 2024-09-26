@@ -18,7 +18,7 @@ build:
 
 CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
 
-test: $(addprefix test-,$(TEST_DIRS))
+test: $(addprefix test-,$(TEST_DIRS)) custom-test-array
 
 .PHONY: phony
 .PRECIOUS: test/%/out.llbc
@@ -35,6 +35,12 @@ test-nested_arrays: EXTRA = -funroll-loops 0
 test-%: test/%/out.llbc out/test-%/main.c | all
 	$(EURYDICE) $(EXTRA) --output out/test-$* $<
 	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $(EXTRA_C) $*.c main.c && ./a.out
+
+custom-test-array: test-array
+	grep -q XXX1 out/test-array/array.c && \
+	grep -q XXX2 out/test-array/array.c && \
+	grep -q XXX3 out/test-array/array.c && \
+	true
 
 .PRECIOUS: out/%
 out/%:
