@@ -250,7 +250,6 @@ Supported options:|}
   let files = Krml.Simplify.hoist#visit_files [] files in
   Eurydice.Logging.log "Phase2.75" "%a" pfiles files;
   let files = Krml.Simplify.fixup_hoist#visit_files () files in
-  (*good*)
   Eurydice.Logging.log "Phase2.8" "%a" pfiles files;
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
