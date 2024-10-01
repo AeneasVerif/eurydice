@@ -736,7 +736,7 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) :
     list =
   List.concat_map
     (fun tc ->
-      let { C.clause_id; trait = { trait_decl_id; decl_generics }; _ } = tc in
+      let { C.clause_id; trait = { binder_value = { trait_decl_id; decl_generics }; _ }; _ } = tc in
       let trait_decl = env.get_nth_trait_decl trait_decl_id in
 
       let name = string_of_name env trait_decl.item_meta.name in
@@ -1044,7 +1044,9 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
           (fun (trait_ref : C.trait_ref) ->
             let name =
               string_of_name env
-                (env.get_nth_trait_decl trait_ref.trait_decl_ref.trait_decl_id).item_meta.name
+                (env.get_nth_trait_decl trait_ref.trait_decl_ref.binder_value.trait_decl_id)
+                  .item_meta
+                  .name
             in
             L.log "Calls" "%s--> trait_ref: %s\n" depth (C.show_trait_ref trait_ref);
 
@@ -1090,7 +1092,9 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                 let name = string_of_name env trait_decl.item_meta.name in
                 let clause_id = C.TraitClauseId.to_int clause_id in
                 let parent_clause = List.nth trait_decl.parent_clauses clause_id in
-                let parent_clause_decl = env.get_nth_trait_decl parent_clause.trait.trait_decl_id in
+                let parent_clause_decl =
+                  env.get_nth_trait_decl parent_clause.trait.binder_value.trait_decl_id
+                in
                 let parent_name = string_of_name env parent_clause_decl.item_meta.name in
                 Krml.KPrint.bprintf "looking up parent clause #%d of decl=%s = %s\n" clause_id name
                   parent_name;
