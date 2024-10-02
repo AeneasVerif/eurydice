@@ -25,13 +25,17 @@ jobs:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
+        with:
+          repository: cryspen/libcrux
       - run: |
+          nix develop --command cargo generate-lockfile
+          # TODO: how to get these without cloning?
           # Flake overrides aren't recursive: if I want to use eurydice with
           # all its dependencies, I must override each of them.
           CHARON_REV="$(nix develop '.#ci' --command jq -r .nodes.charon.locked.rev flake.lock)"
           KRML_REV="$(nix develop '.#ci' --command jq -r .nodes.karamel.locked.rev flake.lock)"
           FSTAR_REV="$(nix develop '.#ci' --command jq -r .nodes.fstar.locked.rev flake.lock)"
-          nix build --refresh -L 'github:cryspen/libcrux#ml-kem' \
+          nix build --refresh -L '.#ml-kem' \
               --override-input eurydice github:aeneasverif/eurydice/${{ github.sha }} \
               --override-input charon github:aeneasverif/charon/$CHARON_REV \
               --override-input karamel github:FStarLang/karamel/$KRML_REV \
