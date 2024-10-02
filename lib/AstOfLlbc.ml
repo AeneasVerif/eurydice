@@ -1835,7 +1835,7 @@ let decls_of_declarations (env : env) (d : C.declaration_group) : K.decl list =
   Krml.KList.filter_some @@ List.map (decl_of_id env) @@ declaration_group_to_list d
 
 let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
-  let { C.name; declarations; type_decls; fun_decls; global_decls; trait_decls; trait_impls } =
+  let { C.name; declarations; type_decls; fun_decls; global_decls; trait_decls; trait_impls; _ } =
     crate
   in
   seen := 0;
