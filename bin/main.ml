@@ -24,8 +24,8 @@ Supported options:|}
       ( "--header",
         Arg.Set_string Krml.Options.header,
         " path to a header file to be prepended to the generated C" );
-      "--comments", Arg.Set O.comments, " keep inline comments";
       "--config", Arg.Set_string O.config, " YAML configuration file";
+      "-fcomments", Arg.Set O.comments, " keep inline comments";
       "-funroll-loops", Arg.Set_int funroll_loops, " unrool loops up to N";
     ]
   in
