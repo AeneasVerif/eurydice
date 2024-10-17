@@ -1563,7 +1563,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
 
 and expression_of_statement (env: env) (ret_var: C.var_id) (s: C.statement): K.expr =
   { (expression_of_raw_statement env ret_var s.content) with
-    meta = List.map (fun x -> K.CommentBefore x) s.comments_before }
+    meta = if !Options.comments then List.map (fun x -> K.CommentBefore x) s.comments_before else [] }
 
 (** Top-level declarations: orchestration *)
 
