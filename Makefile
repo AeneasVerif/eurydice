@@ -23,7 +23,7 @@ test: $(addprefix test-,$(TEST_DIRS)) custom-test-array
 .PHONY: phony
 .PRECIOUS: test/%/out.llbc
 test/%/out.llbc: phony
-	cd test/$* && $(CHARON) --errors-as-warnings && mv $*.llbc out.llbc
+	cd test/$* && $(CHARON) && mv $*.llbc out.llbc
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
