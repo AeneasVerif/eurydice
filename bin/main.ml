@@ -364,6 +364,7 @@ Supported options:|}
   let files = CStarToC11.mk_files c_name_map files in
   let files = List.filter (fun (_, decls) -> List.length decls > 0) files in
   Krml.Output.maybe_create_internal_dir headers;
+  Krml.Driver.fstar := "dummy";
   ignore (Output.write_c files internal_headers deps);
   ignore (Output.write_h headers public_headers deps);
 
