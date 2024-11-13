@@ -31,7 +31,10 @@ jobs:
           CHARON_REV="$(nix develop '.#ci' --command jq -r .nodes.charon.locked.rev flake.lock)"
           KRML_REV="$(nix develop '.#ci' --command jq -r .nodes.karamel.locked.rev flake.lock)"
           FSTAR_REV="$(nix develop '.#ci' --command jq -r .nodes.fstar.locked.rev flake.lock)"
-          nix build --refresh -L 'github:cryspen/libcrux#ml-kem' \
+          git clone https://github.com/cryspen/libcrux
+          cd libcrux
+          nix develop --command cargo generate-lockfile
+          nix build --refresh -L '.#ml-kem' \
               --override-input eurydice github:aeneasverif/eurydice/${{ github.sha }} \
               --override-input charon github:aeneasverif/charon/$CHARON_REV \
               --override-input karamel github:FStarLang/karamel/$KRML_REV \
@@ -40,4 +43,5 @@ jobs:
               --override-input eurydice/karamel github:FStarLang/karamel/$KRML_REV \
               --override-input eurydice/fstar github:FStarLang/fstar/$FSTAR_REV \
               --update-input charon/rust-overlay \
+              --update-input hax \
               --update-input crane
