@@ -500,10 +500,6 @@ let expression_of_var_id (env : env) (v : C.var_id) : K.expr =
   let i, t = lookup env v in
   K.(with_type t (EBound i))
 
-let expression_and_original_type_of_var_id (env : env) (v : C.var_id) : K.expr * C.ety =
-  let i, t, ty = lookup_with_original_type env v in
-  K.(with_type t (EBound i)), ty
-
 let expression_of_scalar_value ({ C.int_ty; _ } as sv) =
   let w = width_of_integer_type int_ty in
   K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
@@ -521,95 +517,91 @@ let expression_of_const_generic env cg =
   | C.CgVar id -> expression_of_cg_var_id env id
   | C.CgValue l -> expression_of_literal env l
 
-let rec expression_of_place (env : env) (p : C.place) : K.expr * C.ety =
-  (* We construct a target expression, but retain the original type so that callers can tell arrays
+let rec expression_of_place (env : env) (p : C.place) : K.expr =
+  (* We construct a target expression. Callers may still use the original type to tell arrays
      and references apart, since their *uses* (e.g. addr-of) compile in a type-directed way based on
      the *original* rust type *)
   L.log "AstOfLlbc" "expression of place: %s" (C.show_place p);
   match p.kind with
-  | PlaceBase var_id -> expression_and_original_type_of_var_id env var_id
+  | PlaceBase var_id ->
+      let i, t = lookup env var_id in
+      K.(with_type t (EBound i))
   | PlaceProjection (sub_place, pe) -> begin
-      let e, ty = expression_of_place env sub_place in
-      L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr e (C.show_ty ty) (C.show_projection_elem pe);
-      match pe, ty with
-      | C.Deref, TRef (_, (TAdt (TAssumed TArray, { types = [ t ]; _ }) as ty), _) ->
+      let sub_e = expression_of_place env sub_place in
+      L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr sub_e (C.show_ty sub_place.ty)
+        (C.show_projection_elem pe);
+      match pe, sub_place.ty with
+      | C.Deref, TRef (_, TAdt (TAssumed TArray, { types = [ t ]; _ }), _) ->
           (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
-          K.with_type (TBuf (typ_of_ty env t, false)) e.K.node, ty
-      | C.Deref, TRef (_, (TAdt (TAssumed TSlice, _) as t), _) -> e, t
-      | C.Deref, TRef (_, (TAdt (id, generics) as t), _) when RustNames.is_vec env id generics ->
-          e, t
-      | C.Deref, TRef (_, ty, _) ->
-          Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e.K.typ) e.K.node), ty
-      | C.Deref, TAdt (TAssumed TBox, { types = [ ty ]; _ }) ->
-          Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e.K.typ) e.K.node), ty
-      | Field (ProjAdt (typ_id, variant_id), field_id), C.TAdt (_, { types; const_generics; _ }) ->
-      begin
+          K.with_type (TBuf (typ_of_ty env t, false)) sub_e.K.node
+      | C.Deref, TRef (_, TAdt (TAssumed TSlice, _), _) -> sub_e
+      | C.Deref, TRef (_, TAdt (id, generics), _) when RustNames.is_vec env id generics -> sub_e
+      | C.Deref, TRef _ ->
+          Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node)
+      | C.Deref, TAdt (TAssumed TBox, { types = [ _ ]; _ }) ->
+          Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node)
+      | Field (ProjAdt (typ_id, variant_id), field_id), C.TAdt _ -> begin
+          let place_typ = typ_of_ty env p.ty in
           match variant_id with
           | None ->
-              let ty = env.get_nth_type typ_id in
+              let ty_decl = env.get_nth_type typ_id in
               let fields =
-                match ty.kind with
+                match ty_decl.kind with
                 | Struct fields -> fields
                 | _ -> failwith "not a struct"
               in
-              let field_name, field_ty =
+              let field_name =
                 let field = List.nth fields (C.FieldId.to_int field_id) in
                 match field.C.field_name with
-                | Some field_name -> field_name, C.tsubst const_generics types field.C.field_ty
+                | Some field_name -> field_name
                 | None -> failwith "TODO: understand what empty field name means"
               in
-              K.with_type (typ_of_ty env field_ty) (K.EField (e, field_name)), field_ty
+              K.with_type place_typ (K.EField (sub_e, field_name))
           | Some variant_id ->
               let variant = find_nth_variant env typ_id variant_id in
               let field_id = C.FieldId.to_int field_id in
               let field = List.nth variant.fields field_id in
-              let field_ty = C.tsubst const_generics types field.C.field_ty in
-              let field_t = typ_of_ty env field_ty in
               let b =
-                Krml.Helpers.fresh_binder (mk_field_name field.C.field_name field_id) field_t
+                Krml.Helpers.fresh_binder (mk_field_name field.C.field_name field_id) place_typ
               in
-              ( K.with_type field_t
-                  K.(
-                    EMatch
-                      ( Unchecked,
-                        e,
-                        [
-                          ( [ b ],
-                            with_type e.typ
-                              (PCons
-                                 ( variant.C.variant_name,
-                                   List.init (List.length variant.fields) (fun i ->
-                                       if i = field_id then
-                                         with_type field_t (PBound 0)
-                                       else
-                                         with_type TAny PWild) )),
-                            with_type field_t (EBound 0) );
-                        ] )),
-                field_ty )
+              K.with_type place_typ
+                K.(
+                  EMatch
+                    ( Unchecked,
+                      sub_e,
+                      [
+                        ( [ b ],
+                          with_type sub_e.typ
+                            (PCons
+                               ( variant.C.variant_name,
+                                 List.init (List.length variant.fields) (fun i ->
+                                     if i = field_id then
+                                       with_type place_typ (PBound 0)
+                                     else
+                                       with_type TAny PWild) )),
+                          with_type place_typ (EBound 0) );
+                      ] ))
         end
       | Field (ProjTuple n, i), C.TAdt (_, { types = tys; const_generics = cgs; _ }) ->
+          let place_typ = typ_of_ty env p.ty in
           assert (cgs = []);
           (* match e with (_, ..., _, x, _, ..., _) -> x *)
           let i = Charon.Types.FieldId.to_int i in
           if List.length tys = 1 then begin
             assert (i = 0);
             (* Normalized one-element tuple *)
-            e, List.hd tys
+            sub_e
           end
           else
-            let ts, t_i =
-              match e.typ with
-              | TTuple ts ->
-                  assert (List.length ts = n);
-                  ts, List.nth ts i
-              | _ ->
-                  assert (List.length tys = 1);
-                  L.log "AstOfLlbc" "typ is: %a" ptyp e.typ;
-                  failwith "impossible: mismatch ProjTuple/TTuple"
+            let ts =
+              match sub_e.typ with
+              | TTuple ts -> ts
+              | _ -> assert false
             in
-            let binders = [ Krml.Helpers.fresh_binder (uu ()) t_i ] in
+            assert (List.length ts = n);
+            let binders = [ Krml.Helpers.fresh_binder (uu ()) place_typ ] in
             let pattern =
-              K.with_type e.typ
+              K.with_type sub_e.typ
                 (K.PTuple
                    (List.mapi
                       (fun i' t ->
@@ -620,8 +612,8 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr * C.ety =
                              PWild))
                       ts))
             in
-            let expr = K.with_type t_i (K.EBound 0) in
-            K.with_type t_i (K.EMatch (Unchecked, e, [ binders, pattern, expr ])), List.nth tys i
+            let expr = K.with_type place_typ (K.EBound 0) in
+            K.with_type place_typ (K.EMatch (Unchecked, sub_e, [ binders, pattern, expr ]))
       | _ -> failwith "unexpected / ill-typed projection"
     end
 
@@ -1182,17 +1174,17 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
 
 let expression_of_fn_ptr env (fn_ptr : C.fn_ptr) = expression_of_fn_ptr env "" fn_ptr
 
-let expression_of_operand (env : env) (p : C.operand) : K.expr =
-  match p with
+let expression_of_operand (env : env) (op : C.operand) : K.expr =
+  match op with
   | Copy p ->
-      let p, ty = expression_of_place env p in
+      let e = expression_of_place env p in
       begin
-        match ty with
+        match p.ty with
         | C.TAdt (TAssumed TArray, { const_generics = [ cg ]; _ }) ->
-            mk_deep_copy p (expression_of_const_generic env cg)
-        | _ -> p
+            mk_deep_copy e (expression_of_const_generic env cg)
+        | _ -> e
       end
-  | Move p -> fst (expression_of_place env p)
+  | Move p -> expression_of_place env p
   | Constant { value = CLiteral l; _ } -> expression_of_literal env l
   | Constant { value = CVar id; _ } -> expression_of_cg_var_id env id
   | Constant { value = CFnPtr fn_ptr; _ } ->
@@ -1200,7 +1192,7 @@ let expression_of_operand (env : env) (p : C.operand) : K.expr =
       e
   | Constant _ ->
       fail "expression_of_operand Constant: %s"
-        (Charon.PrintExpressions.operand_to_string env.format_env p)
+        (Charon.PrintExpressions.operand_to_string env.format_env op)
 
 let is_str env var_id =
   match lookup_with_original_type env var_id with
@@ -1218,10 +1210,10 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
          passed by address naturally). *)
       expression_of_var_id env var_id
   | RvRef (p, _) ->
-      let e, ty = expression_of_place env p in
+      let e = expression_of_place env p in
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
          pass one for the other *)
-      maybe_addrof env ty e
+      maybe_addrof env p.ty e
   | UnaryOp (Cast (CastScalar (_, TInteger dst)), e) ->
       let dst = K.TInt (width_of_integer_type dst) in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
@@ -1327,15 +1319,15 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
     =
   match s with
   | Assign (p, rv) ->
-      let p, _ = expression_of_place env p in
+      let p = expression_of_place env p in
       let rv = expression_of_rvalue env rv in
       K.(with_type TUnit (EAssign (p, rv)))
   | SetDiscriminant (_, _) -> failwith "C.SetDiscriminant"
   | FakeRead _ -> Krml.Helpers.eunit
   | Drop p ->
-      let _p, ty = expression_of_place env p in
+      let _ = expression_of_place env p in
       begin
-        match ty with
+        match p.ty with
         (* doesn't do the right thing yet, need to understand why there are
            several drops per variable *)
         (* | C.Adt (Assumed Vec, _) when false -> *)
@@ -1366,7 +1358,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
       let e = expression_of_operand env e in
       let t = typ_of_ty env ty in
       let len = expression_of_const_generic env c in
-      let dest, _ = expression_of_place env dest in
+      let dest = expression_of_place env dest in
       let repeat =
         K.(
           with_type
@@ -1398,7 +1390,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
       let e1 = expression_of_operand env e1 in
       let e2 = expression_of_operand env e2 in
       let t = typ_of_ty env ty in
-      let dest, _ = expression_of_place env dest in
+      let dest = expression_of_place env dest in
       Krml.Helpers.with_unit
         K.(EAssign (dest, maybe_addrof env ty (with_type t (EBufRead (e1, e2)))))
   | Call { func = FnOpRegular fn_ptr; args; dest; _ }
@@ -1435,13 +1427,13 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
         else
           fail "Unknown from-cast: %s" (string_of_fn_ptr env fn_ptr)
       in
-      let dest, _ = expression_of_place env dest in
+      let dest = expression_of_place env dest in
       let e = expression_of_operand env (Krml.KList.one args) in
       Krml.Helpers.with_unit K.(EAssign (dest, with_type (TInt w) (ECast (e, TInt w))))
   | Call { func = FnOpRegular fn_ptr; args; dest; _ } ->
       (* For now, we take trait type arguments to be part of the code-gen *)
       let hd, _is_known_builtin, output_t = expression_of_fn_ptr env fn_ptr in
-      let dest, _ = expression_of_place env dest in
+      let dest = expression_of_place env dest in
       let args = List.map (expression_of_operand env) args in
       (* This needs to match what is done in the FunGroup case (i.e. when we extract
          a definition). There are two behaviors depending on whether the function is
@@ -1515,9 +1507,9 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
       let t = Krml.KList.reduce lesser (List.map (fun (_, e) -> e.K.typ) branches) in
       K.(with_type t (ESwitch (scrutinee, branches)))
   | Switch (Match (p, branches, default)) ->
-      let p, ty = expression_of_place env p in
+      let scrutinee = expression_of_place env p in
       let variant_name_of_variant_id =
-        match ty with
+        match p.ty with
         | TAdt (TAdtId typ_id, _) ->
             let ty = env.get_nth_type typ_id in
             let variants =
@@ -1533,13 +1525,13 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
 
       let branches =
         List.concat_map
-          (fun (variant_ids, e) ->
+          (fun (variant_ids, branch) ->
             List.map
               (fun variant_id ->
                 let variant_name, n_fields = variant_name_of_variant_id variant_id in
                 let dummies = List.init n_fields (fun _ -> K.(with_type TAny PWild)) in
-                let pat = K.with_type p.typ (K.PCons (variant_name, dummies)) in
-                [], pat, expression_of_statement env ret_var e)
+                let pat = K.with_type scrutinee.typ (K.PCons (variant_name, dummies)) in
+                [], pat, expression_of_statement env ret_var branch)
               variant_ids)
           branches
       in
@@ -1548,11 +1540,11 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
         @
         match default with
         | Some default ->
-            [ [], K.with_type p.typ K.PWild, expression_of_statement env ret_var default ]
+            [ [], K.with_type scrutinee.typ K.PWild, expression_of_statement env ret_var default ]
         | None -> []
       in
       let t = Krml.KList.reduce lesser (List.map (fun (_, _, e) -> e.K.typ) branches) in
-      K.(with_type t (EMatch (Unchecked, p, branches)))
+      K.(with_type t (EMatch (Unchecked, scrutinee, branches)))
   | Loop s ->
       K.(with_type TUnit (EWhile (Krml.Helpers.etrue, expression_of_statement env ret_var s)))
   | Error _ -> failwith "TODO: error"
