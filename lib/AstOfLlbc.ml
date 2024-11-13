@@ -521,15 +521,15 @@ let expression_of_const_generic env cg =
   | C.CgVar id -> expression_of_cg_var_id env id
   | C.CgValue l -> expression_of_literal env l
 
-let expression_of_place (env : env) (p : C.place) : K.expr * C.ety =
-  let { C.var_id; projection } = p in
-  let e, ty = expression_and_original_type_of_var_id env var_id in
+let rec expression_of_place (env : env) (p : C.place) : K.expr * C.ety =
   (* We construct a target expression, but retain the original type so that callers can tell arrays
      and references apart, since their *uses* (e.g. addr-of) compile in a type-directed way based on
      the *original* rust type *)
   L.log "AstOfLlbc" "expression of place: %s" (C.show_place p);
-  List.fold_left
-    (fun (e, (ty : C.ety)) pe ->
+  match p.kind with
+  | PlaceBase var_id -> expression_and_original_type_of_var_id env var_id
+  | PlaceProjection (sub_place, pe) -> begin
+      let e, ty = expression_of_place env sub_place in
       L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr e (C.show_ty ty) (C.show_projection_elem pe);
       match pe, ty with
       | C.Deref, TRef (_, (TAdt (TAssumed TArray, { types = [ t ]; _ }) as ty), _) ->
@@ -546,9 +546,9 @@ let expression_of_place (env : env) (p : C.place) : K.expr * C.ety =
       begin
           match variant_id with
           | None ->
-              let { C.kind; _ } = env.get_nth_type typ_id in
+              let ty = env.get_nth_type typ_id in
               let fields =
-                match kind with
+                match ty.kind with
                 | Struct fields -> fields
                 | _ -> failwith "not a struct"
               in
@@ -622,8 +622,8 @@ let expression_of_place (env : env) (p : C.place) : K.expr * C.ety =
             in
             let expr = K.with_type t_i (K.EBound 0) in
             K.with_type t_i (K.EMatch (Unchecked, e, [ binders, pattern, expr ])), List.nth tys i
-      | _ -> failwith "unexpected / ill-typed projection")
-    (e, ty) projection
+      | _ -> failwith "unexpected / ill-typed projection"
+    end
 
 let op_of_unop (op : C.unop) : Krml.Constant.op =
   match op with
@@ -1210,7 +1210,8 @@ let is_str env var_id =
 let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   match p with
   | Use op -> expression_of_operand env op
-  | RvRef ({ var_id; projection = [ Deref ] }, _) when is_str env var_id ->
+  | RvRef ({ kind = PlaceProjection ({ kind = PlaceBase var_id; _ }, Deref); _ }, _)
+    when is_str env var_id ->
       (* Because we do not materialize the address of a string, we also have to
          avoid dereferencing it. For now, we simply avoid reborrows and treat
          them as simply passing the same constant string around (which in C is
@@ -1518,9 +1519,9 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
       let variant_name_of_variant_id =
         match ty with
         | TAdt (TAdtId typ_id, _) ->
-            let { C.kind; _ } = env.get_nth_type typ_id in
+            let ty = env.get_nth_type typ_id in
             let variants =
-              match kind with
+              match ty.kind with
               | Enum variants -> variants
               | _ -> assert false
             in
@@ -1674,7 +1675,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               (* Opaque function *)
               let { K.n_cgs; n }, t = typ_of_signature env signature in
               Some (K.DExternal (None, [], n_cgs, n, name, t, []))
-          | Some { arg_count; locals; body; _ }, _ ->
+          | Some { locals; body; _ }, _ ->
               if is_global_decl_body then
                 None
               else
@@ -1686,7 +1687,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                      (List.map
                         (fun (local : C.var) ->
                           Charon.PrintTypes.ty_to_string env.format_env local.var_ty)
-                        locals));
+                        locals.vars));
                 L.log "AstOfLlbc" "ty of inputs: %s"
                   (String.concat " ++ "
                      (List.map
@@ -1700,7 +1701,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
 
                 (* `locals` contains, in order: special return variable; function arguments;
                    local variables *)
-                let args, locals = Krml.KList.split (arg_count + 1) locals in
+                let args, locals = Krml.KList.split (locals.arg_count + 1) locals.vars in
                 let return_var = List.hd args in
                 let args = List.tl args in
 
@@ -1804,9 +1805,9 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       begin
         match body.body with
         | Some body ->
-            let ret_var = List.hd body.locals in
+            let ret_var = List.hd body.locals.vars in
             let body =
-              with_locals env ty body.locals (fun env ->
+              with_locals env ty body.locals.vars (fun env ->
                   expression_of_statement env ret_var.index body.body)
             in
             Some (K.DGlobal ([ Krml.Common.Const "" ], lid_of_name env name, 0, ty, body))
