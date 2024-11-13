@@ -1283,7 +1283,9 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
               ptyp (List.hd ops).typ;
             K.(with_type t (EApp (e, ops)))
         | _ ->
-            Krml.KPrint.bprintf "Unknown closure\ntype: %a\nexpr: %a\nops: %a" ptyp e.typ pexpr e pexprs (List.map (expression_of_operand env) ops);
+            Krml.KPrint.bprintf "Unknown closure\ntype: %a\nexpr: %a\nops: %a" ptyp e.typ pexpr e
+              pexprs
+              (List.map (expression_of_operand env) ops);
             failwith "Can't handle arbitrary closures"
       end
   | Aggregate (AggregatedArray (t, cg), ops) ->
@@ -1504,8 +1506,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
           (fun (svs, stmt) ->
             List.map
               (fun sv ->
-                ( K.SConstant (constant_of_scalar_value sv),
-                  expression_of_statement env ret_var stmt ))
+                K.SConstant (constant_of_scalar_value sv), expression_of_statement env ret_var stmt)
               svs)
           branches
         @ [ K.SWild, expression_of_statement env ret_var default ]
@@ -1546,24 +1547,24 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
         @
         match default with
         | Some default ->
-            [
-              ( [],
-                K.with_type p.typ K.PWild,
-                expression_of_statement env ret_var default);
-            ]
+            [ [], K.with_type p.typ K.PWild, expression_of_statement env ret_var default ]
         | None -> []
       in
       let t = Krml.KList.reduce lesser (List.map (fun (_, _, e) -> e.K.typ) branches) in
       K.(with_type t (EMatch (Unchecked, p, branches)))
   | Loop s ->
-      K.(
-        with_type TUnit
-          (EWhile (Krml.Helpers.etrue, expression_of_statement env ret_var s)))
+      K.(with_type TUnit (EWhile (Krml.Helpers.etrue, expression_of_statement env ret_var s)))
   | Error _ -> failwith "TODO: error"
 
-and expression_of_statement (env: env) (ret_var: C.var_id) (s: C.statement): K.expr =
-  { (expression_of_raw_statement env ret_var s.content) with
-    meta = if !Options.comments then List.map (fun x -> K.CommentBefore x) s.comments_before else [] }
+and expression_of_statement (env : env) (ret_var : C.var_id) (s : C.statement) : K.expr =
+  {
+    (expression_of_raw_statement env ret_var s.content) with
+    meta =
+      (if !Options.comments then
+         List.map (fun x -> K.CommentBefore x) s.comments_before
+       else
+         []);
+  }
 
 (** Top-level declarations: orchestration *)
 
