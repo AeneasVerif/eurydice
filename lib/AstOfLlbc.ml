@@ -322,15 +322,15 @@ let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* We compile vecs to fat pointers, which hold the pointer underneath -- no need for an
          extra reference here. *)
       Builtin.mk_vec (typ_of_ty env t)
-  | TRef (_, TAdt (TAssumed TSlice, { types = [ t ]; _ }), _) ->
+  | TRef (_, TAdt (TBuiltin TSlice, { types = [ t ]; _ }), _) ->
       (* We compile slices to fat pointers, which hold the pointer underneath -- no need for an
          extra reference here. *)
       Builtin.mk_slice (typ_of_ty env t)
-  | TRef (_, TAdt (TAssumed TArray, { types = [ t ]; _ }), _) ->
+  | TRef (_, TAdt (TBuiltin TArray, { types = [ t ]; _ }), _) ->
       (* We collapse Ref(Array) into a pointer type, leveraging C's implicit decay between array
          types and pointer types. *)
       K.TBuf (typ_of_ty env t, false)
-  | TRef (_, TAdt (TAssumed TStr, { types = []; _ }), _) ->
+  | TRef (_, TAdt (TBuiltin TStr, { types = []; _ }), _) ->
       (* We perform on-the-fly elimination of addresses of strings (just like we
          do for arrays) so as to type-check them correctly vis à vis krml's
          Checker expectations. This means &'str translates to c_string *)
@@ -353,17 +353,17 @@ let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
         | [ t ] -> typ_of_ty env t (* charon issue #205 *)
         | _ -> TTuple (List.map (typ_of_ty env) args)
       end
-  | TAdt (TAssumed TArray, { types = [ t ]; const_generics = [ cg ]; _ }) -> maybe_cg_array env t cg
-  | TAdt (TAssumed TSlice, { types = [ _t ]; _ }) ->
+  | TAdt (TBuiltin TArray, { types = [ t ]; const_generics = [ cg ]; _ }) -> maybe_cg_array env t cg
+  | TAdt (TBuiltin TSlice, { types = [ _t ]; _ }) ->
       (* Slice values cannot be materialized since their storage space cannot be computed at
          compile-time; we should never encounter this case. *)
       assert false
-  | TAdt (TAssumed TBox, { types = [ t ]; _ }) -> K.TBuf (typ_of_ty env t, false)
-  | TAdt (TAssumed TStr, { types = []; _ }) ->
+  | TAdt (TBuiltin TBox, { types = [ t ]; _ }) -> K.TBuf (typ_of_ty env t, false)
+  | TAdt (TBuiltin TStr, { types = []; _ }) ->
       failwith "Impossible -- strings always behind a pointer"
-  | TAdt (TAssumed f, { types = args; const_generics; _ }) ->
+  | TAdt (TBuiltin f, { types = args; const_generics; _ }) ->
       List.iter (fun x -> print_endline (C.show_const_generic x)) const_generics;
-      fail "TODO: Adt/Assumed %s (%d) %d " (C.show_assumed_ty f) (List.length args)
+      fail "TODO: Adt/Builtin %s (%d) %d " (C.show_builtin_ty f) (List.length args)
         (List.length const_generics)
   | TRawPtr (t, _) ->
       (* Appears in some trait methods, so let's try to handle that. *)
@@ -531,14 +531,14 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr sub_e (C.show_ty sub_place.ty)
         (C.show_projection_elem pe);
       match pe, sub_place.ty with
-      | C.Deref, TRef (_, TAdt (TAssumed TArray, { types = [ t ]; _ }), _) ->
+      | C.Deref, TRef (_, TAdt (TBuiltin TArray, { types = [ t ]; _ }), _) ->
           (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
           K.with_type (TBuf (typ_of_ty env t, false)) sub_e.K.node
-      | C.Deref, TRef (_, TAdt (TAssumed TSlice, _), _) -> sub_e
+      | C.Deref, TRef (_, TAdt (TBuiltin TSlice, _), _) -> sub_e
       | C.Deref, TRef (_, TAdt (id, generics), _) when RustNames.is_vec env id generics -> sub_e
       | C.Deref, TRef _ ->
           Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node)
-      | C.Deref, TAdt (TAssumed TBox, { types = [ _ ]; _ }) ->
+      | C.Deref, TAdt (TBuiltin TBox, { types = [ _ ]; _ }) ->
           Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node)
       | Field (ProjAdt (typ_id, variant_id), field_id), C.TAdt _ -> begin
           let place_typ = typ_of_ty env p.ty in
@@ -673,7 +673,7 @@ let maybe_addrof (env : env) (ty : C.ty) (e : K.expr) =
   (* ty is the *original* Rust type *)
   match ty with
   | TAdt (id, generics) when RustNames.is_vec env id generics -> e
-  | TAdt (TAssumed (TArray | TSlice), _) -> e
+  | TAdt (TBuiltin (TArray | TSlice), _) -> e
   | _ -> K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
 
 (** Handling trait clauses as dictionaries *)
@@ -789,7 +789,7 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) :
    - the cg types, which only contains the original Rust const generic variables
    - the argument types, prefixed by the dictionary-style passing of trait clause methods
    - the return type
-   - whether the function is assumed, or not. *)
+   - whether the function is builtin, or not. *)
 type lookup_result = {
   ts : K.type_scheme; (* just for a sanity check *)
   cg_types : K.typ list;
@@ -939,7 +939,7 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
 
       match f.func with
       | FunId (FRegular f) -> lookup_result_of_fun_id f
-      | FunId (FAssumed f) -> fail "unknown assumed function: %s" (C.show_assumed_fun_id f)
+      | FunId (FBuiltin f) -> fail "unknown builtin function: %s" (C.show_builtin_fun_id f)
       | TraitMethod (trait_ref, method_name, _trait_opaque_signature) -> (
           match trait_ref.trait_id with
           | TraitImpl (id, _) ->
@@ -1103,7 +1103,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
 
   (* This needs to match what is done in the FunGroup case (i.e. when we extract
      a definition). There are two behaviors depending on whether the function is
-     assumed or not. *)
+     builtin or not. *)
   let inputs =
     if inputs = [] then
       [ K.TUnit ]
@@ -1180,7 +1180,7 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
       let e = expression_of_place env p in
       begin
         match p.ty with
-        | C.TAdt (TAssumed TArray, { const_generics = [ cg ]; _ }) ->
+        | C.TAdt (TBuiltin TArray, { const_generics = [ cg ]; _ }) ->
             mk_deep_copy e (expression_of_const_generic env cg)
         | _ -> e
       end
@@ -1196,7 +1196,7 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
 
 let is_str env var_id =
   match lookup_with_original_type env var_id with
-  | _, _, TRef (_, TAdt (TAssumed TStr, { types = []; _ }), _) -> true
+  | _, _, TRef (_, TAdt (TBuiltin TStr, { types = []; _ }), _) -> true
   | _ -> false
 
 let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
@@ -1253,7 +1253,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
             in
             K.with_type t (K.EFlat (List.map2 (fun f a -> f.C.field_name, a) fields args))
       end
-  | Aggregate (AggregatedAdt (TAssumed _, _, _, _), _) ->
+  | Aggregate (AggregatedAdt (TBuiltin _, _, _, _), _) ->
       failwith "unsupported: AggregatedAdt / TAssume"
   | Aggregate (AggregatedClosure (func, generics), ops) ->
       let fun_ptr = { C.func = C.FunId (FRegular func); generics } in
@@ -1330,7 +1330,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
         match p.ty with
         (* doesn't do the right thing yet, need to understand why there are
            several drops per variable *)
-        (* | C.Adt (Assumed Vec, _) when false -> *)
+        (* | C.Adt (Builtin Vec, _) when false -> *)
         (*     (1* p is a vec t *1) *)
         (*     let t = match p.typ with TApp ((["Eurydice"], "vec"), [ t ]) -> t | _ -> assert false in *)
         (*     Krml.Helpers.(with_unit K.(EApp ( *)
@@ -1346,7 +1346,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
         func =
           FnOpRegular
             {
-              func = FunId (FAssumed ArrayRepeat);
+              func = FunId (FBuiltin ArrayRepeat);
               generics = { types = [ ty ]; const_generics = [ c ]; _ };
               _;
             };
@@ -1378,7 +1378,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
         func =
           FnOpRegular
             {
-              func = FunId (FAssumed (Index { is_array = true; mutability = _; is_range = false }));
+              func = FunId (FBuiltin (Index { is_array = true; mutability = _; is_range = false }));
               generics = { types = [ ty ]; _ };
               _;
             };
@@ -1437,8 +1437,8 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
       let args = List.map (expression_of_operand env) args in
       (* This needs to match what is done in the FunGroup case (i.e. when we extract
          a definition). There are two behaviors depending on whether the function is
-         assumed or not. *)
-      (* Krml.KPrint.bprintf "Call to %s is assumed %b\n" (string_of_fn_ptr env fn_ptr) is_assumed; *)
+         builtin or not. *)
+      (* Krml.KPrint.bprintf "Call to %s is builtin %b\n" (string_of_fn_ptr env fn_ptr) is_builtin; *)
       let args =
         if args = [] then
           [ Krml.Helpers.eunit ]
@@ -1461,16 +1461,16 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
           | _ -> []
         in
         match fn_ptr.func, fn_ptr.generics.types @ extra_types with
-        | ( FunId (FAssumed (Index { is_array = false; mutability = _; is_range = false })),
-            [ TAdt (TAssumed (TArray | TSlice), _) ] ) ->
+        | ( FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })),
+            [ TAdt (TBuiltin (TArray | TSlice), _) ] ) ->
             (* Will decay. See comment above maybe_addrof *)
             rhs
-        | ( FunId (FAssumed (Index { is_array = false; mutability = _; is_range = false })),
+        | ( FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })),
             [ TAdt (id, generics) ] )
           when RustNames.is_vec env id generics ->
             (* Will decay. See comment above maybe_addrof *)
             rhs
-        | FunId (FAssumed (Index { is_array = false; mutability = _; is_range = false })), _ ->
+        | FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })), _ ->
             K.(with_type (TBuf (rhs.typ, false)) (EAddrOf rhs))
         | _ -> rhs
       in
