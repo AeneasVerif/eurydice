@@ -2,7 +2,7 @@
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
     karamel.url = "github:FStarLang/karamel";
-    fstar.url = "github:FStarLang/fstar";
+    fstar.follows = "karamel/fstar";
 
     nixpkgs.follows = "karamel/nixpkgs";
 
