@@ -4,7 +4,7 @@ if ! which jq 2> /dev/null 1>&2; then
     exit 1
 fi
 
-CHARON_DIR=./lib/charon/..
+CHARON_DIR=./lib/charon
 CHARON_BRANCH="$(git -C "$CHARON_DIR" rev-parse --abbrev-ref HEAD)"
 CHARON_COMMIT="$(git -C "$CHARON_DIR" rev-parse HEAD)"
 echo 'Taking the commit from your local charon directory. The charon branch is `'"$CHARON_BRANCH"'`'
