@@ -1,9 +1,8 @@
 {
   inputs = {
-    flake-utils.url = "github:numtide/flake-utils";
     karamel.url = "github:FStarLang/karamel";
     fstar.follows = "karamel/fstar";
-
+    flake-utils.follows = "karamel/flake-utils";
     nixpkgs.follows = "karamel/nixpkgs";
 
     charon.url = "github:AeneasVerif/charon";
