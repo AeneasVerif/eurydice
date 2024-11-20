@@ -1646,7 +1646,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       match decl with
       | None -> None
       | Some decl -> (
-          let { C.def_id; signature; body; is_global_decl_body; item_meta; kind; _ } = decl in
+          let { C.def_id; signature; body; item_meta; kind; _ } = decl in
           let env = { env with generic_params = signature.generics } in
           L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
             (if body = None then
@@ -1668,7 +1668,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               let { K.n_cgs; n }, t = typ_of_signature env signature in
               Some (K.DExternal (None, [], n_cgs, n, name, t, []))
           | Some { locals; body; _ }, _ ->
-              if is_global_decl_body then
+              if Option.is_some decl.is_global_initializer then
                 None
               else
                 let env = push_cg_binders env signature.C.generics.const_generics in
