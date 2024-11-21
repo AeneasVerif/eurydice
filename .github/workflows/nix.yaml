@@ -45,5 +45,5 @@ jobs:
           nix flake lock --override-input charon github:aeneasverif/charon/$CHARON_REV
           nix flake lock --override-input eurydice github:aeneasverif/eurydice/$EURYDICE_REV
           nix flake lock --override-input eurydice/karamel github:FStarLang/karamel/$KRML_REV
-          nix flake lock --override-input eurydice/fstar github:FStarLang/fstar/$FSTAR_REV
+          nix flake lock --override-input eurydice/karamel/fstar github:FStarLang/fstar/$FSTAR_REV
           ./check.sh ml-kem-small
