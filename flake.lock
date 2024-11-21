@@ -158,10 +158,6 @@
           "karamel",
           "flake-utils"
         ],
-        "fstar": [
-          "karamel",
-          "fstar"
-        ],
         "karamel": "karamel",
         "nixpkgs": [
           "karamel",

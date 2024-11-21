@@ -1,7 +1,6 @@
 {
   inputs = {
     karamel.url = "github:FStarLang/karamel";
-    fstar.follows = "karamel/fstar";
     flake-utils.follows = "karamel/flake-utils";
     nixpkgs.follows = "karamel/nixpkgs";
 
@@ -19,13 +18,12 @@
       pkgs = import nixpkgs { inherit system; };
 
       karamel = inputs.karamel.packages.${system}.default;
+      fstar = inputs.karamel.inputs.fstar.packages.${system}.default;
       krml = karamel.passthru.lib;
 
       charon-packages = inputs.charon.packages.${system};
       charon-ml = charon-packages.charon-ml;
       charon = charon-packages.default;
-
-      fstar = inputs.fstar.packages.${system}.default;
 
       package =
         { ocamlPackages
@@ -58,10 +56,10 @@
                 name = "tests";
                 src = ./.;
                 KRML_HOME = karamel;
-                FSTAR_HOME = fstar;
+                FSTAR_HOME = "dummy";
                 EURYDICE = "${eurydice}/bin/eurydice";
                 buildInputs = [ charon.buildInputs eurydice ];
-                nativeBuildInputs = [ charon.nativeBuildInputs fstar clang ];
+                nativeBuildInputs = [ charon.nativeBuildInputs clang ];
                 buildPhase = ''
                   export CHARON="${charon}/bin/charon"
 
