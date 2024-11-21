@@ -214,6 +214,7 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.2" "%a" pfiles files;
   (* Sanity check for the big rewriting above. *)
   let errors, files = Krml.Checker.check_everything ~warn:true files in
+  Eurydice.Logging.log "Phase2.25" "%a" pfiles files;
   if errors then
     fail __FILE__ __LINE__;
   let files = Krml.Inlining.drop_unused files in

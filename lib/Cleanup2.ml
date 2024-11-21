@@ -618,26 +618,46 @@ let resugar_loops =
 end
 [@ocamlformat "disable"]
 
+(* So I'm not entirely clear on the meaning of this phase, but I think two
+   things are simultaneously true:
+   - builtins (externals) have only one signature (duh), so if the pass_by_ref
+     phase rewrites the signature of an external like slice_index, then we're
+     toast! this will be a type error, so we need to undo some of the work of
+     pass_by_ref (this could be conceivably fixed on the krml side)
+   - MIR is aware of what in C is called array decay, and for instance, if x has
+     type &[[T; N]], then let y = &x[0] generates a simple index into x where y
+     has type T* (not type [T; N]) -- if there is a [T; N] involved, this is
+     represented in MIR by an &x[i] followed by an array-assignment, meaning
+     that there is nothing smart to be done here for slice indices, this is
+     already handled.
+   So, that's two good reasons to not bother rewriting the signature of
+   slice_index, even if the type of elements is an array. (Note: a previous
+   version of this wasn't aware of the second point and had a variant called
+   slice_index_outparam. Turns out this isn't necessary.) *)
 let detect_array_returning_builtins =
   object
   inherit [_] map as super
 
   method! visit_ELet ((), _ as env) b e1 e2 =
     match e1.node, e2.node with
+    (* let ret = $any;
+       Eurydice_slice_index (e_slice, e_index, ret);
+       e2 *)
     | EAny, ESequence [
       { node = EApp (
         { node = ETApp ({ node = EQualified (["Eurydice"], "slice_index"); _ }, [], [], [ t_elements ]) as hd; _ },
         [ e_slice; e_index; { node = EBound 0; _ } ]); _ };
-      { node = EBound 0; _ }
+      e2
     ] ->
-        (* let ret = $any;
-           Eurydice_slice_index (e_slice, e_index, ret);
-           ret *)
+        (* ret does not appear in the first two arguments of slice_index --
+           shift them above the ret *)
         let shift1 = Krml.DeBruijn.subst Krml.Helpers.eunit 0 in
         let e_slice = shift1 e_slice in
         let e_index = shift1 e_index in
         let t_hd = Krml.DeBruijn.subst_t t_elements 0 Builtin.slice_index.typ in
-        EApp (with_type t_hd hd, [ e_slice; e_index ])
+        let e_slice_index = with_type t_elements (EApp (with_type t_hd hd, [ e_slice; e_index ])) in
+        (* now substitute *)
+        (Krml.DeBruijn.subst e_slice_index 0 e2).node
 
     | _ ->
         super#visit_ELet env b e1 e2
