@@ -618,32 +618,6 @@ let resugar_loops =
 end
 [@ocamlformat "disable"]
 
-let detect_array_returning_builtins =
-  object
-  inherit [_] map as super
-
-  method! visit_ELet ((), _ as env) b e1 e2 =
-    match e1.node, e2.node with
-    | EAny, ESequence [
-      { node = EApp (
-        { node = ETApp ({ node = EQualified (["Eurydice"], "slice_index"); _ }, [], [], [ t_elements ]) as hd; _ },
-        [ e_slice; e_index; { node = EBound 0; _ } ]); _ };
-      { node = EBound 0; _ }
-    ] ->
-        (* let ret = $any;
-           Eurydice_slice_index (e_slice, e_index, ret);
-           ret *)
-        let shift1 = Krml.DeBruijn.subst Krml.Helpers.eunit 0 in
-        let e_slice = shift1 e_slice in
-        let e_index = shift1 e_index in
-        let t_hd = Krml.DeBruijn.subst_t t_elements 0 Builtin.slice_index.typ in
-        EApp (with_type t_hd hd, [ e_slice; e_index ])
-
-    | _ ->
-        super#visit_ELet env b e1 e2
-end
-[@ocamlformat "disable"]
-
 let improve_names files =
   let renamed = Hashtbl.create 41 in
   let allocated = Hashtbl.create 41 in
