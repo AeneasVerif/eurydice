@@ -214,7 +214,6 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.2" "%a" pfiles files;
   (* Sanity check for the big rewriting above. *)
   let errors, files = Krml.Checker.check_everything ~warn:true files in
-  Eurydice.Logging.log "Phase2.25" "%a" pfiles files;
   if errors then
     fail __FILE__ __LINE__;
   let files = Krml.Inlining.drop_unused files in
@@ -230,12 +229,11 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_trivial_into#visit_files () files in
   let files = Krml.Structs.pass_by_ref files in
   Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
-  let files = Eurydice.Cleanup2.detect_array_returning_builtins#visit_files () files in
+  Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_literals#visit_files () files in
   (* Eurydice does something more involved than krml and performs a conservative
      approximation of functions that are known to be pure readonly (i.e.,
      functions that do not write to memory). *)
-  Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
   fill_readonly_table files;
   let files = Krml.Simplify.optimize_lets files in
   (* let files = Eurydice.Cleanup2.break_down_nested_arrays#visit_files () files in *)
