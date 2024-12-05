@@ -517,6 +517,14 @@ let expression_of_const_generic env cg =
   | C.CgVar id -> expression_of_cg_var_id env id
   | C.CgValue l -> expression_of_literal env l
 
+let ensure_named i name =
+  match name, i with
+  | None, 0 -> "fst"
+  | None, 1 -> "snd"
+  | None, 2 -> "thd"
+  | None, _ -> Printf.sprintf "field%d" i
+  | Some name, _ -> name
+
 let rec expression_of_place (env : env) (p : C.place) : K.expr =
   (* We construct a target expression. Callers may still use the original type to tell arrays
      and references apart, since their *uses* (e.g. addr-of) compile in a type-directed way based on
@@ -551,10 +559,9 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
                 | _ -> failwith "not a struct"
               in
               let field_name =
-                let field = List.nth fields (C.FieldId.to_int field_id) in
-                match field.C.field_name with
-                | Some field_name -> field_name
-                | None -> failwith "TODO: understand what empty field name means"
+                let i = C.FieldId.to_int field_id in
+                let field = List.nth fields i in
+                ensure_named i field.field_name
               in
               K.with_type place_typ (K.EField (sub_e, field_name))
           | Some variant_id ->
@@ -1251,7 +1258,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
               | Struct fields -> fields
               | _ -> failwith "not a struct"
             in
-            K.with_type t (K.EFlat (List.map2 (fun f a -> f.C.field_name, a) fields args))
+            K.with_type t (K.EFlat (List.mapi (fun i (f, a) -> Some (ensure_named i f.C.field_name), a) (List.combine fields args)))
       end
   | Aggregate (AggregatedAdt (TBuiltin _, _, _, _), _) ->
       failwith "unsupported: AggregatedAdt / TAssume"
@@ -1612,8 +1619,9 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       | Union _ | Opaque | TError _ -> None
       | Struct fields ->
           let fields =
-            List.map
-              (fun { C.field_name; field_ty; _ } -> field_name, (typ_of_ty env field_ty, true))
+            List.mapi
+              (fun i { C.field_name; field_ty; _ } ->
+                 Some (ensure_named i field_name), (typ_of_ty env field_ty, true))
               fields
           in
           Some
@@ -1753,6 +1761,9 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                     with_locals env return_type (return_var :: locals) (fun env ->
                         expression_of_statement env return_var.index body)
                   with e ->
+                    L.log "AstOfLlbc" "ERROR translating %s: %s\n%s"
+                      (string_of_name env item_meta.name)
+                      (Printexc.to_string e) (Printexc.get_backtrace ());
                     let msg =
                       Krml.KPrint.bsprintf "Eurydice error: %s\n%s" (Printexc.to_string e)
                         (Printexc.get_backtrace ())
