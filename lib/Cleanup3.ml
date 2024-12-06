@@ -148,6 +148,7 @@ let bonus_cleanups =
               with_type TUnit (EAssign (DeBruijn.subst Helpers.eunit 0 e2, e1));
               self#visit_expr env (DeBruijn.subst Helpers.eunit 0 e3);
             ]
+
       | _ -> super#visit_ELet env b e1 e2
   end
 
