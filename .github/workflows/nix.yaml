@@ -2,6 +2,8 @@ name: Build Eurydice and run tests
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 jobs:
