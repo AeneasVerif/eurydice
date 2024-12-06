@@ -369,7 +369,9 @@ let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* Appears in some trait methods, so let's try to handle that. *)
       K.TBuf (typ_of_ty env t, false)
   | TTraitType _ -> failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
-  | TArrow (_, ts, t) -> Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
+  | TArrow binder ->
+      let ts, t = binder.binder_value in
+      Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
 
 and maybe_cg_array env t cg =
   match cg with
@@ -1258,7 +1260,11 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
               | Struct fields -> fields
               | _ -> failwith "not a struct"
             in
-            K.with_type t (K.EFlat (List.mapi (fun i (f, a) -> Some (ensure_named i f.C.field_name), a) (List.combine fields args)))
+            K.with_type t
+              (K.EFlat
+                 (List.mapi
+                    (fun i (f, a) -> Some (ensure_named i f.C.field_name), a)
+                    (List.combine fields args)))
       end
   | Aggregate (AggregatedAdt (TBuiltin _, _, _, _), _) ->
       failwith "unsupported: AggregatedAdt / TAssume"
@@ -1483,7 +1489,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
       in
       Krml.Helpers.with_unit K.(EAssign (dest, rhs))
   | Call { func = FnOpMove _; _ } -> failwith "TODO: Call/FnOpMove"
-  | Panic -> with_any (K.EAbort (None, Some "panic!"))
+  | Abort _ -> with_any (K.EAbort (None, Some "panic!"))
   | Return ->
       let e = expression_of_var_id env ret_var in
       K.(with_type TAny (EReturn e))
@@ -1621,7 +1627,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
           let fields =
             List.mapi
               (fun i { C.field_name; field_ty; _ } ->
-                 Some (ensure_named i field_name), (typ_of_ty env field_ty, true))
+                Some (ensure_named i field_name), (typ_of_ty env field_ty, true))
               fields
           in
           Some
