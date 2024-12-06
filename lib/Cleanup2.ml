@@ -775,5 +775,12 @@ let reconstruct_for_loops =
         end
 
       | _ -> super#visit_ELet env b e1 e2
+
+    method! visit_EWhile env e1 e2 =
+      match e1.node, e2.node with
+      | EBool true, EIfThenElse (e_cond, e_then, { node = EBreak; _ }) ->
+          EWhile (e_cond, self#visit_expr env e_then)
+      | _ ->
+          super#visit_EWhile env e1 e2
   end
 
