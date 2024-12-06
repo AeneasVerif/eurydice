@@ -763,7 +763,6 @@ let reconstruct_for_loops =
             node = EIfThenElse (e_cond, e_then, { node = EBreak; _ }); _
           }); _ }, e2) when not (found 1 e2)
       ->
-        print_endline "PATTERN TRIGGERED!!!\n";
         begin match find_terminal_incr 0 e_then with
         | Some (e_then, e_incr) ->
             let e_then = self#visit_expr env e_then in
