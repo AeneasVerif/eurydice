@@ -369,7 +369,9 @@ let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* Appears in some trait methods, so let's try to handle that. *)
       K.TBuf (typ_of_ty env t, false)
   | TTraitType _ -> failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
-  | TArrow (_, ts, t) -> Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
+  | TArrow binder ->
+      let ts, t = binder.binder_value in
+      Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
 
 and maybe_cg_array env t cg =
   match cg with
