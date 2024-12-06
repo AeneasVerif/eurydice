@@ -6,6 +6,11 @@ on:
       - main
   pull_request:
 
+# Cancel previous versions of this job that are still running.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     runs-on: self-hosted
