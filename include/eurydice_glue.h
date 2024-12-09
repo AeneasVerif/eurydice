@@ -213,7 +213,7 @@ core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__N
 
 // ITERATORS
 #define Eurydice_range_iter_next(iter_ptr, t, ret_t)                           \
-  (((iter_ptr)->start == (iter_ptr)->end)                                      \
+  (((iter_ptr)->start >= (iter_ptr)->end)                                      \
        ? (CLITERAL(ret_t){.tag = core_option_None})                            \
        : (CLITERAL(ret_t){.tag = core_option_Some,                             \
                           .f0 = (iter_ptr)->start++}))
