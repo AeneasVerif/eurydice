@@ -9,8 +9,7 @@ module C = struct
   include Charon.GAstUtils
 
   (* Fails if the variable is bound *)
-  let expect_free_var (var : ('b, 'f) de_bruijn_var) : 'f =
-    match var with
+  let expect_free_var = function
     | Free id -> id
     | Bound _ -> failwith "Found unexpected bound variable"
 
