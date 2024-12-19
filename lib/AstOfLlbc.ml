@@ -276,7 +276,7 @@ let lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
 
 let width_of_integer_type (t : Charon.Types.integer_type) : K.width =
   match t with
-  | Isize -> failwith "TODO: Isize"
+  | Isize -> PtrdiffT
   | I8 -> Int8
   | I16 -> Int16
   | I32 -> Int32
@@ -1412,7 +1412,14 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
       Krml.Helpers.with_unit
         K.(EAssign (dest, maybe_addrof env ty (with_type t (EBufRead (e1, e2)))))
   | Call { func = FnOpRegular fn_ptr; args; dest; _ }
-    when Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u16 fn_ptr
+    when
+
+    begin try ignore (Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config
+    RustNames.from_u16 fn_ptr) with
+    | _ -> print_endline "FOOBAR"; ignore (expression_of_fn_ptr env fn_ptr)
+    end;
+
+    Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u16 fn_ptr
          || Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u32 fn_ptr
          || Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u64 fn_ptr
          || Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_i16 fn_ptr
@@ -1637,10 +1644,30 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
           in
           Some
             (K.DType (name, [], List.length const_generics, List.length type_params, Flat fields))
+
+      | Enum branches when List.for_all (fun v -> v.C.fields = []) branches ->
+          let has_custom_constants =
+            let rec has_custom_constants i = function
+              | { C.discriminant; _ } :: bs ->
+                  discriminant.value <> Z.of_int i || has_custom_constants (i + 1) bs
+              | _ ->
+                  false
+            in
+            has_custom_constants 0 branches
+          in
+
+          let cases = List.map
+            (fun ({ C.variant_name; discriminant; _ }: C.variant) ->
+              let v = if has_custom_constants then Some (Z.to_int discriminant.value) else None in
+              (fst name @ [ snd name ], variant_name), v
+            ) branches
+          in
+          Some (K.DType (name, [], List.length const_generics, List.length type_params, Enum cases))
+
       | Enum branches ->
           let branches =
             List.map
-              (fun { C.variant_name; fields; _ } ->
+              (fun ({ C.variant_name; fields; _ }: C.variant) ->
                 ( variant_name,
                   List.mapi
                     (fun i { C.field_name; field_ty; _ } ->
