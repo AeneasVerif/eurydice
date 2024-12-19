@@ -8,12 +8,17 @@ module C = struct
   include Charon.Values
   include Charon.GAstUtils
 
+  (* Fails if the variable is bound *)
+  let expect_free_var = function
+    | Free id -> id
+    | Bound _ -> failwith "Found unexpected bound variable"
+
   let tsubst cgs ts ty =
     begin
       object
         inherit [_] map_ty
-        method! visit_TVar _ v = TypeVarId.nth ts v
-        method! visit_CgVar _ v = ConstGenericVarId.nth cgs v
+        method! visit_TVar _ v = TypeVarId.nth ts (expect_free_var v)
+        method! visit_CgVar _ v = ConstGenericVarId.nth cgs (expect_free_var v)
         method visit_'r _ x = x
       end
     end
@@ -298,7 +303,7 @@ let assert_cg_scalar = function
 
 let cg_of_const_generic env cg =
   match cg with
-  | C.CgVar id -> K.CgVar (fst (lookup_cg_in_types env id))
+  | C.CgVar var -> K.CgVar (fst (lookup_cg_in_types env (C.expect_free_var var)))
   | C.CgValue (VScalar sv) -> CgConst (constant_of_scalar_value sv)
   | _ ->
       failwith
@@ -313,7 +318,7 @@ let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
 
 let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   match ty with
-  | TVar id -> K.TBound (lookup_typ env id)
+  | TVar var -> K.TBound (lookup_typ env (C.expect_free_var var))
   | TLiteral t -> typ_of_literal_ty env t
   | TNever -> failwith "Impossible: Never"
   | TDynTrait _ -> failwith "TODO: dyn Trait"
@@ -369,13 +374,15 @@ let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* Appears in some trait methods, so let's try to handle that. *)
       K.TBuf (typ_of_ty env t, false)
   | TTraitType _ -> failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
-  | TArrow (_, ts, t) -> Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
+  | TArrow binder ->
+      let ts, t = binder.binder_value in
+      Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
 
 and maybe_cg_array env t cg =
   match cg with
   | CgValue _ -> K.TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))
-  | CgVar id ->
-      let id, cg_t = lookup_cg_in_types env id in
+  | CgVar var ->
+      let id, cg_t = lookup_cg_in_types env (C.expect_free_var var) in
       assert (cg_t = K.TInt SizeT);
       K.TCgArray (typ_of_ty env t, id)
   | _ -> failwith "TODO: CgGlobal"
@@ -514,7 +521,7 @@ let expression_of_literal (_env : env) (l : C.literal) : K.expr =
 let expression_of_const_generic env cg =
   match cg with
   | C.CgGlobal _ -> failwith "TODO: CgGLobal"
-  | C.CgVar id -> expression_of_cg_var_id env id
+  | C.CgVar var -> expression_of_cg_var_id env (C.expect_free_var var)
   | C.CgValue l -> expression_of_literal env l
 
 let ensure_named i name =
@@ -766,7 +773,7 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) :
                 n_cgs = List.length trait_decl.generics.const_generics;
               }
             in
-            ( (C.Clause clause_id, item_name),
+            ( (C.Clause (Free clause_id), item_name),
               (decl_generics, ts, trait_decl.C.item_meta.name, decl.C.signature) ))
           (trait_decl.C.required_methods @ trait_decl.C.provided_methods)
         @ List.flatten
@@ -779,11 +786,11 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) :
                      (* This is the parent clause `clause_id'` of `clause_id` -- see comments in charon/types.rs  *)
                      let clause_id' =
                        match clause_id' with
-                       | Clause clause_id' -> clause_id'
+                       | Clause (Free clause_id') -> clause_id'
                        | _ -> fail "not a clause??"
                      in
                      let id : C.trait_instance_id =
-                       ParentClause (Clause clause_id, trait_decl_id, clause_id')
+                       ParentClause (Clause (Free clause_id), trait_decl_id, clause_id')
                      in
                      (id, m), v)
                    m)
@@ -1193,7 +1200,7 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
       end
   | Move p -> expression_of_place env p
   | Constant { value = CLiteral l; _ } -> expression_of_literal env l
-  | Constant { value = CVar id; _ } -> expression_of_cg_var_id env id
+  | Constant { value = CVar var; _ } -> expression_of_cg_var_id env (C.expect_free_var var)
   | Constant { value = CFnPtr fn_ptr; _ } ->
       let e, _, _ = expression_of_fn_ptr env fn_ptr in
       e
@@ -1258,7 +1265,11 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
               | Struct fields -> fields
               | _ -> failwith "not a struct"
             in
-            K.with_type t (K.EFlat (List.mapi (fun i (f, a) -> Some (ensure_named i f.C.field_name), a) (List.combine fields args)))
+            K.with_type t
+              (K.EFlat
+                 (List.mapi
+                    (fun i (f, a) -> Some (ensure_named i f.C.field_name), a)
+                    (List.combine fields args)))
       end
   | Aggregate (AggregatedAdt (TBuiltin _, _, _, _), _) ->
       failwith "unsupported: AggregatedAdt / TAssume"
@@ -1483,7 +1494,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
       in
       Krml.Helpers.with_unit K.(EAssign (dest, rhs))
   | Call { func = FnOpMove _; _ } -> failwith "TODO: Call/FnOpMove"
-  | Panic -> with_any (K.EAbort (None, Some "panic!"))
+  | Abort _ -> with_any (K.EAbort (None, Some "panic!"))
   | Return ->
       let e = expression_of_var_id env ret_var in
       K.(with_type TAny (EReturn e))
@@ -1621,7 +1632,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
           let fields =
             List.mapi
               (fun i { C.field_name; field_ty; _ } ->
-                 Some (ensure_named i field_name), (typ_of_ty env field_ty, true))
+                Some (ensure_named i field_name), (typ_of_ty env field_ty, true))
               fields
           in
           Some

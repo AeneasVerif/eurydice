@@ -98,6 +98,7 @@
 
         inputsFrom = [
           self.packages.${system}.default
+          charon-ml
         ];
       };
     });
