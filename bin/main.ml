@@ -200,6 +200,15 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.1" "%a" pfiles files;
   let files = Eurydice.Cleanup2.improve_names files in
   let files = Eurydice.Cleanup2.recognize_asserts#visit_files () files in
+  let files = object
+    inherit [_] Krml.Ast.map
+    method! visit_DFunction _ cc flags n_cgs n t name binders body =
+      if Krml.KString.exists (snd name) "inner_loop" then
+        DFunction (cc, [ Krml.Common.MustInline; MustDisappear ] @ flags, n_cgs, n, t, name, binders, body)
+      else
+        DFunction (cc, flags, n_cgs, n, t, name, binders, body)
+  end#visit_files () files in
+  let files = Krml.Inlining.inline files in
   let files = Krml.Monomorphization.functions files in
   let files = Krml.Monomorphization.datatypes files in
   let files =
@@ -251,8 +260,10 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.75" "%a" pfiles files;
   let files = Krml.Simplify.fixup_hoist#visit_files () files in
   Eurydice.Logging.log "Phase2.8" "%a" pfiles files;
+  let files = Eurydice.Cleanup2.reconstruct_for_loops#visit_files () files in
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
+  Eurydice.Logging.log "Phase2.9" "%a" pfiles files;
   let files = Eurydice.Cleanup3.bonus_cleanups#visit_files [] files in
   (* Macros stemming from globals *)
   let files, macros = Eurydice.Cleanup2.build_macros files in

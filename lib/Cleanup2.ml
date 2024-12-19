@@ -682,3 +682,105 @@ let recognize_asserts =
               [ e1; with_type Krml.Checker.c_string (EString (Option.value ~default:"" msg)) ] )
       | _ -> super#visit_EIfThenElse env e1 e2 e3
   end
+
+(* Reconstructing for-loops from while nodes introduced by c_for!. *)
+
+class iter_counting = object
+  (* The environment [i] has type [int]. *)
+  inherit [_] iter
+  (* The environment [i] keeps track of how many binders have been
+     entered. It is incremented at each binder. *)
+  method! extend i (_: binder) =
+    i + 1
+end
+
+(* De Bruijn index i is found in expression e *)
+let found i e =
+  let exception Found in
+  let find = object
+    inherit iter_counting
+
+    method! visit_EBound (i, _) j =
+      if i = j then
+        raise Found
+
+  end in
+  try find#visit_expr_w i e; false
+  with Found -> true
+
+let smallest = object
+  inherit [_] reduce
+  method zero = max_int
+  method plus x y = min x y
+  method visit_EBound _ i =
+    i
+end
+
+let rec find_terminal_incr i e =
+  assert (e.typ = TUnit);
+  let ( let* ) = Option.bind in
+  let hoist e = Krml.DeBruijn.subst_n e (List.init i (fun _ -> Krml.Helpers.eunit)) in
+  match e.node with
+  | ELet (b, e1, e2) ->
+      let* e2, e_incr = find_terminal_incr (i + 1) e2 in
+      Some ({ e with node = ELet (b, e1, e2) }, e_incr)
+  | ESequence es ->
+      let es, e_incr = Krml.KList.split_at_last es in
+      let nearest = smallest#visit_expr_w () e_incr in
+      if nearest < i then
+        None
+      else
+        Some ({ e with node = ESequence es }, hoist e_incr)
+  | _ ->
+      let nearest = smallest#visit_expr_w () e in
+      if nearest < i then
+        None
+      else
+        Some (Krml.Helpers.eunit, hoist e)
+
+let reconstruct_for_loops =
+  object (self)
+    inherit [_] map as super
+
+    method! visit_ELet (((), _) as env) b e1 e2 =
+
+      match e1.node, e1.typ, e2.node with
+      (* t x = e1; while (true) { if (e_cond) { ...;  e_incr } else { break; } *)
+      | _, _, EWhile ({ node = EBool true; _ }, {
+        node = EIfThenElse (e_cond, e_then, { node = EBreak; _ }); _
+      }) ->
+        begin match find_terminal_incr 0 e_then with
+        | Some (e_then, e_incr) ->
+            let e_then = self#visit_expr env e_then in
+            EFor (b, e1, e_cond, e_incr, e_then)
+        | None ->
+            super#visit_ELet env b e1 e2
+        end
+
+      (* t x = e_init; while (true) { if (e_cond) { ...;  e_incr } else { break; }; ... *)
+      | _, _, ELet (_, {
+          node = EWhile ({ node = EBool true; _ }, {
+            node = EIfThenElse (e_cond, e_then, { node = EBreak; _ }); _
+          }); _ }, e2) when not (found 1 e2)
+      ->
+        begin match find_terminal_incr 0 e_then with
+        | Some (e_then, e_incr) ->
+            let e_then = self#visit_expr env e_then in
+            let e2 = self#visit_expr env e2 in
+            ELet (Krml.Helpers.sequence_binding (), with_type TUnit (
+              EFor (b, e1, e_cond, e_incr, e_then)
+            ), Krml.(DeBruijn.subst Helpers.eunit 0 e2))
+        | None ->
+            super#visit_ELet env b e1 e2
+        end
+
+      | _ -> super#visit_ELet env b e1 e2
+
+    method! visit_EWhile env e1 e2 =
+      match e1.node, e2.node with
+      | EBool true, EIfThenElse (e_cond, e_then, { node = EBreak; _ }) ->
+          EWhile (e_cond, self#visit_expr env e_then)
+      | _ ->
+          super#visit_EWhile env e1 e2
+  end
+
