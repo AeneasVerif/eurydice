@@ -676,10 +676,15 @@ let recognize_asserts =
     method! visit_EIfThenElse (((), _) as env) e1 e2 e3 =
       match e1.typ, e2.node, e3.node with
       | TBool, EUnit, EAbort (_, msg) ->
-          (* if not (e1) then abort msg else ()  -->  static_assert(e1, msg) *)
+          (* if e1 then () else abort msg -->  static_assert(e1, msg) *)
           EApp
             ( Builtin.static_assert_ref,
               [ e1; with_type Krml.Checker.c_string (EString (Option.value ~default:"" msg)) ] )
+      | TBool, EAbort (_, msg), EUnit ->
+          (* if not (e1) then abort msg else ()  -->  static_assert(e1, msg) *)
+          EApp
+            ( Builtin.static_assert_ref,
+              [ Krml.Helpers.mk_not e1; with_type Krml.Checker.c_string (EString (Option.value ~default:"" msg)) ] )
       | _ -> super#visit_EIfThenElse env e1 e2 e3
   end
 
