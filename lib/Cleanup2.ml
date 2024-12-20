@@ -789,6 +789,23 @@ let reconstruct_for_loops =
           super#visit_EWhile env e1 e2
   end
 
+let remove_assign_return =
+  object(self)
+    inherit [_] map as super
+
+    method! visit_ESequence (((), _) as env) es =
+      match List.rev es with
+      | { node = EReturn { node = EBound i; _ }; typ = t; _ } ::
+        { node = EAssign ({ node = EBound i'; _ }, e); _ } ::
+        es when i = i' ->
+          ESequence (List.rev (with_type t (EReturn e) :: List.map (self#visit_expr env) es))
+      | { node = EBound i; _ } ::
+        { node = EAssign ({ node = EBound i'; _ }, e); _ } ::
+        es when i = i' ->
+          ESequence (List.rev (e :: List.map (self#visit_expr env) es))
+      | _ ->
+          super#visit_ESequence env es
+  end
 
 let bonus_cleanups =
   let open Krml in
