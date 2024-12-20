@@ -1425,14 +1425,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
       let dest = expression_of_place env dest in
       Krml.Helpers.with_unit
         K.(EAssign (dest, maybe_addrof env ty (with_type t (EBufRead (e1, e2)))))
-  | Call { func = FnOpRegular fn_ptr; args; dest; _ }
-    when
-
-    begin try ignore (Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config
-    RustNames.from_u16 fn_ptr) with
-    | _ -> print_endline "FOOBAR"; ignore (expression_of_fn_ptr env fn_ptr)
-    end;
-
+  | Call { func = FnOpRegular fn_ptr; args; dest; _ } when
     Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u16 fn_ptr
          || Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u32 fn_ptr
          || Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u64 fn_ptr
