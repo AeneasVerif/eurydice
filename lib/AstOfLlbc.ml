@@ -168,6 +168,17 @@ let mk_field_name f i =
   | Some f -> f
   | None -> "f" ^ string_of_int i
 
+let is_enum (env: env) (id: C.type_decl_id): bool =
+  let decl = env.get_nth_type id in
+  match decl.C.kind with
+  | Enum branches ->
+      List.for_all (fun v -> v.C.fields = []) branches
+  | _ ->
+      false
+
+let mk_enum_case lid c =
+  fst lid @ [ snd lid ], c
+
 (* Helpers: traits finding & matching *)
 
 module RustNames = struct
@@ -1258,7 +1269,10 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
         match variant_id with
         | Some variant_id ->
             let variant_id = (find_nth_variant env typ_id variant_id).variant_name in
-            K.with_type t (K.ECons (variant_id, args))
+            if is_enum env typ_id then
+              K.with_type t (K.EEnum (mk_enum_case typ_lid variant_id))
+            else
+              K.with_type t (K.ECons (variant_id, args))
         | None ->
             let fields =
               match kind with
@@ -1533,7 +1547,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
       K.(with_type t (ESwitch (scrutinee, branches)))
   | Switch (Match (p, branches, default)) ->
       let scrutinee = expression_of_place env p in
-      let variant_name_of_variant_id =
+      let typ_id, typ_lid, variant_name_of_variant_id =
         match p.ty with
         | TAdt (TAdtId typ_id, _) ->
             let ty = env.get_nth_type typ_id in
@@ -1542,7 +1556,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
               | Enum variants -> variants
               | _ -> assert false
             in
-            fun v ->
+            typ_id, lid_of_name env ty.item_meta.name, fun v ->
               let v = C.VariantId.nth variants v in
               v.variant_name, List.length v.fields
         | _ -> failwith "TODO: match on not adt, not option"
@@ -1555,7 +1569,13 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
               (fun variant_id ->
                 let variant_name, n_fields = variant_name_of_variant_id variant_id in
                 let dummies = List.init n_fields (fun _ -> K.(with_type TAny PWild)) in
-                let pat = K.with_type scrutinee.typ (K.PCons (variant_name, dummies)) in
+                let pat = 
+                  if is_enum env typ_id then
+                    K.PEnum (mk_enum_case typ_lid variant_name)
+                  else
+                    K.PCons (variant_name, dummies)
+                in
+                let pat = K.with_type scrutinee.typ pat in
                 [], pat, expression_of_statement env ret_var branch)
               variant_ids)
           branches
@@ -1659,7 +1679,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
           let cases = List.map
             (fun ({ C.variant_name; discriminant; _ }: C.variant) ->
               let v = if has_custom_constants then Some (Z.to_int discriminant.value) else None in
-              (fst name @ [ snd name ], variant_name), v
+              mk_enum_case name variant_name, v
             ) branches
           in
           Some (K.DType (name, [], List.length const_generics, List.length type_params, Enum cases))
