@@ -238,7 +238,6 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_trivial_into#visit_files () files in
   let files = Krml.Structs.pass_by_ref files in
   Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
-  Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_literals#visit_files () files in
   (* Eurydice does something more involved than krml and performs a conservative
      approximation of functions that are known to be pure readonly (i.e.,
@@ -254,6 +253,7 @@ Supported options:|}
   let files = Krml.Inlining.cross_call_analysis files in
   let files = Krml.Simplify.remove_unused files in
   (* This chunk which reuses key elements of simplify2 *)
+  Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
   let files = Eurydice.Cleanup2.check_addrof#visit_files () files in
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
   Eurydice.Logging.log "Phase2.7" "%a" pfiles files;

@@ -862,7 +862,7 @@ let check_addrof = object(self)
 
     | EApp ({ node = EQualified lid; _ }, _)
     | ETApp ({ node = EApp ({ node = EQualified lid; _ }, _); _ }, _, _, _)
-      when Krml.KString.starts_with (snd lid) "op_Bang_Star__" (* case 3 *) ->
+      when lid = Builtin.slice_index.name || Krml.KString.starts_with (snd lid) "op_Bang_Star__" (* case 3 *) ->
         EAddrOf (self#visit_expr_w () e)
 
     | _ ->
