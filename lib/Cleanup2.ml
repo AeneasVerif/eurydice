@@ -869,7 +869,7 @@ let check_addrof = object(self)
         if Krml.Structs.will_be_lvalue e then
           EAddrOf e
         else
-          let b = Krml.Helpers.fresh_binder "lvalue" e.typ in
+          let b = Krml.Helpers.fresh_binder ~mut:true "lvalue" e.typ in
           let b = { b with Krml.Ast.meta = [ CommentBefore "original Rust expression is not an lvalue in C" ] } in
           ELet (b, e, with_type t (EAddrOf (with_type e.typ (EBound 0))))
 
