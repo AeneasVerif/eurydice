@@ -851,6 +851,10 @@ let bonus_cleanups =
   end
 
 
+(* This is a potentially tricky phase because if it's too aggressive, it'll
+   generate a copy -- for instance, f(&x[3]) is not the same as let tmp = x[3];
+   f(&tmp). Such cases might be hidden behind macros! (Like
+   Eurydice_slice_index.) *)
 let check_addrof = object(self)
   inherit [_] map
   method! visit_EAddrOf ((), t) e =
