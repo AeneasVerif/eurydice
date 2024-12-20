@@ -789,3 +789,88 @@ let reconstruct_for_loops =
           super#visit_EWhile env e1 e2
   end
 
+
+let bonus_cleanups =
+  let open Krml in
+  object (self)
+    inherit [_] map as super
+    method! extend env b = b.node.name :: env
+
+    method! visit_lident _ lid =
+      match lid with
+      | [ "core"; "slice"; "{@Slice<T>}" ], "len" -> [ "Eurydice" ], "slice_len"
+      | [ "core"; "slice"; "{@Slice<T>}" ], "copy_from_slice" -> [ "Eurydice" ], "slice_copy"
+      | [ "core"; "slice"; "{@Slice<T>}" ], "split_at" -> [ "Eurydice" ], "slice_split_at"
+      | [ "core"; "slice"; "{@Slice<T>}" ], "split_at_mut" -> [ "Eurydice" ], "slice_split_at_mut"
+      | _ -> lid
+
+    method! visit_ELet ((bs, _) as env) b e1 e2 =
+      match e1.node, e1.typ, e2.node with
+      (* let x; x := e; return x  -->  x*)
+      | ( EAny,
+          _,
+          ESequence [ { node = EAssign ({ node = EBound 0; _ }, e3); _ }; { node = EBound 0; _ } ] )
+        -> (DeBruijn.subst Helpers.eunit 0 e3).node
+
+      (* let uu; memcpy(uu, ..., src, ...); e2  -->  let copy_of_src; ... *)
+      | ( EAny,
+          TArray (_, (_, n)),
+          ESequence
+            [
+              {
+                node =
+                  EBufBlit
+                    ( { node = EBound src; _ },
+                      { node = EConstant (_, "0"); _ },
+                      { node = EBound 0; _ },
+                      { node = EConstant (_, "0"); _ },
+                      { node = EConstant (_, n'); _ } );
+                _;
+              };
+              _;
+            ] )
+        when n = n' && Krml.Helpers.is_uu b.node.name ->
+          super#visit_ELet env
+             { b with
+                node = { b.node with name = "copy_of_" ^ List.nth bs (src - 1) };
+                meta = [ CommentBefore "Passing arrays by value in Rust generates a copy in C" ] }
+             e1 e2
+
+      (* let uu = f(e); y = uu; e2  -->  let y = f(e); e2 *)
+      | ( EApp ({ node = EQualified _; _ }, es),
+          _,
+          ESequence [ { node = EAssign (e2, { node = EBound 0; _ }); _ }; e3 ] )
+        when Helpers.is_uu b.node.name && List.for_all Helpers.is_readonly_c_expression es ->
+          ESequence
+            [
+              with_type TUnit (EAssign (DeBruijn.subst Helpers.eunit 0 e2, e1));
+              self#visit_expr env (DeBruijn.subst Helpers.eunit 0 e3);
+            ]
+
+      | _ -> super#visit_ELet env b e1 e2
+  end
+
+
+let check_addrof = object(self)
+  inherit [_] map
+  method! visit_EAddrOf ((), t) e =
+    (* see https://en.cppreference.com/w/c/language/operator_member_access *)
+    match e.node with
+    | EQualified _ (* case 1 *)
+    | EBufRead _ (* case 4 *) ->
+        EAddrOf (self#visit_expr_w () e)
+
+    | EApp ({ node = EQualified lid; _ }, _)
+    | ETApp ({ node = EApp ({ node = EQualified lid; _ }, _); _ }, _, _, _)
+      when Krml.KString.starts_with (snd lid) "op_Bang_Star__" (* case 3 *) ->
+        EAddrOf (self#visit_expr_w () e)
+
+    | _ ->
+        if Krml.Structs.will_be_lvalue e then
+          EAddrOf e
+        else
+          let b = Krml.Helpers.fresh_binder "lvalue" e.typ in
+          let b = { b with Krml.Ast.meta = [ CommentBefore "original Rust expression is not an lvalue in C" ] } in
+          ELet (b, e, with_type t (EAddrOf (with_type e.typ (EBound 0))))
+
+end
