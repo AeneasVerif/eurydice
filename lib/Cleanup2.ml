@@ -861,9 +861,9 @@ let check_addrof = object(self)
         EAddrOf (self#visit_expr_w () e)
 
     | EApp ({ node = EQualified lid; _ }, _)
-    | ETApp ({ node = EApp ({ node = EQualified lid; _ }, _); _ }, _, _, _)
-      when lid = Builtin.slice_index.name || Krml.KString.starts_with (snd lid) "op_Bang_Star__" (* case 3 *) ->
-        EAddrOf (self#visit_expr_w () e)
+    | EApp ({ node = ETApp ({ node = EQualified lid; _ }, _, _, _); _ }, _)
+      when lid = Builtin.slice_index.name || Krml.KString.starts_with (snd lid) "op_Bang_Star__" (* case 4, case 3 *) ->
+        EAddrOf e
 
     | _ ->
         if Krml.Structs.will_be_lvalue e then
