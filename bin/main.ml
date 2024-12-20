@@ -257,6 +257,7 @@ Supported options:|}
   let files = Krml.Simplify.remove_unused files in
   Eurydice.Logging.log "Phase2.7" "%a" pfiles files;
   (* This chunk which reuses key elements of simplify2 *)
+  Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
   let files = Eurydice.Cleanup2.check_addrof#visit_files () files in
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
   let files = Krml.Simplify.hoist#visit_files [] files in

@@ -868,6 +868,10 @@ let bonus_cleanups =
   end
 
 
+(* This is a potentially tricky phase because if it's too aggressive, it'll
+   generate a copy -- for instance, f(&x[3]) is not the same as let tmp = x[3];
+   f(&tmp). Such cases might be hidden behind macros! (Like
+   Eurydice_slice_index.) *)
 let check_addrof = object(self)
   inherit [_] map
   method! visit_EAddrOf ((), t) e =
@@ -878,15 +882,15 @@ let check_addrof = object(self)
         EAddrOf (self#visit_expr_w () e)
 
     | EApp ({ node = EQualified lid; _ }, _)
-    | ETApp ({ node = EApp ({ node = EQualified lid; _ }, _); _ }, _, _, _)
-      when Krml.KString.starts_with (snd lid) "op_Bang_Star__" (* case 3 *) ->
-        EAddrOf (self#visit_expr_w () e)
+    | EApp ({ node = ETApp ({ node = EQualified lid; _ }, _, _, _); _ }, _)
+      when lid = Builtin.slice_index.name || Krml.KString.starts_with (snd lid) "op_Bang_Star__" (* case 4, case 3 *) ->
+        EAddrOf e
 
     | _ ->
         if Krml.Structs.will_be_lvalue e then
           EAddrOf e
         else
-          let b = Krml.Helpers.fresh_binder "lvalue" e.typ in
+          let b = Krml.Helpers.fresh_binder ~mut:true "lvalue" e.typ in
           let b = { b with Krml.Ast.meta = [ CommentBefore "original Rust expression is not an lvalue in C" ] } in
           ELet (b, e, with_type t (EAddrOf (with_type e.typ (EBound 0))))
 
