@@ -744,6 +744,19 @@ let rec find_terminal_incr i e =
         Some (Krml.Helpers.eunit, hoist e)
 
 let reconstruct_for_loops =
+  let no_control_flow (e: expr) =
+    match e.node with
+    | EWhile _
+    | EFor _
+    | ELet _
+    | EFun _
+    | EIfThenElse _
+    | ESequence _
+    | EMatch _
+    | ESwitch _ -> false
+    | _ -> true
+  in
+
   object (self)
     inherit [_] map as super
 
@@ -755,38 +768,50 @@ let reconstruct_for_loops =
         node = EIfThenElse (e_cond, e_then, { node = EBreak; _ }); _
       }) ->
         begin match find_terminal_incr 0 e_then with
-        | Some (e_then, e_incr) ->
+        | Some (e_then, e_incr) when no_control_flow e_incr ->
             let e_then = self#visit_expr env e_then in
             EFor (b, e1, e_cond, e_incr, e_then)
-        | None ->
+        | _ ->
             super#visit_ELet env b e1 e2
         end
 
-      (* t x = e_init; while (true) { if (e_cond) { ...;  e_incr } else { break; }; ... *)
+      (* let t x = e1 in
+         let _ = while (true) { if (e_cond) { e_then; e_incr } else { break; } in
+         e2
+         ~~~>
+         let _ = for (t x = e1; e_cond; e_incr) { e_then } in
+         e2 *)
       | _, _, ELet (_, {
           node = EWhile ({ node = EBool true; _ }, {
             node = EIfThenElse (e_cond, e_then, { node = EBreak; _ }); _
-          }); _ }, e2) when not (found 1 e2)
+          }); _ }, e2') when not (found 1 e2')
       ->
         begin match find_terminal_incr 0 e_then with
-        | Some (e_then, e_incr) ->
+        | Some (e_then, e_incr) when no_control_flow e_incr ->
             let e_then = self#visit_expr env e_then in
-            let e2 = self#visit_expr env e2 in
+            let e2 = self#visit_expr env e2' in
+            let shift1 = Krml.(DeBruijn.subst Helpers.eunit 0) in
             ELet (Krml.Helpers.sequence_binding (), with_type TUnit (
               EFor (b, e1, e_cond, e_incr, e_then)
-            ), Krml.(DeBruijn.subst Helpers.eunit 0 e2))
-        | None ->
+            ), shift1 e2)
+        | _ ->
             super#visit_ELet env b e1 e2
         end
 
       | _ -> super#visit_ELet env b e1 e2
 
     method! visit_EWhile env e1 e2 =
+      (* while (true) { if (e_cond) { e_then } else { break } } ~~>
+         while (e_cond) { e_then } *)
       match e1.node, e2.node with
       | EBool true, EIfThenElse (e_cond, e_then, { node = EBreak; _ }) ->
           EWhile (e_cond, self#visit_expr env e_then)
       | _ ->
           super#visit_EWhile env e1 e2
+
+(*     method! visit_DFunction _ cc flags n_cgs n t name bs e = *)
+(*       Krml.KPrint.bprintf "for-loop reconstruction: visiting %a\n" plid name; *)
+(*       super#visit_DFunction () cc flags n_cgs n t name bs e *)
   end
 
 let remove_assign_return =
