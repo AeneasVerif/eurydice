@@ -37,10 +37,19 @@ let fail fmt =
 (** Environment *)
 
 (* The various kinds of binders we insert in the expression scope. Usually come
-   in this order, the first two being only ever inserted upon entering a function
+   in this order, the first three being only ever inserted upon entering a function
    definition. *)
 type var_id =
-  | TraitClauseMethod of C.trait_instance_id * string * K.type_scheme
+  | TraitClauseMethod of {
+    clause_id : C.trait_instance_id;
+    item_name : string;
+    pretty_name : string;
+    ts : K.type_scheme;
+  }
+  | TraitClauseConstant of {
+    clause_id: C.trait_instance_id;
+    item_name: string
+  }
   | ConstGenericVar of C.const_generic_var_id
   | Var of C.var_id * C.ety (* the ety aids code-generation, sometimes *)
 
@@ -416,7 +425,7 @@ let assert_var = function
   | _ -> assert false
 
 let assert_trait_clause_method = function
-  | TraitClauseMethod (clause_id, item_name, signature) -> clause_id, item_name, signature
+  | TraitClauseMethod { clause_id; item_name; ts; _ } -> clause_id, item_name, ts
   | _ -> assert false
 
 (* Regular binders *)
@@ -448,17 +457,8 @@ let push_binders env (ts : C.var list) = List.fold_left push_binder env ts
 
 (* Clause binders, which only appear as function parameters, and hold an unknown
    trait method (dictionary-style). *)
-
-type clause_binder = {
-  clause_id : C.trait_instance_id;
-  item_name : string;
-  pretty_name : string;
-  ts : K.type_scheme;
-  t : K.typ;
-}
-
-let push_clause_binder env { clause_id; item_name; t; ts; _ } =
-  { env with binders = (TraitClauseMethod (clause_id, item_name, ts), t) :: env.binders }
+let push_clause_binder env b =
+  { env with binders = b :: env.binders }
 
 let push_clause_binders env bs = List.fold_left push_clause_binder env bs
 
@@ -467,7 +467,7 @@ let lookup_clause_binder env clause_id item_name =
     try
       findi
         (function
-          | TraitClauseMethod (clause_id2, item_name2, _), _ ->
+          | TraitClauseMethod { clause_id = clause_id2; item_name = item_name2; _} , _ ->
               clause_id2 = clause_id && item_name2 = item_name
           | _ -> false)
         env.binders
@@ -737,10 +737,12 @@ let blocklisted_trait_decls =
 (* For a given function, a (flat) list of all the trait methods that are
    transitively, possibly called by this function, based on the trait bounds in
    its signature. *)
+type trait_clause_entry =
+  | ClauseMethod of (C.generic_args * K.type_scheme * Charon.Types.name * C.fun_sig)
+  | ClauseConstant of K.typ
+
 type trait_clause_mapping =
-  ((C.trait_instance_id * string)
-  * (C.generic_args * K.type_scheme * Charon.Types.name * C.fun_sig))
-  list
+  ((C.trait_instance_id * string) * trait_clause_entry) list
 
 (* Using tests/where_clauses_simple as an example.
 
@@ -791,7 +793,7 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) : t
               }
             in
             ( (C.Clause (Free clause_id), item_name),
-              (decl_generics, ts, trait_decl.C.item_meta.name, decl.C.signature) ))
+              ClauseMethod (decl_generics, ts, trait_decl.C.item_meta.name, decl.C.signature) ))
           (trait_decl.C.required_methods @ trait_decl.C.provided_methods)
         @ List.flatten
             (List.mapi
@@ -849,7 +851,7 @@ let rec lookup_signature env depth signature : lookup_result =
   let clause_mapping = build_trait_clause_mapping env trait_clauses in
   debug_trait_clause_mapping env clause_mapping;
   let clause_binders = mk_clause_binders_and_args env clause_mapping in
-  let clause_ts = List.map (fun { t; _ } -> t) clause_binders in
+  let clause_ts = List.map snd clause_binders in
 
   {
     ts = { n = List.length type_params; n_cgs = List.length const_generics };
@@ -869,55 +871,59 @@ let rec lookup_signature env depth signature : lookup_result =
 (* When building a function declaration, this synthesizes all the extra binders
    required for trait methods (passed as function pointers). Assumes type
    variables have been suitably bound in the environment *)
-and mk_clause_binders_and_args env (clause_mapping : trait_clause_mapping) : clause_binder list =
+and mk_clause_binders_and_args env (clause_mapping : trait_clause_mapping) : (var_id * K.typ) list =
   List.map
-    (fun ( (clause_id, item_name),
-           ((clause_generics : C.generic_args), trait_ts, trait_name, (signature : C.fun_sig)) ) ->
-      (* Polymorphic signature for trait method has const generic for BOTH
-         trait-level generics and fn-level generics. Consider:
+    (fun ( (clause_id, item_name), clause_entry ) ->
+      match clause_entry with
+      | ClauseMethod ((clause_generics : C.generic_args), trait_ts, trait_name, (signature : C.fun_sig)) ->
+          (* Polymorphic signature for trait method has const generic for BOTH
+             trait-level generics and fn-level generics. Consider:
 
-         trait Hash<K>
-           fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K];
+             trait Hash<K>
+               fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K];
 
-         which gives the signature:
+             which gives the signature:
 
-         size_t -> size_t ->  uint8_t[33size_t]* -> uint8_t[$0][$1]
-      *)
-      let _, t = typ_of_signature env signature in
-      (* We are in a function that has a trait clause of the form e.g. Hash<FOO>.
-         cgs contains FOO, that's it. *)
-      let cgs = List.map (cg_of_const_generic env) clause_generics.C.const_generics in
-      let ts = List.map (typ_of_ty env) clause_generics.C.types in
-      (* A little bit of math to compute how many of these are on the method
-         itself *)
-      let f_ts =
-        {
-          K.n_cgs = List.length signature.C.generics.const_generics - List.length cgs;
-          n = List.length signature.C.generics.types - List.length ts;
-        }
-      in
-      L.log "TraitClauses" "%s has %d fn-level const generics" item_name f_ts.n_cgs;
-      L.log "TraitClauses" "%s has %d fn-level type params" item_name f_ts.n;
-      L.log "TraitClauses" "About to substitute cgs=%a, ts=%a into %a" pcgs cgs ptyps ts ptyp t;
-      let t = Krml.DeBruijn.(subst_tn' f_ts.n ts (subst_ctn'' f_ts.n_cgs cgs t)) in
-      L.log "TraitClauses" "After subtitution t=%a" ptyp t;
-      let ret, args = Krml.Helpers.flatten_arrow t in
-      let _, args = Krml.KList.split trait_ts.K.n_cgs args in
-      let t = Krml.Helpers.fold_arrow args ret in
-      L.log "TraitClauses" "After chopping t=%a" ptyp t;
-      let t = maybe_ts f_ts t in
-      L.log "TraitClauses" "After ts addition t=%a" ptyp t;
+             size_t -> size_t ->  uint8_t[33size_t]* -> uint8_t[$0][$1]
+          *)
+          let _, t = typ_of_signature env signature in
+          (* We are in a function that has a trait clause of the form e.g. Hash<FOO>.
+             cgs contains FOO, that's it. *)
+          let cgs = List.map (cg_of_const_generic env) clause_generics.C.const_generics in
+          let ts = List.map (typ_of_ty env) clause_generics.C.types in
+          (* A little bit of math to compute how many of these are on the method
+             itself *)
+          let f_ts =
+            {
+              K.n_cgs = List.length signature.C.generics.const_generics - List.length cgs;
+              n = List.length signature.C.generics.types - List.length ts;
+            }
+          in
+          L.log "TraitClauses" "%s has %d fn-level const generics" item_name f_ts.n_cgs;
+          L.log "TraitClauses" "%s has %d fn-level type params" item_name f_ts.n;
+          L.log "TraitClauses" "About to substitute cgs=%a, ts=%a into %a" pcgs cgs ptyps ts ptyp t;
+          let t = Krml.DeBruijn.(subst_tn' f_ts.n ts (subst_ctn'' f_ts.n_cgs cgs t)) in
+          L.log "TraitClauses" "After subtitution t=%a" ptyp t;
+          let ret, args = Krml.Helpers.flatten_arrow t in
+          let _, args = Krml.KList.split trait_ts.K.n_cgs args in
+          let t = Krml.Helpers.fold_arrow args ret in
+          L.log "TraitClauses" "After chopping t=%a" ptyp t;
+          let t = maybe_ts f_ts t in
+          L.log "TraitClauses" "After ts addition t=%a" ptyp t;
 
-      let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
-      let ts =
-        {
-          K.n = List.length signature.generics.types - trait_ts.n;
-          K.n_cgs = List.length signature.generics.const_generics - trait_ts.n_cgs;
-        }
-      in
-      (* TODO: figure out why this fails for e.g. Iterator.rev *)
-      assert (ts.n_cgs >= 0 && ts.n >= 0);
-      { pretty_name; t; clause_id; item_name; ts })
+          let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
+          let ts =
+            {
+              K.n = List.length signature.generics.types - trait_ts.n;
+              K.n_cgs = List.length signature.generics.const_generics - trait_ts.n_cgs;
+            }
+          in
+          (* TODO: figure out why this fails for e.g. Iterator.rev *)
+          assert (ts.n_cgs >= 0 && ts.n >= 0);
+          TraitClauseMethod { pretty_name; clause_id; item_name; ts }, t
+      | ClauseConstant _ ->
+          failwith "TODO: ClauseConstant"
+    )
     clause_mapping
 
 (* Transforms a lookup result into a usable type, taking into account the fact that the internal Ast
@@ -938,11 +944,17 @@ and debug_trait_clause_mapping env (mapping : trait_clause_mapping) =
   else
     L.log "TraitClauses" "In this function, calls to trait bound methods are as follows:";
   List.iter
-    (fun ((clause_id, item_name), (_, ts, trait_name, signature)) ->
-      let _, t = typ_of_signature env signature in
-      L.log "TraitClauses" "%s (a.k.a. %s)::%s: %a has trait-level %d const generics, %d type vars"
-        (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
-        (string_of_name env trait_name) item_name ptyp t ts.K.n_cgs ts.n)
+    (fun ((clause_id, item_name), clause_entry) ->
+      match clause_entry with
+      | ClauseMethod (_, ts, trait_name, signature) ->
+          let _, t = typ_of_signature env signature in
+          L.log "TraitClauses" "%s (a.k.a. %s)::%s: %a has trait-level %d const generics, %d type vars"
+            (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
+            (string_of_name env trait_name) item_name ptyp t ts.K.n_cgs ts.n
+      | ClauseConstant t ->
+          L.log "TraitClauses" "%s::%s: associated constant %a"
+            (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
+            item_name ptyp t)
     mapping
 
 (** Compiling function instantiations into krml application nodes. *)
@@ -1121,7 +1133,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                   (Krml.KList.filter_mapi
                      (fun i (var, t) ->
                        match var with
-                       | TraitClauseMethod (clause_id', _, _) when relevant clause_id' ->
+                       | TraitClauseMethod { clause_id = clause_id'; _ } when relevant clause_id' ->
                            Some K.(with_type t (EBound i))
                        | _ -> None)
                      env.binders)
@@ -1827,7 +1839,9 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                       Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty))
                     signature.C.generics.const_generics
                   @ List.map
-                      (fun { pretty_name; t; _ } -> Krml.Helpers.fresh_binder pretty_name t)
+                      (function
+                        | TraitClauseMethod { pretty_name; _ }, t -> Krml.Helpers.fresh_binder pretty_name t
+                        | _ -> assert false)
                       clause_binders
                   @ List.map
                       (fun (arg : C.var) ->
