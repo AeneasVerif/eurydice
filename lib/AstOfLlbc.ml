@@ -48,7 +48,8 @@ type var_id =
   }
   | TraitClauseConstant of {
     clause_id: C.trait_instance_id;
-    item_name: string
+    item_name: string;
+    pretty_name : string;
   }
   | ConstGenericVar of C.const_generic_var_id
   | Var of C.var_id * C.ety (* the ety aids code-generation, sometimes *)
@@ -467,7 +468,8 @@ let lookup_clause_binder env clause_id item_name =
     try
       findi
         (function
-          | TraitClauseMethod { clause_id = clause_id2; item_name = item_name2; _} , _ ->
+          | TraitClauseMethod { clause_id = clause_id2; item_name = item_name2; _} , _
+          | TraitClauseConstant { clause_id = clause_id2; item_name = item_name2; _} , _ ->
               clause_id2 = clause_id && item_name2 = item_name
           | _ -> false)
         env.binders
@@ -475,7 +477,15 @@ let lookup_clause_binder env clause_id item_name =
       Krml.KPrint.bprintf "Error looking up %s.%s\n" (C.show_trait_instance_id clause_id) item_name;
       raise Not_found
   in
+  i, t, v
+
+let lookup_clause_method env clause_id item_name =
+  let i, t, v = lookup_clause_binder env clause_id item_name in
   i, t, thd3 (assert_trait_clause_method v)
+
+let lookup_clause_constant env clause_id item_name =
+  let i, t, _ = lookup_clause_binder env clause_id item_name in
+  i, t
 
 (** Translation of expressions (statements, operands, rvalues, places) *)
 
@@ -738,8 +748,8 @@ let blocklisted_trait_decls =
    transitively, possibly called by this function, based on the trait bounds in
    its signature. *)
 type trait_clause_entry =
-  | ClauseMethod of (C.generic_args * K.type_scheme * Charon.Types.name * C.fun_sig)
-  | ClauseConstant of K.typ
+  | ClauseMethod of (C.generic_args * K.type_scheme * Charon.Types.name (* trait name *) * C.fun_sig)
+  | ClauseConstant of Charon.Types.name (* trait name *) * C.ty
 
 type trait_clause_mapping =
   ((C.trait_instance_id * string) * trait_clause_entry) list
@@ -783,7 +793,12 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) : t
           (List.length trait_decl.C.required_methods)
           (List.length trait_decl.C.provided_methods);
 
-        List.map
+        (* 1. Associated constants *)
+        List.map (fun (item_name, typ) ->
+          (C.Clause (Free clause_id), item_name), ClauseConstant (trait_decl.C.item_meta.name, typ)
+        ) trait_decl.C.consts
+        (* 2. Trait methods *)
+        @ List.map
           (fun (item_name, decl_id) ->
             let decl = env.get_nth_function decl_id in
             let ts =
@@ -795,6 +810,7 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) : t
             ( (C.Clause (Free clause_id), item_name),
               ClauseMethod (decl_generics, ts, trait_decl.C.item_meta.name, decl.C.signature) ))
           (trait_decl.C.required_methods @ trait_decl.C.provided_methods)
+        (* 1 + 2, recursively, for parent traits *)
         @ List.flatten
             (List.mapi
                (fun _i (parent_clause : C.trait_clause) ->
@@ -921,8 +937,10 @@ and mk_clause_binders_and_args env (clause_mapping : trait_clause_mapping) : (va
           (* TODO: figure out why this fails for e.g. Iterator.rev *)
           assert (ts.n_cgs >= 0 && ts.n >= 0);
           TraitClauseMethod { pretty_name; clause_id; item_name; ts }, t
-      | ClauseConstant _ ->
-          failwith "TODO: ClauseConstant"
+      | ClauseConstant (trait_name, t) ->
+          let t = typ_of_ty env t in
+          let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
+          TraitClauseConstant { clause_id; item_name; pretty_name }, t
     )
     clause_mapping
 
@@ -951,10 +969,11 @@ and debug_trait_clause_mapping env (mapping : trait_clause_mapping) =
           L.log "TraitClauses" "%s (a.k.a. %s)::%s: %a has trait-level %d const generics, %d type vars"
             (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
             (string_of_name env trait_name) item_name ptyp t ts.K.n_cgs ts.n
-      | ClauseConstant t ->
-          L.log "TraitClauses" "%s::%s: associated constant %a"
+      | ClauseConstant (trait_name, t) ->
+          let t = typ_of_ty env t in
+          L.log "TraitClauses" "%s (a.k.a. %s)::%s: associated constant %a"
             (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
-            item_name ptyp t)
+            (string_of_name env trait_name) item_name ptyp t)
     mapping
 
 (** Compiling function instantiations into krml application nodes. *)
@@ -998,7 +1017,7 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
               in
               lookup_result_of_fun_id f
           | (Clause _ | ParentClause _) as tcid ->
-              let f, t, sig_info = lookup_clause_binder env tcid method_name in
+              let f, t, sig_info = lookup_clause_method env tcid method_name in
               (* the sig_info is kind of redundant here *)
               let t =
                 match t with
@@ -1109,6 +1128,12 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                 let trait_impl : C.trait_impl = env.get_nth_trait_impl impl_id in
 
                 (* This must be in agreement, and in the same order as build_trait_clause_mapping *)
+                List.map (fun (_item_name, { C.global_id; global_generics }) ->
+                  if not (global_generics.types = [] && global_generics.const_generics = [] && global_generics.trait_refs = []) then
+                    failwith "TODO: polymorphic globals";
+                  let global = env.get_nth_global global_id in
+                  K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
+                ) trait_impl.consts @
                 List.map
                   (fun (item_name, decl_id) ->
                     let fn_ptr : C.fn_ptr =
@@ -1133,7 +1158,8 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                   (Krml.KList.filter_mapi
                      (fun i (var, t) ->
                        match var with
-                       | TraitClauseMethod { clause_id = clause_id'; _ } when relevant clause_id' ->
+                       | TraitClauseMethod { clause_id = clause_id'; _ }
+                       | TraitClauseConstant { clause_id = clause_id'; _ } when relevant clause_id' ->
                            Some K.(with_type t (EBound i))
                        | _ -> None)
                      env.binders)
@@ -1252,9 +1278,26 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
   | Constant { value = CFnPtr fn_ptr; _ } ->
       let e, _, _ = expression_of_fn_ptr env fn_ptr in
       e
-  | Constant _ ->
-      fail "expression_of_operand Constant: %s"
-        (Charon.PrintExpressions.operand_to_string env.format_env op)
+  | Constant { value = CTraitConst ({ C.trait_id; _ } as trait_ref, name); _ } ->
+      (* Logic similar to lookup_fun *)
+      match trait_id with
+      | Clause _ | ParentClause _ ->
+          let i, t = lookup_clause_constant env trait_id name in
+          K.(with_type t (EBound i))
+      | TraitImpl (id, _) ->
+          let trait = env.get_nth_trait_impl id in
+          let global =
+            try List.assoc name trait.consts
+            with Not_found ->
+              fail "Error looking trait impl: %s %s%!"
+                (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref)
+                name
+          in
+          let global = env.get_nth_global global.C.global_id in
+          K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
+      | _ ->
+          fail "expression_of_operand Constant: %s"
+            (Charon.PrintExpressions.operand_to_string env.format_env op)
 
 let is_str env var_id =
   match lookup_with_original_type env var_id with
@@ -1840,7 +1883,8 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                     signature.C.generics.const_generics
                   @ List.map
                       (function
-                        | TraitClauseMethod { pretty_name; _ }, t -> Krml.Helpers.fresh_binder pretty_name t
+                        | TraitClauseMethod { pretty_name; _ }, t
+                        | TraitClauseConstant { pretty_name; _ }, t -> Krml.Helpers.fresh_binder pretty_name t
                         | _ -> assert false)
                       clause_binders
                   @ List.map
