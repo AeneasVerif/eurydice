@@ -630,7 +630,8 @@ let improve_names files =
        | [ trait_impl ] ->
            let hash = Hashtbl.hash trait_impl in
            let n = Printf.sprintf "%s_%02x" n (hash land 0xFF) in
-           Krml.Monomorphization.maybe_debug_hash hash (lazy PPrint.(string "trait impl:" ^/^ string trait_impl));
+           Krml.Monomorphization.maybe_debug_hash hash
+             (lazy PPrint.(string "trait impl:" ^/^ string trait_impl));
            let n = Krml.Idents.mk_fresh n (fun n -> Hashtbl.mem allocated (m, n)) in
            Hashtbl.add renamed lid ((m, n), trait_impl);
            Hashtbl.add allocated (m, n) ()
@@ -684,42 +685,49 @@ let recognize_asserts =
           (* if not (e1) then abort msg else ()  -->  static_assert(e1, msg) *)
           EApp
             ( Builtin.static_assert_ref,
-              [ Krml.Helpers.mk_not e1; with_type Krml.Checker.c_string (EString (Option.value ~default:"" msg)) ] )
+              [
+                Krml.Helpers.mk_not e1;
+                with_type Krml.Checker.c_string (EString (Option.value ~default:"" msg));
+              ] )
       | _ -> super#visit_EIfThenElse env e1 e2 e3
   end
 
 (* Reconstructing for-loops from while nodes introduced by c_for!. *)
 
-class iter_counting = object
-  (* The environment [i] has type [int]. *)
-  inherit [_] iter
-  (* The environment [i] keeps track of how many binders have been
-     entered. It is incremented at each binder. *)
-  method! extend i (_: binder) =
-    i + 1
-end
+class iter_counting =
+  object
+    (* The environment [i] has type [int]. *)
+    inherit [_] iter
+
+    (* The environment [i] keeps track of how many binders have been
+       entered. It is incremented at each binder. *)
+    method! extend i (_ : binder) = i + 1
+  end
 
 (* De Bruijn index i is found in expression e *)
 let found i e =
   let exception Found in
-  let find = object
-    inherit iter_counting
+  let find =
+    object
+      inherit iter_counting
 
-    method! visit_EBound (i, _) j =
-      if i = j then
-        raise Found
-
-  end in
-  try find#visit_expr_w i e; false
+      method! visit_EBound (i, _) j =
+        if i = j then
+          raise Found
+    end
+  in
+  try
+    find#visit_expr_w i e;
+    false
   with Found -> true
 
-let smallest = object
-  inherit [_] reduce
-  method zero = max_int
-  method plus x y = min x y
-  method visit_EBound _ i =
-    i
-end
+let smallest =
+  object
+    inherit [_] reduce
+    method zero = max_int
+    method plus x y = min x y
+    method visit_EBound _ i = i
+  end
 
 let rec find_terminal_incr i e =
   assert (e.typ = TUnit);
@@ -744,16 +752,10 @@ let rec find_terminal_incr i e =
         Some (Krml.Helpers.eunit, hoist e)
 
 let reconstruct_for_loops =
-  let no_control_flow (e: expr) =
+  let no_control_flow (e : expr) =
     match e.node with
-    | EWhile _
-    | EFor _
-    | ELet _
-    | EFun _
-    | EIfThenElse _
-    | ESequence _
-    | EMatch _
-    | ESwitch _ -> false
+    | EWhile _ | EFor _ | ELet _ | EFun _ | EIfThenElse _ | ESequence _ | EMatch _ | ESwitch _ ->
+        false
     | _ -> true
   in
 
@@ -761,43 +763,49 @@ let reconstruct_for_loops =
     inherit [_] map as super
 
     method! visit_ELet (((), _) as env) b e1 e2 =
-
       match e1.node, e1.typ, e2.node with
       (* t x = e1; while (true) { if (e_cond) { ...;  e_incr } else { break; } *)
-      | _, _, EWhile ({ node = EBool true; _ }, {
-        node = EIfThenElse (e_cond, e_then, { node = EBreak; _ }); _
-      }) ->
-        begin match find_terminal_incr 0 e_then with
-        | Some (e_then, e_incr) when no_control_flow e_incr ->
-            let e_then = self#visit_expr env e_then in
-            EFor (b, e1, e_cond, e_incr, e_then)
-        | _ ->
-            super#visit_ELet env b e1 e2
+      | ( _,
+          _,
+          EWhile
+            ( { node = EBool true; _ },
+              { node = EIfThenElse (e_cond, e_then, { node = EBreak; _ }); _ } ) ) -> begin
+          match find_terminal_incr 0 e_then with
+          | Some (e_then, e_incr) when no_control_flow e_incr ->
+              let e_then = self#visit_expr env e_then in
+              EFor (b, e1, e_cond, e_incr, e_then)
+          | _ -> super#visit_ELet env b e1 e2
         end
-
       (* let t x = e1 in
          let _ = while (true) { if (e_cond) { e_then; e_incr } else { break; } in
          e2
          ~~~>
          let _ = for (t x = e1; e_cond; e_incr) { e_then } in
          e2 *)
-      | _, _, ELet (_, {
-          node = EWhile ({ node = EBool true; _ }, {
-            node = EIfThenElse (e_cond, e_then, { node = EBreak; _ }); _
-          }); _ }, e2') when not (found 1 e2')
-      ->
-        begin match find_terminal_incr 0 e_then with
-        | Some (e_then, e_incr) when no_control_flow e_incr ->
-            let e_then = self#visit_expr env e_then in
-            let e2 = self#visit_expr env e2' in
-            let shift1 = Krml.(DeBruijn.subst Helpers.eunit 0) in
-            ELet (Krml.Helpers.sequence_binding (), with_type TUnit (
-              EFor (b, e1, e_cond, e_incr, e_then)
-            ), shift1 e2)
-        | _ ->
-            super#visit_ELet env b e1 e2
+      | ( _,
+          _,
+          ELet
+            ( _,
+              {
+                node =
+                  EWhile
+                    ( { node = EBool true; _ },
+                      { node = EIfThenElse (e_cond, e_then, { node = EBreak; _ }); _ } );
+                _;
+              },
+              e2' ) )
+        when not (found 1 e2') -> begin
+          match find_terminal_incr 0 e_then with
+          | Some (e_then, e_incr) when no_control_flow e_incr ->
+              let e_then = self#visit_expr env e_then in
+              let e2 = self#visit_expr env e2' in
+              let shift1 = Krml.(DeBruijn.subst Helpers.eunit 0) in
+              ELet
+                ( Krml.Helpers.sequence_binding (),
+                  with_type TUnit (EFor (b, e1, e_cond, e_incr, e_then)),
+                  shift1 e2 )
+          | _ -> super#visit_ELet env b e1 e2
         end
-
       | _ -> super#visit_ELet env b e1 e2
 
     method! visit_EWhile env e1 e2 =
@@ -806,30 +814,27 @@ let reconstruct_for_loops =
       match e1.node, e2.node with
       | EBool true, EIfThenElse (e_cond, e_then, { node = EBreak; _ }) ->
           EWhile (e_cond, self#visit_expr env e_then)
-      | _ ->
-          super#visit_EWhile env e1 e2
+      | _ -> super#visit_EWhile env e1 e2
 
-(*     method! visit_DFunction _ cc flags n_cgs n t name bs e = *)
-(*       Krml.KPrint.bprintf "for-loop reconstruction: visiting %a\n" plid name; *)
-(*       super#visit_DFunction () cc flags n_cgs n t name bs e *)
+    (*     method! visit_DFunction _ cc flags n_cgs n t name bs e = *)
+    (*       Krml.KPrint.bprintf "for-loop reconstruction: visiting %a\n" plid name; *)
+    (*       super#visit_DFunction () cc flags n_cgs n t name bs e *)
   end
 
 let remove_assign_return =
-  object(self)
+  object (self)
     inherit [_] map as super
 
     method! visit_ESequence (((), _) as env) es =
       match List.rev es with
-      | { node = EReturn { node = EBound i; _ }; typ = t; _ } ::
-        { node = EAssign ({ node = EBound i'; _ }, e); _ } ::
-        es when i = i' ->
+      | { node = EReturn { node = EBound i; _ }; typ = t; _ }
+        :: { node = EAssign ({ node = EBound i'; _ }, e); _ }
+        :: es
+        when i = i' ->
           ESequence (List.rev (with_type t (EReturn e) :: List.map (self#visit_expr env) es))
-      | { node = EBound i; _ } ::
-        { node = EAssign ({ node = EBound i'; _ }, e); _ } ::
-        es when i = i' ->
-          ESequence (List.rev (e :: List.map (self#visit_expr env) es))
-      | _ ->
-          super#visit_ESequence env es
+      | { node = EBound i; _ } :: { node = EAssign ({ node = EBound i'; _ }, e); _ } :: es
+        when i = i' -> ESequence (List.rev (e :: List.map (self#visit_expr env) es))
+      | _ -> super#visit_ESequence env es
   end
 
 let bonus_cleanups =
@@ -853,7 +858,6 @@ let bonus_cleanups =
           _,
           ESequence [ { node = EAssign ({ node = EBound 0; _ }, e3); _ }; { node = EBound 0; _ } ] )
         -> (DeBruijn.subst Helpers.eunit 0 e3).node
-
       (* let uu; memcpy(uu, ..., src, ...); e2  -->  let copy_of_src; ... *)
       | ( EAny,
           TArray (_, (_, n)),
@@ -873,11 +877,12 @@ let bonus_cleanups =
             ] )
         when n = n' && Krml.Helpers.is_uu b.node.name ->
           super#visit_ELet env
-             { b with
-                node = { b.node with name = "copy_of_" ^ List.nth bs (src - 1) };
-                meta = [ CommentBefore "Passing arrays by value in Rust generates a copy in C" ] }
-             e1 e2
-
+            {
+              b with
+              node = { b.node with name = "copy_of_" ^ List.nth bs (src - 1) };
+              meta = [ CommentBefore "Passing arrays by value in Rust generates a copy in C" ];
+            }
+            e1 e2
       (* let uu = f(e); y = uu; e2  -->  let y = f(e); e2 *)
       | ( EApp ({ node = EQualified _; _ }, es),
           _,
@@ -888,35 +893,36 @@ let bonus_cleanups =
               with_type TUnit (EAssign (DeBruijn.subst Helpers.eunit 0 e2, e1));
               self#visit_expr env (DeBruijn.subst Helpers.eunit 0 e3);
             ]
-
       | _ -> super#visit_ELet env b e1 e2
   end
-
 
 (* This is a potentially tricky phase because if it's too aggressive, it'll
    generate a copy -- for instance, f(&x[3]) is not the same as let tmp = x[3];
    f(&tmp). Such cases might be hidden behind macros! (Like
    Eurydice_slice_index.) *)
-let check_addrof = object(self)
-  inherit [_] map
-  method! visit_EAddrOf ((), t) e =
-    (* see https://en.cppreference.com/w/c/language/operator_member_access *)
-    match e.node with
-    | EQualified _ (* case 1 *)
-    | EBufRead _ (* case 4 *) ->
-        EAddrOf (self#visit_expr_w () e)
+let check_addrof =
+  object (self)
+    inherit [_] map
 
-    | EApp ({ node = EQualified lid; _ }, _)
-    | EApp ({ node = ETApp ({ node = EQualified lid; _ }, _, _, _); _ }, _)
-      when lid = Builtin.slice_index.name || Krml.KString.starts_with (snd lid) "op_Bang_Star__" (* case 4, case 3 *) ->
-        EAddrOf e
-
-    | _ ->
-        if Krml.Structs.will_be_lvalue e then
+    method! visit_EAddrOf ((), t) e =
+      (* see https://en.cppreference.com/w/c/language/operator_member_access *)
+      match e.node with
+      | EQualified _ (* case 1 *) | EBufRead _ (* case 4 *) -> EAddrOf (self#visit_expr_w () e)
+      | EApp ({ node = EQualified lid; _ }, _)
+      | EApp ({ node = ETApp ({ node = EQualified lid; _ }, _, _, _); _ }, _)
+        when lid = Builtin.slice_index.name
+             || Krml.KString.starts_with (snd lid) "op_Bang_Star__" (* case 4, case 3 *) ->
           EAddrOf e
-        else
-          let b = Krml.Helpers.fresh_binder ~mut:true "lvalue" e.typ in
-          let b = { b with Krml.Ast.meta = [ CommentBefore "original Rust expression is not an lvalue in C" ] } in
-          ELet (b, e, with_type t (EAddrOf (with_type e.typ (EBound 0))))
-
-end
+      | _ ->
+          if Krml.Structs.will_be_lvalue e then
+            EAddrOf e
+          else
+            let b = Krml.Helpers.fresh_binder ~mut:true "lvalue" e.typ in
+            let b =
+              {
+                b with
+                Krml.Ast.meta = [ CommentBefore "original Rust expression is not an lvalue in C" ];
+              }
+            in
+            ELet (b, e, with_type t (EAddrOf (with_type e.typ (EBound 0))))
+  end

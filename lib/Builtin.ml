@@ -111,7 +111,7 @@ let mk_step_by t = K.TApp (step_by, [ t ])
 let mk_range_step_by_iterator t = mk_iterator (mk_step_by t)
 
 (* This is incorrect: the function receives e.g.
-   - Range<usize> as its type argument, 
+   - Range<usize> as its type argument,
    - &StepBy<Range<usize>> for the type of its argument,
    then returns Option<usize> for its return value. Which we can't really type. *)
 let range_iterator_step_by =
