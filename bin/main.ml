@@ -200,14 +200,27 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.1" "%a" pfiles files;
   let files = Eurydice.Cleanup2.improve_names files in
   let files = Eurydice.Cleanup2.recognize_asserts#visit_files () files in
-  let files = object
-    inherit [_] Krml.Ast.map
-    method! visit_DFunction _ cc flags n_cgs n t name binders body =
-      if Krml.KString.exists (snd name) "inner_loop" then
-        DFunction (cc, [ Krml.Common.MustInline; MustDisappear ] @ flags, n_cgs, n, t, name, binders, body)
-      else
-        DFunction (cc, flags, n_cgs, n, t, name, binders, body)
-  end#visit_files () files in
+  let files =
+    (object
+       inherit [_] Krml.Ast.map
+
+       method! visit_DFunction _ cc flags n_cgs n t name binders body =
+         if Krml.KString.exists (snd name) "inner_loop" then
+           DFunction
+             ( cc,
+               [ Krml.Common.MustInline; MustDisappear ] @ flags,
+               n_cgs,
+               n,
+               t,
+               name,
+               binders,
+               body )
+         else
+           DFunction (cc, flags, n_cgs, n, t, name, binders, body)
+    end)
+      #visit_files
+      () files
+  in
   let files = Krml.Inlining.inline files in
   let files = Krml.Monomorphization.functions files in
   let files = Krml.Monomorphization.datatypes files in

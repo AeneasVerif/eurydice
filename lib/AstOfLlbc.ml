@@ -168,16 +168,13 @@ let mk_field_name f i =
   | Some f -> f
   | None -> "f" ^ string_of_int i
 
-let is_enum (env: env) (id: C.type_decl_id): bool =
+let is_enum (env : env) (id : C.type_decl_id) : bool =
   let decl = env.get_nth_type id in
   match decl.C.kind with
-  | Enum branches ->
-      List.for_all (fun v -> v.C.fields = []) branches
-  | _ ->
-      false
+  | Enum branches -> List.for_all (fun v -> v.C.fields = []) branches
+  | _ -> false
 
-let mk_enum_case lid c =
-  fst lid @ [ snd lid ], c
+let mk_enum_case lid c = fst lid @ [ snd lid ], c
 
 (* Helpers: traits finding & matching *)
 
@@ -547,7 +544,6 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
   (* We construct a target expression. Callers may still use the original type to tell arrays
      and references apart, since their *uses* (e.g. addr-of) compile in a type-directed way based on
      the *original* rust type *)
-  L.log "AstOfLlbc" "expression of place: %s" (C.show_place p);
   match p.kind with
   | PlaceBase var_id ->
       let i, t = lookup env var_id in
@@ -639,8 +635,12 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
             in
             let expr = K.with_type place_typ (K.EBound 0) in
             K.with_type place_typ (K.EMatch (Unchecked, sub_e, [ binders, pattern, expr ]))
-      | _ -> failwith "unexpected / ill-typed projection"
+      | _ -> fail "unexpected / ill-typed projection"
     end
+
+let expression_of_place (env : env) (p : C.place) : K.expr =
+  L.log "AstOfLlbc" "expression of place: %s" (C.show_place p);
+  expression_of_place env p
 
 let op_of_unop (op : C.unop) : Krml.Constant.op =
   match op with
@@ -734,6 +734,14 @@ let blocklisted_trait_decls =
     "core::fmt::Debug";
   ]
 
+(* For a given function, a (flat) list of all the trait methods that are
+   transitively, possibly called by this function, based on the trait bounds in
+   its signature. *)
+type trait_clause_mapping =
+  ((C.trait_instance_id * string)
+  * (C.generic_args * K.type_scheme * Charon.Types.name * C.fun_sig))
+  list
+
 (* Using tests/where_clauses_simple as an example.
 
    fn double<T: Ops + Copy, U: Ops+Copy> (...)
@@ -747,10 +755,8 @@ let blocklisted_trait_decls =
    the types we obtain by looking up the trait declaration have Self as 0
    (DeBruijn).
 *)
-let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) :
-    ((C.trait_instance_id * string)
-    * (C.generic_args * K.type_scheme * Charon.Types.name * C.fun_sig))
-    list =
+let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) : trait_clause_mapping
+    =
   List.concat_map
     (fun tc ->
       let { C.clause_id; trait = { binder_value = { trait_decl_id; decl_generics }; _ }; _ } = tc in
@@ -829,7 +835,7 @@ let maybe_ts ts t =
   else
     t
 
-let rec lookup_signature env depth signature =
+let rec lookup_signature env depth signature : lookup_result =
   let { C.generics = { types = type_params; const_generics; trait_clauses; _ }; inputs; output; _ }
       =
     signature
@@ -860,8 +866,10 @@ let rec lookup_signature env depth signature =
     is_known_builtin = false;
   }
 
-(* Assumes type variables have been suitably bound in the environment *)
-and mk_clause_binders_and_args env clause_mapping : clause_binder list =
+(* When building a function declaration, this synthesizes all the extra binders
+   required for trait methods (passed as function pointers). Assumes type
+   variables have been suitably bound in the environment *)
+and mk_clause_binders_and_args env (clause_mapping : trait_clause_mapping) : clause_binder list =
   List.map
     (fun ( (clause_id, item_name),
            ((clause_generics : C.generic_args), trait_ts, trait_name, (signature : C.fun_sig)) ) ->
@@ -924,7 +932,7 @@ and typ_of_signature env signature =
   let t = Krml.Helpers.fold_arrow adjusted_inputs output in
   ts, t
 
-and debug_trait_clause_mapping env mapping =
+and debug_trait_clause_mapping env (mapping : trait_clause_mapping) =
   if mapping = [] then
     L.log "TraitClauses" "In this function, trait clause mapping is empty"
   else
@@ -1010,21 +1018,29 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
     fn_ptr
   in
 
-  (* General case for function calls and trait method calls. *)
+  (* We handle any kind of fn_ptr, whether it's a concrete function call, a
+     concrete trait implementation method call, or an abstract trait method call
+     (e.g. a call to T::f when T is a trait bound in scope). *)
   L.log "Calls" "%sVisiting call: %s" depth
     (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
   L.log "Calls" "%sis_array_map: %b" depth (RustNames.is_array_map env fn_ptr);
   L.log "Calls" "%s--> %d type_args, %d const_generics, %d trait_refs" depth (List.length type_args)
     (List.length const_generic_args) (List.length trait_refs);
 
-  let generics =
-    match func with
-    | TraitMethod ({ trait_id = TraitImpl (_, generics); _ }, _, _) ->
-        L.log "Calls" "%s--> this is a trait method" depth;
-        generics
-    | _ -> C.empty_generic_args
-  in
+  (* In case this is a call to a trait implementation method, there are two
+     levels of applications: the trait-generic arguments (i.e. impl <T: ...> for ...)
+     and the method-generic arguments (i.e. fn f<U: ...>). The method appears as
+     a top-level function that receives all the arguments for T and U (types,
+     const generics, trait references), and when we synthesize a call node, we
+     do behave accordingly and provide arguments for both T and U. *)
   let type_args, const_generic_args, trait_refs =
+    let generics =
+      match func with
+      | TraitMethod ({ trait_id = TraitImpl (_, generics); _ }, _, _) ->
+          L.log "Calls" "%s--> this is a trait method" depth;
+          generics
+      | _ -> C.empty_generic_args
+    in
     ( generics.types @ type_args,
       generics.const_generics @ const_generic_args,
       generics.trait_refs @ trait_refs )
@@ -1039,15 +1055,20 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   L.log "Calls" "%s--> type_args: %s" depth
     (String.concat ", " (List.map (Charon.PrintTypes.ty_to_string env.format_env) type_args));
 
+  (* Translate effective type and cg arguments. *)
   let type_args = List.map (typ_of_ty env) type_args in
   let const_generic_args = List.map (expression_of_const_generic env) const_generic_args in
+
+  (* The function itself, along with information about its *signature*. *)
   let f, { ts; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_known_builtin } =
     lookup_fun env depth fn_ptr
   in
   L.log "Calls" "%s--> inputs: %a" depth ptyps inputs;
 
-  (* Handling trait implementations for generic trait bounds in the callee. *)
-  let fn_ptrs =
+  (* Handling trait implementations for generic trait bounds in the callee. We
+     synthesize krml expressions that correspond to each one of the trait methods
+     that the callee expects. Order matters here. *)
+  let fn_ptrs : K.expr list =
     if is_known_builtin then
       (* If this is a known builtin implementation, we do not materialize trait methods, on the
          basis that this is likely something from the standard library that exercises more features
@@ -1136,6 +1157,10 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
       inputs
   in
 
+  (* From here on, this is only krml logic, which is about building
+     properly-annotated internal nodes that take care of instantiating generic
+     type schemes, dealing with type applications, const genericss, etc.
+     followed by the application of trait methods (in the special TApp node). *)
   let t_unapplied = maybe_ts ts (Krml.Helpers.fold_arrow (cg_inputs @ inputs) output) in
   let offset = List.length env.binders - List.length env.cg_binders in
   L.log "Calls" "%s--> t_unapplied: %a" depth ptyp t_unapplied;
@@ -1425,8 +1450,8 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
       let dest = expression_of_place env dest in
       Krml.Helpers.with_unit
         K.(EAssign (dest, maybe_addrof env ty (with_type t (EBufRead (e1, e2)))))
-  | Call { func = FnOpRegular fn_ptr; args; dest; _ } when
-    Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u16 fn_ptr
+  | Call { func = FnOpRegular fn_ptr; args; dest; _ }
+    when Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u16 fn_ptr
          || Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u32 fn_ptr
          || Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u64 fn_ptr
          || Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_i16 fn_ptr
@@ -1549,9 +1574,11 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
               | Enum variants -> variants
               | _ -> assert false
             in
-            typ_id, lid_of_name env ty.item_meta.name, fun v ->
-              let v = C.VariantId.nth variants v in
-              v.variant_name, List.length v.fields
+            ( typ_id,
+              lid_of_name env ty.item_meta.name,
+              fun v ->
+                let v = C.VariantId.nth variants v in
+                v.variant_name, List.length v.fields )
         | _ -> failwith "TODO: match on not adt, not option"
       in
 
@@ -1562,7 +1589,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
               (fun variant_id ->
                 let variant_name, n_fields = variant_name_of_variant_id variant_id in
                 let dummies = List.init n_fields (fun _ -> K.(with_type TAny PWild)) in
-                let pat = 
+                let pat =
                   if is_enum env typ_id then
                     K.PEnum (mk_enum_case typ_lid variant_name)
                   else
@@ -1657,30 +1684,33 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
           in
           Some
             (K.DType (name, [], List.length const_generics, List.length type_params, Flat fields))
-
       | Enum branches when List.for_all (fun v -> v.C.fields = []) branches ->
           let has_custom_constants =
             let rec has_custom_constants i = function
               | { C.discriminant; _ } :: bs ->
                   discriminant.value <> Z.of_int i || has_custom_constants (i + 1) bs
-              | _ ->
-                  false
+              | _ -> false
             in
             has_custom_constants 0 branches
           in
 
-          let cases = List.map
-            (fun ({ C.variant_name; discriminant; _ }: C.variant) ->
-              let v = if has_custom_constants then Some (Z.to_int discriminant.value) else None in
-              mk_enum_case name variant_name, v
-            ) branches
+          let cases =
+            List.map
+              (fun ({ C.variant_name; discriminant; _ } : C.variant) ->
+                let v =
+                  if has_custom_constants then
+                    Some (Z.to_int discriminant.value)
+                  else
+                    None
+                in
+                mk_enum_case name variant_name, v)
+              branches
           in
           Some (K.DType (name, [], List.length const_generics, List.length type_params, Enum cases))
-
       | Enum branches ->
           let branches =
             List.map
-              (fun ({ C.variant_name; fields; _ }: C.variant) ->
+              (fun ({ C.variant_name; fields; _ } : C.variant) ->
                 ( variant_name,
                   List.mapi
                     (fun i { C.field_name; field_ty; _ } ->
@@ -1760,18 +1790,19 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
 
                 (* Note: Rust allows zero-argument functions but the krml internal
                    representation wants a unit there. This is aligned with typ_of_signature. *)
-                let t_unit =
-                  C.(
-                    TAdt (TTuple, { types = []; const_generics = []; regions = []; trait_refs = [] }))
-                in
-                let v_unit =
-                  {
-                    C.index = Charon.Expressions.VarId.of_int max_int;
-                    name = None;
-                    var_ty = t_unit;
-                  }
-                in
                 let args =
+                  let t_unit =
+                    C.(
+                      TAdt
+                        (TTuple, { types = []; const_generics = []; regions = []; trait_refs = [] }))
+                  in
+                  let v_unit =
+                    {
+                      C.index = Charon.Expressions.VarId.of_int max_int;
+                      name = None;
+                      var_ty = t_unit;
+                    }
+                  in
                   if args = [] then
                     [ v_unit ]
                   else
@@ -1811,7 +1842,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                   try
                     with_locals env return_type (return_var :: locals) (fun env ->
                         expression_of_statement env return_var.index body)
-                  with e ->
+                  with e when false ->
                     L.log "AstOfLlbc" "ERROR translating %s: %s\n%s"
                       (string_of_name env item_meta.name)
                       (Printexc.to_string e) (Printexc.get_backtrace ());

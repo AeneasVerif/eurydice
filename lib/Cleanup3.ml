@@ -125,7 +125,7 @@ let add_extra_type_to_slice_index =
             {
               node = EFlat [ (Some "start", e_start); (Some "end", e_end) ];
               typ = TQualified ([ "core"; "ops"; "range" ], id);
-              _
+              _;
             };
           ] )
         when KString.starts_with id "Range" ->
@@ -147,7 +147,7 @@ let add_extra_type_to_slice_index =
             {
               node = EFlat [ (Some "start", e_start); (Some "end", e_end) ];
               typ = TQualified ([ "core"; "ops"; "range" ], id);
-              _
+              _;
             };
           ] )
         when KString.starts_with id "Range" ->

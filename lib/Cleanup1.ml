@@ -16,10 +16,13 @@ let count_atoms =
 
 type remove_env = (string * typ * node_meta list) AtomMap.t
 
-let pmeta buf ({ meta; _ }: 'a with_type) =
-  List.iter (function
-    | CommentBefore s | CommentAfter s -> Buffer.add_string  buf s;
-    Buffer.add_char buf '\n') meta
+let pmeta buf ({ meta; _ } : 'a with_type) =
+  List.iter
+    (function
+      | CommentBefore s | CommentAfter s ->
+          Buffer.add_string buf s;
+          Buffer.add_char buf '\n')
+    meta
 
 let mk typ meta node = { node; typ; meta }
 
@@ -27,7 +30,7 @@ let remove_assignments =
   object (self)
     inherit [_] map
 
-    method private peel_lets (to_close: remove_env) e =
+    method private peel_lets (to_close : remove_env) e =
       match e.node with
       | ELet (b, e1, e2) ->
           (if not (e1.node = EAny || e1.node = EUnit) then
@@ -42,16 +45,16 @@ let remove_assignments =
           (* Krml.(KPrint.bprintf "after peeling:\n%a" PrintAst.Ops.ppexpr e); *)
           self#visit_expr_w to_close e
 
-    method! visit_DFunction (to_close: remove_env) cc flags n_cgs n t name bs e =
+    method! visit_DFunction (to_close : remove_env) cc flags n_cgs n t name bs e =
       (* Krml.(KPrint.bprintf "visiting %a\n" PrintAst.Ops.plid name); *)
       assert (AtomMap.is_empty to_close);
       DFunction (cc, flags, n_cgs, n, t, name, bs, self#peel_lets to_close e)
 
-    method! visit_DGlobal (to_close: remove_env) flags n t name e =
+    method! visit_DGlobal (to_close : remove_env) flags n t name e =
       assert (AtomMap.is_empty to_close);
       DGlobal (flags, n, t, name, self#peel_lets to_close e)
 
-    method! visit_ELet ((not_yet_closed: remove_env), t) b e1 e2 =
+    method! visit_ELet ((not_yet_closed : remove_env), t) b e1 e2 =
       (* If [not_yet_closed] represents the set of bindings that have yet to be
          closed (i.e. for which we have yet to insert a let-binding, as close as
          possible to the first use-site), and [candidates] represents the atoms
@@ -59,7 +62,7 @@ let remove_assignments =
          inserts suitable let-bindings for the candidates that have not yet been
          closed, then calls the continuation with the remaining subset of
          not_yet_closed. *)
-      let close_now_over (not_yet_closed: remove_env) candidates mk_node =
+      let close_now_over (not_yet_closed : remove_env) candidates mk_node =
         let to_close_now = AtomSet.inter candidates (set_of_map_keys not_yet_closed) in
         let bs = List.of_seq (AtomSet.to_seq to_close_now) in
         let bs =
@@ -103,7 +106,7 @@ let remove_assignments =
          the general case if it's a let-node; special treatment if it's
          control-flow (match, if, while); otherwise, just close everything now and
          move on (wildcard case). *)
-      let rec recurse_or_close (not_yet_closed: remove_env) e0 =
+      let rec recurse_or_close (not_yet_closed : remove_env) e0 =
         let t = e0.typ in
         match e0.node with
         | ELet _ ->
@@ -164,7 +167,7 @@ let remove_assignments =
             mk t e0.meta
             @@ close_now_over not_yet_closed (count e0) (fun not_yet_closed ->
                    (* not_yet_closed should be empty at this stage *)
-                (self#visit_expr_w not_yet_closed e0).node)
+                   (self#visit_expr_w not_yet_closed e0).node)
       in
 
       match e1.node with
