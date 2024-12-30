@@ -1991,9 +1991,7 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   let get_nth_trait_impl id = C.TraitImplId.Map.find id trait_impls in
   let get_nth_trait_decl id = C.TraitDeclId.Map.find id trait_decls in
   let format_env = Charon.PrintLlbcAst.Crate.crate_to_fmt_env crate in
-  let name_ctx : Charon.NameMatcher.ctx =
-    { type_decls; global_decls; trait_decls; fun_decls; trait_impls }
-  in
+  let name_ctx = Charon.NameMatcher.ctx_from_crate crate in
   let env =
     {
       get_nth_function;
