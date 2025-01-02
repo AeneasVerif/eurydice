@@ -798,8 +798,9 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) : t
           trait_decl.C.consts
         (* 2. Trait methods *)
         @ List.map
-            (fun (item_name, decl_id) ->
-              let decl = env.get_nth_function decl_id in
+            (fun (item_name, bound_fn) ->
+              let fun_decl_id = bound_fn.C.binder_value.C.fun_id in
+              let decl = env.get_nth_function fun_decl_id in
               let ts =
                 {
                   K.n = List.length trait_decl.generics.types;
@@ -1015,7 +1016,7 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
                     (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref)
                     method_name
               in
-              lookup_result_of_fun_id f
+              lookup_result_of_fun_id f.C.binder_value.C.fun_id
           | (Clause _ | ParentClause _) as tcid ->
               let f, t, sig_info = lookup_clause_method env tcid method_name in
               (* the sig_info is kind of redundant here *)
@@ -1142,10 +1143,11 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                       (K.EQualified (lid_of_name env global.item_meta.name)))
                   trait_impl.consts
                 @ List.map
-                    (fun (item_name, decl_id) ->
+                    (fun (item_name, bound_fn) ->
+                      let fun_decl_id = bound_fn.C.binder_value.C.fun_id in
                       let fn_ptr : C.fn_ptr =
                         {
-                          func = TraitMethod (trait_ref, item_name, decl_id);
+                          func = TraitMethod (trait_ref, item_name, fun_decl_id);
                           generics = Charon.TypesUtils.empty_generic_args;
                         }
                       in
