@@ -2,7 +2,11 @@
   inputs = {
     karamel.url = "github:FStarLang/karamel";
     flake-utils.follows = "karamel/flake-utils";
+    # Need to use same-ish nixpkgs version as karamel to gt a compatible ocaml
+    # toolchain
     nixpkgs.follows = "karamel/nixpkgs";
+    # Need a recent nixpkgs to get ocamlformat 0.26.2
+    recent_nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
 
     charon.url = "github:AeneasVerif/charon";
     charon.inputs.nixpkgs.follows = "nixpkgs";
@@ -11,11 +15,13 @@
     { self
     , flake-utils
     , nixpkgs
+    , recent_nixpkgs
     , ...
     } @ inputs:
     flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = import nixpkgs { inherit system; };
+      recent_pkgs = import recent_nixpkgs { inherit system; };
 
       karamel = inputs.karamel.packages.${system}.default;
       fstar = inputs.karamel.inputs.fstar.packages.${system}.default;
@@ -87,7 +93,7 @@
         packages = [
           pkgs.clang-tools # For clang-format
           pkgs.ocamlPackages.ocaml
-          pkgs.ocamlPackages.ocamlformat
+          recent_pkgs.ocamlPackages.ocamlformat_0_26_2
           pkgs.ocamlPackages.menhir
           # ocaml-lsp's version must match the ocaml version used. Pinning
           # this here to save me a headache.
