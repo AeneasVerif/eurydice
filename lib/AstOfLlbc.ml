@@ -752,6 +752,27 @@ type trait_clause_entry =
 
 type trait_clause_mapping = ((C.trait_instance_id * string) * trait_clause_entry) list
 
+(* Handling the encoding of traits as dictionaries.
+
+   A function that is parametric over a trait becomes parametric over extra
+   expression-level arguments, with either function types (trait methods) or
+   plain types (trait associated constants).
+
+   A function call that provides a concrete trait instance becomes an
+   application node with extra arguments (function pointers for trait methods,
+   and plain values for trait associated constants).
+
+   The `build_trait_clause_mapping` function, below, synthesizes a description
+   of those extra arguments, suitable for enriching the environment, either when
+   translating a function body (see decl_of_id, IdFun case), or when computing a
+   function type (see lookup_signature).
+
+   Then, expression_of_fn_ptr synthesizes arguments (using the inner
+   build_trait_ref_mapping function) that corresponds to the expectations of
+   build_trait_clause_mapping.
+
+*)
+
 (* Using tests/where_clauses_simple as an example.
 
    fn double<T: Ops + Copy, U: Ops+Copy> (...)
