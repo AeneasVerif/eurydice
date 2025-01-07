@@ -54,6 +54,10 @@ type var_id =
   | ConstGenericVar of C.const_generic_var_id
   | Var of C.var_id * C.ety (* the ety aids code-generation, sometimes *)
 
+type type_var_id =
+  | TypeVar of C.type_var_id
+  | TraitType of C.trait_instance_id * string
+
 type env = {
   (* Lookup functions to resolve various id's into actual declarations. *)
   get_nth_function : C.FunDeclId.id -> C.fun_decl;
@@ -104,7 +108,7 @@ type env = {
      ], EBound 2 (* expressions refer to the copy of the cg var as an expression var *)
   *)
   cg_binders : (C.const_generic_var_id * K.typ) list;
-  type_binders : C.type_var_id list;
+  type_binders : type_var_id list;
   binders : (var_id * K.typ) list;
   (* For printing. *)
   format_env : Charon.PrintLlbcAst.fmt_env;
@@ -135,12 +139,15 @@ let lookup_cg_in_types env v1 =
   let i, (_, t) = findi (fun (v2, _) -> v1 = v2) env.cg_binders in
   i, t
 
-let lookup_typ env (v1 : C.type_var_id) =
+let lookup_typ env (v1 : type_var_id) =
   let i, _ = findi (( = ) v1) env.type_binders in
   i
 
-let push_type_binder env (t : C.type_var) = { env with type_binders = t.index :: env.type_binders }
+let push_type_binder env (t : C.type_var) = { env with type_binders = TypeVar t.index :: env.type_binders }
 let push_type_binders env (ts : C.type_var list) = List.fold_left push_type_binder env ts
+
+let push_type_trait_binder env (x, y) = { env with type_binders = TraitType (x, y):: env.type_binders }
+let push_type_trait_binders env ts = List.fold_left push_type_trait_binder env ts
 
 (** Helpers: types *)
 
@@ -336,7 +343,7 @@ let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
 
 let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   match ty with
-  | TVar var -> K.TBound (lookup_typ env (C.expect_free_var var))
+  | TVar var -> K.TBound (lookup_typ env (TypeVar (C.expect_free_var var)))
   | TLiteral t -> typ_of_literal_ty env t
   | TNever -> failwith "Impossible: Never"
   | TDynTrait _ -> failwith "TODO: dyn Trait"
@@ -391,7 +398,10 @@ let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TRawPtr (t, _) ->
       (* Appears in some trait methods, so let's try to handle that. *)
       K.TBuf (typ_of_ty env t, false)
-  | TTraitType _ -> failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
+  | TTraitType (ref, name) ->
+      Krml.KPrint.bprintf "looking up: %s::%s\n"
+        (Charon.PrintTypes.trait_instance_id_to_string env.format_env ref.trait_id) name;
+      K.TBound (lookup_typ env (TraitType (ref.trait_id, name)))
   | TArrow binder ->
       let ts, t = binder.binder_value in
       Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
@@ -750,7 +760,6 @@ type trait_clause_entry =
       (C.generic_args * K.type_scheme * Charon.Types.name (* trait name *) * C.fun_sig)
   | ClauseConstant of Charon.Types.name (* trait name *) * C.ty
 
-type trait_clause_mapping = ((C.trait_instance_id * string) * trait_clause_entry) list
 
 (* Handling the encoding of traits as dictionaries.
 
@@ -772,6 +781,62 @@ type trait_clause_mapping = ((C.trait_instance_id * string) * trait_clause_entry
    build_trait_clause_mapping.
 
 *)
+
+type trait_type_mapping =
+  (* associated types: *) (C.trait_instance_id * string) list
+
+(* Coming first, because this needs to be pushed into the environment for
+   build_trait_clause_mapping to succeed. *)
+let rec build_trait_type_mapping env (trait_clauses: C.trait_clause list): trait_type_mapping =
+  List.concat_map
+    (fun tc ->
+      let { C.clause_id; trait = { binder_value = { trait_decl_id; _ }; _ }; _ } = tc in
+      let trait_decl = env.get_nth_trait_decl trait_decl_id in
+
+      let name = string_of_name env trait_decl.item_meta.name in
+      if List.mem name blocklisted_trait_decls then
+        []
+      else begin
+        (* 1. Associated types *)
+        List.map
+          (fun item_name ->
+            C.Clause (Free clause_id), item_name)
+          trait_decl.C.types
+        (* 1, recursively, for parent traits *)
+        @ List.flatten
+            (List.map
+               (fun (parent_clause : C.trait_clause) ->
+                 (* Mapping of the methods of the parent clause *)
+                 let m = build_trait_type_mapping env [ parent_clause ] in
+                 List.map
+                   (fun ((clause_id' : C.trait_instance_id), m) ->
+                     (* This is the parent clause `clause_id'` of `clause_id` -- see comments in charon/types.rs  *)
+                     let clause_id' =
+                       match clause_id' with
+                       | Clause (Free clause_id') -> clause_id'
+                       | _ -> fail "not a clause??"
+                     in
+                     let id : C.trait_instance_id =
+                       ParentClause (Clause (Free clause_id), trait_decl_id, clause_id')
+                     in
+                     id, m)
+                   m)
+               trait_decl.C.parent_clauses)
+      end)
+    trait_clauses
+
+type trait_clause_mapping =
+  (* methods_and_constants: *) ((C.trait_instance_id * string) * trait_clause_entry) list
+  
+let subst_self_sig (instance_id: C.trait_instance_id) (s: C.fun_sig) =
+  let open Charon.Substitute in
+  let subst: subst = { empty_subst with tr_self = instance_id } in
+  Charon.Substitute.st_substitute_visitor#visit_fun_sig subst s
+  
+let subst_self_ty (instance_id: C.trait_instance_id) (s: C.ty) =
+  let open Charon.Substitute in
+  let subst: subst = { empty_subst with tr_self = instance_id } in
+  Charon.Substitute.st_substitute_visitor#visit_ty subst s
 
 (* Using tests/where_clauses_simple as an example.
 
@@ -854,6 +919,19 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) : t
       end)
     trait_clauses
 
+(* A fixup because right now, signatures (ClauseMethod) and types
+   (ClauseConstant) still contain references to Self (instead of whatever trait
+   clause in scope this is. We fix this, with the understanding that the
+   substitution is probably incorrect if we start referencing associated types from
+   parent clauses. *)
+let build_trait_clause_mapping env trait_clauses =
+  let mapping = build_trait_clause_mapping env trait_clauses in
+  List.map (fun ((clause_id, item), entry) ->
+    (clause_id, item), match entry with
+    | ClauseConstant (name, t) -> ClauseConstant (name, subst_self_ty clause_id t)
+    | ClauseMethod (gs, ts, name, decl_sig) -> ClauseMethod (gs, ts, name, subst_self_sig clause_id decl_sig)
+  ) mapping
+
 (* Interpret a Rust function type, with trait bounds, into the krml Ast, providing:
    - the type scheme (fields may be zero)
    - the cg types, which only contains the original Rust const generic variables
@@ -874,6 +952,7 @@ let maybe_ts ts t =
   else
     t
 
+(* MUST be kept in sync with IdFun case. TODO: factorize *)
 let rec lookup_signature env depth signature : lookup_result =
   let { C.generics = { types = type_params; const_generics; trait_clauses; _ }; inputs; output; _ }
       =
@@ -884,6 +963,11 @@ let rec lookup_signature env depth signature : lookup_result =
     (Charon.PrintTypes.ty_to_string env.format_env output);
   let env = push_cg_binders env const_generics in
   let env = push_type_binders env type_params in
+  let type_mapping =
+    build_trait_type_mapping env signature.C.generics.trait_clauses
+  in
+  debug_trait_type_mapping env type_mapping;
+  let env = push_type_trait_binders env type_mapping in
 
   let clause_mapping = build_trait_clause_mapping env trait_clauses in
   debug_trait_clause_mapping env clause_mapping;
@@ -891,7 +975,7 @@ let rec lookup_signature env depth signature : lookup_result =
   let clause_ts = List.map snd clause_binders in
 
   {
-    ts = { n = List.length type_params; n_cgs = List.length const_generics };
+    ts = { n = List.length type_params + List.length type_mapping; n_cgs = List.length const_generics };
     cg_types = List.map (fun (v : C.const_generic_var) -> typ_of_literal_ty env v.ty) const_generics;
     arg_types =
       (clause_ts
@@ -996,6 +1080,20 @@ and debug_trait_clause_mapping env (mapping : trait_clause_mapping) =
           L.log "TraitClauses" "%s (a.k.a. %s)::%s: associated constant %a"
             (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
             (string_of_name env trait_name) item_name ptyp t)
+    mapping
+
+and debug_trait_type_mapping env (mapping : trait_type_mapping) =
+  if mapping = [] then
+    L.log "TraitClauses" "In this function, trait type mapping is empty"
+  else
+    L.log "TraitClauses" "In this function, associated types are as follows:";
+  List.iter
+    (fun (clause_id, item_name) ->
+      L.log "TraitClauses"
+        "%s::%s"
+        (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
+        item_name
+    )
     mapping
 
 (** Compiling function instantiations into krml application nodes. *)
@@ -1848,6 +1946,11 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               else
                 let env = push_cg_binders env signature.C.generics.const_generics in
                 let env = push_type_binders env signature.C.generics.types in
+                let type_mapping =
+                  build_trait_type_mapping env signature.C.generics.trait_clauses
+                in
+                debug_trait_type_mapping env type_mapping;
+                let env = push_type_trait_binders env type_mapping in
 
                 L.log "AstOfLlbc" "ty of locals: %s"
                   (String.concat " ++ "
@@ -1955,7 +2058,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                    clause binders are not in env.cg_binders, well, types don't refer to clause
                    binders, so we won't have translation errors. *)
                 let n_cg = List.length signature.C.generics.const_generics in
-                let n = List.length signature.C.generics.types in
+                let n = List.length signature.C.generics.types + List.length type_mapping in
                 Some
                   (K.DFunction
                      ( None,
