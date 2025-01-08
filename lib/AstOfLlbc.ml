@@ -1764,7 +1764,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               (fun ({ C.variant_name; discriminant; _ } : C.variant) ->
                 let v =
                   if has_custom_constants then
-                    Some (Z.to_int discriminant.value)
+                    Some discriminant.value
                   else
                     None
                 in
