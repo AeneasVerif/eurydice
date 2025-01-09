@@ -650,9 +650,12 @@ let expression_of_place (env : env) (p : C.place) : K.expr =
   L.log "AstOfLlbc" "expression of place: %s" (C.show_place p);
   expression_of_place env p
 
+(* We produce bit-wise operators first, then when the type is of booleans, we
+   change into the non-B variants (Rust does not distinguish between bitwise and
+   boolean operators) *)
 let op_of_unop (op : C.unop) : Krml.Constant.op =
   match op with
-  | C.Not -> Not
+  | C.Not -> BNot
   | C.Neg -> Neg
   | _ -> assert false
 
@@ -684,8 +687,13 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
     | t -> fail "Not an operator type: %a" ptyp t
   in
   let op =
-    if op = Not && first.typ <> K.TBool then
-      Krml.Constant.BNot
+    if first.typ = K.TBool then
+      match op with
+      | BNot -> Krml.Constant.Not
+      | BAnd -> And
+      | BOr -> Or
+      | BXor -> Xor
+      | op -> op
     else
       op
   in
@@ -1764,7 +1772,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               (fun ({ C.variant_name; discriminant; _ } : C.variant) ->
                 let v =
                   if has_custom_constants then
-                    Some (Z.to_int discriminant.value)
+                    Some discriminant.value
                   else
                     None
                 in
