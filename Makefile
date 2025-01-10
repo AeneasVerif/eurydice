@@ -6,6 +6,9 @@ CHARON		?= $(CHARON_HOME)/bin/charon
 BROKEN_TESTS		= step_by where_clauses chunks mutable_slice_range closure issue_49 issue_37 issue_105
 TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(subst test/,,$(shell find test -maxdepth 1 -mindepth 1 -type d)))
 
+# Enable `foo/**` glob syntax
+SHELL := bash -O globstar 
+
 .PHONY: all
 all: format-check
 	@ocamlfind list | grep -q charon || test -L lib/charon || echo "⚠️⚠️⚠️ Charon not found; we suggest cd lib && ln -s path/to/charon charon"
@@ -36,6 +39,8 @@ test-symcrust: CFLAGS += -Wno-unused-function
 
 test-%: test/%/out.llbc out/test-%/main.c | all
 	$(EURYDICE) $(EXTRA) --output out/test-$* $<
+	sed -i 's/  KaRaMeL version: .*//' out/test-$*/**/*.{c,h} # This changes on every commit
+	sed -i 's/  KaRaMeL invocation: .*//' out/test-$*/**/*.{c,h} # This changes between local and CI
 	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $(EXTRA_C) $*.c main.c && ./a.out
 
 custom-test-array: test-array
