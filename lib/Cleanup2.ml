@@ -926,3 +926,32 @@ let check_addrof =
             in
             ELet (b, e, with_type t (EAddrOf (with_type e.typ (EBound 0))))
   end
+
+let return_becomes_break = object
+  inherit [_] Krml.Ast.map
+
+  method! visit_EReturn _ _ =
+    EBreak
+
+  method! visit_EFor _ _ _ _ =
+    failwith "nested loop in a loop body"
+end
+
+
+let inline_loops = object
+   inherit [_] Krml.Ast.map
+
+   method! visit_DFunction () cc flags n_cgs n t name binders body =
+     if Krml.KString.exists (snd name) "inner_loop" then
+       DFunction
+         ( cc,
+           [ Krml.Common.MustInline; MustDisappear ] @ flags,
+           n_cgs,
+           n,
+           t,
+           name,
+           binders,
+           return_becomes_break#visit_expr_w () body )
+     else
+       DFunction (cc, flags, n_cgs, n, t, name, binders, body)
+end

@@ -200,27 +200,8 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.1" "%a" pfiles files;
   let files = Eurydice.Cleanup2.improve_names files in
   let files = Eurydice.Cleanup2.recognize_asserts#visit_files () files in
-  let files =
-    (object
-       inherit [_] Krml.Ast.map
-
-       method! visit_DFunction _ cc flags n_cgs n t name binders body =
-         if Krml.KString.exists (snd name) "inner_loop" then
-           DFunction
-             ( cc,
-               [ Krml.Common.MustInline; MustDisappear ] @ flags,
-               n_cgs,
-               n,
-               t,
-               name,
-               binders,
-               body )
-         else
-           DFunction (cc, flags, n_cgs, n, t, name, binders, body)
-    end)
-      #visit_files
-      () files
-  in
+  (* Temporary workaround until Aeneas supports nested loops *)
+  let files = Eurydice.Cleanup2.inline_loops #visit_files () files in
   let files = Krml.Inlining.inline files in
   let files = Krml.Monomorphization.functions files in
   let files = Krml.Monomorphization.datatypes files in
@@ -270,7 +251,6 @@ Supported options:|}
   let files = Krml.Simplify.remove_unused files in
   Eurydice.Logging.log "Phase2.7" "%a" pfiles files;
   (* This chunk which reuses key elements of simplify2 *)
-  Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
   let files = Eurydice.Cleanup2.check_addrof#visit_files () files in
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
   let files = Krml.Simplify.hoist#visit_files [] files in
