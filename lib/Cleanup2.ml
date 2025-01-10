@@ -927,14 +927,24 @@ let check_addrof =
             ELet (b, e, with_type t (EAddrOf (with_type e.typ (EBound 0))))
   end
 
+(* Aeneas requires hoisting loop bodies into separate functions. *)
+let is_inline_loop lid = Krml.KString.exists (snd lid) "inner_loop"
+
 let return_becomes_break = object
-  inherit [_] Krml.Ast.map
+  inherit [_] Krml.Ast.map as super
 
   method! visit_EReturn _ _ =
     EBreak
 
   method! visit_EFor _ _ _ _ =
     failwith "nested loop in a loop body"
+
+  method! visit_EApp env e es =
+    match e.node with
+    | EQualified lid when is_inline_loop lid ->
+        failwith "nested loop in a loop body"
+    | _ ->
+        super#visit_EApp env e es
 end
 
 
@@ -942,7 +952,7 @@ let inline_loops = object
    inherit [_] Krml.Ast.map
 
    method! visit_DFunction () cc flags n_cgs n t name binders body =
-     if Krml.KString.exists (snd name) "inner_loop" then
+     if is_inline_loop name then
        DFunction
          ( cc,
            [ Krml.Common.MustInline; MustDisappear ] @ flags,
