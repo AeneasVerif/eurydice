@@ -730,7 +730,8 @@ let smallest =
   end
 
 let rec find_terminal_incr i e =
-  assert (e.typ = TUnit);
+  if e.typ <> TUnit && e.typ <> TAny then
+    Krml.Warn.failwith "e_then has type: %a\n" ptyp e.typ;
   let ( let* ) = Option.bind in
   let hoist e = Krml.DeBruijn.subst_n e (List.init i (fun _ -> Krml.Helpers.eunit)) in
   match e.node with
