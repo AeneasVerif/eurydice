@@ -179,14 +179,23 @@ with const generics
 */
 bool const_generics_g_70(uint32_t x, size_t y)
 {
+  bool uu____0;
   if (const_generics_f_70(x, y))
   {
     if (x == 4U)
     {
-      return y == (size_t)3U;
+      uu____0 = y == (size_t)3U;
+    }
+    else
+    {
+      uu____0 = false;
     }
   }
-  return false;
+  else
+  {
+    uu____0 = false;
+  }
+  return uu____0;
 }
 
 typedef struct _bool__x2_s
