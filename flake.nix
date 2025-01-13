@@ -64,8 +64,8 @@
                 KRML_HOME = karamel;
                 FSTAR_HOME = "dummy";
                 EURYDICE = "${eurydice}/bin/eurydice";
-                buildInputs = [ charon.buildInputs eurydice ];
-                nativeBuildInputs = [ charon.nativeBuildInputs clang ];
+                buildInputs = [ eurydice ];
+                nativeBuildInputs = [ clang ];
                 buildPhase = ''
                   shopt -s globstar
                   export CHARON="${charon}/bin/charon"
