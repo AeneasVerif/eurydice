@@ -8,6 +8,7 @@ TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(subst test/,,$(shell find test -maxd
 
 # Enable `foo/**` glob syntax
 SHELL := bash -O globstar 
+SED=$(shell which gsed &>/dev/null && echo gsed || echo sed)
 
 .PHONY: all
 all: format-check
@@ -39,8 +40,8 @@ test-symcrust: CFLAGS += -Wno-unused-function
 
 test-%: test/%/out.llbc out/test-%/main.c | all
 	$(EURYDICE) $(EXTRA) --output out/test-$* $<
-	sed -i 's/  KaRaMeL version: .*//' out/test-$*/**/*.{c,h} # This changes on every commit
-	sed -i 's/  KaRaMeL invocation: .*//' out/test-$*/**/*.{c,h} # This changes between local and CI
+	$(SED) -i 's/  KaRaMeL version: .*//' out/test-$*/**/*.{c,h} # This changes on every commit
+	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-$*/**/*.{c,h} # This changes between local and CI
 	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $(EXTRA_C) $*.c main.c && ./a.out
 
 custom-test-array: test-array

@@ -67,6 +67,7 @@
                 buildInputs = [ charon.buildInputs eurydice ];
                 nativeBuildInputs = [ charon.nativeBuildInputs clang ];
                 buildPhase = ''
+                  shopt -s globstar
                   export CHARON="${charon}/bin/charon"
 
                   # setup CHARON_HOME: it is expected to be writtable, hence the `cp --no-preserve`
