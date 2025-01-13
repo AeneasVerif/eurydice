@@ -1,8 +1,8 @@
 _build
 lib/krml
 lib/charon
-out
 test/*/target
+out/*/a.out
 *.DS_Store
 *.orig
 *.llbc

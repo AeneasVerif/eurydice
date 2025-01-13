@@ -67,13 +67,31 @@
                 buildInputs = [ charon.buildInputs eurydice ];
                 nativeBuildInputs = [ charon.nativeBuildInputs clang ];
                 buildPhase = ''
+                  shopt -s globstar
                   export CHARON="${charon}/bin/charon"
 
                   # setup CHARON_HOME: it is expected to be writtable, hence the `cp --no-preserve`
                   cp --no-preserve=mode,ownership -rf ${inputs.charon.sourceInfo.outPath} ./charon
                   export CHARON_HOME=./charon
 
+                  # Move the committed test outputs out of the way
+                  mv out out-comitted
+
+                  # Run the tests
                   make -o all test
+
+                  # Clean generated files that we don't want to compare.
+                  rm out/**/a.out
+
+                  # Check that there are no differences between the generated
+                  # outputs and the committed outputs.
+                  if diff -rq out-comitted out; then
+                    echo "Ok: the regenerated files are the same as the checked out files"
+                  else
+                    echo "Error: the regenerated files differ from the checked out files"
+                    diff -ru out-comitted out
+                    exit 1
+                  fi
                 '';
                 installPhase = ''touch $out'';
               };
