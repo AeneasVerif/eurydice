@@ -34,7 +34,7 @@
       package =
         { ocamlPackages
         , removeReferencesTo
-        , stdenv
+        , clangStdenv
         , symlinks
         , version
         , which
@@ -44,7 +44,6 @@
         , krml
         , symlinkJoin
         , clang
-        ,
         }:
         let
           eurydice = ocamlPackages.buildDunePackage {
@@ -58,14 +57,13 @@
             propagatedBuildInputs = [ krml charon-ml ocamlPackages.terminal ocamlPackages.yaml ];
 
             passthru = {
-              tests = stdenv.mkDerivation {
+              tests = clangStdenv.mkDerivation {
                 name = "tests";
                 src = ./.;
                 KRML_HOME = karamel;
                 FSTAR_HOME = "dummy";
                 EURYDICE = "${eurydice}/bin/eurydice";
                 buildInputs = [ eurydice ];
-                nativeBuildInputs = [ clang ];
                 buildPhase = ''
                   shopt -s globstar
                   export CHARON="${charon}/bin/charon"
