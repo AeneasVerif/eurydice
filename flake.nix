@@ -2,14 +2,15 @@
   inputs = {
     karamel.url = "github:FStarLang/karamel";
     flake-utils.follows = "karamel/flake-utils";
-    # Need to use same-ish nixpkgs version as karamel to gt a compatible ocaml
+    # Need to use same-ish nixpkgs version as karamel to get a compatible ocaml
     # toolchain
     nixpkgs.follows = "karamel/nixpkgs";
     # Need a recent nixpkgs to get ocamlformat 0.26.2
     recent_nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
 
     charon.url = "github:AeneasVerif/charon";
-    charon.inputs.nixpkgs.follows = "nixpkgs";
+    charon.inputs.nixpkgs.follows = "recent_nixpkgs";
+    charon.inputs.nixpkgs-ocaml.follows = "nixpkgs";
   };
   outputs =
     { self
@@ -34,7 +35,7 @@
       package =
         { ocamlPackages
         , removeReferencesTo
-        , stdenv
+        , clangStdenv
         , symlinks
         , version
         , which
@@ -44,7 +45,6 @@
         , krml
         , symlinkJoin
         , clang
-        ,
         }:
         let
           eurydice = ocamlPackages.buildDunePackage {
@@ -58,14 +58,13 @@
             propagatedBuildInputs = [ krml charon-ml ocamlPackages.terminal ocamlPackages.yaml ];
 
             passthru = {
-              tests = stdenv.mkDerivation {
+              tests = clangStdenv.mkDerivation {
                 name = "tests";
                 src = ./.;
                 KRML_HOME = karamel;
                 FSTAR_HOME = "dummy";
                 EURYDICE = "${eurydice}/bin/eurydice";
-                buildInputs = [ charon.buildInputs eurydice ];
-                nativeBuildInputs = [ charon.nativeBuildInputs clang ];
+                buildInputs = [ eurydice ];
                 buildPhase = ''
                   shopt -s globstar
                   export CHARON="${charon}/bin/charon"
