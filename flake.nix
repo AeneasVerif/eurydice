@@ -107,6 +107,7 @@
       checks.default = packages.default.tests;
       devShells.ci = pkgs.mkShell { packages = [ pkgs.jq ]; };
       devShells.default = (pkgs.mkShell.override { stdenv = pkgs.clangStdenv; }) {
+        OCAMLRUNPARAM = "b"; # Get backtrace on exception
         packages = [
           pkgs.clang-tools # For clang-format
           pkgs.ocamlPackages.ocaml
