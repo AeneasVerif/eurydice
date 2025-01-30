@@ -32,25 +32,7 @@ extern bool
 core_cmp_impls___core__cmp__PartialEq_u32__for_u32__24__eq(uint32_t *x0, uint32_t *x1);
 
 extern bool
-core_cmp_impls___core__cmp__PartialEq_u32__for_u32__24__ne(uint32_t *x0, uint32_t *x1);
-
-extern bool
 core_cmp_impls___core__cmp__PartialEq_usize__for_usize__21__eq(size_t *x0, size_t *x1);
-
-extern bool
-core_cmp_impls___core__cmp__PartialEq_usize__for_usize__21__ne(size_t *x0, size_t *x1);
-
-extern bool
-core_cmp_impls___core__cmp__PartialOrd_u32__for_u32__64__ge(uint32_t *x0, uint32_t *x1);
-
-extern bool
-core_cmp_impls___core__cmp__PartialOrd_u32__for_u32__64__gt(uint32_t *x0, uint32_t *x1);
-
-extern bool
-core_cmp_impls___core__cmp__PartialOrd_u32__for_u32__64__le(uint32_t *x0, uint32_t *x1);
-
-extern bool
-core_cmp_impls___core__cmp__PartialOrd_u32__for_u32__64__lt(uint32_t *x0, uint32_t *x1);
 
 #define core_option_None 0
 #define core_option_Some 1
@@ -75,18 +57,6 @@ core_cmp_impls___core__cmp__PartialOrd_u32__for_u32__64__partial_cmp(
   uint32_t *x1
 );
 
-extern bool
-core_cmp_impls___core__cmp__PartialOrd_usize__for_usize__58__ge(size_t *x0, size_t *x1);
-
-extern bool
-core_cmp_impls___core__cmp__PartialOrd_usize__for_usize__58__gt(size_t *x0, size_t *x1);
-
-extern bool
-core_cmp_impls___core__cmp__PartialOrd_usize__for_usize__58__le(size_t *x0, size_t *x1);
-
-extern bool
-core_cmp_impls___core__cmp__PartialOrd_usize__for_usize__58__lt(size_t *x0, size_t *x1);
-
 extern core_option_Option_77
 core_cmp_impls___core__cmp__PartialOrd_usize__for_usize__58__partial_cmp(
   size_t *x0,
@@ -98,9 +68,6 @@ core_convert_num___core__convert__From_u16__for_u32__69__from(uint16_t x0);
 
 static inline uint64_t
 core_convert_num___core__convert__From_u32__for_u64__72__from(uint32_t x0);
-
-extern size_t
-core_iter_range___core__iter__range__Step_for_usize__43__backward(size_t x0, size_t x1);
 
 /**
 A monomorphic instance of core.option.Option
@@ -117,67 +84,11 @@ core_option_Option_08;
 extern core_option_Option_08
 core_iter_range___core__iter__range__Step_for_usize__43__backward_checked(size_t x0, size_t x1);
 
-extern size_t
-core_iter_range___core__iter__range__Step_for_usize__43__backward_unchecked(
-  size_t x0,
-  size_t x1
-);
-
-extern size_t
-core_iter_range___core__iter__range__Step_for_usize__43__forward(size_t x0, size_t x1);
-
 extern core_option_Option_08
 core_iter_range___core__iter__range__Step_for_usize__43__forward_checked(size_t x0, size_t x1);
 
-extern size_t
-core_iter_range___core__iter__range__Step_for_usize__43__forward_unchecked(
-  size_t x0,
-  size_t x1
-);
-
 extern core_option_Option_08
 core_iter_range___core__iter__range__Step_for_usize__43__steps_between(size_t *x0, size_t *x1);
-
-/**
-A monomorphic instance of core.num.nonzero.NonZero
-with types size_t
-
-*/
-typedef size_t core_num_nonzero_NonZero_08;
-
-#define core_result_Ok 0
-#define core_result_Err 1
-
-typedef uint8_t core_result_Result_eb_tags;
-
-/**
-A monomorphic instance of core.result.Result
-with types (), core_num_nonzero_NonZero size_t
-
-*/
-typedef struct core_result_Result_eb_s
-{
-  core_result_Result_eb_tags tag;
-  core_num_nonzero_NonZero_08 f0;
-}
-core_result_Result_eb;
-
-/**
-A monomorphic instance of K.
-with types size_t, core_option_Option size_t
-
-*/
-typedef struct tuple_04_s
-{
-  size_t fst;
-  core_option_Option_08 snd;
-}
-tuple_04;
-
-static inline core_num_nonzero_private_NonZeroUsizeInner
-core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__NonZeroUsizeInner__26__clone(
-  core_num_nonzero_private_NonZeroUsizeInner *x0
-);
 
 static inline void core_num__u32_8__to_le_bytes(uint32_t x0, uint8_t x1[4U]);
 
