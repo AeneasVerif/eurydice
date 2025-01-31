@@ -27,6 +27,9 @@ void array2d_main(void);
 extern bool
 core_cmp_impls___core__cmp__PartialEq_u32__for_u32__24__eq(uint32_t *x0, uint32_t *x1);
 
+extern bool
+core_cmp_impls___core__cmp__PartialEq_u32__for_u32__24__ne(uint32_t *x0, uint32_t *x1);
+
 #if defined(__cplusplus)
 }
 #endif

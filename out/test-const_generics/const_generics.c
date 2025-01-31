@@ -7,6 +7,8 @@
 
 #include "const_generics.h"
 
+#include "Eurydice.h"
+
 /**
 A monomorphic instance of const_generics.serialize
 with const generics

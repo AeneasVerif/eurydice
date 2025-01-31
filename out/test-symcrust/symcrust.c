@@ -7,6 +7,7 @@
 
 #include "symcrust.h"
 
+#include "Eurydice.h"
 #include "internal/Eurydice.h"
 
 void
