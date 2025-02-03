@@ -7,6 +7,8 @@
 
 #include "traits.h"
 
+#include "Eurydice.h"
+
 /**
 This function found in impl {(traits::ToInt for traits::Foo)}
 */
