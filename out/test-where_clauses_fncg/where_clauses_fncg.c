@@ -31,9 +31,9 @@ with const generics
 */
 uint64_t where_clauses_fncg_f_43(void)
 {
-  uint8_t buf0[8U][4U] = { { 0U } };
-  uint8_t buf[4U][8U] = { { 0U } };
-  return where_clauses_fncg_bar_ea_7b(buf0, buf);
+  uint8_t buf[8U][4U] = { { 0U } };
+  uint8_t repeat_expression[4U][8U] = { { 0U } };
+  return where_clauses_fncg_bar_ea_7b(buf, repeat_expression);
 }
 
 typedef struct _uint64_t__x2_s
