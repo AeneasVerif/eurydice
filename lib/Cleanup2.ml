@@ -36,6 +36,8 @@ let remove_implicit_array_copies =
     method private remove_assign n lhs rhs e2 =
       match rhs.node with
       | EBufCreateL (Stack, es) ->
+          (* TODO: if all elements are equal *and* the length is > some constant, consider using a
+             for-loop. *)
           (* let _ = lhs := bufcreatel e1, e2, ... lhs[0] := e1, lhs[1] := e2, ... *)
           assert (List.length es = int_of_string (snd n));
           let lift = Krml.DeBruijn.lift in
@@ -154,7 +156,18 @@ let remove_array_repeats =
             | _ -> failwith "impossible"
           in
           let init = self#visit_expr env init in
-          EBufCreate (Stack, init, Krml.Helpers.mk_sizet l)
+          (* Generating EBufCreate here opts out of the array assignment desugaring phase,
+             since remove_implicit_array_copies, above, only matches on EBufCreateL. The array
+             assignment desugaring is necessary in the general case, because the elements might have
+             array types (nested arrays), which in turn need to be further desguared. But in the
+             simple case where there is no array nesting, it's ok to use the form EBufCreate, which
+             will generate a proper memcpy. *)
+          begin match init.node with
+          | EConstant _ ->
+              EBufCreate (Stack, init, Krml.Helpers.mk_sizet l)
+          | _ ->
+              EBufCreateL (Stack, List.init l (fun _ -> init))
+          end
       | _ -> super#visit_EApp env e es
 
     method! visit_ELet (((), _) as env) b e1 e2 =
@@ -170,7 +183,7 @@ let remove_array_repeats =
         when lid = Builtin.array_repeat.name ->
           if all_repeats e1 then
             (* Further code-gen can handle nested ebufcreatel's by using nested
-               static initializer lists, possiblye shortening to { 0 } if
+               static initializer lists, possibly shortening to { 0 } if
                applicable. *)
             super#visit_ELet env b e1 e2
           else
