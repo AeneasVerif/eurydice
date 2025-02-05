@@ -144,15 +144,17 @@ let remove_array_repeats =
 
     method! visit_EApp env e es =
       (* This is the case where the declaration is not in let-binding position. This happens with
-         e.g. `fn init() -> ... { [0; 32] }`. *) 
+         e.g. `fn init() -> ... { [0; 32] }`. *)
       match e.node, es with
       | ETApp ({ node = EQualified lid; _ }, [ _ ], _, [ _ ]), [ _ ]
         when lid = Builtin.array_repeat.name ->
-          (self#visit_expr env (with_type (snd env) (ELet (
-            H.fresh_binder "repeat_expression"  (snd env),
-            with_type (snd env) (EApp (e, es)),
-            with_type (snd env) (EBound 0)
-          )))).node
+          (self#visit_expr env
+             (with_type (snd env)
+                (ELet
+                   ( H.fresh_binder "repeat_expression" (snd env),
+                     with_type (snd env) (EApp (e, es)),
+                     with_type (snd env) (EBound 0) ))))
+            .node
       | _ -> super#visit_EApp env e es
 
     method private assert_length len =
@@ -162,38 +164,35 @@ let remove_array_repeats =
 
     method private try_expand_zero e =
       match e.node with
-      | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ },
-        [ { node = EConstant (_, "0"); _ } as init ])
-        when lid = Builtin.array_repeat.name
-        ->
+      | EApp
+          ( { node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ },
+            [ ({ node = EConstant (_, "0"); _ } as init) ] )
+        when lid = Builtin.array_repeat.name ->
           (* [0; n] -> ok *)
           with_type e.typ @@ EBufCreateL (Stack, List.init (self#assert_length len) (fun _ -> init))
-
       | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
         when lid = Builtin.array_repeat.name ->
           (* [e; n] -> ok if e ok *)
           let init = self#try_expand_zero init in
           with_type e.typ @@ EBufCreateL (Stack, List.init (self#assert_length len) (fun _ -> init))
-
-      | _ ->
-          raise Not_found
-
+      | _ -> raise Not_found
 
     method! visit_ELet (((), _) as env) b e1 e2 =
       match e1.node with
       | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
-        when lid = Builtin.array_repeat.name ->
-          begin try
+        when lid = Builtin.array_repeat.name -> begin
+          try
             (* Case 1. *)
             ELet (b, self#try_expand_zero e1, self#visit_expr env e2)
-
-          with Not_found ->
+          with Not_found -> (
             match init.node with
             | EConstant _ ->
                 (* Case 2. *)
-                let e1 = with_type e1.typ (EBufCreate (Stack, init, Krml.Helpers.mk_sizet (self#assert_length len))) in
+                let e1 =
+                  with_type e1.typ
+                    (EBufCreate (Stack, init, Krml.Helpers.mk_sizet (self#assert_length len)))
+                in
                 ELet (b, e1, self#visit_expr env e2)
-
             | _ ->
                 (* Case 3. *)
 
@@ -224,8 +223,8 @@ let remove_array_repeats =
                                   (* b[i] := init *)
                                   H.with_unit (EAssign (b_i, Krml.DeBruijn.lift 2 init)) )),
                            (* e2 *)
-                           Krml.DeBruijn.lift 1 (self#visit_expr env e2) )) )
-          end
+                           Krml.DeBruijn.lift 1 (self#visit_expr env e2) )) ))
+        end
       | _ -> super#visit_ELet env b e1 e2
   end
 
@@ -955,38 +954,33 @@ let check_addrof =
 (* Aeneas requires hoisting loop bodies into separate functions. *)
 let is_inline_loop lid = Krml.KString.exists (snd lid) "inner_loop"
 
-let return_becomes_break = object
-  inherit [_] Krml.Ast.map as super
+let return_becomes_break =
+  object
+    inherit [_] Krml.Ast.map as super
+    method! visit_EReturn _ _ = EBreak
+    method! visit_EFor _ _ _ _ = failwith "nested loop in a loop body"
 
-  method! visit_EReturn _ _ =
-    EBreak
+    method! visit_EApp env e es =
+      match e.node with
+      | EQualified lid when is_inline_loop lid -> failwith "nested loop in a loop body"
+      | _ -> super#visit_EApp env e es
+  end
 
-  method! visit_EFor _ _ _ _ =
-    failwith "nested loop in a loop body"
+let inline_loops =
+  object
+    inherit [_] Krml.Ast.map
 
-  method! visit_EApp env e es =
-    match e.node with
-    | EQualified lid when is_inline_loop lid ->
-        failwith "nested loop in a loop body"
-    | _ ->
-        super#visit_EApp env e es
-end
-
-
-let inline_loops = object
-   inherit [_] Krml.Ast.map
-
-   method! visit_DFunction () cc flags n_cgs n t name binders body =
-     if is_inline_loop name then
-       DFunction
-         ( cc,
-           [ Krml.Common.MustInline; MustDisappear ] @ flags,
-           n_cgs,
-           n,
-           t,
-           name,
-           binders,
-           return_becomes_break#visit_expr_w () body )
-     else
-       DFunction (cc, flags, n_cgs, n, t, name, binders, body)
-end
+    method! visit_DFunction () cc flags n_cgs n t name binders body =
+      if is_inline_loop name then
+        DFunction
+          ( cc,
+            [ Krml.Common.MustInline; MustDisappear ] @ flags,
+            n_cgs,
+            n,
+            t,
+            name,
+            binders,
+            return_becomes_break#visit_expr_w () body )
+      else
+        DFunction (cc, flags, n_cgs, n, t, name, binders, body)
+  end

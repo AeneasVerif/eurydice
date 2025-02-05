@@ -201,7 +201,7 @@ Supported options:|}
   let files = Eurydice.Cleanup2.improve_names files in
   let files = Eurydice.Cleanup2.recognize_asserts#visit_files () files in
   (* Temporary workaround until Aeneas supports nested loops *)
-  let files = Eurydice.Cleanup2.inline_loops #visit_files () files in
+  let files = Eurydice.Cleanup2.inline_loops#visit_files () files in
   let files = Krml.Inlining.inline files in
   let files = Krml.Monomorphization.functions files in
   let files = Krml.Monomorphization.datatypes files in
