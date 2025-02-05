@@ -238,7 +238,6 @@ Supported options:|}
      functions that do not write to memory). *)
   fill_readonly_table files;
   let files = Krml.Simplify.optimize_lets files in
-  (* let files = Eurydice.Cleanup2.break_down_nested_arrays#visit_files () files in *)
   let files = Eurydice.Cleanup2.remove_array_from_fn files in
   (* remove_array_from_fn, above, creates further opportunities for removing unused functions. *)
   let files = Krml.Inlining.drop_unused files in
