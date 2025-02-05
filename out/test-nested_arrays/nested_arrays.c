@@ -19,11 +19,14 @@ _uint32_t__x2;
 void nested_arrays_main(void)
 {
   uint32_t keys[3U][3U][8U];
-  for (size_t i = (size_t)0U; i < (size_t)3U; i++)
+  for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++)
   {
-    memcpy(keys[i][0U], nested_arrays_ZERO, (size_t)8U * sizeof (uint32_t));
-    memcpy(keys[i][1U], nested_arrays_ZERO, (size_t)8U * sizeof (uint32_t));
-    memcpy(keys[i][2U], nested_arrays_ZERO, (size_t)8U * sizeof (uint32_t));
+    uint32_t repeat_expression[3U][8U];
+    for (size_t i = (size_t)0U; i < (size_t)3U; i++)
+    {
+      memcpy(repeat_expression[i], nested_arrays_ZERO, (size_t)8U * sizeof (uint32_t));
+    }
+    memcpy(keys[i0], repeat_expression, (size_t)3U * sizeof (uint32_t [8U]));
   }
   for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++)
   {

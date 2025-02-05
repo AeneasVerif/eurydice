@@ -42,8 +42,8 @@ with const generics
 size_t where_clauses_simple_fn_k_71(void)
 {
   size_t x = where_clauses_simple_of_u16_56_e0(0U);
-  uint16_t buf[3U] = { 0U };
-  return where_clauses_simple_add_56_e0(buf, x);
+  uint16_t repeat_expression[3U] = { 0U };
+  return where_clauses_simple_add_56_e0(repeat_expression, x);
 }
 
 typedef struct _size_t__x2_s
@@ -88,8 +88,8 @@ with const generics
 uint64_t where_clauses_simple_fn_k_3a(void)
 {
   uint64_t x = where_clauses_simple_of_u16_d9(0U);
-  uint16_t buf[1U] = { 0U };
-  return where_clauses_simple_add_d9(buf, x);
+  uint16_t repeat_expression[1U] = { 0U };
+  return where_clauses_simple_add_d9(repeat_expression, x);
 }
 
 typedef struct _uint64_t__x2_s
@@ -144,8 +144,8 @@ with const generics
 size_t where_clauses_simple_fn_1_e6(void)
 {
   size_t x = where_clauses_simple_of_u16_56_74(0U);
-  uint16_t buf[1U] = { 0U };
-  return where_clauses_simple_add_56_74(buf, x);
+  uint16_t repeat_expression[1U] = { 0U };
+  return where_clauses_simple_add_56_74(repeat_expression, x);
 }
 
 void where_clauses_simple_one_calls_k(void)
@@ -167,8 +167,8 @@ with const generics
 uint64_t where_clauses_simple_fn_1_6f(void)
 {
   uint64_t x = where_clauses_simple_of_u16_d9(0U);
-  uint16_t buf[1U] = { 0U };
-  return where_clauses_simple_add_d9(buf, x);
+  uint16_t repeat_expression[1U] = { 0U };
+  return where_clauses_simple_add_d9(repeat_expression, x);
 }
 
 void where_clauses_simple_one_calls_one(void)
@@ -190,10 +190,10 @@ with const generics
 tuple_65 where_clauses_simple_double_47(uint64_t x, size_t y)
 {
   tuple_65 lit;
-  uint16_t buf[1U] = { 0U };
-  lit.fst = where_clauses_simple_add_d9(buf, x);
-  uint16_t buf0[1U] = { 0U };
-  lit.snd = where_clauses_simple_add_56_74(buf0, y);
+  uint16_t repeat_expression[1U] = { 0U };
+  lit.fst = where_clauses_simple_add_d9(repeat_expression, x);
+  uint16_t repeat_expression0[1U] = { 0U };
+  lit.snd = where_clauses_simple_add_56_74(repeat_expression0, y);
   return lit;
 }
 
@@ -206,10 +206,10 @@ with const generics
 tuple_b6 where_clauses_simple_double_k_7b(size_t x, uint64_t y)
 {
   tuple_b6 lit;
-  uint16_t buf[3U] = { 0U };
-  lit.fst = where_clauses_simple_add_56_e0(buf, x);
-  uint16_t buf0[1U] = { 0U };
-  lit.snd = where_clauses_simple_add_d9(buf0, y);
+  uint16_t repeat_expression[3U] = { 0U };
+  lit.fst = where_clauses_simple_add_56_e0(repeat_expression, x);
+  uint16_t repeat_expression0[1U] = { 0U };
+  lit.snd = where_clauses_simple_add_d9(repeat_expression0, y);
   return lit;
 }
 
