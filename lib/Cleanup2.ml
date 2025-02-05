@@ -154,7 +154,7 @@ let remove_array_repeats =
             | _ -> failwith "impossible"
           in
           let init = self#visit_expr env init in
-          EBufCreateL (Stack, List.init l (fun _ -> init))
+          EBufCreate (Stack, init, Krml.Helpers.mk_sizet l)
       | _ -> super#visit_EApp env e es
 
     method! visit_ELet (((), _) as env) b e1 e2 =
