@@ -57,6 +57,8 @@ let remove_implicit_array_copies =
       | _ ->
           (* Something else, e.g. a variable -- generate a memcpy *)
           let zero = Krml.(Helpers.zero Constant.SizeT) in
+          let rhs = self#visit_expr_w () rhs in
+          let lhs = self#visit_expr_w () lhs in
           ELet
             ( H.sequence_binding (),
               H.with_unit (EBufBlit (rhs, zero, lhs, zero, PreCleanup.expr_of_constant n)),
