@@ -221,7 +221,9 @@ Supported options:|}
     fail __FILE__ __LINE__;
   let files = Krml.Inlining.drop_unused files in
   let files = Eurydice.Cleanup2.remove_array_temporaries#visit_files () files in
+  Eurydice.Logging.log "Phase2.25" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
+  Eurydice.Logging.log "Phase2.26" "%a" pfiles files;
   let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
   let files = Krml.DataTypes.simplify files in
   let files = Krml.DataTypes.optimize files in
@@ -241,6 +243,7 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_array_from_fn files in
   (* remove_array_from_fn, above, creates further opportunities for removing unused functions. *)
   let files = Krml.Inlining.drop_unused files in
+  Eurydice.Logging.log "Phase2.55" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_implicit_array_copies#visit_files () files in
   (* Creates opportunities for removing unused variables *)
   Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
