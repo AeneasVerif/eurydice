@@ -95,7 +95,7 @@ let remove_implicit_array_copies =
             ( b,
               H.any,
               (* b := *)
-              with_type e2.typ ((self#remove_assign n (with_type b.typ (EBound 0)) e1
+              with_type e2.typ ((self#remove_assign n (with_type b.typ (EBound 0)) (Krml.DeBruijn.lift 1 e1)
                    (* e2 *)
                    (self#visit_expr env e2) )))
 
