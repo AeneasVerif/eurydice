@@ -81,6 +81,8 @@ extern const uint32_t nested_arrays_ZERO[8U];
 
 void nested_arrays_main(void);
 
+void nested_arrays_test(uint8_t ret[4U][200U]);
+
 #if defined(__cplusplus)
 }
 #endif

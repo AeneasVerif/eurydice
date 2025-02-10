@@ -34,24 +34,27 @@ let remove_implicit_array_copies =
                we possibly recurse if the type of elements is an array *)
             assert (List.length es = int_of_string (snd n));
             let lift = Krml.DeBruijn.lift in
-            let rec nest i es =
+            let rec nest lifting_index array_index es =
               match es with
-              | [] -> lift i (self#visit_expr_w () e2)
+              | [] -> lift lifting_index (self#visit_expr_w () e2)
               | e :: es ->
-                  let i_ = with_type H.usize (EConstant (SizeT, string_of_int i)) in
-                  let lhs_i = with_type (H.assert_tbuf_or_tarray lhs.typ) (EBufRead (lhs, i_)) in
+                  let array_index_ = with_type H.usize (EConstant (SizeT, string_of_int array_index)) in
+                  let lhs_i = with_type (H.assert_tbuf_or_tarray lhs.typ) (EBufRead (lhs, array_index_)) in
                   match e.typ with
                   | TArray (_, n) ->
                       with_type e2.typ
-                        (self#remove_assign n (lift i lhs_i) (lift i e) (nest i es))
+                        (self#remove_assign n
+                          (lift lifting_index lhs_i)
+                          (lift lifting_index e)
+                          (nest lifting_index (array_index + 1) es))
                   | _ ->
                       with_type e2.typ
                         (ELet
                            ( H.sequence_binding (),
-                             H.with_unit (EAssign (lift i lhs_i, lift i e)),
-                             nest (i + 1) es ))
+                             H.with_unit (EAssign (lift lifting_index lhs_i, lift lifting_index e)),
+                             nest (lifting_index + 1) (array_index + 1) es ))
             in
-            (nest 0 es).node
+            (nest 0 0 es).node
           end
 
       | _ ->
