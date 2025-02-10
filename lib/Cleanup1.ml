@@ -117,13 +117,14 @@ let remove_assignments =
             @@ close_now_over not_yet_closed
                  ((* We must now bind: *)
                   count e
-                ++ (* whichever variables were in the condition *)
+                ++
+                (* whichever variables were in the condition *)
                 AtomSet.empty)
                  (* unlike below, we are in terminal position, so we do not need to
                     close immediately variables that appear in both branches -- we can simply declare them
                     twice in each branch! is this a better code-gen choice? yes, absolutely -- owing to
                     the structure of MIR, NOT doing this generates awful code *)
-                   (fun not_yet_closed ->
+                 (fun not_yet_closed ->
                    EIfThenElse
                      ( self#visit_expr_w not_yet_closed e,
                        recurse_or_close not_yet_closed e',
@@ -137,10 +138,11 @@ let remove_assignments =
             @@ close_now_over not_yet_closed
                  ((* We must now bind: *)
                   count e
-                ++ (* i.e., whichever variables were in the condition *)
+                ++
+                (* i.e., whichever variables were in the condition *)
                 AtomSet.empty)
                  (* see above *)
-                   (fun not_yet_closed ->
+                 (fun not_yet_closed ->
                    ESwitch
                      ( self#visit_expr_w not_yet_closed e,
                        List.map (fun (p, e) -> p, recurse_or_close not_yet_closed e) branches ))
@@ -149,10 +151,11 @@ let remove_assignments =
             @@ close_now_over not_yet_closed
                  ((* We must now bind: *)
                   count e
-                ++ (* i.e., whichever variables were in the condition *)
+                ++
+                (* i.e., whichever variables were in the condition *)
                 AtomSet.empty)
                  (* see above *)
-                   (fun not_yet_closed ->
+                 (fun not_yet_closed ->
                    EMatch
                      ( c,
                        self#visit_expr_w not_yet_closed e,
@@ -201,12 +204,14 @@ let remove_assignments =
           close_now_over not_yet_closed
             ((* We must now bind: *)
              count e
-            ++ (* whichever variables were in the condition *)
+            ++
+            (* whichever variables were in the condition *)
             AtomSet.inter (count e') (count e'')
-            ++ (* variables that appear in both branches *)
+            ++
+            (* variables that appear in both branches *)
             AtomSet.inter (count e' ++ count e'') (count e2))
             (* variables in either branch *and* used later *)
-              (fun not_yet_closed ->
+            (fun not_yet_closed ->
               ELet
                 ( b,
                   mk e1.typ e1.meta
@@ -232,16 +237,18 @@ let remove_assignments =
           close_now_over not_yet_closed
             ((* We must now bind: *)
              count e
-            ++ (* i.e., whichever variables were in the condition *)
+            ++
+            (* i.e., whichever variables were in the condition *)
             Krml.KList.reduce AtomSet.inter (List.map (fun (_p, e) -> count e) branches)
-            ++ (* i.e., variables that appear in all branches -- note that
+            ++
+            (* i.e., variables that appear in all branches -- note that
                   switches don't bind variables in their branches so it's simpler
                   than the match below*)
             AtomSet.inter
               (Krml.KList.reduce ( ++ ) (List.map (fun (_, e) -> count e) branches))
               (count e2))
             (* i.e., variables in either one of the branches *and* used later *)
-              (fun not_yet_closed ->
+            (fun not_yet_closed ->
               ELet
                 ( b,
                   mk e1.typ e1.meta
@@ -254,15 +261,17 @@ let remove_assignments =
           close_now_over not_yet_closed
             ((* We must now bind: *)
              count e
-            ++ (* i.e., whichever variables were in the condition *)
+            ++
+            (* i.e., whichever variables were in the condition *)
             Krml.KList.reduce AtomSet.inter (List.map (fun (_bs, _p, e) -> count e) branches)
-            ++ (* i.e., variables that appear in all branches -- note that we
+            ++
+            (* i.e., variables that appear in all branches -- note that we
                   don't open _bs meaning that we don't collect bound variables in this branch *)
             AtomSet.inter
               (Krml.KList.reduce ( ++ ) (List.map (fun (_, _, e) -> count e) branches))
               (count e2))
             (* i.e., variables in either one of the branches *and* used later *)
-              (fun not_yet_closed ->
+            (fun not_yet_closed ->
               ELet
                 ( b,
                   mk e1.typ e1.meta

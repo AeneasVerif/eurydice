@@ -19,11 +19,14 @@ _uint32_t__x2;
 void nested_arrays_main(void)
 {
   uint32_t keys[3U][3U][8U];
-  for (size_t i = (size_t)0U; i < (size_t)3U; i++)
+  for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++)
   {
-    memcpy(keys[i][0U], nested_arrays_ZERO, (size_t)8U * sizeof (uint32_t));
-    memcpy(keys[i][1U], nested_arrays_ZERO, (size_t)8U * sizeof (uint32_t));
-    memcpy(keys[i][2U], nested_arrays_ZERO, (size_t)8U * sizeof (uint32_t));
+    uint32_t repeat_expression[3U][8U];
+    for (size_t i = (size_t)0U; i < (size_t)3U; i++)
+    {
+      memcpy(repeat_expression[i], nested_arrays_ZERO, (size_t)8U * sizeof (uint32_t));
+    }
+    memcpy(keys[i0], repeat_expression, (size_t)3U * sizeof (uint32_t [8U]));
   }
   for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++)
   {
@@ -43,5 +46,28 @@ void nested_arrays_main(void)
       }
     }
   }
+}
+
+void nested_arrays_test(uint8_t ret[4U][200U])
+{
+  uint8_t out0[200U] = { 0U };
+  uint8_t out1[200U] = { 0U };
+  uint8_t out2[200U] = { 0U };
+  uint8_t out3[200U] = { 0U };
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_out0[200U];
+  memcpy(copy_of_out0, out0, (size_t)200U * sizeof (uint8_t));
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_out1[200U];
+  memcpy(copy_of_out1, out1, (size_t)200U * sizeof (uint8_t));
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint8_t copy_of_out2[200U];
+  memcpy(copy_of_out2, out2, (size_t)200U * sizeof (uint8_t));
+  uint8_t uu____3[200U];
+  memcpy(uu____3, out3, (size_t)200U * sizeof (uint8_t));
+  memcpy(ret[0U], copy_of_out0, (size_t)200U * sizeof (uint8_t));
+  memcpy(ret[1U], copy_of_out1, (size_t)200U * sizeof (uint8_t));
+  memcpy(ret[2U], copy_of_out2, (size_t)200U * sizeof (uint8_t));
+  memcpy(ret[3U], uu____3, (size_t)200U * sizeof (uint8_t));
 }
 

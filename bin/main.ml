@@ -201,7 +201,7 @@ Supported options:|}
   let files = Eurydice.Cleanup2.improve_names files in
   let files = Eurydice.Cleanup2.recognize_asserts#visit_files () files in
   (* Temporary workaround until Aeneas supports nested loops *)
-  let files = Eurydice.Cleanup2.inline_loops #visit_files () files in
+  let files = Eurydice.Cleanup2.inline_loops#visit_files () files in
   let files = Krml.Inlining.inline files in
   let files = Krml.Monomorphization.functions files in
   let files = Krml.Monomorphization.datatypes files in
@@ -221,7 +221,9 @@ Supported options:|}
     fail __FILE__ __LINE__;
   let files = Krml.Inlining.drop_unused files in
   let files = Eurydice.Cleanup2.remove_array_temporaries#visit_files () files in
+  Eurydice.Logging.log "Phase2.25" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
+  Eurydice.Logging.log "Phase2.26" "%a" pfiles files;
   let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
   let files = Krml.DataTypes.simplify files in
   let files = Krml.DataTypes.optimize files in
@@ -238,10 +240,10 @@ Supported options:|}
      functions that do not write to memory). *)
   fill_readonly_table files;
   let files = Krml.Simplify.optimize_lets files in
-  (* let files = Eurydice.Cleanup2.break_down_nested_arrays#visit_files () files in *)
   let files = Eurydice.Cleanup2.remove_array_from_fn files in
   (* remove_array_from_fn, above, creates further opportunities for removing unused functions. *)
   let files = Krml.Inlining.drop_unused files in
+  Eurydice.Logging.log "Phase2.55" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_implicit_array_copies#visit_files () files in
   (* Creates opportunities for removing unused variables *)
   Eurydice.Logging.log "Phase2.6" "%a" pfiles files;

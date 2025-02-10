@@ -439,16 +439,19 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
                } ->
             (* Monomorphization resulting in exactly this name *)
             find_map (matches monomorphized_lid) monomorphizations_exact
-            ||| (* Monomorphization using given trait name, amongst the arguments *)
+            |||
+            (* Monomorphization using given trait name, amongst the arguments *)
             List.find_map
               (fun e ->
                 match e.node with
                 | EQualified lid' -> find_map (matches lid') monomorphizations_using
                 | _ -> None)
               cgs
-            ||| (* Monomorphization using given type name *)
+            |||
+            (* Monomorphization using given type name *)
             List.find_map (uses monomorphizations_using) ts
-            ||| (* Monomorphization of a given polymorphic name *)
+            |||
+            (* Monomorphization of a given polymorphic name *)
             find_map (matches generic_lid) monomorphizations_of
             |> Option.map (fun vis -> name, inline_static, vis))
           config

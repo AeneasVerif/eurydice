@@ -20,17 +20,11 @@ void issue_96_use_it2(issue_96_MyStruct2 *x)
 void issue_96_main(void)
 {
   issue_96_MyStruct x;
-  x.fst[0U] = 0U;
-  x.fst[1U] = 0U;
-  x.fst[2U] = 0U;
-  x.fst[3U] = 0U;
-  x.fst[4U] = 0U;
+  uint8_t repeat_expression0[5U] = { 0U };
+  memcpy(x.fst, repeat_expression0, (size_t)5U * sizeof (uint8_t));
   issue_96_MyStruct2 x0;
-  x0.fst[0U] = 0U;
-  x0.fst[1U] = 0U;
-  x0.fst[2U] = 0U;
-  x0.fst[3U] = 0U;
-  x0.fst[4U] = 0U;
+  uint8_t repeat_expression[5U] = { 0U };
+  memcpy(x0.fst, repeat_expression, (size_t)5U * sizeof (uint8_t));
   x0.snd = 2U;
 }
 

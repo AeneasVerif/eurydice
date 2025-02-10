@@ -6,86 +6,102 @@ open Krml.PrintAst.Ops
 
 (* Target cleanups invoked from bin/main.ml *)
 
-let break_down_nested_arrays =
-  object (self)
-    inherit [_] map as super
-
-    method! visit_ELet (((), _) as env) b e1 e2 =
-      match e1.node with
-      | EBufCreateL (Stack, es) when H.is_array (List.hd es).typ ->
-          ELet
-            ( b,
-              H.any,
-              with_type e2.typ
-                (ESequence
-                   (List.mapi
-                      (fun i e ->
-                        let b = with_type b.typ (EBound 0) in
-                        let i = with_type H.usize (EConstant (SizeT, string_of_int i)) in
-                        let b_i = with_type (H.assert_tbuf_or_tarray b.typ) (EBufRead (b, i)) in
-                        H.with_unit (EAssign (b_i, self#visit_expr env (Krml.DeBruijn.lift 1 e))))
-                      es
-                   @ [ self#visit_expr env e2 ])) )
-      | _ -> super#visit_ELet env b e1 e2
-  end
-
+(* A general phase that removes assignments at array types. Note that all array repeat expressions
+   are desugared before this. We try to reduce all cases to the assignment case (e1 := e2). *)
 let remove_implicit_array_copies =
   object (self)
     inherit [_] map as super
 
+    (* Desugar `lhs := rhs in e2`, because `rhs` has an array type and `not (is_suitable_initializer rhs)`. *)
     method private remove_assign n lhs rhs e2 =
+      (* Krml.KPrint.bprintf "remove_assign %a := %a\n" pexpr lhs pexpr rhs; *)
+      let is_array = function TArray _ -> true | _ -> false in
+
+      (* What are we trying to assign? *)
       match rhs.node with
       | EBufCreateL (Stack, es) ->
-          (* let _ = lhs := bufcreatel e1, e2, ... lhs[0] := e1, lhs[1] := e2, ... *)
-          assert (List.length es = int_of_string (snd n));
-          let lift = Krml.DeBruijn.lift in
-          let rec nest i es =
-            match es with
-            | [] -> lift i (self#visit_expr_w () e2)
-            | e :: es ->
-                let i_ = with_type H.usize (EConstant (SizeT, string_of_int i)) in
-                let lhs_i = with_type (H.assert_tbuf_or_tarray lhs.typ) (EBufRead (lhs, i_)) in
-                with_type e2.typ
-                  (ELet
-                     ( H.sequence_binding (),
-                       H.with_unit (EAssign (lift i lhs_i, lift i e)),
-                       nest (i + 1) es ))
-          in
-          (nest 0 es).node
+
+          if List.for_all ((=) (List.hd es)) es && not (is_array (List.hd es).typ) then
+            (* We assign a list of elements that are all identical -- optimize *)
+            let lift = Krml.DeBruijn.lift 1 in
+            ELet
+              ( H.sequence_binding (),
+                H.with_unit (EBufFill (lhs, List.hd es, Krml.Helpers.mk_uint32 (List.length es))),
+                lift e2 )
+
+          else begin
+            (* lhs := bufcreatel e1, e2, ... ~~> lhs[0] := e1, lhs[1] := e2, ...
+               we possibly recurse if the type of elements is an array *)
+            assert (List.length es = int_of_string (snd n));
+            let lift = Krml.DeBruijn.lift in
+            let rec nest lifting_index array_index es =
+              match es with
+              | [] -> lift lifting_index (self#visit_expr_w () e2)
+              | e :: es ->
+                  let array_index_ = with_type H.usize (EConstant (SizeT, string_of_int array_index)) in
+                  let lhs_i = with_type (H.assert_tbuf_or_tarray lhs.typ) (EBufRead (lhs, array_index_)) in
+                  match e.typ with
+                  | TArray (_, n) ->
+                      with_type e2.typ
+                        (self#remove_assign n
+                          (lift lifting_index lhs_i)
+                          (lift lifting_index e)
+                          (nest lifting_index (array_index + 1) es))
+                  | _ ->
+                      with_type e2.typ
+                        (ELet
+                           ( H.sequence_binding (),
+                             H.with_unit (EAssign (lift lifting_index lhs_i, lift lifting_index e)),
+                             nest (lifting_index + 1) (array_index + 1) es ))
+            in
+            (nest 0 0 es).node
+          end
+
       | _ ->
+          (* Something else, e.g. a variable -- generate a memcpy *)
           let zero = Krml.(Helpers.zero Constant.SizeT) in
-          (* let _ = *)
+          let rhs = self#visit_expr_w () rhs in
+          let lhs = self#visit_expr_w () lhs in
           ELet
             ( H.sequence_binding (),
               H.with_unit (EBufBlit (rhs, zero, lhs, zero, PreCleanup.expr_of_constant n)),
               lift 1 (self#visit_expr_w () e2) )
 
     method! visit_ELet (((), _) as env) b e1 e2 =
+      let rec subarrays_only_literals e =
+        (* Underneath an initializer list *)
+        match e.typ with
+        | TArray _ ->
+            (* In the case of nested arrays *)
+            begin match e.node with
+            | EBufCreateL (_, es) ->
+                (* We only allow sub-initializer lists *)
+                List.for_all subarrays_only_literals es
+            | _ ->
+                (* Anything else (e.g. variable) is not copy-assignment in C *)
+                false
+            end
+        | _ ->
+            (* If this is not a nested array, then anything goes *)
+            true
+      in
       let is_suitable_initializer = function
-        | EAny | EBufCreate _ | EBufCreateL _ -> true
+        | EAny | EBufCreate _ -> true
+        | EBufCreateL (_, es) -> List.for_all subarrays_only_literals es
         | _ -> false
       in
       match b.typ, e1.node with
-      (* COPY: let b: TArray (_, n) = e1 in e2 *)
+      (* INVALID INITIALIZATION: let b = e1 in e2 -- explode into assignments, recursively *)
       | TArray (_, n), _ when not (is_suitable_initializer e1.node) ->
-          let zero = Krml.(Helpers.zero Constant.SizeT) in
           (* let b = <uninitialized> in *)
           ELet
             ( b,
               H.any,
-              with_type e2.typ
-                (ELet
-                   ( H.sequence_binding (),
-                     (* let _ = blit e1 (a.k.a. src) b (a.k.a. dst) in *)
-                     H.with_unit
-                       (EBufBlit
-                          ( lift 1 e1,
-                            zero,
-                            with_type b.typ (EBound 0),
-                            zero,
-                            PreCleanup.expr_of_constant n )),
-                     (* e2 *)
-                     lift 1 (self#visit_expr env e2) )) )
+              (* b := *)
+              with_type e2.typ ((self#remove_assign n (with_type b.typ (EBound 0)) (Krml.DeBruijn.lift 1 e1)
+                   (* e2 *)
+                   (self#visit_expr env e2) )))
+
       (* COPY: let _ = lhs := rhs with lhs.typ == TArray _ ... *)
       | _, EAssign (lhs, rhs) when H.is_array lhs.typ ->
           let n =
@@ -94,16 +110,15 @@ let remove_implicit_array_copies =
             | _ -> failwith "impossible"
           in
           (* Fixpoint here for multi-dimensional arrays. *)
-          (self#visit_expr env
-             (with_type e2.typ (self#remove_assign n lhs rhs (subst H.eunit 0 e2))))
-            .node
+          self#remove_assign n lhs rhs (subst H.eunit 0 e2)
+
       | _ -> super#visit_ELet env b e1 e2
 
     method! visit_EAssign env lhs rhs =
+      (* COPY: lhs := rhs with lhs.typ == TArray _ ... *)
       match lhs.typ with
       | TArray (_, n) ->
-          (* Fixpoint here for multi-dimensional arrays. *)
-          (self#visit_expr env (H.with_unit (self#remove_assign n lhs rhs H.eunit))).node
+          self#remove_assign n lhs rhs H.eunit
       | _ -> super#visit_EAssign env lhs rhs
   end
 
@@ -140,68 +155,112 @@ let remove_array_temporaries =
       | _ -> ELet (b, self#visit_expr env e1, self#visit_expr env e2)
   end
 
+(* We remove array repeat expressions.
+
+   Such expressions might occur in any position; we rewrite everything into a
+   single form let x = [e; n] with a let-binding. (The later hoist phase is
+   going to do this anyhow, so we might as well do it now for simplicity.)
+
+   - If the array repeat is made up of zeroes, or array repeats made of zeroes,
+     then we generate (complete) initializer lists that the subsequent code-gen
+     in CStarToC will be able to emit as = { 0 } (note that this works because
+     we ensure such expressions are let-bound.) We could expand and generate
+     EBufCreateL nodes for *any* array repeat whose bounds are statically known,
+     but that's generally a bad idea.
+   - If the array repeat is of a /simple form/ (i.e., e is a scalar value), then
+     we use the BufCreate node, to be emitted later on (also in CStarToC) as a
+     zero-initializer, a memset, or a for-loop.
+   - Barring that, we use a for-loop and recurse. *)
 let remove_array_repeats =
   object (self)
     inherit [_] map as super
 
     method! visit_EApp env e es =
+      (* This is the case where the declaration is not in let-binding position. This happens with
+         e.g. `fn init() -> ... { [0; 32] }`. *)
       match e.node, es with
-      | ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]), [ init ]
+      | ETApp ({ node = EQualified lid; _ }, [ _ ], _, [ _ ]), [ _ ]
         when lid = Builtin.array_repeat.name ->
-          let l =
-            match len.node with
-            | EConstant (_, s) -> int_of_string s
-            | _ -> failwith "impossible"
-          in
-          let init = self#visit_expr env init in
-          EBufCreateL (Stack, List.init l (fun _ -> init))
+          (self#visit_expr env
+             (with_type (snd env)
+                (ELet
+                   ( H.fresh_binder "repeat_expression" (snd env),
+                     with_type (snd env) (EApp (e, es)),
+                     with_type (snd env) (EBound 0) ))))
+            .node
       | _ -> super#visit_EApp env e es
 
-    method! visit_ELet (((), _) as env) b e1 e2 =
-      let rec all_repeats e =
-        match e.node with
-        | EConstant _ -> true
-        | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ _ ], _, [ _ ]); _ }, [ init ])
-          when lid = Builtin.array_repeat.name -> all_repeats init
-        | _ -> false
-      in
-      match e1.node with
+    method private assert_length len =
+      match len.node with
+      | EConstant (_, s) -> int_of_string s
+      | _ -> failwith "impossible"
+
+    method private try_expand_zero e =
+      match e.node with
+      | EApp
+          ( { node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ },
+            [ ({ node = EConstant (_, "0"); _ } as init) ] )
+        when lid = Builtin.array_repeat.name ->
+          (* [0; n] -> ok *)
+          with_type e.typ @@ EBufCreateL (Stack, List.init (self#assert_length len) (fun _ -> init))
       | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
         when lid = Builtin.array_repeat.name ->
-          if all_repeats e1 then
-            (* Further code-gen can handle nested ebufcreatel's by using nested
-               static initializer lists, possiblye shortening to { 0 } if
-               applicable. *)
-            super#visit_ELet env b e1 e2
-          else
-            (* let b = [ init; len ] *)
-            let module H = Krml.Helpers in
-            let len = self#visit_expr env len in
-            let init = self#visit_expr env init in
-            (* let b; *)
-            ELet
-              ( b,
-                H.any,
-                (* let _ = *)
-                with_type e2.typ
-                  (ELet
-                     ( H.sequence_binding (),
-                       (* for *)
-                       H.with_unit
-                         (EFor
-                            ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
-                              H.zero_usize (* i = 0 *),
-                              H.mk_lt_usize (Krml.DeBruijn.lift 2 len) (* i < len *),
-                              H.mk_incr_usize (* i++ *),
-                              let i = with_type H.usize (EBound 0) in
-                              let b = with_type b.typ (EBound 1) in
-                              let b_i =
-                                with_type (H.assert_tbuf_or_tarray b.typ) (EBufRead (b, i))
-                              in
-                              (* b[i] := init *)
-                              H.with_unit (EAssign (b_i, Krml.DeBruijn.lift 2 init)) )),
-                       (* e2 *)
-                       Krml.DeBruijn.lift 1 (self#visit_expr env e2) )) )
+          (* [e; n] -> ok if e ok *)
+          let init = self#try_expand_zero init in
+          with_type e.typ @@ EBufCreateL (Stack, List.init (self#assert_length len) (fun _ -> init))
+      | _ -> raise Not_found
+
+    method! visit_ELet (((), _) as env) b e1 e2 =
+      match e1.node with
+      | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
+        when lid = Builtin.array_repeat.name -> begin
+          try
+            (* Case 1. *)
+            let r = ELet (b, self#try_expand_zero e1, self#visit_expr env e2) in
+            Krml.KPrint.bprintf "SUCCESS EXPAND ZERO\n";
+            r
+          with Not_found -> (
+            Krml.KPrint.bprintf "DID NOT EXPAND ZERO\n";
+            match init.node with
+            | EConstant _ ->
+                (* Case 2. *)
+                let e1 =
+                  with_type e1.typ
+                    (EBufCreate (Stack, init, Krml.Helpers.mk_sizet (self#assert_length len)))
+                in
+                ELet (b, e1, self#visit_expr env e2)
+            | _ ->
+                (* Case 3. *)
+
+                (* let b = [ init; len ] *)
+                let module H = Krml.Helpers in
+                let len = self#visit_expr env len in
+                let init = self#visit_expr env init in
+                (* let b; *)
+                ELet
+                  ( b,
+                    H.any,
+                    (* let _ = *)
+                    with_type e2.typ
+                      (ELet
+                         ( H.sequence_binding (),
+                           (* for *)
+                           H.with_unit
+                             (EFor
+                                ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
+                                  H.zero_usize (* i = 0 *),
+                                  H.mk_lt_usize (Krml.DeBruijn.lift 2 len) (* i < len *),
+                                  H.mk_incr_usize (* i++ *),
+                                  let i = with_type H.usize (EBound 0) in
+                                  let b = with_type b.typ (EBound 1) in
+                                  let b_i =
+                                    with_type (H.assert_tbuf_or_tarray b.typ) (EBufRead (b, i))
+                                  in
+                                  (* b[i] := init *)
+                                  H.with_unit (EAssign (b_i, Krml.DeBruijn.lift 2 init)) )),
+                           (* e2 *)
+                           Krml.DeBruijn.lift 1 (self#visit_expr env e2) )) ))
+        end
       | _ -> super#visit_ELet env b e1 e2
   end
 
@@ -931,38 +990,33 @@ let check_addrof =
 (* Aeneas requires hoisting loop bodies into separate functions. *)
 let is_inline_loop lid = Krml.KString.exists (snd lid) "inner_loop"
 
-let return_becomes_break = object
-  inherit [_] Krml.Ast.map as super
+let return_becomes_break =
+  object
+    inherit [_] Krml.Ast.map as super
+    method! visit_EReturn _ _ = EBreak
+    method! visit_EFor _ _ _ _ = failwith "nested loop in a loop body"
 
-  method! visit_EReturn _ _ =
-    EBreak
+    method! visit_EApp env e es =
+      match e.node with
+      | EQualified lid when is_inline_loop lid -> failwith "nested loop in a loop body"
+      | _ -> super#visit_EApp env e es
+  end
 
-  method! visit_EFor _ _ _ _ =
-    failwith "nested loop in a loop body"
+let inline_loops =
+  object
+    inherit [_] Krml.Ast.map
 
-  method! visit_EApp env e es =
-    match e.node with
-    | EQualified lid when is_inline_loop lid ->
-        failwith "nested loop in a loop body"
-    | _ ->
-        super#visit_EApp env e es
-end
-
-
-let inline_loops = object
-   inherit [_] Krml.Ast.map
-
-   method! visit_DFunction () cc flags n_cgs n t name binders body =
-     if is_inline_loop name then
-       DFunction
-         ( cc,
-           [ Krml.Common.MustInline; MustDisappear ] @ flags,
-           n_cgs,
-           n,
-           t,
-           name,
-           binders,
-           return_becomes_break#visit_expr_w () body )
-     else
-       DFunction (cc, flags, n_cgs, n, t, name, binders, body)
-end
+    method! visit_DFunction () cc flags n_cgs n t name binders body =
+      if is_inline_loop name then
+        DFunction
+          ( cc,
+            [ Krml.Common.MustInline; MustDisappear ] @ flags,
+            n_cgs,
+            n,
+            t,
+            name,
+            binders,
+            return_becomes_break#visit_expr_w () body )
+      else
+        DFunction (cc, flags, n_cgs, n, t, name, binders, body)
+  end
