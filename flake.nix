@@ -1,6 +1,6 @@
 {
   inputs = {
-    karamel.url = "github:FStarLang/karamel";
+    karamel.url = "github:FStarLang/karamel/lucas-nix-aarch64";
     flake-utils.follows = "karamel/flake-utils";
     # Need to use same-ish nixpkgs version as karamel to get a compatible ocaml
     # toolchain
