@@ -790,14 +790,12 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) : t
           \  id %d:\n\
           \  clause_generic type is %s\n\
           \  clause_generic const_generics is %s\n\
-          \  required: %d\n\
-          \  provided: %d\n"
+          \  methods: %d\n"
           name
           (C.TraitClauseId.to_int clause_id)
           (String.concat " ++ " (List.map C.show_ty decl_generics.C.types))
           (String.concat " ++ " (List.map C.show_const_generic decl_generics.C.const_generics))
-          (List.length trait_decl.C.required_methods)
-          (List.length trait_decl.C.provided_methods);
+          (List.length trait_decl.C.methods);
 
         (* 1. Associated constants *)
         List.map
@@ -817,7 +815,7 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) : t
               in
               ( (C.Clause (Free clause_id), item_name),
                 ClauseMethod (decl_generics, ts, trait_decl.C.item_meta.name, decl.C.signature) ))
-            (trait_decl.C.required_methods @ trait_decl.C.provided_methods)
+            trait_decl.C.methods
         (* 1 + 2, recursively, for parent traits *)
         @ List.flatten
             (List.mapi
@@ -1018,7 +1016,7 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
           | TraitImpl (id, _) ->
               let trait = env.get_nth_trait_impl id in
               let f =
-                try List.assoc method_name (trait.required_methods @ trait.provided_methods)
+                try List.assoc method_name trait.methods
                 with Not_found ->
                   fail "Error looking trait impl: %s %s%!"
                     (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref)
@@ -1161,7 +1159,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                       in
                       let fn_ptr = fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr) in
                       fn_ptr)
-                    (trait_impl.required_methods @ trait_impl.provided_methods)
+                    trait_impl.methods
                 @ build_trait_ref_mapping ("  " ^ depth) generics.trait_refs
             | Clause _ as clause_id ->
                 (* Caller it itself polymorphic and refers to one of its own clauses to synthesize
