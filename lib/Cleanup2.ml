@@ -217,10 +217,8 @@ let remove_array_repeats =
           try
             (* Case 1. *)
             let r = ELet (b, self#try_expand_zero e1, self#visit_expr env e2) in
-            Krml.KPrint.bprintf "SUCCESS EXPAND ZERO\n";
             r
           with Not_found -> (
-            Krml.KPrint.bprintf "DID NOT EXPAND ZERO\n";
             match init.node with
             | EConstant _ ->
                 (* Case 2. *)
