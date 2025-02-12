@@ -15,20 +15,21 @@ let remove_implicit_array_copies =
     (* Desugar `lhs := rhs in e2`, because `rhs` has an array type and `not (is_suitable_initializer rhs)`. *)
     method private remove_assign n lhs rhs e2 =
       (* Krml.KPrint.bprintf "remove_assign %a := %a\n" pexpr lhs pexpr rhs; *)
-      let is_array = function TArray _ -> true | _ -> false in
+      let is_array = function
+        | TArray _ -> true
+        | _ -> false
+      in
 
       (* What are we trying to assign? *)
       match rhs.node with
       | EBufCreateL (Stack, es) ->
-
-          if List.for_all ((=) (List.hd es)) es && not (is_array (List.hd es).typ) then
+          if List.for_all (( = ) (List.hd es)) es && not (is_array (List.hd es).typ) then
             (* We assign a list of elements that are all identical -- optimize *)
             let lift = Krml.DeBruijn.lift 1 in
             ELet
               ( H.sequence_binding (),
                 H.with_unit (EBufFill (lhs, List.hd es, Krml.Helpers.mk_uint32 (List.length es))),
                 lift e2 )
-
           else begin
             (* lhs := bufcreatel e1, e2, ... ~~> lhs[0] := e1, lhs[1] := e2, ...
                we possibly recurse if the type of elements is an array *)
@@ -37,26 +38,27 @@ let remove_implicit_array_copies =
             let rec nest lifting_index array_index es =
               match es with
               | [] -> lift lifting_index (self#visit_expr_w () e2)
-              | e :: es ->
-                  let array_index_ = with_type H.usize (EConstant (SizeT, string_of_int array_index)) in
-                  let lhs_i = with_type (H.assert_tbuf_or_tarray lhs.typ) (EBufRead (lhs, array_index_)) in
+              | e :: es -> (
+                  let array_index_ =
+                    with_type H.usize (EConstant (SizeT, string_of_int array_index))
+                  in
+                  let lhs_i =
+                    with_type (H.assert_tbuf_or_tarray lhs.typ) (EBufRead (lhs, array_index_))
+                  in
                   match e.typ with
                   | TArray (_, n) ->
                       with_type e2.typ
-                        (self#remove_assign n
-                          (lift lifting_index lhs_i)
-                          (lift lifting_index e)
-                          (nest lifting_index (array_index + 1) es))
+                        (self#remove_assign n (lift lifting_index lhs_i) (lift lifting_index e)
+                           (nest lifting_index (array_index + 1) es))
                   | _ ->
                       with_type e2.typ
                         (ELet
                            ( H.sequence_binding (),
                              H.with_unit (EAssign (lift lifting_index lhs_i, lift lifting_index e)),
-                             nest (lifting_index + 1) (array_index + 1) es ))
+                             nest (lifting_index + 1) (array_index + 1) es )))
             in
             (nest 0 0 es).node
           end
-
       | _ ->
           (* Something else, e.g. a variable -- generate a memcpy *)
           let zero = Krml.(Helpers.zero Constant.SizeT) in
@@ -73,13 +75,14 @@ let remove_implicit_array_copies =
         match e.typ with
         | TArray _ ->
             (* In the case of nested arrays *)
-            begin match e.node with
-            | EBufCreateL (_, es) ->
-                (* We only allow sub-initializer lists *)
-                List.for_all subarrays_only_literals es
-            | _ ->
-                (* Anything else (e.g. variable) is not copy-assignment in C *)
-                false
+            begin
+              match e.node with
+              | EBufCreateL (_, es) ->
+                  (* We only allow sub-initializer lists *)
+                  List.for_all subarrays_only_literals es
+              | _ ->
+                  (* Anything else (e.g. variable) is not copy-assignment in C *)
+                  false
             end
         | _ ->
             (* If this is not a nested array, then anything goes *)
@@ -98,10 +101,10 @@ let remove_implicit_array_copies =
             ( b,
               H.any,
               (* b := *)
-              with_type e2.typ ((self#remove_assign n (with_type b.typ (EBound 0)) (Krml.DeBruijn.lift 1 e1)
+              with_type e2.typ
+                (self#remove_assign n (with_type b.typ (EBound 0)) (Krml.DeBruijn.lift 1 e1)
                    (* e2 *)
-                   (self#visit_expr env e2) )))
-
+                   (self#visit_expr env e2)) )
       (* COPY: let _ = lhs := rhs with lhs.typ == TArray _ ... *)
       | _, EAssign (lhs, rhs) when H.is_array lhs.typ ->
           let n =
@@ -111,14 +114,12 @@ let remove_implicit_array_copies =
           in
           (* Fixpoint here for multi-dimensional arrays. *)
           self#remove_assign n lhs rhs (subst H.eunit 0 e2)
-
       | _ -> super#visit_ELet env b e1 e2
 
     method! visit_EAssign env lhs rhs =
       (* COPY: lhs := rhs with lhs.typ == TArray _ ... *)
       match lhs.typ with
-      | TArray (_, n) ->
-          self#remove_assign n lhs rhs H.eunit
+      | TArray (_, n) -> self#remove_assign n lhs rhs H.eunit
       | _ -> super#visit_EAssign env lhs rhs
   end
 

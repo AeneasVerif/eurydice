@@ -28,6 +28,8 @@ typedef int8_t core_cmp_Ordering;
 extern core_cmp_Ordering
 core_cmp_impls___core__cmp__Ord_for_u32__65__cmp(uint32_t *x0, uint32_t *x1);
 
+extern uint32_t core_cmp_impls___core__cmp__Ord_for_u32__65__min(uint32_t x0, uint32_t x1);
+
 extern bool
 core_cmp_impls___core__cmp__PartialEq_u32__for_u32__24__eq(uint32_t *x0, uint32_t *x1);
 

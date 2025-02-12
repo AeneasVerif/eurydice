@@ -5,8 +5,8 @@
     # Need to use same-ish nixpkgs version as karamel to get a compatible ocaml
     # toolchain
     nixpkgs.follows = "karamel/nixpkgs";
-    # Need a recent nixpkgs to get ocamlformat 0.26.2
-    recent_nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    # Need a recent nixpkgs to get ocamlformat 0.27
+    recent_nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
     charon.url = "github:AeneasVerif/charon";
     charon.inputs.nixpkgs.follows = "recent_nixpkgs";
@@ -111,7 +111,7 @@
         packages = [
           pkgs.clang-tools # For clang-format
           pkgs.ocamlPackages.ocaml
-          recent_pkgs.ocamlPackages.ocamlformat_0_26_2
+          recent_pkgs.ocamlPackages.ocamlformat_0_27_0
           pkgs.ocamlPackages.menhir
           # ocaml-lsp's version must match the ocaml version used. Pinning
           # this here to save me a headache.

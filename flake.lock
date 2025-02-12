@@ -13,11 +13,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1738250252,
-        "narHash": "sha256-T4cRt5gSW4mpOePDWu/oaBkVJYgd04Fyn93qjw33CbI=",
-        "owner": "AeneasVerif",
+        "lastModified": 1739284006,
+        "narHash": "sha256-HfvqqGbvj1ZQwRqg83IDC9Y2tIm94g/kXgV1QRCzG0Q=",
+        "owner": "aeneasverif",
         "repo": "charon",
-        "rev": "30cab88265206f4fa849736e704983e39a404d96",
+        "rev": "821fe7c71300e00c23e47ae97de1e8dc4ac91f9d",
         "type": "github"
       },
       "original": {
@@ -140,16 +140,16 @@
     },
     "recent_nixpkgs": {
       "locked": {
-        "lastModified": 1735563628,
-        "narHash": "sha256-OnSAY7XDSx7CtDoqNh8jwVwh4xNL/2HaJxGjryLWzX8=",
+        "lastModified": 1739138025,
+        "narHash": "sha256-M4ilIfGxzbBZuURokv24aqJTbdjPA9K+DtKUzrJaES4=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "b134951a4c9f3c995fd7be05f3243f8ecd65d798",
+        "rev": "b2243f41e860ac85c0b446eadc6930359b294e79",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
-        "ref": "nixos-24.05",
+        "ref": "nixpkgs-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }
