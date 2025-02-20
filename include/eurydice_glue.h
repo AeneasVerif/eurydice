@@ -181,6 +181,13 @@ static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
 #endif
 }
 
+static inline size_t core_cmp_impls___core__cmp__Ord_for_usize__59__min(size_t a, size_t b) {
+  if (a <= b)
+    return a;
+  else
+    return b;
+}
+
 // unsigned overflow wraparound semantics in C
 static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) {
   return x + y;
@@ -188,6 +195,7 @@ static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) {
 static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
   return x - y;
 }
+
 
 static inline void core_ops_arith__i32_319__add_assign(int32_t *x0,
                                                        int32_t *x1) {
