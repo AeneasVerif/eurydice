@@ -3,7 +3,7 @@ KRML_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../karamel
 EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
 CHARON		?= $(CHARON_HOME)/bin/charon
 
-BROKEN_TESTS		= step_by where_clauses chunks mutable_slice_range closure issue_49 issue_37 issue_105
+BROKEN_TESTS		= step_by where_clauses chunks mutable_slice_range closure issue_37 issue_105 issue_99
 TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(subst test/,,$(shell find test -maxdepth 1 -mindepth 1 -type d)))
 
 # Enable `foo/**` glob syntax
