@@ -34,6 +34,6 @@ fn fun(e: E) -> i32 {
 }
 
 fn main() {
-    assert_eq!(E2::C1 as isize, -1);
+    assert_eq!(E2::C2 as isize, -1);
     assert_eq!(fun(E::One), 1);
 }

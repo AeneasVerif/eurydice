@@ -40,7 +40,7 @@ _int32_t__x2;
 void issue_123_main(void)
 {
   /* original Rust expression is not an lvalue in C */
-  ptrdiff_t lvalue0 = (ptrdiff_t)((ptrdiff_t)255 + (ptrdiff_t)0);
+  ptrdiff_t lvalue0 = (ptrdiff_t)((ptrdiff_t)-1 + (ptrdiff_t)0);
   /* original Rust expression is not an lvalue in C */
   ptrdiff_t lvalue1 = (ptrdiff_t)-1;
   _ptrdiff_t__x2 uu____0 = { .fst = &lvalue0, .snd = &lvalue1 };
