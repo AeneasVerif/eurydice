@@ -23,6 +23,7 @@ extern "C" {
     if (!(test)) {                                                             \
       fprintf(stderr, "assertion \"%s\" failed: file \"%s\", line %d\n", msg,  \
               __FILE__, __LINE__);                                             \
+      exit(255);                                                                 \
     }                                                                          \
   } while (0)
 

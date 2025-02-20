@@ -368,7 +368,7 @@ let topological_sort decls =
       let r, deps, decl = Hashtbl.find graph lid in
       match !r with
       | Black -> ()
-      | Gray -> failwith "dependency cycle"
+      | Gray -> ()
       | White ->
           r := Gray;
           List.iter dfs deps;
