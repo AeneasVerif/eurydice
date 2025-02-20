@@ -1293,7 +1293,7 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
   | Constant { value = CFnPtr fn_ptr; _ } ->
       let e, _, _ = expression_of_fn_ptr env fn_ptr in
       e
-  | Constant { value = CTraitConst (({ C.trait_id; _ } as trait_ref), name); _ } -> (
+  | Constant { value = CTraitConst (({ C.trait_id; _ } as trait_ref), name); _ } -> begin
       (* Logic similar to lookup_fun *)
       match trait_id with
       | Clause _ | ParentClause _ ->
@@ -1313,7 +1313,10 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
             (K.EQualified (lid_of_name env global.item_meta.name))
       | _ ->
           fail "expression_of_operand Constant: %s"
-            (Charon.PrintExpressions.operand_to_string env.format_env op))
+            (Charon.PrintExpressions.operand_to_string env.format_env op)
+    end
+  | Constant _ ->
+      fail "expression_of_operand: %s" (Charon.PrintExpressions.operand_to_string env.format_env op)
 
 let is_str env var_id =
   match lookup_with_original_type env var_id with
