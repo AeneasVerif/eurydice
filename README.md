@@ -38,8 +38,8 @@ the [Zulip](https://aeneas-verif.zulipchat.com/).
 # Install
 
 We recommend using Nix to easily ensure you are running the right versions of the tools and
-libraries. Our CI uses the `flake.lock` and `flake.nix` files, meaning that the you are always
-a successful build if you use Nix.
+libraries. Our CI uses the `flake.lock` and `flake.nix` files, meaning that you are always
+guaranteed a successful build if you use Nix.
 
 Alternatively, you can do a local setup as follows.
 
