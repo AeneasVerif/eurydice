@@ -567,15 +567,26 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr sub_e (C.show_ty sub_place.ty)
         (C.show_projection_elem pe);
       match pe, sub_place.ty with
-      | C.Deref, TRef (_, TAdt (TBuiltin TArray, { types = [ t ]; _ }), _) ->
+      | C.Deref, TRef (_, TAdt (TBuiltin TArray, { types = [ t ]; _ }), _)
+      | C.Deref, TRawPtr (TAdt (TBuiltin TArray, { types = [ t ]; _ }), _) ->
           (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
           K.with_type (TBuf (typ_of_ty env t, false)) sub_e.K.node
-      | C.Deref, TRef (_, TAdt (TBuiltin TSlice, _), _) -> sub_e
-      | C.Deref, TRef (_, TAdt (id, generics), _) when RustNames.is_vec env id generics -> sub_e
+
+      | C.Deref, TRef (_, TAdt (TBuiltin TSlice, _), _)
+      | C.Deref, TRawPtr (TAdt (TBuiltin TSlice, _), _) ->
+          sub_e
+
+      | C.Deref, TRef (_, TAdt (id, generics), _)
+      | C.Deref, TRawPtr (TAdt (id, generics), _) when RustNames.is_vec env id generics ->
+          sub_e
+
+      | C.Deref, TRawPtr _
       | C.Deref, TRef _ ->
           Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node)
+
       | C.Deref, TAdt (TBuiltin TBox, { types = [ _ ]; _ }) ->
           Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node)
+
       | Field (ProjAdt (typ_id, variant_id), field_id), C.TAdt _ -> begin
           let place_typ = typ_of_ty env p.ty in
           match variant_id with
@@ -663,7 +674,7 @@ let op_of_unop (op : C.unop) : Krml.Constant.op =
   match op with
   | C.Not -> BNot
   | C.Neg -> Neg
-  | _ -> assert false
+  | _ -> failwith (C.show_unop op)
 
 let op_of_binop (op : C.binop) : Krml.Constant.op =
   match op with
@@ -1339,7 +1350,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
          them as simply passing the same constant string around (which in C is
          passed by address naturally). *)
       expression_of_var_id env var_id
-  | RvRef (p, _) ->
+  | RvRef (p, _)
+  | RawPtr (p, _) ->
       let e = expression_of_place env p in
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
          pass one for the other *)
@@ -1347,6 +1359,17 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | UnaryOp (Cast (CastScalar (_, TInteger dst)), e) ->
       let dst = K.TInt (width_of_integer_type dst) in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
+
+  | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
+      let dst = typ_of_ty env to_ in
+      K.with_type dst (K.ECast (expression_of_operand env e, dst))
+
+  | UnaryOp (Cast ck, _e) ->
+      failwith
+        ("unknown cast: `"
+        ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck
+        ^ "`")
+
   | UnaryOp (op, o1) -> mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]

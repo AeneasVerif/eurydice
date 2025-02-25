@@ -1,6 +1,0 @@
-[package]
-name = "issue_123"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
