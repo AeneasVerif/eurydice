@@ -4,7 +4,7 @@ EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
 CHARON		?= $(CHARON_HOME)/bin/charon
 
 BROKEN_TESTS		= step_by where_clauses chunks mutable_slice_range closure issue_37 issue_105 issue_99
-TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(subst test/,,$(shell find test -maxdepth 1 -mindepth 1 -type d)))
+TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.rs))))
 
 # Enable `foo/**` glob syntax
 SHELL := bash -O globstar 
@@ -24,21 +24,21 @@ CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
 
 test: $(addprefix test-,$(TEST_DIRS)) custom-test-array
 
-.PHONY: phony
-.PRECIOUS: test/%/out.llbc
-test/%/out.llbc: phony
-	cd test/$* && $(CHARON) && mv $*.llbc out.llbc
+.PRECIOUS: %.llbc
+%.llbc: %.rs
+	# TODO: add --output to charon
+	$(CHARON) --no-cargo --input $< && mv $(notdir $*).llbc $@
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
 	sed 's/__NAME__/$*/g' $< > $@
 
-test-partial_eq: EXTRA_C = ../../test/partial_eq/stubs.c
+test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c
 test-nested_arrays: EXTRA = -funroll-loops 0
 test-array: EXTRA = -fcomments
 test-symcrust: CFLAGS += -Wno-unused-function
 
-test-%: test/%/out.llbc out/test-%/main.c | all
+test-%: test/%.llbc out/test-%/main.c | all
 	$(EURYDICE) $(EXTRA) --output out/test-$* $<
 	$(SED) -i 's/  KaRaMeL version: .*//' out/test-$*/**/*.{c,h} # This changes on every commit
 	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-$*/**/*.{c,h} # This changes between local and CI
@@ -65,12 +65,14 @@ update-charon-pin:
 
 FORMAT_FILE=include/eurydice_glue.h
 
-format-check: phony
+.PHONY: format-check
+format-check:
 	@if ! dune build @fmt >/dev/null 2>&1; then \echo "\033[0;31m⚠️⚠️⚠️ SUGGESTED: $(MAKE) format-apply\033[0;m"; fi
 	@F=$$(mktemp); clang-format $(FORMAT_FILE) > $$F; \
 	  if ! diff -q $(FORMAT_FILE) $$F >/dev/null; then \echo "\033[0;31m⚠️⚠️⚠️ SUGGESTED: $(MAKE) format-apply\033[0;m"; fi; \
 	  rm -rf $$F
 
-format-apply: phony
+.PHONY: format-check
+format-apply:
 	dune fmt >/dev/null || true
 	clang-format -i $(FORMAT_FILE)
