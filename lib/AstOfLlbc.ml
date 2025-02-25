@@ -278,11 +278,17 @@ end
 
 let string_of_pattern pattern = Charon.NameMatcher.(pattern_to_string { tgt = TkPattern } pattern)
 
+
 let pattern_of_fn_ptr env fn_ptr =
   Charon.NameMatcher.(
     fn_ptr_to_pattern env.name_ctx
       { tgt = TkPattern; use_trait_decl_refs = true }
       Charon.TypesUtils.empty_generic_params fn_ptr)
+
+let pattern_of_name env name =
+  Charon.NameMatcher.(
+    name_to_pattern env.name_ctx
+      { tgt = TkPattern; use_trait_decl_refs = true } name)
 
 let string_of_fn_ptr env fn_ptr = string_of_pattern (pattern_of_fn_ptr env fn_ptr)
 
@@ -1917,18 +1923,8 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                 L.log "AstOfLlbc" "type of binders: %a" ptyps
                   (List.map (fun o -> o.K.typ) arg_binders);
                 let body =
-                  try
-                    with_locals env return_type (return_var :: locals) (fun env ->
-                        expression_of_statement env return_var.index body)
-                  with e when false ->
-                    L.log "AstOfLlbc" "ERROR translating %s: %s\n%s"
-                      (string_of_name env item_meta.name)
-                      (Printexc.to_string e) (Printexc.get_backtrace ());
-                    let msg =
-                      Krml.KPrint.bsprintf "Eurydice error: %s\n%s" (Printexc.to_string e)
-                        (Printexc.get_backtrace ())
-                    in
-                    K.(with_type return_type (EAbort (None, Some msg)))
+                  with_locals env return_type (return_var :: locals) (fun env ->
+                      expression_of_statement env return_var.index body)
                 in
                 let flags =
                   match item_meta.attr_info.inline with
@@ -1985,14 +1981,49 @@ let name_of_id env (id : C.any_decl_id) =
   | IdGlobal id -> (env.get_nth_global id).item_meta.name
   | _ -> failwith "unsupported"
 
+let known_failures = List.map Charon.NameMatcher.parse_pattern [
+  (* Failure("TODO: TraitTypes Self::Output") *)
+  "core::array::{core::ops::index::Index<[@T; @N], @I>}::index";
+  (* Failure("TODO: TraitTypes parent(Self)::TraitClause@0::Output") *)
+  "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut";
+  (* Failure("TODO: TraitTypes core::marker::DiscriminantKind<T@0>::Discriminant") *)
+  "core::intrinsics::discriminant_value";
+  (* Failure("TODO: TraitTypes Self::Output") *)
+  "core::slice::index::{core::ops::index::Index<[@T], @I>}::index";
+  (* Failure("TODO: TraitTypes Self::Output") *)
+  "core::slice::index::{core::ops::index::IndexMut<[@T], @I>}::index_mut";
+  (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
+  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::Range<usize>, [@T]>}::get_unchecked";
+  (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
+  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::Range<usize>, [@T]>}::get_unchecked_mut";
+  (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
+  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFrom<usize>, [@T]>}::get_unchecked";
+  (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
+  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFrom<usize>, [@T]>}::get_unchecked_mut";
+  (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
+  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeTo<usize>, [@T]>}::get_unchecked";
+  (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
+  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeTo<usize>, [@T]>}::get_unchecked_mut";
+  (* Failure("TODO: TraitTypes core::marker::DiscriminantKind<T@0>::Discriminant") *)
+  "issue_123::{core::cmp::PartialEq<issue_123::E2, issue_123::E2>}::eq";
+  (* Failure("Can't handle arbitrary closures") *)
+  "mismatch::{mismatch::MlKemKeyPairUnpacked<@Vector, @K>}::default";
+  (* Failure("TODO: TraitTypes Self::Error") *)
+  "core::convert::{core::convert::TryInto<@T, @U>}::try_into";
+]
+
 (* Catch-all error handler (last resort) *)
 let decl_of_id env decl =
   try decl_of_id env decl
   with e ->
-    L.log "AstOfLlbc" "ERROR translating %s: %s\n%s"
-      (string_of_name env (name_of_id env decl))
-      (Printexc.to_string e) (Printexc.get_backtrace ());
-    None
+    let matches p = Charon.NameMatcher.match_name env.name_ctx RustNames.config p (name_of_id env decl) in
+    if not (List.exists matches known_failures) then begin
+      Printf.eprintf "ERROR translating %s: %s\n%s"
+        (string_of_pattern (pattern_of_name env (name_of_id env decl)))
+        (Printexc.to_string e) (Printexc.get_backtrace ());
+      exit 255
+    end else
+      None
 
 let decls_of_declarations (env : env) (d : C.declaration_group) : K.decl list =
   incr seen;
