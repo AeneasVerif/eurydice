@@ -34,3 +34,40 @@ freshly written for Eurydice.
 
 If you want to contribute or ask questions, we strongly encourage you to join
 the [Zulip](https://aeneas-verif.zulipchat.com/).
+
+# Install
+
+We recommend using Nix to easily ensure you are running the right versions of the tools and
+libraries. Our CI uses the `flake.lock` and `flake.nix` files, meaning that the you are always
+a successful build if you use Nix.
+
+Alternatively, you can do a local setup as follows.
+
+```bash
+# Step 1: install OCaml environment. Follow instructions, reload your shell, and make sure 
+# `eval $(opam env)` has been suitably added to your shell profile.
+sudo apt install opam cargo # or brew on OSX
+opam init
+
+# Step 2: karamel, charon and eurydice -- we assume you are putting projects side by side
+git clone https://github.com/AeneasVerif/charon
+git clone https://github.com/FStarLang/karamel
+git clone https://github.com/AeneasVerif/eurydice
+
+# Step 3: install required OCaml packages. Note: the invocation for karamel might fail, in which
+# case you want to install all the packages in the `depends` field of karamel.opam except fstar. At
+# the time of writing, this means typing:
+# opam install ocamlfind batteries zarith stdint yojson ocamlbuild fileutils menhir pprint ulex process fix visitors wasm ppx_deriving ppx_deriving_yojson uucp
+(cd charon && opam install --deps-only .)
+(cd karamel && opam install --deps-only .)
+(cd eurydice && opam install --deps-only .)
+
+# Step 4: misc. setup steps
+(cd charon && make)
+(cd karamel && make lib/AutoConfig.ml)
+(cd eurydice/lib && ln -s ../../karamel/lib krml)
+
+# Step 5: ready!
+cd eurydice
+make test
+```
