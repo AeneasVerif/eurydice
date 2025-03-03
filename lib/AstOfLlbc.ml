@@ -62,7 +62,7 @@ type env = {
   get_nth_trait_impl : C.TraitImplId.id -> C.trait_impl;
   get_nth_trait_decl : C.TraitDeclId.id -> C.trait_decl;
   (* Needed by the name matching logic *)
-  name_ctx : Charon.NameMatcher.ctx;
+  name_ctx : C.statement Charon.NameMatcher.ctx;
   generic_params : C.generic_params;
   (* We have three lists of binders, which allow us to go from a Rust variable
      to a corresponding krml AST variable; everything is in De Bruijn, so
