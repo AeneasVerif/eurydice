@@ -1,7 +1,7 @@
 CHARON_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../charon
 KRML_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../karamel
 EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
-CHARON		?= $(CHARON_HOME)/bin/charon
+CHARON		?= $(CHARON_HOME)/bin/charon --remove-associated-types '*'
 
 BROKEN_TESTS		= step_by where_clauses chunks mutable_slice_range closure issue_37 issue_105 issue_99
 TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.rs))))

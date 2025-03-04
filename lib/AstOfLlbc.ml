@@ -207,20 +207,20 @@ module RustNames = struct
     (* slices *)
     parse_pattern "SliceIndexShared<'_, @T>", Builtin.slice_index;
     parse_pattern "SliceIndexMut<'_, @T>", Builtin.slice_index;
-    parse_pattern "core::ops::index::Index<[@T], core::ops::range::Range<usize>>::index", Builtin.slice_subslice;
-    parse_pattern "core::ops::index::IndexMut<[@T], core::ops::range::Range<usize>>::index_mut", Builtin.slice_subslice;
-    parse_pattern "core::ops::index::Index<[@], core::ops::range::RangeTo<usize>>::index", Builtin.slice_subslice_to;
-    parse_pattern "core::ops::index::IndexMut<[@], core::ops::range::RangeTo<usize>>::index_mut", Builtin.slice_subslice_to;
-    parse_pattern "core::ops::index::Index<[@], core::ops::range::RangeFrom<usize>>::index", Builtin.slice_subslice_from;
-    parse_pattern "core::ops::index::IndexMut<[@], core::ops::range::RangeFrom<usize>>::index_mut", Builtin.slice_subslice_from;
+    parse_pattern "core::ops::index::Index<[@T], core::ops::range::Range<usize>, @>::index<@, @, @, @, @>", Builtin.slice_subslice;
+    parse_pattern "core::ops::index::IndexMut<[@T], core::ops::range::Range<usize>, @>::index_mut<@, @, @, @, @>", Builtin.slice_subslice;
+    parse_pattern "core::ops::index::Index<[@], core::ops::range::RangeTo<usize>, @>::index<@, @, @, @, @>", Builtin.slice_subslice_to;
+    parse_pattern "core::ops::index::IndexMut<[@], core::ops::range::RangeTo<usize>, @>::index_mut<@, @, @, @, @>", Builtin.slice_subslice_to;
+    parse_pattern "core::ops::index::Index<[@], core::ops::range::RangeFrom<usize>, @>::index<@, @, @, @, @>", Builtin.slice_subslice_from;
+    parse_pattern "core::ops::index::IndexMut<[@], core::ops::range::RangeFrom<usize>, @>::index_mut<@, @, @, @, @>", Builtin.slice_subslice_from;
 
     (* arrays *)
-    parse_pattern "core::ops::index::Index<[@T; @N], core::ops::range::Range<usize>>::index", Builtin.array_to_subslice;
-    parse_pattern "core::ops::index::IndexMut<[@T; @N], core::ops::range::Range<usize>>::index_mut", Builtin.array_to_subslice;
-    parse_pattern "core::ops::index::Index<[@T; @N], core::ops::range::RangeTo<usize>>::index", Builtin.array_to_subslice_to;
-    parse_pattern "core::ops::index::IndexMut<[@T; @N], core::ops::range::RangeTo<usize>>::index_mut", Builtin.array_to_subslice_to;
-    parse_pattern "core::ops::index::Index<[@T; @N], core::ops::range::RangeFrom<usize>>::index", Builtin.array_to_subslice_from;
-    parse_pattern "core::ops::index::IndexMut<[@T; @N], core::ops::range::RangeFrom<usize>>::index_mut", Builtin.array_to_subslice_from;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, u8, core::ops::range::Range<usize>, [u8], @>", Builtin.array_to_subslice;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, u8, core::ops::range::Range<usize>, [u8], @>", Builtin.array_to_subslice;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, u8, core::ops::range::RangeTo<usize>, [u8], @>", Builtin.array_to_subslice_to;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, u8, core::ops::range::RangeTo<usize>, [u8], @>", Builtin.array_to_subslice_to;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, u8, core::ops::range::RangeFrom<usize>, [u8], @>", Builtin.array_to_subslice_from;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, u8, core::ops::range::RangeFrom<usize>, [u8], @>", Builtin.array_to_subslice_from;
 
     (* slices <-> arrays *)
     parse_pattern "ArrayToSliceShared<'_, @T, @N>", Builtin.array_to_slice;
@@ -383,10 +383,10 @@ let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
         | _ -> TTuple (List.map (typ_of_ty env) args)
       end
   | TAdt (TBuiltin TArray, { types = [ t ]; const_generics = [ cg ]; _ }) -> maybe_cg_array env t cg
-  | TAdt (TBuiltin TSlice, { types = [ _t ]; _ }) ->
-      (* Slice values cannot be materialized since their storage space cannot be computed at
-         compile-time; we should never encounter this case. *)
-      assert false
+
+  | TAdt (TBuiltin TSlice, { types = [ t ]; _ }) ->
+      (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
+      TApp (([], "__builtin_slice_t"), [ typ_of_ty env t ])
   | TAdt (TBuiltin TBox, { types = [ t ]; _ }) -> K.TBuf (typ_of_ty env t, false)
   | TAdt (TBuiltin TStr, { types = []; _ }) ->
       failwith "Impossible -- strings always behind a pointer"
@@ -2006,27 +2006,27 @@ let name_of_id env (id : C.any_decl_id) =
 
 let known_failures = List.map Charon.NameMatcher.parse_pattern [
   (* Failure("TODO: TraitTypes Self::Output") *)
-  "core::array::{core::ops::index::Index<[@T; @N], @I>}::index";
+  "core::array::{core::ops::index::Index<[@T; @N], @I, @C>}::index";
   (* Failure("TODO: TraitTypes parent(Self)::TraitClause@0::Output") *)
-  "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut";
+  "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @C>}::index_mut";
   (* Failure("TODO: TraitTypes core::marker::DiscriminantKind<T@0>::Discriminant") *)
   "core::intrinsics::discriminant_value";
   (* Failure("TODO: TraitTypes Self::Output") *)
-  "core::slice::index::{core::ops::index::Index<[@T], @I>}::index";
+  "core::slice::index::{core::ops::index::Index<[@T], @I, @C>}::index";
   (* Failure("TODO: TraitTypes Self::Output") *)
-  "core::slice::index::{core::ops::index::IndexMut<[@T], @I>}::index_mut";
+  "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @C>}::index_mut";
   (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
-  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::Range<usize>, [@T]>}::get_unchecked";
+  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::Range<usize>, [@T], [@T]>}::get_unchecked";
   (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
-  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::Range<usize>, [@T]>}::get_unchecked_mut";
+  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::Range<usize>, [@T], [@T]>}::get_unchecked_mut";
   (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
-  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFrom<usize>, [@T]>}::get_unchecked";
+  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFrom<usize>, [@T], [@T]>}::get_unchecked";
   (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
-  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFrom<usize>, [@T]>}::get_unchecked_mut";
+  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFrom<usize>, [@T], [@T]>}::get_unchecked_mut";
   (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
-  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeTo<usize>, [@T]>}::get_unchecked";
+  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeTo<usize>, [@T], [@T]>}::get_unchecked";
   (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
-  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeTo<usize>, [@T]>}::get_unchecked_mut";
+  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeTo<usize>, [@T], [@T]>}::get_unchecked_mut";
   (* Failure("TODO: TraitTypes core::marker::DiscriminantKind<T@0>::Discriminant") *)
   "issue_123::{core::cmp::PartialEq<issue_123::E2, issue_123::E2>}::eq";
   (* Failure("Can't handle arbitrary closures") *)
