@@ -63,7 +63,7 @@ Supported options:|}
     PPrint.(ToBuffer.pretty 0.95 terminal_width b (Krml.PrintAst.print_files files ^^ hardline))
   in
   let fail file line =
-    Printf.printf "%s:%d exiting" file line;
+    Printf.printf "%s:%d exiting\n" file line;
     exit 1
   in
 

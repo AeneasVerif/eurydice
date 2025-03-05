@@ -207,12 +207,13 @@ module RustNames = struct
     (* slices *)
     parse_pattern "SliceIndexShared<'_, @T>", Builtin.slice_index; (* XXX *)
     parse_pattern "SliceIndexMut<'_, @T>", Builtin.slice_index; (* XXX *)
-    parse_pattern "core::ops::index::Index<[@T], core::ops::range::Range<usize>, @>::index<@, @, @, @, @>", Builtin.slice_subslice;
-    parse_pattern "core::ops::index::IndexMut<[@T], core::ops::range::Range<usize>, @>::index_mut<@, @, @, @, @>", Builtin.slice_subslice;
-    parse_pattern "core::ops::index::Index<[@], core::ops::range::RangeTo<usize>, @>::index<@, @, @, @, @>", Builtin.slice_subslice_to;
-    parse_pattern "core::ops::index::IndexMut<[@], core::ops::range::RangeTo<usize>, @>::index_mut<@, @, @, @, @>", Builtin.slice_subslice_to;
-    parse_pattern "core::ops::index::Index<[@], core::ops::range::RangeFrom<usize>, @>::index<@, @, @, @, @>", Builtin.slice_subslice_from;
-    parse_pattern "core::ops::index::IndexMut<[@], core::ops::range::RangeFrom<usize>, @>::index_mut<@, @, @, @, @>", Builtin.slice_subslice_from;
+
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@]>", Builtin.slice_subslice_to;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@]>", Builtin.slice_subslice_to;
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@]>", Builtin.slice_subslice_from;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@]>", Builtin.slice_subslice_from;
 
     (* arrays *)
     parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, u8, core::ops::range::Range<usize>, [u8], @>", Builtin.array_to_subslice;
@@ -2055,9 +2056,13 @@ let decls_of_declarations (env : env) (d : C.declaration_group) : K.decl list =
   Krml.KList.filter_some @@ List.map (decl_of_id env) @@ declaration_group_to_list d
 
 let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
-  let { C.name; declarations; type_decls; fun_decls; global_decls; trait_decls; trait_impls; _ } =
+  let { C.name; declarations; type_decls; fun_decls; global_decls; trait_decls; trait_impls; options; _ } =
     crate
   in
+  if options.remove_associated_types <> [ "*" ] then begin
+    Printf.eprintf "ERROR: Eurydice expects Charon to be invoked with exactly --remove-associated-types '*'\n";
+    exit 255
+  end;
   seen := 0;
   total := List.length declarations;
   let get_nth_function id = C.FunDeclId.Map.find id fun_decls in

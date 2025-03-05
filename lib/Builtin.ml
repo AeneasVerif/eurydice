@@ -158,8 +158,8 @@ let slice_subslice =
   {
     name = [ "Eurydice" ], "slice_subslice";
     typ =
-      Krml.Helpers.fold_arrow [ mk_slice (TBound 1); mk_range (TInt SizeT) ] (mk_slice (TBound 1));
-    n_type_args = 2;
+      Krml.Helpers.fold_arrow [ mk_slice (TBound 2); mk_range (TInt SizeT) ] (mk_slice (TBound 2));
+    n_type_args = 3;
     cg_args = [];
     arg_names = [ "s"; "r" ];
   }
@@ -169,9 +169,9 @@ let slice_subslice_to =
     name = [ "Eurydice" ], "slice_subslice_to";
     typ =
       Krml.Helpers.fold_arrow
-        [ mk_slice (TBound 1); mk_range_to (TInt SizeT) ]
-        (mk_slice (TBound 1));
-    n_type_args = 2;
+        [ mk_slice (TBound 2); mk_range_to (TInt SizeT) ]
+        (mk_slice (TBound 2));
+    n_type_args = 3;
     cg_args = [];
     arg_names = [ "s"; "r" ];
   }
@@ -181,9 +181,9 @@ let slice_subslice_from =
     name = [ "Eurydice" ], "slice_subslice_from";
     typ =
       Krml.Helpers.fold_arrow
-        [ mk_slice (TBound 1); mk_range_from (TInt SizeT) ]
-        (mk_slice (TBound 1));
-    n_type_args = 2;
+        [ mk_slice (TBound 2); mk_range_from (TInt SizeT) ]
+        (mk_slice (TBound 2));
+    n_type_args = 3;
     cg_args = [];
     arg_names = [ "s"; "r" ];
   }
@@ -420,5 +420,5 @@ let check () =
     (fun (lid, (_, seen)) ->
       if !seen = Unused then
         let open Krml in
-        KPrint.bprintf "Unused replacement: %a" PrintAst.Ops.plid lid)
+        KPrint.bprintf "Unused replacement: %a\n" PrintAst.Ops.plid lid)
     replacements
