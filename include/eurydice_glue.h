@@ -76,14 +76,14 @@ typedef struct {
 #define Eurydice_array_to_slice(end, x, t)                                     \
   EURYDICE_SLICE(x, 0,                                                         \
                  end) /* x is already at an array type, no need for cast */
-#define Eurydice_array_to_subslice(_arraylen, x, r, t, _)                      \
+#define Eurydice_array_to_subslice(_arraylen, x, r, t, _0, _1)                 \
   EURYDICE_SLICE((t *)x, r.start, r.end)
 // Same as above, variant for when start and end are statically known
 #define Eurydice_array_to_subslice2(x, start, end, t)                          \
   EURYDICE_SLICE((t *)x, start, end)
-#define Eurydice_array_to_subslice_to(_size, x, r, t, _range_t)                \
+#define Eurydice_array_to_subslice_to(_size, x, r, t, _range_t, _0)            \
   EURYDICE_SLICE((t *)x, 0, r)
-#define Eurydice_array_to_subslice_from(size, x, r, t, _range_t)               \
+#define Eurydice_array_to_subslice_from(size, x, r, t, _range_t, _0)           \
   EURYDICE_SLICE((t *)x, r, size)
 #define Eurydice_array_repeat(dst, len, init, t)                               \
   ERROR "should've been desugared"

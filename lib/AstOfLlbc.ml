@@ -220,7 +220,7 @@ module RustNames = struct
     parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, u8, core::ops::range::RangeTo<usize>, [u8], @>", Builtin.array_to_subslice_to;
     parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, u8, core::ops::range::RangeTo<usize>, [u8], @>", Builtin.array_to_subslice_to;
     parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, u8, core::ops::range::RangeFrom<usize>, [u8], @>", Builtin.array_to_subslice_from;
-    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, u8, core::ops::range::RangeFrom<usize>, [u8], @>", Builtin.array_to_subslice_from;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, u8, core::ops::range::RangeFrom<usize>, [u8], @>", Builtin.array_to_subslice_from;
 
     (* slices <-> arrays *)
     parse_pattern "ArrayToSliceShared<'_, @T, @N>", Builtin.array_to_slice; (* XXX *)
@@ -1119,6 +1119,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
     lookup_fun env depth fn_ptr
   in
   L.log "Calls" "%s--> inputs: %a" depth ptyps inputs;
+  L.log "Calls" "%s--> is_known_builtin?: %b" depth is_known_builtin;
 
   (* Handling trait implementations for generic trait bounds in the callee. We
      synthesize krml expressions that correspond to each one of the trait methods
