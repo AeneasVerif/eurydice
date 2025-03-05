@@ -205,8 +205,8 @@ module RustNames = struct
   let known_builtins =
     [
     (* slices *)
-    parse_pattern "SliceIndexShared<'_, @T>", Builtin.slice_index; (* XXX *)
-    parse_pattern "SliceIndexMut<'_, @T>", Builtin.slice_index; (* XXX *)
+    parse_pattern "SliceIndexShared<'_, @T>", Builtin.slice_index;
+    parse_pattern "SliceIndexMut<'_, @T>", Builtin.slice_index;
 
     parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
     parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
@@ -224,21 +224,21 @@ module RustNames = struct
     parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", Builtin.array_to_subslice_from;
 
     (* slices <-> arrays *)
-    parse_pattern "ArrayToSliceShared<'_, @T, @N>", Builtin.array_to_slice; (* XXX *)
-    parse_pattern "ArrayToSliceMut<'_, @T, @N>", Builtin.array_to_slice; (* XXX *)
+    parse_pattern "ArrayToSliceShared<'_, @T, @N>", Builtin.array_to_slice;
+    parse_pattern "ArrayToSliceMut<'_, @T, @N>", Builtin.array_to_slice;
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
 
-    (* iterators *)
-    parse_pattern "core::iter::traits::collect::IntoIterator<[@; @]>::into_iter", Builtin.array_into_iter; (* XXX *)
-    parse_pattern "core::iter::traits::iterator::Iterator<core::ops::range::Range<@>>::step_by", Builtin.range_iterator_step_by; (* XXX *)
-    parse_pattern "core::iter::traits::iterator::Iterator<core::iter::adapters::step_by::StepBy<core::ops::range::Range<@>>>::next", Builtin.range_step_by_iterator_next; (* XXX *)
+    (* iterators XXX are any of these used? *)
+    parse_pattern "core::iter::traits::collect::IntoIterator<[@; @]>::into_iter", Builtin.array_into_iter;
+    parse_pattern "core::iter::traits::iterator::Iterator<core::ops::range::Range<@>>::step_by", Builtin.range_iterator_step_by;
+    parse_pattern "core::iter::traits::iterator::Iterator<core::iter::adapters::step_by::StepBy<core::ops::range::Range<@>>>::next", Builtin.range_step_by_iterator_next;
 
     (* bitwise & arithmetic operations *)
-    parse_pattern "core::ops::bit::BitAnd<&'_ u8, u8>::bitand", Builtin.bitand_pv_u8; (* XXX *)
-    parse_pattern "core::ops::bit::Shr<&'_ u8, i32>::shr", Builtin.shr_pv_u8; (* XXX *)
+    parse_pattern "core::ops::bit::BitAnd<&'_ u8, u8>::bitand", Builtin.bitand_pv_u8;
+    parse_pattern "core::ops::bit::Shr<&'_ u8, i32>::shr", Builtin.shr_pv_u8;
 
     (* misc *)
-    parse_pattern "core::cmp::Ord<u32>::min", Builtin.min_u32; (* XXX *)
+    parse_pattern "core::cmp::Ord<u32>::min", Builtin.min_u32;
   ]
   [@ocamlformat "disable"]
 
