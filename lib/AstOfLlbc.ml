@@ -226,7 +226,7 @@ module RustNames = struct
     (* slices <-> arrays *)
     parse_pattern "ArrayToSliceShared<'_, @T, @N>", Builtin.array_to_slice; (* XXX *)
     parse_pattern "ArrayToSliceMut<'_, @T, @N>", Builtin.array_to_slice; (* XXX *)
-    parse_pattern "core::convert::TryInto<&'_ [@T], [@T; @]>::try_into", Builtin.slice_to_array; (* XXX *)
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
 
     (* iterators *)
     parse_pattern "core::iter::traits::collect::IntoIterator<[@; @]>::into_iter", Builtin.array_into_iter; (* XXX *)

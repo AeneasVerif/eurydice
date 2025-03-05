@@ -193,9 +193,9 @@ let slice_to_array =
   {
     name = [ "Eurydice" ], "slice_to_array";
     typ =
-      Krml.Helpers.fold_arrow [ TBound 1 ]
-        (mk_result (TBound 0) (TQualified ([ "core"; "array" ], "TryFromSliceError")));
-    n_type_args = 2;
+      Krml.Helpers.fold_arrow [ TBound 2 ]
+        (mk_result (TBound 1) (TBound 0));
+    n_type_args = 3;
     cg_args = [];
     arg_names = [ "s" ];
   }
@@ -207,11 +207,11 @@ let slice_to_array2 =
     typ =
       Krml.Helpers.fold_arrow
         [
-          TBuf (mk_result (TBound 0) (TQualified ([ "core"; "array" ], "TryFromSliceError")), false);
-          TBound 1;
+          TBuf (mk_result (TBound 1) (TBound 0), false);
+          TBound 2;
         ]
         TUnit;
-    n_type_args = 2;
+    n_type_args = 3;
     cg_args = [];
     arg_names = [ "dst"; "s" ];
   }

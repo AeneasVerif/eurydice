@@ -120,7 +120,7 @@ typedef struct {
 // Conversion of slice to an array, rewritten (by Eurydice) to name the
 // destination array, since arrays are not values in C.
 // N.B.: see note in karamel/lib/Inlining.ml if you change this.
-#define Eurydice_slice_to_array2(dst, src, _, t_arr)                           \
+#define Eurydice_slice_to_array2(dst, src, _0, t_arr, _1)                      \
   Eurydice_slice_to_array3(&(dst)->tag, (char *)&(dst)->val.case_Ok, src,      \
                            sizeof(t_arr))
 
@@ -227,22 +227,12 @@ core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__N
        : (CLITERAL(ret_t){.tag = core_option_Some,                             \
                           .f0 = (iter_ptr)->start++}))
 
-// Old name (TODO: remove once everyone has upgraded to the latest Charon)
-#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___3__next \
-  Eurydice_range_iter_next
-
-#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next \
-  Eurydice_range_iter_next
-
-#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next \
+#define core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next \
   Eurydice_range_iter_next
 
 // See note in karamel/lib/Inlining.ml if you change this
-#define Eurydice_into_iter(x, t, _ret_t) (x)
-#define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I___into_iter \
-  Eurydice_into_iter
-// This name changed on 20240627
-#define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter \
+#define Eurydice_into_iter(x, t, _ret_t, _) (x)
+#define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter \
   Eurydice_into_iter
 
 typedef struct {
