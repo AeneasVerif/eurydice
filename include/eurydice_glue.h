@@ -63,15 +63,15 @@ typedef struct {
 // adds an extra argument to this macro at the last minute so that we have the
 // correct type of *pointers* to elements.
 #define Eurydice_slice_index(s, i, t, t_ptr_t) (((t_ptr_t)s.ptr)[i])
-#define Eurydice_slice_subslice(s, r, t, _)                                    \
+#define Eurydice_slice_subslice(s, r, t, _0, _1)                               \
   EURYDICE_SLICE((t *)s.ptr, r.start, r.end)
 // Variant for when the start and end indices are statically known (i.e., the
 // range argument `r` is a literal).
 #define Eurydice_slice_subslice2(s, start, end, t)                             \
   EURYDICE_SLICE((t *)s.ptr, start, end)
-#define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _)                  \
+#define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _0, _1)             \
   EURYDICE_SLICE((t *)s.ptr, 0, subslice_end_pos)
-#define Eurydice_slice_subslice_from(s, subslice_start_pos, t, _)              \
+#define Eurydice_slice_subslice_from(s, subslice_start_pos, t, _0, _1)         \
   EURYDICE_SLICE((t *)s.ptr, subslice_start_pos, s.len)
 #define Eurydice_array_to_slice(end, x, t)                                     \
   EURYDICE_SLICE(x, 0,                                                         \
