@@ -575,7 +575,7 @@ let resugar_loops =
       { node = EQualified (["core"; "iter"; "traits"; "collect"; _], "into_iter"); _ },
       [],
       _,
-      [ TApp ((["core"; "ops"; "range"], "Range"), _t')  ]
+      TApp ((["core"; "ops"; "range"], "Range"), _t') :: _
     ); _ }, [
       { node = EFlat [ Some "start", e_start; Some "end", e_end ]; _ }
     ]),
@@ -625,7 +625,7 @@ let resugar_loops =
       { node = EQualified (["core"; "iter"; "traits"; "collect"; _], "into_iter"); _ },
       [],
       _,
-      [ TApp ((["core"; "ops"; "range"], "Range"), _t')  ]
+      TApp ((["core"; "ops"; "range"], "Range"), _t') :: _
     ); _ }, [
       { node = EFlat [ Some "start", e_start; Some "end", e_end ]; _ }
     ]),
