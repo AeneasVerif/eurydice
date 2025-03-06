@@ -207,30 +207,29 @@ module RustNames = struct
     (* slices *)
     parse_pattern "SliceIndexShared<'_, @T>", Builtin.slice_index;
     parse_pattern "SliceIndexMut<'_, @T>", Builtin.slice_index;
-    parse_pattern "core::ops::index::Index<[@T], core::ops::range::Range<usize>>::index", Builtin.slice_subslice;
-    parse_pattern "core::ops::index::IndexMut<[@T], core::ops::range::Range<usize>>::index_mut", Builtin.slice_subslice;
-    parse_pattern "core::ops::index::Index<[@], core::ops::range::RangeTo<usize>>::index", Builtin.slice_subslice_to;
-    parse_pattern "core::ops::index::IndexMut<[@], core::ops::range::RangeTo<usize>>::index_mut", Builtin.slice_subslice_to;
-    parse_pattern "core::ops::index::Index<[@], core::ops::range::RangeFrom<usize>>::index", Builtin.slice_subslice_from;
-    parse_pattern "core::ops::index::IndexMut<[@], core::ops::range::RangeFrom<usize>>::index_mut", Builtin.slice_subslice_from;
+
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@]>", Builtin.slice_subslice_to;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@]>", Builtin.slice_subslice_to;
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@]>", Builtin.slice_subslice_from;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@]>", Builtin.slice_subslice_from;
 
     (* arrays *)
-    parse_pattern "core::ops::index::Index<[@T; @N], core::ops::range::Range<usize>>::index", Builtin.array_to_subslice;
-    parse_pattern "core::ops::index::IndexMut<[@T; @N], core::ops::range::Range<usize>>::index_mut", Builtin.array_to_subslice;
-    parse_pattern "core::ops::index::Index<[@T; @N], core::ops::range::RangeTo<usize>>::index", Builtin.array_to_subslice_to;
-    parse_pattern "core::ops::index::IndexMut<[@T; @N], core::ops::range::RangeTo<usize>>::index_mut", Builtin.array_to_subslice_to;
-    parse_pattern "core::ops::index::Index<[@T; @N], core::ops::range::RangeFrom<usize>>::index", Builtin.array_to_subslice_from;
-    parse_pattern "core::ops::index::IndexMut<[@T; @N], core::ops::range::RangeFrom<usize>>::index_mut", Builtin.array_to_subslice_from;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::Range<usize>, [@], @>", Builtin.array_to_subslice;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@], @>", Builtin.array_to_subslice;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@], @>", Builtin.array_to_subslice_to;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@], @>", Builtin.array_to_subslice_to;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", Builtin.array_to_subslice_from;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", Builtin.array_to_subslice_from;
 
     (* slices <-> arrays *)
     parse_pattern "ArrayToSliceShared<'_, @T, @N>", Builtin.array_to_slice;
     parse_pattern "ArrayToSliceMut<'_, @T, @N>", Builtin.array_to_slice;
-    parse_pattern "core::convert::TryInto<&'_ [@T], [@T; @]>::try_into", Builtin.slice_to_array;
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
 
-    (* iterators *)
+    (* iterators XXX are any of these used? *)
     parse_pattern "core::iter::traits::collect::IntoIterator<[@; @]>::into_iter", Builtin.array_into_iter;
-    parse_pattern "core::iter::traits::iterator::Iterator<core::ops::range::Range<@>>::step_by", Builtin.range_iterator_step_by;
-    parse_pattern "core::iter::traits::iterator::Iterator<core::iter::adapters::step_by::StepBy<core::ops::range::Range<@>>>::next", Builtin.range_step_by_iterator_next;
 
     (* bitwise & arithmetic operations *)
     parse_pattern "core::ops::bit::BitAnd<&'_ u8, u8>::bitand", Builtin.bitand_pv_u8;
@@ -278,7 +277,6 @@ end
 
 let string_of_pattern pattern = Charon.NameMatcher.(pattern_to_string { tgt = TkPattern } pattern)
 
-
 let pattern_of_fn_ptr env fn_ptr =
   Charon.NameMatcher.(
     fn_ptr_to_pattern env.name_ctx
@@ -287,8 +285,7 @@ let pattern_of_fn_ptr env fn_ptr =
 
 let pattern_of_name env name =
   Charon.NameMatcher.(
-    name_to_pattern env.name_ctx
-      { tgt = TkPattern; use_trait_decl_refs = true } name)
+    name_to_pattern env.name_ctx { tgt = TkPattern; use_trait_decl_refs = true } name)
 
 let string_of_fn_ptr env fn_ptr = string_of_pattern (pattern_of_fn_ptr env fn_ptr)
 
@@ -383,10 +380,9 @@ let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
         | _ -> TTuple (List.map (typ_of_ty env) args)
       end
   | TAdt (TBuiltin TArray, { types = [ t ]; const_generics = [ cg ]; _ }) -> maybe_cg_array env t cg
-  | TAdt (TBuiltin TSlice, { types = [ _t ]; _ }) ->
-      (* Slice values cannot be materialized since their storage space cannot be computed at
-         compile-time; we should never encounter this case. *)
-      assert false
+  | TAdt (TBuiltin TSlice, { types = [ t ]; _ }) ->
+      (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
+      TApp (([], "__builtin_slice_t"), [ typ_of_ty env t ])
   | TAdt (TBuiltin TBox, { types = [ t ]; _ }) -> K.TBuf (typ_of_ty env t, false)
   | TAdt (TBuiltin TStr, { types = []; _ }) ->
       failwith "Impossible -- strings always behind a pointer"
@@ -571,22 +567,14 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       | C.Deref, TRawPtr (TAdt (TBuiltin TArray, { types = [ t ]; _ }), _) ->
           (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
           K.with_type (TBuf (typ_of_ty env t, false)) sub_e.K.node
-
       | C.Deref, TRef (_, TAdt (TBuiltin TSlice, _), _)
-      | C.Deref, TRawPtr (TAdt (TBuiltin TSlice, _), _) ->
-          sub_e
-
-      | C.Deref, TRef (_, TAdt (id, generics), _)
-      | C.Deref, TRawPtr (TAdt (id, generics), _) when RustNames.is_vec env id generics ->
-          sub_e
-
-      | C.Deref, TRawPtr _
-      | C.Deref, TRef _ ->
+      | C.Deref, TRawPtr (TAdt (TBuiltin TSlice, _), _) -> sub_e
+      | (C.Deref, TRef (_, TAdt (id, generics), _) | C.Deref, TRawPtr (TAdt (id, generics), _))
+        when RustNames.is_vec env id generics -> sub_e
+      | C.Deref, TRawPtr _ | C.Deref, TRef _ ->
           Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node)
-
       | C.Deref, TAdt (TBuiltin TBox, { types = [ _ ]; _ }) ->
           Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node)
-
       | Field (ProjAdt (typ_id, variant_id), field_id), C.TAdt _ -> begin
           let place_typ = typ_of_ty env p.ty in
           match variant_id with
@@ -1119,6 +1107,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
     lookup_fun env depth fn_ptr
   in
   L.log "Calls" "%s--> inputs: %a" depth ptyps inputs;
+  L.log "Calls" "%s--> is_known_builtin?: %b" depth is_known_builtin;
 
   (* Handling trait implementations for generic trait bounds in the callee. We
      synthesize krml expressions that correspond to each one of the trait methods
@@ -1350,8 +1339,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
          them as simply passing the same constant string around (which in C is
          passed by address naturally). *)
       expression_of_var_id env var_id
-  | RvRef (p, _)
-  | RawPtr (p, _) ->
+  | RvRef (p, _) | RawPtr (p, _) ->
       let e = expression_of_place env p in
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
          pass one for the other *)
@@ -1359,17 +1347,12 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | UnaryOp (Cast (CastScalar (_, TInteger dst)), e) ->
       let dst = K.TInt (width_of_integer_type dst) in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
-
   | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
-
   | UnaryOp (Cast ck, _e) ->
       failwith
-        ("unknown cast: `"
-        ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck
-        ^ "`")
-
+        ("unknown cast: `" ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck ^ "`")
   | UnaryOp (op, o1) -> mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
@@ -2004,48 +1987,59 @@ let name_of_id env (id : C.any_decl_id) =
   | IdGlobal id -> (env.get_nth_global id).item_meta.name
   | _ -> failwith "unsupported"
 
-let known_failures = List.map Charon.NameMatcher.parse_pattern [
-  (* Failure("TODO: TraitTypes Self::Output") *)
-  "core::array::{core::ops::index::Index<[@T; @N], @I>}::index";
-  (* Failure("TODO: TraitTypes parent(Self)::TraitClause@0::Output") *)
-  "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut";
-  (* Failure("TODO: TraitTypes core::marker::DiscriminantKind<T@0>::Discriminant") *)
-  "core::intrinsics::discriminant_value";
-  (* Failure("TODO: TraitTypes Self::Output") *)
-  "core::slice::index::{core::ops::index::Index<[@T], @I>}::index";
-  (* Failure("TODO: TraitTypes Self::Output") *)
-  "core::slice::index::{core::ops::index::IndexMut<[@T], @I>}::index_mut";
-  (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
-  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::Range<usize>, [@T]>}::get_unchecked";
-  (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
-  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::Range<usize>, [@T]>}::get_unchecked_mut";
-  (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
-  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFrom<usize>, [@T]>}::get_unchecked";
-  (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
-  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFrom<usize>, [@T]>}::get_unchecked_mut";
-  (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
-  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeTo<usize>, [@T]>}::get_unchecked";
-  (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
-  "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeTo<usize>, [@T]>}::get_unchecked_mut";
-  (* Failure("TODO: TraitTypes core::marker::DiscriminantKind<T@0>::Discriminant") *)
-  "issue_123::{core::cmp::PartialEq<issue_123::E2, issue_123::E2>}::eq";
-  (* Failure("Can't handle arbitrary closures") *)
-  "mismatch::{mismatch::MlKemKeyPairUnpacked<@Vector, @K>}::default";
-  (* Failure("TODO: TraitTypes Self::Error") *)
-  "core::convert::{core::convert::TryInto<@T, @U>}::try_into";
-]
+let known_failures =
+  List.map Charon.NameMatcher.parse_pattern
+    [
+      (* Failure("TODO: TraitTypes Self::Output") *)
+      "core::array::{core::ops::index::Index<[@T; @N], @I, @C>}::index";
+      (* Failure("TODO: TraitTypes parent(Self)::TraitClause@0::Output") *)
+      "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @C>}::index_mut";
+      (* Failure("TODO: TraitTypes core::marker::DiscriminantKind<T@0>::Discriminant") *)
+      "core::intrinsics::discriminant_value";
+      (* Failure("TODO: TraitTypes Self::Output") *)
+      "core::slice::index::{core::ops::index::Index<[@T], @I, @C>}::index";
+      (* Failure("TODO: TraitTypes Self::Output") *)
+      "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @C>}::index_mut";
+      (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
+      "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::Range<usize>, [@T], \
+       [@T]>}::get_unchecked";
+      (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
+      "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::Range<usize>, [@T], \
+       [@T]>}::get_unchecked_mut";
+      (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
+      "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFrom<usize>, \
+       [@T], [@T]>}::get_unchecked";
+      (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
+      "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeFrom<usize>, \
+       [@T], [@T]>}::get_unchecked_mut";
+      (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
+      "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeTo<usize>, [@T], \
+       [@T]>}::get_unchecked";
+      (* File "lib/AstOfLlbc.ml", line 389, characters 6-12: Assertion failed *)
+      "core::slice::index::{core::slice::index::SliceIndex<core::ops::range::RangeTo<usize>, [@T], \
+       [@T]>}::get_unchecked_mut";
+      (* Failure("TODO: TraitTypes core::marker::DiscriminantKind<T@0>::Discriminant") *)
+      "issue_123::{core::cmp::PartialEq<issue_123::E2, issue_123::E2>}::eq";
+      (* Failure("Can't handle arbitrary closures") *)
+      "mismatch::{mismatch::MlKemKeyPairUnpacked<@Vector, @K>}::default";
+      (* Failure("TODO: TraitTypes Self::Error") *)
+      "core::convert::{core::convert::TryInto<@T, @U>}::try_into";
+    ]
 
 (* Catch-all error handler (last resort) *)
 let decl_of_id env decl =
   try decl_of_id env decl
   with e ->
-    let matches p = Charon.NameMatcher.match_name env.name_ctx RustNames.config p (name_of_id env decl) in
+    let matches p =
+      Charon.NameMatcher.match_name env.name_ctx RustNames.config p (name_of_id env decl)
+    in
     if not (List.exists matches known_failures) then begin
       Printf.eprintf "ERROR translating %s: %s\n%s"
         (string_of_pattern (pattern_of_name env (name_of_id env decl)))
         (Printexc.to_string e) (Printexc.get_backtrace ());
       exit 255
-    end else
+    end
+    else
       None
 
 let decls_of_declarations (env : env) (d : C.declaration_group) : K.decl list =
@@ -2054,9 +2048,24 @@ let decls_of_declarations (env : env) (d : C.declaration_group) : K.decl list =
   Krml.KList.filter_some @@ List.map (decl_of_id env) @@ declaration_group_to_list d
 
 let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
-  let { C.name; declarations; type_decls; fun_decls; global_decls; trait_decls; trait_impls; _ } =
+  let {
+    C.name;
+    declarations;
+    type_decls;
+    fun_decls;
+    global_decls;
+    trait_decls;
+    trait_impls;
+    options;
+    _;
+  } =
     crate
   in
+  if options.remove_associated_types <> [ "*" ] then begin
+    Printf.eprintf
+      "ERROR: Eurydice expects Charon to be invoked with exactly --remove-associated-types '*'\n";
+    exit 255
+  end;
   seen := 0;
   total := List.length declarations;
   let get_nth_function id = C.FunDeclId.Map.find id fun_decls in

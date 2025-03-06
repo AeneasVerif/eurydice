@@ -23,7 +23,7 @@ extern "C" {
     if (!(test)) {                                                             \
       fprintf(stderr, "assertion \"%s\" failed: file \"%s\", line %d\n", msg,  \
               __FILE__, __LINE__);                                             \
-      exit(255);                                                                 \
+      exit(255);                                                               \
     }                                                                          \
   } while (0)
 
@@ -63,27 +63,27 @@ typedef struct {
 // adds an extra argument to this macro at the last minute so that we have the
 // correct type of *pointers* to elements.
 #define Eurydice_slice_index(s, i, t, t_ptr_t) (((t_ptr_t)s.ptr)[i])
-#define Eurydice_slice_subslice(s, r, t, _)                                    \
+#define Eurydice_slice_subslice(s, r, t, _0, _1)                               \
   EURYDICE_SLICE((t *)s.ptr, r.start, r.end)
 // Variant for when the start and end indices are statically known (i.e., the
 // range argument `r` is a literal).
 #define Eurydice_slice_subslice2(s, start, end, t)                             \
   EURYDICE_SLICE((t *)s.ptr, start, end)
-#define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _)                  \
+#define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _0, _1)             \
   EURYDICE_SLICE((t *)s.ptr, 0, subslice_end_pos)
-#define Eurydice_slice_subslice_from(s, subslice_start_pos, t, _)              \
+#define Eurydice_slice_subslice_from(s, subslice_start_pos, t, _0, _1)         \
   EURYDICE_SLICE((t *)s.ptr, subslice_start_pos, s.len)
 #define Eurydice_array_to_slice(end, x, t)                                     \
   EURYDICE_SLICE(x, 0,                                                         \
                  end) /* x is already at an array type, no need for cast */
-#define Eurydice_array_to_subslice(_arraylen, x, r, t, _)                      \
+#define Eurydice_array_to_subslice(_arraylen, x, r, t, _0, _1)                 \
   EURYDICE_SLICE((t *)x, r.start, r.end)
 // Same as above, variant for when start and end are statically known
 #define Eurydice_array_to_subslice2(x, start, end, t)                          \
   EURYDICE_SLICE((t *)x, start, end)
-#define Eurydice_array_to_subslice_to(_size, x, r, t, _range_t)                \
+#define Eurydice_array_to_subslice_to(_size, x, r, t, _range_t, _0)            \
   EURYDICE_SLICE((t *)x, 0, r)
-#define Eurydice_array_to_subslice_from(size, x, r, t, _range_t)               \
+#define Eurydice_array_to_subslice_from(size, x, r, t, _range_t, _0)           \
   EURYDICE_SLICE((t *)x, r, size)
 #define Eurydice_array_repeat(dst, len, init, t)                               \
   ERROR "should've been desugared"
@@ -120,7 +120,7 @@ typedef struct {
 // Conversion of slice to an array, rewritten (by Eurydice) to name the
 // destination array, since arrays are not values in C.
 // N.B.: see note in karamel/lib/Inlining.ml if you change this.
-#define Eurydice_slice_to_array2(dst, src, _, t_arr)                           \
+#define Eurydice_slice_to_array2(dst, src, _0, t_arr, _1)                      \
   Eurydice_slice_to_array3(&(dst)->tag, (char *)&(dst)->val.case_Ok, src,      \
                            sizeof(t_arr))
 
@@ -182,7 +182,8 @@ static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
 #endif
 }
 
-static inline size_t core_cmp_impls___core__cmp__Ord_for_usize__59__min(size_t a, size_t b) {
+static inline size_t
+core_cmp_impls___core__cmp__Ord_for_usize__59__min(size_t a, size_t b) {
   if (a <= b)
     return a;
   else
@@ -196,7 +197,6 @@ static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) {
 static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
   return x - y;
 }
-
 
 static inline void core_ops_arith__i32_319__add_assign(int32_t *x0,
                                                        int32_t *x1) {
@@ -227,22 +227,12 @@ core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__N
        : (CLITERAL(ret_t){.tag = core_option_Some,                             \
                           .f0 = (iter_ptr)->start++}))
 
-// Old name (TODO: remove once everyone has upgraded to the latest Charon)
-#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___3__next \
-  Eurydice_range_iter_next
-
-#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A___6__next \
-  Eurydice_range_iter_next
-
-#define core_iter_range___core__iter__traits__iterator__Iterator_for_core__ops__range__Range_A__TraitClause_0___6__next \
+#define core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next \
   Eurydice_range_iter_next
 
 // See note in karamel/lib/Inlining.ml if you change this
-#define Eurydice_into_iter(x, t, _ret_t) (x)
-#define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I___into_iter \
-  Eurydice_into_iter
-// This name changed on 20240627
-#define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_for_I__1__into_iter \
+#define Eurydice_into_iter(x, t, _ret_t, _) (x)
+#define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter \
   Eurydice_into_iter
 
 typedef struct {

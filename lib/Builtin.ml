@@ -54,9 +54,9 @@ let array_to_subslice =
     name = [ "Eurydice" ], "array_to_subslice";
     typ =
       Krml.Helpers.fold_arrow
-        [ TBuf (TBound 1, false); mk_range (TInt SizeT) ]
-        (mk_slice (TBound 1));
-    n_type_args = 2;
+        [ TBuf (TBound 2, false); mk_range (TInt SizeT) ]
+        (mk_slice (TBound 2));
+    n_type_args = 3;
     cg_args = [ TInt SizeT ];
     arg_names = [ "a"; "r" ];
   }
@@ -66,9 +66,9 @@ let array_to_subslice_to =
     name = [ "Eurydice" ], "array_to_subslice_to";
     typ =
       Krml.Helpers.fold_arrow
-        [ TBuf (TBound 1, false); mk_range_to (TInt SizeT) ]
-        (mk_slice (TBound 1));
-    n_type_args = 2;
+        [ TBuf (TBound 2, false); mk_range_to (TInt SizeT) ]
+        (mk_slice (TBound 2));
+    n_type_args = 3;
     cg_args = [ TInt SizeT ];
     arg_names = [ "a"; "r" ];
   }
@@ -78,9 +78,9 @@ let array_to_subslice_from =
     name = [ "Eurydice" ], "array_to_subslice_from";
     typ =
       Krml.Helpers.fold_arrow
-        [ TBuf (TBound 1, false); mk_range_from (TInt SizeT) ]
-        (mk_slice (TBound 1));
-    n_type_args = 2;
+        [ TBuf (TBound 2, false); mk_range_from (TInt SizeT) ]
+        (mk_slice (TBound 2));
+    n_type_args = 3;
     cg_args = [ TInt SizeT ];
     arg_names = [ "a"; "r" ];
   }
@@ -158,8 +158,8 @@ let slice_subslice =
   {
     name = [ "Eurydice" ], "slice_subslice";
     typ =
-      Krml.Helpers.fold_arrow [ mk_slice (TBound 1); mk_range (TInt SizeT) ] (mk_slice (TBound 1));
-    n_type_args = 2;
+      Krml.Helpers.fold_arrow [ mk_slice (TBound 2); mk_range (TInt SizeT) ] (mk_slice (TBound 2));
+    n_type_args = 3;
     cg_args = [];
     arg_names = [ "s"; "r" ];
   }
@@ -169,9 +169,9 @@ let slice_subslice_to =
     name = [ "Eurydice" ], "slice_subslice_to";
     typ =
       Krml.Helpers.fold_arrow
-        [ mk_slice (TBound 1); mk_range_to (TInt SizeT) ]
-        (mk_slice (TBound 1));
-    n_type_args = 2;
+        [ mk_slice (TBound 2); mk_range_to (TInt SizeT) ]
+        (mk_slice (TBound 2));
+    n_type_args = 3;
     cg_args = [];
     arg_names = [ "s"; "r" ];
   }
@@ -181,9 +181,9 @@ let slice_subslice_from =
     name = [ "Eurydice" ], "slice_subslice_from";
     typ =
       Krml.Helpers.fold_arrow
-        [ mk_slice (TBound 1); mk_range_from (TInt SizeT) ]
-        (mk_slice (TBound 1));
-    n_type_args = 2;
+        [ mk_slice (TBound 2); mk_range_from (TInt SizeT) ]
+        (mk_slice (TBound 2));
+    n_type_args = 3;
     cg_args = [];
     arg_names = [ "s"; "r" ];
   }
@@ -192,10 +192,8 @@ let slice_subslice_from =
 let slice_to_array =
   {
     name = [ "Eurydice" ], "slice_to_array";
-    typ =
-      Krml.Helpers.fold_arrow [ TBound 1 ]
-        (mk_result (TBound 0) (TQualified ([ "core"; "array" ], "TryFromSliceError")));
-    n_type_args = 2;
+    typ = Krml.Helpers.fold_arrow [ TBound 2 ] (mk_result (TBound 1) (TBound 0));
+    n_type_args = 3;
     cg_args = [];
     arg_names = [ "s" ];
   }
@@ -204,14 +202,8 @@ let slice_to_array =
 let slice_to_array2 =
   {
     name = [ "Eurydice" ], "slice_to_array2";
-    typ =
-      Krml.Helpers.fold_arrow
-        [
-          TBuf (mk_result (TBound 0) (TQualified ([ "core"; "array" ], "TryFromSliceError")), false);
-          TBound 1;
-        ]
-        TUnit;
-    n_type_args = 2;
+    typ = Krml.Helpers.fold_arrow [ TBuf (mk_result (TBound 1) (TBound 0), false); TBound 2 ] TUnit;
+    n_type_args = 3;
     cg_args = [];
     arg_names = [ "dst"; "s" ];
   }
@@ -420,5 +412,5 @@ let check () =
     (fun (lid, (_, seen)) ->
       if !seen = Unused then
         let open Krml in
-        KPrint.bprintf "Unused replacement: %a" PrintAst.Ops.plid lid)
+        KPrint.bprintf "Unused replacement: %a\n" PrintAst.Ops.plid lid)
     replacements

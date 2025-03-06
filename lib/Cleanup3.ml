@@ -119,7 +119,7 @@ let add_extra_type_to_slice_index =
     method! visit_EApp env e es =
       match e.node, es with
       | ( ETApp
-            ({ node = EQualified ([ "Eurydice" ], "slice_subslice"); _ }, [], [], [ t_elements; _ ]),
+            ({ node = EQualified ([ "Eurydice" ], "slice_subslice"); _ }, [], [], t_elements :: _),
           [
             e_slice;
             {
@@ -138,10 +138,7 @@ let add_extra_type_to_slice_index =
                      [ t_elements ] )),
               [ e_slice; e_start; e_end ] )
       | ( ETApp
-            ( { node = EQualified ([ "Eurydice" ], "array_to_subslice"); _ },
-              _,
-              [],
-              [ t_elements; _ ] ),
+            ({ node = EQualified ([ "Eurydice" ], "array_to_subslice"); _ }, _, [], t_elements :: _),
           [
             e_slice;
             {
