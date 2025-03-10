@@ -75,7 +75,7 @@ Supported options:|}
       allow_tapps := true;
       minimal := true;
       curly_braces := true;
-      add_include := [ All, "\"eurydice_glue.h\"" ];
+      add_very_early_include := [ All, "\"eurydice_glue.h\"" ];
       parentheses := true;
       no_shadow := true;
       extern_c := true;
