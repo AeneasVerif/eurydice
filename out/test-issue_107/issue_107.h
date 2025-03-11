@@ -7,12 +7,12 @@
 
 #ifndef __issue_107_H
 #define __issue_107_H
+#include "eurydice_glue.h"
+
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 void issue_107_main(void);
 

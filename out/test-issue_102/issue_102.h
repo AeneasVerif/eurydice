@@ -7,12 +7,12 @@
 
 #ifndef __issue_102_H
 #define __issue_102_H
+#include "eurydice_glue.h"
+
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 #define issue_102_Error1_Reason1 1
 #define issue_102_Error1_Reason2 2

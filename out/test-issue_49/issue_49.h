@@ -7,12 +7,12 @@
 
 #ifndef __issue_49_H
 #define __issue_49_H
+#include "eurydice_glue.h"
+
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 #define core_cmp_Ordering_Less -1
 #define core_cmp_Ordering_Equal 0

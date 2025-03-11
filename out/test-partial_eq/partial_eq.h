@@ -7,12 +7,12 @@
 
 #ifndef __partial_eq_H
 #define __partial_eq_H
+#include "eurydice_glue.h"
+
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 #define core_result_Ok 0
 #define core_result_Err 1

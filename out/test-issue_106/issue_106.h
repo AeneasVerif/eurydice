@@ -7,12 +7,12 @@
 
 #ifndef __issue_106_H
 #define __issue_106_H
+#include "eurydice_glue.h"
+
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 typedef uint8_t issue_106_MyStruct;
 

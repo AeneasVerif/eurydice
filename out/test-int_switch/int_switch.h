@@ -7,12 +7,12 @@
 
 #ifndef __int_switch_H
 #define __int_switch_H
+#include "eurydice_glue.h"
+
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 uint32_t int_switch_f(void);
 

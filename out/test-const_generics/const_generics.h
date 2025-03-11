@@ -7,12 +7,12 @@
 
 #ifndef __const_generics_H
 #define __const_generics_H
+#include "eurydice_glue.h"
+
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 static inline void core_num__u32_8__to_be_bytes(uint32_t x0, uint8_t x1[4U]);
 

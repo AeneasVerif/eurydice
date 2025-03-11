@@ -7,12 +7,12 @@
 
 #ifndef __issue_96_H
 #define __issue_96_H
+#include "eurydice_glue.h"
+
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 typedef struct issue_96_MyStruct_s { uint8_t fst[5U]; } issue_96_MyStruct;
 

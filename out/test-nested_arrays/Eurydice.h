@@ -7,12 +7,12 @@
 
 #ifndef __Eurydice_H
 #define __Eurydice_H
+#include "eurydice_glue.h"
+
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 /**
 A monomorphic instance of core.ops.range.Range

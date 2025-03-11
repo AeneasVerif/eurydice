@@ -7,13 +7,14 @@
 
 #ifndef __traits_H
 #define __traits_H
+#include "eurydice_glue.h"
+
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
 #include "Eurydice.h"
-#include "eurydice_glue.h"
 
 #define traits_Foo_Foo1 0
 #define traits_Foo_Foo2 1

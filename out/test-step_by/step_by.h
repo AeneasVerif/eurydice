@@ -7,12 +7,12 @@
 
 #ifndef __step_by_H
 #define __step_by_H
+#include "eurydice_glue.h"
+
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 extern int32_t core_clone_impls___core__clone__Clone_for_i32__14__clone(int32_t *x0);
 
