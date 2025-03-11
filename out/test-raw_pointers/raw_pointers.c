@@ -7,12 +7,12 @@
 
 #include "raw_pointers.h"
 
-typedef struct _uint8_t__x2_s
+typedef struct const_uint8_t__x2_s
 {
-  uint8_t *fst;
-  uint8_t *snd;
+  const uint8_t *fst;
+  const uint8_t *snd;
 }
-_uint8_t__x2;
+const_uint8_t__x2;
 
 void raw_pointers_main(void)
 {
@@ -20,9 +20,9 @@ void raw_pointers_main(void)
   uint8_t *px = (uint8_t *)&x;
   /* original Rust expression is not an lvalue in C */
   uint8_t lvalue = 0U;
-  _uint8_t__x2 uu____0 = { CFIELD(.fst, &lvalue), CFIELD(.snd, px) };
-  uint8_t *left_val = uu____0.fst;
-  uint8_t *right_val = uu____0.snd;
+  const_uint8_t__x2 uu____0 = { CFIELD(.fst, &lvalue), CFIELD(.snd, px) };
+  const uint8_t *left_val = uu____0.fst;
+  const uint8_t *right_val = uu____0.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
 }
 

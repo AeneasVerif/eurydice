@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-extern size_t core_clone_impls___core__clone__Clone_for_usize__5__clone(size_t *x0);
+extern size_t core_clone_impls___core__clone__Clone_for_usize__5__clone(const size_t *x0);
 
 #define core_cmp_Ordering_Less -1
 #define core_cmp_Ordering_Equal 0
@@ -24,7 +24,10 @@ extern size_t core_clone_impls___core__clone__Clone_for_usize__5__clone(size_t *
 typedef int8_t core_cmp_Ordering;
 
 extern bool
-core_cmp_impls___core__cmp__PartialEq_usize__for_usize__21__eq(size_t *x0, size_t *x1);
+core_cmp_impls___core__cmp__PartialEq_usize__for_usize__21__eq(
+  const size_t *x0,
+  const size_t *x1
+);
 
 #define core_option_None 0
 #define core_option_Some 1
@@ -45,8 +48,8 @@ core_option_Option_77;
 
 extern core_option_Option_77
 core_cmp_impls___core__cmp__PartialOrd_usize__for_usize__58__partial_cmp(
-  size_t *x0,
-  size_t *x1
+  const size_t *x0,
+  const size_t *x1
 );
 
 /**
@@ -68,7 +71,10 @@ extern core_option_Option_08
 core_iter_range___core__iter__range__Step_for_usize__43__forward_checked(size_t x0, size_t x1);
 
 extern core_option_Option_08
-core_iter_range___core__iter__range__Step_for_usize__43__steps_between(size_t *x0, size_t *x1);
+core_iter_range___core__iter__range__Step_for_usize__43__steps_between(
+  const size_t *x0,
+  const size_t *x1
+);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1

@@ -532,12 +532,14 @@ let remove_literals =
     inherit! Krml.Structs.remove_literals as super_krml
 
     method! visit_ELet env b e1 e2 =
+      (* To be desugared into memcpy's later. *)
       if contains_array e1 then
         super_krml#visit_ELet env b e1 e2
       else
         super_map#visit_ELet env b e1 e2
 
-    method! visit_EFlat (((), t) as env) fields =
+    method! visit_EFlat ((_, t) as env) fields =
+      (* To be desugared into memcpy's later. *)
       if contains_array (with_type t (EFlat fields)) then
         super_krml#visit_EFlat env fields
       else

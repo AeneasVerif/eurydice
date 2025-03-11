@@ -91,7 +91,8 @@ Supported options:|}
         [ "Eurydice" ], "slice_subslice2";
         [ "Eurydice" ], "slice_subslice_to";
         [ "Eurydice" ], "slice_subslice_from";
-        [ "Eurydice" ], "array_to_slice";
+        [ "Eurydice" ], "array_to_slice_shared";
+        [ "Eurydice" ], "array_to_slice_mut";
         [ "Eurydice" ], "array_to_subslice";
         [ "Eurydice" ], "array_to_subslice2";
         [ "Eurydice" ], "array_to_subslice_to";
@@ -234,7 +235,10 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_trivial_into#visit_files () files in
   let files = Krml.Structs.pass_by_ref files in
   Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
-  let files = Eurydice.Cleanup2.remove_literals#visit_files () files in
+  (* This phase is necessary to generate copy-assignemnts via memcpy -- leaving literals misses
+     opportunities to generate array copies, which currently only detect nodes of the EAssign form. *)
+  let files = Eurydice.Cleanup2.remove_literals#visit_files (Krml.Structs.build_field_to_type_map#visit_files () files) files in
+  Eurydice.Logging.log "Phase2.55" "%a" pfiles files;
   (* Eurydice does something more involved than krml and performs a conservative
      approximation of functions that are known to be pure readonly (i.e.,
      functions that do not write to memory). *)
@@ -243,7 +247,6 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_array_from_fn files in
   (* remove_array_from_fn, above, creates further opportunities for removing unused functions. *)
   let files = Krml.Inlining.drop_unused files in
-  Eurydice.Logging.log "Phase2.55" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_implicit_array_copies#visit_files () files in
   (* Creates opportunities for removing unused variables *)
   Eurydice.Logging.log "Phase2.6" "%a" pfiles files;

@@ -150,9 +150,12 @@ static inline Eurydice_slice mk_slice(void *start, size_t len) {
 #define Eurydice_slice_subslice_from(s, subslice_start_pos, t, _0, _1)         \
   EURYDICE_SLICE((t *)s.ptr, subslice_start_pos, s.len)
 
-#define Eurydice_array_to_slice(end, x, t)                                     \
+#define Eurydice_array_to_slice_shared(end, x, t)                              \
   EURYDICE_SLICE(x, 0,                                                         \
                  end) /* x is already at an array type, no need for cast */
+#define Eurydice_array_to_slice_mut(end, x, t)                                 \
+  Eurydice_array_to_slice_shared(end, x, t)
+
 #define Eurydice_array_to_subslice(_arraylen, x, r, t, _0, _1)                 \
   EURYDICE_SLICE((t *)x, r.start, r.end)
 

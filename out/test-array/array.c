@@ -61,12 +61,12 @@ void array_mk_incr_95(uint32_t ret[10U])
   KRML_MAYBE_FOR10(i, (size_t)0U, (size_t)10U, (size_t)1U, ret[i] = (uint32_t)i;);
 }
 
-typedef struct _uint32_t__x2_s
+typedef struct const_uint32_t__x2_s
 {
-  uint32_t *fst;
-  uint32_t *snd;
+  const uint32_t *fst;
+  const uint32_t *snd;
 }
-_uint32_t__x2;
+const_uint32_t__x2;
 
 void array_main(void)
 {
@@ -91,22 +91,22 @@ void array_main(void)
   memcpy(lit.x, copy_of_x, (size_t)2U * sizeof (uint32_t));
   memcpy(lit.y, copy_of_y, (size_t)2U * sizeof (uint32_t));
   array_mut_foo(lit);
-  _uint32_t__x2 uu____4;
+  const_uint32_t__x2 uu____4;
   uu____4.fst = x;
   uu____4.snd = &unsigned0;
   /* XXX3 */
-  uint32_t *left_val = uu____4.fst;
-  uint32_t *right_val0 = uu____4.snd;
+  const uint32_t *left_val = uu____4.fst;
+  const uint32_t *right_val0 = uu____4.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val0[0U], "panic!");
   uint32_t a[10U];
   array_mk_incr_95(a);
-  _uint32_t__x2 uu____5;
+  const_uint32_t__x2 uu____5;
   uu____5.fst = &a[9U];
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 9U;
   uu____5.snd = &lvalue;
-  uint32_t *left_val0 = uu____5.fst;
-  uint32_t *right_val = uu____5.snd;
+  const uint32_t *left_val0 = uu____5.fst;
+  const uint32_t *right_val = uu____5.snd;
   EURYDICE_ASSERT(left_val0[0U] == right_val[0U], "panic!");
 }
 

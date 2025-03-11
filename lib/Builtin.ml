@@ -40,9 +40,18 @@ type builtin = {
 
 let expr_of_builtin { name; typ; _ } = K.(with_type typ (EQualified name))
 
-let array_to_slice =
+let array_to_slice_shared =
   {
-    name = [ "Eurydice" ], "array_to_slice";
+    name = [ "Eurydice" ], "array_to_slice_shared";
+    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, true) ] (mk_slice (TBound 0));
+    n_type_args = 1;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "a" ];
+  }
+
+let array_to_slice_mut =
+  {
+    name = [ "Eurydice" ], "array_to_slice_mut";
     typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, false) ] (mk_slice (TBound 0));
     n_type_args = 1;
     cg_args = [ TInt SizeT ];
@@ -361,7 +370,8 @@ let files =
            in
            K.DExternal (None, flags, List.length cg_args, n_type_args, name, typ, arg_names))
          [
-           array_to_slice;
+           array_to_slice_shared;
+           array_to_slice_mut;
            array_to_subslice;
            array_to_subslice_to;
            array_to_subslice_from;

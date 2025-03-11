@@ -12,20 +12,20 @@ size_t issue_49_f(size_t a, size_t b)
   return core_cmp_impls___core__cmp__Ord_for_usize__59__min(a, b);
 }
 
-typedef struct _size_t__x2_s
+typedef struct const_size_t__x2_s
 {
-  size_t *fst;
-  size_t *snd;
+  const size_t *fst;
+  const size_t *snd;
 }
-_size_t__x2;
+const_size_t__x2;
 
 void issue_49_main(void)
 {
   size_t expected = (size_t)0U;
   size_t actual = issue_49_f((size_t)0U, (size_t)0U);
-  _size_t__x2 uu____0 = { CFIELD(.fst, &expected), CFIELD(.snd, &actual) };
-  size_t *left_val = uu____0.fst;
-  size_t *right_val = uu____0.snd;
+  const_size_t__x2 uu____0 = { CFIELD(.fst, &expected), CFIELD(.snd, &actual) };
+  const size_t *left_val = uu____0.fst;
+  const size_t *right_val = uu____0.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
 }
 

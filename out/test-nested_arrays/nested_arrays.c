@@ -9,12 +9,12 @@
 
 const uint32_t nested_arrays_ZERO[8U] = { 0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U };
 
-typedef struct _uint32_t__x2_s
+typedef struct const_uint32_t__x2_s
 {
-  uint32_t *fst;
-  uint32_t *snd;
+  const uint32_t *fst;
+  const uint32_t *snd;
 }
-_uint32_t__x2;
+const_uint32_t__x2;
 
 void nested_arrays_main(void)
 {
@@ -39,9 +39,9 @@ void nested_arrays_main(void)
         size_t k = i;
         uint32_t actual = keys[i1][j][k];
         uint32_t expected = (uint32_t)k;
-        _uint32_t__x2 uu____0 = { CFIELD(.fst, &actual), CFIELD(.snd, &expected) };
-        uint32_t *left_val = uu____0.fst;
-        uint32_t *right_val = uu____0.snd;
+        const_uint32_t__x2 uu____0 = { CFIELD(.fst, &actual), CFIELD(.snd, &expected) };
+        const uint32_t *left_val = uu____0.fst;
+        const uint32_t *right_val = uu____0.snd;
         EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
       }
     }

@@ -17,9 +17,9 @@ extern "C" {
 
 #include "Eurydice.h"
 
-extern uint8_t core_clone_impls___core__clone__Clone_for_u8__6__clone(uint8_t *x0);
+extern uint8_t core_clone_impls___core__clone__Clone_for_u8__6__clone(const uint8_t *x0);
 
-extern size_t core_clone_impls___core__clone__Clone_for_usize__5__clone(size_t *x0);
+extern size_t core_clone_impls___core__clone__Clone_for_usize__5__clone(const size_t *x0);
 
 #define core_cmp_Ordering_Less -1
 #define core_cmp_Ordering_Equal 0
@@ -28,15 +28,21 @@ extern size_t core_clone_impls___core__clone__Clone_for_usize__5__clone(size_t *
 typedef int8_t core_cmp_Ordering;
 
 extern core_cmp_Ordering
-core_cmp_impls___core__cmp__Ord_for_u32__65__cmp(uint32_t *x0, uint32_t *x1);
+core_cmp_impls___core__cmp__Ord_for_u32__65__cmp(const uint32_t *x0, const uint32_t *x1);
 
 extern uint32_t core_cmp_impls___core__cmp__Ord_for_u32__65__min(uint32_t x0, uint32_t x1);
 
 extern bool
-core_cmp_impls___core__cmp__PartialEq_u32__for_u32__24__eq(uint32_t *x0, uint32_t *x1);
+core_cmp_impls___core__cmp__PartialEq_u32__for_u32__24__eq(
+  const uint32_t *x0,
+  const uint32_t *x1
+);
 
 extern bool
-core_cmp_impls___core__cmp__PartialEq_usize__for_usize__21__eq(size_t *x0, size_t *x1);
+core_cmp_impls___core__cmp__PartialEq_usize__for_usize__21__eq(
+  const size_t *x0,
+  const size_t *x1
+);
 
 #define core_option_None 0
 #define core_option_Some 1
@@ -57,14 +63,14 @@ core_option_Option_77;
 
 extern core_option_Option_77
 core_cmp_impls___core__cmp__PartialOrd_u32__for_u32__64__partial_cmp(
-  uint32_t *x0,
-  uint32_t *x1
+  const uint32_t *x0,
+  const uint32_t *x1
 );
 
 extern core_option_Option_77
 core_cmp_impls___core__cmp__PartialOrd_usize__for_usize__58__partial_cmp(
-  size_t *x0,
-  size_t *x1
+  const size_t *x0,
+  const size_t *x1
 );
 
 static inline uint32_t
@@ -92,13 +98,16 @@ extern core_option_Option_08
 core_iter_range___core__iter__range__Step_for_usize__43__forward_checked(size_t x0, size_t x1);
 
 extern core_option_Option_08
-core_iter_range___core__iter__range__Step_for_usize__43__steps_between(size_t *x0, size_t *x1);
+core_iter_range___core__iter__range__Step_for_usize__43__steps_between(
+  const size_t *x0,
+  const size_t *x1
+);
 
 static inline void core_num__u32_8__to_le_bytes(uint32_t x0, uint8_t x1[4U]);
 
 void
 symcrust_SymCrustMlKemPolyElementCompressAndEncode(
-  uint16_t *coeffs,
+  const uint16_t *coeffs,
   uint32_t nBitsPerCoefficient,
   Eurydice_slice dst
 );

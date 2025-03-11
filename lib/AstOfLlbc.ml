@@ -224,8 +224,8 @@ module RustNames = struct
     parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", Builtin.array_to_subslice_from;
 
     (* slices <-> arrays *)
-    parse_pattern "ArrayToSliceShared<'_, @T, @N>", Builtin.array_to_slice;
-    parse_pattern "ArrayToSliceMut<'_, @T, @N>", Builtin.array_to_slice;
+    parse_pattern "ArrayToSliceShared<'_, @T, @N>", Builtin.array_to_slice_shared;
+    parse_pattern "ArrayToSliceMut<'_, @T, @N>", Builtin.array_to_slice_mut;
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
 
     (* iterators XXX are any of these used? *)
@@ -337,6 +337,10 @@ let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
   | TFloat _ -> failwith "TODO: Float"
   | TInteger k -> K.TInt (width_of_integer_type k)
 
+let const_of_ref_kind = function
+  | C.RMut -> false
+  | C.RShared -> true
+
 let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   match ty with
   | TVar var -> K.TBound (lookup_typ env (C.expect_free_var var))
@@ -352,18 +356,18 @@ let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* We compile slices to fat pointers, which hold the pointer underneath -- no need for an
          extra reference here. *)
       Builtin.mk_slice (typ_of_ty env t)
-  | TRef (_, TAdt (TBuiltin TArray, { types = [ t ]; _ }), _) ->
+  | TRef (_, TAdt (TBuiltin TArray, { types = [ t ]; _ }), k) ->
       (* We collapse Ref(Array) into a pointer type, leveraging C's implicit decay between array
          types and pointer types. *)
-      K.TBuf (typ_of_ty env t, false)
+      K.TBuf (typ_of_ty env t, const_of_ref_kind k)
   | TRef (_, TAdt (TBuiltin TStr, { types = []; _ }), _) ->
       (* We perform on-the-fly elimination of addresses of strings (just like we
          do for arrays) so as to type-check them correctly vis à vis krml's
          Checker expectations. This means &'str translates to c_string *)
       Krml.Checker.c_string
-  | TRef (_, t, _) ->
+  | TRef (_, t, k) ->
       (* Normal reference *)
-      K.TBuf (typ_of_ty env t, false)
+      K.TBuf (typ_of_ty env t, const_of_ref_kind k)
   | TAdt (id, ({ types = [ t ]; _ } as generics)) when RustNames.is_vec env id generics ->
       Builtin.mk_vec (typ_of_ty env t)
   | TAdt (TAdtId id, { types = args; const_generics = generic_args; _ }) ->
@@ -563,16 +567,17 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr sub_e (C.show_ty sub_place.ty)
         (C.show_projection_elem pe);
       match pe, sub_place.ty with
-      | C.Deref, TRef (_, TAdt (TBuiltin TArray, { types = [ t ]; _ }), _)
-      | C.Deref, TRawPtr (TAdt (TBuiltin TArray, { types = [ t ]; _ }), _) ->
+      | C.Deref, TRef (_, TAdt (TBuiltin TArray, { types = [ t ]; _ }), k)
+      | C.Deref, TRawPtr (TAdt (TBuiltin TArray, { types = [ t ]; _ }), k) ->
           (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
-          K.with_type (TBuf (typ_of_ty env t, false)) sub_e.K.node
+          K.with_type (TBuf (typ_of_ty env t, const_of_ref_kind k)) sub_e.K.node
       | C.Deref, TRef (_, TAdt (TBuiltin TSlice, _), _)
       | C.Deref, TRawPtr (TAdt (TBuiltin TSlice, _), _) -> sub_e
       | (C.Deref, TRef (_, TAdt (id, generics), _) | C.Deref, TRawPtr (TAdt (id, generics), _))
         when RustNames.is_vec env id generics -> sub_e
-      | C.Deref, TRawPtr _ | C.Deref, TRef _ ->
-          Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node)
+      | C.Deref, TRawPtr (_, k) | C.Deref, TRef (_, _, k) ->
+          let const = const_of_ref_kind k in
+          Krml.Helpers.(mk_deref ~const (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node)
       | C.Deref, TAdt (TBuiltin TBox, { types = [ _ ]; _ }) ->
           Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node)
       | Field (ProjAdt (typ_id, variant_id), field_id), C.TAdt _ -> begin

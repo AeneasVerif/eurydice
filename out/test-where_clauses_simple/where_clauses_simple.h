@@ -15,9 +15,9 @@
 extern "C" {
 #endif
 
-extern uint64_t core_clone_impls___core__clone__Clone_for_u64__9__clone(uint64_t *x0);
+extern uint64_t core_clone_impls___core__clone__Clone_for_u64__9__clone(const uint64_t *x0);
 
-extern size_t core_clone_impls___core__clone__Clone_for_usize__5__clone(size_t *x0);
+extern size_t core_clone_impls___core__clone__Clone_for_usize__5__clone(const size_t *x0);
 
 static inline uint64_t
 core_convert_num___core__convert__From_u16__for_u64__70__from(uint16_t x0);

@@ -7,12 +7,12 @@
 
 #include "issue_96.h"
 
-void issue_96_use_it(issue_96_MyStruct *x)
+void issue_96_use_it(const issue_96_MyStruct *x)
 {
 
 }
 
-void issue_96_use_it2(issue_96_MyStruct2 *x)
+void issue_96_use_it2(const issue_96_MyStruct2 *x)
 {
 
 }
