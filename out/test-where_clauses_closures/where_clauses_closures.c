@@ -65,7 +65,7 @@ void where_clauses_closures_main(void)
   size_t_x2 uu____0 = where_clauses_closures_test_e3();
   size_t x = uu____0.fst;
   size_t y = uu____0.snd;
-  _size_t__x2 uu____1 = { .fst = &x, .snd = &y };
+  _size_t__x2 uu____1 = { CFIELD(.fst, &x), CFIELD(.snd, &y) };
   size_t *left_val = uu____1.fst;
   size_t *right_val = uu____1.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");

@@ -8,11 +8,12 @@
 #ifndef __issue_128_H
 #define __issue_128_H
 
+#include "eurydice_glue.h"
+
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 #define issue_128_E_A 1
 #define issue_128_E_B 2

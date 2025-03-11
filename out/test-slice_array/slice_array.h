@@ -8,11 +8,12 @@
 #ifndef __slice_array_H
 #define __slice_array_H
 
+#include "eurydice_glue.h"
+
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1

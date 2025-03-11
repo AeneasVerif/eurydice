@@ -8,11 +8,12 @@
 #ifndef __where_clauses_fncg_H
 #define __where_clauses_fncg_H
 
+#include "eurydice_glue.h"
+
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 static inline uint64_t
 core_convert_num___core__convert__From_u8__for_u64__66__from(uint8_t x0);

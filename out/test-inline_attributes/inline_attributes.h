@@ -8,11 +8,12 @@
 #ifndef __inline_attributes_H
 #define __inline_attributes_H
 
+#include "eurydice_glue.h"
+
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 uint32_t inline_attributes_f(void);
 

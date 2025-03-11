@@ -8,12 +8,14 @@
 #ifndef __symcrust_H
 #define __symcrust_H
 
+#include "eurydice_glue.h"
+
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
 #include "Eurydice.h"
-#include "eurydice_glue.h"
 
 extern uint8_t core_clone_impls___core__clone__Clone_for_u8__6__clone(uint8_t *x0);
 

@@ -18,12 +18,24 @@ void const_generics_serialize_3b(Eurydice_slice re, uint8_t ret[8U])
 {
   uint8_t out[8U] = { 0U };
   Eurydice_slice
-  uu____0 = Eurydice_array_to_subslice_to((size_t)8U, out, (size_t)4U, uint8_t, size_t);
+  uu____0 =
+    Eurydice_array_to_subslice_to((size_t)8U,
+      out,
+      (size_t)4U,
+      uint8_t,
+      size_t,
+      __builtin_slice_t);
   uint8_t ret0[4U];
   core_num__u32_8__to_be_bytes(Eurydice_slice_index(re, (size_t)0U, uint32_t, uint32_t *), ret0);
   Eurydice_slice_copy(uu____0, Eurydice_array_to_slice((size_t)4U, ret0, uint8_t), uint8_t);
   Eurydice_slice
-  uu____1 = Eurydice_array_to_subslice_from((size_t)8U, out, (size_t)4U, uint8_t, size_t);
+  uu____1 =
+    Eurydice_array_to_subslice_from((size_t)8U,
+      out,
+      (size_t)4U,
+      uint8_t,
+      size_t,
+      __builtin_slice_t);
   uint8_t ret1[4U];
   core_num__u32_8__to_be_bytes(Eurydice_slice_index(re, (size_t)1U, uint32_t, uint32_t *), ret1);
   Eurydice_slice_copy(uu____1, Eurydice_array_to_slice((size_t)4U, ret1, uint8_t), uint8_t);
@@ -219,7 +231,7 @@ void const_generics_main3(void)
     x = false;
   }
   bool expected = false;
-  _bool__x2 uu____0 = { .fst = &x, .snd = &expected };
+  _bool__x2 uu____0 = { CFIELD(.fst, &x), CFIELD(.snd, &expected) };
   bool *left_val = uu____0.fst;
   bool *right_val = uu____0.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");

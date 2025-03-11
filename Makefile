@@ -3,7 +3,7 @@ KRML_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../karamel
 EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
 CHARON		?= $(CHARON_HOME)/bin/charon
 
-BROKEN_TESTS		= step_by where_clauses chunks mutable_slice_range closure issue_37 issue_105 issue_99
+BROKEN_TESTS		= where_clauses chunks mutable_slice_range closure issue_37 issue_105 issue_99
 TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.rs))))
 
 # Enable `foo/**` glob syntax
@@ -27,7 +27,7 @@ test: $(addprefix test-,$(TEST_DIRS)) custom-test-array
 .PRECIOUS: %.llbc
 %.llbc: %.rs
 	# TODO: add --output to charon
-	$(CHARON) --no-cargo --input $< && mv $(notdir $*).llbc $@
+	$(CHARON) --remove-associated-types '*' --no-cargo --input $< && mv $(notdir $*).llbc $@
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*

@@ -8,11 +8,12 @@
 #ifndef __array_H
 #define __array_H
 
+#include "eurydice_glue.h"
+
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 typedef struct array_Foo_s
 {

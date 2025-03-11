@@ -8,11 +8,12 @@
 #ifndef __nested_arrays2_H
 #define __nested_arrays2_H
 
+#include "eurydice_glue.h"
+
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 extern const uint8_t nested_arrays2_TABLE[1U][1U];
 

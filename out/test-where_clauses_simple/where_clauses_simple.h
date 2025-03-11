@@ -8,11 +8,12 @@
 #ifndef __where_clauses_simple_H
 #define __where_clauses_simple_H
 
+#include "eurydice_glue.h"
+
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 extern uint64_t core_clone_impls___core__clone__Clone_for_u64__9__clone(uint64_t *x0);
 

@@ -8,11 +8,12 @@
 #ifndef __recursion_H
 #define __recursion_H
 
+#include "eurydice_glue.h"
+
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 bool recursion_is_odd(int32_t y);
 

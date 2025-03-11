@@ -8,11 +8,12 @@
 #ifndef __where_clauses_closures_H
 #define __where_clauses_closures_H
 
+#include "eurydice_glue.h"
+
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 extern size_t core_clone_impls___core__clone__Clone_for_usize__5__clone(size_t *x0);
 

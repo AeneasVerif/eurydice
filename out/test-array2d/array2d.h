@@ -8,11 +8,12 @@
 #ifndef __array2d_H
 #define __array2d_H
 
+#include "eurydice_glue.h"
+
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include "eurydice_glue.h"
 
 bool array2d_f(uint32_t x[4U][2U]);
 

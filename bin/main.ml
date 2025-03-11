@@ -63,7 +63,7 @@ Supported options:|}
     PPrint.(ToBuffer.pretty 0.95 terminal_width b (Krml.PrintAst.print_files files ^^ hardline))
   in
   let fail file line =
-    Printf.printf "%s:%d exiting" file line;
+    Printf.printf "%s:%d exiting\n" file line;
     exit 1
   in
 
@@ -75,7 +75,7 @@ Supported options:|}
       allow_tapps := true;
       minimal := true;
       curly_braces := true;
-      add_include := [ All, "\"eurydice_glue.h\"" ];
+      add_very_early_include := [ All, "\"eurydice_glue.h\"" ];
       parentheses := true;
       no_shadow := true;
       extern_c := true;
@@ -193,11 +193,11 @@ Supported options:|}
 
   Printf.printf "3️⃣ Monomorphization, datatypes\n";
   let files = Eurydice.Cleanup2.resugar_loops#visit_files () files in
+  Eurydice.Logging.log "Phase2.1" "%a" pfiles files;
   (* Sanity check for the big rewriting above. *)
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
     fail __FILE__ __LINE__;
-  Eurydice.Logging.log "Phase2.1" "%a" pfiles files;
   let files = Eurydice.Cleanup2.improve_names files in
   let files = Eurydice.Cleanup2.recognize_asserts#visit_files () files in
   (* Temporary workaround until Aeneas supports nested loops *)
