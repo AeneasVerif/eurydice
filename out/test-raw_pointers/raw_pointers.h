@@ -7,6 +7,7 @@
 
 #ifndef __raw_pointers_H
 #define __raw_pointers_H
+
 #include "eurydice_glue.h"
 
 

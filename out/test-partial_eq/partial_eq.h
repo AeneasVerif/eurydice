@@ -7,6 +7,7 @@
 
 #ifndef __partial_eq_H
 #define __partial_eq_H
+
 #include "eurydice_glue.h"
 
 

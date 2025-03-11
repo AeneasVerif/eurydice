@@ -23,7 +23,7 @@ void issue_49_main(void)
 {
   size_t expected = (size_t)0U;
   size_t actual = issue_49_f((size_t)0U, (size_t)0U);
-  _size_t__x2 uu____0 = { .fst = &expected, .snd = &actual };
+  _size_t__x2 uu____0 = { CFIELD(.fst, &expected), CFIELD(.snd, &actual) };
   size_t *left_val = uu____0.fst;
   size_t *right_val = uu____0.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");

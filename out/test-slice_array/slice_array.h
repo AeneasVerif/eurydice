@@ -7,6 +7,7 @@
 
 #ifndef __slice_array_H
 #define __slice_array_H
+
 #include "eurydice_glue.h"
 
 

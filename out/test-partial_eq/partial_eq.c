@@ -25,7 +25,7 @@ _partial_eq_Enum__x2;
 void partial_eq_main(void)
 {
   partial_eq_Enum expected = partial_eq_Enum_A;
-  _partial_eq_Enum__x2 uu____0 = { .fst = &expected, .snd = &expected };
+  _partial_eq_Enum__x2 uu____0 = { CFIELD(.fst, &expected), CFIELD(.snd, &expected) };
   partial_eq_Enum *left_val = uu____0.fst;
   partial_eq_Enum *right_val = uu____0.snd;
   EURYDICE_ASSERT(partial_eq_eq_dd(left_val, right_val), "panic!");

@@ -7,6 +7,7 @@
 
 #ifndef __where_clauses_simple_H
 #define __where_clauses_simple_H
+
 #include "eurydice_glue.h"
 
 

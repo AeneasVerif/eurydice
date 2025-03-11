@@ -7,6 +7,7 @@
 
 #ifndef __inline_attributes_H
 #define __inline_attributes_H
+
 #include "eurydice_glue.h"
 
 

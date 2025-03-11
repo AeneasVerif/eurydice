@@ -7,6 +7,7 @@
 
 #ifndef __traits_H
 #define __traits_H
+
 #include "eurydice_glue.h"
 
 

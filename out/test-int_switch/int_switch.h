@@ -7,6 +7,7 @@
 
 #ifndef __int_switch_H
 #define __int_switch_H
+
 #include "eurydice_glue.h"
 
 

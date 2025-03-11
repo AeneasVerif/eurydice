@@ -7,6 +7,7 @@
 
 #ifndef __recursion_H
 #define __recursion_H
+
 #include "eurydice_glue.h"
 
 

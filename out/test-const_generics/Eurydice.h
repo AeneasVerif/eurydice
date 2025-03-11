@@ -7,6 +7,7 @@
 
 #ifndef __Eurydice_H
 #define __Eurydice_H
+
 #include "eurydice_glue.h"
 
 

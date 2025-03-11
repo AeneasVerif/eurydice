@@ -231,7 +231,7 @@ void const_generics_main3(void)
     x = false;
   }
   bool expected = false;
-  _bool__x2 uu____0 = { .fst = &x, .snd = &expected };
+  _bool__x2 uu____0 = { CFIELD(.fst, &x), CFIELD(.snd, &expected) };
   bool *left_val = uu____0.fst;
   bool *right_val = uu____0.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");

@@ -7,6 +7,7 @@
 
 #ifndef __symcrust_H
 #define __symcrust_H
+
 #include "eurydice_glue.h"
 
 

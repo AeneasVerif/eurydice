@@ -7,6 +7,7 @@
 
 #ifndef __where_clauses_fncg_H
 #define __where_clauses_fncg_H
+
 #include "eurydice_glue.h"
 
 

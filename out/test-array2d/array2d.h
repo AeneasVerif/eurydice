@@ -7,6 +7,7 @@
 
 #ifndef __array2d_H
 #define __array2d_H
+
 #include "eurydice_glue.h"
 
 

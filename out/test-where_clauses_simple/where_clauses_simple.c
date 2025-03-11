@@ -57,7 +57,7 @@ void where_clauses_simple_k_calls_k(void)
 {
   size_t r = where_clauses_simple_fn_k_71();
   size_t r_expected = (size_t)3U;
-  _size_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
+  _size_t__x2 uu____0 = { CFIELD(.fst, &r), CFIELD(.snd, &r_expected) };
   size_t *left_val = uu____0.fst;
   size_t *right_val = uu____0.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
@@ -103,7 +103,7 @@ void where_clauses_simple_k_calls_one(void)
 {
   uint64_t r = where_clauses_simple_fn_k_3a();
   uint64_t r_expected = 0ULL;
-  _uint64_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
+  _uint64_t__x2 uu____0 = { CFIELD(.fst, &r), CFIELD(.snd, &r_expected) };
   uint64_t *left_val = uu____0.fst;
   uint64_t *right_val = uu____0.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
@@ -152,7 +152,7 @@ void where_clauses_simple_one_calls_k(void)
 {
   size_t r = where_clauses_simple_fn_1_e6();
   size_t r_expected = (size_t)1U;
-  _size_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
+  _size_t__x2 uu____0 = { CFIELD(.fst, &r), CFIELD(.snd, &r_expected) };
   size_t *left_val = uu____0.fst;
   size_t *right_val = uu____0.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
@@ -175,7 +175,7 @@ void where_clauses_simple_one_calls_one(void)
 {
   uint64_t r = where_clauses_simple_fn_1_6f();
   uint64_t r_expected = 0ULL;
-  _uint64_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
+  _uint64_t__x2 uu____0 = { CFIELD(.fst, &r), CFIELD(.snd, &r_expected) };
   uint64_t *left_val = uu____0.fst;
   uint64_t *right_val = uu____0.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
@@ -223,21 +223,21 @@ void where_clauses_simple_main(void)
   tuple_b6 y = where_clauses_simple_double_k_7b((size_t)1U, 1ULL);
   uint64_t x_0 = 1ULL;
   size_t x_1 = (size_t)2U;
-  _uint64_t__x2 uu____0 = { .fst = &x.fst, .snd = &x_0 };
+  _uint64_t__x2 uu____0 = { CFIELD(.fst, &x.fst), CFIELD(.snd, &x_0) };
   uint64_t *left_val0 = uu____0.fst;
   uint64_t *right_val0 = uu____0.snd;
   EURYDICE_ASSERT(left_val0[0U] == right_val0[0U], "panic!");
-  _size_t__x2 uu____1 = { .fst = &x.snd, .snd = &x_1 };
+  _size_t__x2 uu____1 = { CFIELD(.fst, &x.snd), CFIELD(.snd, &x_1) };
   size_t *left_val1 = uu____1.fst;
   size_t *right_val1 = uu____1.snd;
   EURYDICE_ASSERT(left_val1[0U] == right_val1[0U], "panic!");
   size_t y_0 = (size_t)4U;
   uint64_t y_1 = 1ULL;
-  _size_t__x2 uu____2 = { .fst = &y.fst, .snd = &y_0 };
+  _size_t__x2 uu____2 = { CFIELD(.fst, &y.fst), CFIELD(.snd, &y_0) };
   size_t *left_val2 = uu____2.fst;
   size_t *right_val2 = uu____2.snd;
   EURYDICE_ASSERT(left_val2[0U] == right_val2[0U], "panic!");
-  _uint64_t__x2 uu____3 = { .fst = &y.snd, .snd = &y_1 };
+  _uint64_t__x2 uu____3 = { CFIELD(.fst, &y.snd), CFIELD(.snd, &y_1) };
   uint64_t *left_val = uu____3.fst;
   uint64_t *right_val = uu____3.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");

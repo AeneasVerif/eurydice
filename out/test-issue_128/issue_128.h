@@ -7,6 +7,7 @@
 
 #ifndef __issue_128_H
 #define __issue_128_H
+
 #include "eurydice_glue.h"
 
 
