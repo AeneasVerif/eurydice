@@ -26,8 +26,7 @@ test: $(addprefix test-,$(TEST_DIRS)) custom-test-array
 
 .PRECIOUS: %.llbc
 %.llbc: %.rs
-	# TODO: add --output to charon
-	$(CHARON) --remove-associated-types '*' --no-cargo --input $< && mv $(notdir $*).llbc $@
+	$(CHARON) --remove-associated-types '*' --no-cargo --input $< --dest-file "$@"
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
