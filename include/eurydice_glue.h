@@ -39,7 +39,7 @@ using std::type_identity_t;
   constexpr T(int t, V U::*m, type_identity_t<V> v) : tag(t) {                 \
     val.*m = std::move(v);                                                     \
   }                                                                            \
-  T () = default;
+  T() = default;
 
 #endif
 
@@ -93,7 +93,7 @@ typedef struct {
 // cast to something that can decay (see remark above about how pointer
 // arithmetic works in C), meaning either pointer or array type.
 #define EURYDICE_SLICE(x, start, end)                                          \
-  (KRML_CLITERAL(Eurydice_slice) { (void *)(x + start), end - start })
+  (KRML_CLITERAL(Eurydice_slice){(void *)(x + start), end - start})
 
 // Slice length
 #define EURYDICE_SLICE_LEN(s, _) (s).len
@@ -165,25 +165,24 @@ typedef struct {
   Eurydice_array_eq(sz, a1, ((a2)->ptr), t, _)
 
 #define Eurydice_slice_split_at(slice, mid, element_type, ret_t)               \
-  KRML_CLITERAL(ret_t) {                                                            \
-    EURYDICE_CFIELD(.fst =)                                                             \
+  KRML_CLITERAL(ret_t) {                                                       \
+    EURYDICE_CFIELD(.fst =)                                                    \
     EURYDICE_SLICE((element_type *)(slice).ptr, 0, mid),                       \
-        EURYDICE_CFIELD(.snd =)                                                         \
+        EURYDICE_CFIELD(.snd =)                                                \
             EURYDICE_SLICE((element_type *)(slice).ptr, mid, (slice).len)      \
   }
 
 #define Eurydice_slice_split_at_mut(slice, mid, element_type, ret_t)           \
-  KRML_CLITERAL(ret_t)                                                              \
-    {                                                                          \
-      EURYDICE_CFIELD(.fst =)                                                           \
-      KRML_CLITERAL(Eurydice_slice)                                                 \
-          {EURYDICE_CFIELD(.ptr =)(slice.ptr), EURYDICE_CFIELD(.len =) mid},                     \
-          EURYDICE_CFIELD(.snd =) KRML_CLITERAL(Eurydice_slice) {                            \
-        EURYDICE_CFIELD(.ptr =)                                                         \
-        ((char *)slice.ptr + mid * sizeof(element_type)),                      \
-            EURYDICE_CFIELD(.len =)(slice.len - mid)                                    \
-      }                                                                        \
-    }
+  KRML_CLITERAL(ret_t) {                                                       \
+    EURYDICE_CFIELD(.fst =)                                                    \
+    KRML_CLITERAL(Eurydice_slice){EURYDICE_CFIELD(.ptr =)(slice.ptr),          \
+                                  EURYDICE_CFIELD(.len =) mid},                \
+        EURYDICE_CFIELD(.snd =) KRML_CLITERAL(Eurydice_slice) {                \
+      EURYDICE_CFIELD(.ptr =)                                                  \
+      ((char *)slice.ptr + mid * sizeof(element_type)),                        \
+          EURYDICE_CFIELD(.len =)(slice.len - mid)                             \
+    }                                                                          \
+  }
 
 // Conversion of slice to an array, rewritten (by Eurydice) to name the
 // destination array, since arrays are not values in C.
@@ -310,11 +309,12 @@ core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__N
 
 // ITERATORS
 
-#define Eurydice_range_iter_next(iter_ptr, t, ret_t)          \
-  (((iter_ptr)->start >= (iter_ptr)->end)                     \
-       ? (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 0, EURYDICE_CFIELD(.f0 =) 0}) \
-       : (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 1,                   \
-                          EURYDICE_CFIELD(.f0 =)(iter_ptr)->start++}))
+#define Eurydice_range_iter_next(iter_ptr, t, ret_t)                           \
+  (((iter_ptr)->start >= (iter_ptr)->end)                                      \
+       ? (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 0,                      \
+                               EURYDICE_CFIELD(.f0 =) 0})                      \
+       : (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 1,                      \
+                               EURYDICE_CFIELD(.f0 =)(iter_ptr)->start++}))
 
 #define core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next \
   Eurydice_range_iter_next
@@ -378,12 +378,14 @@ typedef struct {
 #define core_slice_iter__core__slice__iter__Iter__a__T__181__next(iter, t,     \
                                                                   ret_t)       \
   (((iter)->index == (iter)->s.len)                                            \
-       ? (KRML_CLITERAL(ret_t){.tag = core_option_None})                            \
-       : (KRML_CLITERAL(ret_t){.tag = core_option_Some,                             \
-                          .f0 =                                                \
-                              ((iter)->index++,                                \
-                               &((t *)((iter)->s.ptr))[(iter)->index - 1])}))
-#define core_option__core__option__Option_T__TraitClause_0___is_some(X, _0, _1) ((X)->tag == 1)
+       ? (KRML_CLITERAL(ret_t){.tag = core_option_None})                       \
+       : (KRML_CLITERAL(ret_t){                                                \
+             .tag = core_option_Some,                                          \
+             .f0 = ((iter)->index++,                                           \
+                    &((t *)((iter)->s.ptr))[(iter)->index - 1])}))
+#define core_option__core__option__Option_T__TraitClause_0___is_some(X, _0,    \
+                                                                     _1)       \
+  ((X)->tag == 1)
 // STRINGS
 
 typedef const char *Prims_string;
