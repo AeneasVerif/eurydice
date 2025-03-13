@@ -144,7 +144,7 @@ typedef struct {
   memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 
 #define core_array___Array_T__N__23__as_slice(len_, ptr_, t, _ret_t)           \
-  EURYDICE_SLICE(ptr_, len_)
+  CLITERAL(Eurydice_slice) { ptr_, len_ }
 
 #define core_array___core__clone__Clone_for__Array_T__N___20__clone(           \
     len, src, dst, elem_type, _ret_t)                                          \
@@ -170,10 +170,10 @@ typedef struct {
   }
 
 #define Eurydice_slice_split_at_mut(slice, mid, element_type, ret_t)           \
-  CLITERAL(ret_t) {                                                            \
+  CLITERAL(ret_t)                                                              \
     {                                                                          \
       CFIELD(.fst =)                                                           \
-      CLITERAL(Eurydice_slice),                                                \
+      CLITERAL(Eurydice_slice)                                                 \
           {CFIELD(.ptr =)(slice.ptr), CFIELD(.len =) mid},                     \
           CFIELD(.snd =) CLITERAL(Eurydice_slice) {                            \
         CFIELD(.ptr =)                                                         \
