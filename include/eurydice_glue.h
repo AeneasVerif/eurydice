@@ -96,8 +96,8 @@ typedef struct {
   CLITERAL(Eurydice_slice) { (void *)(x + start), end - start }
 
 // Slice length
-#define EURYDICE_SLICE_LEN(s, _) s.len
-#define Eurydice_slice_len(s, t) EURYDICE_SLICE_LEN(s, t)
+#define EURYDICE_SLICE_LEN(s, _) (s).len
+#define Eurydice_slice_len(s, _) (s).len
 
 // This macro is a pain because in case the dereferenced element type is an
 // array, you cannot simply write `t x` as it would yield `int[4] x` instead,
@@ -167,9 +167,9 @@ typedef struct {
 #define Eurydice_slice_split_at(slice, mid, element_type, ret_t)               \
   CLITERAL(ret_t) {                                                            \
     CFIELD(.fst =)                                                             \
-    EURYDICE_SLICE((element_type *)slice.ptr, 0, mid),                         \
+    EURYDICE_SLICE((element_type *)(slice).ptr, 0, mid),                       \
         CFIELD(.snd =)                                                         \
-            EURYDICE_SLICE((element_type *)slice.ptr, mid, slice.len)          \
+            EURYDICE_SLICE((element_type *)(slice).ptr, mid, (slice).len)      \
   }
 
 #define Eurydice_slice_split_at_mut(slice, mid, element_type, ret_t)           \
@@ -250,6 +250,14 @@ static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
 #endif
 }
 
+static inline uint32_t core_num__i32_2__count_ones(int32_t x0) {
+#ifdef _MSC_VER
+  return __popcnt(x0);
+#else
+  return __builtin_popcount(x0);
+#endif
+}
+
 static inline size_t
 core_cmp_impls___core__cmp__Ord_for_usize__59__min(size_t a, size_t b) {
   if (a <= b)
@@ -279,6 +287,18 @@ static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
 }
 static inline uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
   return x < y ? x : y;
+}
+
+static inline uint8_t
+core_ops_bit___core__ops__bit__BitAnd_u8__u8__for___a__u8___46__bitand(
+    uint8_t *x0, uint8_t x1) {
+  return Eurydice_bitand_pv_u8(x0, x1);
+}
+
+static inline uint8_t
+core_ops_bit___core__ops__bit__Shr_i32__u8__for___a__u8___792__shr(uint8_t *x0,
+                                                                   int32_t x1) {
+  return Eurydice_shr_pv_u8(x0, x1);
 }
 
 #define core_num_nonzero_private_NonZeroUsizeInner size_t
@@ -362,7 +382,7 @@ typedef struct {
                           .f0 =                                                \
                               ((iter)->index++,                                \
                                &((t *)((iter)->s.ptr))[(iter)->index - 1])}))
-
+#define core_option__core__option__Option_T__TraitClause_0___is_some(X, _0, _1) ((X)->tag == 1)
 // STRINGS
 
 typedef const char *Prims_string;
