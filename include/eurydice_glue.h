@@ -93,7 +93,7 @@ typedef struct {
 // cast to something that can decay (see remark above about how pointer
 // arithmetic works in C), meaning either pointer or array type.
 #define EURYDICE_SLICE(x, start, end)                                          \
-  CLITERAL(Eurydice_slice) { (void *)(x + start), end - start }
+  (CLITERAL(Eurydice_slice) { (void *)(x + start), end - start })
 
 // Slice length
 #define EURYDICE_SLICE_LEN(s, _) (s).len
@@ -310,10 +310,11 @@ core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__N
 
 // ITERATORS
 
-#define Eurydice_range_iter_next(iter_ptr, t, ret_t)                           \
-  (((iter_ptr)->start >= (iter_ptr)->end)                                      \
-       ? (ret_t){CFIELD(.tag =) 0, CFIELD(.f0 =) 0}                            \
-       : (ret_t){CFIELD(.tag =) 1, CFIELD(.f0 =)(iter_ptr)->start++})
+#define Eurydice_range_iter_next(iter_ptr, t, ret_t)          \
+  (((iter_ptr)->start >= (iter_ptr)->end)                     \
+       ? (CLITERAL(ret_t){CFIELD(.tag =) 0, CFIELD(.f0 =) 0}) \
+       : (CLITERAL(ret_t){CFIELD(.tag =) 1,                   \
+                          CFIELD(.f0 =)(iter_ptr)->start++}))
 
 #define core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next \
   Eurydice_range_iter_next
