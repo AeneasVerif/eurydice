@@ -14,7 +14,8 @@ result_S result_ident(result_S x)
 
 result_S result_mk1(uint32_t x, uint32_t y)
 {
-  return (CLITERAL(result_S){ .tag = result_S1, .val = { .case_S1 = { .x1 = x, .y1 = y } } });
+  return
+    (KRML_CLITERAL(result_S){ .tag = result_S1, .val = { .case_S1 = { .x1 = x, .y1 = y } } });
 }
 
 void result_main(void)
@@ -33,7 +34,7 @@ void result_main(void)
                 result_S
                 uu____1 =
                   result_ident((
-                      CLITERAL(result_S){
+                      KRML_CLITERAL(result_S){
                         .tag = result_S2,
                         .val = { .case_S2 = { .x2 = 0U, .y2 = 0U } }
                       }

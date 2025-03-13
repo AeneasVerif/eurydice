@@ -47,7 +47,7 @@ void where_clauses_fncg_main(void)
 {
   uint64_t r = where_clauses_fncg_f_43();
   uint64_t expected = 0ULL;
-  _uint64_t__x2 uu____0 = { CFIELD(.fst, &r), CFIELD(.snd, &expected) };
+  _uint64_t__x2 uu____0 = { .fst = &r, .snd = &expected };
   uint64_t *left_val = uu____0.fst;
   uint64_t *right_val = uu____0.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");

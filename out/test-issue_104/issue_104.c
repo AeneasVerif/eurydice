@@ -36,7 +36,7 @@ void issue_104_main(void)
   uint8_t lvalue0 = issue_104_call();
   /* original Rust expression is not an lvalue in C */
   uint8_t lvalue = 5U;
-  _uint8_t__x2 uu____0 = { CFIELD(.fst, &lvalue0), CFIELD(.snd, &lvalue) };
+  _uint8_t__x2 uu____0 = { .fst = &lvalue0, .snd = &lvalue };
   uint8_t *left_val = uu____0.fst;
   uint8_t *right_val = uu____0.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
