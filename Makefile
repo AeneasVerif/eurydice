@@ -23,7 +23,7 @@ build:
 CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
 CXXFLAGS	:= -std=c++17
 
-test: $(addprefix test-,$(TEST_DIRS)) custom-test-array
+test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result
 
 .PRECIOUS: %.llbc
 %.llbc: %.rs
@@ -52,8 +52,8 @@ out/testxx-%/main.cc: test/main.c
 
 testxx-%: test/%.llbc out/testxx-%/main.cc | all
 	$(EURYDICE) $(EXTRA) -fc++17-compat --output out/testxx-$* $<
-	$(SED) -i 's/  KaRaMeL version: .*//' out/test-$*/**/*.{c,h} # This changes on every commit
-	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-$*/**/*.{c,h} # This changes between local and CI
+	$(SED) -i 's/  KaRaMeL version: .*//' out/testxx-$*/**/*.{c,h} # This changes on every commit
+	$(SED) -i 's/  KaRaMeL invocation: .*//' out/testxx-$*/**/*.{c,h} # This changes between local and CI
 	mv out/testxx-$*/$*.c out/testxx-$*/$*.cc
 	cd out/testxx-$* && $(CXX) $(CXXFLAGS) $(CFLAGS) -I. -I../../include $(EXTRA_C) $*.cc main.cc && ./a.out
 
