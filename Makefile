@@ -21,8 +21,9 @@ build:
 	dune build && ln -sf _build/default/bin/main.exe eurydice
 
 CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
+CXXFLAGS	:= -std=c++17
 
-test: $(addprefix test-,$(TEST_DIRS)) custom-test-array
+test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result
 
 .PRECIOUS: %.llbc
 %.llbc: %.rs
@@ -42,6 +43,19 @@ test-%: test/%.llbc out/test-%/main.c | all
 	$(SED) -i 's/  KaRaMeL version: .*//' out/test-$*/**/*.{c,h} # This changes on every commit
 	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-$*/**/*.{c,h} # This changes between local and CI
 	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $(EXTRA_C) $*.c main.c && ./a.out
+
+# C++ tests
+
+out/testxx-%/main.cc: test/main.c
+	mkdir -p out/testxx-$*
+	sed 's/__NAME__/$*/g' $< > $@
+
+testxx-%: test/%.llbc out/testxx-%/main.cc | all
+	$(EURYDICE) $(EXTRA) -fc++17-compat --output out/testxx-$* $<
+	$(SED) -i 's/  KaRaMeL version: .*//' out/testxx-$*/**/*.{c,h} # This changes on every commit
+	$(SED) -i 's/  KaRaMeL invocation: .*//' out/testxx-$*/**/*.{c,h} # This changes between local and CI
+	mv out/testxx-$*/$*.c out/testxx-$*/$*.cc
+	cd out/testxx-$* && $(CXX) $(CXXFLAGS) $(CFLAGS) -I. -I../../include $(EXTRA_C) $*.cc main.cc && ./a.out
 
 custom-test-array: test-array
 	grep -q XXX1 out/test-array/array.c && \

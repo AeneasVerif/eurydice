@@ -1,15 +1,11 @@
 #pragma once
 
-#if defined(__cplusplus)
-extern "C" {
-#endif // defined(__cplusplus)
-
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
- 
+
 #ifdef _MSC_VER
 // For __popcnt
 #include <intrin.h>
@@ -18,27 +14,33 @@ extern "C" {
 #include "krml/internal/target.h"
 #include "krml/lowstar_endianness.h"
 
-// C++ HELPERS (temporarily closing the extern "C" block)
+// C++ HELPERS
 
 #if defined(__cplusplus)
-} // extern "C"
 
-// Get C++ struct initialization as an expression
-template <typename Type> static inline Type mk(Type value) { return value; }
+#ifndef KRML_HOST_EPRINTF
+#define KRML_HOST_EPRINTF(...) fprintf(stderr, __VA_ARGS__)
+#endif
 
-template <typename Type, typename SizeType>
-static inline Type iter_next(SizeType &start, SizeType end) {
-  if (start >= end) {
-    return mk<Type>(
-        {0, 0}); // XXX: None | not nice that we can't use the define
-  } else {
-    return mk<Type>(
-        {1, start++}); // XXX: Some | not nice that we can't use the define
-  }
+#include <utility>
 
-}
+#ifndef __cpp_lib_type_identity
+template <class T> struct type_identity {
+  using type = T;
+};
 
-extern "C" {
+template <class T> using type_identity_t = typename type_identity<T>::type;
+#else
+using std::type_identity_t;
+#endif
+
+#define KRML_UNION_CONSTRUCTOR(T)                                              \
+  template <typename V>                                                        \
+  constexpr T(int t, V U::*m, type_identity_t<V> v) : tag(t) {                 \
+    val.*m = std::move(v);                                                     \
+  }                                                                            \
+  T() = default;
+
 #endif
 
 // GENERAL-PURPOSE STUFF
@@ -73,59 +75,29 @@ typedef struct {
   size_t len;
 } Eurydice_slice;
 
-// Helper to drop brackets from arguments in macros
-#define ESC(...) __VA_ARGS__
-
-// The MSVC C++ compiler does not support compound literals or designated
-// initializers with C++-17. This CLITERAL and CFIELD are used to turn
-// `(type){.field = value, ...}` into `{value, ...}` when using a C++ compiler.
-//
-// Note that this is not always great because the C++ initializer list syntax
-// only works when the expected type is known from the context, which is not
-// always the case. Thus, it is preferred, when in a C++ context, to call `mk`
-// with an explicit type argument.
-//
-// TODO: determine if the CLITERAL below should be instead mk<type>(ESC(value))
-// -- this would perhaps allow removing iter_next and have a single
-// implementation across C/C++.
-// TODO: determine if we want to use C++21 syntax if available (similar to C99
-// compound literals)
 #if defined(__cplusplus)
-#define CLITERAL(type, value) ESC(value)
+#define KRML_CLITERAL(type) type
 #else
-#define CLITERAL(type, value) (type) value
+#define KRML_CLITERAL(type) (type)
 #endif
 
-#if defined(__cplusplus)
-#define CFIELDS(...) __VA_ARGS__
+#if defined(__cplusplus) && defined(__cpp_designated_initializers) ||          \
+    !(defined(__cplusplus))
+#define EURYDICE_CFIELD(X) X
 #else
-#define CFIELDS(...) __VA_ARGS__
+#define EURYDICE_CFIELD(X)
 #endif
-
-#if defined(__cplusplus)
-#define CFIELD(field, value) ESC(value)
-#else
-#define CFIELD(field, value) field = value
-#endif
-
-// Helper function to build a eurydice slice from a pointer and length.
-static inline Eurydice_slice mk_slice(void *start, size_t len) {
-#if defined(__cplusplus)
-  return {start, len};
-#else
-  return (Eurydice_slice){start, len};
-#endif
-}
 
 // Helper macro to create a slice out of a pointer x, a start index in x
 // (included), and an end index in x (excluded). The argument x must be suitably
 // cast to something that can decay (see remark above about how pointer
 // arithmetic works in C), meaning either pointer or array type.
-#define EURYDICE_SLICE(x, start, end) mk_slice((void *)(x + start), end - start)
+#define EURYDICE_SLICE(x, start, end)                                          \
+  (KRML_CLITERAL(Eurydice_slice){(void *)(x + start), end - start})
 
 // Slice length
-#define EURYDICE_SLICE_LEN(s, _) s.len
-#define Eurydice_slice_len(s, t) EURYDICE_SLICE_LEN(s, t)
+#define EURYDICE_SLICE_LEN(s, _) (s).len
+#define Eurydice_slice_len(s, _) (s).len
 
 // This macro is a pain because in case the dereferenced element type is an
 // array, you cannot simply write `t x` as it would yield `int[4] x` instead,
@@ -175,7 +147,7 @@ static inline Eurydice_slice mk_slice(void *start, size_t len) {
   memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 
 #define core_array___Array_T__N__23__as_slice(len_, ptr_, t, _ret_t)           \
-  EURYDICE_SLICE(ptr_, len_)
+  KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
 
 #define core_array___core__clone__Clone_for__Array_T__N___20__clone(           \
     len, src, dst, elem_type, _ret_t)                                          \
@@ -193,24 +165,24 @@ static inline Eurydice_slice mk_slice(void *start, size_t len) {
   Eurydice_array_eq(sz, a1, ((a2)->ptr), t, _)
 
 #define Eurydice_slice_split_at(slice, mid, element_type, ret_t)               \
-  CLITERAL(ret_t,                                                              \
-           CFIELDS({CFIELD(.fst,                                               \
-                           EURYDICE_SLICE((element_type *)slice.ptr, 0, mid)), \
-                    CFIELD(.snd, EURYDICE_SLICE((element_type *)slice.ptr,     \
-                                                mid, slice.len))}))
+  KRML_CLITERAL(ret_t) {                                                       \
+    EURYDICE_CFIELD(.fst =)                                                    \
+    EURYDICE_SLICE((element_type *)(slice).ptr, 0, mid),                       \
+        EURYDICE_CFIELD(.snd =)                                                \
+            EURYDICE_SLICE((element_type *)(slice).ptr, mid, (slice).len)      \
+  }
 
 #define Eurydice_slice_split_at_mut(slice, mid, element_type, ret_t)           \
-  CLITERAL(                                                                    \
-      ret_t,                                                                   \
-      CFIELDS({CFIELD(.fst, CLITERAL(Eurydice_slice,                           \
-                                     CFIELDS({CFIELD(.ptr, (slice.ptr)),       \
-                                              CFIELD(.len, mid)}))),           \
-               CFIELD(.snd,                                                    \
-                      CLITERAL(                                                \
-                          Eurydice_slice,                                      \
-                          CFIELDS({CFIELD(.ptr, ((char *)slice.ptr +           \
-                                                 mid * sizeof(element_type))), \
-                                   CFIELD(.len, (slice.len - mid))})))}))
+  KRML_CLITERAL(ret_t) {                                                       \
+    EURYDICE_CFIELD(.fst =)                                                    \
+    KRML_CLITERAL(Eurydice_slice){EURYDICE_CFIELD(.ptr =)(slice.ptr),          \
+                                  EURYDICE_CFIELD(.len =) mid},                \
+        EURYDICE_CFIELD(.snd =) KRML_CLITERAL(Eurydice_slice) {                \
+      EURYDICE_CFIELD(.ptr =)                                                  \
+      ((char *)slice.ptr + mid * sizeof(element_type)),                        \
+          EURYDICE_CFIELD(.len =)(slice.len - mid)                             \
+    }                                                                          \
+  }
 
 // Conversion of slice to an array, rewritten (by Eurydice) to name the
 // destination array, since arrays are not values in C.
@@ -226,7 +198,7 @@ static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
 }
 
 // CORE STUFF (conversions, endianness, ...)
- 
+
 static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   // TODO: why not store32_be?
   uint32_t x = htobe32(src);
@@ -276,7 +248,15 @@ static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
   return __builtin_popcount(x0);
 #endif
 }
- 
+
+static inline uint32_t core_num__i32_2__count_ones(int32_t x0) {
+#ifdef _MSC_VER
+  return __popcnt(x0);
+#else
+  return __builtin_popcount(x0);
+#endif
+}
+
 static inline size_t
 core_cmp_impls___core__cmp__Ord_for_usize__59__min(size_t a, size_t b) {
   if (a <= b)
@@ -308,6 +288,18 @@ static inline uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
   return x < y ? x : y;
 }
 
+static inline uint8_t
+core_ops_bit___core__ops__bit__BitAnd_u8__u8__for___a__u8___46__bitand(
+    uint8_t *x0, uint8_t x1) {
+  return Eurydice_bitand_pv_u8(x0, x1);
+}
+
+static inline uint8_t
+core_ops_bit___core__ops__bit__Shr_i32__u8__for___a__u8___792__shr(uint8_t *x0,
+                                                                   int32_t x1) {
+  return Eurydice_shr_pv_u8(x0, x1);
+}
+
 #define core_num_nonzero_private_NonZeroUsizeInner size_t
 static inline core_num_nonzero_private_NonZeroUsizeInner
 core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__NonZeroUsizeInner__26__clone(
@@ -315,19 +307,14 @@ core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__N
   return *x0;
 }
 
-
 // ITERATORS
 
-#if defined(__cplusplus)
-#define Eurydice_range_iter_next(iter_ptr, t, ret_t)                           \
-  iter_next<ret_t, t>((iter_ptr)->start, (iter_ptr)->end)
-#else
 #define Eurydice_range_iter_next(iter_ptr, t, ret_t)                           \
   (((iter_ptr)->start >= (iter_ptr)->end)                                      \
-       ? CLITERAL(ret_t, CFIELDS({CFIELD(.tag, 0), CFIELD(.f0, 0)}))           \
-       : CLITERAL(ret_t, CFIELDS({CFIELD(.tag, 1),                             \
-                                  CFIELD(.f0, (iter_ptr)->start++)})))
-#endif
+       ? (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 0,                      \
+                               EURYDICE_CFIELD(.f0 =) 0})                      \
+       : (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 1,                      \
+                               EURYDICE_CFIELD(.f0 =)(iter_ptr)->start++}))
 
 #define core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next \
   Eurydice_range_iter_next
@@ -336,7 +323,7 @@ core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__N
 #define Eurydice_into_iter(x, t, _ret_t, _) (x)
 #define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter \
   Eurydice_into_iter
- 
+
 typedef struct {
   Eurydice_slice slice;
   size_t chunk_size;
@@ -391,12 +378,14 @@ typedef struct {
 #define core_slice_iter__core__slice__iter__Iter__a__T__181__next(iter, t,     \
                                                                   ret_t)       \
   (((iter)->index == (iter)->s.len)                                            \
-       ? (CLITERAL(ret_t){.tag = core_option_None})                            \
-       : (CLITERAL(ret_t){.tag = core_option_Some,                             \
-                          .f0 =                                                \
-                              ((iter)->index++,                                \
-                               &((t *)((iter)->s.ptr))[(iter)->index - 1])}))
-
+       ? (KRML_CLITERAL(ret_t){.tag = core_option_None})                       \
+       : (KRML_CLITERAL(ret_t){                                                \
+             .tag = core_option_Some,                                          \
+             .f0 = ((iter)->index++,                                           \
+                    &((t *)((iter)->s.ptr))[(iter)->index - 1])}))
+#define core_option__core__option__Option_T__TraitClause_0___is_some(X, _0,    \
+                                                                     _1)       \
+  ((X)->tag == 1)
 // STRINGS
 
 typedef const char *Prims_string;
@@ -469,7 +458,3 @@ typedef struct {
     *ptr = new_v;                                                              \
     old_v;                                                                     \
   })
-
-#if defined(__cplusplus)
-}
-#endif

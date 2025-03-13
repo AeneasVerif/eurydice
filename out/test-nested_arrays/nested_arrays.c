@@ -39,7 +39,7 @@ void nested_arrays_main(void)
         size_t k = i;
         uint32_t actual = keys[i1][j][k];
         uint32_t expected = (uint32_t)k;
-        _uint32_t__x2 uu____0 = { CFIELD(.fst, &actual), CFIELD(.snd, &expected) };
+        _uint32_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
         uint32_t *left_val = uu____0.fst;
         uint32_t *right_val = uu____0.snd;
         EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");

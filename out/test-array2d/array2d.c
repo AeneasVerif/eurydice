@@ -46,7 +46,7 @@ void array2d_main(void)
   memcpy(copy_of_y, y, (size_t)4U * sizeof (uint32_t [2U]));
   bool actual = array2d_f(copy_of_y);
   bool expected = true;
-  _bool__x2 uu____1 = { CFIELD(.fst, &actual), CFIELD(.snd, &expected) };
+  _bool__x2 uu____1 = { .fst = &actual, .snd = &expected };
   bool *left_val = uu____1.fst;
   bool *right_val = uu____1.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");

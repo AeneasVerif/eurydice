@@ -27,6 +27,9 @@ Supported options:|}
       "--config", Arg.Set_string O.config, " YAML configuration file";
       "-fcomments", Arg.Set O.comments, " keep inline comments";
       "-funroll-loops", Arg.Set_int funroll_loops, " unrool loops up to N";
+      ( "-fc++17-compat",
+        Arg.Set Krml.Options.cxx17_compat,
+        " instead of generating C11/C++20 code (default), generate C++17-only code" );
     ]
   in
   let spec = Arg.align spec in
