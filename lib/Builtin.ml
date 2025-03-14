@@ -271,6 +271,15 @@ let replace =
     arg_names = [ "v"; "x" ];
   }
 
+let dst_deref =
+  {
+    name = [ "Eurydice" ], "dst_deref";
+    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, false) ] (TBound 0);
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [ "ptr" ];
+  }
+
 (* pointer, value *)
 let bitand_pv_u8 =
   {
@@ -383,6 +392,7 @@ let files =
            vec_index;
            box_new;
            replace;
+           dst_deref;
            bitand_pv_u8;
            shr_pv_u8;
            min_u32;

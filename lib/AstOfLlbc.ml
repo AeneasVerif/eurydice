@@ -579,11 +579,24 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       | C.Deref, TRef (_, TAdt (TBuiltin TSlice, _), _)
       | C.Deref, TRawPtr (TAdt (TBuiltin TSlice, _), _) -> sub_e
       | (C.Deref, TRef (_, TAdt (id, generics), _) | C.Deref, TRawPtr (TAdt (id, generics), _))
-        when RustNames.is_vec env id generics -> sub_e
+        when RustNames.is_vec env id generics ->
+          sub_e
       | C.Deref, TRawPtr _ | C.Deref, TRef _ ->
-          Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node)
+          let t_pointee = Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ in
+          Krml.Helpers.(mk_deref t_pointee sub_e.K.node)
       | C.Deref, TAdt (TBuiltin TBox, { types = [ _ ]; _ }) ->
-          Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node)
+          let t_pointee = Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ in
+          Krml.KPrint.bprintf "t_pointee: %a\n" ptyp t_pointee;
+          begin match t_pointee with
+          | TApp (lid, _) when LidSet.mem lid env.dsts ->
+              let dst_deref = Builtin.(expr_of_builtin dst_deref) in
+              let dst_deref = K.with_type
+                (Krml.DeBruijn.subst_t t_pointee 0 dst_deref.typ) (K.ETApp (dst_deref, [], [], [ t_pointee ])) 
+              in
+              K.with_type t_pointee (K.EApp (dst_deref, [ sub_e ]))
+          | _ ->
+              Krml.Helpers.(mk_deref t_pointee sub_e.K.node)
+          end
       | Field (ProjAdt (typ_id, variant_id), field_id), C.TAdt _ -> begin
           let place_typ = typ_of_ty env p.ty in
           match variant_id with

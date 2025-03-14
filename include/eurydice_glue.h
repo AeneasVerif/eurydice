@@ -199,6 +199,17 @@ static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
 
 // SUPPORT FOR DSTs (Dynamically-Sized Types)
 
+// A DST is a fat pointer that keeps tracks of the size of it flexible array member.
+typedef struct {
+  void *ptr;
+  size_t sz;
+} Eurydice_dst;
+
+// FIXME: this might need to hack where the macro receives an extra argument for the pointer-ized
+// type.
+#define Eurydice_dst_deref(dst, t) (*((t*) dst.ptr))
+#define Eurydice_dst_borrow ...
+
 // CORE STUFF (conversions, endianness, ...)
 
 static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {

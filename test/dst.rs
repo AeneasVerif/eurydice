@@ -6,6 +6,7 @@ struct S<U: ?Sized> {
 type T = S<[u32]>;
 
 fn check(x: Box<T>) {
+    assert_eq!(x.foo, 0);
     assert_eq!(x.data[0], 0);
 }
 
