@@ -1792,7 +1792,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
 
       assert (def_id = id);
       let name = lid_of_name env name in
-      let _is_dst = LidSet.mem name env.dsts in
+      let is_dst = LidSet.mem name env.dsts in
       let env = push_cg_binders env const_generics in
       let env = push_type_binders env type_params in
 
@@ -1804,6 +1804,29 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               (fun i { C.field_name; field_ty; _ } ->
                 Some (ensure_named i field_name), (typ_of_ty env field_ty, true))
               fields
+          in
+          let fields =
+            if not is_dst then
+              (* Nothing to do if the type is not a DST *)
+              fields
+            else
+              let normal_fields, variable_size_one = Krml.KList.split_at_last fields in
+              let variable_size_one =
+                match variable_size_one with
+                | f, (TBound 0, true) ->
+                    (* 1. This makes the type parameter unused, meaning there will be a single lid
+                       used for all instances of this type (great)
+                       2. Krml can then catch this to generate the proper code
+
+                       Note: we cannot use a macro here, since generating
+                       struct { int header; flexible_array_member data; }
+                       would not leave room from the proper syntax (i.e. struct { ...; char data[] })
+                     *)
+                    f, (K.TQualified (["Krml"], "flexible_array_member"), true)
+                | _ ->
+                    failwith "impossible (we don't support DSTs with > 1 type parameter"
+              in
+              normal_fields @ [ variable_size_one ]
           in
           Some
             (K.DType (name, [], List.length const_generics, List.length type_params, Flat fields))

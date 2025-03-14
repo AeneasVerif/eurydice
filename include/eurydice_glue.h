@@ -197,6 +197,8 @@ static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
   memcpy(dst_ok, src.ptr, sz);
 }
 
+// SUPPORT FOR DSTs (Dynamically-Sized Types)
+
 // CORE STUFF (conversions, endianness, ...)
 
 static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
