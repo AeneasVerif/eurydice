@@ -2037,7 +2037,10 @@ let decl_of_id env decl =
       Printf.eprintf "ERROR translating %s: %s\n%s"
         (string_of_pattern (pattern_of_name env (name_of_id env decl)))
         (Printexc.to_string e) (Printexc.get_backtrace ());
-      exit 255
+      if not !Options.keep_going then
+        exit 255
+      else
+        None
     end
     else
       None
