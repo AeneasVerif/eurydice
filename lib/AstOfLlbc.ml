@@ -237,6 +237,9 @@ module RustNames = struct
 
     (* misc *)
     parse_pattern "core::cmp::Ord<u32>::min", Builtin.min_u32;
+
+    (* boxes *)
+    parse_pattern "alloc::boxed::{alloc::boxed::Box<@T>}::new<@>", Builtin.box_new;
   ]
   [@ocamlformat "disable"]
 
@@ -384,6 +387,8 @@ let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
       TApp (([], "__builtin_slice_t"), [ typ_of_ty env t ])
   | TAdt (TBuiltin TBox, { types = [ t ]; _ }) -> K.TBuf (typ_of_ty env t, false)
+      (* Boxes are immediately translated to a pointer type -- we do not maintain a Box<T>
+         definition in the krml internal AST. *)
   | TAdt (TBuiltin TStr, { types = []; _ }) ->
       failwith "Impossible -- strings always behind a pointer"
   | TAdt (TBuiltin f, { types = args; const_generics; _ }) ->
