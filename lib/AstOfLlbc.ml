@@ -26,7 +26,7 @@ module C = struct
       () ty
 end
 
-module LidSet = Krml.Idents.LidSet
+module LidMap = Krml.Idents.LidMap
 
 module K = Krml.Ast
 module L = Logging
@@ -112,8 +112,9 @@ type env = {
   format_env : Charon.PrintLlbcAst.fmt_env;
   (* For picking pretty names *)
   crate_name : string;
-  (* A set of all the DSTs (dynamically-sized types) that we know about *)
-  dsts: LidSet.t;
+  (* A set of all the DSTs (dynamically-sized types) that we know about, and the name of their
+     flexible member *)
+  dsts: string LidMap.t;
 }
 
 (* Environment: types *)
@@ -586,9 +587,8 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           Krml.Helpers.(mk_deref t_pointee sub_e.K.node)
       | C.Deref, TAdt (TBuiltin TBox, { types = [ _ ]; _ }) ->
           let t_pointee = Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ in
-          Krml.KPrint.bprintf "t_pointee: %a\n" ptyp t_pointee;
           begin match t_pointee with
-          | TApp (lid, _) when LidSet.mem lid env.dsts ->
+          | TApp (lid, _) when LidMap.mem lid env.dsts ->
               let dst_deref = Builtin.(expr_of_builtin dst_deref) in
               let dst_deref = K.with_type
                 (Krml.DeBruijn.subst_t t_pointee 0 dst_deref.typ) (K.ETApp (dst_deref, [], [], [ t_pointee ])) 
@@ -1366,6 +1366,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
          pass one for the other *)
       maybe_addrof env p.ty e
+
   | UnaryOp (Cast (CastScalar (_, TInteger dst)), e) ->
       let dst = K.TInt (width_of_integer_type dst) in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
@@ -1786,7 +1787,13 @@ let check_if_dst (env: env) (id: C.any_decl_id) : env =
            exactly the type parameter T. See https://doc.rust-lang.org/std/marker/trait.Unsize.html *)
         L.log "AstOfLlbc" "%s is a DST\n" name;
         let lid = lid_of_name env decl.item_meta.name in
-        { env with dsts = LidSet.add lid env.dsts }
+        let field_name = match decl.kind with
+          | Struct fields ->
+              (Krml.KList.last fields).C.field_name
+          | _ ->
+              assert false
+        in
+        { env with dsts = LidMap.add lid (Option.get field_name) env.dsts }
       end else
         env
   | _ ->
@@ -1805,7 +1812,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
 
       assert (def_id = id);
       let name = lid_of_name env name in
-      let is_dst = LidSet.mem name env.dsts in
+      let is_dst = LidMap.mem name env.dsts in
       let env = push_cg_binders env const_generics in
       let env = push_type_binders env type_params in
 
@@ -2169,7 +2176,7 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
       crate_name = name;
       name_ctx;
       generic_params = Charon.TypesUtils.empty_generic_params;
-      dsts = LidSet.empty
+      dsts = LidMap.empty
     }
   in
   let env = List.fold_left check_if_dst env declarations in

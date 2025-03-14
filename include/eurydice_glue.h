@@ -199,16 +199,26 @@ static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
 
 // SUPPORT FOR DSTs (Dynamically-Sized Types)
 
-// A DST is a fat pointer that keeps tracks of the size of it flexible array member.
+// A DST is a fat pointer that keeps tracks of the size of it flexible array member. Slices are a
+// specific case of DSTs, where [T; N] implements Unsize<[T]>, meaning an array of statically known
+// size can be converted to a fat pointer, i.e. a slice.
+//
+// To avoid confusing things (especially since, for historical reasons, the slices keep a number
+// of elements, not a size in bytes...), we use this to implement types T<U> where the last field of
+// T is a U that is Unsized.
+//
+// Concretely, type T becomes `struct { ...; char data[]; }`, and original instances of T in the MIR
+// become references to Eurydice_dst -- accessing *through* a DST emits one of the macros below
+// which are aware of the encoding.
 typedef struct {
   void *ptr;
   size_t sz;
 } Eurydice_dst;
 
-// FIXME: this might need to hack where the macro receives an extra argument for the pointer-ized
-// type.
-#define Eurydice_dst_deref(dst, t) (*((t*) dst.ptr))
-#define Eurydice_dst_borrow ...
+// Dereference a DST, with the intent of using the non-flexible portion, e.g. field selection.
+#define Eurydice_dst_deref(dst, t, _ret_t) (*((t*) dst.ptr))
+// Borrow the flexible portion as a slice -- we only support T<[U]> for the time being.
+#define Eurydice_dst_borrow_as_slice(dst, t, ...)
 
 // CORE STUFF (conversions, endianness, ...)
 
