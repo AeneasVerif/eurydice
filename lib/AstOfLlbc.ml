@@ -26,6 +26,8 @@ module C = struct
       () ty
 end
 
+module LidSet = Krml.Idents.LidSet
+
 module K = Krml.Ast
 module L = Logging
 open Krml.PrintAst.Ops
@@ -110,6 +112,8 @@ type env = {
   format_env : Charon.PrintLlbcAst.fmt_env;
   (* For picking pretty names *)
   crate_name : string;
+  (* A set of all the DSTs (dynamically-sized types) that we know about *)
+  dsts: LidSet.t;
 }
 
 (* Environment: types *)
@@ -1748,6 +1752,33 @@ let flags_of_meta (meta : C.item_meta) : K.flags =
             meta.attr_info.attributes));
   ]
 
+let check_if_dst (env: env) (id: C.any_decl_id) : env =
+  match id with
+  | C.IdType id ->
+      let decl = env.get_nth_type id in
+      let name = string_of_name env decl.item_meta.name in
+      let sized_clauses =
+        let sized_pattern = Charon.NameMatcher.parse_pattern "core::marker::Sized" in
+        let matches = Charon.NameMatcher.match_name env.name_ctx RustNames.config sized_pattern in
+        List.filter (fun (tc: C.trait_clause) ->
+          let trait_decl = env.get_nth_trait_decl tc.trait.binder_value.trait_decl_id in
+          L.log "AstOfLlbc" "%s" (string_of_pattern (pattern_of_name env trait_decl.item_meta.name));
+          matches trait_decl.item_meta.name
+        ) decl.generics.trait_clauses
+      in
+      if List.length decl.generics.types <> List.length sized_clauses then begin
+        if List.length decl.generics.types > 1 then
+          failwith "Unsupported: DST with > 1 type parameter";
+        (* From here on, we assume (per Rust restrictions) we can deduce that the last field of this type is
+           exactly the type parameter T. See https://doc.rust-lang.org/std/marker/trait.Unsize.html *)
+        L.log "AstOfLlbc" "%s is a DST\n" name;
+        let lid = lid_of_name env decl.item_meta.name in
+        { env with dsts = LidSet.add lid env.dsts }
+      end else
+        env
+  | _ ->
+      env
+
 let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
   match id with
   | IdType id -> begin
@@ -1761,6 +1792,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
 
       assert (def_id = id);
       let name = lid_of_name env name in
+      let _is_dst = LidSet.mem name env.dsts in
       let env = push_cg_binders env const_generics in
       let env = push_type_binders env type_params in
 
@@ -2050,10 +2082,13 @@ let decl_of_id env decl =
     else
       None
 
-let decls_of_declarations (env : env) (d : C.declaration_group) : K.decl list =
+let flatten_declarations (d : C.declaration_group list) : C.any_decl_id list =
+  List.flatten (List.map declaration_group_to_list d)
+
+let decls_of_declarations (env : env) (d : C.any_decl_id list) : K.decl list =
   incr seen;
   L.log "Progress" "%s: %d/%d" env.crate_name !seen !total;
-  Krml.KList.filter_some @@ List.map (decl_of_id env) @@ declaration_group_to_list d
+  Krml.KList.filter_some @@ List.map (decl_of_id env) d
 
 let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   let {
@@ -2074,6 +2109,7 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
       "ERROR: Eurydice expects Charon to be invoked with exactly --remove-associated-types '*'\n";
     exit 255
   end;
+  let declarations = flatten_declarations declarations in
   seen := 0;
   total := List.length declarations;
   let get_nth_function id = C.FunDeclId.Map.find id fun_decls in
@@ -2097,6 +2133,8 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
       crate_name = name;
       name_ctx;
       generic_params = Charon.TypesUtils.empty_generic_params;
+      dsts = LidSet.empty
     }
   in
-  name, List.concat_map (decls_of_declarations env) declarations
+  let env = List.fold_left check_if_dst env declarations in
+  name, decls_of_declarations env declarations
