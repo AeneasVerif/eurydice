@@ -10,7 +10,9 @@
 array_Foo array_mk_foo(void)
 {
   uint32_t x[2U] = { 0U };
-  uint32_t y[2U] = { 1U, 1U };
+  uint32_t y[2U];
+  for (uint32_t _i = 0U; _i < (size_t)2U; ++_i)
+    y[_i] = 1U;
   /* Passing arrays by value in Rust generates a copy in C */
   uint32_t copy_of_x[2U];
   memcpy(copy_of_x, x, (size_t)2U * sizeof (uint32_t));
