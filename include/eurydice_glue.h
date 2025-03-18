@@ -199,6 +199,26 @@ static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
 
 // CORE STUFF (conversions, endianness, ...)
 
+static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) {
+  return (*p) & v;
+}
+static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
+  return (*p) >> v;
+}
+static inline uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
+  return x < y ? x : y;
+}
+
+#define core_num_nonzero_private_NonZeroUsizeInner size_t
+
+// These need an extern C block because they are defined as extern C in the
+// extraction.
+// Note that clang is apparently ok with this conflicting declaration. But GCC
+// is not.
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   // TODO: why not store32_be?
   uint32_t x = htobe32(src);
@@ -278,16 +298,6 @@ static inline void core_ops_arith__i32_319__add_assign(int32_t *x0,
   *x0 = *x0 + *x1;
 }
 
-static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) {
-  return (*p) & v;
-}
-static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
-  return (*p) >> v;
-}
-static inline uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
-  return x < y ? x : y;
-}
-
 static inline uint8_t
 core_ops_bit___core__ops__bit__BitAnd_u8__u8__for___a__u8___46__bitand(
     uint8_t *x0, uint8_t x1) {
@@ -300,12 +310,15 @@ core_ops_bit___core__ops__bit__Shr_i32__u8__for___a__u8___792__shr(uint8_t *x0,
   return Eurydice_shr_pv_u8(x0, x1);
 }
 
-#define core_num_nonzero_private_NonZeroUsizeInner size_t
 static inline core_num_nonzero_private_NonZeroUsizeInner
 core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__NonZeroUsizeInner__26__clone(
     core_num_nonzero_private_NonZeroUsizeInner *x0) {
   return *x0;
 }
+
+#if defined(__cplusplus)
+}
+#endif
 
 // ITERATORS
 
