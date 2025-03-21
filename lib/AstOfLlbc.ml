@@ -397,6 +397,7 @@ let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TArrow binder ->
       let ts, t = binder.binder_value in
       Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
+  | TError _ -> failwith "Found type error in charon's output"
 
 and maybe_cg_array env t cg =
   match cg with
@@ -1760,7 +1761,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       let env = push_type_binders env type_params in
 
       match kind with
-      | Union _ | Opaque | TError _ -> None
+      | Union _ | Opaque | TDeclError _ -> None
       | Struct fields ->
           let fields =
             List.mapi
