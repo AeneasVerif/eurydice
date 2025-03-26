@@ -27,7 +27,7 @@ test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result
 
 .PRECIOUS: %.llbc
 %.llbc: %.rs
-	$(CHARON) --remove-associated-types '*' --no-cargo --input $< --dest-file "$@"
+	$(CHARON) rustc --remove-associated-types '*' --dest-file "$@" -- $<
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
