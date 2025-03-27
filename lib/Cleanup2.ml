@@ -171,7 +171,9 @@ let remove_array_temporaries =
    - If the array repeat is of a /simple form/ (i.e., e is a scalar value), then
      we use the BufCreate node, to be emitted later on (also in CStarToC) as a
      zero-initializer, a memset, or a for-loop.
-   - Barring that, we use a for-loop and recurse. *)
+   - Barring that, we use a for-loop and recurse.
+
+   This happens BEFORE remove_implicit_array_copies above. *)
 let remove_array_repeats =
   object (self)
     inherit [_] map as super
@@ -210,6 +212,25 @@ let remove_array_repeats =
           let init = self#try_expand_zero init in
           with_type e.typ @@ EBufCreateL (Stack, List.init (self#assert_length len) (fun _ -> init))
       | _ -> raise Not_found
+
+    method! visit_DGlobal env flags name n t e1 =
+      match e1.node with
+      | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
+        when lid = Builtin.array_repeat.name -> begin
+          try
+            (* Case 1. *)
+            DGlobal (flags, name, n, t, self#try_expand_zero e1)
+          with Not_found ->
+            match init.node with
+            | EConstant _ ->
+                (* Case 2. *)
+                DGlobal (flags, name, n, t, with_type e1.typ
+                  (EBufCreate (Stack, init, Krml.Helpers.mk_sizet (self#assert_length len))))
+            | _ ->
+                super#visit_DGlobal env flags name n t e1
+        end
+      | _ ->
+            super#visit_DGlobal env flags name n t e1
 
     method! visit_ELet (((), _) as env) b e1 e2 =
       match e1.node with
@@ -572,7 +593,7 @@ let resugar_loops =
     match e1.node, e2.node with
     (* Non-terminal position (step-by for-loop) *)
     |
-    (* let iter = core::iter::traits::collect::_<t>({ start = e_start; end = e_end }) in *)
+
     EApp ({ node = ETApp (
       { node = EQualified (["core"; "iter"; "traits"; "collect"; _], "into_iter"); _ },
       [],
