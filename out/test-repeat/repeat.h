@@ -15,7 +15,11 @@
 extern "C" {
 #endif
 
-extern const uint32_t repeat_n[1U];
+extern const uint32_t repeat_C1[1U];
+
+extern const uint32_t repeat_C2[1U][1U];
+
+extern const uint8_t repeat_REJECTION_SAMPLE_SHUFFLE_TABLE[256U][16U];
 
 void repeat_main(void);
 

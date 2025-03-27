@@ -1,7 +1,8 @@
 fn main() {
     let a = [ 0, 1, 2, 3, 4, 5, 6 ];
     let mut i = 0;
-    for v in a.into_iter() {
+    // This one not supported -- all the other ones are.
+    for v in a {
         i += v;
     }
     for v in a.iter() {
