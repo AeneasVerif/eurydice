@@ -341,7 +341,7 @@ typedef struct {
 } Eurydice_chunks;
 
 // Can't use macros Eurydice_slice_subslice_{to,from} because they require a
-// type, and thisstatic inline function cannot receive a type as an argument.
+// type, and this static inline function cannot receive a type as an argument.
 // Instead, we receive the element size and use it to peform manual offset
 // computations rather than going through the macros.
 static inline Eurydice_slice chunk_next(Eurydice_chunks *chunks,
