@@ -106,6 +106,7 @@
           version = self.rev or "dirty";
         };
         inherit charon;
+        inherit (charon-packages) rustToolchain;
       };
       checks.default = packages.default.tests;
       devShells.ci = pkgs.mkShell { packages = [ pkgs.jq ]; };
