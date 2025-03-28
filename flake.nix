@@ -100,9 +100,12 @@
         eurydice;
     in
     rec {
-      packages.default = pkgs.callPackage package {
-        inherit charon-ml krml;
-        version = self.rev or "dirty";
+      packages = {
+        default = pkgs.callPackage package {
+          inherit charon-ml krml;
+          version = self.rev or "dirty";
+        };
+        inherit charon;
       };
       checks.default = packages.default.tests;
       devShells.ci = pkgs.mkShell { packages = [ pkgs.jq ]; };
