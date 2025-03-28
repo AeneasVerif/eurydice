@@ -607,13 +607,28 @@ let resugar_loops =
   object(self)
   inherit [_] map as super
 
-  method! visit_ELet ((), _ as env) b e1 e2 =
-    (* XXX note: these patterns are fragile and will break if the loop index ends up being unused
-       because the let ... = next goes away. *)
-    match e1.node, e2.node with
+  method! visit_expr ((), _ as env) e =
     (* Non-terminal position (step-by for-loop) *)
-    |
+    match e with
+    | [%cremepat {|
+      let iter =
+        core::iter::traits::collect::_::into_iter<
+          core::iter::adapters::step_by::StepBy<core::ops::range::Range<_>>
+        >(core::iter::range::_::step_by<_>(
+          { start: @e_start, end: @e_end },
+          @e_increment
+        ));
+      while true {
+        let x = core::iter::adapters::step_by::_::next<@, @t1>(&(&iter)[0]);
+        match x {
+          None -> break,
+          Some _ -> @e_body
+        }
+      };
+      @rest
+      |}]
 
+    (*
     EApp ({ node = ETApp (
       { node = EQualified (["core"; "iter"; "traits"; "collect"; _], "into_iter"); _ },
       [],
@@ -651,7 +666,7 @@ let resugar_loops =
               node = EConstant (_, "0"); _
             }); _
           }
-        ); _ }]); _ }, 
+        ); _ }]); _ },
 
     {
         (* match core::iter::adapters::step_by::...::next<t>(&(&iter[0])) with None -> break | Some _ -> e_body *)
@@ -659,7 +674,7 @@ let resugar_loops =
             [], { node = PCons ("None", _); _ }, { node = EBreak; _ };
             [], { node = PCons ("Some", _); _ }, e_body;
           ]); _
-       }); _ }); _ } :: rest)
+       }); _ }); _ } :: rest)  *)
 
     ->
       let open Krml.Helpers in
