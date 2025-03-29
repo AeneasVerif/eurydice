@@ -181,7 +181,7 @@ let compile_parse_tree (env: env) loc (pt: ParseTree.expr) (* : Astlib.Ast_503.P
         ppat_cons_one ~loc "EFlat" (
           ppat_list ~loc (List.map (fun (f, e) ->
             ppat_tuple ~loc [
-              ppat_cons_one ~loc "Some" (ppat_string ~loc f);
+              ppat_cons_one' ~loc "Some" (ppat_string ~loc f);
               compile env e
             ]) es))
 
