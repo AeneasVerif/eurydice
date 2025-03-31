@@ -3,7 +3,7 @@ type expr =
   (* Binding most loosely *)
   | Let of string * expr * expr
   | Sequence of expr list
-  | App of expr * typ list_pattern * expr list
+  | App of expr * typ list * expr list
   | Addr of expr
   | Index of expr * expr
   (* Atomic -- we terminate matches and loops using braces, we are not barbarians. *)
@@ -14,6 +14,7 @@ type expr =
   | Qualified of path
   | BoundVar of string
   | PatternVar of string
+  | ListPatternVar of string
   | Break
   | Bool of bool
 
@@ -28,17 +29,14 @@ and branch =
   pat * expr
 
 and pat =
-  | Cons of string * pat list_pattern
+  | Cons of string * pat list
   | Wild
 
 and typ =
   | TQualified of path
   | TPatternVar of string
-  | TApp of typ * typ list_pattern
-
-and 'a list_pattern =
-  | Wild
-  | List of 'a list
+  | TListPatternVar of string
+  | TApp of typ * typ list
 
 let gensym =
   let r = ref 0 in

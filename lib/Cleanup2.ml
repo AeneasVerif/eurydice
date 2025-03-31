@@ -615,20 +615,20 @@ let resugar_loops =
 
     [%cremepat {|
       let iter =
-        core::iter::traits::collect::_::into_iter<
-          core::iter::adapters::step_by::StepBy<core::ops::range::Range<_>>
-        >(core::iter::range::_::step_by<_>(
-          { start: @e_start, end: @e_end },
-          @e_increment
+        core::iter::traits::collect::?::into_iter<
+          core::iter::adapters::step_by::StepBy<core::ops::range::Range<?..>>
+        >(core::iter::range::?::step_by<?..>(
+          { start: ?e_start, end: ?e_end },
+          ?e_increment
         ));
       while true {
-        let x = core::iter::adapters::step_by::_::next<@, @t1>(&(&iter)[0]);
+        let x = core::iter::adapters::step_by::?::next<?, ?t1>(&(&iter)[0]);
         match x {
           None -> break,
-          Some _ -> @e_body
+          Some ? -> ?e_body
         }
       };
-      @rest
+      ?rest..
       |}]
 
     (*
@@ -695,17 +695,17 @@ let resugar_loops =
     |
     [%cremepat {|
       let iter =
-        core::iter::traits::collect::_::into_iter<
-          core::iter::adapters::step_by::StepBy<core::ops::range::Range<_>>
-        >(core::iter::range::_::step_by<_>(
-          { start: @e_start, end: @e_end },
-          @e_increment
+        core::iter::traits::collect::?::into_iter<
+          core::iter::adapters::step_by::StepBy<core::ops::range::Range<?..>>
+        >(core::iter::range::?::step_by<?..>(
+          { start: ?e_start, end: ?e_end },
+          ?e_increment
         ));
       while true {
-        let x = core::iter::adapters::step_by::_::next<@, @t1>(&(&iter)[0]);
+        let x = core::iter::adapters::step_by::?::next<?, ?t1>(&(&iter)[0]);
         match x {
           None -> break,
-          Some _ -> @e_body
+          Some ? -> ?e_body
         }
       }
       |}]
@@ -772,14 +772,14 @@ let resugar_loops =
     |
     [%cremepat {|
       let iter =
-        core::iter::traits::collect::_::into_iter
-          <core::ops::range::Range<_>>
-          ({ start: @e_start, end: @e_end });
+        core::iter::traits::collect::?::into_iter
+          <core::ops::range::Range<?..>>
+          ({ start: ?e_start, end: ?e_end });
       while true {
-        let x = core::iter::range::_::next<@t1>(&(&iter)[0]);
+        let x = core::iter::range::?::next<?t1>(&(&iter)[0]);
         match x {
           None -> break,
-          Some _ -> @e_body
+          Some ? -> ?e_body
         }
       }
       |}] ->
@@ -836,17 +836,17 @@ let resugar_loops =
     |
     [%cremepat {|
       let iter =
-        core::iter::traits::collect::_::into_iter
-          <core::ops::range::Range<_>>
-          ({ start: @e_start, end: @e_end });
+        core::iter::traits::collect::?::into_iter
+          <core::ops::range::Range<?>>
+          ({ start: ?e_start, end: ?e_end });
       while true {
-        let x = core::iter::range::_::next<@t1>(&(&iter)[0]);
+        let x = core::iter::range::?::next<?t1>(&(&iter)[0]);
         match x {
           None -> break,
-          Some _ -> @e_body
+          Some ? -> ?e_body
         }
       };
-      @rest
+      ?rest..
       |}] ->
 
 (*    (1* let iter = core::iter::traits::collect<t>({ start = e_start; end = e_end }) in *1) *)

@@ -8,7 +8,8 @@ let up_alpha =  [%sedlex.regexp? 'A'..'Z']
 let anyident = [%sedlex.regexp? up_alpha | low_alpha | '_' | '-' | digit]
 let lident = [%sedlex.regexp? low_alpha, Star (anyident)]
 let uident = [%sedlex.regexp? up_alpha, Star (anyident)]
-let atident = [%sedlex.regexp? '@', Star (anyident)]
+let uvar = [%sedlex.regexp? '?', Star (anyident)]
+let uvarlist = [%sedlex.regexp? '?', Star (anyident), '.', '.']
 
 let locate _ tok = tok, Lexing.dummy_pos, Lexing.dummy_pos
 
@@ -39,10 +40,14 @@ match%sedlex lexbuf with
     with Not_found ->
       locate lexbuf (LIDENT l)
     end
-| atident ->
+| uvar ->
     let l = Utf8.lexeme lexbuf in
     let l = String.sub l 1 (String.length l - 1) in
-    locate lexbuf (ATIDENT l)
+    locate lexbuf (UVAR l)
+| uvarlist ->
+    let l = Utf8.lexeme lexbuf in
+    let l = String.sub l 1 (String.length l - 3) in
+    locate lexbuf (UVARLIST l)
 | "&" -> locate lexbuf AMP
 | ";" -> locate lexbuf SEMI
 | "->" -> locate lexbuf ARROW
@@ -56,7 +61,7 @@ match%sedlex lexbuf with
 | "}" -> locate lexbuf RCURLY
 | "(" -> locate lexbuf LPAREN
 | ")" -> locate lexbuf RPAREN
-| "_" -> locate lexbuf UNDERSCORE
+(* | "_" -> locate lexbuf UNDERSCORE *)
 | "::" -> locate lexbuf COLONCOLON
 | ":" -> locate lexbuf COLON
 | "\n" ->

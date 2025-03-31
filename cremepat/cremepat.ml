@@ -10,6 +10,10 @@ module Terminal = struct
   let reset = "\x1b[0m"  
 end
 
+let fail fmt =
+  let b = Buffer.create 256 in
+  Printf.kbprintf (fun b -> failwith (Buffer.contents b)) b fmt
+
 let parse arg =
   let the_parser = MenhirLib.Convert.Simplified.traditional2revised Parse.fragment in
   let lexbuf = Sedlexing.Utf8.from_string arg in
@@ -143,7 +147,7 @@ let compile_parse_tree (env: env) loc (pt: ParseTree.expr) (* : Astlib.Ast_503.P
             compile env e;
             ppat_any ~loc; (* no syntax to match on const-generics *)
             ppat_any ~loc; (* no syntax to match on method-generics *)
-            compile_list_pattern (compile_typ env) ts;
+            compile_typ_list_pattern env ts;
           ];
           ppat_list ~loc (List.map (compile env) es)
         ]
@@ -201,6 +205,9 @@ let compile_parse_tree (env: env) loc (pt: ParseTree.expr) (* : Astlib.Ast_503.P
     | PatternVar s ->
         ppat_var ~loc { txt = s; loc }
 
+    | ListPatternVar s ->
+        fail "[cremepat]: list pattern ?%s.. appears in unexpected position" s
+
     | Break ->
         ppat_cons_zero ~loc "EBreak"
 
@@ -219,13 +226,33 @@ let compile_parse_tree (env: env) loc (pt: ParseTree.expr) (* : Astlib.Ast_503.P
     | Wild -> ppat_any ~loc
     | Name s -> ppat_string ~loc s
 
-  and compile_list_pattern: 'a. ('a -> _) -> 'a ParseTree.list_pattern -> _ =
-    fun f pt ->
-      match pt with
-      | Wild ->
-          ppat_any ~loc
-      | List pts ->
-          ppat_list ~loc (List.map f pts)
+  and compile_expr_list_pattern env (es: ParseTree.expr list) =
+    match es with
+    | [ ListPatternVar txt ] ->
+        ppat_var ~loc { txt; loc }
+    | [] ->
+        ppat_construct ~loc (lident ~loc "[]") None
+    | ListPatternVar s :: _ ->
+        fail "[cremepat]: list pattern ?%s.. should only appear in tail position" s
+    | e :: es ->
+        ppat_construct ~loc (lident ~loc "::") (Some (ppat_tuple ~loc [
+          compile env e;
+          compile_expr_list_pattern env es
+        ]))
+
+  and compile_typ_list_pattern env (es: ParseTree.typ list) =
+    match es with
+    | [ TListPatternVar txt ] ->
+        ppat_var ~loc { txt; loc }
+    | [] ->
+        ppat_construct ~loc (lident ~loc "[]") None
+    | TListPatternVar s :: _ ->
+        fail "[cremepat]: type list pattern ?%s.. should only appear in tail position" s
+    | e :: es ->
+        ppat_construct ~loc (lident ~loc "::") (Some (ppat_tuple ~loc [
+          compile_typ env e;
+          compile_typ_list_pattern env es
+        ]))
 
   and compile_typ env (pt: ParseTree.typ) =
     match pt with
@@ -235,16 +262,19 @@ let compile_parse_tree (env: env) loc (pt: ParseTree.expr) (* : Astlib.Ast_503.P
     | TPatternVar s ->
         ppat_var ~loc { txt = s; loc }
 
-    | TApp (TQualified t, ts) ->
+    | TListPatternVar s ->
+        fail "[cremepat]: type list pattern ?%s.. appears in unexpected position" s
+
+    | TApp (TQualified p, ts) ->
         ppat_cons_many' ~loc "TApp" [
-          compile_path env t;
-          compile_list_pattern (compile_typ env) ts
+          compile_path env p;
+          compile_typ_list_pattern env ts
         ]
 
-    | TApp (TPatternVar s, ts) ->
+    | TApp (TPatternVar p, ts) ->
         ppat_cons_many' ~loc "TApp" [
-          ppat_var ~loc { txt = s; loc };
-          compile_list_pattern (compile_typ env) ts
+          ppat_var ~loc { txt = p; loc };
+          compile_typ_list_pattern env ts
         ]
 
     | TApp (TApp _, _) ->

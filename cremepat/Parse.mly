@@ -3,9 +3,9 @@
 %}
 
 %token<int>     INT
-%token<string>  UIDENT LIDENT ATIDENT
+%token<string>  UIDENT LIDENT UVAR UVARLIST
 %token          EOF COMMA EQUALS LBRACK RBRACK LANGLE RANGLE LCURLY RCURLY
-%token          COLON COLONCOLON AMP LPAREN RPAREN SEMI UNDERSCORE
+%token          COLON COLONCOLON AMP LPAREN RPAREN SEMI
 %token          MATCH TRUE FALSE LET WHILE BREAK ARROW
 
 %type <expr> expr
@@ -40,8 +40,10 @@ ident:
 path_item:
 | i = ident
   { Name i }
-| UNDERSCORE
-  { Wild }
+| p = UVAR
+  { assert (p = ""); Wild }
+| _p = UVARLIST
+  { failwith "TODO" }
 
 %inline
 path:
@@ -55,20 +57,15 @@ path:
 | x1 = X; separator; x2 = X; separator; xs = separated_nonempty_list(separator, X)
     { x1 :: x2 :: xs }
 
-%inline
-list_pattern(X):
-| UNDERSCORE
-  { Wild }
-| xs = separated_nonempty_list(COMMA, X)
-  { List xs }
-
 (* Types *)
 
 typ:
-| t = typ ts = delimited(LANGLE, list_pattern(typ), RANGLE)
+| t = typ ts = delimited(LANGLE, separated_list(COMMA, typ), RANGLE)
   { TApp (t, ts) }
-| x = ATIDENT
+| x = UVAR
   { TPatternVar (if x = "" then "_" ^ gensym () else x) }
+| x = UVARLIST
+  { TListPatternVar (if x = "" then "_" ^ gensym () else x) }
 | p = path
   { TQualified p }
 
@@ -76,10 +73,8 @@ typ:
 
 pat:
 | u = uident
-  { Cons (u, List []) }
-| u = uident UNDERSCORE
-  { Cons (u, Wild) }
-| u = uident p = delimited(LPAREN, list_pattern(pat), RPAREN)
+  { Cons (u, []) }
+| u = uident p = delimited(LPAREN, separated_list(COMMA, pat), RPAREN)
   { Cons (u, p) }
 
 (* Expressions *)
@@ -97,8 +92,8 @@ seq_expr:
   { e }
 
 app_expr:
-| e = app_expr ts = ioption(delimited(LANGLE, list_pattern(typ), RANGLE)) es = delimited(LPAREN, separated_list(COMMA, expr), RPAREN)
-  { App (e, Option.value ~default:(List []) ts, es) }
+| e = app_expr ts = ioption(delimited(LANGLE, separated_list(COMMA, typ), RANGLE)) es = delimited(LPAREN, separated_list(COMMA, expr), RPAREN)
+  { App (e, Option.value ~default:[] ts, es) }
 | AMP e = index_expr
   { Addr e }
 | e = index_expr
@@ -123,8 +118,10 @@ atomic_expr:
   { Qualified p }
 | x = lident
   { BoundVar x }
-| x = ATIDENT
+| x = UVAR
   { PatternVar (if x = "" then "_" ^ gensym () else x) }
+| x = UVARLIST
+  { ListPatternVar (if x = "" then "_" ^ gensym () else x) }
 | BREAK
   { Break }
 | FALSE
