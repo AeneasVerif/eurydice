@@ -1,5 +1,5 @@
 (* Strictly a parse tree *)
-type expr =
+type pre_expr =
   (* Binding most loosely *)
   | Let of string * expr * expr
   | Sequence of expr list
@@ -13,10 +13,16 @@ type expr =
   | Int of int
   | Qualified of path
   | BoundVar of string
-  | PatternVar of string
-  | ListPatternVar of string
   | Break
   | Bool of bool
+
+and expr =
+  pre_expr with_vars
+
+and 'a with_vars =
+  | PatternVar of string
+  | ListPatternVar of string
+  | Fixed of 'a
 
 and path =
   path_item list
@@ -28,15 +34,18 @@ and path_item =
 and branch =
   pat * expr
 
-and pat =
+and pre_pat =
   | Cons of string * pat list
-  | Wild
+
+and pat =
+  pre_pat with_vars
+
+and pre_typ =
+  | TQualified of path
+  | TApp of typ * typ list
 
 and typ =
-  | TQualified of path
-  | TPatternVar of string
-  | TListPatternVar of string
-  | TApp of typ * typ list
+  pre_typ with_vars
 
 let gensym =
   let r = ref 0 in

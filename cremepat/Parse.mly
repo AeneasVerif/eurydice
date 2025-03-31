@@ -57,55 +57,97 @@ path:
 | x1 = X; separator; x2 = X; separator; xs = separated_nonempty_list(separator, X)
     { x1 :: x2 :: xs }
 
+%inline
+with_vars(X):
+| x = UVAR
+  { PatternVar (if x = "" then "_" ^ gensym () else x) }
+| x = UVARLIST
+  { ListPatternVar (if x = "" then "_" ^ gensym () else x) }
+| x = X
+  { Fixed x }
+
+%inline
+fixed(X):
+| x = X
+  { Fixed x }
+
 (* Types *)
 
-typ:
+pre_typ:
 | t = typ ts = delimited(LANGLE, separated_list(COMMA, typ), RANGLE)
   { TApp (t, ts) }
-| x = UVAR
-  { TPatternVar (if x = "" then "_" ^ gensym () else x) }
-| x = UVARLIST
-  { TListPatternVar (if x = "" then "_" ^ gensym () else x) }
 | p = path
   { TQualified p }
 
+typ:
+| t = with_vars(pre_typ)
+  { t }
+
 (* Patterns *)
 
-pat:
+pre_pat:
 | u = uident
   { Cons (u, []) }
 | u = uident p = delimited(LPAREN, separated_list(COMMA, pat), RPAREN)
   { Cons (u, p) }
+| u = uident p = pat
+  { Cons (u, [ p ]) }
+
+pat:
+| t = with_vars(pre_pat)
+  { t }
 
 (* Expressions *)
 
 expr:
-| LET b = lident EQUALS e1 = app_expr SEMI e2 = expr
-  { Let (b, e1, e2) }
+| e = fixed(pre_expr)
+  { e }
 | e = seq_expr
   { e }
 
+pre_expr:
+| LET b = lident EQUALS e1 = app_expr SEMI e2 = expr
+  { Let (b, e1, e2) }
+
 seq_expr:
-| e1 = app_expr SEMI e2 = seq_expr
-  { match e2 with Sequence es -> Sequence (e1 :: es) | _ -> Sequence [ e1; e2 ] }
+| e = fixed(pre_seq_expr)
+  { e }
 | e = app_expr
   { e }
 
+pre_seq_expr:
+| e1 = app_expr SEMI e2 = seq_expr
+  { match e2 with Fixed (Sequence e2) -> Sequence (e1 :: e2) | _ -> Sequence [ e1; e2 ] }
+
 app_expr:
+| e = fixed(pre_app_expr)
+  { e }
+| e = index_expr
+  { e }
+
+pre_app_expr:
 | e = app_expr ts = ioption(delimited(LANGLE, separated_list(COMMA, typ), RANGLE)) es = delimited(LPAREN, separated_list(COMMA, expr), RPAREN)
   { App (e, Option.value ~default:[] ts, es) }
 | AMP e = index_expr
   { Addr e }
-| e = index_expr
-  { e }
 
 index_expr:
-| e1 = index_expr e2 = delimited(LBRACK, expr, RBRACK)
-  { Index (e1, e2) }
+| e = fixed(pre_index_expr)
+  { e }
 | e = atomic_expr
   { e }
 
+pre_index_expr:
+| e1 = index_expr e2 = delimited(LBRACK, expr, RBRACK)
+  { Index (e1, e2) }
+
 atomic_expr:
+| e = with_vars(pre_atomic_expr)
+  { e }
+| e = delimited(LPAREN, expr, RPAREN)
+  { e }
+
+pre_atomic_expr:
 | WHILE e1 = index_expr e2 = delimited(LCURLY, expr, RCURLY)
   { While (e1, e2) }
 | MATCH e = index_expr bs = delimited(LCURLY, separated_list(COMMA, separated_pair(pat, ARROW, expr)), RCURLY)
@@ -118,20 +160,15 @@ atomic_expr:
   { Qualified p }
 | x = lident
   { BoundVar x }
-| x = UVAR
-  { PatternVar (if x = "" then "_" ^ gensym () else x) }
-| x = UVARLIST
-  { ListPatternVar (if x = "" then "_" ^ gensym () else x) }
 | BREAK
   { Break }
 | FALSE
   { Bool false }
 | TRUE
   { Bool true }
-| e = delimited(LPAREN, expr, RPAREN)
-  { e }
 
 (* Entry point *)
 fragment:
 | e = expr EOF
   { e }
+

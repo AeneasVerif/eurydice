@@ -123,7 +123,52 @@ let ppat_cons_zero ~loc cons =
 
 let compile_parse_tree (env: env) loc (pt: ParseTree.expr) (* : Astlib.Ast_503.Parsetree.pattern *) =
   let open Ast_builder.Default in
-  let rec compile env pt =
+
+  (* Helpers *)
+
+  (* Compiling a node where only non-list unification variables may appear *)
+  let rec compile_with_var: 'a. env -> 'a ParseTree.with_vars -> (env -> 'a -> _) -> _ =
+    fun env pt compile_pre ->
+      match pt with
+      | Fixed e ->
+          compile_pre env e
+      | PatternVar txt ->
+          ppat_var ~loc { txt; loc }
+      | ListPatternVar s ->
+          fail "[cremepat]: list pattern ?%s.. appears in unexpected position" s
+
+  (* Special treatment for lists of 'a that are allowed to contain list unification variables --
+     recurse into one of the specialized variants of this for AST positions that admit lists. Note
+     that the syntax does not enforce that list unification variables only appear where allowed --
+     there is some implicit typing depending on whether you recurse via compile_with_var or
+     compile_list_pattern. *)
+  and compile_list_pattern: 'a. env -> 'a ParseTree.with_vars list -> (env -> 'a -> _) -> _ =
+    fun env pts compile_pre ->
+      match pts with
+      | [] ->
+          ppat_construct ~loc (lident ~loc "[]") None
+      | ListPatternVar txt :: [] ->
+          ppat_var ~loc { txt; loc }
+      | ListPatternVar s :: _ ->
+          fail "[cremepat]: list pattern ?%s.. should only appear in tail position" s
+      | PatternVar txt :: pts ->
+          ppat_construct ~loc (lident ~loc "::") (Some (ppat_tuple ~loc [
+            ppat_var ~loc { txt; loc };
+            compile_list_pattern env pts compile_pre
+          ]))
+      | Fixed pt :: pts ->
+          ppat_construct ~loc (lident ~loc "::") (Some (ppat_tuple ~loc [
+            compile_pre env pt;
+            compile_list_pattern env pts compile_pre
+          ]))
+
+  and compile env pt =
+    compile_with_var env pt compile_pre_expr
+
+  and compile_expr_list_pattern env pt =
+    compile_list_pattern env pt compile_pre_expr
+
+  and compile_pre_expr env pt =
     match pt with
     | ParseTree.Let (b, e1, e2) ->
         let p1 = compile env e1 in
@@ -137,8 +182,7 @@ let compile_parse_tree (env: env) loc (pt: ParseTree.expr) (* : Astlib.Ast_503.P
         ]
 
     | Sequence ps ->
-        ppat_cons_one ~loc "ESequence" (
-          ppat_list ~loc (List.map (compile env) ps))
+        ppat_cons_one ~loc "ESequence" (compile_expr_list_pattern env ps)
 
     | App (e, ts, es) ->
         (* EApp (ETApp (e, ts), es) *)
@@ -202,17 +246,13 @@ let compile_parse_tree (env: env) loc (pt: ParseTree.expr) (* : Astlib.Ast_503.P
         let i = find env s in
         ppat_cons_one ~loc "EBound" (ppat_int ~loc i)
 
-    | PatternVar s ->
-        ppat_var ~loc { txt = s; loc }
-
-    | ListPatternVar s ->
-        fail "[cremepat]: list pattern ?%s.. appears in unexpected position" s
-
     | Break ->
         ppat_cons_zero ~loc "EBreak"
 
     | Bool b ->
         ppat_cons_one ~loc "EBool" (ppat_bool ~loc b)
+
+  (* Paths *)
 
   and compile_path env (pt: ParseTree.path) =
     let m, n = match List.rev pt with n :: m -> List.rev m, n | _ -> failwith "impossible" in
@@ -226,71 +266,51 @@ let compile_parse_tree (env: env) loc (pt: ParseTree.expr) (* : Astlib.Ast_503.P
     | Wild -> ppat_any ~loc
     | Name s -> ppat_string ~loc s
 
-  and compile_expr_list_pattern env (es: ParseTree.expr list) =
-    match es with
-    | [ ListPatternVar txt ] ->
-        ppat_var ~loc { txt; loc }
-    | [] ->
-        ppat_construct ~loc (lident ~loc "[]") None
-    | ListPatternVar s :: _ ->
-        fail "[cremepat]: list pattern ?%s.. should only appear in tail position" s
-    | e :: es ->
-        ppat_construct ~loc (lident ~loc "::") (Some (ppat_tuple ~loc [
-          compile env e;
-          compile_expr_list_pattern env es
-        ]))
+  (* Types *)
+
+  and _compile_typ env pt =
+    compile_with_var env pt compile_pre_typ
 
   and compile_typ_list_pattern env (es: ParseTree.typ list) =
-    match es with
-    | [ TListPatternVar txt ] ->
-        ppat_var ~loc { txt; loc }
-    | [] ->
-        ppat_construct ~loc (lident ~loc "[]") None
-    | TListPatternVar s :: _ ->
-        fail "[cremepat]: type list pattern ?%s.. should only appear in tail position" s
-    | e :: es ->
-        ppat_construct ~loc (lident ~loc "::") (Some (ppat_tuple ~loc [
-          compile_typ env e;
-          compile_typ_list_pattern env es
-        ]))
+    compile_list_pattern env es compile_pre_typ
 
-  and compile_typ env (pt: ParseTree.typ) =
+  and compile_pre_typ env (pt: ParseTree.pre_typ) =
     match pt with
     | TQualified path ->
         ppat_cons_one' ~loc "TQualified" (compile_path env path)
 
-    | TPatternVar s ->
-        ppat_var ~loc { txt = s; loc }
-
-    | TListPatternVar s ->
-        fail "[cremepat]: type list pattern ?%s.. appears in unexpected position" s
-
-    | TApp (TQualified p, ts) ->
+    | TApp (Fixed (TQualified p), ts) ->
         ppat_cons_many' ~loc "TApp" [
           compile_path env p;
           compile_typ_list_pattern env ts
         ]
 
-    | TApp (TPatternVar p, ts) ->
+    | TApp (PatternVar p, ts) ->
         ppat_cons_many' ~loc "TApp" [
           ppat_var ~loc { txt = p; loc };
           compile_typ_list_pattern env ts
         ]
 
-    | TApp (TApp _, _) ->
-        failwith "cannot nest type applications on the left"
+    | TApp (_, _) ->
+        failwith "incorrect type application left-hand side"
 
-  and compile_pat env (pt: ParseTree.pat) =
+  (* Patterns *)
+
+  and compile_pat env pt =
+    compile_with_var env pt compile_pre_pat
+
+  and compile_pat_list_pattern env (es: ParseTree.pat list) =
+    compile_list_pattern env es compile_pre_pat
+
+  and compile_pre_pat env (pt: ParseTree.pre_pat) =
     match pt with
     | Cons (cons, ps) ->
         ppat_cons_many ~loc "PCons" [
           ppat_string ~loc cons;
-          compile_list_pattern (compile_pat env) ps
+          compile_pat_list_pattern env ps
         ]
-    | Wild ->
-        ppat_cons_zero ~loc "PWild"
-
   in
+
   compile env pt
 
 let expand ~ctxt (payload: string) =
