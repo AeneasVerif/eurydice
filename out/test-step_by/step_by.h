@@ -87,6 +87,10 @@ typedef uint8_t core_panicking_AssertKind;
 
 void step_by_bar(void);
 
+void step_by_main1(void);
+
+void step_by_main2(void);
+
 void step_by_main(void);
 
 #if defined(__cplusplus)
