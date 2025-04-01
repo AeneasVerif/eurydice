@@ -6,7 +6,7 @@
         "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
         "nixpkgs": [
-          "recent_nixpkgs"
+          "nixpkgs"
         ],
         "nixpkgs-ocaml": [
           "nixpkgs"
@@ -120,8 +120,6 @@
         ],
         "fstar": "fstar",
         "nixpkgs": [
-          "karamel",
-          "fstar",
           "nixpkgs"
         ]
       },
@@ -154,13 +152,13 @@
         "type": "indirect"
       }
     },
-    "recent_nixpkgs": {
+    "nixpkgs_2": {
       "locked": {
-        "lastModified": 1742923925,
-        "narHash": "sha256-biPjLws6FiBVUUDHEMFq5pUQL84Wf7PntPYdo3oKkFw=",
+        "lastModified": 1743441817,
+        "narHash": "sha256-+OE03P3u0FRwhS+Ah6EYiwxdS1rcIYlXheuXGM3wP3Q=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "25d1b84f5c90632a623c48d83a2faf156451e6b1",
+        "rev": "3eeaa42ef4c19447b48d1c676fe59077dfd0846e",
         "type": "github"
       },
       "original": {
@@ -178,11 +176,7 @@
           "flake-utils"
         ],
         "karamel": "karamel",
-        "nixpkgs": [
-          "karamel",
-          "nixpkgs"
-        ],
-        "recent_nixpkgs": "recent_nixpkgs"
+        "nixpkgs": "nixpkgs_2"
       }
     },
     "rust-overlay": {
