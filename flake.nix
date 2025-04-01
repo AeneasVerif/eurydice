@@ -50,9 +50,9 @@
 
             src = ./.;
 
-            nativeBuildInputs = [ gnugrep ];
+            nativeBuildInputs = [ gnugrep ] ++ (with ocamlPackages; [ menhir ]);
 
-            propagatedBuildInputs = [ krml charon-ml ocamlPackages.terminal ocamlPackages.yaml ];
+            propagatedBuildInputs = [ krml charon-ml ocamlPackages.terminal ocamlPackages.yaml ] ++ (with ocamlPackages; [ menhirLib ]);
 
             passthru = {
               tests = clangStdenv.mkDerivation {
