@@ -282,9 +282,7 @@ void repeat_main(void)
 {
   if
   (
-    !(repeat_C1[0U]
-    + repeat_C2[0U][0U]
-    + (uint32_t)repeat_REJECTION_SAMPLE_SHUFFLE_TABLE[255U][0U]
+    !(repeat_C1[0U] + repeat_C2[0U][0U] + (uint32_t)repeat_REJECTION_SAMPLE_SHUFFLE_TABLE[255U][0U]
     != 0U)
   )
   {
