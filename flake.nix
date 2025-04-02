@@ -109,7 +109,7 @@
       devShells.default = (pkgs.mkShell.override { stdenv = pkgs.clangStdenv; }) {
         OCAMLRUNPARAM = "b"; # Get backtrace on exception
         packages = [
-          pkgs.clang-tools # For clang-format
+          pkgs.clang-tools_18 # For clang-format
           pkgs.ocamlPackages.ocaml
           pkgs.ocamlPackages.ocamlformat_0_27_0
           pkgs.ocamlPackages.menhir
