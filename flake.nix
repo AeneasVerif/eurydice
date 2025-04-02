@@ -26,7 +26,9 @@
       krml = karamel.passthru.lib;
 
       charon-packages = inputs.charon.packages.${system};
-      charon-ml = charon-packages.charon-ml;
+      charon-ml = charon-packages.charon-ml.override {
+        ocamlPackages = pkgs.ocamlPackages;
+      };
       charon = charon-packages.default;
 
       package =
