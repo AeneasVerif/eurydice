@@ -231,24 +231,31 @@ let remove_array_repeats =
     method! visit_DGlobal env flags name n t e1 =
       match e1.node with
       | EBufCreateL (l, es) ->
-          DGlobal (flags, name, n, t,
-            with_type e1.typ (EBufCreateL (l, List.map (self#expand_repeat true) es)))
+          DGlobal
+            ( flags,
+              name,
+              n,
+              t,
+              with_type e1.typ (EBufCreateL (l, List.map (self#expand_repeat true) es)) )
       | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
         when lid = Builtin.array_repeat.name -> begin
           try
             (* Case 1. *)
             DGlobal (flags, name, n, t, (self#expand_repeat false) e1)
-          with Not_found ->
+          with Not_found -> (
             match init.node with
             | EConstant _ ->
                 (* Case 2. *)
-                DGlobal (flags, name, n, t, with_type e1.typ
-                  (EBufCreate (Stack, init, Krml.Helpers.mk_sizet (self#assert_length len))))
-            | _ ->
-                super#visit_DGlobal env flags name n t e1
+                DGlobal
+                  ( flags,
+                    name,
+                    n,
+                    t,
+                    with_type e1.typ
+                      (EBufCreate (Stack, init, Krml.Helpers.mk_sizet (self#assert_length len))) )
+            | _ -> super#visit_DGlobal env flags name n t e1)
         end
-      | _ ->
-            super#visit_DGlobal env flags name n t e1
+      | _ -> super#visit_DGlobal env flags name n t e1
 
     method! visit_ELet (((), _) as env) b e1 e2 =
       match e1.node with
