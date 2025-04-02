@@ -104,7 +104,7 @@
           inherit charon-ml krml;
           version = self.rev or "dirty";
         };
-        inherit charon;
+        inherit charon karamel;
       };
       checks.default = packages.default.tests;
       devShells.ci = pkgs.mkShell { packages = [ pkgs.jq ]; };
