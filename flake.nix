@@ -26,7 +26,9 @@
       krml = karamel.passthru.lib;
 
       charon-packages = inputs.charon.packages.${system};
-      charon-ml = charon-packages.charon-ml;
+      charon-ml = charon-packages.charon-ml.override {
+        ocamlPackages = pkgs.ocamlPackages;
+      };
       charon = charon-packages.default;
 
       package =
@@ -102,7 +104,7 @@
           inherit charon-ml krml;
           version = self.rev or "dirty";
         };
-        inherit charon;
+        inherit charon karamel;
       };
       checks.default = packages.default.tests;
       devShells.ci = pkgs.mkShell { packages = [ pkgs.jq ]; };
