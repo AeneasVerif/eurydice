@@ -30,8 +30,8 @@ uint32_t traits_to_int_dd(Eurydice_slice *self)
   uu____0 =
     traits_to_int_7d(&Eurydice_slice_index(self[0U], (size_t)0U, traits_Foo, traits_Foo *));
   return
-    uu____0
-    * traits_to_int_7d(&Eurydice_slice_index(self[0U], (size_t)1U, traits_Foo, traits_Foo *));
+    uu____0 *
+      traits_to_int_7d(&Eurydice_slice_index(self[0U], (size_t)1U, traits_Foo, traits_Foo *));
 }
 
 void traits_main(void)
