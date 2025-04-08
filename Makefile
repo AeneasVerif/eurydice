@@ -69,7 +69,7 @@ out/%:
 
 .PHONY: nix-magic
 nix-magic:
-	nix flake update --extra-experimental-features nix-command --extra-experimental-features flakes
+	nix flake update karamel charon --extra-experimental-features nix-command --extra-experimental-features flakes
 
 # Updates `flake.lock` with the latest commit from our local charon clone (the one that is symlinked into `lib/charon`).
 .PHONY: update-charon-pin
