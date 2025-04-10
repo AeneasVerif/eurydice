@@ -50,3 +50,4 @@ jobs:
           nix flake update charon --override-input charon github:aeneasverif/charon/$CHARON_REV
           nix flake update eurydice --override-input eurydice github:aeneasverif/eurydice/$EURYDICE_REV
           ./check.sh ml-kem-small
+          ./check.sh ml-dsa-small
