@@ -1,13 +1,11 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.follows = "charon/nixpkgs";
     flake-utils.follows = "karamel/flake-utils";
     karamel.url = "github:FStarLang/karamel";
     karamel.inputs.nixpkgs.follows = "nixpkgs";
 
     charon.url = "github:AeneasVerif/charon";
-    charon.inputs.nixpkgs.follows = "nixpkgs";
-    charon.inputs.nixpkgs-ocaml.follows = "nixpkgs";
   };
   outputs =
     { self
