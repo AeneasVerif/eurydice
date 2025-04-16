@@ -1438,7 +1438,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
         ^ Charon.PrintExpressions.rvalue_to_string env.format_env rvalue
         ^ "`")
 
-let expression_of_assertion (env : env) ({ cond; expected } : C.assertion) : K.expr =
+let expression_of_assertion (env : env) ({ cond; expected; _ } : C.assertion) : K.expr =
   let cond =
     if not expected then
       expression_of_operand env cond
@@ -1467,8 +1467,9 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.ra
       let rv = expression_of_rvalue env rv in
       K.(with_type TUnit (EAssign (p, rv)))
   | SetDiscriminant (_, _) -> failwith "C.SetDiscriminant"
-  | FakeRead _ -> Krml.Helpers.eunit
-  | Drop p ->
+  | StorageLive _ -> Krml.Helpers.eunit
+  | StorageDead _ -> Krml.Helpers.eunit
+  | Deinit p | Drop p ->
       let _ = expression_of_place env p in
       begin
         match p.ty with
