@@ -25,6 +25,10 @@ CXXFLAGS	:= -std=c++17
 
 test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result
 
+clean-and-test:
+	$(MAKE) clean-llbc
+	$(MAKE) test
+
 .PRECIOUS: %.llbc
 %.llbc: %.rs
 	$(CHARON) rustc --remove-associated-types '*' --dest-file "$@" -- $<
@@ -89,3 +93,7 @@ format-check:
 format-apply:
 	dune fmt >/dev/null || true
 	clang-format -i $(FORMAT_FILE)
+
+.PHONY: clean-llbc
+clean-llbc:
+	rm test/*.llbc
