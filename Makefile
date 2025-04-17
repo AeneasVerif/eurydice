@@ -96,4 +96,4 @@ format-apply:
 
 .PHONY: clean-llbc
 clean-llbc:
-	rm test/*.llbc
+	rm test/*.llbc || true
