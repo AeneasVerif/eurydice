@@ -6,6 +6,12 @@ CHARON		?= $(CHARON_HOME)/bin/charon
 BROKEN_TESTS		= where_clauses chunks mutable_slice_range closure issue_37 issue_105 issue_99
 TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.rs))))
 
+# Warn on old versions of bash
+_ := $(shell bash -c '(( $${BASH_VERSION%%.*} >= 4 ))')
+ifneq ($(.SHELLSTATUS),0)
+_: $(error "bash version is too old, install a newer bash")
+endif
+
 # Enable `foo/**` glob syntax
 SHELL := bash -O globstar 
 SED=$(shell which gsed &>/dev/null && echo gsed || echo sed)
