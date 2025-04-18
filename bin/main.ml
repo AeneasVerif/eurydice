@@ -342,6 +342,7 @@ Supported options:|}
             ds ))
       files
   in
+  let files = Eurydice.Cleanup3.unpack_apply_funcs files in
 
   Eurydice.Logging.log "Phase3.3" "%a" pfiles files;
   let files =

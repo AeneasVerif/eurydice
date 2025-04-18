@@ -171,3 +171,53 @@ let also_skip_prefix_for_external_types (scope_env, _) =
         if actual <> fst target then
           KPrint.bprintf "Warning! The skip_prefix options generate name conflicts\n"
   end
+
+
+let unpack_apply_funcs (files : files) =
+  let open Krml.Ast in
+  let visitor = object (_self)
+    inherit [_] map as super
+
+    method! visit_EQualified ((found,_) as env) name =
+      if AstOfLlbc.is_apply_func_name name then begin
+        Logging.log "unpack" 
+          "[unpack, found] Found apply function: %s\n" @@ snd name;
+        found := true
+      end;
+      super#visit_EQualified env name
+
+    method! visit_EApp ((found,typ) as env) e es =
+      let e = super#visit_expr env e in
+      (* Do not move `let es = List.map (super#visit_expr env) es` here *)
+      (* We should handle `found` first -- *)
+      (*   because there is no referential transparency. *)
+      if !found then begin
+        found := false;
+        Logging.log "unpack"
+          "[unpack, revoke] Revoke apply function head: %a"
+          Krml.PrintAst.pexpr e;
+        match List.map (super#visit_expr env) es with
+        | [] -> failwith "empty application to the apply func."
+        | f :: args -> begin
+          let ret_e = EApp (f, args) in
+          Logging.log "unpack"
+            "[unpack, reconstruct] Reconstruct application: %a"
+            Krml.PrintAst.pexpr @@ with_type typ ret_e;
+          ret_e
+        end
+      end else begin
+        let es = List.map (super#visit_expr env) es in
+        EApp (e, es)
+      end
+  end in
+  let remove_apply_func_decls files =
+    let is_apply_func (decl : decl) =
+      match decl with
+      | DExternal (_, _, _, _, name, _, _)
+          when AstOfLlbc.is_apply_func_name name -> false
+      | _otw -> true
+    in
+    List.map (fun (name,decls) -> (name,List.filter is_apply_func decls)) files
+  in
+  let files = remove_apply_func_decls files in
+  visitor#visit_files (ref false) files
