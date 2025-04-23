@@ -1355,12 +1355,13 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
       (* Add a simpler case: identity cast is allowed *)
       let is_ident =
         match ck with
-        | C.CastScalar    (f, t) when compare f t = 0 -> true
-        | C.CastRawPtr    (f, t) when compare f t = 0 -> true
-        | C.CastFnPtr     (f, t) when compare f t = 0 -> true
-        | C.CastUnsize    (f, t) when compare f t = 0 -> true
-        | C.CastTransmute (f, t) when compare f t = 0 -> true
-        | _ -> false
+        (* Here are `literal_type`s *)
+        | C.CastScalar    (f, t) -> f = t
+        (* The following are `type`s *)
+        | C.CastRawPtr    (f, t)
+        | C.CastFnPtr     (f, t)
+        | C.CastUnsize    (f, t)
+        | C.CastTransmute (f, t) -> f = t
       in
       if is_ident then expression_of_operand env e
       else
@@ -1474,21 +1475,31 @@ let lesser t1 t2 =
 
 
 (* FnOpMove helpers *)
-let apply_func_decls = ref []
-let apply_func_counts = ref 0
-let apply_func_name id : K.lident = ([], "$apply$" ^ string_of_int id)
-let is_apply_func_name (lst,name) =
-  lst = [] && String.starts_with ~prefix:"$apply$" name
-let register_next_apply_func (cg_cnt, tg_cnt, typ) =
-  let new_id = !apply_func_counts in
-  incr apply_func_counts;
-  let name = apply_func_name new_id in
-  let decl = K.DExternal (None, [], cg_cnt, tg_cnt, name, typ, []) in
-  apply_func_decls := decl :: !apply_func_decls;
-  L.log "pack" "[pack] register new apply function: %a" pdecl decl;
-  K.with_type typ @@ K.EQualified name
+module FnOpMoveHelper = struct
+  let apply_func_decls = ref []
+  let apply_func_counts = ref 0
+  let apply_func_name id : K.lident = ([], "$apply$" ^ string_of_int id)
+  let is_apply_func_name (lst,name) =
+    lst = [] && String.starts_with ~prefix:"$apply$" name
+  let register_next_apply_func (ty_sch : K.type_scheme) typ =
+    let new_id = !apply_func_counts in
+    incr apply_func_counts;
+    let name = apply_func_name new_id in
+    let decl = K.DExternal (None, [], ty_sch.n_cgs, ty_sch.n, name, typ, []) in
+    apply_func_decls := decl :: !apply_func_decls;
+    L.log "pack" "[pack] register new apply function: %a" pdecl decl;
+    K.with_type typ @@ K.EQualified name
+end
+
+(* As Low* cannot handle higher-order application, which means to use a parameter as a function. *)
+(* But we can by-pass this by the following transformation: *)
 (* f(...) => $apply$i(f,...) *)
-(* Captures also the generic parameters in the `env` *)
+(* It introduces the "apply functions" `$apply$i`, which are then marked as `extern` in C. *)
+(* Finally, after all Low* simplifications, before translating to `C` *)
+(* We "unpack" the apply functions and turn `$apply$i(f,...)` back to `f(...)`. *)
+(* The "unpacking" function is `Cleanup3.unpack_apply_funcs`. *)
+(*  *)
+(* The conversion captures also the generic parameters in the `env` *)
 let expression_of_fn_op_move (env : env) ({ func; args; dest } : C.call) =
   let fHd =
     match func with
@@ -1506,7 +1517,7 @@ let expression_of_fn_op_move (env : env) ({ func; args; dest } : C.call) =
     else
       args
   in
-  (* The type of the application result *)
+  (* The type of the overall application, e.g. the `EApp` node *)
   let output_t =
     let rec match_args_typs 
         (args : K.expr list) typs : K.typ list =
@@ -1523,7 +1534,8 @@ let expression_of_fn_op_move (env : env) ({ func; args; dest } : C.call) =
   in
   let cg_cnt = List.length env.cg_binders in
   let tg_cnt = List.length env.type_binders in
-  (* The type to be applied to the composed argument list (fHd :: args) *)
+  (* The type of the application head (after const generics)
+     namely, `$apply$i [[cgs]]` *)
   let apply_typ = K.TArrow (fHd.typ, fHd.typ) in
   (* The real apply function type, should include the const generic types *)
   let apply_func_typ =
@@ -1532,7 +1544,7 @@ let expression_of_fn_op_move (env : env) ({ func; args; dest } : C.call) =
   in
   (* The apply function itself *)
   let apply_func =
-    register_next_apply_func (cg_cnt, tg_cnt, apply_func_typ) 
+    FnOpMoveHelper.register_next_apply_func ({n_cgs = cg_cnt; n = tg_cnt}) apply_func_typ
   in
   (* The type-applied apply function *)
   let apply_hd =
@@ -1556,7 +1568,7 @@ let expression_of_fn_op_move (env : env) ({ func; args; dest } : C.call) =
   in
 
   let rhs = K.with_type output_t @@ K.EApp (apply_hd, fHd :: args) in
-  Krml.Helpers.with_unit @@ K.EAssign (lhs, rhs)
+  Krml.Helpers.with_unit @@ K.EAssign (lhs, rhs)  
 
 
 let rec expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_statement) :
@@ -2196,4 +2208,4 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   (* Force the computation to happen first to collect stuff from `apply_func_decls`. *)
   (* Otherwise the optimization might read `apply_func_decls` first. *)
   let decls = List.concat_map (decls_of_declarations env) declarations in
-  name, decls @ !apply_func_decls
+  name, decls @ !FnOpMoveHelper.apply_func_decls

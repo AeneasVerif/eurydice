@@ -179,7 +179,7 @@ let unpack_apply_funcs (files : files) =
     inherit [_] map as super
 
     method! visit_EQualified ((found,_) as env) name =
-      if AstOfLlbc.is_apply_func_name name then begin
+      if AstOfLlbc.FnOpMoveHelper.is_apply_func_name name then begin
         Logging.log "unpack" 
           "[unpack, found] Found apply function: %s\n" @@ snd name;
         found := true
@@ -214,7 +214,7 @@ let unpack_apply_funcs (files : files) =
     let is_apply_func (decl : decl) =
       match decl with
       | DExternal (_, _, _, _, name, _, _)
-          when AstOfLlbc.is_apply_func_name name -> false
+          when AstOfLlbc.FnOpMoveHelper.is_apply_func_name name -> false
       | _otw -> true
     in
     List.map (fun (name,decls) -> (name,List.filter is_apply_func decls)) files
