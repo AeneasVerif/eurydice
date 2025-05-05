@@ -37,7 +37,7 @@ clean-and-test:
 
 .PRECIOUS: %.llbc
 %.llbc: %.rs
-	$(CHARON) rustc --remove-associated-types '*' --dest-file "$@" -- $<
+	$(CHARON) rustc --preset=eurydice --dest-file "$@" -- $<
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
