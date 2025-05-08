@@ -394,7 +394,7 @@ let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* Appears in some trait methods, so let's try to handle that. *)
       K.TBuf (typ_of_ty env t, false)
   | TTraitType _ -> failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
-  | TArrow binder ->
+  | TArrow binder | TClosure (_, _, _, binder) ->
       let ts, t = binder.binder_value in
       Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
   | TError _ -> failwith "Found type error in charon's output"
@@ -681,6 +681,9 @@ let op_of_binop (op : C.binop) : Krml.Constant.op =
   | C.Add -> Add
   | C.Sub -> Sub
   | C.Mul -> Mult
+  | C.WrappingAdd -> Add
+  | C.WrappingSub -> Sub
+  | C.WrappingMul -> Mult
   | C.Shl -> BShiftL
   | C.Shr -> BShiftR
   | _ -> fail "unsupported operator: %s" (C.show_binop op)
@@ -2176,8 +2179,7 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
     crate
   in
   if options.remove_associated_types <> [ "*" ] then begin
-    Printf.eprintf
-      "ERROR: Eurydice expects Charon to be invoked with exactly --remove-associated-types '*'\n";
+    Printf.eprintf "ERROR: Eurydice expects Charon to be invoked with `--preset=eurydice`\n";
     exit 255
   end;
   seen := 0;
