@@ -26,6 +26,8 @@ let pmeta buf ({ meta; _ } : 'a with_type) =
 
 let mk typ meta node = { node; typ; meta }
 
+let is_sequence = Krml.Simplify.is_sequence
+
 let remove_assignments =
   object (self)
     inherit [_] map
@@ -76,8 +78,7 @@ let remove_assignments =
                       name;
                       mut = true;
                       mark = ref Krml.Mark.default;
-                      meta = None;
-                      attempt_inline = false;
+                      meta = [];
                     };
                   typ;
                   meta;
@@ -177,7 +178,7 @@ let remove_assignments =
       | EAssign ({ node = EOpen (_, atom); _ }, e_rhs) when AtomMap.mem atom not_yet_closed ->
           close_now_over not_yet_closed (count e_rhs) (fun not_yet_closed ->
               (* Combined "close now" (above) + let-binding insertion in lieu of the assignment *)
-              assert (b.node.meta = Some MetaSequence);
+              assert (is_sequence b.node.meta);
               let e2 = snd (open_binder b e2) in
               let name, typ, meta = AtomMap.find atom not_yet_closed in
               let b =
@@ -188,8 +189,7 @@ let remove_assignments =
                       name;
                       mut = true;
                       mark = ref Krml.Mark.default;
-                      meta = None;
-                      attempt_inline = false;
+                      meta = [];
                     };
                   typ;
                   meta = meta @ e1.meta;
@@ -200,7 +200,7 @@ let remove_assignments =
               let e2 = self#visit_expr_w not_yet_closed (close_binder b e2) in
               ELet (b, e_rhs, e2))
       | EIfThenElse (e, e', e'') ->
-          assert (b.node.meta = Some MetaSequence);
+          assert (is_sequence b.node.meta);
           close_now_over not_yet_closed
             ((* We must now bind: *)
              count e
@@ -221,7 +221,7 @@ let remove_assignments =
                          recurse_or_close not_yet_closed e'' )),
                   recurse_or_close not_yet_closed e2 ))
       | EWhile (e, e') ->
-          assert (b.node.meta = Some MetaSequence);
+          assert (is_sequence b.node.meta);
           close_now_over not_yet_closed
             (* We must be here variables that are declared in the condition, and variables that
                appear both in the loop body and its continuation. *)
@@ -233,7 +233,7 @@ let remove_assignments =
                     (EWhile (self#visit_expr_w not_yet_closed e, recurse_or_close not_yet_closed e')),
                   recurse_or_close not_yet_closed e2 ))
       | ESwitch (e, branches) ->
-          assert (b.node.meta = Some MetaSequence);
+          assert (is_sequence b.node.meta);
           close_now_over not_yet_closed
             ((* We must now bind: *)
              count e
@@ -257,7 +257,7 @@ let remove_assignments =
                          List.map (fun (p, e) -> p, recurse_or_close not_yet_closed e) branches )),
                   recurse_or_close not_yet_closed e2 ))
       | EMatch (c, e, branches) ->
-          assert (b.node.meta = Some MetaSequence);
+          assert (is_sequence b.node.meta);
           close_now_over not_yet_closed
             ((* We must now bind: *)
              count e
