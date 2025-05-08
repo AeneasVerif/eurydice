@@ -23,6 +23,10 @@ fn compose_cg_apply<X : Copy,Y,const N : usize,Z>(
 fn use_compose_cg() {
   let x = compose_cg_apply(sum_lst, id, &[1,2,3,4,5]);
   let y = compose_cg_apply(more_sum_lst, id, &[10,11,12]);
-  println!("x = {}", x);
-  println!("y = {}", y);
+  assert_eq!(x, 20);
+  assert_eq!(y, 33);
+}
+
+fn main() {
+    use_compose_cg();
 }
