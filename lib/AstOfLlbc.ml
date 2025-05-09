@@ -1354,9 +1354,22 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
-  | UnaryOp (Cast ck, _e) ->
-      failwith
-        ("unknown cast: `" ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck ^ "`")
+  | UnaryOp (Cast ck, e) ->
+      (* Add a simpler case: identity cast is allowed *)
+      let is_ident =
+        match ck with
+        (* Here are `literal_type`s *)
+        | C.CastScalar    (f, t) -> f = t
+        (* The following are `type`s *)
+        | C.CastRawPtr    (f, t)
+        | C.CastFnPtr     (f, t)
+        | C.CastUnsize    (f, t)
+        | C.CastTransmute (f, t) -> f = t
+      in
+      if is_ident then expression_of_operand env e
+      else
+        failwith
+          ("unknown cast: `" ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck ^ "`")
   | UnaryOp (op, o1) -> mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
@@ -1461,6 +1474,105 @@ let lesser t1 t2 =
     fail "lesser t1=%a t2=%a" ptyp t1 ptyp t2
   else
     t1
+
+
+
+(* FnOpMove helpers *)
+module FnOpMoveHelper = struct
+  let apply_func_decls = ref []
+  let apply_func_counts = ref 0
+  let apply_func_name id : K.lident = ([], "$apply$" ^ string_of_int id)
+  let is_apply_func_name (lst,name) =
+    lst = [] && String.starts_with ~prefix:"$apply$" name
+  let register_next_apply_func (ty_sch : K.type_scheme) typ =
+    let new_id = !apply_func_counts in
+    incr apply_func_counts;
+    let name = apply_func_name new_id in
+    let decl = K.DExternal (None, [], ty_sch.n_cgs, ty_sch.n, name, typ, []) in
+    apply_func_decls := decl :: !apply_func_decls;
+    L.log "pack" "[pack] register new apply function: %a" pdecl decl;
+    K.with_type typ @@ K.EQualified name
+end
+
+(* As Low* cannot handle higher-order application, which means to use a parameter as a function. *)
+(* But we can by-pass this by the following transformation: *)
+(* f(...) => $apply$i(f,...) *)
+(* It introduces the "apply functions" `$apply$i`, which are then marked as `extern` in C. *)
+(* Finally, after all Low* simplifications, before translating to `C` *)
+(* We "unpack" the apply functions and turn `$apply$i(f,...)` back to `f(...)`. *)
+(* The "unpacking" function is `Cleanup3.unpack_apply_funcs`. *)
+(*  *)
+(* The conversion captures also the generic parameters in the `env` *)
+let expression_of_fn_op_move (env : env) ({ func; args; dest } : C.call) =
+  let fHd =
+    match func with
+    | C.FnOpMove place -> expression_of_place env place
+    | _otw -> 
+      failwith @@
+        "Internal error: the given call is not to `FnOpMove`." ^
+        "The function `expression_of_fn_op_move` handles only call to `FnOpMove`."
+  in
+  let lhs = expression_of_place env dest in
+  let args = List.map (expression_of_operand env) args in
+  let args =
+    if args = [] then
+      [ Krml.Helpers.eunit ]
+    else
+      args
+  in
+  (* The type of the overall application, e.g. the `EApp` node *)
+  let output_t =
+    let rec match_args_typs 
+        (args : K.expr list) typs : K.typ list =
+      match (args, typs) with
+      | ([], typs) -> typs
+      | (args, []) -> begin
+        L.log "Error" "extra arguments: %a" pexprs args;
+        failwith "Error: more arguments than expected"
+      end
+      | (_::args,_::typs) -> match_args_typs args typs
+    in
+    let ret_t, arg_t = Krml.Helpers.flatten_arrow fHd.typ in
+    Krml.Helpers.fold_arrow (match_args_typs args arg_t) ret_t
+  in
+  let cg_cnt = List.length env.cg_binders in
+  let tg_cnt = List.length env.type_binders in
+  (* The type of the application head (after const generics)
+     namely, `$apply$i [[cgs]]` *)
+  let apply_typ = K.TArrow (fHd.typ, fHd.typ) in
+  (* The real apply function type, should include the const generic types *)
+  let apply_func_typ =
+    let cg_typs = List.map snd env.cg_binders in
+    Krml.Helpers.fold_arrow cg_typs apply_typ
+  in
+  (* The apply function itself *)
+  let apply_func =
+    FnOpMoveHelper.register_next_apply_func ({n_cgs = cg_cnt; n = tg_cnt}) apply_func_typ
+  in
+  (* The type-applied apply function *)
+  let apply_hd =
+    if cg_cnt = 0 && tg_cnt = 0 then
+      apply_func
+    else
+      let cg_exprs =
+        let expression_of_cg_binder env (v_id, _) =
+          expression_of_cg_var_id env v_id
+        in
+        List.map (expression_of_cg_binder env) env.cg_binders
+      in
+      let tg_typs =
+        let typ_of_type_binder typ_id =
+          K.TBound (C.TypeVarId.to_int typ_id)
+        in
+        List.map typ_of_type_binder env.type_binders
+      in
+      K.with_type apply_typ @@
+        K.ETApp (apply_func, cg_exprs, [], tg_typs)
+  in
+
+  let rhs = K.with_type output_t @@ K.EApp (apply_hd, fHd :: args) in
+  Krml.Helpers.with_unit @@ K.EAssign (lhs, rhs)  
+
 
 let rec expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_statement) :
     K.expr =
@@ -1623,7 +1735,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.ra
         | _ -> rhs
       in
       Krml.Helpers.with_unit K.(EAssign (dest, rhs))
-  | Call { func = FnOpMove _; _ } -> failwith "TODO: Call/FnOpMove"
+  | Call ({ func = FnOpMove _; _ } as call) -> expression_of_fn_op_move env call
   | Abort _ -> with_any (K.EAbort (None, Some "panic!"))
   | Return ->
       let e = expression_of_var_id env ret_var in
@@ -2095,4 +2207,7 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
       generic_params = Charon.TypesUtils.empty_generic_params;
     }
   in
-  name, List.concat_map (decls_of_declarations env) declarations
+  (* Force the computation to happen first to collect stuff from `apply_func_decls`. *)
+  (* Otherwise the optimization might read `apply_func_decls` first. *)
+  let decls = List.concat_map (decls_of_declarations env) declarations in
+  name, decls @ !FnOpMoveHelper.apply_func_decls
