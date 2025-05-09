@@ -1476,33 +1476,8 @@ let lesser t1 t2 =
     t1
 
 
-
-(* FnOpMove helpers *)
-module FnOpMoveHelper = struct
-  let apply_func_decls = ref []
-  let apply_func_counts = ref 0
-  let apply_func_name id : K.lident = ([], "$apply$" ^ string_of_int id)
-  let is_apply_func_name (lst,name) =
-    lst = [] && String.starts_with ~prefix:"$apply$" name
-  let register_next_apply_func (ty_sch : K.type_scheme) typ =
-    let new_id = !apply_func_counts in
-    incr apply_func_counts;
-    let name = apply_func_name new_id in
-    let decl = K.DExternal (None, [], ty_sch.n_cgs, ty_sch.n, name, typ, []) in
-    apply_func_decls := decl :: !apply_func_decls;
-    L.log "pack" "[pack] register new apply function: %a" pdecl decl;
-    K.with_type typ @@ K.EQualified name
-end
-
-(* As Low* cannot handle higher-order application, which means to use a parameter as a function. *)
-(* But we can by-pass this by the following transformation: *)
-(* f(...) => $apply$i(f,...) *)
-(* It introduces the "apply functions" `$apply$i`, which are then marked as `extern` in C. *)
-(* Finally, after all Low* simplifications, before translating to `C` *)
-(* We "unpack" the apply functions and turn `$apply$i(f,...)` back to `f(...)`. *)
-(* The "unpacking" function is `Cleanup3.unpack_apply_funcs`. *)
-(*  *)
-(* The conversion captures also the generic parameters in the `env` *)
+(* A `fn` pointer, which does not have trait bounds, and cannot be partially applied. This is a
+   much simplified version of expression_of_fn_ptr. *)
 let expression_of_fn_op_move (env : env) ({ func; args; dest } : C.call) =
   let fHd =
     match func with
@@ -1520,57 +1495,10 @@ let expression_of_fn_op_move (env : env) ({ func; args; dest } : C.call) =
     else
       args
   in
-  (* The type of the overall application, e.g. the `EApp` node *)
-  let output_t =
-    let rec match_args_typs 
-        (args : K.expr list) typs : K.typ list =
-      match (args, typs) with
-      | ([], typs) -> typs
-      | (args, []) -> begin
-        L.log "Error" "extra arguments: %a" pexprs args;
-        failwith "Error: more arguments than expected"
-      end
-      | (_::args,_::typs) -> match_args_typs args typs
-    in
-    let ret_t, arg_t = Krml.Helpers.flatten_arrow fHd.typ in
-    Krml.Helpers.fold_arrow (match_args_typs args arg_t) ret_t
-  in
-  let cg_cnt = List.length env.cg_binders in
-  let tg_cnt = List.length env.type_binders in
-  (* The type of the application head (after const generics)
-     namely, `$apply$i [[cgs]]` *)
-  let apply_typ = K.TArrow (fHd.typ, fHd.typ) in
-  (* The real apply function type, should include the const generic types *)
-  let apply_func_typ =
-    let cg_typs = List.map snd env.cg_binders in
-    Krml.Helpers.fold_arrow cg_typs apply_typ
-  in
-  (* The apply function itself *)
-  let apply_func =
-    FnOpMoveHelper.register_next_apply_func ({n_cgs = cg_cnt; n = tg_cnt}) apply_func_typ
-  in
-  (* The type-applied apply function *)
-  let apply_hd =
-    if cg_cnt = 0 && tg_cnt = 0 then
-      apply_func
-    else
-      let cg_exprs =
-        let expression_of_cg_binder env (v_id, _) =
-          expression_of_cg_var_id env v_id
-        in
-        List.map (expression_of_cg_binder env) env.cg_binders
-      in
-      let tg_typs =
-        let typ_of_type_binder typ_id =
-          K.TBound (C.TypeVarId.to_int typ_id)
-        in
-        List.map typ_of_type_binder env.type_binders
-      in
-      K.with_type apply_typ @@
-        K.ETApp (apply_func, cg_exprs, [], tg_typs)
-  in
-
-  let rhs = K.with_type output_t @@ K.EApp (apply_hd, fHd :: args) in
+  (* Asserting that this is not a partial application *)
+  let ret_t, args_t = Krml.Helpers.flatten_arrow fHd.typ in
+  assert (List.length args_t = List.length args);
+  let rhs = K.with_type ret_t @@ K.EApp (fHd, args) in
   Krml.Helpers.with_unit @@ K.EAssign (lhs, rhs)  
 
 
@@ -2207,7 +2135,4 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
       generic_params = Charon.TypesUtils.empty_generic_params;
     }
   in
-  (* Force the computation to happen first to collect stuff from `apply_func_decls`. *)
-  (* Otherwise the optimization might read `apply_func_decls` first. *)
-  let decls = List.concat_map (decls_of_declarations env) declarations in
-  name, decls @ !FnOpMoveHelper.apply_func_decls
+  name, List.concat_map (decls_of_declarations env) declarations
