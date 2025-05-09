@@ -6,6 +6,12 @@ CHARON		?= $(CHARON_HOME)/bin/charon
 BROKEN_TESTS		= where_clauses chunks mutable_slice_range closure issue_37 issue_105 issue_99 dst
 TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.rs))))
 
+# Warn on old versions of bash
+_ := $(shell bash -c '(( $${BASH_VERSION%%.*} >= 4 ))')
+ifneq ($(.SHELLSTATUS),0)
+_: $(error "bash version is too old, install a newer bash")
+endif
+
 # Enable `foo/**` glob syntax
 SHELL := bash -O globstar 
 SED=$(shell which gsed &>/dev/null && echo gsed || echo sed)
@@ -25,9 +31,13 @@ CXXFLAGS	:= -std=c++17
 
 test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result
 
+clean-and-test:
+	$(MAKE) clean-llbc
+	$(MAKE) test
+
 .PRECIOUS: %.llbc
 %.llbc: %.rs
-	$(CHARON) --remove-associated-types '*' --no-cargo --input $< --dest-file "$@"
+	$(CHARON) rustc --preset=eurydice --dest-file "$@" -- $<
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
@@ -69,7 +79,7 @@ out/%:
 
 .PHONY: nix-magic
 nix-magic:
-	nix flake update --extra-experimental-features nix-command --extra-experimental-features flakes
+	nix flake update karamel charon --extra-experimental-features nix-command --extra-experimental-features flakes
 
 # Updates `flake.lock` with the latest commit from our local charon clone (the one that is symlinked into `lib/charon`).
 .PHONY: update-charon-pin
@@ -89,3 +99,7 @@ format-check:
 format-apply:
 	dune fmt >/dev/null || true
 	clang-format -i $(FORMAT_FILE)
+
+.PHONY: clean-llbc
+clean-llbc:
+	rm test/*.llbc || true

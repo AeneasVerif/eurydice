@@ -91,7 +91,19 @@ core_iter_range___core__iter__range__Step_for_usize__43__backward_checked(size_t
 extern core_option_Option_08
 core_iter_range___core__iter__range__Step_for_usize__43__forward_checked(size_t x0, size_t x1);
 
-extern core_option_Option_08
+/**
+A monomorphic instance of K.
+with types size_t, core_option_Option size_t
+
+*/
+typedef struct tuple_04_s
+{
+  size_t fst;
+  core_option_Option_08 snd;
+}
+tuple_04;
+
+extern tuple_04
 core_iter_range___core__iter__range__Step_for_usize__43__steps_between(size_t *x0, size_t *x1);
 
 static inline void core_num__u32_8__to_le_bytes(uint32_t x0, uint8_t x1[4U]);

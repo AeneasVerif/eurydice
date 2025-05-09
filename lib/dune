@@ -2,7 +2,7 @@
  (name eurydice)
  (libraries charon krml yaml)
  (preprocess
-  (pps ppx_deriving.std)))
+  (pps ppx_deriving.std cremepat)))
 
 (env
  (_

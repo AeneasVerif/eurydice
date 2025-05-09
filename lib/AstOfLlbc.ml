@@ -54,7 +54,7 @@ type var_id =
       pretty_name : string;
     }
   | ConstGenericVar of C.const_generic_var_id
-  | Var of C.var_id * C.ety (* the ety aids code-generation, sometimes *)
+  | Var of C.local_id * C.ety (* the ety aids code-generation, sometimes *)
 
 type env = {
   (* Lookup functions to resolve various id's into actual declarations. *)
@@ -404,9 +404,10 @@ let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* Appears in some trait methods, so let's try to handle that. *)
       K.TBuf (typ_of_ty env t, false)
   | TTraitType _ -> failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
-  | TArrow binder ->
+  | TArrow binder | TClosure (_, _, _, binder) ->
       let ts, t = binder.binder_value in
       Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
+  | TError _ -> failwith "Found type error in charon's output"
 
 and maybe_cg_array env t cg =
   match cg with
@@ -463,10 +464,10 @@ let push_cg_binder env (t : C.const_generic_var) =
 
 let push_cg_binders env (ts : C.const_generic_var list) = List.fold_left push_cg_binder env ts
 
-let push_binder env (t : C.var) =
+let push_binder env (t : C.local) =
   { env with binders = (Var (t.index, t.var_ty), typ_of_ty env t.var_ty) :: env.binders }
 
-let push_binders env (ts : C.var list) = List.fold_left push_binder env ts
+let push_binders env (ts : C.local list) = List.fold_left push_binder env ts
 
 (* Clause binders, which only appear as function parameters, and hold an unknown
    trait method (dictionary-style). *)
@@ -506,7 +507,7 @@ let uu =
     incr r;
     "uu____" ^ suffix
 
-let binder_of_var (env : env) (l : C.var) : K.binder =
+let binder_of_var (env : env) (l : C.local) : K.binder =
   let name = Option.value ~default:(uu ()) l.name in
   Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env l.var_ty)
 
@@ -515,7 +516,7 @@ let find_nth_variant (env : env) (typ : C.type_decl_id) (var : C.variant_id) =
   | { kind = Enum variants; _ } -> Charon.Types.VariantId.nth variants var
   | _ -> failwith "impossible: type is not a variant"
 
-let rec with_locals (env : env) (t : K.typ) (locals : C.var list) (k : env -> 'a) : 'a =
+let rec with_locals (env : env) (t : K.typ) (locals : C.local list) (k : env -> 'a) : 'a =
   match locals with
   | [] -> k env
   | l :: locals ->
@@ -531,7 +532,7 @@ let expression_of_cg_var_id env v =
   let i, t = lookup_cg_in_expressions env v in
   K.(with_type t (EBound i))
 
-let expression_of_var_id (env : env) (v : C.var_id) : K.expr =
+let expression_of_var_id (env : env) (v : C.local_id) : K.expr =
   let i, t = lookup env v in
   K.(with_type t (EBound i))
 
@@ -565,7 +566,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
      and references apart, since their *uses* (e.g. addr-of) compile in a type-directed way based on
      the *original* rust type *)
   match p.kind with
-  | PlaceBase var_id ->
+  | PlaceLocal var_id ->
       let i, t = lookup env var_id in
       K.(with_type t (EBound i))
   | PlaceProjection (sub_place, pe) -> begin
@@ -702,6 +703,9 @@ let op_of_binop (op : C.binop) : Krml.Constant.op =
   | C.Add -> Add
   | C.Sub -> Sub
   | C.Mul -> Mult
+  | C.WrappingAdd -> Add
+  | C.WrappingSub -> Sub
+  | C.WrappingMul -> Mult
   | C.Shl -> BShiftL
   | C.Shr -> BShiftR
   | _ -> fail "unsupported operator: %s" (C.show_binop op)
@@ -1354,7 +1358,7 @@ let is_str env var_id =
 let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   match p with
   | Use op -> expression_of_operand env op
-  | RvRef ({ kind = PlaceProjection ({ kind = PlaceBase var_id; _ }, Deref); _ }, _)
+  | RvRef ({ kind = PlaceProjection ({ kind = PlaceLocal var_id; _ }, Deref); _ }, _)
     when is_str env var_id ->
       (* Because we do not materialize the address of a string, we also have to
          avoid dereferencing it. For now, we simply avoid reborrows and treat
@@ -1460,7 +1464,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
         ^ Charon.PrintExpressions.rvalue_to_string env.format_env rvalue
         ^ "`")
 
-let expression_of_assertion (env : env) ({ cond; expected } : C.assertion) : K.expr =
+let expression_of_assertion (env : env) ({ cond; expected; _ } : C.assertion) : K.expr =
   let cond =
     if not expected then
       expression_of_operand env cond
@@ -1481,16 +1485,17 @@ let lesser t1 t2 =
   else
     t1
 
-let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_statement) : K.expr
-    =
+let rec expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_statement) :
+    K.expr =
   match s with
   | Assign (p, rv) ->
       let p = expression_of_place env p in
       let rv = expression_of_rvalue env rv in
       K.(with_type TUnit (EAssign (p, rv)))
   | SetDiscriminant (_, _) -> failwith "C.SetDiscriminant"
-  | FakeRead _ -> Krml.Helpers.eunit
-  | Drop p ->
+  | StorageLive _ -> Krml.Helpers.eunit
+  | StorageDead _ -> Krml.Helpers.eunit
+  | Deinit p | Drop p ->
       let _ = expression_of_place env p in
       begin
         match p.ty with
@@ -1723,7 +1728,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.var_id) (s : C.raw_
       K.(with_type TUnit (EWhile (Krml.Helpers.etrue, expression_of_statement env ret_var s)))
   | Error _ -> failwith "TODO: error"
 
-and expression_of_statement (env : env) (ret_var : C.var_id) (s : C.statement) : K.expr =
+and expression_of_statement (env : env) (ret_var : C.local_id) (s : C.statement) : K.expr =
   {
     (expression_of_raw_statement env ret_var s.content) with
     meta =
@@ -1817,7 +1822,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       let env = push_type_binders env type_params in
 
       match kind with
-      | Union _ | Opaque | TError _ -> None
+      | Union _ | Opaque | TDeclError _ -> None
       | Struct fields ->
           let fields =
             List.mapi
@@ -1932,9 +1937,9 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                 L.log "AstOfLlbc" "ty of locals: %s"
                   (String.concat " ++ "
                      (List.map
-                        (fun (local : C.var) ->
+                        (fun (local : C.local) ->
                           Charon.PrintTypes.ty_to_string env.format_env local.var_ty)
-                        locals.vars));
+                        locals.locals));
                 L.log "AstOfLlbc" "ty of inputs: %s"
                   (String.concat " ++ "
                      (List.map
@@ -1948,7 +1953,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
 
                 (* `locals` contains, in order: special return variable; function arguments;
                    local variables *)
-                let args, locals = Krml.KList.split (locals.arg_count + 1) locals.vars in
+                let args, locals = Krml.KList.split (locals.arg_count + 1) locals.locals in
                 let return_var = List.hd args in
                 let args = List.tl args in
 
@@ -1964,7 +1969,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                   in
                   let v_unit =
                     {
-                      C.index = Charon.Expressions.VarId.of_int max_int;
+                      C.index = Charon.Expressions.LocalId.of_int max_int;
                       name = None;
                       var_ty = t_unit;
                     }
@@ -2000,7 +2005,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                         | _ -> assert false)
                       clause_binders
                   @ List.map
-                      (fun (arg : C.var) ->
+                      (fun (arg : C.local) ->
                         let name = Option.value ~default:"_" arg.name in
                         Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty))
                       args
@@ -2050,9 +2055,9 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       begin
         match body.body with
         | Some body ->
-            let ret_var = List.hd body.locals.vars in
+            let ret_var = List.hd body.locals.locals in
             let body =
-              with_locals env ty body.locals.vars (fun env ->
+              with_locals env ty body.locals.locals (fun env ->
                   expression_of_statement env ret_var.index body.body)
             in
             Some (K.DGlobal ([ Krml.Common.Const "" ], lid_of_name env name, 0, ty, body))
@@ -2148,8 +2153,7 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
     crate
   in
   if options.remove_associated_types <> [ "*" ] then begin
-    Printf.eprintf
-      "ERROR: Eurydice expects Charon to be invoked with exactly --remove-associated-types '*'\n";
+    Printf.eprintf "ERROR: Eurydice expects Charon to be invoked with `--preset=eurydice`\n";
     exit 255
   end;
   let declarations = flatten_declarations declarations in

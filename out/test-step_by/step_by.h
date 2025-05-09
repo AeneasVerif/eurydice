@@ -76,7 +76,19 @@ typedef struct core_option_Option_08_s
 }
 core_option_Option_08;
 
-extern core_option_Option_08
+/**
+A monomorphic instance of K.
+with types size_t, core_option_Option size_t
+
+*/
+typedef struct tuple_04_s
+{
+  size_t fst;
+  core_option_Option_08 snd;
+}
+tuple_04;
+
+extern tuple_04
 core_iter_range___core__iter__range__Step_for_i32__40__steps_between(int32_t *x0, int32_t *x1);
 
 #define core_panicking_AssertKind_Eq 0
@@ -86,6 +98,10 @@ core_iter_range___core__iter__range__Step_for_i32__40__steps_between(int32_t *x0
 typedef uint8_t core_panicking_AssertKind;
 
 void step_by_bar(void);
+
+void step_by_main1(void);
+
+void step_by_main2(void);
 
 void step_by_main(void);
 
