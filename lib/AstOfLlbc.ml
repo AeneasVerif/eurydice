@@ -608,25 +608,27 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       let i, t = lookup env var_id in
       K.(with_type t (EBound i))
   | PlaceProjection (sub_place, pe) -> begin
+      (* Can't evaluate this here because of the special case for DSTs. *)
       let sub_e = lazy (expression_of_place env sub_place) in
+      let (!*) = Lazy.force in
       (* L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr sub_e (C.show_ty sub_place.ty) *)
       (*   (C.show_projection_elem pe); *)
       match pe, sub_place, sub_place.ty with
       | C.Deref, _, TRef (_, TAdt (TBuiltin TArray, { types = [ t ]; _ }), _)
       | C.Deref, _, TRawPtr (TAdt (TBuiltin TArray, { types = [ t ]; _ }), _) ->
           (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
-          K.with_type (TBuf (typ_of_ty env t, false)) (Lazy.force sub_e).K.node
+          K.with_type (TBuf (typ_of_ty env t, false)) !*sub_e.K.node
       | C.Deref, _, TRef (_, TAdt (TBuiltin TSlice, _), _)
-      | C.Deref, _, TRawPtr (TAdt (TBuiltin TSlice, _), _) -> Lazy.force sub_e
+      | C.Deref, _, TRawPtr (TAdt (TBuiltin TSlice, _), _) -> !*sub_e
       | (C.Deref, _, TRef (_, TAdt (id, generics), _) | C.Deref, _, TRawPtr (TAdt (id, generics), _))
         when RustNames.is_vec env id generics ->
-          Lazy.force sub_e
+          !*sub_e
       | C.Deref, _, (TRawPtr _ | TRef _ | TAdt (TBuiltin TBox, { types = [ _ ]; _ })) ->
           (* All types represented as a pointer at run-time, compiled to a C pointer *)
-          let t_pointee = Krml.Helpers.assert_tbuf_or_tarray (Lazy.force sub_e).K.typ in
-          Krml.Helpers.(mk_deref t_pointee (Lazy.force sub_e).K.node)
+          let t_pointee = Krml.Helpers.assert_tbuf_or_tarray !*sub_e.K.typ in
+          Krml.Helpers.(mk_deref t_pointee !*sub_e.K.node)
 
-      | Field (ProjAdt (typ_id, None), field_id), { kind = PlaceProjection (sub_place, C.Deref); _ }, C.TAdt _ -> begin
+      | Field (ProjAdt (typ_id, None), field_id), { kind = PlaceProjection (sub_place, C.Deref); _ }, C.TAdt _ ->
           (* Support for DSTs. Recall that values of a DST cannot exist unless behind a pointer
              (&, Box, etc.). Therefore, a place expression that refers to a DST (and therefore
              warrants special treatment) begins with `*x` where `x: T<U>` for `U: ?Sized` (we
@@ -645,7 +647,6 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           let field_name = lookup_field env typ_id field_id in
           let sub_e = expression_of_place env sub_place in
           let place_typ = typ_of_ty env p.ty in
-          (* 3. Make a determination *)
           begin match sub_e.K.typ with
           | TApp (dst_hd, [ TApp (lid, _) as t_pointee ]) when
             dst_hd = Builtin.dst && (assert (LidMap.mem lid env.dsts); not (is_dst_field env lid field_name))
@@ -658,24 +659,19 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
               K.with_type place_typ (K.EField (
                 K.with_type t_pointee (K.EApp (dst_deref, [ sub_e ])), 
                 field_name))
-          | TApp (dst_hd, [ TApp (lid, _) as _t_pointee ]) ->
-              Krml.KPrint.bprintf "FOUND THE RIGHT SHAPE: %a %b %b\n" ptyp sub_e.K.typ
-                (dst_hd = Builtin.dst) (not (is_dst_field env lid field_name));
-              assert false
           | _ ->
               (* Same as below *)
               K.with_type place_typ (K.EField (
                 Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node),
                 field_name))
           end
-      end
 
       | Field (ProjAdt (typ_id, variant_id), field_id), _, C.TAdt _ -> begin
           let place_typ = typ_of_ty env p.ty in
           match variant_id with
           | None ->
               let field_name = lookup_field env typ_id field_id in
-              K.with_type place_typ (K.EField (Lazy.force sub_e, field_name))
+              K.with_type place_typ (K.EField (!*sub_e, field_name))
           | Some variant_id ->
               let variant = find_nth_variant env typ_id variant_id in
               let field_id = C.FieldId.to_int field_id in
@@ -687,10 +683,10 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
                 K.(
                   EMatch
                     ( Unchecked,
-                      Lazy.force sub_e,
+                      !*sub_e,
                       [
                         ( [ b ],
-                          with_type (Lazy.force sub_e).typ
+                          with_type !*sub_e.typ
                             (PCons
                                ( variant.C.variant_name,
                                  List.init (List.length variant.fields) (fun i ->
@@ -709,18 +705,18 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           if List.length tys = 1 then begin
             assert (i = 0);
             (* Normalized one-element tuple *)
-            Lazy.force sub_e
+            !*sub_e
           end
           else
             let ts =
-              match (Lazy.force sub_e).typ with
+              match !*sub_e.typ with
               | TTuple ts -> ts
               | _ -> assert false
             in
             assert (List.length ts = n);
             let binders = [ Krml.Helpers.fresh_binder (uu ()) place_typ ] in
             let pattern =
-              K.with_type (Lazy.force sub_e).typ
+              K.with_type !*sub_e.typ
                 (K.PTuple
                    (List.mapi
                       (fun i' t ->
@@ -732,7 +728,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
                       ts))
             in
             let expr = K.with_type place_typ (K.EBound 0) in
-            K.with_type place_typ (K.EMatch (Unchecked, Lazy.force sub_e, [ binders, pattern, expr ]))
+            K.with_type place_typ (K.EMatch (Unchecked, !*sub_e, [ binders, pattern, expr ]))
       | _ -> fail "unexpected / ill-typed projection"
     end
 
@@ -1417,17 +1413,28 @@ let is_str env var_id =
   | _, _, TRef (_, TAdt (TBuiltin TStr, { types = []; _ }), _) -> true
   | _ -> false
 
+let is_dst_var env var_id =
+  match lookup env var_id with
+  | _, TApp (dst_hd, [ TApp (lid, _) ]) when dst_hd = Builtin.dst ->
+      assert (LidMap.mem lid env.dsts);
+      true
+  | _ ->
+      false
+
 let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   match p with
   | Use op -> expression_of_operand env op
   | RvRef ({ kind = PlaceProjection ({ kind = PlaceLocal var_id; _ }, Deref); _ }, _)
-    when is_str env var_id ->
-      (* Because we do not materialize the address of a string, we also have to
-         avoid dereferencing it. For now, we simply avoid reborrows and treat
-         them as simply passing the same constant string around (which in C is
-         passed by address naturally). *)
+    when is_str env var_id || is_dst_var env var_id ->
+      (* String case:
+         because we do not materialize the address of a string, we also have to
+         avoid dereferencing it. For now, we simply avoid reborrows and treat them as simply passing
+         the same constant string around (which in C is passed by address naturally).
+         TODO: this is a temporary fix and we need to represent &str the same way as &[u8].
+
+         DST case:
+         this is case three, see "support for DSTs", above. *)
       expression_of_var_id env var_id
-      (* TODO: reborrow dst *)
   | RvRef (p, _) | RawPtr (p, _) ->
       let e = expression_of_place env p in
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
