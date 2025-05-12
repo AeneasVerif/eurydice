@@ -10,17 +10,20 @@ fn mk() -> Box<T2<[u32]>> {
     y
 }
 
+// ---
+
 struct S<U: ?Sized> {
     foo: u32,
     my_data: U,
 }
 
-// ---
-
 type T = S<[u32]>;
 
-fn check(x: Box<T>) {
+fn check_regular_field(x: Box<T>) {
     assert_eq!(x.foo, 0);
+}
+
+fn check_var_field(x: Box<T>) {
     assert_eq!(x.my_data[0], 0);
 }
 
@@ -31,6 +34,7 @@ fn alloc() -> Box<T> {
 // ---
 
 fn main() {
-    check(alloc());
+    check_regular_field(alloc());
+    check_var_field(alloc());
     assert_eq!((mk()).my_data[0], 0);
 }

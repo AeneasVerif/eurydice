@@ -273,6 +273,8 @@ let replace =
 
 let dst = ["Eurydice"], "dst"
 
+let derefed_slice = ["Eurydice"], "derefed_slice"
+
 let dst_def =
   K.DType (dst, [], 0, 1, Flat [
     Some "ptr", (TBuf (TBound 0, false), false);
