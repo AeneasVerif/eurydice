@@ -271,10 +271,20 @@ let replace =
     arg_names = [ "v"; "x" ];
   }
 
+let dst = ["Eurydice"], "dst"
+
+let dst_def =
+  K.DType (dst, [], 0, 1, Flat [
+    Some "ptr", (TBuf (TBound 0, false), false);
+    Some "sz", (TInt SizeT, false);
+  ])
+
+let mk_dst t: K.typ = TApp (dst, [ t ])
+
 let dst_deref =
   {
     name = [ "Eurydice" ], "dst_deref";
-    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, false) ] (TBound 0);
+    typ = Krml.Helpers.fold_arrow [ mk_dst (TBound 0) ] (TBound 0);
     n_type_args = 1;
     cg_args = [];
     arg_names = [ "ptr" ];
@@ -397,7 +407,7 @@ let files =
            shr_pv_u8;
            min_u32;
          ]
-       @ [ nonzero_def; static_assert ]
+     @ [ nonzero_def; static_assert; dst_def ]
      in
      "Eurydice", externals);
   ]

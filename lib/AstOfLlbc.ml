@@ -344,8 +344,38 @@ let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
   | TChar -> failwith "TODO: Char"
   | TFloat _ -> failwith "TODO: Float"
   | TInteger k -> K.TInt (width_of_integer_type k)
+  
+(* Is TApp (lid, [ t ]) a DST? *)
+let is_dst env lid (t: K.typ) =
+  LidMap.mem lid env.dsts && match t with
+    | TApp (([], "Eurydice_derefed_slice"), [ _ ]) ->
+        true
+    | _ ->
+        false
 
-let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
+let is_dst_field env lid f =
+  LidMap.find_opt lid env.dsts = Some f
+
+let ensure_named i name =
+  match name, i with
+  | None, 0 -> "fst"
+  | None, 1 -> "snd"
+  | None, 2 -> "thd"
+  | None, _ -> Printf.sprintf "field%d" i
+  | Some name, _ -> name
+
+let lookup_field env typ_id field_id =
+  let ty_decl = env.get_nth_type typ_id in
+  let fields =
+    match ty_decl.kind with
+    | Struct fields -> fields
+    | _ -> failwith "not a struct"
+  in
+  let i = C.FieldId.to_int field_id in
+  let field = List.nth fields i in
+  ensure_named i field.field_name
+
+let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   match ty with
   | TVar var -> K.TBound (lookup_typ env (C.expect_free_var var))
   | TLiteral t -> typ_of_literal_ty env t
@@ -387,10 +417,13 @@ let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
         | [ t ] -> typ_of_ty env t (* charon issue #205 *)
         | _ -> TTuple (List.map (typ_of_ty env) args)
       end
+
   | TAdt (TBuiltin TArray, { types = [ t ]; const_generics = [ cg ]; _ }) -> maybe_cg_array env t cg
+
   | TAdt (TBuiltin TSlice, { types = [ t ]; _ }) ->
       (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
-      TApp (([], "__builtin_slice_t"), [ typ_of_ty env t ])
+      TApp (([], "Eurydice_derefed_slice"), [ typ_of_ty env t ])
+
   | TAdt (TBuiltin TBox, { types = [ t ]; _ }) -> K.TBuf (typ_of_ty env t, false)
       (* Boxes are immediately translated to a pointer type -- we do not maintain a Box<T>
          definition in the krml internal AST. *)
@@ -408,6 +441,19 @@ let rec typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       let ts, t = binder.binder_value in
       Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
   | TError _ -> failwith "Found type error in charon's output"
+
+and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
+  let t = pre_typ_of_ty env ty in
+  (* Handling of DSTs. We need to catch the cases where we have a type T* where T is unsized. For
+     now, we only support `T<[U]>*` -- eventually, we might want to generalize this. *)
+  match t with
+  | TBuf (TApp (lid, [ t ]), _) when is_dst env lid t ->
+      (* T<[U]>* is a DST, and needs to be a fat pointer with length + size (in bytes). *)
+      Builtin.mk_dst t
+  | _ ->
+      (* T<[U; N]>* is NOT a DST, and retains the usual representation. The unsize cast will move
+         from this to the DST above. *)
+      t
 
 and maybe_cg_array env t cg =
   match cg with
@@ -553,14 +599,6 @@ let expression_of_const_generic env cg =
   | C.CgVar var -> expression_of_cg_var_id env (C.expect_free_var var)
   | C.CgValue l -> expression_of_literal env l
 
-let ensure_named i name =
-  match name, i with
-  | None, 0 -> "fst"
-  | None, 1 -> "snd"
-  | None, 2 -> "thd"
-  | None, _ -> Printf.sprintf "field%d" i
-  | Some name, _ -> name
-
 let rec expression_of_place (env : env) (p : C.place) : K.expr =
   (* We construct a target expression. Callers may still use the original type to tell arrays
      and references apart, since their *uses* (e.g. addr-of) compile in a type-directed way based on
@@ -573,46 +611,65 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       let sub_e = expression_of_place env sub_place in
       L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr sub_e (C.show_ty sub_place.ty)
         (C.show_projection_elem pe);
-      match pe, sub_place.ty with
-      | C.Deref, TRef (_, TAdt (TBuiltin TArray, { types = [ t ]; _ }), _)
-      | C.Deref, TRawPtr (TAdt (TBuiltin TArray, { types = [ t ]; _ }), _) ->
+      match pe, sub_place, sub_place.ty with
+      | C.Deref, _, TRef (_, TAdt (TBuiltin TArray, { types = [ t ]; _ }), _)
+      | C.Deref, _, TRawPtr (TAdt (TBuiltin TArray, { types = [ t ]; _ }), _) ->
           (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
           K.with_type (TBuf (typ_of_ty env t, false)) sub_e.K.node
-      | C.Deref, TRef (_, TAdt (TBuiltin TSlice, _), _)
-      | C.Deref, TRawPtr (TAdt (TBuiltin TSlice, _), _) -> sub_e
-      | (C.Deref, TRef (_, TAdt (id, generics), _) | C.Deref, TRawPtr (TAdt (id, generics), _))
+      | C.Deref, _, TRef (_, TAdt (TBuiltin TSlice, _), _)
+      | C.Deref, _, TRawPtr (TAdt (TBuiltin TSlice, _), _) -> sub_e
+      | (C.Deref, _, TRef (_, TAdt (id, generics), _) | C.Deref, _, TRawPtr (TAdt (id, generics), _))
         when RustNames.is_vec env id generics ->
           sub_e
-      | C.Deref, TRawPtr _ | C.Deref, TRef _ ->
+      | C.Deref, _, (TRawPtr _ | TRef _ | TAdt (TBuiltin TBox, { types = [ _ ]; _ })) ->
+          (* All types represented as a pointer at run-time, compiled to a C pointer *)
           let t_pointee = Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ in
           Krml.Helpers.(mk_deref t_pointee sub_e.K.node)
-      | C.Deref, TAdt (TBuiltin TBox, { types = [ _ ]; _ }) ->
+
+      | Field (ProjAdt (typ_id, None), field_id), { kind = PlaceProjection (sub_place, C.Deref); _ }, C.TAdt _ -> begin
+          (* Support for DSTs. Recall that values of a DST cannot exist unless behind a pointer
+             (&, Box, etc.). Therefore, a place expression that refers to a DST (and therefore
+             warrants special treatment) begins with `*x` where `x: T<U>` for `U: ?Sized` (we
+             describe the simplified case of a single parameter for T).
+
+             We cannot store or materialize such a value, therefore, after `*x`, we can either:
+             - take its U field (of type [U'], not representable), and in turn takes its address,
+               thus obtaining a value of type `&[U']` -- this is `&(( *x).data)`
+             - take one of the other fields -- this is `( *x).f_i`, no particular requirement on
+               address taking here
+             - reborrow, obtaining a pointer to a DST, also representable -- this is `&( *x)`
+
+             The first and third cases are handled in expression_of_rvalue. The second case, as it
+             involves no borrowing, is handled here.
+          *)
+          let field_name = lookup_field env typ_id field_id in
+          let sub_e = expression_of_place env sub_place in
           let t_pointee = Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ in
+          let place_typ = typ_of_ty env p.ty in
+          (* 3. Make a determination *)
           begin match t_pointee with
-          | TApp (lid, _) when LidMap.mem lid env.dsts ->
+          | TApp (lid, [ t ]) when is_dst env lid t && not (is_dst_field env lid field_name) ->
+              (* dst_deref has type Eurydice_dst<T> -> T *)
               let dst_deref = Builtin.(expr_of_builtin dst_deref) in
               let dst_deref = K.with_type
                 (Krml.DeBruijn.subst_t t_pointee 0 dst_deref.typ) (K.ETApp (dst_deref, [], [], [ t_pointee ])) 
               in
-              K.with_type t_pointee (K.EApp (dst_deref, [ sub_e ]))
+              K.with_type place_typ (K.EField (
+                K.with_type t_pointee (K.EApp (dst_deref, [ sub_e ])), 
+                field_name))
           | _ ->
-              Krml.Helpers.(mk_deref t_pointee sub_e.K.node)
+              (* Same as below *)
+              K.with_type place_typ (K.EField (
+                Krml.Helpers.(mk_deref t_pointee sub_e.K.node),
+                field_name))
           end
-      | Field (ProjAdt (typ_id, variant_id), field_id), C.TAdt _ -> begin
+      end
+
+      | Field (ProjAdt (typ_id, variant_id), field_id), _, C.TAdt _ -> begin
           let place_typ = typ_of_ty env p.ty in
           match variant_id with
           | None ->
-              let ty_decl = env.get_nth_type typ_id in
-              let fields =
-                match ty_decl.kind with
-                | Struct fields -> fields
-                | _ -> failwith "not a struct"
-              in
-              let field_name =
-                let i = C.FieldId.to_int field_id in
-                let field = List.nth fields i in
-                ensure_named i field.field_name
-              in
+              let field_name = lookup_field env typ_id field_id in
               K.with_type place_typ (K.EField (sub_e, field_name))
           | Some variant_id ->
               let variant = find_nth_variant env typ_id variant_id in
@@ -639,7 +696,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
                           with_type place_typ (EBound 0) );
                       ] ))
         end
-      | Field (ProjTuple n, i), C.TAdt (_, { types = tys; const_generics = cgs; _ }) ->
+      | Field (ProjTuple n, i), _, C.TAdt (_, { types = tys; const_generics = cgs; _ }) ->
           let place_typ = typ_of_ty env p.ty in
           assert (cgs = []);
           (* match e with (_, ..., _, x, _, ..., _) -> x *)
@@ -1365,6 +1422,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
          them as simply passing the same constant string around (which in C is
          passed by address naturally). *)
       expression_of_var_id env var_id
+      (* TODO: reborrow dst *)
   | RvRef (p, _) | RawPtr (p, _) ->
       let e = expression_of_place env p in
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
@@ -1817,7 +1875,6 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
 
       assert (def_id = id);
       let name = lid_of_name env name in
-      let is_dst = LidMap.mem name env.dsts in
       let env = push_cg_binders env const_generics in
       let env = push_type_binders env type_params in
 
@@ -1829,29 +1886,6 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               (fun i { C.field_name; field_ty; _ } ->
                 Some (ensure_named i field_name), (typ_of_ty env field_ty, true))
               fields
-          in
-          let fields =
-            if not is_dst then
-              (* Nothing to do if the type is not a DST *)
-              fields
-            else
-              let normal_fields, variable_size_one = Krml.KList.split_at_last fields in
-              let variable_size_one =
-                match variable_size_one with
-                | f, (TBound 0, true) ->
-                    (* 1. This makes the type parameter unused, meaning there will be a single lid
-                       used for all instances of this type (great)
-                       2. Krml can then catch this to generate the proper code
-
-                       Note: we cannot use a macro here, since generating
-                       struct { int header; flexible_array_member data; }
-                       would not leave room from the proper syntax (i.e. struct { ...; char data[] })
-                     *)
-                    f, (K.TQualified (["Krml"], "flexible_array_member"), true)
-                | _ ->
-                    failwith "impossible (we don't support DSTs with > 1 type parameter"
-              in
-              normal_fields @ [ variable_size_one ]
           in
           Some
             (K.DType (name, [], List.length const_generics, List.length type_params, Flat fields))
