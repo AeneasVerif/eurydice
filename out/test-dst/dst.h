@@ -36,11 +36,65 @@ with types dst_S Eurydice_derefed_slice uint32_t
 typedef struct Eurydice_dst_31_s
 {
   dst_T *ptr;
-  size_t sz;
+  size_t len;
 }
 Eurydice_dst_31;
 
+/**
+A monomorphic instance of dst.S
+with types uint32_t[4size_t]
+
+*/
+typedef struct dst_S_dd_s
+{
+  uint32_t foo;
+  uint32_t my_data[4U];
+}
+dst_S_dd;
+
+Eurydice_dst_31 dst_alloc(void);
+
 void dst_check_regular_field(Eurydice_dst_31 x);
+
+void dst_check_regular_field_ref(Eurydice_dst_31 x);
+
+/**
+A monomorphic instance of dst.T2
+with types Eurydice_derefed_slice uint32_t
+
+*/
+typedef struct dst_T2_be_s
+{
+  size_t header;
+  Eurydice_derefed_slice my_data;
+}
+dst_T2_be;
+
+/**
+A monomorphic instance of Eurydice.dst
+with types dst_T2 Eurydice_derefed_slice uint32_t
+
+*/
+typedef struct Eurydice_dst_7a_s
+{
+  dst_T2_be *ptr;
+  size_t len;
+}
+Eurydice_dst_7a;
+
+/**
+A monomorphic instance of dst.T2
+with types uint32_t[4size_t]
+
+*/
+typedef struct dst_T2_dd_s
+{
+  size_t header;
+  uint32_t my_data[4U];
+}
+dst_T2_dd;
+
+Eurydice_dst_7a dst_mk(void);
 
 #if defined(__cplusplus)
 }

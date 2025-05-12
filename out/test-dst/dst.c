@@ -7,6 +7,18 @@
 
 #include "dst.h"
 
+Eurydice_dst_31 dst_alloc(void)
+{
+  Eurydice_dst_31 lit0;
+  dst_S_dd lit;
+  lit.foo = 0U;
+  uint32_t repeat_expression[4U] = { 0U };
+  memcpy(lit.my_data, repeat_expression, (size_t)4U * sizeof (uint32_t));
+  lit0.ptr = (dst_T *)Eurydice_box_new(lit, dst_S_dd, dst_S_dd *);
+  lit0.len = (size_t)4U;
+  return lit0;
+}
+
 typedef struct _uint32_t__x2_s
 {
   uint32_t *fst;
@@ -22,5 +34,27 @@ void dst_check_regular_field(Eurydice_dst_31 x)
   uint32_t *left_val = uu____0.fst;
   uint32_t *right_val = uu____0.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+}
+
+void dst_check_regular_field_ref(Eurydice_dst_31 x)
+{
+  /* original Rust expression is not an lvalue in C */
+  uint32_t lvalue = 0U;
+  _uint32_t__x2 uu____0 = { .fst = &Eurydice_dst_deref(x, dst_T, dst_T).foo, .snd = &lvalue };
+  uint32_t *left_val = uu____0.fst;
+  uint32_t *right_val = uu____0.snd;
+  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+}
+
+Eurydice_dst_7a dst_mk(void)
+{
+  dst_T2_dd x;
+  x.header = (size_t)0U;
+  uint32_t repeat_expression[4U] = { 0U };
+  memcpy(x.my_data, repeat_expression, (size_t)4U * sizeof (uint32_t));
+  x.my_data[1U] = 2U;
+  Eurydice_dst_7a
+  y = { .ptr = (dst_T2_be *)Eurydice_box_new(x, dst_T2_dd, dst_T2_dd *), .len = (size_t)4U };
+  return y;
 }
 

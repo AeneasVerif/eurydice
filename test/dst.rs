@@ -27,6 +27,14 @@ fn check_var_field(x: Box<T>) {
     assert_eq!(x.my_data[0], 0);
 }
 
+fn check_regular_field_ref(x: &T) {
+    assert_eq!(x.foo, 0);
+}
+
+fn check_var_field_ref(x: &T) {
+    assert_eq!(x.my_data[0], 0);
+}
+
 fn alloc() -> Box<T> {
     Box::new(S { foo: 0, my_data: [ 0; 4 ] })
 }
@@ -36,5 +44,11 @@ fn alloc() -> Box<T> {
 fn main() {
     check_regular_field(alloc());
     check_var_field(alloc());
+
+    let x = S { foo: 0, my_data: [ 0; 4 ] };
+    let x: &T = &x;
+    check_regular_field_ref(x);
+    check_var_field_ref(x);
+
     assert_eq!((mk()).my_data[0], 0);
 }

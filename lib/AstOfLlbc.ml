@@ -448,7 +448,7 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
      now, we only support `T<[U]>*` -- eventually, we might want to generalize this. *)
   match t with
   | TBuf (TApp (lid, [ u ]) as t, _) when is_dst env lid u ->
-      (* T<[U]>* is a DST, and needs to be a fat pointer with length + size (in bytes). *)
+      (* T<[U]>* is a DST, and needs to be a fat pointer with length (in elements). *)
       Builtin.mk_dst t
   | _ ->
       (* T<[U; N]>* is NOT a DST, and retains the usual representation. The unsize cast will move
@@ -1447,6 +1447,27 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
+  | UnaryOp (Cast (CastUnsize (t_from, t_to) as ck), e) ->
+      (* DSTs: we only support going from T<[U;N]> to T<[U]>. The former is sized, the latter is
+         unsized and becomes a fat pointer. We build this coercion by hand, and slightly violate C's
+         strict aliasing rules. *)
+      let t_from = typ_of_ty env t_from and t_to = typ_of_ty env t_to in
+      let e = expression_of_operand env e in
+      begin match t_from, t_to with
+      | TBuf (TApp (lid1, [ TArray (u1, n) ]), _),
+        TApp (dst_hd, [ TApp (lid2, [ TApp (slice_hd, [ u2 ]) ]) as t_u ]) when
+        lid1 = lid2 && u1 = u2 && dst_hd = Builtin.dst && slice_hd = Builtin.derefed_slice ->
+          assert (LidMap.mem lid1 env.dsts);
+          ignore (n, e);
+          let len = Krml.Helpers.mk_sizet (int_of_string (snd n)) in
+          (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
+             `Eurydice_derefed_slice data` (a.k.a. `char data[]`) *)
+          let ptr = K.with_type (TBuf (t_u, false)) (K.ECast (e, TBuf (t_u, false))) in
+          Builtin.dst_new ~len ~ptr t_u
+      | _ ->
+          failwith
+            ("unknown unsize cast: `" ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck ^ "`")
+      end
   | UnaryOp (Cast ck, _e) ->
       failwith
         ("unknown cast: `" ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck ^ "`")

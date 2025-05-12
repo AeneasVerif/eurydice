@@ -278,7 +278,7 @@ let derefed_slice = ["Eurydice"], "derefed_slice"
 let dst_def =
   K.DType (dst, [], 0, 1, Flat [
     Some "ptr", (TBuf (TBound 0, false), false);
-    Some "sz", (TInt SizeT, false);
+    Some "len", (TInt SizeT, false); (* a number of elements, just like slices *)
   ])
 
 let mk_dst t: K.typ = TApp (dst, [ t ])
@@ -291,6 +291,16 @@ let dst_deref =
     cg_args = [];
     arg_names = [ "ptr" ];
   }
+
+(* Take the type of the ptr field *)
+let dst_new ~ptr ~len t =
+  let open K in
+  with_type (mk_dst t) (
+    EFlat [
+      Some "ptr", ptr;
+      Some "len", len;
+    ]
+  )
 
 (* pointer, value *)
 let bitand_pv_u8 =
