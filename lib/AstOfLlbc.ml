@@ -362,13 +362,9 @@ let is_dst env t =
 
 (* e: Eurydice_dst<t> *)
 let mk_dst_deref _env t e =
-  (* dst_deref: Eurydice_dst<0> -> 0 *)
-  let dst_deref = Builtin.(expr_of_builtin dst_deref) in
-  (* dst_deref: Eurydice_dst<t> -> t *)
-  let dst_deref =
-    K.with_type (Krml.DeBruijn.subst_t t 0 dst_deref.typ) (K.ETApp (dst_deref, [], [], [ t ]))
-  in
-  K.with_type t (K.EApp (dst_deref, [ e ]))
+  (* ptr_field: t* *)
+  let ptr_field = K.(with_type (TBuf (t, false)) (EField (e, "ptr"))) in
+  K.(with_type t (EBufRead (ptr_field, Krml.Helpers.zero_usize)))
 
 let is_dst_field env lid f = LidMap.find_opt lid env.dsts = Some f
 

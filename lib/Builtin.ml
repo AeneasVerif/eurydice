@@ -289,15 +289,6 @@ let dst_def =
 
 let mk_dst t : K.typ = TApp (dst, [ t ])
 
-let dst_deref =
-  {
-    name = [ "Eurydice" ], "dst_deref";
-    typ = Krml.Helpers.fold_arrow [ mk_dst (TBound 0) ] (TBound 0);
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [ "ptr" ];
-  }
-
 (* Gotta use a helper because the definition of Eurydice_slice is opaque (historical mistake?). *)
 let slice_of_dst =
   {
@@ -428,7 +419,6 @@ let files =
            vec_index;
            box_new;
            replace;
-           dst_deref;
            slice_of_dst;
            bitand_pv_u8;
            shr_pv_u8;

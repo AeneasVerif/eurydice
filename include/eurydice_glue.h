@@ -222,7 +222,6 @@ static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
 
 typedef char Eurydice_derefed_slice[];
 
-#define Eurydice_dst_deref(x, t, _) (*(x.ptr))
 #define Eurydice_slice_of_dst(fam_ptr, len_, t, _)                             \
   ((Eurydice_slice){.ptr = (void *)(fam_ptr), .len = len_})
 
