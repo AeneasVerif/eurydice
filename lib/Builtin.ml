@@ -292,6 +292,16 @@ let dst_deref =
     arg_names = [ "ptr" ];
   }
 
+(* Gotta use a helper because the definition of Eurydice_slice is opaque (historical mistake?). *)
+let slice_of_dst =
+  {
+    name = [ "Eurydice" ], "slice_of_dst";
+    typ = Krml.Helpers.fold_arrow [ TBuf (TApp (derefed_slice, [ TBound 0 ]), false); TInt SizeT ] (mk_slice (TBound 0));
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [ "ptr"; "len" ];
+  }
+
 (* Take the type of the ptr field *)
 let dst_new ~ptr ~len t =
   let open K in
@@ -415,6 +425,7 @@ let files =
            box_new;
            replace;
            dst_deref;
+           slice_of_dst;
            bitand_pv_u8;
            shr_pv_u8;
            min_u32;
