@@ -1507,9 +1507,6 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
           failwith
             ("unknown unsize cast: `" ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck ^ "`")
       end
-  | UnaryOp (Cast ck, _e) ->
-      failwith
-        ("unknown cast: `" ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck ^ "`")
   | UnaryOp (Cast ck, e) ->
       (* Add a simpler case: identity cast is allowed *)
       let is_ident =
