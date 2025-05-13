@@ -120,7 +120,7 @@ void dst_main(void)
   Eurydice_dst_7a uu____0 = dst_mk();
   size_t uu____1 = (size_t)0U;
   /* original Rust expression is not an lvalue in C */
-  uint32_t lvalue = 0U;
+  uint32_t lvalue0 = 0U;
   _uint32_t__x2
   uu____2 =
     {
@@ -133,10 +133,31 @@ void dst_main(void)
         uu____1,
         uint32_t,
         uint32_t *),
+      .snd = &lvalue0
+    };
+  uint32_t *left_val0 = uu____2.fst;
+  uint32_t *right_val0 = uu____2.snd;
+  EURYDICE_ASSERT(left_val0[0U] == right_val0[0U], "panic!");
+  Eurydice_dst_7a uu____3 = dst_mk();
+  size_t uu____4 = (size_t)1U;
+  /* original Rust expression is not an lvalue in C */
+  uint32_t lvalue = 2U;
+  _uint32_t__x2
+  uu____5 =
+    {
+      .fst = &Eurydice_slice_index(Eurydice_slice_of_dst(&Eurydice_dst_deref(uu____3,
+            dst_T2_be,
+            dst_T2_be).my_data,
+          uu____3.len,
+          uint32_t,
+          Eurydice_slice),
+        uu____4,
+        uint32_t,
+        uint32_t *),
       .snd = &lvalue
     };
-  uint32_t *left_val = uu____2.fst;
-  uint32_t *right_val = uu____2.snd;
+  uint32_t *left_val = uu____5.fst;
+  uint32_t *right_val = uu____5.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
 }
 

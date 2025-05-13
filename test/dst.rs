@@ -51,4 +51,5 @@ fn main() {
     check_var_field_ref(x);
 
     assert_eq!((mk()).my_data[0], 0);
+    assert_eq!((mk()).my_data[1], 2);
 }
