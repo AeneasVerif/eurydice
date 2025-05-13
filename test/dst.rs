@@ -41,6 +41,23 @@ fn alloc() -> Box<T> {
 
 // ---
 
+type T3 = S<[[u32; 3]]>;
+
+fn alloc3() -> Box<T3> {
+    Box::new(S { foo: 0, my_data: [ [0; 3]; 4 ] })
+}
+
+fn check_var_field_ref3(x: &T3) {
+    assert_eq!(x.my_data[0][0], 0);
+}
+
+fn main3() {
+    let x = alloc3();
+    check_var_field_ref3(&x);
+}
+
+// ---
+
 fn main() {
     check_regular_field(alloc());
     check_var_field(alloc());
@@ -49,6 +66,8 @@ fn main() {
     let x: &T = &x;
     check_regular_field_ref(x);
     check_var_field_ref(x);
+
+    main3();
 
     assert_eq!((mk()).my_data[0], 0);
     assert_eq!((mk()).my_data[1], 2);

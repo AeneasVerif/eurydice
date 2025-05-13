@@ -638,8 +638,14 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
         when RustNames.is_vec env id generics -> !*sub_e
       | C.Deref, _, (TRawPtr _ | TRef _ | TAdt (TBuiltin TBox, { types = [ _ ]; _ })) ->
           (* All types represented as a pointer at run-time, compiled to a C pointer *)
-          let t_pointee = Krml.Helpers.assert_tbuf_or_tarray !*sub_e.K.typ in
-          Krml.Helpers.(mk_deref t_pointee !*sub_e.K.node)
+          begin match !*sub_e.K.typ with
+          | TBuf (t_pointee, _) | TArray (t_pointee, _) ->
+              Krml.Helpers.(mk_deref t_pointee !*sub_e.K.node)
+          | _ ->
+              L.log "AstOfLlbc" "UNHANDLED DEREFERENCE\ne=%a\nty=%s\npe=%s\n" pexpr !*sub_e (C.show_ty sub_place.ty)
+                (C.show_projection_elem pe);
+              failwith "unhandled dereference"
+          end
       | ( Field (ProjAdt (typ_id, None), field_id),
           { kind = PlaceProjection (sub_place, C.Deref); _ },
           C.TAdt _ ) ->
@@ -1425,17 +1431,20 @@ let is_dst_var env var_id = Option.is_some (is_dst env (snd (lookup env var_id))
 let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   match p with
   | Use op -> expression_of_operand env op
+
   | RvRef ({ kind = PlaceProjection ({ kind = PlaceLocal var_id; _ }, Deref); _ }, _)
-    when is_str env var_id || is_dst_var env var_id ->
-      (* String case:
-         because we do not materialize the address of a string, we also have to
+    when is_str env var_id ->
+      (* because we do not materialize the address of a string, we also have to
          avoid dereferencing it. For now, we simply avoid reborrows and treat them as simply passing
          the same constant string around (which in C is passed by address naturally).
-         TODO: this is a temporary fix and we need to represent &str the same way as &[u8].
-
-         DST case:
-         this is case three, see "support for DSTs", above. *)
+         TODO: this is a temporary fix and we need to represent &str the same way as &[u8]. *)
       expression_of_var_id env var_id
+
+  | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _) when is_dst env (typ_of_ty env p.ty) <> None ->
+      (* this is case three, see "support for DSTs", above. *)
+      (* TODO: is this something we want to generalize for code quality? *)
+      expression_of_place env p
+
   | RvRef
       ( ({
            kind =
@@ -1960,18 +1969,24 @@ let check_if_dst (env : env) (id : C.any_decl_id) : env =
           decl.generics.trait_clauses
       in
       if List.length decl.generics.types <> List.length sized_clauses then begin
-        if List.length decl.generics.types > 1 then
-          failwith "Unsupported: DST with > 1 type parameter";
-        (* From here on, we assume (per Rust restrictions) we can deduce that the last field of this type is
-           exactly the type parameter T. See https://doc.rust-lang.org/std/marker/trait.Unsize.html *)
-        L.log "AstOfLlbc" "%s is a DST\n" name;
-        let lid = lid_of_name env decl.item_meta.name in
-        let field_name =
+        if List.length decl.generics.types > 1 then begin
+          Krml.KPrint.beprintf "Unsupported: DST %s has > 1 type parameter\n" name;
+          env
+        end else begin
+          (* From here on, we assume (per Rust restrictions) we can deduce that the last field of this type is
+             exactly the type parameter T. See https://doc.rust-lang.org/std/marker/trait.Unsize.html *)
+          L.log "AstOfLlbc" "%s is a DST\n" name;
+          let lid = lid_of_name env decl.item_meta.name in
           match decl.kind with
-          | Struct fields -> (Krml.KList.last fields).C.field_name
-          | _ -> assert false
-        in
-        { env with dsts = LidMap.add lid (Option.get field_name) env.dsts }
+          | Struct fields ->
+              let field_name =
+                (Krml.KList.last fields).C.field_name
+              in
+              { env with dsts = LidMap.add lid (Option.get field_name) env.dsts }
+          | _ ->
+              Krml.KPrint.beprintf "Unsupported: DST %s has no field name\n" name;
+              env
+        end
       end
       else
         env
