@@ -1510,6 +1510,22 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | UnaryOp (Cast ck, _e) ->
       failwith
         ("unknown cast: `" ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck ^ "`")
+  | UnaryOp (Cast ck, e) ->
+      (* Add a simpler case: identity cast is allowed *)
+      let is_ident =
+        match ck with
+        (* Here are `literal_type`s *)
+        | C.CastScalar    (f, t) -> f = t
+        (* The following are `type`s *)
+        | C.CastRawPtr    (f, t)
+        | C.CastFnPtr     (f, t)
+        | C.CastUnsize    (f, t)
+        | C.CastTransmute (f, t) -> f = t
+      in
+      if is_ident then expression_of_operand env e
+      else
+        failwith
+          ("unknown cast: `" ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck ^ "`")
   | UnaryOp (op, o1) -> mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
@@ -1614,6 +1630,33 @@ let lesser t1 t2 =
     fail "lesser t1=%a t2=%a" ptyp t1 ptyp t2
   else
     t1
+
+
+(* A `fn` pointer, which does not have trait bounds, and cannot be partially applied. This is a
+   much simplified version of expression_of_fn_ptr. *)
+let expression_of_fn_op_move (env : env) ({ func; args; dest } : C.call) =
+  let fHd =
+    match func with
+    | C.FnOpMove place -> expression_of_place env place
+    | _otw -> 
+      failwith @@
+        "Internal error: the given call is not to `FnOpMove`." ^
+        "The function `expression_of_fn_op_move` handles only call to `FnOpMove`."
+  in
+  let lhs = expression_of_place env dest in
+  let args = List.map (expression_of_operand env) args in
+  let args =
+    if args = [] then
+      [ Krml.Helpers.eunit ]
+    else
+      args
+  in
+  (* Asserting that this is not a partial application *)
+  let ret_t, args_t = Krml.Helpers.flatten_arrow fHd.typ in
+  assert (List.length args_t = List.length args);
+  let rhs = K.with_type ret_t @@ K.EApp (fHd, args) in
+  Krml.Helpers.with_unit @@ K.EAssign (lhs, rhs)  
+
 
 let rec expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_statement) :
     K.expr =
@@ -1776,7 +1819,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.ra
         | _ -> rhs
       in
       Krml.Helpers.with_unit K.(EAssign (dest, rhs))
-  | Call { func = FnOpMove _; _ } -> failwith "TODO: Call/FnOpMove"
+  | Call ({ func = FnOpMove _; _ } as call) -> expression_of_fn_op_move env call
   | Abort _ -> with_any (K.EAbort (None, Some "panic!"))
   | Return ->
       let e = expression_of_var_id env ret_var in
