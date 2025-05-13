@@ -27,7 +27,6 @@ module C = struct
 end
 
 module LidMap = Krml.Idents.LidMap
-
 module K = Krml.Ast
 module L = Logging
 open Krml.PrintAst.Ops
@@ -114,7 +113,7 @@ type env = {
   crate_name : string;
   (* A set of all the DSTs (dynamically-sized types) that we know about, and the name of their
      flexible member *)
-  dsts: string LidMap.t;
+  dsts : string LidMap.t;
 }
 
 (* Environment: types *)
@@ -344,36 +343,34 @@ let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
   | TChar -> failwith "TODO: Char"
   | TFloat _ -> failwith "TODO: Float"
   | TInteger k -> K.TInt (width_of_integer_type k)
-  
+
 (* Is TApp (lid, [ t ]) meant to compile to a DST? *)
-let to_dst env lid (t: K.typ) =
-  LidMap.mem lid env.dsts && match t with
-    | TApp (hd, [ _ ]) ->
-        hd = Builtin.derefed_slice
-    | _ ->
-        false
+let to_dst env lid (t : K.typ) =
+  LidMap.mem lid env.dsts
+  &&
+  match t with
+  | TApp (hd, [ _ ]) -> hd = Builtin.derefed_slice
+  | _ -> false
 
 (* Matches an instance of Eurydice_dst<T<U>> -- returns Some (T, U, T<U>) or None *)
 let is_dst env t =
   match t with
-  | K.TApp (dst_hd, [ TApp (lid, [ u ]) as t_u ]) when dst_hd = Builtin.dst ->
+  | K.TApp (dst_hd, [ (TApp (lid, [ u ]) as t_u) ]) when dst_hd = Builtin.dst ->
       assert (LidMap.mem lid env.dsts);
       Some (lid, u, t_u)
-  | _ ->
-      None
+  | _ -> None
 
 (* e: Eurydice_dst<t> *)
 let mk_dst_deref _env t e =
   (* dst_deref: Eurydice_dst<0> -> 0 *)
   let dst_deref = Builtin.(expr_of_builtin dst_deref) in
   (* dst_deref: Eurydice_dst<t> -> t *)
-  let dst_deref = K.with_type
-    (Krml.DeBruijn.subst_t t 0 dst_deref.typ) (K.ETApp (dst_deref, [], [], [ t ])) 
+  let dst_deref =
+    K.with_type (Krml.DeBruijn.subst_t t 0 dst_deref.typ) (K.ETApp (dst_deref, [], [], [ t ]))
   in
   K.with_type t (K.EApp (dst_deref, [ e ]))
 
-let is_dst_field env lid f =
-  LidMap.find_opt lid env.dsts = Some f
+let is_dst_field env lid f = LidMap.find_opt lid env.dsts = Some f
 
 let ensure_named i name =
   match name, i with
@@ -436,14 +433,12 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
         | [ t ] -> typ_of_ty env t (* charon issue #205 *)
         | _ -> TTuple (List.map (typ_of_ty env) args)
       end
-
   | TAdt (TBuiltin TArray, { types = [ t ]; const_generics = [ cg ]; _ }) -> maybe_cg_array env t cg
-
   | TAdt (TBuiltin TSlice, { types = [ t ]; _ }) ->
       (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
       TApp (Builtin.derefed_slice, [ typ_of_ty env t ])
-
-  | TAdt (TBuiltin TBox, { types = [ t ]; _ }) -> K.TBuf (typ_of_ty env t, false)
+  | TAdt (TBuiltin TBox, { types = [ t ]; _ }) ->
+      K.TBuf (typ_of_ty env t, false)
       (* Boxes are immediately translated to a pointer type -- we do not maintain a Box<T>
          definition in the krml internal AST. *)
   | TAdt (TBuiltin TStr, { types = []; _ }) ->
@@ -466,7 +461,7 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   (* Handling of DSTs. We need to catch the cases where we have a type T* where T is unsized. For
      now, we only support `T<[U]>*` -- eventually, we might want to generalize this. *)
   match t with
-  | TBuf (TApp (lid, [ u ]) as t, _) when to_dst env lid u ->
+  | TBuf ((TApp (lid, [ u ]) as t), _) when to_dst env lid u ->
       (* T<[U]>* is a DST, and needs to be a fat pointer with length (in elements). *)
       Builtin.mk_dst t
   | _ ->
@@ -629,7 +624,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
   | PlaceProjection (sub_place, pe) -> begin
       (* Can't evaluate this here because of the special case for DSTs. *)
       let sub_e = lazy (expression_of_place env sub_place) in
-      let (!*) = Lazy.force in
+      let ( !* ) = Lazy.force in
       (* L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr sub_e (C.show_ty sub_place.ty) *)
       (*   (C.show_projection_elem pe); *)
       match pe, sub_place, sub_place.ty with
@@ -640,14 +635,14 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       | C.Deref, _, TRef (_, TAdt (TBuiltin TSlice, _), _)
       | C.Deref, _, TRawPtr (TAdt (TBuiltin TSlice, _), _) -> !*sub_e
       | (C.Deref, _, TRef (_, TAdt (id, generics), _) | C.Deref, _, TRawPtr (TAdt (id, generics), _))
-        when RustNames.is_vec env id generics ->
-          !*sub_e
+        when RustNames.is_vec env id generics -> !*sub_e
       | C.Deref, _, (TRawPtr _ | TRef _ | TAdt (TBuiltin TBox, { types = [ _ ]; _ })) ->
           (* All types represented as a pointer at run-time, compiled to a C pointer *)
           let t_pointee = Krml.Helpers.assert_tbuf_or_tarray !*sub_e.K.typ in
           Krml.Helpers.(mk_deref t_pointee !*sub_e.K.node)
-
-      | Field (ProjAdt (typ_id, None), field_id), { kind = PlaceProjection (sub_place, C.Deref); _ }, C.TAdt _ ->
+      | ( Field (ProjAdt (typ_id, None), field_id),
+          { kind = PlaceProjection (sub_place, C.Deref); _ },
+          C.TAdt _ ) ->
           (* Support for DSTs. Recall that values of a DST cannot exist unless behind a pointer
              (&, Box, etc.). Therefore, a place expression that refers to a DST (and therefore
              warrants special treatment) begins with `*x` where `x: T<U>` for `U: ?Sized` (we
@@ -666,18 +661,18 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           let field_name = lookup_field env typ_id field_id in
           let sub_e = expression_of_place env sub_place in
           let place_typ = typ_of_ty env p.ty in
-          begin match is_dst env sub_e.K.typ with
-          | Some (lid, _u, t_pointee) when not (is_dst_field env lid field_name) ->
-              K.with_type place_typ (K.EField (
-                mk_dst_deref env t_pointee sub_e, 
-                field_name))
-          | _ ->
-              (* Same as below *)
-              K.with_type place_typ (K.EField (
-                Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node),
-                field_name))
+          begin
+            match is_dst env sub_e.K.typ with
+            | Some (lid, _u, t_pointee) when not (is_dst_field env lid field_name) ->
+                K.with_type place_typ (K.EField (mk_dst_deref env t_pointee sub_e, field_name))
+            | _ ->
+                (* Same as below *)
+                K.with_type place_typ
+                  (K.EField
+                     ( Krml.Helpers.(
+                         mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node),
+                       field_name ))
           end
-
       | Field (ProjAdt (typ_id, variant_id), field_id), _, C.TAdt _ -> begin
           let place_typ = typ_of_ty env p.ty in
           match variant_id with
@@ -1425,8 +1420,7 @@ let is_str env var_id =
   | _, _, TRef (_, TAdt (TBuiltin TStr, { types = []; _ }), _) -> true
   | _ -> false
 
-let is_dst_var env var_id =
-  Option.is_some (is_dst env (snd (lookup env var_id)))
+let is_dst_var env var_id = Option.is_some (is_dst env (snd (lookup env var_id)))
 
 let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   match p with
@@ -1442,46 +1436,56 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
          DST case:
          this is case three, see "support for DSTs", above. *)
       expression_of_var_id env var_id
-
-  | RvRef ({ kind = PlaceProjection (
-      { kind = PlaceProjection (sub_place, C.Deref); _ },
-      Field (ProjAdt (typ_id, None), field_id)); _
-    } as p, _) ->
+  | RvRef
+      ( ({
+           kind =
+             PlaceProjection
+               ( { kind = PlaceProjection (sub_place, C.Deref); _ },
+                 Field (ProjAdt (typ_id, None), field_id) );
+           _;
+         } as p),
+        _ ) ->
       let field_name = lookup_field env typ_id field_id in
-      begin match is_dst env (typ_of_ty env sub_place.ty) with
-      | Some (lid, TApp (slice_hd, [ u ]), t_u) when is_dst_field env lid field_name && slice_hd = Builtin.derefed_slice ->
-          (* Support for DSTs (see above). This is the first case. Building by hand... we are
+      begin
+        match is_dst env (typ_of_ty env sub_place.ty) with
+        | Some (lid, TApp (slice_hd, [ u ]), t_u)
+          when is_dst_field env lid field_name && slice_hd = Builtin.derefed_slice ->
+            (* Support for DSTs (see above). This is the first case. Building by hand... we are
              compiling &( *x).f where x: Eurydice_dst<T<[U]>> and x = sub_place, T = lid, U = u,
              T<[U]> = t_u. The goal is to build an actual slice. *)
-          let sub_place = expression_of_place env sub_place in
-          (* e: T<[U]> *)
-          let e = mk_dst_deref env t_u sub_place in
-          (* e_f_addr = &e.f *)
-          let t_field = typ_of_ty env p.ty in 
-          let e_f_addr = K.(with_type (TBuf (t_field, false)) (EAddrOf (with_type t_field (EField (e, field_name))))) in
-          (* slice_of_dst: (derefed_slice 0)* -> size_t -> Eurydice_slice 0 *)
-          let slice_of_dst = Builtin.(expr_of_builtin slice_of_dst) in
-          (* slice_of_dst: (derefed_slice u)* -> size_t -> Eurydice_slice u *)
-          let slice_of_dst = K.with_type
-            (Krml.DeBruijn.subst_t u 0 slice_of_dst.typ) (K.ETApp (slice_of_dst, [], [], [ u ])) 
-          in
-          K.(with_type (Builtin.mk_slice u) (EApp (slice_of_dst, [
-            e_f_addr;
-            with_type (TInt SizeT) (EField (sub_place, "len"))
-          ])))
-      | _ ->
-          (* Default case, same as below *)
-          let e = expression_of_place env p in
-          maybe_addrof env p.ty e
+            let sub_place = expression_of_place env sub_place in
+            (* e: T<[U]> *)
+            let e = mk_dst_deref env t_u sub_place in
+            (* e_f_addr = &e.f *)
+            let t_field = typ_of_ty env p.ty in
+            let e_f_addr =
+              K.(
+                with_type
+                  (TBuf (t_field, false))
+                  (EAddrOf (with_type t_field (EField (e, field_name)))))
+            in
+            (* slice_of_dst: (derefed_slice 0)* -> size_t -> Eurydice_slice 0 *)
+            let slice_of_dst = Builtin.(expr_of_builtin slice_of_dst) in
+            (* slice_of_dst: (derefed_slice u)* -> size_t -> Eurydice_slice u *)
+            let slice_of_dst =
+              K.with_type
+                (Krml.DeBruijn.subst_t u 0 slice_of_dst.typ)
+                (K.ETApp (slice_of_dst, [], [], [ u ]))
+            in
+            K.(
+              with_type (Builtin.mk_slice u)
+                (EApp
+                   (slice_of_dst, [ e_f_addr; with_type (TInt SizeT) (EField (sub_place, "len")) ])))
+        | _ ->
+            (* Default case, same as below *)
+            let e = expression_of_place env p in
+            maybe_addrof env p.ty e
       end
-
-
   | RvRef (p, _) | RawPtr (p, _) ->
       let e = expression_of_place env p in
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
          pass one for the other *)
       maybe_addrof env p.ty e
-
   | UnaryOp (Cast (CastScalar (_, TInteger dst)), e) ->
       let dst = K.TInt (width_of_integer_type dst) in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
@@ -1494,32 +1498,33 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
          strict aliasing rules. *)
       let t_from = typ_of_ty env t_from and t_to = typ_of_ty env t_to in
       let e = expression_of_operand env e in
-      begin match t_from, is_dst env t_to with
-      | TBuf (TApp (lid1, [ TArray (u1, n) ]), _),
-        Some (lid2, TApp (slice_hd, [ u2 ]), t_u) when
-        lid1 = lid2 && u1 = u2 && slice_hd = Builtin.derefed_slice ->
-          let len = Krml.Helpers.mk_sizet (int_of_string (snd n)) in
-          (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
+      begin
+        match t_from, is_dst env t_to with
+        | TBuf (TApp (lid1, [ TArray (u1, n) ]), _), Some (lid2, TApp (slice_hd, [ u2 ]), t_u)
+          when lid1 = lid2 && u1 = u2 && slice_hd = Builtin.derefed_slice ->
+            let len = Krml.Helpers.mk_sizet (int_of_string (snd n)) in
+            (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
              `Eurydice_derefed_slice data` (a.k.a. `char data[]`) *)
-          let ptr = K.with_type (TBuf (t_u, false)) (K.ECast (e, TBuf (t_u, false))) in
-          Builtin.dst_new ~len ~ptr t_u
-      | _ ->
-          failwith
-            ("unknown unsize cast: `" ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck ^ "`")
+            let ptr = K.with_type (TBuf (t_u, false)) (K.ECast (e, TBuf (t_u, false))) in
+            Builtin.dst_new ~len ~ptr t_u
+        | _ ->
+            failwith
+              ("unknown unsize cast: `"
+              ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck
+              ^ "`")
       end
   | UnaryOp (Cast ck, e) ->
       (* Add a simpler case: identity cast is allowed *)
       let is_ident =
         match ck with
         (* Here are `literal_type`s *)
-        | C.CastScalar    (f, t) -> f = t
+        | C.CastScalar (f, t) -> f = t
         (* The following are `type`s *)
-        | C.CastRawPtr    (f, t)
-        | C.CastFnPtr     (f, t)
-        | C.CastUnsize    (f, t)
-        | C.CastTransmute (f, t) -> f = t
+        | C.CastRawPtr (f, t) | C.CastFnPtr (f, t) | C.CastUnsize (f, t) | C.CastTransmute (f, t) ->
+            f = t
       in
-      if is_ident then expression_of_operand env e
+      if is_ident then
+        expression_of_operand env e
       else
         failwith
           ("unknown cast: `" ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck ^ "`")
@@ -1628,17 +1633,15 @@ let lesser t1 t2 =
   else
     t1
 
-
 (* A `fn` pointer, which does not have trait bounds, and cannot be partially applied. This is a
    much simplified version of expression_of_fn_ptr. *)
 let expression_of_fn_op_move (env : env) ({ func; args; dest } : C.call) =
   let fHd =
     match func with
     | C.FnOpMove place -> expression_of_place env place
-    | _otw -> 
-      failwith @@
-        "Internal error: the given call is not to `FnOpMove`." ^
-        "The function `expression_of_fn_op_move` handles only call to `FnOpMove`."
+    | _otw ->
+        failwith @@ "Internal error: the given call is not to `FnOpMove`."
+        ^ "The function `expression_of_fn_op_move` handles only call to `FnOpMove`."
   in
   let lhs = expression_of_place env dest in
   let args = List.map (expression_of_operand env) args in
@@ -1652,8 +1655,7 @@ let expression_of_fn_op_move (env : env) ({ func; args; dest } : C.call) =
   let ret_t, args_t = Krml.Helpers.flatten_arrow fHd.typ in
   assert (List.length args_t = List.length args);
   let rhs = K.with_type ret_t @@ K.EApp (fHd, args) in
-  Krml.Helpers.with_unit @@ K.EAssign (lhs, rhs)  
-
+  Krml.Helpers.with_unit @@ K.EAssign (lhs, rhs)
 
 let rec expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_statement) :
     K.expr =
@@ -1941,7 +1943,7 @@ let flags_of_meta (meta : C.item_meta) : K.flags =
             meta.attr_info.attributes));
   ]
 
-let check_if_dst (env: env) (id: C.any_decl_id) : env =
+let check_if_dst (env : env) (id : C.any_decl_id) : env =
   match id with
   | C.IdType id ->
       let decl = env.get_nth_type id in
@@ -1949,11 +1951,13 @@ let check_if_dst (env: env) (id: C.any_decl_id) : env =
       let sized_clauses =
         let sized_pattern = Charon.NameMatcher.parse_pattern "core::marker::Sized" in
         let matches = Charon.NameMatcher.match_name env.name_ctx RustNames.config sized_pattern in
-        List.filter (fun (tc: C.trait_clause) ->
-          let trait_decl = env.get_nth_trait_decl tc.trait.binder_value.trait_decl_id in
-          L.log "AstOfLlbc" "%s" (string_of_pattern (pattern_of_name env trait_decl.item_meta.name));
-          matches trait_decl.item_meta.name
-        ) decl.generics.trait_clauses
+        List.filter
+          (fun (tc : C.trait_clause) ->
+            let trait_decl = env.get_nth_trait_decl tc.trait.binder_value.trait_decl_id in
+            L.log "AstOfLlbc" "%s"
+              (string_of_pattern (pattern_of_name env trait_decl.item_meta.name));
+            matches trait_decl.item_meta.name)
+          decl.generics.trait_clauses
       in
       if List.length decl.generics.types <> List.length sized_clauses then begin
         if List.length decl.generics.types > 1 then
@@ -1962,17 +1966,16 @@ let check_if_dst (env: env) (id: C.any_decl_id) : env =
            exactly the type parameter T. See https://doc.rust-lang.org/std/marker/trait.Unsize.html *)
         L.log "AstOfLlbc" "%s is a DST\n" name;
         let lid = lid_of_name env decl.item_meta.name in
-        let field_name = match decl.kind with
-          | Struct fields ->
-              (Krml.KList.last fields).C.field_name
-          | _ ->
-              assert false
+        let field_name =
+          match decl.kind with
+          | Struct fields -> (Krml.KList.last fields).C.field_name
+          | _ -> assert false
         in
         { env with dsts = LidMap.add lid (Option.get field_name) env.dsts }
-      end else
+      end
+      else
         env
-  | _ ->
-      env
+  | _ -> env
 
 let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
   match id with
@@ -2326,7 +2329,7 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
       crate_name = name;
       name_ctx;
       generic_params = Charon.TypesUtils.empty_generic_params;
-      dsts = LidMap.empty
+      dsts = LidMap.empty;
     }
   in
   let env = List.fold_left check_if_dst env declarations in

@@ -271,17 +271,23 @@ let replace =
     arg_names = [ "v"; "x" ];
   }
 
-let dst = ["Eurydice"], "dst"
-
-let derefed_slice = ["Eurydice"], "derefed_slice"
+let dst = [ "Eurydice" ], "dst"
+let derefed_slice = [ "Eurydice" ], "derefed_slice"
 
 let dst_def =
-  K.DType (dst, [], 0, 1, Flat [
-    Some "ptr", (TBuf (TBound 0, false), false);
-    Some "len", (TInt SizeT, false); (* a number of elements, just like slices *)
-  ])
+  K.DType
+    ( dst,
+      [],
+      0,
+      1,
+      Flat
+        [
+          Some "ptr", (TBuf (TBound 0, false), false);
+          Some "len", (TInt SizeT, false);
+          (* a number of elements, just like slices *)
+        ] )
 
-let mk_dst t: K.typ = TApp (dst, [ t ])
+let mk_dst t : K.typ = TApp (dst, [ t ])
 
 let dst_deref =
   {
@@ -296,7 +302,10 @@ let dst_deref =
 let slice_of_dst =
   {
     name = [ "Eurydice" ], "slice_of_dst";
-    typ = Krml.Helpers.fold_arrow [ TBuf (TApp (derefed_slice, [ TBound 0 ]), false); TInt SizeT ] (mk_slice (TBound 0));
+    typ =
+      Krml.Helpers.fold_arrow
+        [ TBuf (TApp (derefed_slice, [ TBound 0 ]), false); TInt SizeT ]
+        (mk_slice (TBound 0));
     n_type_args = 1;
     cg_args = [];
     arg_names = [ "ptr"; "len" ];
@@ -305,12 +314,7 @@ let slice_of_dst =
 (* Take the type of the ptr field *)
 let dst_new ~ptr ~len t =
   let open K in
-  with_type (mk_dst t) (
-    EFlat [
-      Some "ptr", ptr;
-      Some "len", len;
-    ]
-  )
+  with_type (mk_dst t) (EFlat [ Some "ptr", ptr; Some "len", len ])
 
 (* pointer, value *)
 let bitand_pv_u8 =
@@ -430,7 +434,7 @@ let files =
            shr_pv_u8;
            min_u32;
          ]
-     @ [ nonzero_def; static_assert; dst_def ]
+       @ [ nonzero_def; static_assert; dst_def ]
      in
      "Eurydice", externals);
   ]
