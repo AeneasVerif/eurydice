@@ -560,6 +560,7 @@ let remove_trivial_ite =
       | _ -> super#visit_ESwitch env scrut branches
   end
 
+(* This is not a good criterion -- way too conservative! *)
 let contains_array t =
   begin
     object (_self)
@@ -574,10 +575,10 @@ let contains_array t =
     #visit_expr_w
     () t
 
-let remove_literals =
+let remove_literals tbl =
   object (_self)
     inherit [_] map as super_map
-    inherit! Krml.Structs.remove_literals as super_krml
+    inherit! Krml.Structs.remove_literals tbl as super_krml
 
     method! visit_ELet env b e1 e2 =
       if contains_array e1 then
@@ -590,7 +591,14 @@ let remove_literals =
         super_krml#visit_EFlat env fields
       else
         super_map#visit_EFlat env fields
+
+    method! visit_DGlobal _env flags name n t body =
+      (* No point: can't have let-bindings in globals *)
+      DGlobal (flags, name, n, t, body)
   end
+
+let remove_literals files =
+  (remove_literals (Krml.Structs.build_remove_literals_map files))#visit_files () files
 
 let build_macros (macros : Krml.Idents.LidSet.t ref) =
   object (_self)

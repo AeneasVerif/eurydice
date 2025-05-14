@@ -18,21 +18,9 @@ extern "C" {
 #define core_result_Ok 0
 #define core_result_Err 1
 
-typedef uint8_t core_result_Result_a9_tags;
+typedef uint8_t core_result_Result_10;
 
-/**
-A monomorphic instance of core.result.Result
-with types (), core_fmt_Error
-
-*/
-typedef struct core_result_Result_a9_s
-{
-  core_result_Result_a9_tags tag;
-  void *f0;
-}
-core_result_Result_a9;
-
-extern core_result_Result_a9
+extern core_result_Result_10
 core_fmt__core__fmt__Formatter__a__11__write_str(core_fmt_Formatter *x0, Prims_string x1);
 
 #define core_panicking_AssertKind_Eq 0
@@ -55,7 +43,7 @@ void partial_eq_main(void);
 /**
 This function found in impl {(core::fmt::Debug for partial_eq::Enum)#2}
 */
-core_result_Result_a9 partial_eq_fmt_19(partial_eq_Enum *self, core_fmt_Formatter *f);
+core_result_Result_10 partial_eq_fmt_19(partial_eq_Enum *self, core_fmt_Formatter *f);
 
 #if defined(__cplusplus)
 }

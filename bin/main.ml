@@ -208,9 +208,19 @@ Supported options:|}
   let files = Eurydice.Cleanup2.recognize_asserts#visit_files () files in
   (* Temporary workaround until Aeneas supports nested loops *)
   let files = Eurydice.Cleanup2.inline_loops#visit_files () files in
-  let files = Krml.Inlining.inline files in
+  (* Following the krml order of phases here *)
+  let files = Krml.Inlining.inline_type_abbrevs files in
   let files = Krml.Monomorphization.functions files in
+  let files = Krml.Simplify.optimize_lets files in
+  let files = Krml.DataTypes.simplify files in
+  (* Must happen now, before Monomorphization.datatypes, because otherwise
+     MonomorphizationState.state gets filled with lids that later on get eliminated on the basis
+     that they were empty structs to begin with, which would send Checker off the rails *)
+  let files = Krml.DataTypes.remove_empty_structs files in
   let files = Krml.Monomorphization.datatypes files in
+  let files = Krml.DataTypes.optimize files in
+  Eurydice.Logging.log "Phase2.15" "%a" pfiles files;
+  let files = Krml.Inlining.inline files in
   let files =
     match config with
     | None -> files
@@ -231,8 +241,6 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
   Eurydice.Logging.log "Phase2.26" "%a" pfiles files;
   let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
-  let files = Krml.DataTypes.simplify files in
-  let files = Krml.DataTypes.optimize files in
   let _, files = Krml.DataTypes.everything files in
   Eurydice.Logging.log "Phase2.3" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_ite#visit_files () files in
@@ -240,7 +248,7 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_trivial_into#visit_files () files in
   let files = Krml.Structs.pass_by_ref files in
   Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
-  let files = Eurydice.Cleanup2.remove_literals#visit_files () files in
+  let files = Eurydice.Cleanup2.remove_literals files in
   (* Eurydice does something more involved than krml and performs a conservative
      approximation of functions that are known to be pure readonly (i.e.,
      functions that do not write to memory). *)

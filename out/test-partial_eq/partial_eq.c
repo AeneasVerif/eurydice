@@ -34,7 +34,7 @@ void partial_eq_main(void)
 /**
 This function found in impl {(core::fmt::Debug for partial_eq::Enum)#2}
 */
-inline core_result_Result_a9 partial_eq_fmt_19(partial_eq_Enum *self, core_fmt_Formatter *f)
+inline core_result_Result_10 partial_eq_fmt_19(partial_eq_Enum *self, core_fmt_Formatter *f)
 {
   return core_fmt__core__fmt__Formatter__a__11__write_str(f, "A");
 }
