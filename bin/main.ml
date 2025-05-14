@@ -219,6 +219,7 @@ Supported options:|}
   let files = Krml.DataTypes.remove_empty_structs files in
   let files = Krml.Monomorphization.datatypes files in
   let files = Krml.DataTypes.optimize files in
+  Eurydice.Logging.log "Phase2.15" "%a" pfiles files;
   let files = Krml.Inlining.inline files in
   let files =
     match config with
