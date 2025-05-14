@@ -25,7 +25,6 @@ let pmeta buf ({ meta; _ } : 'a with_type) =
     meta
 
 let mk typ meta node = { node; typ; meta }
-
 let is_sequence = Krml.Simplify.is_sequence
 
 let remove_assignments =
@@ -72,14 +71,7 @@ let remove_assignments =
             (fun atom ->
               let name, typ, meta = AtomMap.find atom not_yet_closed in
               ( {
-                  node =
-                    {
-                      atom;
-                      name;
-                      mut = true;
-                      mark = ref Krml.Mark.default;
-                      meta = [];
-                    };
+                  node = { atom; name; mut = true; mark = ref Krml.Mark.default; meta = [] };
                   typ;
                   meta;
                 },
@@ -183,14 +175,7 @@ let remove_assignments =
               let name, typ, meta = AtomMap.find atom not_yet_closed in
               let b =
                 {
-                  node =
-                    {
-                      atom;
-                      name;
-                      mut = true;
-                      mark = ref Krml.Mark.default;
-                      meta = [];
-                    };
+                  node = { atom; name; mut = true; mark = ref Krml.Mark.default; meta = [] };
                   typ;
                   meta = meta @ e1.meta;
                 }

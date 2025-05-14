@@ -197,6 +197,37 @@ static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
   memcpy(dst_ok, src.ptr, sz);
 }
 
+// SUPPORT FOR DSTs (Dynamically-Sized Types)
+
+// A DST is a fat pointer that keeps tracks of the size of it flexible array
+// member. Slices are a specific case of DSTs, where [T; N] implements
+// Unsize<[T]>, meaning an array of statically known size can be converted to a
+// fat pointer, i.e. a slice.
+//
+// Unlike slices, DSTs have a built-in definition that gets monomorphized, of
+// the form:
+//
+// typedef struct {
+//   T *ptr;
+//   size_t len; // number of elements
+// } Eurydice_dst;
+//
+// Furthermore, T = T0<[U0]> where `struct T0<U: ?Sized>`, where the `U` is the
+// last field. This means that there are two monomorphizations of T0 in the
+// program. One is `T0<[V; N]>`
+// -- this is directly converted to a Eurydice_dst via suitable codegen (no
+// macro). The other is `T = T0<[U]>`, where `[U]` gets emitted to
+// `Eurydice_derefed_slice`, a type that only appears in that precise situation
+// and is thus defined to give rise to a flexible array member.
+
+typedef char Eurydice_derefed_slice[];
+
+#define Eurydice_slice_of_dst(fam_ptr, len_, t, _)                             \
+  ((Eurydice_slice){.ptr = (void *)(fam_ptr), .len = len_})
+
+#define Eurydice_slice_of_boxed_array(ptr_, len_, t, _)                        \
+  ((Eurydice_slice){.ptr = (void *)(ptr_), .len = len_})
+
 // CORE STUFF (conversions, endianness, ...)
 
 // We slap extern "C" on declarations that intend to implement a prototype
@@ -411,6 +442,21 @@ typedef void *core_fmt_rt_Argument;
                                                                 x4)            \
   NULL
 
+// BOXES
+
+// Crimes.
+static inline char *malloc_and_init(size_t sz, char *init) {
+  char *ptr = (char *)malloc(sz);
+  memcpy(ptr, init, sz);
+  return ptr;
+}
+
+#define Eurydice_box_new(init, t, t_dst)                                       \
+  ((t_dst)(malloc_and_init(sizeof(t), (char *)(&init))))
+
+#define Eurydice_box_new_array(len, ptr, t, t_dst)                             \
+  ((t_dst)(malloc_and_init(len * sizeof(t), (char *)(ptr))))
+
 // VECTORS (ANCIENT, POSSIBLY UNTESTED)
 
 /* For now these are passed by value -- three words. We could conceivably change
@@ -457,12 +503,6 @@ typedef struct {
 #define EURYDICE_VEC_LEN(v, t) (v)->len
 
 /* TODO: remove GCC-isms */
-#define EURYDICE_BOX_NEW(x, t)                                                 \
-  ({                                                                           \
-    t *p = malloc(sizeof(t));                                                  \
-    *p = x;                                                                    \
-    p;                                                                         \
-  })
 
 #define EURYDICE_REPLACE(ptr, new_v, t)                                        \
   ({                                                                           \

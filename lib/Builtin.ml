@@ -38,7 +38,9 @@ type builtin = {
   arg_names : string list;
 }
 
-let expr_of_builtin { name; typ; _ } = K.(with_type typ (EQualified name))
+let expr_of_builtin { name; typ; cg_args; _ } =
+  let typ = List.fold_right (fun t acc -> K.TArrow (t, acc)) cg_args typ in
+  K.(with_type typ (EQualified name))
 
 let array_to_slice =
   {
@@ -262,6 +264,15 @@ let box_new =
     arg_names = [ "v" ];
   }
 
+let box_new_array =
+  {
+    name = [ "Eurydice" ], "box_new_array";
+    typ = Krml.Helpers.fold_arrow [ TCgArray (TBound 0, 0) ] (TBuf (TBound 0, false));
+    n_type_args = 1;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "v" ];
+  }
+
 let replace =
   {
     name = [ "Eurydice" ], "replace";
@@ -270,6 +281,52 @@ let replace =
     cg_args = [];
     arg_names = [ "v"; "x" ];
   }
+
+let dst = [ "Eurydice" ], "dst"
+let derefed_slice = [ "Eurydice" ], "derefed_slice"
+
+let dst_def =
+  K.DType
+    ( dst,
+      [],
+      0,
+      1,
+      Flat
+        [
+          Some "ptr", (TBuf (TBound 0, false), false);
+          Some "len", (TInt SizeT, false);
+          (* a number of elements, just like slices *)
+        ] )
+
+let mk_dst t : K.typ = TApp (dst, [ t ])
+
+(* Gotta use a helper because the definition of Eurydice_slice is opaque (historical mistake?). *)
+let slice_of_dst =
+  {
+    name = [ "Eurydice" ], "slice_of_dst";
+    typ =
+      Krml.Helpers.fold_arrow
+        [ TBuf (TApp (derefed_slice, [ TBound 0 ]), false); TInt SizeT ]
+        (mk_slice (TBound 0));
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [ "ptr"; "len" ];
+  }
+
+(* Gotta use a helper because the definition of Eurydice_slice is opaque (historical mistake?). *)
+let slice_of_boxed_array =
+  {
+    name = [ "Eurydice" ], "slice_of_boxed_array";
+    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, false); TInt SizeT ] (mk_slice (TBound 0));
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [ "ptr"; "len" ];
+  }
+
+(* Take the type of the ptr field *)
+let dst_new ~ptr ~len t =
+  let open K in
+  with_type (mk_dst t) (EFlat [ Some "ptr", ptr; Some "len", len ])
 
 (* pointer, value *)
 let bitand_pv_u8 =
@@ -382,12 +439,15 @@ let files =
            vec_drop;
            vec_index;
            box_new;
+           box_new_array;
            replace;
+           slice_of_dst;
+           slice_of_boxed_array;
            bitand_pv_u8;
            shr_pv_u8;
            min_u32;
          ]
-       @ [ nonzero_def; static_assert ]
+       @ [ nonzero_def; static_assert; dst_def ]
      in
      "Eurydice", externals);
   ]
