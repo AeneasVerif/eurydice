@@ -137,6 +137,8 @@ dst_T2_dd;
 
 Eurydice_dst_7a dst_mk(void);
 
+void dst_main4(void);
+
 void dst_main(void);
 
 #if defined(__cplusplus)

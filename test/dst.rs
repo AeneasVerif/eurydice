@@ -58,6 +58,14 @@ fn main3() {
 
 // ---
 
+fn main4() {
+    let x: Box<[u32]> = Box::new([0; 4]);
+    let y = &x;
+    assert_eq!(x[3], 0);
+}
+
+// ---
+
 fn main() {
     check_regular_field(alloc());
     check_var_field(alloc());
@@ -71,4 +79,6 @@ fn main() {
 
     assert_eq!((mk()).my_data[0], 0);
     assert_eq!((mk()).my_data[1], 2);
+
+    main4();
 }

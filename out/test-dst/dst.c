@@ -141,6 +141,27 @@ Eurydice_dst_7a dst_mk(void)
   return y;
 }
 
+void dst_main4(void)
+{
+  uint32_t repeat_expression[4U] = { 0U };
+  Eurydice_slice
+  x =
+    Eurydice_slice_of_boxed_array(Eurydice_box_new_array((size_t)4U,
+        repeat_expression,
+        uint32_t,
+        uint32_t *),
+      (size_t)4U,
+      uint32_t,
+      Eurydice_slice);
+  /* original Rust expression is not an lvalue in C */
+  uint32_t lvalue = 0U;
+  _uint32_t__x2
+  uu____0 = { .fst = &Eurydice_slice_index(x, (size_t)3U, uint32_t, uint32_t *), .snd = &lvalue };
+  uint32_t *left_val = uu____0.fst;
+  uint32_t *right_val = uu____0.snd;
+  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+}
+
 void dst_main(void)
 {
   dst_check_regular_field(dst_alloc());
@@ -191,5 +212,6 @@ void dst_main(void)
   uint32_t *left_val = uu____5.fst;
   uint32_t *right_val = uu____5.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  dst_main4();
 }
 

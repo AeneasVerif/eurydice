@@ -360,6 +360,13 @@ let is_dst env t =
       Some (lid, u, t_u)
   | _ -> None
 
+let is_slice _env t =
+  match t with
+  | K.TApp (slice_hd, _) when slice_hd = Builtin.slice ->
+      true
+  | _ ->
+      false
+
 (* e: Eurydice_dst<t> *)
 let mk_dst_deref _env t e =
   (* ptr_field: t* *)
@@ -398,14 +405,19 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* We compile vecs to fat pointers, which hold the pointer underneath -- no need for an
          extra reference here. *)
       Builtin.mk_vec (typ_of_ty env t)
+
+  | TAdt (TBuiltin TBox, { types = [ TAdt (TBuiltin TSlice, { types = [ t ]; _ }) ]; _ })
   | TRef (_, TAdt (TBuiltin TSlice, { types = [ t ]; _ }), _) ->
       (* We compile slices to fat pointers, which hold the pointer underneath -- no need for an
          extra reference here. *)
       Builtin.mk_slice (typ_of_ty env t)
+
+  | TAdt (TBuiltin TBox, { types = [ TAdt (TBuiltin TArray, { types = [ t ]; _ }) ]; _ })
   | TRef (_, TAdt (TBuiltin TArray, { types = [ t ]; _ }), _) ->
       (* We collapse Ref(Array) into a pointer type, leveraging C's implicit decay between array
          types and pointer types. *)
       K.TBuf (typ_of_ty env t, false)
+
   | TRef (_, TAdt (TBuiltin TStr, { types = []; _ }), _) ->
       (* We perform on-the-fly elimination of addresses of strings (just like we
          do for arrays) so as to type-check them correctly vis à vis krml's
@@ -637,8 +649,11 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           begin match !*sub_e.K.typ with
           | TBuf (t_pointee, _) | TArray (t_pointee, _) ->
               Krml.Helpers.(mk_deref t_pointee !*sub_e.K.node)
-          | _ ->
-              L.log "AstOfLlbc" "UNHANDLED DEREFERENCE\ne=%a\nty=%s\npe=%s\n" pexpr !*sub_e (C.show_ty sub_place.ty)
+          | t ->
+              L.log "AstOfLlbc" "UNHANDLED DEREFERENCE\ne=%a\nt=%a\nty=%s\npe=%s\n"
+                pexpr !*sub_e
+                ptyp t
+                (C.show_ty sub_place.ty)
                 (C.show_projection_elem pe);
               failwith "unhandled dereference"
           end
@@ -1436,7 +1451,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
          TODO: this is a temporary fix and we need to represent &str the same way as &[u8]. *)
       expression_of_var_id env var_id
 
-  | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _) when is_dst env (typ_of_ty env p.ty) <> None ->
+  | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _)
+    when is_dst env (typ_of_ty env p.ty) <> None || is_slice env (typ_of_ty env p.ty) ->
       (* this is case three, see "support for DSTs", above. *)
       (* TODO: is this something we want to generalize for code quality? *)
       expression_of_place env p
@@ -1497,26 +1513,53 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
-  | UnaryOp (Cast (CastUnsize (t_from, t_to) as ck), e) ->
+  | UnaryOp (Cast (CastUnsize (ty_from, ty_to) as ck), e) ->
       (* DSTs: we only support going from T<[U;N]> to T<[U]>. The former is sized, the latter is
          unsized and becomes a fat pointer. We build this coercion by hand, and slightly violate C's
          strict aliasing rules. *)
-      let t_from = typ_of_ty env t_from and t_to = typ_of_ty env t_to in
+      let t_from = typ_of_ty env ty_from and t_to = typ_of_ty env ty_to in
       let e = expression_of_operand env e in
       begin
-        match t_from, is_dst env t_to with
-        | TBuf (TApp (lid1, [ TArray (u1, n) ]), _), Some (lid2, TApp (slice_hd, [ u2 ]), t_u)
+        (* TODO: this whole piece of code should handle TCgArray too *)
+        match t_from, is_dst env t_to, ty_from, ty_to with
+        | TBuf (TApp (lid1, [ TArray (u1, n) ]), _), Some (lid2, TApp (slice_hd, [ u2 ]), t_u), _, _
           when lid1 = lid2 && u1 = u2 && slice_hd = Builtin.derefed_slice ->
             let len = Krml.Helpers.mk_sizet (int_of_string (snd n)) in
             (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
              `Eurydice_derefed_slice data` (a.k.a. `char data[]`) *)
             let ptr = K.with_type (TBuf (t_u, false)) (K.ECast (e, TBuf (t_u, false))) in
             Builtin.dst_new ~len ~ptr t_u
+
+        | _, _,
+          TAdt (TBuiltin TBox, { types = [ TAdt (TBuiltin TArray, { types = [ t1 ]; const_generics = [ cg ]; _ }) ]; _ }),
+          TAdt (TBuiltin TBox, { types = [ TAdt (TBuiltin TSlice, { types = [ t2 ]; _ }) ]; _ }) ->
+            (* Cast from Box<[T; N]> to Box<[T]> which we represent as Eurydice_slice.
+               This is basically the same as above, but because we translate Box straight to *, in
+               order to account for array decay and the like, we have to match on original Rust
+               types. Note that we cannot really compile Box<T> to a struct, as it would defeat the
+               pointer semantics of Box and turn passing by reference into passing by value (array
+               within struct).
+            *)
+            assert (t1 = t2);
+            let t_from = maybe_cg_array env t1 cg in
+            let t, n = match t_from with TArray (t, n) -> t, n | _ -> failwith "impossible" in
+            let len = Krml.Helpers.mk_sizet (int_of_string (snd n)) in
+            (* slice_of_boxed_array: 0* -> size_t -> Eurydice_slice 0 *)
+            let slice_of_boxed_array = Builtin.(expr_of_builtin slice_of_boxed_array) in
+            (* slice_of_boxed_array: 0* -> size_t -> Eurydice_slice 0 *)
+            let slice_of_boxed_array =
+              K.with_type
+                (Krml.DeBruijn.subst_t t 0 slice_of_boxed_array.typ)
+                (K.ETApp (slice_of_boxed_array, [], [], [ t ]))
+            in
+            K.(with_type (Builtin.mk_slice t) (EApp (slice_of_boxed_array, [ e; len ])))
+
         | _ ->
-            failwith
-              ("unknown unsize cast: `"
-              ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck
-              ^ "`")
+            Krml.Warn.fatal_error
+              "unknown unsize cast: `%s`\nt_to=%a\nt_from=%a"
+              (Charon.PrintExpressions.cast_kind_to_string env.format_env ck)
+              ptyp t_to
+              ptyp t_from
       end
   | UnaryOp (Cast ck, e) ->
       (* Add a simpler case: identity cast is allowed *)
@@ -1794,6 +1837,25 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.ra
           args
       in
 
+      (* Another array-to-pointer, decay-related bit of reasoning. The box_new builtin, when applied
+         to an array type, looks like `x := box_new <[T; N]> e` where `e: [T; N]`; However, per the
+         conversion rules, Box<[T; N]> (the type) translates to `T*`, meaning that `x` expects a
+         `T*` but is assigned a `[T; N]*` (because the type application of box_new is not aware of
+         array decay when performing substitution).
+
+         This 100% does not work in case of a polymorphic function that is later monomorphized,
+         meaning we really should be doing this transformation post-monomorphization. *)
+      let hd, output_t =
+        match hd.node with
+        | K.ETApp ({ node = EQualified lid; _ }, [], [], [ TArray (t, n) ]) when lid = Builtin.box_new.name ->
+            let len = K.with_type (TInt SizeT) (K.EConstant n) in 
+            let output_t = K.TBuf (t, false) in
+            K.(with_type (TArrow (TArray (t, n), output_t)) (ETApp (Builtin.(expr_of_builtin box_new_array), [ len ], [], [ t ]))),
+            output_t
+        | _ ->
+            hd, output_t
+      in
+
       let rhs =
         if args = [] then
           hd
@@ -1820,7 +1882,8 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.ra
             rhs
         | FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })), _ ->
             K.(with_type (TBuf (rhs.typ, false)) (EAddrOf rhs))
-        | _ -> rhs
+        | _ ->
+            rhs
       in
       Krml.Helpers.with_unit K.(EAssign (dest, rhs))
   | Call ({ func = FnOpMove _; _ } as call) -> expression_of_fn_op_move env call

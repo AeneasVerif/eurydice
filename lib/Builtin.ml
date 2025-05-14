@@ -38,7 +38,9 @@ type builtin = {
   arg_names : string list;
 }
 
-let expr_of_builtin { name; typ; _ } = K.(with_type typ (EQualified name))
+let expr_of_builtin { name; typ; cg_args; _ } =
+  let typ = List.fold_right (fun t acc -> K.TArrow (t, acc)) cg_args typ in
+  K.(with_type typ (EQualified name))
 
 let array_to_slice =
   {
@@ -262,6 +264,15 @@ let box_new =
     arg_names = [ "v" ];
   }
 
+let box_new_array =
+  {
+    name = [ "Eurydice" ], "box_new_array";
+    typ = Krml.Helpers.fold_arrow [ TCgArray (TBound 0, 0) ] (TBuf (TBound 0, false));
+    n_type_args = 1;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "v" ];
+  }
+
 let replace =
   {
     name = [ "Eurydice" ], "replace";
@@ -296,6 +307,19 @@ let slice_of_dst =
     typ =
       Krml.Helpers.fold_arrow
         [ TBuf (TApp (derefed_slice, [ TBound 0 ]), false); TInt SizeT ]
+        (mk_slice (TBound 0));
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [ "ptr"; "len" ];
+  }
+
+(* Gotta use a helper because the definition of Eurydice_slice is opaque (historical mistake?). *)
+let slice_of_boxed_array =
+  {
+    name = [ "Eurydice" ], "slice_of_boxed_array";
+    typ =
+      Krml.Helpers.fold_arrow
+        [ TBuf (TBound 0, false); TInt SizeT ]
         (mk_slice (TBound 0));
     n_type_args = 1;
     cg_args = [];
@@ -418,8 +442,10 @@ let files =
            vec_drop;
            vec_index;
            box_new;
+           box_new_array;
            replace;
            slice_of_dst;
+           slice_of_boxed_array;
            bitand_pv_u8;
            shr_pv_u8;
            min_u32;
