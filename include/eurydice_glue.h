@@ -225,7 +225,7 @@ typedef char Eurydice_derefed_slice[];
 #define Eurydice_slice_of_dst(fam_ptr, len_, t, _)                             \
   ((Eurydice_slice){.ptr = (void *)(fam_ptr), .len = len_})
 
-#define Eurydice_slice_of_boxed_array(ptr_, len_, t, _)                         \
+#define Eurydice_slice_of_boxed_array(ptr_, len_, t, _)                        \
   ((Eurydice_slice){.ptr = (void *)(ptr_), .len = len_})
 
 // CORE STUFF (conversions, endianness, ...)
@@ -455,7 +455,7 @@ static inline char *malloc_and_init(size_t sz, char *init) {
   ((t_dst)(malloc_and_init(sizeof(t), (char *)(&init))))
 
 #define Eurydice_box_new_array(len, ptr, t, t_dst)                             \
-  ((t_dst)(malloc_and_init(len*sizeof(t), (char *)(ptr))))
+  ((t_dst)(malloc_and_init(len * sizeof(t), (char *)(ptr))))
 
 // VECTORS (ANCIENT, POSSIBLY UNTESTED)
 

@@ -317,10 +317,7 @@ let slice_of_dst =
 let slice_of_boxed_array =
   {
     name = [ "Eurydice" ], "slice_of_boxed_array";
-    typ =
-      Krml.Helpers.fold_arrow
-        [ TBuf (TBound 0, false); TInt SizeT ]
-        (mk_slice (TBound 0));
+    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, false); TInt SizeT ] (mk_slice (TBound 0));
     n_type_args = 1;
     cg_args = [];
     arg_names = [ "ptr"; "len" ];

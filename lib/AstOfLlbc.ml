@@ -362,10 +362,8 @@ let is_dst env t =
 
 let is_slice _env t =
   match t with
-  | K.TApp (slice_hd, _) when slice_hd = Builtin.slice ->
-      true
-  | _ ->
-      false
+  | K.TApp (slice_hd, _) when slice_hd = Builtin.slice -> true
+  | _ -> false
 
 (* e: Eurydice_dst<t> *)
 let mk_dst_deref _env t e =
@@ -405,19 +403,16 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* We compile vecs to fat pointers, which hold the pointer underneath -- no need for an
          extra reference here. *)
       Builtin.mk_vec (typ_of_ty env t)
-
   | TAdt (TBuiltin TBox, { types = [ TAdt (TBuiltin TSlice, { types = [ t ]; _ }) ]; _ })
   | TRef (_, TAdt (TBuiltin TSlice, { types = [ t ]; _ }), _) ->
       (* We compile slices to fat pointers, which hold the pointer underneath -- no need for an
          extra reference here. *)
       Builtin.mk_slice (typ_of_ty env t)
-
   | TAdt (TBuiltin TBox, { types = [ TAdt (TBuiltin TArray, { types = [ t ]; _ }) ]; _ })
   | TRef (_, TAdt (TBuiltin TArray, { types = [ t ]; _ }), _) ->
       (* We collapse Ref(Array) into a pointer type, leveraging C's implicit decay between array
          types and pointer types. *)
       K.TBuf (typ_of_ty env t, false)
-
   | TRef (_, TAdt (TBuiltin TStr, { types = []; _ }), _) ->
       (* We perform on-the-fly elimination of addresses of strings (just like we
          do for arrays) so as to type-check them correctly vis à vis krml's
@@ -646,16 +641,14 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
         when RustNames.is_vec env id generics -> !*sub_e
       | C.Deref, _, (TRawPtr _ | TRef _ | TAdt (TBuiltin TBox, { types = [ _ ]; _ })) ->
           (* All types represented as a pointer at run-time, compiled to a C pointer *)
-          begin match !*sub_e.K.typ with
-          | TBuf (t_pointee, _) | TArray (t_pointee, _) ->
-              Krml.Helpers.(mk_deref t_pointee !*sub_e.K.node)
-          | t ->
-              L.log "AstOfLlbc" "UNHANDLED DEREFERENCE\ne=%a\nt=%a\nty=%s\npe=%s\n"
-                pexpr !*sub_e
-                ptyp t
-                (C.show_ty sub_place.ty)
-                (C.show_projection_elem pe);
-              failwith "unhandled dereference"
+          begin
+            match !*sub_e.K.typ with
+            | TBuf (t_pointee, _) | TArray (t_pointee, _) ->
+                Krml.Helpers.(mk_deref t_pointee !*sub_e.K.node)
+            | t ->
+                L.log "AstOfLlbc" "UNHANDLED DEREFERENCE\ne=%a\nt=%a\nty=%s\npe=%s\n" pexpr !*sub_e
+                  ptyp t (C.show_ty sub_place.ty) (C.show_projection_elem pe);
+                failwith "unhandled dereference"
           end
       | ( Field (ProjAdt (typ_id, None), field_id),
           { kind = PlaceProjection (sub_place, C.Deref); _ },
@@ -1442,7 +1435,6 @@ let is_dst_var env var_id = Option.is_some (is_dst env (snd (lookup env var_id))
 let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   match p with
   | Use op -> expression_of_operand env op
-
   | RvRef ({ kind = PlaceProjection ({ kind = PlaceLocal var_id; _ }, Deref); _ }, _)
     when is_str env var_id ->
       (* because we do not materialize the address of a string, we also have to
@@ -1450,13 +1442,11 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
          the same constant string around (which in C is passed by address naturally).
          TODO: this is a temporary fix and we need to represent &str the same way as &[u8]. *)
       expression_of_var_id env var_id
-
   | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _)
     when is_dst env (typ_of_ty env p.ty) <> None || is_slice env (typ_of_ty env p.ty) ->
       (* this is case three, see "support for DSTs", above. *)
       (* TODO: is this something we want to generalize for code quality? *)
       expression_of_place env p
-
   | RvRef
       ( ({
            kind =
@@ -1529,10 +1519,16 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
              `Eurydice_derefed_slice data` (a.k.a. `char data[]`) *)
             let ptr = K.with_type (TBuf (t_u, false)) (K.ECast (e, TBuf (t_u, false))) in
             Builtin.dst_new ~len ~ptr t_u
-
-        | _, _,
-          TAdt (TBuiltin TBox, { types = [ TAdt (TBuiltin TArray, { types = [ t1 ]; const_generics = [ cg ]; _ }) ]; _ }),
-          TAdt (TBuiltin TBox, { types = [ TAdt (TBuiltin TSlice, { types = [ t2 ]; _ }) ]; _ }) ->
+        | ( _,
+            _,
+            TAdt
+              ( TBuiltin TBox,
+                {
+                  types = [ TAdt (TBuiltin TArray, { types = [ t1 ]; const_generics = [ cg ]; _ }) ];
+                  _;
+                } ),
+            TAdt (TBuiltin TBox, { types = [ TAdt (TBuiltin TSlice, { types = [ t2 ]; _ }) ]; _ }) )
+          ->
             (* Cast from Box<[T; N]> to Box<[T]> which we represent as Eurydice_slice.
                This is basically the same as above, but because we translate Box straight to *, in
                order to account for array decay and the like, we have to match on original Rust
@@ -1542,7 +1538,11 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
             *)
             assert (t1 = t2);
             let t_from = maybe_cg_array env t1 cg in
-            let t, n = match t_from with TArray (t, n) -> t, n | _ -> failwith "impossible" in
+            let t, n =
+              match t_from with
+              | TArray (t, n) -> t, n
+              | _ -> failwith "impossible"
+            in
             let len = Krml.Helpers.mk_sizet (int_of_string (snd n)) in
             (* slice_of_boxed_array: 0* -> size_t -> Eurydice_slice 0 *)
             let slice_of_boxed_array = Builtin.(expr_of_builtin slice_of_boxed_array) in
@@ -1553,13 +1553,10 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
                 (K.ETApp (slice_of_boxed_array, [], [], [ t ]))
             in
             K.(with_type (Builtin.mk_slice t) (EApp (slice_of_boxed_array, [ e; len ])))
-
         | _ ->
-            Krml.Warn.fatal_error
-              "unknown unsize cast: `%s`\nt_to=%a\nt_from=%a"
+            Krml.Warn.fatal_error "unknown unsize cast: `%s`\nt_to=%a\nt_from=%a"
               (Charon.PrintExpressions.cast_kind_to_string env.format_env ck)
-              ptyp t_to
-              ptyp t_from
+              ptyp t_to ptyp t_from
       end
   | UnaryOp (Cast ck, e) ->
       (* Add a simpler case: identity cast is allowed *)
@@ -1847,13 +1844,16 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.ra
          meaning we really should be doing this transformation post-monomorphization. *)
       let hd, output_t =
         match hd.node with
-        | K.ETApp ({ node = EQualified lid; _ }, [], [], [ TArray (t, n) ]) when lid = Builtin.box_new.name ->
-            let len = K.with_type (TInt SizeT) (K.EConstant n) in 
+        | K.ETApp ({ node = EQualified lid; _ }, [], [], [ TArray (t, n) ])
+          when lid = Builtin.box_new.name ->
+            let len = K.with_type (TInt SizeT) (K.EConstant n) in
             let output_t = K.TBuf (t, false) in
-            K.(with_type (TArrow (TArray (t, n), output_t)) (ETApp (Builtin.(expr_of_builtin box_new_array), [ len ], [], [ t ]))),
-            output_t
-        | _ ->
-            hd, output_t
+            ( K.(
+                with_type
+                  (TArrow (TArray (t, n), output_t))
+                  (ETApp (Builtin.(expr_of_builtin box_new_array), [ len ], [], [ t ]))),
+              output_t )
+        | _ -> hd, output_t
       in
 
       let rhs =
@@ -1882,8 +1882,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.ra
             rhs
         | FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })), _ ->
             K.(with_type (TBuf (rhs.typ, false)) (EAddrOf rhs))
-        | _ ->
-            rhs
+        | _ -> rhs
       in
       Krml.Helpers.with_unit K.(EAssign (dest, rhs))
   | Call ({ func = FnOpMove _; _ } as call) -> expression_of_fn_op_move env call
@@ -2031,16 +2030,15 @@ let check_if_dst (env : env) (id : C.any_decl_id) : env =
         if List.length decl.generics.types > 1 then begin
           Krml.KPrint.beprintf "Unsupported: DST %s has > 1 type parameter\n" name;
           env
-        end else begin
+        end
+        else begin
           (* From here on, we assume (per Rust restrictions) we can deduce that the last field of this type is
              exactly the type parameter T. See https://doc.rust-lang.org/std/marker/trait.Unsize.html *)
           L.log "AstOfLlbc" "%s is a DST\n" name;
           let lid = lid_of_name env decl.item_meta.name in
           match decl.kind with
           | Struct fields ->
-              let field_name =
-                (Krml.KList.last fields).C.field_name
-              in
+              let field_name = (Krml.KList.last fields).C.field_name in
               { env with dsts = LidMap.add lid (Option.get field_name) env.dsts }
           | _ ->
               Krml.KPrint.beprintf "Unsupported: DST %s has no field name\n" name;
