@@ -14,6 +14,9 @@ depends: [
   "dune" {>= "3.13"}
   "yaml"
   "terminal" {>= "0.4.0"}
+  "sedlex"
+  "menhir"
+  "ppx_deriving"
   "odoc" {with-doc}
 ]
 build: [

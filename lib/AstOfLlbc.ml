@@ -1710,6 +1710,7 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.ra
       let rv = expression_of_rvalue env rv in
       K.(with_type TUnit (EAssign (p, rv)))
   | SetDiscriminant (_, _) -> failwith "C.SetDiscriminant"
+  | CopyNonOverlapping _ -> failwith "C.CopyNonOverlapping"
   | StorageLive _ -> Krml.Helpers.eunit
   | StorageDead _ -> Krml.Helpers.eunit
   | Deinit p | Drop p ->

@@ -23,6 +23,9 @@
   dune
   yaml
   (terminal (>= 0.4.0))
+  sedlex
+  menhir
+  ppx_deriving
  )
 )
 
