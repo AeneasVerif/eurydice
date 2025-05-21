@@ -1965,7 +1965,10 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.ra
       K.(with_type t (EMatch (Unchecked, scrutinee, branches)))
   | Loop s ->
       K.(with_type TUnit (EWhile (Krml.Helpers.etrue, expression_of_statement env ret_var s)))
-  | Error _ -> failwith "TODO: error"
+  | _ ->
+      failwith
+        ("Unsupported statement: "
+        ^ Charon.PrintLlbcAst.Ast.raw_statement_to_string env.format_env "" "" s)
 
 and expression_of_statement (env : env) (ret_var : C.local_id) (s : C.statement) : K.expr =
   {
