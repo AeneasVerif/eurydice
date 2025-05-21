@@ -463,7 +463,8 @@ typedef void *core_fmt_rt_Argument;
 // Crimes.
 static inline char *malloc_and_init(size_t sz, char *init) {
   char *ptr = (char *)malloc(sz);
-  memcpy(ptr, init, sz);
+  if (ptr != NULL)
+    memcpy(ptr, init, sz);
   return ptr;
 }
 
@@ -473,16 +474,28 @@ static inline char *malloc_and_init(size_t sz, char *init) {
 #define Eurydice_box_new_array(len, ptr, t, t_dst)                             \
   ((t_dst)(malloc_and_init(len * sizeof(t), (char *)(ptr))))
 
-// VECTORS (ANCIENT, POSSIBLY UNTESTED)
+// FIXME this needs to handle allocation failure errors, but this seems hard to do without
+// evaluating malloc_and_init twice...
+#define alloc_boxed__alloc__boxed__Box_T___try_new(init, t, t_ret)             \
+  ((t_ret){ .tag = core_result_Ok, .f0 = (t*) malloc_and_init(sizeof(t), (char*)(&init)) })
 
-/* For now these are passed by value -- three words. We could conceivably change
- * the representation to heap-allocate this struct and only pass around the
- * pointer (one word). */
+
+// VECTORS
+
+/* This is heap-allocated. We copy the layout of
+ * https://doc.rust-lang.org/std/vec/struct.Vec.html and keep the size and
+ * capacity. (For consistency with other definitions in this file, we do not use
+ * `len`, which here tends to refer to a number of elements, and instead use a
+ * size.) */
 typedef struct {
   void *ptr;
-  size_t len;        /* the number of elements */
-  size_t alloc_size; /* the size of the allocation, in number of BYTES */
+  size_t sz;        /* the number of elements */
+  size_t capacity; /* the size of the allocation, in number of BYTES */
 } Eurydice_vec_s, *Eurydice_vec;
+
+typedef Eurydice_vec alloc_vec_Vec;
+
+// VECTORS (ANCIENT, POSSIBLY UNTESTED)
 
 /* Here, we set everything to zero rather than use a non-standard GCC
  * statement-expression -- this suitably initializes ptr to NULL and len and
