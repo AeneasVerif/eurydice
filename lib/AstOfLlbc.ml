@@ -2348,7 +2348,7 @@ let decl_of_id env decl =
     | exception _ -> None
   ) replacements
   with
-  | Some d -> Some d
+  | Some d -> Some (d (lid_of_name env (name_of_id env decl)))
   | None -> 
       try decl_of_id env decl
       with e ->

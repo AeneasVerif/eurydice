@@ -365,34 +365,34 @@ let static_assert, static_assert_ref =
 
 (* Replacements, applied on-the-fly in AstOfLlbc *)
 
-let unwrap : K.decl =
+let unwrap =
   let open Krml in
   let open Ast in
-  let lid =
-    [ "core"; "result"; "{core::result::Result<T, E>}" ], "unwrap"
-  in
   let t_T = TBound 1 in
   let t_E = TBound 0 in
+  let b = Krml.Helpers.fresh_binder "f0" t_T in
   let t_result = mk_result t_T t_E in
   let binders = [ Helpers.fresh_binder "self" t_result ] in
-  DFunction
-    ( None,
-      [ Private ],
-      0,
-      2,
-      t_T,
-      lid,
-      binders,
-      with_type t_T
-        (EMatch
-           ( Unchecked,
-             with_type t_result (EBound 0),
-             [
-               ( [ Helpers.fresh_binder "f0" t_T ],
-                 with_type t_result (PCons ("Ok", [ with_type t_T (PBound 0) ])),
-                 with_type t_T (EBound 0) );
-               [], with_type t_result PWild, with_type t_T (EAbort (Some t_T, Some "unwrap not Ok"));
-             ] )) )
+  (* Ensures this returns always the same term (structurally equal) *)
+  fun lid ->
+    DFunction
+      ( None,
+        [ Private ],
+        0,
+        2,
+        t_T,
+        lid,
+        binders,
+        with_type t_T
+          (EMatch
+             ( Unchecked,
+               with_type t_result (EBound 0),
+               [
+                 ( [ b ],
+                   with_type t_result (PCons ("Ok", [ with_type t_T (PBound 0) ])),
+                   with_type t_T (EBound 0) );
+                 [], with_type t_result PWild, with_type t_T (EAbort (Some t_T, Some "unwrap not Ok"));
+               ] )) )
 
 let nonzero_def = K.DType (nonzero, [], 0, 1, Abbrev (TBound 0))
 
