@@ -11,6 +11,14 @@ fn more_sum_lst(l : &[i32; 3]) -> i32 {
   sum
 }
 
+fn empty_ptr(f : fn() -> i32) -> i32 {
+  f()
+}
+
+fn unit_empty_ptr(f : fn()) {
+  f()
+}
+
 fn id<R>(r : R) -> R { r }
 
 fn compose_cg_apply<X : Copy,Y,const N : usize,Z>(

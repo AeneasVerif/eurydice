@@ -7,6 +7,11 @@
 
 #include "fn_higher_order.h"
 
+int32_t fn_higher_order_empty_ptr(int32_t (*f)(void))
+{
+  return f();
+}
+
 int32_t fn_higher_order_more_sum_lst(int32_t *l)
 {
   int32_t sum = (int32_t)0;
@@ -135,5 +140,10 @@ void fn_higher_order_use_compose_cg(void)
 void fn_higher_order_main(void)
 {
   fn_higher_order_use_compose_cg();
+}
+
+void fn_higher_order_unit_empty_ptr(void (*f)(void))
+{
+  f();
 }
 

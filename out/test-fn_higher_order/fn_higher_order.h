@@ -90,6 +90,8 @@ core_iter_range___core__iter__range__Step_for_usize__43__steps_between(size_t *x
 
 typedef uint8_t core_panicking_AssertKind;
 
+int32_t fn_higher_order_empty_ptr(int32_t (*f)(void));
+
 int32_t fn_higher_order_more_sum_lst(int32_t *l);
 
 /**
@@ -142,6 +144,8 @@ int32_t fn_higher_order_id_a8(int32_t r);
 void fn_higher_order_use_compose_cg(void);
 
 void fn_higher_order_main(void);
+
+void fn_higher_order_unit_empty_ptr(void (*f)(void));
 
 #if defined(__cplusplus)
 }
