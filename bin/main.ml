@@ -94,12 +94,12 @@ Supported options:|}
       [
         [ "Eurydice" ], "slice_index";
         [ "Eurydice" ], "slice_subslice";
-        [ "Eurydice" ], "slice_subslice2";
+        [ "Eurydice" ], "slice_subslice3";
         [ "Eurydice" ], "slice_subslice_to";
         [ "Eurydice" ], "slice_subslice_from";
         [ "Eurydice" ], "array_to_slice";
         [ "Eurydice" ], "array_to_subslice";
-        [ "Eurydice" ], "array_to_subslice2";
+        [ "Eurydice" ], "array_to_subslice3";
         [ "Eurydice" ], "array_to_subslice_to";
         [ "Eurydice" ], "array_to_subslice_from";
         [ "Eurydice" ], "array_repeat";

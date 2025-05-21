@@ -367,7 +367,7 @@ let unwrap : K.decl =
   let open Krml in
   let open Ast in
   let lid =
-    [ "core"; "result"; "{core::result::Result<T, E>[TraitClause@0, TraitClause@1]}" ], "unwrap"
+    [ "core"; "result"; "{core::result::Result<T, E>}" ], "unwrap"
   in
   let t_T = TBound 1 in
   let t_E = TBound 0 in

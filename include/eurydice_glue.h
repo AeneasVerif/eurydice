@@ -116,6 +116,11 @@ typedef struct {
 #define Eurydice_slice_subslice2(s, start, end, t)                             \
   EURYDICE_SLICE((t *)s.ptr, start, end)
 
+// Previous version above does not work when t is an array type (as usual). Will
+// be deprecated soon.
+#define Eurydice_slice_subslice3(s, start, end, t_ptr)                         \
+  EURYDICE_SLICE((t_ptr)s.ptr, start, end)
+
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _0, _1)             \
   EURYDICE_SLICE((t *)s.ptr, 0, subslice_end_pos)
 
@@ -129,8 +134,8 @@ typedef struct {
   EURYDICE_SLICE((t *)x, r.start, r.end)
 
 // Same as above, variant for when start and end are statically known
-#define Eurydice_array_to_subslice2(x, start, end, t)                          \
-  EURYDICE_SLICE((t *)x, start, end)
+#define Eurydice_array_to_subslice3(x, start, end, t_ptr)                      \
+  EURYDICE_SLICE((t_ptr)x, start, end)
 
 #define Eurydice_array_repeat(dst, len, init, t)                               \
   ERROR "should've been desugared"
@@ -429,9 +434,15 @@ typedef struct {
 #define core_option__core__option__Option_T__TraitClause_0___is_some(X, _0,    \
                                                                      _1)       \
   ((X)->tag == 1)
+
 // STRINGS
 
 typedef const char *Prims_string;
+
+// UNSAFE CODE
+
+#define core_slice___Slice_T___as_mut_ptr(x, t, _) (x.ptr)
+#define core_mem_size_of(t, _) (sizeof(t))
 
 // MISC (UNTESTED)
 
