@@ -231,6 +231,8 @@ module RustNames = struct
     parse_pattern "ArrayToSliceShared<'_, @T, @N>", Builtin.array_to_slice;
     parse_pattern "ArrayToSliceMut<'_, @T, @N>", Builtin.array_to_slice;
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], &'_ [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ mut [@T], &'_ mut [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
 
     (* iterators XXX are any of these used? *)
     parse_pattern "core::iter::traits::collect::IntoIterator<[@; @]>::into_iter", Builtin.array_into_iter;
@@ -1199,16 +1201,25 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   L.log "Calls" "%s--> type_args: %s" depth
     (String.concat ", " (List.map (Charon.PrintTypes.ty_to_string env.format_env) type_args));
 
-  (* Translate effective type and cg arguments. *)
-  let type_args = List.map (typ_of_ty env) type_args in
-  let const_generic_args = List.map (expression_of_const_generic env) const_generic_args in
-
   (* The function itself, along with information about its *signature*. *)
   let f, { ts; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_known_builtin } =
     lookup_fun env depth fn_ptr
   in
   L.log "Calls" "%s--> inputs: %a" depth ptyps inputs;
   L.log "Calls" "%s--> is_known_builtin?: %b" depth is_known_builtin;
+
+  (* Translate effective type and cg arguments. *)
+  let const_generic_args =
+    match f, type_args with
+    | EQualified lid, [ _; TRef (_, TAdt (TBuiltin TArray, { types = [ _ ]; const_generics = [ cg ]; _ }), _); _]
+      when lid = Builtin.slice_to_ref_array.name ->
+        (* Special case, we *do* need to retain the length, which would disappear if we simply did
+           typ_of_ty (owing to array decay rules). *)
+        [ expression_of_const_generic env cg ]
+    | _ ->
+        List.map (expression_of_const_generic env) const_generic_args
+  in
+  let type_args = List.map (typ_of_ty env) type_args in
 
   (* Handling trait implementations for generic trait bounds in the callee. We
      synthesize krml expressions that correspond to each one of the trait methods

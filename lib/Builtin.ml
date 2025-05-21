@@ -210,6 +210,15 @@ let slice_to_array2 =
     arg_names = [ "dst"; "s" ];
   }
 
+let slice_to_ref_array =
+  {
+    name = [ "Eurydice" ], "slice_to_ref_array";
+    typ = Krml.Helpers.fold_arrow [ TBound 2 ] (mk_result (TBound 1) (TBound 0));
+    n_type_args = 3;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "s" ];
+  }
+
 let vec_new =
   {
     name = [ "Eurydice" ], "vec_new";
@@ -431,6 +440,7 @@ let files =
            slice_subslice_from;
            slice_to_array;
            slice_to_array2;
+           slice_to_ref_array;
            range_iterator_step_by;
            range_step_by_iterator_next;
            vec_push;

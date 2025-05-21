@@ -196,6 +196,11 @@ typedef struct {
   Eurydice_slice_to_array3(&(dst)->tag, (char *)&(dst)->val.case_Ok, src,      \
                            sizeof(t_arr))
 
+#define Eurydice_slice_to_ref_array(len_, src, t_ptr, t_arr, t_err, t_res)     \
+  (src.len >= len_ ?                                                           \
+    ((t_res){ .tag = core_result_Ok, .val = { .case_Ok = src.ptr }}) :         \
+    ((t_res){ .tag = core_result_Err, .val = { .case_Err = 0 }}))
+
 static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
                                             Eurydice_slice src, size_t sz) {
   *dst_tag = 0;
