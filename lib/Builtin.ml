@@ -363,6 +363,8 @@ let static_assert, static_assert_ref =
   ( K.DExternal (None, [ Krml.Common.Private; Macro ], 0, 0, name, typ, [ "test"; "msg" ]),
     K.(with_type typ (EQualified name)) )
 
+(* Replacements, applied on-the-fly in AstOfLlbc *)
+
 let unwrap : K.decl =
   let open Krml in
   let open Ast in
@@ -397,8 +399,6 @@ let nonzero_def = K.DType (nonzero, [], 0, 1, Abbrev (TBound 0))
 (* -------------------------------------------------------------------------- *)
 
 type usage = Used | Unused
-
-let replacements = List.map (fun decl -> K.lid_of_decl decl, (decl, ref Unused)) [ unwrap ]
 
 let files =
   [
@@ -452,6 +452,7 @@ let files =
      "Eurydice", externals);
   ]
 
+(* FIXME get rid of this, this seems ancient *)
 let adjust (f, decls) =
   ( f,
     List.map
@@ -459,18 +460,5 @@ let adjust (f, decls) =
         | Krml.Ast.DExternal (_, _, _, _, (([ "core"; "num"; mid ], "BITS") as lid), _, _)
           when Krml.KString.starts_with mid "{u32" ->
             Krml.Ast.DGlobal ([], lid, 0, Krml.Helpers.uint32, Krml.Helpers.mk_uint32 32)
-        | d -> (
-            try
-              let d, seen = List.assoc (K.lid_of_decl d) replacements in
-              seen := Used;
-              d
-            with Not_found -> d))
+        | d -> d)
       decls )
-
-let check () =
-  List.iter
-    (fun (lid, (_, seen)) ->
-      if !seen = Unused then
-        let open Krml in
-        KPrint.bprintf "Unused replacement: %a\n" PrintAst.Ops.plid lid)
-    replacements

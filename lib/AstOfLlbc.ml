@@ -2335,24 +2335,37 @@ let known_failures =
       "core::convert::{core::convert::TryInto<@T, @U>}::try_into";
     ]
 
+let replacements = List.map (fun (p, d) -> Charon.NameMatcher.parse_pattern p, d) [
+  "core::result::{core::result::Result<@T, @E>}::unwrap", Builtin.unwrap
+]
+
 (* Catch-all error handler (last resort) *)
 let decl_of_id env decl =
-  try decl_of_id env decl
-  with e ->
-    let matches p =
-      Charon.NameMatcher.match_name env.name_ctx RustNames.config p (name_of_id env decl)
-    in
-    if not (List.exists matches known_failures) then begin
-      Printf.eprintf "ERROR translating %s: %s\n%s"
-        (string_of_pattern (pattern_of_name env (name_of_id env decl)))
-        (Printexc.to_string e) (Printexc.get_backtrace ());
-      if not !Options.keep_going then
-        exit 255
-      else
-        None
-    end
-    else
-      None
+  match List.find_map (fun (p, d) ->
+    match Charon.NameMatcher.match_name env.name_ctx RustNames.config p (name_of_id env decl) with
+    | true -> Some d
+    | false -> None
+    | exception _ -> None
+  ) replacements
+  with
+  | Some d -> Some d
+  | None -> 
+      try decl_of_id env decl
+      with e ->
+        let matches p =
+          Charon.NameMatcher.match_name env.name_ctx RustNames.config p (name_of_id env decl)
+        in
+        if not (List.exists matches known_failures) then begin
+          Printf.eprintf "ERROR translating %s: %s\n%s"
+            (string_of_pattern (pattern_of_name env (name_of_id env decl)))
+            (Printexc.to_string e) (Printexc.get_backtrace ());
+          if not !Options.keep_going then
+            exit 255
+          else
+            None
+        end
+        else
+          None
 
 let flatten_declarations (d : C.declaration_group list) : C.any_decl_id list =
   List.flatten (List.map declaration_group_to_list d)

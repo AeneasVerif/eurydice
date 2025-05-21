@@ -161,7 +161,6 @@ Supported options:|}
              !files);
       ]
   in
-  Eurydice.Builtin.check ();
 
   Printf.printf "1️⃣ LLBC ➡️  AST\n";
   let files = Eurydice.PreCleanup.precleanup files in
