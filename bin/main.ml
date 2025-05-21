@@ -240,7 +240,8 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
   Eurydice.Logging.log "Phase2.26" "%a" pfiles files;
   let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
-  let _, files = Krml.DataTypes.everything files in
+  let (map, _, _), files = Krml.DataTypes.everything files in
+  Eurydice.Cleanup2.fixup_monomorphization_map map;
   Eurydice.Logging.log "Phase2.3" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_ite#visit_files () files in
   Eurydice.Logging.log "Phase2.4" "%a" pfiles files;
