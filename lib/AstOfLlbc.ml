@@ -2389,7 +2389,7 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   } =
     crate
   in
-  if options.remove_associated_types <> [ "*" ] then begin
+  if options.preset <> Some (Eurydice) then begin
     Printf.eprintf "ERROR: Eurydice expects Charon to be invoked with `--preset=eurydice`\n";
     exit 255
   end;
