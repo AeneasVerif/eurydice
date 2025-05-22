@@ -1619,7 +1619,11 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
             let fields =
               match kind with
               | Struct fields -> fields
-              | _ -> failwith "not a struct"
+              | Enum _ -> failwith "TODO: Enum"
+              | Union _ -> failwith "TODO: Union"
+              | Opaque -> failwith "TODO: Opaque"
+              | Alias _ -> failwith "TODO: Alias"
+              | TDeclError _ -> failwith "TODO: TDeclError"
             in
             K.with_type t
               (K.EFlat
@@ -2052,8 +2056,12 @@ let check_if_dst (env : env) (id : C.any_decl_id) : env =
           let lid = lid_of_name env decl.item_meta.name in
           match decl.kind with
           | Struct fields ->
-              let field_name = (Krml.KList.last fields).C.field_name in
-              { env with dsts = LidMap.add lid (Option.get field_name) env.dsts }
+              if fields = [] then begin
+                Krml.KPrint.beprintf "Unsupported: DST %s has no fields\n" name;
+                env
+              end else
+                let field_name = (Krml.KList.last fields).C.field_name in
+                { env with dsts = LidMap.add lid (Option.get field_name) env.dsts }
           | _ ->
               Krml.KPrint.beprintf "Unsupported: DST %s has no field name\n" name;
               env
