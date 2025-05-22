@@ -309,13 +309,13 @@ let width_of_integer_type (t : Charon.Types.integer_type) : K.width =
   | I16 -> Int16
   | I32 -> Int32
   | I64 -> Int64
-  | I128 -> failwith "TODO: I128"
+  | I128 -> failwith "Internal error: `i128` should not be handled in `width_of_integer_type`."
   | Usize -> SizeT
   | U8 -> UInt8
   | U16 -> UInt16
   | U32 -> UInt32
   | U64 -> UInt64
-  | U128 -> failwith "TODO: U128"
+  | U128 -> failwith "Internal error: `u128` should not be handled in `width_of_integer_type`."
 
 let lid_of_type_decl_id (env : env) (id : C.type_decl_id) =
   let { C.item_meta; _ } = env.get_nth_type id in
@@ -340,8 +340,10 @@ let cg_of_const_generic env cg =
 let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
   match ty with
   | TBool -> K.TBool
-  | TChar -> failwith "TODO: Char"
+  | TChar -> Builtin.char_t
   | TFloat _ -> failwith "TODO: Float"
+  | TInteger C.I128 -> Builtin.int128_t
+  | TInteger C.U128 -> Builtin.uint128_t
   | TInteger k -> K.TInt (width_of_integer_type k)
 
 (* Is TApp (lid, [ t ]) meant to compile to a DST? *)
@@ -608,16 +610,56 @@ let expression_of_var_id (env : env) (v : C.local_id) : K.expr =
   let i, t = lookup env v in
   K.(with_type t (EBound i))
 
-let expression_of_scalar_value ({ C.int_ty; _ } as sv) =
-  let w = width_of_integer_type int_ty in
-  K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
+(** Assume here the maximum length is 128-bit -- throw away any bits outside the initial 128 bits
+    Returns the **expr** pair (high64bits, low64bits) *)
+let split_128bit (value : Z.t) =
+  (* Throw away the longer parts *)
+  let mask128 = Z.sub (Z.shift_left Z.one 128) Z.one in
+  let mask64 = Z.sub (Z.shift_left Z.one 64) Z.one in
+  let value = Z.logand value mask128 in
+  (* Split to get the high & low values *)
+  let low64 = Z.logand mask64 value in
+  let high64 = Z.shift_right value 64 in
+  (* Build the exprs *)
+  let to_expr_u64bits v = 
+    let print_Z z = Z.format "%#x" z in
+    K.with_type (K.TInt UInt64) @@ (K.EConstant (UInt64, print_Z v))
+  in
+  (to_expr_u64bits high64, to_expr_u64bits low64)
+let expression_of_int128_t (value : Z.t) =
+  let i128_max = Z.sub (Z.shift_left Z.one 127) Z.one in
+  if value > i128_max then
+    failwith "value is larger than the maximum value of i128";
+  let i128_min = Z.neg (Z.shift_left Z.one 127) in
+  if value < i128_min then
+    failwith "value is smaller than the minimum value of i128";
+  let high64, low64 = split_128bit value in
+  K.(with_type Builtin.int128_t (EApp (Builtin.(expr_of_builtin i128_from_bits), [ high64; low64 ])))
+let expression_of_uint128_t (value : Z.t) =
+  let u128_max = Z.sub (Z.shift_left Z.one 128) Z.one in
+  if value > u128_max then
+    failwith "value is larger than the maximum value of u128";
+  let high64, low64 = split_128bit value in
+  K.(with_type Builtin.uint128_t (EApp (Builtin.(expr_of_builtin u128_from_bits), [ high64; low64 ])))
+
+let expression_of_scalar_value ({ C.int_ty; _ } as sv) : K.expr =
+  match int_ty with
+  | C.I128 -> expression_of_int128_t sv.value
+  | C.U128 -> expression_of_uint128_t sv.value
+  | _ ->
+    let w = width_of_integer_type int_ty in
+    K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
 
 let expression_of_literal (_env : env) (l : C.literal) : K.expr =
   match l with
   | VScalar sv -> expression_of_scalar_value sv
   | VBool b -> K.(with_type TBool (EBool b))
   | VStr s -> K.(with_type Krml.Checker.c_string (EString s))
-  | _ -> failwith "TODO: expression_of_literal"
+  | VChar c -> K.(with_type Builtin.char_t (EConstant (UInt32, string_of_int @@ Uchar.to_int c)))
+  | VByteStr lst ->
+    let str = List.map (Printf.sprintf "%#x") lst |> String.concat "" in
+    K.(with_type Krml.Checker.c_string (EString str))
+  | VFloat _ -> failwith "TODO: float value still not supported!"
 
 let expression_of_const_generic env cg =
   match cg with
@@ -1506,8 +1548,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
          pass one for the other *)
       maybe_addrof env p.ty e
-  | UnaryOp (Cast (CastScalar (_, TInteger dst)), e) ->
-      let dst = K.TInt (width_of_integer_type dst) in
+  | UnaryOp (Cast (CastScalar (_, dst)), e) ->
+      let dst = typ_of_literal_ty env dst in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
   | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
       let dst = typ_of_ty env to_ in
@@ -1711,7 +1753,45 @@ let expression_of_fn_op_move (env : env) ({ func; args; dest } : C.call) =
   let rhs = K.with_type ret_t @@ K.EApp (fHd, args) in
   Krml.Helpers.with_unit @@ K.EAssign (lhs, rhs)
 
-let rec expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_statement) :
+(** Handles only the `SwitchInt` for 128-bit integers.
+    Turn the switch expression into if-then-else expressions.
+    This is to work around the Krml integer type limitations. *)
+let rec expression_of_switch_128bits
+    env
+    ret_var
+    scrutinee
+    int_ty
+    branches
+    default : K.expr =
+  let scrutinee = expression_of_operand env scrutinee in
+  let cmp_op =
+    match int_ty with
+    | C.I128 -> Builtin.(expr_of_builtin i128_eq)
+    | C.U128 -> Builtin.(expr_of_builtin u128_eq)
+    | _ -> failwith "Should only call this function with 128-bit integer types."
+  in
+  let else_branch = expression_of_statement env ret_var default in
+  let folder (svs, stmt) else_branch =
+    (* [i1, i2, ..., in] ==> scrutinee == i1 || scrutinee == i2 || ... || scrutinee == in *)
+    let guard =
+      let make_eq sv =
+        let sv = expression_of_scalar_value sv in
+        K.(with_type TBool (EApp (cmp_op, [ scrutinee; sv ])))
+      in
+      List.map make_eq svs
+      |> function
+      | [] -> Krml.Helpers.etrue
+      | x :: lst -> List.fold_left (Krml.Helpers.mk_or) x lst
+    in
+    (* the "then" body of the if-then-else expression *)
+    let body = expression_of_statement env ret_var stmt in
+    (* combines the types: compare each branch and then generate the correct type *)
+    let typ = lesser body.K.typ else_branch.K.typ in
+    K.(with_type typ (EIfThenElse (guard, body, else_branch)))
+  in
+  List.fold_right folder branches else_branch
+
+and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_statement) :
     K.expr =
   match s with
   | Assign (p, rv) ->
@@ -1911,20 +1991,23 @@ let rec expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.ra
       let e2 = expression_of_statement env ret_var s2 in
       let t = lesser e1.typ e2.typ in
       K.(with_type t (EIfThenElse (expression_of_operand env op, e1, e2)))
-  | Switch (SwitchInt (scrutinee, _int_ty, branches, default)) ->
-      let scrutinee = expression_of_operand env scrutinee in
-      let branches =
-        List.concat_map
-          (fun (svs, stmt) ->
-            List.map
-              (fun sv ->
-                K.SConstant (constant_of_scalar_value sv), expression_of_statement env ret_var stmt)
-              svs)
-          branches
-        @ [ K.SWild, expression_of_statement env ret_var default ]
-      in
-      let t = Krml.KList.reduce lesser (List.map (fun (_, e) -> e.K.typ) branches) in
-      K.(with_type t (ESwitch (scrutinee, branches)))
+  | Switch (SwitchInt (scrutinee, int_ty, branches, default)) ->
+      if int_ty = I128 || int_ty = U128 then
+        expression_of_switch_128bits env ret_var scrutinee int_ty branches default
+      else
+        let scrutinee = expression_of_operand env scrutinee in
+        let branches =
+          List.concat_map
+            (fun (svs, stmt) ->
+              List.map
+                (fun sv ->
+                  K.SConstant (constant_of_scalar_value sv), expression_of_statement env ret_var stmt)
+                svs)
+            branches
+          @ [ K.SWild, expression_of_statement env ret_var default ]
+        in
+        let t = Krml.KList.reduce lesser (List.map (fun (_, e) -> e.K.typ) branches) in
+        K.(with_type t (ESwitch (scrutinee, branches)))
   | Switch (Match (p, branches, default)) ->
       let scrutinee = expression_of_place env p in
       let typ_id, typ_lid, variant_name_of_variant_id =

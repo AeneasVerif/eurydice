@@ -27,6 +27,11 @@ let mk_result t1 t2 = K.TApp (result, [ t1; t2 ])
 let nonzero = [ "core"; "num"; "nonzero" ], "NonZero"
 let mk_nonzero t = K.TApp (nonzero, [ t ])
 
+(* Internal types *)
+let char_t = K.(TInt UInt32)
+let int128_t = K.TQualified (["Eurydice"], "int128_t")
+let uint128_t = K.TQualified (["Eurydice"], "uint128_t")
+
 (* A record to hold a builtin function with all relevant information for both
    krml and the transpilation phase in AstOfLlbc *)
 
@@ -41,6 +46,55 @@ type builtin = {
 let expr_of_builtin { name; typ; cg_args; _ } =
   let typ = List.fold_right (fun t acc -> K.TArrow (t, acc)) cg_args typ in
   K.(with_type typ (EQualified name))
+
+(*
+  The real implementations:
+
+Eurydice_int128_t Eurydice_i128_from_bits(uint64_t hi, uint64_t lo) {
+  return ((Eurydice_int128_t)hi << 64) | lo;
+}
+Eurydice_uint128_t Eurydice_u128_from_bits(uint64_t hi, uint64_t lo) {
+  return ((Eurydice_uint128_t)hi << 64) | lo;
+}
+bool Eurydice_i128_eq(Eurydice_int128_t x, Eurydice_int128_t y) {
+  return x == y;
+}
+bool Eurydice_u128_eq(Eurydice_uint128_t x, Eurydice_uint128_t y) {
+  return x == y;
+}
+*)
+let i128_from_bits =
+  {
+    name = [ "Eurydice" ], "i128_from_bits";
+    typ = Krml.Helpers.fold_arrow [ Krml.Helpers.uint64; Krml.Helpers.uint64 ] int128_t;
+    n_type_args = 0;
+    cg_args = [ ];
+    arg_names = [ "high"; "low" ];
+  }
+let u128_from_bits =
+  {
+    name = [ "Eurydice" ], "u128_from_bits";
+    typ = Krml.Helpers.fold_arrow [ Krml.Helpers.uint64; Krml.Helpers.uint64 ] uint128_t;
+    n_type_args = 0;
+    cg_args = [ ];
+    arg_names = [ "high"; "low" ];
+  }
+let i128_eq =
+  {
+    name = [ "Eurydice" ], "i128_eq";
+    typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] TBool;
+    n_type_args = 0;
+    cg_args = [ ];
+    arg_names = [ "lhs"; "rhs" ];
+  }
+let u128_eq =
+  {
+    name = [ "Eurydice" ], "u128_eq";
+    typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] TBool;
+    n_type_args = 0;
+    cg_args = [ ];
+    arg_names = [ "lhs"; "rhs" ];
+  }
 
 let array_to_slice =
   {
@@ -418,6 +472,10 @@ let files =
            in
            K.DExternal (None, flags, List.length cg_args, n_type_args, name, typ, arg_names))
          [
+           i128_from_bits;
+           u128_from_bits;
+           i128_eq;
+           u128_eq;
            array_to_slice;
            array_to_subslice;
            array_to_subslice_to;
