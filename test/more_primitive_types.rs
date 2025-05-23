@@ -22,6 +22,11 @@ fn match_i128(p : &MorePrimitiveTypes) -> i32 {
     }
 }
 
+fn int128_operations(p : &mut MorePrimitiveTypes) {
+    p.int128 = p.int128 & 0xffff_ffff_1 - 0x1ff_ffff_ffff_ffff * 0x1 << 10;
+    p.uint128 = p.uint128 & 0xffff_ffff_1 - 0x1f;
+}
+
 fn use_more_primitive_types() {
     let s = b"ahello";
     let p = MorePrimitiveTypes {

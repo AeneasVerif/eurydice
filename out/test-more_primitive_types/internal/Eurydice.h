@@ -23,6 +23,18 @@ extern bool Eurydice_i128_eq(Eurydice_int128_t lhs, Eurydice_int128_t rhs);
 
 extern bool Eurydice_u128_eq(Eurydice_uint128_t lhs, Eurydice_uint128_t rhs);
 
+extern Eurydice_int128_t Eurydice_i128_sub(Eurydice_int128_t lhs, Eurydice_int128_t rhs);
+
+extern Eurydice_uint128_t Eurydice_u128_sub(Eurydice_uint128_t lhs, Eurydice_uint128_t rhs);
+
+extern Eurydice_int128_t Eurydice_i128_mul(Eurydice_int128_t lhs, Eurydice_int128_t rhs);
+
+extern Eurydice_int128_t Eurydice_i128_band(Eurydice_int128_t lhs, Eurydice_int128_t rhs);
+
+extern Eurydice_uint128_t Eurydice_u128_band(Eurydice_uint128_t lhs, Eurydice_uint128_t rhs);
+
+extern Eurydice_int128_t Eurydice_i128_shl(Eurydice_int128_t lhs, uint32_t rhs);
+
 #if defined(__cplusplus)
 }
 #endif

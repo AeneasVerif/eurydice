@@ -836,27 +836,108 @@ let op_of_binop (op : C.binop) : Krml.Constant.op =
   | C.Shr -> BShiftR
   | _ -> fail "unsupported operator: %s" (C.show_binop op)
 
+let int128_op_of_op (op : K.op) : K.expr =
+  match op with
+  | Add -> Builtin.(expr_of_builtin i128_add)
+  | Sub -> Builtin.(expr_of_builtin i128_sub)
+  | Mult -> Builtin.(expr_of_builtin i128_mul)
+  | Div -> Builtin.(expr_of_builtin i128_div)
+  | Mod -> Builtin.(expr_of_builtin i128_mod)
+  | BShiftL -> Builtin.(expr_of_builtin i128_shl)
+  | BShiftR -> Builtin.(expr_of_builtin i128_shr)
+  | BAnd -> Builtin.(expr_of_builtin i128_band)
+  | BOr -> Builtin.(expr_of_builtin i128_bor)
+  | BXor -> Builtin.(expr_of_builtin i128_bxor)
+  | Eq -> Builtin.(expr_of_builtin i128_eq)
+  | Neq -> Builtin.(expr_of_builtin i128_neq)
+  | Lt -> Builtin.(expr_of_builtin i128_lt)
+  | Lte -> Builtin.(expr_of_builtin i128_lte)
+  | Gt -> Builtin.(expr_of_builtin i128_gt)
+  | Gte -> Builtin.(expr_of_builtin i128_gte)
+  | _ -> failwith "Unsupported operation for int128"
+let uint128_op_of_op (op : K.op) : K.expr =
+  match op with
+  | Add -> Builtin.(expr_of_builtin u128_add)
+  | Sub -> Builtin.(expr_of_builtin u128_sub)
+  | Mult -> Builtin.(expr_of_builtin u128_mul)
+  | Div -> Builtin.(expr_of_builtin u128_div)
+  | Mod -> Builtin.(expr_of_builtin u128_mod)
+  | BShiftL -> Builtin.(expr_of_builtin u128_shl)
+  | BShiftR -> Builtin.(expr_of_builtin u128_shr)
+  | BAnd -> Builtin.(expr_of_builtin u128_band)
+  | BOr -> Builtin.(expr_of_builtin u128_bor)
+  | BXor -> Builtin.(expr_of_builtin u128_bxor)
+  | Eq -> Builtin.(expr_of_builtin u128_eq)
+  | Neq -> Builtin.(expr_of_builtin u128_neq)
+  | Lt -> Builtin.(expr_of_builtin u128_lt)
+  | Lte -> Builtin.(expr_of_builtin u128_lte)
+  | Gt -> Builtin.(expr_of_builtin u128_gt)
+  | Gte -> Builtin.(expr_of_builtin u128_gte)
+  | _ -> failwith "Unsupported operation for uint128"
+
 let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
-  let w =
-    match first.typ with
-    | K.TInt w -> w
-    | K.TBool -> Bool
-    | t -> fail "Not an operator type: %a" ptyp t
-  in
-  let op =
-    if first.typ = K.TBool then
-      match op with
-      | BNot -> Krml.Constant.Not
-      | BAnd -> And
-      | BOr -> Or
-      | BXor -> Xor
-      | op -> op
+  (* For 128-bit integers, the case is different: convert the operator & match the case here *)
+  let op, ret_t =
+    if first.typ = Builtin.int128_t || first.typ = Builtin.uint128_t then
+        let op =
+          if first.typ = Builtin.int128_t then int128_op_of_op op
+          else uint128_op_of_op op
+        in
+        let ret_t, _ = Krml.Helpers.flatten_arrow op.typ in
+        op, ret_t
     else
-      op
+      (* Otherwise, simply the normal case *)
+      let w =
+        match first.typ with
+        | K.TInt w -> w
+        | K.TBool -> Bool
+        | t -> fail "Not an operator type: %a" ptyp t
+      in
+      let op =
+        if first.typ = K.TBool then
+          match op with
+          | BNot -> Krml.Constant.Not
+          | BAnd -> And
+          | BOr -> Or
+          | BXor -> Xor
+          | op -> op
+        else
+          op
+      in
+      let op_t = Krml.Helpers.type_of_op op w in
+      let op = K.(with_type op_t (EOp (op, w))) in
+      let ret_t, _ = Krml.Helpers.flatten_arrow op_t in
+      op, ret_t
   in
-  let op_t = Krml.Helpers.type_of_op op w in
-  let op = K.(with_type op_t (EOp (op, w))) in
-  let ret_t, _ = Krml.Helpers.flatten_arrow op_t in
+  (* Additionally, if the op is `shift` (BShiftL/R for usual, (u)int128_shl/r for 128 bits)
+    then the `rest` should be with a single element of type `uint32_t`
+    if it is not, turn to type casting. *)
+  (* Helper functions for this process *)
+  let is_128_bit_shift_lident lident =
+    List.mem lident @@ List.map (fun (x : Builtin.builtin) -> x.name) Builtin.[
+      i128_shl; i128_shr; u128_shl; u128_shr
+    ]
+  in
+  let modify_rest : K.expr list -> K.expr list = function
+  | [ e2 ] -> begin
+    match e2.node with
+    | EConstant (_, s) ->
+        let i = int_of_string s in
+        assert (i >= 0);
+        [ Krml.Helpers.mk_uint32 i ]
+    | _ ->
+        [ K.(with_type (TInt UInt32) (ECast (e2, TInt UInt32))) ]
+  end
+  | _ -> failwith
+    "Invalid call to binary operator `shiftl` or `shiftr` -- the number of operands is not 2"
+  in
+  (* Modify here *)
+  let rest =
+    match op.node with
+    | EOp (BShiftL,_) | EOp (BShiftR,_) -> modify_rest rest
+    | EQualified lident when is_128_bit_shift_lident lident -> modify_rest rest
+    | _ -> rest
+  in
   K.(with_type ret_t (EApp (op, first :: rest)))
 
 (* According to the rules (see my notebook), array and slice types do not need
@@ -1760,24 +1841,14 @@ let rec expression_of_switch_128bits
     env
     ret_var
     scrutinee
-    int_ty
     branches
     default : K.expr =
   let scrutinee = expression_of_operand env scrutinee in
-  let cmp_op =
-    match int_ty with
-    | C.I128 -> Builtin.(expr_of_builtin i128_eq)
-    | C.U128 -> Builtin.(expr_of_builtin u128_eq)
-    | _ -> failwith "Should only call this function with 128-bit integer types."
-  in
   let else_branch = expression_of_statement env ret_var default in
   let folder (svs, stmt) else_branch =
     (* [i1, i2, ..., in] ==> scrutinee == i1 || scrutinee == i2 || ... || scrutinee == in *)
     let guard =
-      let make_eq sv =
-        let sv = expression_of_scalar_value sv in
-        K.(with_type TBool (EApp (cmp_op, [ scrutinee; sv ])))
-      in
+      let make_eq sv = mk_op_app Eq scrutinee [ expression_of_scalar_value sv ] in
       List.map make_eq svs
       |> function
       | [] -> Krml.Helpers.etrue
@@ -1993,7 +2064,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
       K.(with_type t (EIfThenElse (expression_of_operand env op, e1, e2)))
   | Switch (SwitchInt (scrutinee, int_ty, branches, default)) ->
       if int_ty = I128 || int_ty = U128 then
-        expression_of_switch_128bits env ret_var scrutinee int_ty branches default
+        expression_of_switch_128bits env ret_var scrutinee branches default
       else
         let scrutinee = expression_of_operand env scrutinee in
         let branches =

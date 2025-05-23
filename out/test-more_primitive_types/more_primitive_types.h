@@ -23,6 +23,8 @@ typedef struct more_primitive_types_MorePrimitiveTypes_s
 }
 more_primitive_types_MorePrimitiveTypes;
 
+void more_primitive_types_int128_operations(more_primitive_types_MorePrimitiveTypes *p);
+
 int32_t more_primitive_types_match_u128(more_primitive_types_MorePrimitiveTypes *p);
 
 int32_t more_primitive_types_match_i128(more_primitive_types_MorePrimitiveTypes *p);
