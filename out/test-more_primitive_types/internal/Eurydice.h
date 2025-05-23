@@ -35,6 +35,10 @@ extern Eurydice_uint128_t Eurydice_u128_band(Eurydice_uint128_t lhs, Eurydice_ui
 
 extern Eurydice_int128_t Eurydice_i128_shl(Eurydice_int128_t lhs, uint32_t rhs);
 
+extern Eurydice_uint128_t Eurydice_u128_shl(Eurydice_uint128_t lhs, uint32_t rhs);
+
+extern Eurydice_uint128_t Eurydice_u128_shr(Eurydice_uint128_t lhs, uint32_t rhs);
+
 #if defined(__cplusplus)
 }
 #endif

@@ -9,7 +9,7 @@
 
 #include "internal/Eurydice.h"
 
-void more_primitive_types_int128_operations(more_primitive_types_MorePrimitiveTypes *p)
+int32_t more_primitive_types_int128_operations(more_primitive_types_MorePrimitiveTypes *p)
 {
   Eurydice_int128_t uu____0 = p->int128;
   Eurydice_int128_t
@@ -27,6 +27,11 @@ void more_primitive_types_int128_operations(more_primitive_types_MorePrimitiveTy
     Eurydice_u128_sub(Eurydice_u128_from_bits(0x0ULL, 0xffffffff1ULL),
       Eurydice_u128_from_bits(0x0ULL, 0x1fULL));
   p->uint128 = Eurydice_u128_band(uu____3, uu____4);
+  Eurydice_uint128_t uu____5 = p->uint128;
+  Eurydice_uint128_t
+  uu____6 = Eurydice_u128_shr(Eurydice_u128_from_bits(0x0ULL, 0x1ULL), (uint32_t)uu____5);
+  Eurydice_uint128_t x = Eurydice_u128_shl(uu____6, (uint32_t)p->int128);
+  return (int32_t)x;
 }
 
 int32_t more_primitive_types_match_u128(more_primitive_types_MorePrimitiveTypes *p)
