@@ -14,6 +14,11 @@
 #include "krml/internal/target.h"
 #include "krml/lowstar_endianness.h"
 
+// New types for 128-bit integers
+
+typedef __int128_t Eurydice_int128_t;
+typedef __uint128_t Eurydice_uint128_t;
+
 // C++ HELPERS
 
 #if defined(__cplusplus)
