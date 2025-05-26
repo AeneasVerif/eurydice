@@ -856,6 +856,8 @@ let op_128_of_op kind (op : K.op) : K.expr =
     | Lte -> "lte"
     | Gt -> "gt"
     | Gte -> "gte"
+    | Neg -> "neg"
+    | BNot -> "bnot"
     | _ -> failwith "Unsupported operation for uint128"
   in
   Builtin.get_128_op (kind, op_name)

@@ -29,6 +29,107 @@ fn int128_operations(p : &mut MorePrimitiveTypes) -> i32 {
     x as i32
 }
 
+fn more_operations(p : &mut MorePrimitiveTypes) -> i32 {
+    let mut result = 0;
+
+    // Add
+    result += (p.int128 + 1) as i32;
+    result += (p.uint128 + 1) as i32;
+
+    // Sub
+    result += (p.int128 - 1) as i32;
+    result += (p.uint128 - 1) as i32;
+
+    // Mult
+    result += (p.int128 * 2) as i32;
+    result += (p.uint128 * 2) as i32;
+
+    // Div
+    result += (p.int128 / 2) as i32;
+    result += (p.uint128 / 2) as i32;
+
+    // Mod
+    result += (p.int128 % 3) as i32;
+    result += (p.uint128 % 3) as i32;
+
+    // BShiftL
+    result += (p.int128 << 1) as i32;
+    result += (p.uint128 << 1) as i32;
+
+    // BShiftR
+    result += (p.int128 >> 1) as i32;
+    result += (p.uint128 >> 1) as i32;
+
+    // BAnd
+    result += (p.int128 & 0xff) as i32;
+    result += (p.uint128 & 0xff) as i32;
+
+    // BOr
+    result += (p.int128 | 0xff) as i32;
+    result += (p.uint128 | 0xff) as i32;
+
+    // BXor
+    result += (p.int128 ^ 0xff) as i32;
+    result += (p.uint128 ^ 0xff) as i32;
+
+    // Eq
+    if p.int128 == 0 {
+        result += 1;
+    }
+    if p.uint128 == 0 {
+        result += 1;
+    }
+
+    // Neq
+    if p.int128 != 0 {
+        result += 1;
+    }
+    if p.uint128 != 0 {
+        result += 1;
+    }
+
+    // Lt
+    if p.int128 < 0 {
+        result += 1;
+    }
+    if p.uint128 < 1 {
+        result += 1;
+    }
+
+    // Lte
+    if p.int128 <= 0 {
+        result += 1;
+    }
+    if p.uint128 <= 1 {
+        result += 1;
+    }
+
+    // Gt
+    if p.int128 > 0 {
+        result += 1;
+    }
+    if p.uint128 > 1 {
+        result += 1;
+    }
+
+    // Gte
+    if p.int128 >= 0 {
+        result += 1;
+    }
+    if p.uint128 >= 1 {
+        result += 1;
+    }
+
+    // Neg
+    result += (-p.int128) as i32;
+
+    // BNot
+    result += (!p.int128) as i32;
+    result += (!p.uint128) as i32;
+
+    result
+}
+
 fn use_more_primitive_types() {
     let s = b"ahello";
     let p = MorePrimitiveTypes {

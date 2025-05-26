@@ -79,6 +79,8 @@ let op_128_cfgs = [
   (("i", "shl"), (int128_t, TInt UInt32, int128_t));
   (("i", "shr"), (int128_t, TInt UInt32, int128_t));
   (("i", "bnot"), (int128_t, K.TUnit, int128_t));
+  (("i", "neg"), (int128_t, K.TUnit, int128_t));
+  (("u", "neg"), (uint128_t, K.TUnit, uint128_t));
   (("i", "eq"), (int128_t, int128_t, TBool));
   (("i", "lt"), (int128_t, int128_t, TBool));
   (("i", "gt"), (int128_t, int128_t, TBool));
