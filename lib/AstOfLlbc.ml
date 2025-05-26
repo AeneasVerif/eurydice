@@ -634,13 +634,13 @@ let expression_of_int128_t (value : Z.t) =
   if value < i128_min then
     failwith "value is smaller than the minimum value of i128";
   let high64, low64 = split_128bit value in
-  K.(with_type Builtin.int128_t (EApp (Builtin.(expr_of_builtin i128_from_bits), [ high64; low64 ])))
+  K.(with_type Builtin.int128_t (EApp (Builtin.(get_128_op ("i", "from_bits")), [ high64; low64 ])))
 let expression_of_uint128_t (value : Z.t) =
   let u128_max = Z.sub (Z.shift_left Z.one 128) Z.one in
   if value > u128_max then
     failwith "value is larger than the maximum value of u128";
   let high64, low64 = split_128bit value in
-  K.(with_type Builtin.uint128_t (EApp (Builtin.(expr_of_builtin u128_from_bits), [ high64; low64 ])))
+  K.(with_type Builtin.uint128_t (EApp (Builtin.(get_128_op ("u", "from_bits")), [ high64; low64 ])))
 
 let expression_of_scalar_value ({ C.int_ty; _ } as sv) : K.expr =
   match int_ty with
@@ -836,52 +836,37 @@ let op_of_binop (op : C.binop) : Krml.Constant.op =
   | C.Shr -> BShiftR
   | _ -> fail "unsupported operator: %s" (C.show_binop op)
 
-let int128_op_of_op (op : K.op) : K.expr =
-  match op with
-  | Add -> Builtin.(expr_of_builtin i128_add)
-  | Sub -> Builtin.(expr_of_builtin i128_sub)
-  | Mult -> Builtin.(expr_of_builtin i128_mul)
-  | Div -> Builtin.(expr_of_builtin i128_div)
-  | Mod -> Builtin.(expr_of_builtin i128_mod)
-  | BShiftL -> Builtin.(expr_of_builtin i128_shl)
-  | BShiftR -> Builtin.(expr_of_builtin i128_shr)
-  | BAnd -> Builtin.(expr_of_builtin i128_band)
-  | BOr -> Builtin.(expr_of_builtin i128_bor)
-  | BXor -> Builtin.(expr_of_builtin i128_bxor)
-  | Eq -> Builtin.(expr_of_builtin i128_eq)
-  | Neq -> Builtin.(expr_of_builtin i128_neq)
-  | Lt -> Builtin.(expr_of_builtin i128_lt)
-  | Lte -> Builtin.(expr_of_builtin i128_lte)
-  | Gt -> Builtin.(expr_of_builtin i128_gt)
-  | Gte -> Builtin.(expr_of_builtin i128_gte)
-  | _ -> failwith "Unsupported operation for int128"
-let uint128_op_of_op (op : K.op) : K.expr =
-  match op with
-  | Add -> Builtin.(expr_of_builtin u128_add)
-  | Sub -> Builtin.(expr_of_builtin u128_sub)
-  | Mult -> Builtin.(expr_of_builtin u128_mul)
-  | Div -> Builtin.(expr_of_builtin u128_div)
-  | Mod -> Builtin.(expr_of_builtin u128_mod)
-  | BShiftL -> Builtin.(expr_of_builtin u128_shl)
-  | BShiftR -> Builtin.(expr_of_builtin u128_shr)
-  | BAnd -> Builtin.(expr_of_builtin u128_band)
-  | BOr -> Builtin.(expr_of_builtin u128_bor)
-  | BXor -> Builtin.(expr_of_builtin u128_bxor)
-  | Eq -> Builtin.(expr_of_builtin u128_eq)
-  | Neq -> Builtin.(expr_of_builtin u128_neq)
-  | Lt -> Builtin.(expr_of_builtin u128_lt)
-  | Lte -> Builtin.(expr_of_builtin u128_lte)
-  | Gt -> Builtin.(expr_of_builtin u128_gt)
-  | Gte -> Builtin.(expr_of_builtin u128_gte)
-  | _ -> failwith "Unsupported operation for uint128"
+
+let op_128_of_op kind (op : K.op) : K.expr =
+  let op_name =
+    match op with
+    | Add -> "add"
+    | Sub -> "sub"
+    | Mult -> "mul"
+    | Div -> "div"
+    | Mod -> "mod"
+    | BShiftL -> "shl"
+    | BShiftR -> "shr"
+    | BAnd -> "band"
+    | BOr -> "bor"
+    | BXor -> "bxor"
+    | Eq -> "eq"
+    | Neq -> "neq"
+    | Lt -> "lt"
+    | Lte -> "lte"
+    | Gt -> "gt"
+    | Gte -> "gte"
+    | _ -> failwith "Unsupported operation for uint128"
+  in
+  Builtin.get_128_op (kind, op_name)
 
 let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
   (* For 128-bit integers, the case is different: convert the operator & match the case here *)
   let op, ret_t =
     if first.typ = Builtin.int128_t || first.typ = Builtin.uint128_t then
         let op =
-          if first.typ = Builtin.int128_t then int128_op_of_op op
-          else uint128_op_of_op op
+          if first.typ = Builtin.int128_t then op_128_of_op "i" op
+          else op_128_of_op "u" op
         in
         let ret_t, _ = Krml.Helpers.flatten_arrow op.typ in
         op, ret_t
@@ -914,9 +899,13 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
     if it is not, turn to type casting. *)
   (* Helper functions for this process *)
   let is_128_bit_shift_lident lident =
-    List.mem lident @@ List.map (fun (x : Builtin.builtin) -> x.name) Builtin.[
-      i128_shl; i128_shr; u128_shl; u128_shr
-    ]
+    [ Krml.Constant.BShiftL; BShiftR ]
+    |> List.concat_map (fun op -> [ op_128_of_op "i" op; op_128_of_op "u" op ])
+    |> List.map (fun (x : K.expr) ->
+      match x.K.node with 
+      | EQualified name -> name 
+      | _ -> failwith "IMPOSSIBLE")
+    |> List.mem lident
   in
   let modify_rest : K.expr list -> K.expr list = function
   | [ e2 ] -> begin

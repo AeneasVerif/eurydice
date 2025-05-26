@@ -47,507 +47,75 @@ let expr_of_builtin { name; typ; cg_args; _ } =
   let typ = List.fold_right (fun t acc -> K.TArrow (t, acc)) cg_args typ in
   K.(with_type typ (EQualified name))
 
-(*
-  The real implementations:
-
-Eurydice_int128_t Eurydice_i128_from_bits(uint64_t hi, uint64_t lo) {
-  return ((Eurydice_int128_t)hi << 64) | lo;
-}
-Eurydice_uint128_t Eurydice_u128_from_bits(uint64_t hi, uint64_t lo) {
-  return ((Eurydice_uint128_t)hi << 64) | lo;
-}
-bool Eurydice_i128_eq(Eurydice_int128_t x, Eurydice_int128_t y) {
-  return x == y;
-}
-bool Eurydice_u128_eq(Eurydice_uint128_t x, Eurydice_uint128_t y) {
-  return x == y;
-}
-*)
-let i128_from_bits =
+module Op128Map = Map.Make(struct
+  type t = string * string
+  let compare = Stdlib.compare
+end)
+(* Builtins for i128 and u128 are defined here but implemented in C. *)
+let mk_128_builtin_op kind op lhs_typ rhs_typ ret_typ =
+  let name = [ "Eurydice" ], kind ^ "128_" ^ op in
+  let args, arg_names =
+    match rhs_typ with
+    | K.TUnit -> [ lhs_typ ], [ "lhs" ]
+    | rhs -> [ lhs_typ; rhs ], [ "lhs"; "rhs" ]
+  in
   {
-    name = [ "Eurydice" ], "i128_from_bits";
-    typ = Krml.Helpers.fold_arrow [ Krml.Helpers.uint64; Krml.Helpers.uint64 ] int128_t;
-    n_type_args = 0;
-    cg_args = [ ];
-    arg_names = [ "high"; "low" ];
-  }
-let u128_from_bits =
-  {
-    name = [ "Eurydice" ], "u128_from_bits";
-    typ = Krml.Helpers.fold_arrow [ Krml.Helpers.uint64; Krml.Helpers.uint64 ] uint128_t;
-    n_type_args = 0;
-    cg_args = [ ];
-    arg_names = [ "high"; "low" ];
-  }
-let i128_eq =
-  {
-    name = [ "Eurydice" ], "i128_eq";
-    typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] TBool;
-    n_type_args = 0;
-    cg_args = [ ];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-let u128_eq =
-  {
-    name = [ "Eurydice" ], "u128_eq";
-    typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] TBool;
-    n_type_args = 0;
-    cg_args = [ ];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-(*
-Eurydice_int128_t Eurydice_i128_add(Eurydice_int128_t lhs, Eurydice_int128_t rhs) {
-  return lhs + rhs;
-}
-Eurydice_uint128_t Eurydice_u128_add(Eurydice_uint128_t lhs, Eurydice_uint128_t rhs) {
-  return lhs + rhs;
-}
-Eurydice_int128_t Eurydice_i128_sub(Eurydice_int128_t lhs, Eurydice_int128_t rhs) {
-  return lhs - rhs;
-}
-Eurydice_uint128_t Eurydice_u128_sub(Eurydice_uint128_t lhs, Eurydice_uint128_t rhs) {
-  return lhs - rhs;
-}
-Eurydice_int128_t Eurydice_i128_mul(Eurydice_int128_t lhs, Eurydice_int128_t rhs) {
-  return lhs * rhs;
-}
-Eurydice_uint128_t Eurydice_u128_mul(Eurydice_uint128_t lhs, Eurydice_uint128_t rhs) {
-  return lhs * rhs;
-}
-Eurydice_int128_t Eurydice_i128_div(Eurydice_int128_t lhs, Eurydice_int128_t rhs) {
-  return lhs / rhs;
-}
-Eurydice_uint128_t Eurydice_u128_div(Eurydice_uint128_t lhs, Eurydice_uint128_t rhs) {
-  return lhs / rhs;
-}
-Eurydice_int128_t Eurydice_i128_mod(Eurydice_int128_t lhs, Eurydice_int128_t rhs) {
-  return lhs % rhs;
-}
-Eurydice_uint128_t Eurydice_u128_mod(Eurydice_uint128_t lhs, Eurydice_uint128_t rhs) {
-  return lhs % rhs;
-}
-Eurydice_int128_t Eurydice_i128_bor(Eurydice_int128_t lhs, Eurydice_int128_t rhs) {
-  return lhs | rhs;
-}
-Eurydice_uint128_t Eurydice_u128_bor(Eurydice_uint128_t lhs, Eurydice_uint128_t rhs) {
-  return lhs | rhs;
-}
-Eurydice_int128_t Eurydice_i128_band(Eurydice_int128_t lhs, Eurydice_int128_t rhs) {
-  return lhs & rhs;
-}
-Eurydice_uint128_t Eurydice_u128_band(Eurydice_uint128_t lhs, Eurydice_uint128_t rhs) {
-  return lhs & rhs;
-}
-Eurydice_int128_t Eurydice_i128_bxor(Eurydice_int128_t lhs, Eurydice_int128_t rhs) {
-  return lhs ^ rhs;
-}
-Eurydice_uint128_t Eurydice_u128_bxor(Eurydice_uint128_t lhs, Eurydice_uint128_t rhs) {
-  return lhs ^ rhs;
-}
-Eurydice_int128_t Eurydice_i128_shl(Eurydice_int128_t lhs, uint32_t rhs) {
-  return lhs << rhs;
-}
-Eurydice_uint128_t Eurydice_u128_shl(Eurydice_uint128_t lhs, uint32_t rhs) {
-  return lhs << rhs;
-}
-Eurydice_int128_t Eurydice_i128_shr(Eurydice_int128_t lhs, uint32_t rhs) {
-  return lhs >> rhs;
-}
-Eurydice_uint128_t Eurydice_u128_shr(Eurydice_uint128_t lhs, uint32_t rhs) {
-  return lhs >> rhs;
-}
-Eurydice_int128_t Eurydice_i128_bnot(Eurydice_int128_t x) {
-  return ~x;
-}
-Eurydice_uint128_t Eurydice_u128_bnot(Eurydice_uint128_t x) {
-  return ~x;
-}
-bool Eurydice_i128_lt(Eurydice_int128_t lhs, Eurydice_int128_t rhs) {
-  return lhs < rhs;
-}
-bool Eurydice_u128_lt(Eurydice_uint128_t lhs, Eurydice_uint128_t rhs) {
-  return lhs < rhs;
-}
-bool Eurydice_i128_gt(Eurydice_int128_t lhs, Eurydice_int128_t rhs) {
-  return lhs > rhs;
-}
-bool Eurydice_u128_gt(Eurydice_uint128_t lhs, Eurydice_uint128_t rhs) {
-  return lhs > rhs;
-}
-bool Eurydice_i128_lte(Eurydice_int128_t lhs, Eurydice_int128_t rhs) {
-  return lhs <= rhs;
-}
-bool Eurydice_u128_lte(Eurydice_uint128_t lhs, Eurydice_uint128_t rhs) {
-  return lhs <= rhs;
-}
-bool Eurydice_i128_gte(Eurydice_int128_t lhs, Eurydice_int128_t rhs) {
-  return lhs >= rhs;
-}
-bool Eurydice_u128_gte(Eurydice_uint128_t lhs, Eurydice_uint128_t rhs) {
-  return lhs >= rhs;
-}
-bool Eurydice_i128_neq(Eurydice_int128_t lhs, Eurydice_int128_t rhs) {
-  return lhs != rhs;
-}
-bool Eurydice_u128_neq(Eurydice_uint128_t lhs, Eurydice_uint128_t rhs) {
-  return lhs != rhs;
-}
-*)
-let i128_add =
-  {
-    name = [ "Eurydice" ], "i128_add";
-    typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] int128_t;
+    name;
+    typ = Krml.Helpers.fold_arrow args ret_typ;
     n_type_args = 0;
     cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
+    arg_names;
   }
-
-let u128_add =
-  {
-    name = [ "Eurydice" ], "u128_add";
-    typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] uint128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let i128_sub =
-  {
-    name = [ "Eurydice" ], "i128_sub";
-    typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] int128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let u128_sub =
-  {
-    name = [ "Eurydice" ], "u128_sub";
-    typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] uint128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let i128_mul =
-  {
-    name = [ "Eurydice" ], "i128_mul";
-    typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] int128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let u128_mul =
-  {
-    name = [ "Eurydice" ], "u128_mul";
-    typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] uint128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let i128_div =
-  {
-    name = [ "Eurydice" ], "i128_div";
-    typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] int128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let u128_div =
-  {
-    name = [ "Eurydice" ], "u128_div";
-    typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] uint128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let i128_mod =
-  {
-    name = [ "Eurydice" ], "i128_mod";
-    typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] int128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let u128_mod =
-  {
-    name = [ "Eurydice" ], "u128_mod";
-    typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] uint128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let i128_bor =
-  {
-    name = [ "Eurydice" ], "i128_bor";
-    typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] int128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let u128_bor =
-  {
-    name = [ "Eurydice" ], "u128_bor";
-    typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] uint128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let i128_band =
-  {
-    name = [ "Eurydice" ], "i128_band";
-    typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] int128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let u128_band =
-  {
-    name = [ "Eurydice" ], "u128_band";
-    typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] uint128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let i128_bxor =
-  {
-    name = [ "Eurydice" ], "i128_bxor";
-    typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] int128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let u128_bxor =
-  {
-    name = [ "Eurydice" ], "u128_bxor";
-    typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] uint128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let i128_shl =
-  {
-    name = [ "Eurydice" ], "i128_shl";
-    typ = Krml.Helpers.fold_arrow [ int128_t; TInt UInt32 ] int128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let u128_shl =
-  {
-    name = [ "Eurydice" ], "u128_shl";
-    typ = Krml.Helpers.fold_arrow [ uint128_t; TInt UInt32 ] uint128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let i128_shr =
-  {
-    name = [ "Eurydice" ], "i128_shr";
-    typ = Krml.Helpers.fold_arrow [ int128_t; TInt UInt32 ] int128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let u128_shr =
-  {
-    name = [ "Eurydice" ], "u128_shr";
-    typ = Krml.Helpers.fold_arrow [ uint128_t; TInt UInt32 ] uint128_t;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-let i128_bnot = {
-  name = [ "Eurydice" ], "i128_bnot";
-  typ = Krml.Helpers.fold_arrow [int128_t] int128_t;
-  n_type_args = 0;
-  cg_args = [];
-  arg_names = ["x"];
-}
-
-let u128_bnot = {
-  name = [ "Eurydice" ], "u128_bnot";
-  typ = Krml.Helpers.fold_arrow [uint128_t] uint128_t;
-  n_type_args = 0;
-  cg_args = [];
-  arg_names = ["x"];
-}
-
-let i128_lt =
-  {
-    name = [ "Eurydice" ], "i128_lt";
-    typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] TBool;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let u128_lt =
-  {
-    name = [ "Eurydice" ], "u128_lt";
-    typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] TBool;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let i128_gt =
-  {
-    name = [ "Eurydice" ], "i128_gt";
-    typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] TBool;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let u128_gt =
-  {
-    name = [ "Eurydice" ], "u128_gt";
-    typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] TBool;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-let i128_lte =
-  {
-    name = [ "Eurydice" ], "i128_lte";
-    typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] TBool;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let u128_lte =
-  {
-    name = [ "Eurydice" ], "u128_lte";
-    typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] TBool;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let i128_gte =
-  {
-    name = [ "Eurydice" ], "i128_gte";
-    typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] TBool;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let u128_gte =
-  {
-    name = [ "Eurydice" ], "u128_gte";
-    typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] TBool;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let i128_neq =
-  {
-    name = [ "Eurydice" ], "i128_neq";
-    typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] TBool;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-let u128_neq =
-  {
-    name = [ "Eurydice" ], "u128_neq";
-    typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] TBool;
-    n_type_args = 0;
-    cg_args = [];
-    arg_names = [ "lhs"; "rhs" ];
-  }
-
-  let i128_addW =
-    {
-      name = [ "Eurydice" ], "i128_addW";
-      typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] int128_t;
-      n_type_args = 0;
-      cg_args = [];
-      arg_names = [ "lhs"; "rhs" ];
-    }
-
-  let u128_addW =
-    {
-      name = [ "Eurydice" ], "u128_addW";
-      typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] uint128_t;
-      n_type_args = 0;
-      cg_args = [];
-      arg_names = [ "lhs"; "rhs" ];
-    }
-
-  let i128_subW =
-    {
-      name = [ "Eurydice" ], "i128_subW";
-      typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] int128_t;
-      n_type_args = 0;
-      cg_args = [];
-      arg_names = [ "lhs"; "rhs" ];
-    }
-
-  let u128_subW =
-    {
-      name = [ "Eurydice" ], "u128_subW";
-      typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] uint128_t;
-      n_type_args = 0;
-      cg_args = [];
-      arg_names = [ "lhs"; "rhs" ];
-    }
-
-  let i128_divW =
-    {
-      name = [ "Eurydice" ], "i128_divW";
-      typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] int128_t;
-      n_type_args = 0;
-      cg_args = [];
-      arg_names = [ "lhs"; "rhs" ];
-    }
-
-  let u128_divW =
-    {
-      name = [ "Eurydice" ], "u128_divW";
-      typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] uint128_t;
-      n_type_args = 0;
-      cg_args = [];
-      arg_names = [ "lhs"; "rhs" ];
-    }
-
-  let i128_multW =
-    {
-      name = [ "Eurydice" ], "i128_multW";
-      typ = Krml.Helpers.fold_arrow [ int128_t; int128_t ] int128_t;
-      n_type_args = 0;
-      cg_args = [];
-      arg_names = [ "lhs"; "rhs" ];
-    }
-
-  let u128_multW =
-    {
-      name = [ "Eurydice" ], "u128_multW";
-      typ = Krml.Helpers.fold_arrow [ uint128_t; uint128_t ] uint128_t;
-      n_type_args = 0;
-      cg_args = [];
-      arg_names = [ "lhs"; "rhs" ];
-    }
+let op_128_cfgs = [
+  (("i", "from_bits"), (Krml.Helpers.uint64, Krml.Helpers.uint64, int128_t));
+  (("i", "add"), (int128_t, int128_t, int128_t));
+  (("i", "sub"), (int128_t, int128_t, int128_t));
+  (("i", "mul"), (int128_t, int128_t, int128_t));
+  (("i", "div"), (int128_t, int128_t, int128_t));
+  (("i", "mod"), (int128_t, int128_t, int128_t));
+  (("i", "bor"), (int128_t, int128_t, int128_t));
+  (("i", "band"), (int128_t, int128_t, int128_t));
+  (("i", "bxor"), (int128_t, int128_t, int128_t));
+  (("i", "shl"), (int128_t, TInt UInt32, int128_t));
+  (("i", "shr"), (int128_t, TInt UInt32, int128_t));
+  (("i", "bnot"), (int128_t, K.TUnit, int128_t));
+  (("i", "eq"), (int128_t, int128_t, TBool));
+  (("i", "lt"), (int128_t, int128_t, TBool));
+  (("i", "gt"), (int128_t, int128_t, TBool));
+  (("i", "lte"), (int128_t, int128_t, TBool));
+  (("i", "gte"), (int128_t, int128_t, TBool));
+  (("i", "neq"), (int128_t, int128_t, TBool));
+  (("i", "addW"), (int128_t, int128_t, int128_t));
+  (("i", "subW"), (int128_t, int128_t, int128_t));
+  (("i", "divW"), (int128_t, int128_t, int128_t));
+  (("i", "multW"), (int128_t, int128_t, int128_t));
+  (("u", "from_bits"), (Krml.Helpers.uint64, Krml.Helpers.uint64, uint128_t));
+  (("u", "add"), (uint128_t, uint128_t, uint128_t));
+  (("u", "sub"), (uint128_t, uint128_t, uint128_t));
+  (("u", "mul"), (uint128_t, uint128_t, uint128_t));
+  (("u", "div"), (uint128_t, uint128_t, uint128_t));
+  (("u", "mod"), (uint128_t, uint128_t, uint128_t));
+  (("u", "bor"), (uint128_t, uint128_t, uint128_t));
+  (("u", "band"), (uint128_t, uint128_t, uint128_t));
+  (("u", "bxor"), (uint128_t, uint128_t, uint128_t));
+  (("u", "shl"), (uint128_t, TInt UInt32, uint128_t));
+  (("u", "shr"), (uint128_t, TInt UInt32, uint128_t));
+  (("u", "bnot"), (uint128_t, K.TUnit, uint128_t));
+  (("u", "eq"), (uint128_t, uint128_t, TBool));
+  (("u", "lt"), (uint128_t, uint128_t, TBool));
+  (("u", "gt"), (uint128_t, uint128_t, TBool));
+  (("u", "lte"), (uint128_t, uint128_t, TBool));
+  (("u", "gte"), (uint128_t, uint128_t, TBool));
+  (("u", "neq"), (uint128_t, uint128_t, TBool));
+  (("u", "addW"), (uint128_t, uint128_t, uint128_t));
+  (("u", "subW"), (uint128_t, uint128_t, uint128_t));
+  (("u", "divW"), (uint128_t, uint128_t, uint128_t));
+  (("u", "multW"), (uint128_t, uint128_t, uint128_t));
+] |> List.fold_left (fun acc ((kind, op), (lhs_typ, rhs_typ, ret_typ)) ->
+  Op128Map.add (kind, op) (mk_128_builtin_op kind op lhs_typ rhs_typ ret_typ) acc
+) Op128Map.empty
+let get_128_op (kind, op) : K.expr =
+  expr_of_builtin @@ Op128Map.find (kind, op) op_128_cfgs
 
 let array_to_slice =
   {
@@ -924,51 +492,8 @@ let files =
                [ Krml.Common.Private ]
            in
            K.DExternal (None, flags, List.length cg_args, n_type_args, name, typ, arg_names))
+        begin
          [
-          i128_from_bits;
-          u128_from_bits;
-          i128_eq;
-          u128_eq;
-          i128_add;
-          u128_add;
-          i128_sub;
-          u128_sub;
-          i128_mul;
-          u128_mul;
-          i128_div;
-          u128_div;
-          i128_mod;
-          u128_mod;
-          i128_bor;
-          u128_bor;
-          i128_band;
-          u128_band;
-          i128_bxor;
-          u128_bxor;
-          i128_shl;
-          u128_shl;
-          i128_shr;
-          u128_shr;
-          i128_bnot;
-          u128_bnot;
-          i128_lt;
-          u128_lt;
-          i128_gt;
-          u128_gt;
-          i128_lte;
-          u128_lte;
-          i128_gte;
-          u128_gte;
-          i128_neq;
-          u128_neq;
-          i128_addW;
-          u128_addW;
-          i128_subW;
-          u128_subW;
-          i128_divW;
-          u128_divW;
-          i128_multW;
-          u128_multW;
            array_to_slice;
            array_to_subslice;
            array_to_subslice_to;
@@ -998,6 +523,13 @@ let files =
            shr_pv_u8;
            min_u32;
          ]
+         (* Declares the 128-bit operations *)
+         @ begin
+          Op128Map.to_seq op_128_cfgs
+          |> List.of_seq
+          |> List.map snd
+         end
+      end
        @ [ nonzero_def; static_assert; dst_def ]
      in
      "Eurydice", externals);
