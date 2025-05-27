@@ -458,7 +458,16 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TTraitType _ -> failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
   | TArrow binder | TClosure (_, _, _, binder) ->
       let ts, t = binder.binder_value in
-      Krml.Helpers.fold_arrow (List.map (typ_of_ty env) ts) (typ_of_ty env t)
+      let typs = List.map (typ_of_ty env) ts in
+      let typs =
+        match typs with
+        | [] -> [ K.TUnit ]
+        | typs -> typs
+      in begin
+      match typ_of_ty env t with
+      | TArrow _ -> failwith "Function pointer `fn` currying is not supported, consider using `&'static dyn Fn` instead."
+      | typ -> Krml.Helpers.fold_arrow typs typ
+      end
   | TError _ -> failwith "Found type error in charon's output"
 
 and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =

@@ -9,12 +9,20 @@ TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.
 # Warn on old versions of bash
 _ := $(shell bash -c '(( $${BASH_VERSION%%.*} >= 4 ))')
 ifneq ($(.SHELLSTATUS),0)
-_: $(error "bash version is too old, install a newer bash")
+_: $(error "bash version is too old; hint: brew install bash")
 endif
 
 # Enable `foo/**` glob syntax
 SHELL := bash -O globstar 
-SED=$(shell which gsed &>/dev/null && echo gsed || echo sed)
+
+ifeq ($(shell uname -s),Darwin)
+  ifeq (,$(shell which gsed))
+    $(error gsed not found; try brew install gnu-sed)
+  endif
+  SED=gsed
+else
+  SED=sed
+endif
 
 .PHONY: all
 all: format-check

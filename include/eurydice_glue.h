@@ -321,6 +321,9 @@ static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) {
 static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
   return x - y;
 }
+static inline uint64_t core_num__u64_9__rotate_left(uint64_t x0, uint32_t x1) {
+  return (x0 << x1 | x0 >> (64 - x1));
+}
 
 static inline void core_ops_arith__i32_319__add_assign(int32_t *x0,
                                                        int32_t *x1) {
