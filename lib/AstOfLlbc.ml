@@ -849,6 +849,7 @@ let blocklisted_trait_decls =
   [
     (* Handled primitively. *)
     "core::cmp::PartialEq";
+    "core::ops::function::FnMut";
     (* These don't have methods *)
     "core::marker::Sized";
     "core::marker::Send";
