@@ -901,17 +901,19 @@ type trait_clause_mapping = ((C.trait_instance_id * string) * trait_clause_entry
    the types we obtain by looking up the trait declaration have Self as 0
    (DeBruijn).
 *)
-let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause list) : trait_clause_mapping
-    =
+let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause list) :
+    trait_clause_mapping =
   let depth = Option.value ~default:"" depth in
   List.concat_map
     (fun tc ->
       let { C.clause_id; trait = { binder_value = { trait_decl_id; decl_generics }; _ }; _ } = tc in
       let trait_decl = env.get_nth_trait_decl trait_decl_id in
-      (* Since we recurse on the trait *declaration* for the parent clauses, we need to substitute
-         the effective arguments (known here from decl_generics, above) for the formal arguments (as
-         declared in the trait declaration). *)
-      let subst = Charon.Substitute.(st_substitute_visitor#visit_trait_clause (make_subst_from_generics trait_decl.generics decl_generics)) in
+      (* Every item inside the `trait_decl` may refer to generic params of the
+         trait. To get items that are valid to return outside of the scope of
+         the trait, we must substitute them with the given generics. We should
+         in principle substitute everything but we currently don't. This will
+         likely be a source of bugs. *)
+      let subst = Charon.Substitute.make_subst_from_generics trait_decl.generics decl_generics in
 
       let name = string_of_name env trait_decl.item_meta.name in
       if List.mem name blocklisted_trait_decls then
@@ -953,8 +955,10 @@ let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause li
         @ List.flatten
             (List.mapi
                (fun _i (parent_clause : C.trait_clause) ->
-                 (* With concrete type arguments (instead of formal parameters) *)
-                 let parent_clause = subst parent_clause in
+                 (* Make the clause valid outside the scope of the trait decl. *)
+                 let parent_clause =
+                   Charon.Substitute.st_substitute_visitor#visit_trait_clause subst parent_clause
+                 in
                  (* Mapping of the methods of the parent clause *)
                  let m = build_trait_clause_mapping env ~depth:(depth ^ "--") [ parent_clause ] in
                  List.map
