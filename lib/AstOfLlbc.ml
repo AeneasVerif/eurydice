@@ -1296,7 +1296,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                       let fn_ptr = fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr) in
                       fn_ptr)
                     trait_impl.methods
-                @ build_trait_ref_mapping ("  " ^ depth) (_generics.trait_refs @ trait_impl.parent_trait_refs)
+                @ build_trait_ref_mapping ("  " ^ depth) (*_generics.trait_refs*)trait_impl.parent_trait_refs
             | Clause _ as clause_id ->
                 (* Caller it itself polymorphic and refers to one of its own clauses to synthesize
                    the clause arguments at call-site. We must pass whatever is relevant for this

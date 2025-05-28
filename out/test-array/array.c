@@ -65,11 +65,12 @@ A monomorphic instance of array.mk_incr.call_once_9a
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr_call_once_9a_95(size_t _)
+uint32_t array_mk_incr_call_once_9a_95(size_t args)
 {
   /* original Rust expression is not an lvalue in C */
   void *lvalue = (void *)0U;
-  return array_mk_incr_call_mut_b4_95(&lvalue, _);
+  void **temp_ref = &lvalue;
+  return array_mk_incr_call_mut_b4_95(temp_ref, args);
 }
 
 /**
@@ -109,9 +110,10 @@ A monomorphic instance of array.mk_incr2.call_once_d4
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr2_call_once_d4_95(uint32_t *_, size_t _0)
+uint32_t array_mk_incr2_call_once_d4_95(uint32_t *state, size_t args)
 {
-  return array_mk_incr2_call_mut_ae_95(&_, _0);
+  uint32_t **temp_ref = &state;
+  return array_mk_incr2_call_mut_ae_95(temp_ref, args);
 }
 
 /**
@@ -156,11 +158,12 @@ A monomorphic instance of array.plus_one.call_once_42
 with const generics
 - K= 1
 */
-uint16_t array_plus_one_call_once_42_74(uint32_t _)
+uint16_t array_plus_one_call_once_42_74(uint32_t args)
 {
   /* original Rust expression is not an lvalue in C */
   void *lvalue = (void *)0U;
-  return array_plus_one_call_mut_9c_74(&lvalue, _);
+  void **temp_ref = &lvalue;
+  return array_plus_one_call_mut_9c_74(temp_ref, args);
 }
 
 /**
