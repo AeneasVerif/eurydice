@@ -32,6 +32,10 @@ fn mk_incr<const K: usize>() -> [ u32; K ] {
     core::array::from_fn(|i| i as u32)
 }
 
+fn plus_one<const K: usize>(x: [u32; K]) -> [u16;K] {
+    x.map(|x| (x + 1) as u16)
+}
+
 fn main() {
     // XXX1
     let Foo { x, y } = mk_foo2();
@@ -46,4 +50,7 @@ fn main() {
     let a: [ u32; 10 ] = mk_incr2();
     let expected = 10;
     assert_eq!(a[9], expected);
+    // XXX4
+    let a = plus_one([0u32]);
+    assert_eq!(a[0], 1u16);
 }

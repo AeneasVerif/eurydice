@@ -97,6 +97,33 @@ with const generics
 */
 void array_mk_incr2_95(uint32_t ret[10U]);
 
+/**
+This function found in impl {(core::ops::function::FnMut<(u32), u16> for array::plus_one::closure<K>)}
+*/
+/**
+A monomorphic instance of array.plus_one.call_mut_9c
+with const generics
+- K= 1
+*/
+uint16_t array_plus_one_call_mut_9c_74(void **_, uint32_t tupled_args);
+
+/**
+This function found in impl {(core::ops::function::FnOnce<(u32), u16> for array::plus_one::closure<K>)}
+*/
+/**
+A monomorphic instance of array.plus_one.call_once_42
+with const generics
+- K= 1
+*/
+uint16_t array_plus_one_call_once_42_74(uint32_t args);
+
+/**
+A monomorphic instance of array.plus_one
+with const generics
+- K= 1
+*/
+void array_plus_one_74(uint32_t x[1U], uint16_t ret[1U]);
+
 void array_main(void);
 
 #if defined(__cplusplus)

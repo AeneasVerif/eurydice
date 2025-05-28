@@ -136,12 +136,68 @@ void array_mk_incr2_95(uint32_t ret[10U])
   memcpy(ret, ret0, (size_t)10U * sizeof (uint32_t));
 }
 
+/**
+This function found in impl {(core::ops::function::FnMut<(u32), u16> for array::plus_one::closure<K>)}
+*/
+/**
+A monomorphic instance of array.plus_one.call_mut_9c
+with const generics
+- K= 1
+*/
+uint16_t array_plus_one_call_mut_9c_74(void **_, uint32_t tupled_args)
+{
+  uint32_t x = tupled_args;
+  return (uint16_t)(x + 1U);
+}
+
+/**
+This function found in impl {(core::ops::function::FnOnce<(u32), u16> for array::plus_one::closure<K>)}
+*/
+/**
+A monomorphic instance of array.plus_one.call_once_42
+with const generics
+- K= 1
+*/
+uint16_t array_plus_one_call_once_42_74(uint32_t args)
+{
+  /* original Rust expression is not an lvalue in C */
+  void *lvalue = (void *)0U;
+  void **temp_ref = &lvalue;
+  return array_plus_one_call_mut_9c_74(temp_ref, args);
+}
+
+/**
+A monomorphic instance of array.plus_one
+with const generics
+- K= 1
+*/
+void array_plus_one_74(uint32_t x[1U], uint16_t ret[1U])
+{
+  /* Passing arrays by value in Rust generates a copy in C */
+  uint32_t copy_of_x[1U];
+  memcpy(copy_of_x, x, (size_t)1U * sizeof (uint32_t));
+  uint16_t ret0[1U];
+  {
+    /* original Rust expression is not an lvalue in C */
+    void *lvalue = (void *)0U;
+    ret0[0U] = array_plus_one_call_mut_9c_74(&lvalue, copy_of_x[0U]);
+  }
+  memcpy(ret, ret0, (size_t)1U * sizeof (uint16_t));
+}
+
 typedef struct _uint32_t__x2_s
 {
   uint32_t *fst;
   uint32_t *snd;
 }
 _uint32_t__x2;
+
+typedef struct _uint16_t__x2_s
+{
+  uint16_t *fst;
+  uint16_t *snd;
+}
+_uint16_t__x2;
 
 void array_main(void)
 {
@@ -169,7 +225,6 @@ void array_main(void)
   _uint32_t__x2 uu____4;
   uu____4.fst = x;
   uu____4.snd = &unsigned0;
-  /* XXX3 */
   uint32_t *left_val0 = uu____4.fst;
   uint32_t *right_val0 = uu____4.snd;
   EURYDICE_ASSERT(left_val0[0U] == right_val0[0U], "panic!");
@@ -178,8 +233,8 @@ void array_main(void)
   _uint32_t__x2 uu____5;
   uu____5.fst = &a[9U];
   /* original Rust expression is not an lvalue in C */
-  uint32_t lvalue = 9U;
-  uu____5.snd = &lvalue;
+  uint32_t lvalue0 = 9U;
+  uu____5.snd = &lvalue0;
   uint32_t *left_val1 = uu____5.fst;
   uint32_t *right_val1 = uu____5.snd;
   EURYDICE_ASSERT(left_val1[0U] == right_val1[0U], "panic!");
@@ -190,7 +245,18 @@ void array_main(void)
   uu____6.fst = &a0[9U];
   uu____6.snd = &expected;
   uint32_t *left_val = uu____6.fst;
-  uint32_t *right_val = uu____6.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  uint32_t *right_val2 = uu____6.snd;
+  EURYDICE_ASSERT(left_val[0U] == right_val2[0U], "panic!");
+  uint16_t a1[1U];
+  uint32_t buf[1U] = { 0U };
+  array_plus_one_74(buf, a1);
+  _uint16_t__x2 uu____7;
+  uu____7.fst = a1;
+  /* original Rust expression is not an lvalue in C */
+  uint16_t lvalue = 1U;
+  uu____7.snd = &lvalue;
+  uint16_t *left_val2 = uu____7.fst;
+  uint16_t *right_val = uu____7.snd;
+  EURYDICE_ASSERT(left_val2[0U] == right_val[0U], "panic!");
 }
 

@@ -360,33 +360,23 @@ let remove_array_from_fn files =
                     ]
                   )))
 
-        | ETApp ({ node = EQualified ("core" :: "array" :: _, "map"); _ }, [ len ], _, ts) ->
+        | ETApp ({ node = EQualified ("core" :: "array" :: _, "map"); _ }, [ len ], [ call_mut; _call_once], ts) ->
             let t_src, t_dst =
               match ts with
-              | [ t_src; t_closure; t_dst ] ->
-                  assert (t_closure = TArrow (t_src, t_dst));
+              | [ t_src; t_state; t_dst ] ->
+                  assert (t_state = TUnit);
                   L.log "Cleanup2" "found array map from %a to %a" ptyp t_src ptyp t_dst;
                   t_src, t_dst
               | _ ->
                   failwith "TODO: unknown map closure shape; is it an array outparam? (see above)"
             in
-            let e_src, e_closure, e_dst =
+            let e_src, e_state, e_dst =
               match es with
-              | [ e_src; e_closure; e_dst ] -> e_src, e_closure, e_dst
+              | [ e_src; e_state; e_dst ] -> e_src, e_state, e_dst
               | _ -> failwith "unknown shape of arguments to array map"
             in
-            let closure_lid, state =
-              match e_closure.node with
-              | EQualified _ -> e_closure, []
-              | EApp (({ node = EQualified lid; _ } as hd), [ e_state ]) ->
-                  L.log "Cleanup2" "map closure=%a" pexpr
-                    (Krml.DeBruijn.subst e_state 0 (Hashtbl.find defs lid));
-                  hd, [ e_state ]
-              | _ ->
-                  L.log "Cleanup2" "map closure=%a" pexpr (List.hd es);
-                  failwith "unexpected map closure shape"
-            in
             let lift1 = Krml.DeBruijn.lift 1 in
+            let e_state = with_type (TBuf (e_state.typ, false)) (EAddrOf (lift1 e_state)) in
             EFor
               ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
                 H.zero_usize (* i = 0 *),
@@ -398,7 +388,7 @@ let remove_array_from_fn files =
                   (EBufWrite
                      ( lift1 e_dst,
                        i,
-                       with_type t_dst (EApp (closure_lid, List.map lift1 state @ [ e_src_i ])) ))
+                       with_type t_dst (EApp (call_mut, [ lift1 e_state; e_src_i ])) ))
               )
         | _ -> super#visit_EApp env e es
     end
