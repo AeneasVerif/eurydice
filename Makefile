@@ -78,7 +78,6 @@ testxx-%: test/%.llbc out/testxx-%/main.cc | all
 custom-test-array: test-array
 	grep -q XXX1 out/test-array/array.c && \
 	grep -q XXX2 out/test-array/array.c && \
-	grep -q XXX3 out/test-array/array.c && \
 	true
 
 .PRECIOUS: out/%

@@ -34,12 +34,26 @@ This function found in impl {(where_clauses_closures::Ops<1: usize> for usize)}
 size_t where_clauses_closures_of_usize_d6(size_t x);
 
 /**
-A monomorphic instance of where_clauses_closures.test.closure
+This function found in impl {(core::ops::function::FnMut<(usize), T> for where_clauses_closures::test::closure<T, K>[TraitClause@0, TraitClause@1, TraitClause@2])}
+*/
+/**
+A monomorphic instance of where_clauses_closures.test.call_mut_c3
 with types size_t
 with const generics
 - K= 1
 */
-size_t where_clauses_closures_test_closure_e3(size_t i);
+size_t where_clauses_closures_test_call_mut_c3_e3(void **_, size_t tupled_args);
+
+/**
+This function found in impl {(core::ops::function::FnOnce<(usize), T> for where_clauses_closures::test::closure<T, K>[TraitClause@0, TraitClause@1, TraitClause@2])}
+*/
+/**
+A monomorphic instance of where_clauses_closures.test.call_once_ef
+with types size_t
+with const generics
+- K= 1
+*/
+size_t where_clauses_closures_test_call_once_ef_e3(size_t _);
 
 typedef struct size_t_x2_s
 {

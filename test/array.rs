@@ -23,16 +23,16 @@ fn mk_foo2() -> Foo {
     mk_foo()
 }
 
-fn mk_incr2<const K: usize>() -> [ u32; K ] {
+fn mk_incr2<const K: usize>() -> [u32; K] {
     let j = 1;
     core::array::from_fn(|i| i as u32 + j)
 }
 
-fn mk_incr<const K: usize>() -> [ u32; K ] {
+fn mk_incr<const K: usize>() -> [u32; K] {
     core::array::from_fn(|i| i as u32)
 }
 
-fn plus_one<const K: usize>(x: [u32; K]) -> [u16;K] {
+fn plus_one<const K: usize>(x: [u32; K]) -> [u16; K] {
     x.map(|x| (x + 1) as u16)
 }
 
@@ -44,12 +44,15 @@ fn main() {
     // XXX2
     mut_foo(Foo { x, y });
     assert_eq!(x[0], unsigned);
-    let a: [ u32; 10 ] = mk_incr();
+
+    let a: [u32; 10] = mk_incr();
     // XXX3
     assert_eq!(a[9], 9);
-    let a: [ u32; 10 ] = mk_incr2();
+
+    let a: [u32; 10] = mk_incr2();
     let expected = 10;
     assert_eq!(a[9], expected);
+
     // XXX4
     let a = plus_one([0u32]);
     assert_eq!(a[0], 1u16);

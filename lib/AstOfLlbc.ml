@@ -118,9 +118,10 @@ type env = {
 
 let debug env =
   L.log "DebugEnv" "\n# Debug Env";
-  List.iteri (fun i v ->
-    L.log "DebugEnv" "type_binders[%d]: %s\n" i (Charon.PrintTypes.type_var_id_to_pretty_string v)
-  ) env.type_binders
+  List.iteri
+    (fun i v ->
+      L.log "DebugEnv" "type_binders[%d]: %s\n" i (Charon.PrintTypes.type_var_id_to_pretty_string v))
+    env.type_binders
 
 (* Environment: types *)
 
@@ -887,13 +888,19 @@ type trait_clause_mapping = ((C.trait_instance_id * string) * trait_clause_entry
    the types we obtain by looking up the trait declaration have Self as 0
    (DeBruijn).
 *)
-let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause list) : trait_clause_mapping
-    =
+let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause list) :
+    trait_clause_mapping =
   let depth = Option.value ~default:"" depth in
   List.concat_map
     (fun tc ->
       let { C.clause_id; trait = { binder_value = { trait_decl_id; decl_generics }; _ }; _ } = tc in
       let trait_decl = env.get_nth_trait_decl trait_decl_id in
+      (* Every item inside the `trait_decl` may refer to generic params of the
+         trait. To get items that are valid to return outside of the scope of
+         the trait, we must substitute them with the given generics. We should
+         in principle substitute everything but we currently don't. This will
+         likely be a source of bugs. *)
+      let subst = Charon.Substitute.make_subst_from_generics trait_decl.generics decl_generics in
 
       let name = string_of_name env trait_decl.item_meta.name in
       if List.mem name blocklisted_trait_decls then
@@ -906,8 +913,7 @@ let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause li
           \  decl_generics.types are %s\n\
           \  decl_generics.const_generics are %s\n\
           \  methods: %d\n"
-          depth
-          name
+          depth name
           (C.TraitClauseId.to_int clause_id)
           (String.concat " ++ " (List.map C.show_ty decl_generics.C.types))
           (String.concat " ++ " (List.map C.show_const_generic decl_generics.C.const_generics))
@@ -936,10 +942,9 @@ let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause li
         @ List.flatten
             (List.mapi
                (fun _i (parent_clause : C.trait_clause) ->
+                 (* Make the clause valid outside the scope of the trait decl. *)
                  let parent_clause =
-                   Charon.Substitute.(st_substitute_visitor#visit_trait_clause
-                     (make_subst_from_generics trait_decl.generics decl_generics)
-                     parent_clause)
+                   Charon.Substitute.st_substitute_visitor#visit_trait_clause subst parent_clause
                  in
                  (* Mapping of the methods of the parent clause *)
                  let m = build_trait_clause_mapping env ~depth:(depth ^ "--") [ parent_clause ] in
@@ -1036,8 +1041,8 @@ and mk_clause_binders_and_args env (clause_mapping : trait_clause_mapping) : (va
           let ts, t = typ_of_signature env signature in
           L.log "TraitClauses" "Signature: %a\n" ptyp (maybe_ts ts t);
           L.log "TraitClauses" "Trait effective type arguments: %s\n"
-            (String.concat "," (List.map (Charon.PrintTypes.ty_to_string env.format_env)
-            clause_generics.C.types));
+            (String.concat ","
+               (List.map (Charon.PrintTypes.ty_to_string env.format_env) clause_generics.C.types));
           debug env;
           (* We are in a function that has a trait clause of the form e.g. Hash<FOO>.
              cgs contains FOO, that's it. *)
@@ -1095,7 +1100,8 @@ and debug_trait_clause_mapping env (mapping : trait_clause_mapping) =
   if mapping = [] then
     L.log "TraitClauses" "# Debug Mapping\nIn this function, trait clause mapping is empty"
   else
-    L.log "TraitClauses" "# Debug Mapping\nIn this function, calls to trait bound methods are as follows:";
+    L.log "TraitClauses"
+      "# Debug Mapping\nIn this function, calls to trait bound methods are as follows:";
   List.iter
     (fun ((clause_id, item_name), clause_entry) ->
       L.log "TraitClauses" "@@@ method name: %s" item_name;
@@ -1323,8 +1329,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                   []
                 else
                   failwith "Don't know how to resolve trait_ref above (1)"
-            | _ ->
-                failwith "Don't know how to resolve trait_ref above (2)")
+            | _ -> failwith "Don't know how to resolve trait_ref above (2)")
           trait_refs
       in
       build_trait_ref_mapping depth trait_refs
