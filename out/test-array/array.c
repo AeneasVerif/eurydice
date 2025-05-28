@@ -44,13 +44,33 @@ void array_mut_foo(array_Foo f)
 }
 
 /**
-A monomorphic instance of array.mk_incr.closure
+This function found in impl {(core::ops::function::FnMut<(usize), u32> for array::mk_incr::closure<K>)}
+*/
+/**
+A monomorphic instance of array.mk_incr.call_mut_b4
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr_closure_95(size_t i)
+uint32_t array_mk_incr_call_mut_b4_95(void **_, size_t tupled_args)
 {
+  size_t i = tupled_args;
   return (uint32_t)i;
+}
+
+/**
+This function found in impl {(core::ops::function::FnOnce<(usize), u32> for array::mk_incr::closure<K>)}
+*/
+/**
+A monomorphic instance of array.mk_incr.call_once_9a
+with const generics
+- K= 10
+*/
+uint32_t array_mk_incr_call_once_9a_95(size_t args)
+{
+  /* original Rust expression is not an lvalue in C */
+  void *lvalue = (void *)0U;
+  void **temp_ref = &lvalue;
+  return array_mk_incr_call_mut_b4_95(temp_ref, args);
 }
 
 /**
@@ -60,7 +80,12 @@ with const generics
 */
 void array_mk_incr_95(uint32_t ret[10U])
 {
-  KRML_MAYBE_FOR10(i, (size_t)0U, (size_t)10U, (size_t)1U, ret[i] = (uint32_t)i;);
+  KRML_MAYBE_FOR10(i0,
+    (size_t)0U,
+    (size_t)10U,
+    (size_t)1U,
+    size_t i = i0;
+    ret[i0] = (uint32_t)i;);
 }
 
 typedef struct _uint32_t__x2_s

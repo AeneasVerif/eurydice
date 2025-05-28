@@ -859,6 +859,7 @@ let blocklisted_trait_decls =
     "core::marker::Sized";
     "core::marker::Send";
     "core::marker::Sync";
+    "core::marker::Tuple";
     (* The traits below *should* be handled properly ASAP. But for now, we have specific *instances*
        of those trait methods in the builtin lookup table, which we then implement by hand with
        macros. *)
@@ -1266,13 +1267,13 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                   .item_meta
                   .name
             in
-            L.log "Calls" "%s--> trait_ref: %s\n" depth (C.show_trait_ref trait_ref);
+            L.log "Calls" "%s--> trait_ref %s: %s\n" depth name (C.show_trait_ref trait_ref);
 
             match trait_ref.trait_id with
             | _ when List.mem name blocklisted_trait_decls ->
                 (* Trait not supported -- don't synthesize arguments *)
                 []
-            | TraitImpl (impl_id, generics) ->
+            | TraitImpl (impl_id, _generics) ->
                 (* Call-site has resolved trait clauses into a concrete trait implementation. *)
                 let trait_impl : C.trait_impl = env.get_nth_trait_impl impl_id in
 
@@ -1302,7 +1303,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                       let fn_ptr = fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr) in
                       fn_ptr)
                     trait_impl.methods
-                @ build_trait_ref_mapping ("  " ^ depth) generics.trait_refs
+                @ build_trait_ref_mapping ("  " ^ depth) trait_impl.parent_trait_refs
             | Clause _ as clause_id ->
                 (* Caller it itself polymorphic and refers to one of its own clauses to synthesize
                    the clause arguments at call-site. We must pass whatever is relevant for this

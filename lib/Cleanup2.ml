@@ -332,73 +332,34 @@ let remove_array_from_fn files =
         | ETApp
             ( { node = EQualified ([ "core"; "array" ], "from_fn"); _ },
               [ len ],
-              _,
-              [ t_elements; TArrow (t_index, TArrow (t_elements', TUnit)) ] ) ->
+              [ call_mut; _call_once ],
+              [ t_elements; _t_captured_state ] ) ->
             (* Same as below, but catching the case where the type of elements is an
                array and has undergone outparam optimization (i.e. the closure,
                instead of having type size_t -> t_element, has type size_t -> t_element ->
                unit *)
-            L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements';
-            assert (t_elements' = t_elements);
-            assert (t_index = TInt SizeT);
-            assert (List.length es = 2);
-            let closure_lid, state =
-              match (List.hd es).node with
-              | EQualified _ -> List.hd es, []
-              | EApp (({ node = EQualified lid; _ } as hd), [ e_state ]) ->
-                  L.log "Cleanup2" "closure=%a" pexpr
-                    (Krml.DeBruijn.subst e_state 0 (Hashtbl.find defs lid));
-                  hd, [ e_state ]
-              | _ ->
-                  L.log "Cleanup2" "closure=%a" pexpr (List.hd es);
-                  failwith "unexpected closure shape"
-            in
+            L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements;
+            let closure_lid = H.assert_elid call_mut.node in
             (* First argument = closure, second argument = destination. Note that
                the closure may itself be an application of the closure to the state
                (but not always... is this unit argument elimination kicking in? not
                sure). *)
-            let dst = List.nth es 1 in
+            let state, dst = match es with [ x; y ] -> x, y | _ -> assert false in
             let lift1 = Krml.DeBruijn.lift 1 in
             EFor
               ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
-                H.zero_usize (* i = 0 *),
+                H.zero_usize (* i: size_t = 0 *),
                 H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
                 H.mk_incr_usize (* i++ *),
                 let i = with_type H.usize (EBound 0) in
-                Krml.Helpers.with_unit
-                  (EApp
-                     ( closure_lid,
-                       List.map lift1 state @ [ i; with_type t_elements (EBufRead (lift1 dst, i)) ]
-                     )) )
-        | ETApp
-            ( { node = EQualified ([ "core"; "array" ], "from_fn"); _ },
-              [ len ],
-              _,
-              [ t_elements; TArrow (t_index, t_elements') ] ) ->
-            (* Not sure why this one inlines the body, but not above. *)
-            L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements';
-            assert (t_elements' = t_elements);
-            assert (t_index = TInt SizeT);
-            assert (List.length es = 2);
-            let closure =
-              match (List.hd es).node with
-              | EQualified lid -> Hashtbl.find defs lid
-              | EApp ({ node = EQualified lid; _ }, [ e_state ]) ->
-                  L.log "Cleanup2" "closure=%a" pexpr
-                    (Krml.DeBruijn.subst e_state 0 (Hashtbl.find defs lid));
-                  Krml.DeBruijn.subst e_state 1 (Hashtbl.find defs lid)
-              | _ ->
-                  L.log "Cleanup2" "closure=%a" pexpr (List.hd es);
-                  failwith "unexpected closure shape"
-            in
-            let dst = List.nth es 1 in
-            EFor
-              ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
-                H.zero_usize (* i = 0 *),
-                H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
-                H.mk_incr_usize (* i++ *),
-                let i = with_type H.usize (EBound 0) in
-                Krml.Helpers.with_unit (EBufWrite (Krml.DeBruijn.lift 1 dst, i, closure)) )
+                Krml.Helpers.with_unit (
+                  EBufWrite (Krml.DeBruijn.lift 1 dst, i,
+                    Krml.DeBruijn.subst_n (Hashtbl.find defs closure_lid) [
+                      with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
+                      with_type (TInt SizeT) (EBound 0)
+                    ]
+                  )))
+
         | ETApp ({ node = EQualified ("core" :: "array" :: _, "map"); _ }, [ len ], _, ts) ->
             let t_src, t_dst =
               match ts with

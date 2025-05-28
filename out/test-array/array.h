@@ -37,11 +37,24 @@ void array_mut_array(uint32_t x[2U]);
 void array_mut_foo(array_Foo f);
 
 /**
-A monomorphic instance of array.mk_incr.closure
+This function found in impl {(core::ops::function::FnMut<(usize), u32> for array::mk_incr::closure<K>)}
+*/
+/**
+A monomorphic instance of array.mk_incr.call_mut_b4
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr_closure_95(size_t i);
+uint32_t array_mk_incr_call_mut_b4_95(void **_, size_t tupled_args);
+
+/**
+This function found in impl {(core::ops::function::FnOnce<(usize), u32> for array::mk_incr::closure<K>)}
+*/
+/**
+A monomorphic instance of array.mk_incr.call_once_9a
+with const generics
+- K= 10
+*/
+uint32_t array_mk_incr_call_once_9a_95(size_t args);
 
 /**
 A monomorphic instance of array.mk_incr
