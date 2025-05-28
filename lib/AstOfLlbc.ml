@@ -275,18 +275,6 @@ module RustNames = struct
   let is_vec env = match_pattern_with_type_id env.name_ctx config (mk_empty_maps ()) vec
   let is_range env = match_pattern_with_type_id env.name_ctx config (mk_empty_maps ()) range
   let is_option env = match_pattern_with_type_id env.name_ctx config (mk_empty_maps ()) option
-
-  (* TODO: use a pattern, right now getting an error "unimplemented" *)
-  let is_array_map env (fn_ptr : C.fn_ptr) =
-    match fn_ptr.func with
-    | FunId (FRegular id) ->
-        let decl = env.get_nth_function id in
-        begin
-          match decl.item_meta.name with
-          | [ PeIdent ("core", _); PeIdent ("array", _); _; PeIdent ("map", _) ] -> true
-          | _ -> false
-        end
-    | _ -> false
 end
 
 let string_of_pattern pattern = Charon.NameMatcher.(pattern_to_string { tgt = TkPattern } pattern)
@@ -1203,7 +1191,6 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
      (e.g. a call to T::f when T is a trait bound in scope). *)
   L.log "Calls" "%sVisiting call: %s" depth
     (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
-  L.log "Calls" "%sis_array_map: %b" depth (RustNames.is_array_map env fn_ptr);
   L.log "Calls" "%s--> %d type_args, %d const_generics, %d trait_refs" depth (List.length type_args)
     (List.length const_generic_args) (List.length trait_refs);
 
@@ -1243,7 +1230,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   let f, { ts; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_known_builtin } =
     lookup_fun env depth fn_ptr
   in
-  L.log "Calls" "%s--> inputs: %a" depth ptyps inputs;
+  L.log "Calls" "%s--> %d inputs: %a" depth (List.length inputs) ptyps inputs;
   L.log "Calls" "%s--> is_known_builtin?: %b" depth is_known_builtin;
 
   (* Handling trait implementations for generic trait bounds in the callee. We
@@ -1303,7 +1290,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                       let fn_ptr = fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr) in
                       fn_ptr)
                     trait_impl.methods
-                @ build_trait_ref_mapping ("  " ^ depth) trait_impl.parent_trait_refs
+                @ build_trait_ref_mapping ("  " ^ depth) (_generics.trait_refs @ trait_impl.parent_trait_refs)
             | Clause _ as clause_id ->
                 (* Caller it itself polymorphic and refers to one of its own clauses to synthesize
                    the clause arguments at call-site. We must pass whatever is relevant for this
@@ -1363,7 +1350,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   L.log "Calls" "%s--> t_unapplied: %a" depth ptyp t_unapplied;
   L.log "Calls" "%s--> inputs: %a" depth ptyps inputs;
   L.log "Calls" "%s--> const_generic_args: %a (offset: %d)" depth pexprs const_generic_args offset;
-  L.log "Calls" "%s--> fn_ptrs: %a (offset: %d)" depth
+  L.log "Calls" "%s--> %d fn_ptrs: %a (offset: %d)" depth (List.length fn_ptrs)
     (fun k e ->
       List.iter
         (fun e ->
@@ -1399,6 +1386,8 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
         K.TPoly (ts, Krml.Helpers.fold_arrow args ret)
     | t ->
         let ret, args = Krml.Helpers.flatten_arrow t in
+        if List.length const_generic_args + List.length fn_ptrs > List.length args then
+          L.log "Calls" "ERROR in %s" (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
         let _, args =
           Krml.KList.split (List.length const_generic_args + List.length fn_ptrs) args
         in
