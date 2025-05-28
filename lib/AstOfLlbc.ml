@@ -848,8 +848,8 @@ let maybe_addrof (env : env) (ty : C.ty) (e : K.expr) =
 let blocklisted_trait_decls =
   [
     (* Handled primitively. *)
-    "core::ops::function::FnMut";
     "core::cmp::PartialEq";
+    "core::ops::function::FnMut";
     (* These don't have methods *)
     "core::marker::Sized";
     "core::marker::Send";
@@ -899,6 +899,10 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) : t
     (fun tc ->
       let { C.clause_id; trait = { binder_value = { trait_decl_id; decl_generics }; _ }; _ } = tc in
       let trait_decl = env.get_nth_trait_decl trait_decl_id in
+      (* Since we recurse on the trait *declaration* for the parent clauses, we need to substitute
+         the effective arguments (known here from decl_generics, above) for the formal arguments (as
+         declared in the trait declaration). *)
+      let subst = Charon.Substitute.(st_substitute_visitor#visit_trait_clause (make_subst_from_generics trait_decl.generics decl_generics)) in
 
       let name = string_of_name env trait_decl.item_meta.name in
       if List.mem name blocklisted_trait_decls then
@@ -940,6 +944,8 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) : t
         @ List.flatten
             (List.mapi
                (fun _i (parent_clause : C.trait_clause) ->
+                 (* With concrete type arguments (instead of formal parameters) *)
+                 let parent_clause = subst parent_clause in
                  (* Mapping of the methods of the parent clause *)
                  let m = build_trait_clause_mapping env [ parent_clause ] in
                  List.map
@@ -1313,8 +1319,9 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                 if List.mem parent_name blocklisted_trait_decls then
                   []
                 else
-                  failwith ("Don't know how to resolve trait_ref " ^ C.show_trait_ref trait_ref)
-            | _ -> failwith ("Don't know how to resolve trait_ref " ^ C.show_trait_ref trait_ref))
+                  failwith "Don't know how to resolve trait_ref above (1)"
+            | _ ->
+                failwith "Don't know how to resolve trait_ref above (2)")
           trait_refs
       in
       build_trait_ref_mapping depth trait_refs
