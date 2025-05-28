@@ -855,6 +855,7 @@ let blocklisted_trait_decls =
   [
     (* Handled primitively. *)
     "core::cmp::PartialEq";
+    "core::ops::function::FnMut";
     (* These don't have methods *)
     "core::marker::Sized";
     "core::marker::Send";
@@ -906,6 +907,10 @@ let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause li
     (fun tc ->
       let { C.clause_id; trait = { binder_value = { trait_decl_id; decl_generics }; _ }; _ } = tc in
       let trait_decl = env.get_nth_trait_decl trait_decl_id in
+      (* Since we recurse on the trait *declaration* for the parent clauses, we need to substitute
+         the effective arguments (known here from decl_generics, above) for the formal arguments (as
+         declared in the trait declaration). *)
+      let subst = Charon.Substitute.(st_substitute_visitor#visit_trait_clause (make_subst_from_generics trait_decl.generics decl_generics)) in
 
       let name = string_of_name env trait_decl.item_meta.name in
       if List.mem name blocklisted_trait_decls then
@@ -948,11 +953,8 @@ let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause li
         @ List.flatten
             (List.mapi
                (fun _i (parent_clause : C.trait_clause) ->
-                 let parent_clause =
-                   Charon.Substitute.(st_substitute_visitor#visit_trait_clause
-                     (make_subst_from_generics trait_decl.generics decl_generics)
-                     parent_clause)
-                 in
+                 (* With concrete type arguments (instead of formal parameters) *)
+                 let parent_clause = subst parent_clause in
                  (* Mapping of the methods of the parent clause *)
                  let m = build_trait_clause_mapping env ~depth:(depth ^ "--") [ parent_clause ] in
                  List.map
