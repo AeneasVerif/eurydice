@@ -174,6 +174,7 @@ let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
         | ImplElemTrait _ -> "(" ^ i_as_str ^ ")"
       in
       "{" ^ i_as_str ^ d ^ "}"
+  | PeMonomorphized _ -> "??"
 
 let string_of_name env ps = String.concat "::" (List.map (string_of_path_elem env) ps)
 
@@ -843,7 +844,6 @@ let maybe_addrof (env : env) (ty : C.ty) (e : K.expr) =
 let blocklisted_trait_decls =
   [
     (* Handled primitively. *)
-    "core::ops::function::FnMut";
     "core::cmp::PartialEq";
     (* These don't have methods *)
     "core::marker::Sized";
@@ -935,6 +935,11 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) : t
         @ List.flatten
             (List.mapi
                (fun _i (parent_clause : C.trait_clause) ->
+                 let parent_clause =
+                   Charon.Substitute.(st_substitute_visitor#visit_trait_clause
+                     (make_subst_from_generics trait_decl.generics decl_generics)
+                     parent_clause)
+                 in
                  (* Mapping of the methods of the parent clause *)
                  let m = build_trait_clause_mapping env [ parent_clause ] in
                  List.map
@@ -1308,8 +1313,9 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                 if List.mem parent_name blocklisted_trait_decls then
                   []
                 else
-                  failwith ("Don't know how to resolve trait_ref " ^ C.show_trait_ref trait_ref)
-            | _ -> failwith ("Don't know how to resolve trait_ref " ^ C.show_trait_ref trait_ref))
+                  failwith "Don't know how to resolve trait_ref above (1)"
+            | _ ->
+                failwith "Don't know how to resolve trait_ref above (2)")
           trait_refs
       in
       build_trait_ref_mapping depth trait_refs
