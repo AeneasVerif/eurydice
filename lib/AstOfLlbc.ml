@@ -174,6 +174,7 @@ let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
         | ImplElemTrait _ -> "(" ^ i_as_str ^ ")"
       in
       "{" ^ i_as_str ^ d ^ "}"
+  | PeMonomorphized _ -> Charon.PrintTypes.path_elem_to_string env.format_env p
 
 let string_of_name env ps = String.concat "::" (List.map (string_of_path_elem env) ps)
 
