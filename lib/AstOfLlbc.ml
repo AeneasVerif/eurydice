@@ -174,6 +174,7 @@ let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
         | ImplElemTrait _ -> "(" ^ i_as_str ^ ")"
       in
       "{" ^ i_as_str ^ d ^ "}"
+  | PeMonomorphized _ -> Charon.PrintTypes.path_elem_to_string env.format_env p
 
 let string_of_name env ps = String.concat "::" (List.map (string_of_path_elem env) ps)
 
@@ -461,10 +462,14 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
         match typs with
         | [] -> [ K.TUnit ]
         | typs -> typs
-      in begin
-      match typ_of_ty env t with
-      | TArrow _ -> failwith "Function pointer `fn` currying is not supported, consider using `&'static dyn Fn` instead."
-      | typ -> Krml.Helpers.fold_arrow typs typ
+      in
+      begin
+        match typ_of_ty env t with
+        | TArrow _ ->
+            failwith
+              "Function pointer `fn` currying is not supported, consider using `&'static dyn Fn` \
+               instead."
+        | typ -> Krml.Helpers.fold_arrow typs typ
       end
   | TError _ -> failwith "Found type error in charon's output"
 
