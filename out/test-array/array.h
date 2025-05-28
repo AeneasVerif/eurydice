@@ -63,6 +63,40 @@ with const generics
 */
 void array_mk_incr_95(uint32_t ret[10U]);
 
+/**
+A monomorphic instance of array.mk_incr2.closure
+with const generics
+- $10size_t
+*/
+typedef uint32_t *array_mk_incr2_closure_40;
+
+/**
+This function found in impl {(core::ops::function::FnMut<(usize), u32> for array::mk_incr2::closure<0, K>)}
+*/
+/**
+A monomorphic instance of array.mk_incr2.call_mut_ae
+with const generics
+- K= 10
+*/
+uint32_t array_mk_incr2_call_mut_ae_95(uint32_t **_, size_t tupled_args);
+
+/**
+This function found in impl {(core::ops::function::FnOnce<(usize), u32> for array::mk_incr2::closure<0, K>)}
+*/
+/**
+A monomorphic instance of array.mk_incr2.call_once_d4
+with const generics
+- K= 10
+*/
+uint32_t array_mk_incr2_call_once_d4_95(uint32_t *state, size_t args);
+
+/**
+A monomorphic instance of array.mk_incr2
+with const generics
+- K= 10
+*/
+void array_mk_incr2_95(uint32_t ret[10U]);
+
 void array_main(void);
 
 #if defined(__cplusplus)

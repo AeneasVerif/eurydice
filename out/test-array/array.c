@@ -88,6 +88,54 @@ void array_mk_incr_95(uint32_t ret[10U])
     ret[i0] = (uint32_t)i;);
 }
 
+/**
+This function found in impl {(core::ops::function::FnMut<(usize), u32> for array::mk_incr2::closure<0, K>)}
+*/
+/**
+A monomorphic instance of array.mk_incr2.call_mut_ae
+with const generics
+- K= 10
+*/
+uint32_t array_mk_incr2_call_mut_ae_95(uint32_t **_, size_t tupled_args)
+{
+  size_t i = tupled_args;
+  return (uint32_t)i + _[0U][0U];
+}
+
+/**
+This function found in impl {(core::ops::function::FnOnce<(usize), u32> for array::mk_incr2::closure<0, K>)}
+*/
+/**
+A monomorphic instance of array.mk_incr2.call_once_d4
+with const generics
+- K= 10
+*/
+uint32_t array_mk_incr2_call_once_d4_95(uint32_t *state, size_t args)
+{
+  uint32_t **temp_ref = &state;
+  return array_mk_incr2_call_mut_ae_95(temp_ref, args);
+}
+
+/**
+A monomorphic instance of array.mk_incr2
+with const generics
+- K= 10
+*/
+void array_mk_incr2_95(uint32_t ret[10U])
+{
+  uint32_t j = 1U;
+  uint32_t ret0[10U];
+  KRML_MAYBE_FOR10(i0,
+    (size_t)0U,
+    (size_t)10U,
+    (size_t)1U,
+    size_t i = i0;
+    /* original Rust expression is not an lvalue in C */
+    uint32_t *lvalue = &j;
+    ret0[i0] = (uint32_t)i + lvalue[0U];);
+  memcpy(ret, ret0, (size_t)10U * sizeof (uint32_t));
+}
+
 typedef struct _uint32_t__x2_s
 {
   uint32_t *fst;
@@ -122,9 +170,9 @@ void array_main(void)
   uu____4.fst = x;
   uu____4.snd = &unsigned0;
   /* XXX3 */
-  uint32_t *left_val = uu____4.fst;
+  uint32_t *left_val0 = uu____4.fst;
   uint32_t *right_val0 = uu____4.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val0[0U], "panic!");
+  EURYDICE_ASSERT(left_val0[0U] == right_val0[0U], "panic!");
   uint32_t a[10U];
   array_mk_incr_95(a);
   _uint32_t__x2 uu____5;
@@ -132,8 +180,17 @@ void array_main(void)
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 9U;
   uu____5.snd = &lvalue;
-  uint32_t *left_val0 = uu____5.fst;
-  uint32_t *right_val = uu____5.snd;
-  EURYDICE_ASSERT(left_val0[0U] == right_val[0U], "panic!");
+  uint32_t *left_val1 = uu____5.fst;
+  uint32_t *right_val1 = uu____5.snd;
+  EURYDICE_ASSERT(left_val1[0U] == right_val1[0U], "panic!");
+  uint32_t a0[10U];
+  array_mk_incr2_95(a0);
+  uint32_t expected = 10U;
+  _uint32_t__x2 uu____6;
+  uu____6.fst = &a0[9U];
+  uu____6.snd = &expected;
+  uint32_t *left_val = uu____6.fst;
+  uint32_t *right_val = uu____6.snd;
+  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
 }
 
