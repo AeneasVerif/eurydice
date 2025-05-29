@@ -53,7 +53,7 @@ with types size_t
 with const generics
 - K= 1
 */
-size_t where_clauses_closures_test_call_once_ef_e3(size_t args);
+size_t where_clauses_closures_test_call_once_ef_e3(size_t _);
 
 typedef struct size_t_x2_s
 {

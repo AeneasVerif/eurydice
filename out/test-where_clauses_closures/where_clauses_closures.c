@@ -47,12 +47,11 @@ with types size_t
 with const generics
 - K= 1
 */
-size_t where_clauses_closures_test_call_once_ef_e3(size_t args)
+size_t where_clauses_closures_test_call_once_ef_e3(size_t _)
 {
   /* original Rust expression is not an lvalue in C */
   void *lvalue = (void *)0U;
-  void **temp_ref = &lvalue;
-  return where_clauses_closures_test_call_mut_c3_e3(temp_ref, args);
+  return where_clauses_closures_test_call_mut_c3_e3(&lvalue, _);
 }
 
 /**
