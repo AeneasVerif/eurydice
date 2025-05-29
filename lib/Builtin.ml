@@ -210,6 +210,15 @@ let slice_to_array2 =
     arg_names = [ "dst"; "s" ];
   }
 
+let slice_to_ref_array =
+  {
+    name = [ "Eurydice" ], "slice_to_ref_array";
+    typ = Krml.Helpers.fold_arrow [ TBound 2 ] (mk_result (TBound 1) (TBound 0));
+    n_type_args = 3;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "s" ];
+  }
+
 let vec_new =
   {
     name = [ "Eurydice" ], "vec_new";
@@ -363,42 +372,42 @@ let static_assert, static_assert_ref =
   ( K.DExternal (None, [ Krml.Common.Private; Macro ], 0, 0, name, typ, [ "test"; "msg" ]),
     K.(with_type typ (EQualified name)) )
 
-let unwrap : K.decl =
+(* Replacements, applied on-the-fly in AstOfLlbc *)
+
+let unwrap =
   let open Krml in
   let open Ast in
-  let lid =
-    [ "core"; "result"; "{core::result::Result<T, E>[TraitClause@0, TraitClause@1]}" ], "unwrap"
-  in
   let t_T = TBound 1 in
   let t_E = TBound 0 in
+  let b = Krml.Helpers.fresh_binder "f0" t_T in
   let t_result = mk_result t_T t_E in
   let binders = [ Helpers.fresh_binder "self" t_result ] in
-  DFunction
-    ( None,
-      [ Private ],
-      0,
-      2,
-      t_T,
-      lid,
-      binders,
-      with_type t_T
-        (EMatch
-           ( Unchecked,
-             with_type t_result (EBound 0),
-             [
-               ( [ Helpers.fresh_binder "f0" t_T ],
-                 with_type t_result (PCons ("Ok", [ with_type t_T (PBound 0) ])),
-                 with_type t_T (EBound 0) );
-               [], with_type t_result PWild, with_type t_T (EAbort (Some t_T, Some "unwrap not Ok"));
-             ] )) )
+  (* Ensures this returns always the same term (structurally equal) *)
+  fun lid ->
+    DFunction
+      ( None,
+        [ Private ],
+        0,
+        2,
+        t_T,
+        lid,
+        binders,
+        with_type t_T
+          (EMatch
+             ( Unchecked,
+               with_type t_result (EBound 0),
+               [
+                 ( [ b ],
+                   with_type t_result (PCons ("Ok", [ with_type t_T (PBound 0) ])),
+                   with_type t_T (EBound 0) );
+                 [], with_type t_result PWild, with_type t_T (EAbort (Some t_T, Some "unwrap not Ok"));
+               ] )) )
 
 let nonzero_def = K.DType (nonzero, [], 0, 1, Abbrev (TBound 0))
 
 (* -------------------------------------------------------------------------- *)
 
 type usage = Used | Unused
-
-let replacements = List.map (fun decl -> K.lid_of_decl decl, (decl, ref Unused)) [ unwrap ]
 
 let files =
   [
@@ -431,6 +440,7 @@ let files =
            slice_subslice_from;
            slice_to_array;
            slice_to_array2;
+           slice_to_ref_array;
            range_iterator_step_by;
            range_step_by_iterator_next;
            vec_push;
@@ -452,6 +462,7 @@ let files =
      "Eurydice", externals);
   ]
 
+(* FIXME get rid of this, this seems ancient *)
 let adjust (f, decls) =
   ( f,
     List.map
@@ -459,18 +470,5 @@ let adjust (f, decls) =
         | Krml.Ast.DExternal (_, _, _, _, (([ "core"; "num"; mid ], "BITS") as lid), _, _)
           when Krml.KString.starts_with mid "{u32" ->
             Krml.Ast.DGlobal ([], lid, 0, Krml.Helpers.uint32, Krml.Helpers.mk_uint32 32)
-        | d -> (
-            try
-              let d, seen = List.assoc (K.lid_of_decl d) replacements in
-              seen := Used;
-              d
-            with Not_found -> d))
+        | d -> d)
       decls )
-
-let check () =
-  List.iter
-    (fun (lid, (_, seen)) ->
-      if !seen = Unused then
-        let open Krml in
-        KPrint.bprintf "Unused replacement: %a\n" PrintAst.Ops.plid lid)
-    replacements
