@@ -116,6 +116,13 @@ type env = {
   dsts : string LidMap.t;
 }
 
+let debug env =
+  L.log "DebugEnv" "\n# Debug Env";
+  List.iteri
+    (fun i v ->
+      L.log "DebugEnv" "type_binders[%d]: %s\n" i (Charon.PrintTypes.type_var_id_to_pretty_string v))
+    env.type_binders
+
 (* Environment: types *)
 
 let findi p l =
@@ -269,18 +276,6 @@ module RustNames = struct
   let is_vec env = match_pattern_with_type_id env.name_ctx config (mk_empty_maps ()) vec
   let is_range env = match_pattern_with_type_id env.name_ctx config (mk_empty_maps ()) range
   let is_option env = match_pattern_with_type_id env.name_ctx config (mk_empty_maps ()) option
-
-  (* TODO: use a pattern, right now getting an error "unimplemented" *)
-  let is_array_map env (fn_ptr : C.fn_ptr) =
-    match fn_ptr.func with
-    | FunId (FRegular id) ->
-        let decl = env.get_nth_function id in
-        begin
-          match decl.item_meta.name with
-          | [ PeIdent ("core", _); PeIdent ("array", _); _; PeIdent ("map", _) ] -> true
-          | _ -> false
-        end
-    | _ -> false
 end
 
 let string_of_pattern pattern = Charon.NameMatcher.(pattern_to_string { tgt = TkPattern } pattern)
@@ -455,7 +450,7 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* Appears in some trait methods, so let's try to handle that. *)
       K.TBuf (typ_of_ty env t, false)
   | TTraitType _ -> failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
-  | TArrow binder | TClosure (_, _, _, binder) ->
+  | TArrow binder ->
       let ts, t = binder.binder_value in
       let typs = List.map (typ_of_ty env) ts in
       let typs =
@@ -849,11 +844,11 @@ let blocklisted_trait_decls =
   [
     (* Handled primitively. *)
     "core::cmp::PartialEq";
-    "core::ops::function::FnMut";
     (* These don't have methods *)
     "core::marker::Sized";
     "core::marker::Send";
     "core::marker::Sync";
+    "core::marker::Tuple";
     (* The traits below *should* be handled properly ASAP. But for now, we have specific *instances*
        of those trait methods in the builtin lookup table, which we then implement by hand with
        macros. *)
@@ -893,16 +888,19 @@ type trait_clause_mapping = ((C.trait_instance_id * string) * trait_clause_entry
    the types we obtain by looking up the trait declaration have Self as 0
    (DeBruijn).
 *)
-let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) : trait_clause_mapping
-    =
+let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause list) :
+    trait_clause_mapping =
+  let depth = Option.value ~default:"" depth in
   List.concat_map
     (fun tc ->
       let { C.clause_id; trait = { binder_value = { trait_decl_id; decl_generics }; _ }; _ } = tc in
       let trait_decl = env.get_nth_trait_decl trait_decl_id in
-      (* Since we recurse on the trait *declaration* for the parent clauses, we need to substitute
-         the effective arguments (known here from decl_generics, above) for the formal arguments (as
-         declared in the trait declaration). *)
-      let subst = Charon.Substitute.(st_substitute_visitor#visit_trait_clause (make_subst_from_generics trait_decl.generics decl_generics)) in
+      (* Every item inside the `trait_decl` may refer to generic params of the
+         trait. To get items that are valid to return outside of the scope of
+         the trait, we must substitute them with the given generics. We should
+         in principle substitute everything but we currently don't. This will
+         likely be a source of bugs. *)
+      let subst = Charon.Substitute.make_subst_from_generics trait_decl.generics decl_generics in
 
       let name = string_of_name env trait_decl.item_meta.name in
       if List.mem name blocklisted_trait_decls then
@@ -910,12 +908,12 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) : t
       else begin
         (* FYI, some clauses like Copy have neither required nor provided methods. *)
         L.log "TraitClauses"
-          "clause decl %s\n\
+          "%sclause decl %s\n\
           \  id %d:\n\
-          \  clause_generic type is %s\n\
-          \  clause_generic const_generics is %s\n\
+          \  decl_generics.types are %s\n\
+          \  decl_generics.const_generics are %s\n\
           \  methods: %d\n"
-          name
+          depth name
           (C.TraitClauseId.to_int clause_id)
           (String.concat " ++ " (List.map C.show_ty decl_generics.C.types))
           (String.concat " ++ " (List.map C.show_const_generic decl_generics.C.const_generics))
@@ -944,10 +942,12 @@ let rec build_trait_clause_mapping env (trait_clauses : C.trait_clause list) : t
         @ List.flatten
             (List.mapi
                (fun _i (parent_clause : C.trait_clause) ->
-                 (* With concrete type arguments (instead of formal parameters) *)
-                 let parent_clause = subst parent_clause in
+                 (* Make the clause valid outside the scope of the trait decl. *)
+                 let parent_clause =
+                   Charon.Substitute.st_substitute_visitor#visit_trait_clause subst parent_clause
+                 in
                  (* Mapping of the methods of the parent clause *)
-                 let m = build_trait_clause_mapping env [ parent_clause ] in
+                 let m = build_trait_clause_mapping env ~depth:(depth ^ "--") [ parent_clause ] in
                  List.map
                    (fun (((clause_id' : C.trait_instance_id), m), v) ->
                      (* This is the parent clause `clause_id'` of `clause_id` -- see comments in charon/types.rs  *)
@@ -990,9 +990,11 @@ let rec lookup_signature env depth signature : lookup_result =
       =
     signature
   in
-  L.log "Calls" "%s--> args: %s, ret: %s" depth
+  L.log "Calls" "%s# Lookup Signature\n%s--> args: %s, ret: %s\n" depth depth
     (String.concat " ++ " (List.map (Charon.PrintTypes.ty_to_string env.format_env) inputs))
     (Charon.PrintTypes.ty_to_string env.format_env output);
+  L.log "Calls" "Type parameters for this signature: %s\n"
+    (String.concat " ++ " (List.map Charon.PrintTypes.type_var_to_string type_params));
   let env = push_cg_binders env const_generics in
   let env = push_type_binders env type_params in
 
@@ -1025,6 +1027,7 @@ and mk_clause_binders_and_args env (clause_mapping : trait_clause_mapping) : (va
       match clause_entry with
       | ClauseMethod
           ((clause_generics : C.generic_args), trait_ts, trait_name, (signature : C.fun_sig)) ->
+          L.log "TraitClauses" "\n## Generating binder for %s\n" item_name;
           (* Polymorphic signature for trait method has const generic for BOTH
              trait-level generics and fn-level generics. Consider:
 
@@ -1035,7 +1038,12 @@ and mk_clause_binders_and_args env (clause_mapping : trait_clause_mapping) : (va
 
              size_t -> size_t ->  uint8_t[33size_t]* -> uint8_t[$0][$1]
           *)
-          let _, t = typ_of_signature env signature in
+          let ts, t = typ_of_signature env signature in
+          L.log "TraitClauses" "Signature: %a\n" ptyp (maybe_ts ts t);
+          L.log "TraitClauses" "Trait effective type arguments: %s\n"
+            (String.concat ","
+               (List.map (Charon.PrintTypes.ty_to_string env.format_env) clause_generics.C.types));
+          debug env;
           (* We are in a function that has a trait clause of the form e.g. Hash<FOO>.
              cgs contains FOO, that's it. *)
           let cgs = List.map (cg_of_const_generic env) clause_generics.C.const_generics in
@@ -1090,21 +1098,23 @@ and typ_of_signature env signature =
 
 and debug_trait_clause_mapping env (mapping : trait_clause_mapping) =
   if mapping = [] then
-    L.log "TraitClauses" "In this function, trait clause mapping is empty"
+    L.log "TraitClauses" "# Debug Mapping\nIn this function, trait clause mapping is empty"
   else
-    L.log "TraitClauses" "In this function, calls to trait bound methods are as follows:";
+    L.log "TraitClauses"
+      "# Debug Mapping\nIn this function, calls to trait bound methods are as follows:";
   List.iter
     (fun ((clause_id, item_name), clause_entry) ->
+      L.log "TraitClauses" "@@@ method name: %s" item_name;
       match clause_entry with
       | ClauseMethod (_, ts, trait_name, signature) ->
           let _, t = typ_of_signature env signature in
           L.log "TraitClauses"
-            "%s (a.k.a. %s)::%s: %a has trait-level %d const generics, %d type vars"
+            "%s (a.k.a. %s)::%s: %a has trait-level %d const generics, %d type vars\n"
             (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
             (string_of_name env trait_name) item_name ptyp t ts.K.n_cgs ts.n
       | ClauseConstant (trait_name, t) ->
           let t = typ_of_ty env t in
-          L.log "TraitClauses" "%s (a.k.a. %s)::%s: associated constant %a"
+          L.log "TraitClauses" "%s (a.k.a. %s)::%s: associated constant %a\n"
             (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
             (string_of_name env trait_name) item_name ptyp t)
     mapping
@@ -1187,7 +1197,6 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
      (e.g. a call to T::f when T is a trait bound in scope). *)
   L.log "Calls" "%sVisiting call: %s" depth
     (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
-  L.log "Calls" "%sis_array_map: %b" depth (RustNames.is_array_map env fn_ptr);
   L.log "Calls" "%s--> %d type_args, %d const_generics, %d trait_refs" depth (List.length type_args)
     (List.length const_generic_args) (List.length trait_refs);
 
@@ -1227,7 +1236,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   let f, { ts; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_known_builtin } =
     lookup_fun env depth fn_ptr
   in
-  L.log "Calls" "%s--> inputs: %a" depth ptyps inputs;
+  L.log "Calls" "%s--> %d inputs: %a" depth (List.length inputs) ptyps inputs;
   L.log "Calls" "%s--> is_known_builtin?: %b" depth is_known_builtin;
 
   (* Handling trait implementations for generic trait bounds in the callee. We
@@ -1251,13 +1260,13 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                   .item_meta
                   .name
             in
-            L.log "Calls" "%s--> trait_ref: %s\n" depth (C.show_trait_ref trait_ref);
+            L.log "Calls" "%s--> trait_ref %s: %s\n" depth name (C.show_trait_ref trait_ref);
 
             match trait_ref.trait_id with
             | _ when List.mem name blocklisted_trait_decls ->
                 (* Trait not supported -- don't synthesize arguments *)
                 []
-            | TraitImpl (impl_id, generics) ->
+            | TraitImpl (impl_id, _generics) ->
                 (* Call-site has resolved trait clauses into a concrete trait implementation. *)
                 let trait_impl : C.trait_impl = env.get_nth_trait_impl impl_id in
 
@@ -1287,7 +1296,12 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                       let fn_ptr = fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr) in
                       fn_ptr)
                     trait_impl.methods
-                @ build_trait_ref_mapping ("  " ^ depth) generics.trait_refs
+                @ build_trait_ref_mapping ("  " ^ depth) (
+                  let subst = Charon.Substitute.make_subst_from_generics trait_impl.generics _generics in
+                  (*_generics.trait_refs*)
+                  List.map (Charon.Substitute.st_substitute_visitor#visit_trait_ref subst)
+                    trait_impl.parent_trait_refs
+                )
             | Clause _ as clause_id ->
                 (* Caller it itself polymorphic and refers to one of its own clauses to synthesize
                    the clause arguments at call-site. We must pass whatever is relevant for this
@@ -1320,8 +1334,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                   []
                 else
                   failwith "Don't know how to resolve trait_ref above (1)"
-            | _ ->
-                failwith "Don't know how to resolve trait_ref above (2)")
+            | _ -> failwith "Don't know how to resolve trait_ref above (2)")
           trait_refs
       in
       build_trait_ref_mapping depth trait_refs
@@ -1347,7 +1360,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   L.log "Calls" "%s--> t_unapplied: %a" depth ptyp t_unapplied;
   L.log "Calls" "%s--> inputs: %a" depth ptyps inputs;
   L.log "Calls" "%s--> const_generic_args: %a (offset: %d)" depth pexprs const_generic_args offset;
-  L.log "Calls" "%s--> fn_ptrs: %a (offset: %d)" depth
+  L.log "Calls" "%s--> %d fn_ptrs: %a (offset: %d)" depth (List.length fn_ptrs)
     (fun k e ->
       List.iter
         (fun e ->
@@ -1383,6 +1396,8 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
         K.TPoly (ts, Krml.Helpers.fold_arrow args ret)
     | t ->
         let ret, args = Krml.Helpers.flatten_arrow t in
+        if List.length const_generic_args + List.length fn_ptrs > List.length args then
+          L.log "Calls" "ERROR in %s" (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
         let _, args =
           Krml.KList.split (List.length const_generic_args + List.length fn_ptrs) args
         in
@@ -1639,32 +1654,6 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
       end
   | Aggregate (AggregatedAdt (TBuiltin _, _, _, _), _) ->
       failwith "unsupported: AggregatedAdt / TAssume"
-  | Aggregate (AggregatedClosure (func, generics), ops) ->
-      let fun_ptr = { C.func = C.FunId (FRegular func); generics } in
-      let e, _, _ = expression_of_fn_ptr env fun_ptr in
-      begin
-        match e.typ with
-        | TArrow ((TBuf (TUnit, _) as t_state), t) ->
-            (* Empty closure block, passed by address...? TBD *)
-            K.(with_type t (EApp (e, [ with_type t_state (EAddrOf Krml.Helpers.eunit) ])))
-        | TArrow ((TBuf _ as t'), t) ->
-            let ops = List.map (expression_of_operand env) ops in
-            let ops =
-              if List.length ops > 1 then
-                K.(with_type (TTuple (List.map (fun o -> o.typ) ops)) (ETuple ops))
-              else
-                List.hd ops
-            in
-            let ops = [ K.(with_type t' (EAddrOf ops)) ] in
-            L.log "AstOfLlbc" "t'=%a t=%a closure ops are %a (typ: %a)" ptyp t' ptyp t pexprs ops
-              ptyp (List.hd ops).typ;
-            K.(with_type t (EApp (e, ops)))
-        | _ ->
-            Krml.KPrint.bprintf "Unknown closure\ntype: %a\nexpr: %a\nops: %a" ptyp e.typ pexpr e
-              pexprs
-              (List.map (expression_of_operand env) ops);
-            failwith "Can't handle arbitrary closures"
-      end
   | Aggregate (AggregatedArray (t, cg), ops) ->
       K.with_type
         (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))

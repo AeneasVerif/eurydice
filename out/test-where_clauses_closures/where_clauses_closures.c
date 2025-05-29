@@ -24,14 +24,34 @@ size_t where_clauses_closures_of_usize_d6(size_t x)
 }
 
 /**
-A monomorphic instance of where_clauses_closures.test.closure
+This function found in impl {(core::ops::function::FnMut<(usize), T> for where_clauses_closures::test::closure<T, K>[TraitClause@0, TraitClause@1, TraitClause@2])}
+*/
+/**
+A monomorphic instance of where_clauses_closures.test.call_mut_c3
 with types size_t
 with const generics
 - K= 1
 */
-size_t where_clauses_closures_test_closure_e3(size_t i)
+size_t where_clauses_closures_test_call_mut_c3_e3(void **_, size_t tupled_args)
 {
+  size_t i = tupled_args;
   return where_clauses_closures_of_usize_d6(i);
+}
+
+/**
+This function found in impl {(core::ops::function::FnOnce<(usize), T> for where_clauses_closures::test::closure<T, K>[TraitClause@0, TraitClause@1, TraitClause@2])}
+*/
+/**
+A monomorphic instance of where_clauses_closures.test.call_once_ef
+with types size_t
+with const generics
+- K= 1
+*/
+size_t where_clauses_closures_test_call_once_ef_e3(size_t _)
+{
+  /* original Rust expression is not an lvalue in C */
+  void *lvalue = (void *)0U;
+  return where_clauses_closures_test_call_mut_c3_e3(&lvalue, _);
 }
 
 /**
@@ -44,7 +64,8 @@ size_t_x2 where_clauses_closures_test_e3(void)
 {
   size_t x[1U];
   {
-    x[0U] = where_clauses_closures_of_usize_d6((size_t)0U);
+    size_t i = (size_t)0U;
+    x[0U] = where_clauses_closures_of_usize_d6(i);
   }
   size_t y = where_clauses_closures_zero_d6();
   size_t_x2 lit;
