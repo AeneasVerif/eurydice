@@ -901,6 +901,7 @@ let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause li
          in principle substitute everything but we currently don't. This will
          likely be a source of bugs. *)
       let subst = Charon.Substitute.make_subst_from_generics trait_decl.generics decl_generics in
+      let substitute_visitor = Charon.Substitute.st_substitute_visitor in
 
       let name = string_of_name env trait_decl.item_meta.name in
       if List.mem name blocklisted_trait_decls then
@@ -922,13 +923,20 @@ let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause li
         (* 1. Associated constants *)
         List.map
           (fun (item_name, typ) ->
-            (C.Clause (Free clause_id), item_name), ClauseConstant (trait_decl.C.item_meta.name, typ))
+            ( (C.Clause (Free clause_id), item_name),
+              ClauseConstant (trait_decl.C.item_meta.name, substitute_visitor#visit_ty subst typ) ))
           trait_decl.C.consts
         (* 2. Trait methods *)
         @ List.map
             (fun (item_name, bound_fn) ->
+              let bound_fn =
+                substitute_visitor#visit_binder substitute_visitor#visit_fun_decl_ref subst bound_fn
+              in
               let fun_decl_id = bound_fn.C.binder_value.C.fun_id in
               let decl = env.get_nth_function fun_decl_id in
+              (* TODO: what I really want here is a binder<signature>, because
+                 the method generics are not applied yet *)
+              let signature = decl.C.signature in
               let ts =
                 {
                   K.n = List.length trait_decl.generics.types;
@@ -936,16 +944,14 @@ let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause li
                 }
               in
               ( (C.Clause (Free clause_id), item_name),
-                ClauseMethod (decl_generics, ts, trait_decl.C.item_meta.name, decl.C.signature) ))
+                ClauseMethod (decl_generics, ts, trait_decl.C.item_meta.name, signature) ))
             trait_decl.C.methods
         (* 1 + 2, recursively, for parent traits *)
         @ List.flatten
             (List.mapi
                (fun _i (parent_clause : C.trait_clause) ->
                  (* Make the clause valid outside the scope of the trait decl. *)
-                 let parent_clause =
-                   Charon.Substitute.st_substitute_visitor#visit_trait_clause subst parent_clause
-                 in
+                 let parent_clause = substitute_visitor#visit_trait_clause subst parent_clause in
                  (* Mapping of the methods of the parent clause *)
                  let m = build_trait_clause_mapping env ~depth:(depth ^ "--") [ parent_clause ] in
                  List.map
