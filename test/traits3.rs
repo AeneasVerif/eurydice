@@ -9,23 +9,20 @@ pub(crate) mod internal {
     }
 }
 
-pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>, const RATE: usize, const DELIM: u8>(
-    data: &[&[u8]; N],
-    out: [&mut [u8]; N],
+pub(crate) fn keccak<const N: usize, T: KeccakStateItem<N>>(
 ) {
 }
 
 type uint64x2_t = (u64,u64);
 
 impl internal::KeccakItem<2> for uint64x2_t {
-    #[inline(always)]
     fn zero() -> Self {
         (0, 0)
     }
 }
 
-fn keccakx2<const RATE: usize, const DELIM: u8>(data: &[&[u8]; 2], out: [&mut [u8]; 2]) {
-    keccak::<2, uint64x2_t, RATE, DELIM>(data, out)
+fn keccakx2() {
+    keccak::<2, uint64x2_t>()
 }
 
 fn main() {}
