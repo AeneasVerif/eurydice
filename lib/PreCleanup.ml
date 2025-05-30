@@ -48,8 +48,13 @@ let expand_array_copies files =
     #visit_files
     () files
 
-(* Rust is super lenient regarding the type of shift operators, we impose u32 -- see
-   https://doc.rust-lang.org/std/ops/trait.Shl.html *)
+(* This operation is now **DEPRECATED** as the adjustment is performed on-the-fly in `mk_op_app` in AstOfLlbc.ml
+
+   To recover, add this function to the `precleanup` phase in `lib/PreCleanup.ml` and call it after `flatten_sequences`.
+
+   Rust is super lenient regarding the type of shift operators, we impose u32 -- see
+   https://doc.rust-lang.org/std/ops/trait.Shl.html
+   *)
 let adjust_shifts files =
   begin
     object
@@ -76,7 +81,6 @@ let adjust_shifts files =
 let precleanup files =
   let files = expand_array_copies files in
   let files = flatten_sequences files in
-  let files = adjust_shifts files in
   files
 
 let merge files =

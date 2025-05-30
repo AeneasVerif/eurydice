@@ -174,7 +174,7 @@ let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
         | ImplElemTrait _ -> "(" ^ i_as_str ^ ")"
       in
       "{" ^ i_as_str ^ d ^ "}"
-  | PeMonomorphized _ -> Charon.PrintTypes.path_elem_to_string env.format_env p
+  (* | PeMonomorphized _ -> Charon.PrintTypes.path_elem_to_string env.format_env p *)
 
 let string_of_name env ps = String.concat "::" (List.map (string_of_path_elem env) ps)
 
@@ -615,18 +615,19 @@ let expression_of_var_id (env : env) (v : C.local_id) : K.expr =
   let i, t = lookup env v in
   K.(with_type t (EBound i))
 
-(** Assume here the maximum length is 128-bit -- throw away any bits outside the initial 128 bits
+(** Assume here the maximum length is 128-bit -- will throw away the larger if larger.
+    This is a helper function to split a 128-bit integer into two 64-bit integers and is not assumed to be used in other contexts.
     Returns the **expr** pair (high64bits, low64bits) *)
 let split_128bit (value : Z.t) =
-  (* Throw away the longer parts *)
   let mask128 = Z.sub (Z.shift_left Z.one 128) Z.one in
   let mask64 = Z.sub (Z.shift_left Z.one 64) Z.one in
+  (* Always truncate to 128 bits using bitwise AND *)
   let value = Z.logand value mask128 in
-  (* Split to get the high & low values *)
+  (* Extract low 64 bits *)
   let low64 = Z.logand mask64 value in
+  (* Shift right without sign extension (use logical shift) *)
   let high64 = Z.shift_right value 64 in
-  (* Build the exprs *)
-  let to_expr_u64bits v = 
+  let to_expr_u64bits v =
     let print_Z z = Z.format "%#x" z in
     K.with_type (K.TInt UInt64) @@ (K.EConstant (UInt64, print_Z v))
   in
@@ -912,10 +913,7 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
   let is_128_bit_shift_lident lident =
     [ Krml.Constant.BShiftL; BShiftR ]
     |> List.concat_map (fun op -> [ op_128_of_op "i" op; op_128_of_op "u" op ])
-    |> List.map (fun (x : K.expr) ->
-      match x.K.node with 
-      | EQualified name -> name 
-      | _ -> failwith "IMPOSSIBLE")
+    |> List.map (fun (x : K.expr) -> Krml.Helpers.assert_elid x.K.node)
     |> List.mem lident
   in
   let modify_rest : K.expr list -> K.expr list = function

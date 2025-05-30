@@ -32,8 +32,8 @@ let char_t = K.(TInt UInt32)
 let int128_t = K.TQualified (["Eurydice"], "int128_t")
 let uint128_t = K.TQualified (["Eurydice"], "uint128_t")
 
-(* A record to hold a builtin function with all relevant information for both
-   krml and the transpilation phase in AstOfLlbc *)
+(** A record to hold a builtin *function* with all relevant information for both
+    krml and the transpilation phase in AstOfLlbc *)
 
 type builtin = {
   name : K.lident;
@@ -51,6 +51,7 @@ module Op128Map = Map.Make(struct
   type t = string * string
   let compare = Stdlib.compare
 end)
+
 (* Builtins for i128 and u128 are defined here but implemented in C. *)
 let mk_128_builtin_op kind op lhs_typ rhs_typ ret_typ =
   let name = [ "Eurydice" ], kind ^ "128_" ^ op in
@@ -477,6 +478,44 @@ type usage = Used | Unused
 
 let replacements = List.map (fun decl -> K.lid_of_decl decl, (decl, ref Unused)) [ unwrap ]
 
+let builtin_funcs =
+  [
+    array_to_slice;
+    array_to_subslice;
+    array_to_subslice_to;
+    array_to_subslice_from;
+    array_repeat;
+    array_into_iter;
+    slice_index;
+    slice_index_outparam;
+    slice_subslice;
+    slice_subslice_to;
+    slice_subslice_from;
+    slice_to_array;
+    slice_to_array2;
+    range_iterator_step_by;
+    range_step_by_iterator_next;
+    vec_push;
+    vec_new;
+    vec_len;
+    vec_drop;
+    vec_index;
+    box_new;
+    box_new_array;
+    replace;
+    slice_of_dst;
+    slice_of_boxed_array;
+    bitand_pv_u8;
+    shr_pv_u8;
+    min_u32;
+  ]
+  (* Declares the 128-bit operations *)
+  @ begin
+  Op128Map.to_seq op_128_cfgs
+  |> List.of_seq
+  |> List.map snd
+  end
+
 let files =
   [
     Krml.Builtin.lowstar_ignore;
@@ -494,44 +533,7 @@ let files =
                [ Krml.Common.Private ]
            in
            K.DExternal (None, flags, List.length cg_args, n_type_args, name, typ, arg_names))
-        begin
-         [
-           array_to_slice;
-           array_to_subslice;
-           array_to_subslice_to;
-           array_to_subslice_from;
-           array_repeat;
-           array_into_iter;
-           slice_index;
-           slice_index_outparam;
-           slice_subslice;
-           slice_subslice_to;
-           slice_subslice_from;
-           slice_to_array;
-           slice_to_array2;
-           range_iterator_step_by;
-           range_step_by_iterator_next;
-           vec_push;
-           vec_new;
-           vec_len;
-           vec_drop;
-           vec_index;
-           box_new;
-           box_new_array;
-           replace;
-           slice_of_dst;
-           slice_of_boxed_array;
-           bitand_pv_u8;
-           shr_pv_u8;
-           min_u32;
-         ]
-         (* Declares the 128-bit operations *)
-         @ begin
-          Op128Map.to_seq op_128_cfgs
-          |> List.of_seq
-          |> List.map snd
-         end
-      end
+        builtin_funcs
        @ [ nonzero_def; static_assert; dst_def ]
      in
      "Eurydice", externals);
@@ -551,6 +553,10 @@ let adjust (f, decls) =
               d
             with Not_found -> d))
       decls )
+
+let is_a_builtin_func_name (name : K.lident) =
+  (* Potentially make the list of built-in funcs a Map to speed up if necessary. *)
+  List.exists (fun { name = n; _ } -> n = name) builtin_funcs
 
 let check () =
   List.iter
