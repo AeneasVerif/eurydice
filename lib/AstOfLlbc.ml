@@ -1296,12 +1296,14 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                       let fn_ptr = fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr) in
                       fn_ptr)
                     trait_impl.methods
-                @ build_trait_ref_mapping ("  " ^ depth) (
-                  let subst = Charon.Substitute.make_subst_from_generics trait_impl.generics _generics in
-                  (*_generics.trait_refs*)
-                  List.map (Charon.Substitute.st_substitute_visitor#visit_trait_ref subst)
-                    trait_impl.parent_trait_refs
-                )
+                @ build_trait_ref_mapping ("  " ^ depth)
+                    (let subst =
+                       Charon.Substitute.make_subst_from_generics trait_impl.generics _generics
+                     in
+                     (*_generics.trait_refs*)
+                     List.map
+                       (Charon.Substitute.st_substitute_visitor#visit_trait_ref subst)
+                       trait_impl.parent_trait_refs)
             | Clause _ as clause_id ->
                 (* Caller it itself polymorphic and refers to one of its own clauses to synthesize
                    the clause arguments at call-site. We must pass whatever is relevant for this
@@ -1397,7 +1399,8 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
     | t ->
         let ret, args = Krml.Helpers.flatten_arrow t in
         if List.length const_generic_args + List.length fn_ptrs > List.length args then
-          L.log "Calls" "ERROR in %s" (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
+          L.log "Calls" "ERROR in %s"
+            (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
         let _, args =
           Krml.KList.split (List.length const_generic_args + List.length fn_ptrs) args
         in
