@@ -869,8 +869,7 @@ let blocklisted_trait_decls =
    transitively, possibly called by this function, based on the trait bounds in
    its signature. *)
 type trait_clause_entry =
-  | ClauseMethod of
-      (C.generic_args * K.type_scheme * Charon.Types.name (* trait name *) * C.fun_sig)
+  | ClauseMethod of (Charon.Types.name (* trait name *) * C.fun_sig)
   | ClauseConstant of Charon.Types.name (* trait name *) * C.ty
 
 type trait_clause_mapping = ((C.trait_instance_id * string) * trait_clause_entry) list
@@ -929,22 +928,80 @@ let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause li
         (* 2. Trait methods *)
         @ List.map
             (fun (item_name, bound_fn) ->
-              let bound_fn =
+              (* First we must substitute the trait generics into the method
+                 reference. *)
+              let bound_fn : C.fun_decl_ref C.binder =
                 substitute_visitor#visit_binder substitute_visitor#visit_fun_decl_ref subst bound_fn
               in
-              let fun_decl_id = bound_fn.C.binder_value.C.fun_id in
-              let decl = env.get_nth_function fun_decl_id in
-              (* TODO: what I really want here is a binder<signature>, because
-                 the method generics are not applied yet *)
-              let signature = decl.C.signature in
-              let ts =
-                {
-                  K.n = List.length trait_decl.generics.types;
-                  n_cgs = List.length trait_decl.generics.const_generics;
-                }
+              (* From this we construct a `fun_sig binder` which binds the
+                 method-specific generics. *)
+              let bound_sig : C.fun_sig C.binder =
+                let method_decl_id = bound_fn.C.binder_value.C.fun_id in
+                let method_decl = env.get_nth_function method_decl_id in
+                (* Get the signature from the `fun_decl` and substitute it to
+                   be valid under the binder. *)
+                let signature =
+                  substitute_visitor#visit_fun_sig
+                    (Charon.Substitute.make_subst_from_generics method_decl.signature.generics
+                       bound_fn.binder_value.fun_generics)
+                    method_decl.C.signature
+                in
+                { C.binder_params = bound_fn.binder_params; binder_value = signature }
               in
+
+              (* We then construct a polymorphic signature for this method.
+                 Its generics are the method generics (the ones in the binder).
+                 *)
+              let method_sig =
+                Charon.Substitute.(
+                  (* Variables bound in the inner binder are `Bound`, which
+                     eurydice doesn't handle. We therefore make them all `Free`
+                     variables, shifting indices to avoid overlap with existing
+                     in-scope variables. *)
+                  let ambient_ts =
+                    { K.n = List.length env.type_binders; K.n_cgs = List.length env.cg_binders }
+                  in
+                  let shift_ty_var varid =
+                    C.TypeVarId.of_int (C.TypeVarId.to_int varid + ambient_ts.K.n)
+                  in
+                  let shift_cg_var varid =
+                    C.ConstGenericVarId.of_int
+                      (C.ConstGenericVarId.to_int varid + ambient_ts.K.n_cgs)
+                  in
+                  let shift_vars_subst =
+                    {
+                      empty_free_sb_subst with
+                      ty_sb_subst =
+                        (fun varid -> empty_free_sb_subst.ty_sb_subst (shift_ty_var varid));
+                      cg_sb_subst =
+                        (fun varid -> empty_free_sb_subst.cg_sb_subst (shift_cg_var varid));
+                    }
+                  in
+                  let signature =
+                    st_substitute_visitor#visit_fun_sig
+                      (subst_remove_binder_zero shift_vars_subst)
+                      bound_sig.binder_value
+                  in
+                  let method_params =
+                    {
+                      bound_fn.binder_params with
+                      types =
+                        List.map
+                          (fun (var : C.type_var) ->
+                            { var with C.index = shift_ty_var var.C.index })
+                          bound_fn.binder_params.types;
+                      const_generics =
+                        List.map
+                          (fun (var : C.const_generic_var) ->
+                            { var with C.index = shift_cg_var var.C.index })
+                          bound_fn.binder_params.const_generics;
+                    }
+                  in
+                  { signature with generics = method_params })
+              in
+
               ( (C.Clause (Free clause_id), item_name),
-                ClauseMethod (decl_generics, ts, trait_decl.C.item_meta.name, signature) ))
+                ClauseMethod (trait_decl.C.item_meta.name, method_sig) ))
             trait_decl.C.methods
         (* 1 + 2, recursively, for parent traits *)
         @ List.flatten
@@ -1031,8 +1088,8 @@ and mk_clause_binders_and_args env (clause_mapping : trait_clause_mapping) : (va
   List.map
     (fun ((clause_id, item_name), clause_entry) ->
       match clause_entry with
-      | ClauseMethod
-          ((clause_generics : C.generic_args), trait_ts, trait_name, (signature : C.fun_sig)) ->
+      | ClauseMethod (trait_name, (signature : C.fun_sig)) ->
+          let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
           L.log "TraitClauses" "\n## Generating binder for %s\n" item_name;
           (* Polymorphic signature for trait method has const generic for BOTH
              trait-level generics and fn-level generics. Consider:
@@ -1045,44 +1102,7 @@ and mk_clause_binders_and_args env (clause_mapping : trait_clause_mapping) : (va
              size_t -> size_t ->  uint8_t[33size_t]* -> uint8_t[$0][$1]
           *)
           let ts, t = typ_of_signature env signature in
-          L.log "TraitClauses" "Signature: %a\n" ptyp (maybe_ts ts t);
-          L.log "TraitClauses" "Trait effective type arguments: %s\n"
-            (String.concat ","
-               (List.map (Charon.PrintTypes.ty_to_string env.format_env) clause_generics.C.types));
-          debug env;
-          (* We are in a function that has a trait clause of the form e.g. Hash<FOO>.
-             cgs contains FOO, that's it. *)
-          let cgs = List.map (cg_of_const_generic env) clause_generics.C.const_generics in
-          let ts = List.map (typ_of_ty env) clause_generics.C.types in
-          (* A little bit of math to compute how many of these are on the method
-             itself *)
-          let f_ts =
-            {
-              K.n_cgs = List.length signature.C.generics.const_generics - List.length cgs;
-              n = List.length signature.C.generics.types - List.length ts;
-            }
-          in
-          L.log "TraitClauses" "%s has %d fn-level const generics" item_name f_ts.n_cgs;
-          L.log "TraitClauses" "%s has %d fn-level type params" item_name f_ts.n;
-          L.log "TraitClauses" "About to substitute cgs=%a, ts=%a into %a" pcgs cgs ptyps ts ptyp t;
-          let t = Krml.DeBruijn.(subst_tn' f_ts.n ts (subst_ctn'' f_ts.n_cgs cgs t)) in
-          L.log "TraitClauses" "After subtitution t=%a" ptyp t;
-          let ret, args = Krml.Helpers.flatten_arrow t in
-          let _, args = Krml.KList.split trait_ts.K.n_cgs args in
-          let t = Krml.Helpers.fold_arrow args ret in
-          L.log "TraitClauses" "After chopping t=%a" ptyp t;
-          let t = maybe_ts f_ts t in
-          L.log "TraitClauses" "After ts addition t=%a" ptyp t;
-
-          let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
-          let ts =
-            {
-              K.n = List.length signature.generics.types - trait_ts.n;
-              K.n_cgs = List.length signature.generics.const_generics - trait_ts.n_cgs;
-            }
-          in
-          (* TODO: figure out why this fails for e.g. Iterator.rev *)
-          assert (ts.n_cgs >= 0 && ts.n >= 0);
+          let t = maybe_ts ts t in
           TraitClauseMethod { pretty_name; clause_id; item_name; ts }, t
       | ClauseConstant (trait_name, t) ->
           let t = typ_of_ty env t in
@@ -1112,8 +1132,8 @@ and debug_trait_clause_mapping env (mapping : trait_clause_mapping) =
     (fun ((clause_id, item_name), clause_entry) ->
       L.log "TraitClauses" "@@@ method name: %s" item_name;
       match clause_entry with
-      | ClauseMethod (_, ts, trait_name, signature) ->
-          let _, t = typ_of_signature env signature in
+      | ClauseMethod (trait_name, signature) ->
+          let ts, t = typ_of_signature env signature in
           L.log "TraitClauses"
             "%s (a.k.a. %s)::%s: %a has trait-level %d const generics, %d type vars\n"
             (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
