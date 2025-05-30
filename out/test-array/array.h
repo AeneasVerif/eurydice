@@ -37,11 +37,24 @@ void array_mut_array(uint32_t x[2U]);
 void array_mut_foo(array_Foo f);
 
 /**
-A monomorphic instance of array.mk_incr.closure
+This function found in impl {(core::ops::function::FnMut<(usize), u32> for array::mk_incr::closure<K>)}
+*/
+/**
+A monomorphic instance of array.mk_incr.call_mut_b4
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr_closure_95(size_t i);
+uint32_t array_mk_incr_call_mut_b4_95(void **_, size_t tupled_args);
+
+/**
+This function found in impl {(core::ops::function::FnOnce<(usize), u32> for array::mk_incr::closure<K>)}
+*/
+/**
+A monomorphic instance of array.mk_incr.call_once_9a
+with const generics
+- K= 10
+*/
+uint32_t array_mk_incr_call_once_9a_95(size_t _);
 
 /**
 A monomorphic instance of array.mk_incr
@@ -49,6 +62,67 @@ with const generics
 - K= 10
 */
 void array_mk_incr_95(uint32_t ret[10U]);
+
+/**
+A monomorphic instance of array.mk_incr2.closure
+with const generics
+- $10size_t
+*/
+typedef uint32_t *array_mk_incr2_closure_40;
+
+/**
+This function found in impl {(core::ops::function::FnMut<(usize), u32> for array::mk_incr2::closure<0, K>)}
+*/
+/**
+A monomorphic instance of array.mk_incr2.call_mut_ae
+with const generics
+- K= 10
+*/
+uint32_t array_mk_incr2_call_mut_ae_95(uint32_t **_, size_t tupled_args);
+
+/**
+This function found in impl {(core::ops::function::FnOnce<(usize), u32> for array::mk_incr2::closure<0, K>)}
+*/
+/**
+A monomorphic instance of array.mk_incr2.call_once_d4
+with const generics
+- K= 10
+*/
+uint32_t array_mk_incr2_call_once_d4_95(uint32_t *_, size_t _0);
+
+/**
+A monomorphic instance of array.mk_incr2
+with const generics
+- K= 10
+*/
+void array_mk_incr2_95(uint32_t ret[10U]);
+
+/**
+This function found in impl {(core::ops::function::FnMut<(u32), u16> for array::plus_one::closure<K>)}
+*/
+/**
+A monomorphic instance of array.plus_one.call_mut_9c
+with const generics
+- K= 1
+*/
+uint16_t array_plus_one_call_mut_9c_74(void **_, uint32_t tupled_args);
+
+/**
+This function found in impl {(core::ops::function::FnOnce<(u32), u16> for array::plus_one::closure<K>)}
+*/
+/**
+A monomorphic instance of array.plus_one.call_once_42
+with const generics
+- K= 1
+*/
+uint16_t array_plus_one_call_once_42_74(uint32_t _);
+
+/**
+A monomorphic instance of array.plus_one
+with const generics
+- K= 1
+*/
+void array_plus_one_74(uint32_t x[1U], uint16_t ret[1U]);
 
 void array_main(void);
 

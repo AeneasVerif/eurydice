@@ -211,6 +211,7 @@ Supported options:|}
   (* Following the krml order of phases here *)
   let files = Krml.Inlining.inline_type_abbrevs files in
   let files = Krml.Monomorphization.functions files in
+  Eurydice.Logging.log "Phase2.12" "%a" pfiles files;
   let files = Krml.Simplify.optimize_lets files in
   let files = Krml.DataTypes.simplify files in
   (* Must happen now, before Monomorphization.datatypes, because otherwise
@@ -218,8 +219,9 @@ Supported options:|}
      that they were empty structs to begin with, which would send Checker off the rails *)
   let files = Krml.DataTypes.remove_empty_structs files in
   let files = Krml.Monomorphization.datatypes files in
-  let files = Krml.DataTypes.optimize files in
-  Eurydice.Logging.log "Phase2.15" "%a" pfiles files;
+  (* Cannot use remove_unit_buffers as it is technically incorrect *)
+  let files = Krml.DataTypes.remove_unit_fields#visit_files () files in
+  Eurydice.Logging.log "Phase2.13" "%a" pfiles files;
   let files = Krml.Inlining.inline files in
   let files =
     match config with
@@ -254,13 +256,13 @@ Supported options:|}
      functions that do not write to memory). *)
   fill_readonly_table files;
   let files = Krml.Simplify.optimize_lets files in
+  Eurydice.Logging.log "Phase2.55" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_array_from_fn files in
+  Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
   (* remove_array_from_fn, above, creates further opportunities for removing unused functions. *)
   let files = Krml.Inlining.drop_unused files in
-  Eurydice.Logging.log "Phase2.55" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_implicit_array_copies#visit_files () files in
   (* Creates opportunities for removing unused variables *)
-  Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_assign_return#visit_files () files in
   (* These two need to come before... *)
   let files = Krml.Inlining.cross_call_analysis files in
