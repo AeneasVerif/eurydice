@@ -298,6 +298,7 @@ Supported options:|}
     Krml.Idents.LidSet.(union (union macros cg_macros) Eurydice.Builtin.macros)
   in
   let c_name_map = Krml.GlobalNames.mapping (fst scope_env) in
+  let files = Eurydice.Cleanup3.remove_builtin_funcs files in
 
   let open Krml in
   let file_of_map = Bundle.mk_file_of files in
