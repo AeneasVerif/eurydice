@@ -1062,8 +1062,8 @@ let rec lookup_signature env depth signature : lookup_result =
   let env = push_type_binders env type_params in
 
   let clause_mapping = build_trait_clause_mapping env trait_clauses in
-  debug_trait_clause_mapping env clause_mapping;
   let clause_binders = mk_clause_binders_and_args env clause_mapping in
+  debug_trait_clause_mapping env clause_binders;
   let clause_ts = List.map snd clause_binders in
 
   {
@@ -1122,27 +1122,26 @@ and typ_of_signature env signature =
   let t = Krml.Helpers.fold_arrow adjusted_inputs output in
   ts, t
 
-and debug_trait_clause_mapping env (mapping : trait_clause_mapping) =
+and debug_trait_clause_mapping env (mapping : (var_id * K.typ) list) =
   if mapping = [] then
     L.log "TraitClauses" "# Debug Mapping\nIn this function, trait clause mapping is empty"
   else
     L.log "TraitClauses"
       "# Debug Mapping\nIn this function, calls to trait bound methods are as follows:";
   List.iter
-    (fun ((clause_id, item_name), clause_entry) ->
-      L.log "TraitClauses" "@@@ method name: %s" item_name;
+    (fun (clause_entry, t) ->
       match clause_entry with
-      | ClauseMethod (trait_name, signature) ->
-          let ts, t = typ_of_signature env signature in
-          L.log "TraitClauses"
-            "%s (a.k.a. %s)::%s: %a has trait-level %d const generics, %d type vars\n"
+      | TraitClauseMethod { clause_id; item_name; ts; _ } ->
+          L.log "TraitClauses" "@@@ method name: %s" item_name;
+          L.log "TraitClauses" "%s::%s: %a has trait-level %d const generics, %d type vars\n"
             (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
-            (string_of_name env trait_name) item_name ptyp t ts.K.n_cgs ts.n
-      | ClauseConstant (trait_name, t) ->
-          let t = typ_of_ty env t in
-          L.log "TraitClauses" "%s (a.k.a. %s)::%s: associated constant %a\n"
+            item_name ptyp t ts.K.n_cgs ts.n
+      | TraitClauseConstant { clause_id; item_name; _ } ->
+          L.log "TraitClauses" "@@@ method name: %s" item_name;
+          L.log "TraitClauses" "%s::%s: associated constant %a\n"
             (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
-            (string_of_name env trait_name) item_name ptyp t)
+            item_name ptyp t
+      | _ -> ())
     mapping
 
 (** Compiling function instantiations into krml application nodes. *)
@@ -2209,11 +2208,6 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                         (fun t -> Charon.PrintTypes.ty_to_string env.format_env t)
                         signature.C.inputs));
 
-                let clause_mapping =
-                  build_trait_clause_mapping env signature.C.generics.trait_clauses
-                in
-                debug_trait_clause_mapping env clause_mapping;
-
                 (* `locals` contains, in order: special return variable; function arguments;
                    local variables *)
                 let args, locals = Krml.KList.split (locals.arg_count + 1) locals.locals in
@@ -2248,7 +2242,11 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                    type_binders = <<all type binders>>
                    binders = <<all cg binders>>
                 *)
+                let clause_mapping =
+                  build_trait_clause_mapping env signature.C.generics.trait_clauses
+                in
                 let clause_binders = mk_clause_binders_and_args env clause_mapping in
+                debug_trait_clause_mapping env clause_binders;
                 (* Now we turn it into:
                    binders = <<all cg binders>> ++ <<all clause binders>> ++ <<regular function args>>
                 *)
