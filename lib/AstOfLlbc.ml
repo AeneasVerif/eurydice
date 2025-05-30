@@ -865,16 +865,31 @@ let blocklisted_trait_decls =
     "core::fmt::Debug";
   ]
 
+(* Interpret a Rust function type, with trait bounds, into the krml Ast, providing:
+   - the type scheme (fields may be zero)
+   - the cg types, which only contains the original Rust const generic variables
+   - the argument types, prefixed by the dictionary-style passing of trait clause methods
+   - the return type
+   - whether the function is builtin, or not. *)
+type lookup_result = {
+  ts : K.type_scheme; (* just for a sanity check *)
+  cg_types : K.typ list;
+  arg_types : K.typ list;
+  ret_type : K.typ;
+  is_known_builtin : bool;
+}
+
+let maybe_ts ts t =
+  if ts.K.n <> 0 || ts.n_cgs <> 0 then
+    K.TPoly (ts, t)
+  else
+    t
+
 (* For a given function, a (flat) list of all the trait methods that are
    transitively, possibly called by this function, based on the trait bounds in
-   its signature. *)
-type trait_clause_entry =
-  | ClauseMethod of (Charon.Types.name (* trait name *) * C.fun_sig)
-  | ClauseConstant of Charon.Types.name (* trait name *) * C.ty
+   its signature.
 
-type trait_clause_mapping = ((C.trait_instance_id * string) * trait_clause_entry) list
-
-(* Using tests/where_clauses_simple as an example.
+   Using tests/where_clauses_simple as an example.
 
    fn double<T: Ops + Copy, U: Ops+Copy> (...)
 
@@ -886,9 +901,13 @@ type trait_clause_mapping = ((C.trait_instance_id * string) * trait_clause_entry
 
    the types we obtain by looking up the trait declaration have Self as 0
    (DeBruijn).
+
+   When building a function declaration, this synthesizes all the extra binders
+   required for trait methods (passed as function pointers). Assumes type
+   variables have been suitably bound in the environment.
 *)
-let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause list) :
-    trait_clause_mapping =
+let rec mk_clause_binders_and_args env ?depth (trait_clauses : C.trait_clause list) :
+    (var_id * K.typ) list =
   let depth = Option.value ~default:"" depth in
   List.concat_map
     (fun tc ->
@@ -903,6 +922,8 @@ let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause li
       let substitute_visitor = Charon.Substitute.st_substitute_visitor in
 
       let name = string_of_name env trait_decl.item_meta.name in
+      let clause_ref = C.Clause (Free clause_id) in
+
       if List.mem name blocklisted_trait_decls then
         []
       else begin
@@ -922,12 +943,18 @@ let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause li
         (* 1. Associated constants *)
         List.map
           (fun (item_name, typ) ->
-            ( (C.Clause (Free clause_id), item_name),
-              ClauseConstant (trait_decl.C.item_meta.name, substitute_visitor#visit_ty subst typ) ))
+            let trait_name = trait_decl.C.item_meta.name in
+            let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
+            let t = substitute_visitor#visit_ty subst typ in
+            let t = typ_of_ty env t in
+            TraitClauseConstant { item_name; pretty_name; clause_id = clause_ref }, t)
           trait_decl.C.consts
         (* 2. Trait methods *)
         @ List.map
             (fun (item_name, bound_fn) ->
+              let trait_name = trait_decl.C.item_meta.name in
+              let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
+
               (* First we must substitute the trait generics into the method
                  reference. *)
               let bound_fn : C.fun_decl_ref C.binder =
@@ -999,9 +1026,9 @@ let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause li
                   in
                   { signature with generics = method_params })
               in
-
-              ( (C.Clause (Free clause_id), item_name),
-                ClauseMethod (trait_decl.C.item_meta.name, method_sig) ))
+              let ts, t = typ_of_signature env method_sig in
+              let t = maybe_ts ts t in
+              TraitClauseMethod { item_name; pretty_name; clause_id = clause_ref; ts }, t)
             trait_decl.C.methods
         (* 1 + 2, recursively, for parent traits *)
         @ List.flatten
@@ -1010,45 +1037,37 @@ let rec build_trait_clause_mapping env ?depth (trait_clauses : C.trait_clause li
                  (* Make the clause valid outside the scope of the trait decl. *)
                  let parent_clause = substitute_visitor#visit_trait_clause subst parent_clause in
                  (* Mapping of the methods of the parent clause *)
-                 let m = build_trait_clause_mapping env ~depth:(depth ^ "--") [ parent_clause ] in
+                 let mapping =
+                   mk_clause_binders_and_args env ~depth:(depth ^ "--") [ parent_clause ]
+                 in
+                 let map_clause (clause_id' : C.trait_instance_id) : C.trait_instance_id =
+                   (* This is the parent clause `clause_id'` of `clause_id` -- see comments in charon/types.rs  *)
+                   let clause_id' =
+                     match clause_id' with
+                     | Clause (Free clause_id') -> clause_id'
+                     | _ -> fail "not a clause??"
+                   in
+                   ParentClause (clause_ref, trait_decl_id, clause_id')
+                 in
                  List.map
-                   (fun (((clause_id' : C.trait_instance_id), m), v) ->
-                     (* This is the parent clause `clause_id'` of `clause_id` -- see comments in charon/types.rs  *)
-                     let clause_id' =
-                       match clause_id' with
-                       | Clause (Free clause_id') -> clause_id'
-                       | _ -> fail "not a clause??"
+                   (fun (entry, t) ->
+                     let entry =
+                       match entry with
+                       | TraitClauseMethod { pretty_name; clause_id; item_name; ts } ->
+                           TraitClauseMethod
+                             { pretty_name; clause_id = map_clause clause_id; item_name; ts }
+                       | TraitClauseConstant { pretty_name; clause_id; item_name } ->
+                           TraitClauseConstant
+                             { pretty_name; clause_id = map_clause clause_id; item_name }
+                       | entry -> entry
                      in
-                     let id : C.trait_instance_id =
-                       ParentClause (Clause (Free clause_id), trait_decl_id, clause_id')
-                     in
-                     (id, m), v)
-                   m)
+                     entry, t)
+                   mapping)
                trait_decl.C.parent_clauses)
       end)
     trait_clauses
 
-(* Interpret a Rust function type, with trait bounds, into the krml Ast, providing:
-   - the type scheme (fields may be zero)
-   - the cg types, which only contains the original Rust const generic variables
-   - the argument types, prefixed by the dictionary-style passing of trait clause methods
-   - the return type
-   - whether the function is builtin, or not. *)
-type lookup_result = {
-  ts : K.type_scheme; (* just for a sanity check *)
-  cg_types : K.typ list;
-  arg_types : K.typ list;
-  ret_type : K.typ;
-  is_known_builtin : bool;
-}
-
-let maybe_ts ts t =
-  if ts.K.n <> 0 || ts.n_cgs <> 0 then
-    K.TPoly (ts, t)
-  else
-    t
-
-let rec lookup_signature env depth signature : lookup_result =
+and lookup_signature env depth signature : lookup_result =
   let { C.generics = { types = type_params; const_generics; trait_clauses; _ }; inputs; output; _ }
       =
     signature
@@ -1061,8 +1080,7 @@ let rec lookup_signature env depth signature : lookup_result =
   let env = push_cg_binders env const_generics in
   let env = push_type_binders env type_params in
 
-  let clause_mapping = build_trait_clause_mapping env trait_clauses in
-  let clause_binders = mk_clause_binders_and_args env clause_mapping in
+  let clause_binders = mk_clause_binders_and_args env trait_clauses in
   debug_trait_clause_mapping env clause_binders;
   let clause_ts = List.map snd clause_binders in
 
@@ -1080,35 +1098,6 @@ let rec lookup_signature env depth signature : lookup_result =
     ret_type = typ_of_ty env output;
     is_known_builtin = false;
   }
-
-(* When building a function declaration, this synthesizes all the extra binders
-   required for trait methods (passed as function pointers). Assumes type
-   variables have been suitably bound in the environment *)
-and mk_clause_binders_and_args env (clause_mapping : trait_clause_mapping) : (var_id * K.typ) list =
-  List.map
-    (fun ((clause_id, item_name), clause_entry) ->
-      match clause_entry with
-      | ClauseMethod (trait_name, (signature : C.fun_sig)) ->
-          let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
-          L.log "TraitClauses" "\n## Generating binder for %s\n" item_name;
-          (* Polymorphic signature for trait method has const generic for BOTH
-             trait-level generics and fn-level generics. Consider:
-
-             trait Hash<K>
-               fn PRFxN<const LEN: usize>(input: &[[u8; 33]; K]) -> [[u8; LEN]; K];
-
-             which gives the signature:
-
-             size_t -> size_t ->  uint8_t[33size_t]* -> uint8_t[$0][$1]
-          *)
-          let ts, t = typ_of_signature env signature in
-          let t = maybe_ts ts t in
-          TraitClauseMethod { pretty_name; clause_id; item_name; ts }, t
-      | ClauseConstant (trait_name, t) ->
-          let t = typ_of_ty env t in
-          let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
-          TraitClauseConstant { clause_id; item_name; pretty_name }, t)
-    clause_mapping
 
 (* Transforms a lookup result into a usable type, taking into account the fact that the internal Ast
    is ML-style and does not have zero-argument functions. *)
@@ -1275,7 +1264,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
          anyhow. *)
       []
     else
-      (* MUST have the same structure as build_trait_clause_mapping *)
+      (* MUST have the same structure as mk_clause_binders_and_args *)
       let rec build_trait_ref_mapping depth (trait_refs : C.trait_ref list) =
         List.concat_map
           (fun (trait_ref : C.trait_ref) ->
@@ -1295,7 +1284,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                 (* Call-site has resolved trait clauses into a concrete trait implementation. *)
                 let trait_impl : C.trait_impl = env.get_nth_trait_impl impl_id in
 
-                (* This must be in agreement, and in the same order as build_trait_clause_mapping *)
+                (* This must be in agreement, and in the same order as mk_clause_binders_and_args *)
                 List.map
                   (fun (_item_name, { C.global_id; global_generics }) ->
                     if
@@ -2242,10 +2231,9 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                    type_binders = <<all type binders>>
                    binders = <<all cg binders>>
                 *)
-                let clause_mapping =
-                  build_trait_clause_mapping env signature.C.generics.trait_clauses
+                let clause_binders =
+                  mk_clause_binders_and_args env signature.C.generics.trait_clauses
                 in
-                let clause_binders = mk_clause_binders_and_args env clause_mapping in
                 debug_trait_clause_mapping env clause_binders;
                 (* Now we turn it into:
                    binders = <<all cg binders>> ++ <<all clause binders>> ++ <<regular function args>>
