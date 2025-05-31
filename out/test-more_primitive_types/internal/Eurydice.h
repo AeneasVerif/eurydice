@@ -15,114 +15,114 @@
 extern "C" {
 #endif
 
-static inline Eurydice_int128_int128_t
-Eurydice_int128_i128_add(Eurydice_int128_int128_t lhs, Eurydice_int128_int128_t rhs);
+static inline Eurydice_Int128_int128_t
+Eurydice_Int128_i128_add(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs);
 
-static inline Eurydice_int128_int128_t
-Eurydice_int128_i128_band(Eurydice_int128_int128_t lhs, Eurydice_int128_int128_t rhs);
+static inline Eurydice_Int128_int128_t
+Eurydice_Int128_i128_band(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs);
 
-static inline Eurydice_int128_int128_t Eurydice_int128_i128_bnot(Eurydice_int128_int128_t lhs);
+static inline Eurydice_Int128_int128_t Eurydice_Int128_i128_bnot(Eurydice_Int128_int128_t lhs);
 
-static inline Eurydice_int128_int128_t
-Eurydice_int128_i128_bor(Eurydice_int128_int128_t lhs, Eurydice_int128_int128_t rhs);
+static inline Eurydice_Int128_int128_t
+Eurydice_Int128_i128_bor(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs);
 
-static inline Eurydice_int128_int128_t
-Eurydice_int128_i128_bxor(Eurydice_int128_int128_t lhs, Eurydice_int128_int128_t rhs);
+static inline Eurydice_Int128_int128_t
+Eurydice_Int128_i128_bxor(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs);
 
-static inline Eurydice_int128_int128_t
-Eurydice_int128_i128_div(Eurydice_int128_int128_t lhs, Eurydice_int128_int128_t rhs);
-
-static inline bool
-Eurydice_int128_i128_eq(Eurydice_int128_int128_t lhs, Eurydice_int128_int128_t rhs);
-
-static inline Eurydice_int128_int128_t
-Eurydice_int128_i128_from_bits(uint64_t lhs, uint64_t rhs);
+static inline Eurydice_Int128_int128_t
+Eurydice_Int128_i128_div(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs);
 
 static inline bool
-Eurydice_int128_i128_gt(Eurydice_int128_int128_t lhs, Eurydice_int128_int128_t rhs);
+Eurydice_Int128_i128_eq(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs);
+
+static inline Eurydice_Int128_int128_t
+Eurydice_Int128_i128_from_bits(uint64_t lhs, uint64_t rhs);
 
 static inline bool
-Eurydice_int128_i128_gte(Eurydice_int128_int128_t lhs, Eurydice_int128_int128_t rhs);
+Eurydice_Int128_i128_gt(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs);
 
 static inline bool
-Eurydice_int128_i128_lt(Eurydice_int128_int128_t lhs, Eurydice_int128_int128_t rhs);
+Eurydice_Int128_i128_gte(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs);
 
 static inline bool
-Eurydice_int128_i128_lte(Eurydice_int128_int128_t lhs, Eurydice_int128_int128_t rhs);
-
-static inline Eurydice_int128_int128_t
-Eurydice_int128_i128_mod(Eurydice_int128_int128_t lhs, Eurydice_int128_int128_t rhs);
-
-static inline Eurydice_int128_int128_t
-Eurydice_int128_i128_mul(Eurydice_int128_int128_t lhs, Eurydice_int128_int128_t rhs);
-
-static inline Eurydice_int128_int128_t Eurydice_int128_i128_neg(Eurydice_int128_int128_t lhs);
+Eurydice_Int128_i128_lt(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs);
 
 static inline bool
-Eurydice_int128_i128_neq(Eurydice_int128_int128_t lhs, Eurydice_int128_int128_t rhs);
+Eurydice_Int128_i128_lte(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs);
 
-static inline Eurydice_int128_int128_t
-Eurydice_int128_i128_shl(Eurydice_int128_int128_t lhs, uint32_t rhs);
+static inline Eurydice_Int128_int128_t
+Eurydice_Int128_i128_mod(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs);
 
-static inline Eurydice_int128_int128_t
-Eurydice_int128_i128_shr(Eurydice_int128_int128_t lhs, uint32_t rhs);
+static inline Eurydice_Int128_int128_t
+Eurydice_Int128_i128_mul(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs);
 
-static inline Eurydice_int128_int128_t
-Eurydice_int128_i128_sub(Eurydice_int128_int128_t lhs, Eurydice_int128_int128_t rhs);
-
-static inline Eurydice_int128_uint128_t
-Eurydice_int128_u128_add(Eurydice_int128_uint128_t lhs, Eurydice_int128_uint128_t rhs);
-
-static inline Eurydice_int128_uint128_t
-Eurydice_int128_u128_band(Eurydice_int128_uint128_t lhs, Eurydice_int128_uint128_t rhs);
-
-static inline Eurydice_int128_uint128_t
-Eurydice_int128_u128_bnot(Eurydice_int128_uint128_t lhs);
-
-static inline Eurydice_int128_uint128_t
-Eurydice_int128_u128_bor(Eurydice_int128_uint128_t lhs, Eurydice_int128_uint128_t rhs);
-
-static inline Eurydice_int128_uint128_t
-Eurydice_int128_u128_bxor(Eurydice_int128_uint128_t lhs, Eurydice_int128_uint128_t rhs);
-
-static inline Eurydice_int128_uint128_t
-Eurydice_int128_u128_div(Eurydice_int128_uint128_t lhs, Eurydice_int128_uint128_t rhs);
+static inline Eurydice_Int128_int128_t Eurydice_Int128_i128_neg(Eurydice_Int128_int128_t lhs);
 
 static inline bool
-Eurydice_int128_u128_eq(Eurydice_int128_uint128_t lhs, Eurydice_int128_uint128_t rhs);
+Eurydice_Int128_i128_neq(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs);
 
-static inline Eurydice_int128_uint128_t
-Eurydice_int128_u128_from_bits(uint64_t lhs, uint64_t rhs);
+static inline Eurydice_Int128_int128_t
+Eurydice_Int128_i128_shl(Eurydice_Int128_int128_t lhs, uint32_t rhs);
+
+static inline Eurydice_Int128_int128_t
+Eurydice_Int128_i128_shr(Eurydice_Int128_int128_t lhs, uint32_t rhs);
+
+static inline Eurydice_Int128_int128_t
+Eurydice_Int128_i128_sub(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs);
+
+static inline Eurydice_Int128_uint128_t
+Eurydice_Int128_u128_add(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs);
+
+static inline Eurydice_Int128_uint128_t
+Eurydice_Int128_u128_band(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs);
+
+static inline Eurydice_Int128_uint128_t
+Eurydice_Int128_u128_bnot(Eurydice_Int128_uint128_t lhs);
+
+static inline Eurydice_Int128_uint128_t
+Eurydice_Int128_u128_bor(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs);
+
+static inline Eurydice_Int128_uint128_t
+Eurydice_Int128_u128_bxor(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs);
+
+static inline Eurydice_Int128_uint128_t
+Eurydice_Int128_u128_div(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs);
 
 static inline bool
-Eurydice_int128_u128_gt(Eurydice_int128_uint128_t lhs, Eurydice_int128_uint128_t rhs);
+Eurydice_Int128_u128_eq(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs);
+
+static inline Eurydice_Int128_uint128_t
+Eurydice_Int128_u128_from_bits(uint64_t lhs, uint64_t rhs);
 
 static inline bool
-Eurydice_int128_u128_gte(Eurydice_int128_uint128_t lhs, Eurydice_int128_uint128_t rhs);
+Eurydice_Int128_u128_gt(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs);
 
 static inline bool
-Eurydice_int128_u128_lt(Eurydice_int128_uint128_t lhs, Eurydice_int128_uint128_t rhs);
+Eurydice_Int128_u128_gte(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs);
 
 static inline bool
-Eurydice_int128_u128_lte(Eurydice_int128_uint128_t lhs, Eurydice_int128_uint128_t rhs);
-
-static inline Eurydice_int128_uint128_t
-Eurydice_int128_u128_mod(Eurydice_int128_uint128_t lhs, Eurydice_int128_uint128_t rhs);
-
-static inline Eurydice_int128_uint128_t
-Eurydice_int128_u128_mul(Eurydice_int128_uint128_t lhs, Eurydice_int128_uint128_t rhs);
+Eurydice_Int128_u128_lt(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs);
 
 static inline bool
-Eurydice_int128_u128_neq(Eurydice_int128_uint128_t lhs, Eurydice_int128_uint128_t rhs);
+Eurydice_Int128_u128_lte(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs);
 
-static inline Eurydice_int128_uint128_t
-Eurydice_int128_u128_shl(Eurydice_int128_uint128_t lhs, uint32_t rhs);
+static inline Eurydice_Int128_uint128_t
+Eurydice_Int128_u128_mod(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs);
 
-static inline Eurydice_int128_uint128_t
-Eurydice_int128_u128_shr(Eurydice_int128_uint128_t lhs, uint32_t rhs);
+static inline Eurydice_Int128_uint128_t
+Eurydice_Int128_u128_mul(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs);
 
-static inline Eurydice_int128_uint128_t
-Eurydice_int128_u128_sub(Eurydice_int128_uint128_t lhs, Eurydice_int128_uint128_t rhs);
+static inline bool
+Eurydice_Int128_u128_neq(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs);
+
+static inline Eurydice_Int128_uint128_t
+Eurydice_Int128_u128_shl(Eurydice_Int128_uint128_t lhs, uint32_t rhs);
+
+static inline Eurydice_Int128_uint128_t
+Eurydice_Int128_u128_shr(Eurydice_Int128_uint128_t lhs, uint32_t rhs);
+
+static inline Eurydice_Int128_uint128_t
+Eurydice_Int128_u128_sub(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs);
 
 #if defined(__cplusplus)
 }

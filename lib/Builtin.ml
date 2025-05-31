@@ -29,8 +29,8 @@ let mk_nonzero t = K.TApp (nonzero, [ t ])
 
 (* Internal types *)
 let char_t = K.(TInt UInt32)
-let int128_t = K.TQualified (["Eurydice"; "int128" ], "int128_t")
-let uint128_t = K.TQualified (["Eurydice"; "int128" ], "uint128_t")
+let int128_t = K.TQualified (["Eurydice"; "Int128" ], "int128_t")
+let uint128_t = K.TQualified (["Eurydice"; "Int128" ], "uint128_t")
 
 (** A record to hold a builtin *function* with all relevant information for both
     krml and the transpilation phase in AstOfLlbc *)
@@ -54,7 +54,7 @@ end)
 
 (* Builtins for i128 and u128 are defined here but implemented in C. *)
 let mk_128_builtin_op kind op lhs_typ rhs_typ ret_typ =
-  let name = [ "Eurydice"; "int128" ], kind ^ "128_" ^ op in
+  let name = [ "Eurydice"; "Int128" ], kind ^ "128_" ^ op in
   let args, arg_names =
     match rhs_typ with
     | K.TUnit -> [ lhs_typ ], [ "lhs" ]

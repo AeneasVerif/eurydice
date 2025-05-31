@@ -87,7 +87,7 @@ Supported options:|}
       extern_c := true;
       cxx_compat := true;
       unroll_loops := !funroll_loops;
-      static_header := [ Bundle.Prefix [ "core"; "convert" ]; Bundle.Prefix [ "core"; "num" ]; Bundle.Prefix [ "Eurydice"; "int128" ] ];
+      static_header := [ Bundle.Prefix [ "core"; "convert" ]; Bundle.Prefix [ "core"; "num" ]; Bundle.Prefix [ "Eurydice"; "Int128" ] ];
       Warn.parse_warn_error (!warn_error ^ "+8"));
     Monomorphization.NameGen.short_names := true;
     AstToCStar.no_return_type_lids :=
