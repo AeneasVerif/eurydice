@@ -17,8 +17,8 @@ extern "C" {
 
 typedef struct more_primitive_types_MorePrimitiveTypes_s
 {
-  Eurydice_int128_t int128;
-  Eurydice_uint128_t uint128;
+  Eurydice_int128_int128_t int128;
+  Eurydice_int128_uint128_t uint128;
   uint32_t c;
 }
 more_primitive_types_MorePrimitiveTypes;

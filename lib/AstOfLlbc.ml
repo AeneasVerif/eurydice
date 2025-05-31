@@ -901,6 +901,9 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
       let ret_t, _ = Krml.Helpers.flatten_arrow op_t in
       op, ret_t
   in
+  (* Rust is super lenient regarding the type of shift operators, we impose u32 -- see
+     https://doc.rust-lang.org/std/ops/trait.Shl.html
+  *)
   (* Additionally, if the op is `shift` (BShiftL/R for usual, (u)int128_shl/r for 128 bits)
     then the `rest` should be with a single element of type `uint32_t`
     if it is not, turn to type casting. *)

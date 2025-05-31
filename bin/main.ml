@@ -87,7 +87,7 @@ Supported options:|}
       extern_c := true;
       cxx_compat := true;
       unroll_loops := !funroll_loops;
-      static_header := [ Bundle.Prefix [ "core"; "convert" ]; Bundle.Prefix [ "core"; "num" ] ];
+      static_header := [ Bundle.Prefix [ "core"; "convert" ]; Bundle.Prefix [ "core"; "num" ]; Bundle.Prefix [ "Eurydice"; "int128" ] ];
       Warn.parse_warn_error (!warn_error ^ "+8"));
     Monomorphization.NameGen.short_names := true;
     AstToCStar.no_return_type_lids :=
@@ -298,7 +298,6 @@ Supported options:|}
     Krml.Idents.LidSet.(union (union macros cg_macros) Eurydice.Builtin.macros)
   in
   let c_name_map = Krml.GlobalNames.mapping (fst scope_env) in
-  let files = Eurydice.Cleanup3.remove_builtin_funcs files in
 
   let open Krml in
   let file_of_map = Bundle.mk_file_of files in

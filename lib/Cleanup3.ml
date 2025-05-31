@@ -172,11 +172,3 @@ let also_skip_prefix_for_external_types (scope_env, _) =
           KPrint.bprintf "Warning! The skip_prefix options generate name conflicts\n"
   end
 
-let remove_builtin_funcs files =
-  let filtrate decl =
-    match decl with
-    | DExternal (_, _, _, _, name, _, _) -> B.is_a_builtin_func_name name
-    | _ -> true
-  in
-  List.map (fun (name, decls) -> (name, List.filter filtrate decls)) files
-
