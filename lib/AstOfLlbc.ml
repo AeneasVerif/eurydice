@@ -995,37 +995,46 @@ let rec mk_clause_binders_and_args env ?depth (trait_clauses : C.trait_clause li
                     C.ConstGenericVarId.of_int
                       (C.ConstGenericVarId.to_int varid + ambient_ts.K.n_cgs)
                   in
-                  let shift_vars_subst =
-                    {
-                      empty_free_sb_subst with
-                      ty_sb_subst =
-                        (fun varid -> empty_free_sb_subst.ty_sb_subst (shift_ty_var varid));
-                      cg_sb_subst =
-                        (fun varid -> empty_free_sb_subst.cg_sb_subst (shift_cg_var varid));
-                    }
+                  (* Replace bound variables with free variables that don't
+                     overlap with existing ones. *)
+                  let subst =
+                    subst_remove_binder_zero
+                      {
+                        empty_free_sb_subst with
+                        ty_sb_subst =
+                          (fun varid -> empty_free_sb_subst.ty_sb_subst (shift_ty_var varid));
+                        cg_sb_subst =
+                          (fun varid -> empty_free_sb_subst.cg_sb_subst (shift_cg_var varid));
+                      }
                   in
+
                   let signature =
-                    st_substitute_visitor#visit_fun_sig
-                      (subst_remove_binder_zero shift_vars_subst)
-                      bound_sig.binder_value
+                    st_substitute_visitor#visit_fun_sig subst bound_sig.binder_value
                   in
+                  (* Gotta shift the params too, as trait clause may refer to bound types. *)
+                  let method_params =
+                    st_substitute_visitor#visit_generic_params subst bound_sig.binder_params
+                  in
+                  (* Finally, update the parameters so they use the new, shifted indices. *)
                   let method_params =
                     {
-                      bound_fn.binder_params with
+                      method_params with
                       types =
                         List.map
                           (fun (var : C.type_var) ->
                             { var with C.index = shift_ty_var var.C.index })
-                          bound_fn.binder_params.types;
+                          method_params.types;
                       const_generics =
                         List.map
                           (fun (var : C.const_generic_var) ->
                             { var with C.index = shift_cg_var var.C.index })
-                          bound_fn.binder_params.const_generics;
+                          method_params.const_generics;
                     }
                   in
                   { signature with generics = method_params })
               in
+              L.log "TraitClauses" "%s computed method signature %s::%s:\n%s" depth name item_name
+                (Charon.PrintGAst.fun_sig_to_string env.format_env "" " " method_sig);
               let ts, t = typ_of_signature env method_sig in
               let t = maybe_ts ts t in
               TraitClauseMethod { item_name; pretty_name; clause_id = clause_ref; ts }, t)
