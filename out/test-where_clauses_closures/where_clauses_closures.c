@@ -64,8 +64,9 @@ size_t_x2 where_clauses_closures_test_e3(void)
 {
   size_t x[1U];
   {
-    size_t i = (size_t)0U;
-    x[0U] = where_clauses_closures_of_usize_d6(i);
+    /* original Rust expression is not an lvalue in C */
+    void *lvalue = (void *)0U;
+    x[0U] = where_clauses_closures_test_call_mut_c3_e3(&lvalue, (size_t)0U);
   }
   size_t y = where_clauses_closures_zero_d6();
   size_t_x2 lit;
