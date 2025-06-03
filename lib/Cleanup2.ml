@@ -339,13 +339,13 @@ let remove_array_from_fn files =
                instead of having type size_t -> t_element, has type size_t -> t_element ->
                unit *)
             L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements;
-            let closure_lid = H.assert_elid call_mut.node in
             (* First argument = closure, second argument = destination. Note that
                the closure may itself be an application of the closure to the state
                (but not always... is this unit argument elimination kicking in? not
                sure). *)
             let state, dst = match es with [ x; y ] -> x, y | _ -> assert false in
             let lift1 = Krml.DeBruijn.lift 1 in
+            let t_dst = H.assert_tbuf_or_tarray dst.typ in
             EFor
               ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
                 H.zero_usize (* i: size_t = 0 *),
@@ -353,12 +353,19 @@ let remove_array_from_fn files =
                 H.mk_incr_usize (* i++ *),
                 let i = with_type H.usize (EBound 0) in
                 Krml.Helpers.with_unit (
-                  EBufWrite (Krml.DeBruijn.lift 1 dst, i,
-                    Krml.DeBruijn.subst_n (Hashtbl.find defs closure_lid) [
+                  if H.is_array t_dst then
+                    EApp (call_mut, [
                       with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
-                      with_type (TInt SizeT) (EBound 0)
-                    ]
-                  )))
+                      with_type (TInt SizeT) (EBound 0);
+                      with_type t_dst (EBufRead (lift1 dst, i))
+                    ])
+                  else
+                    EBufWrite (Krml.DeBruijn.lift 1 dst, i,
+                      with_type t_dst (EApp (call_mut, [
+                        with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
+                        with_type (TInt SizeT) (EBound 0)
+                      ]))
+                    )))
 
         | ETApp ({ node = EQualified ("core" :: "array" :: _, "map"); _ }, [ len ], [ call_mut; _call_once], ts) ->
             let t_src, t_dst =
