@@ -62,6 +62,7 @@ type env = {
   get_nth_global : C.GlobalDeclId.id -> C.global_decl;
   get_nth_trait_impl : C.TraitImplId.id -> C.trait_impl;
   get_nth_trait_decl : C.TraitDeclId.id -> C.trait_decl;
+  crate : C.crate;
   (* Needed by the name matching logic *)
   name_ctx : C.statement Charon.NameMatcher.ctx;
   generic_params : C.generic_params;
@@ -951,29 +952,19 @@ let rec mk_clause_binders_and_args env ?depth (trait_clauses : C.trait_clause li
           trait_decl.C.consts
         (* 2. Trait methods *)
         @ List.map
-            (fun (item_name, bound_fn) ->
+            (fun (item_name, _) ->
               let trait_name = trait_decl.C.item_meta.name in
               let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
 
-              (* First we must substitute the trait generics into the method
-                 reference. *)
-              let bound_fn : C.fun_decl_ref C.binder =
-                substitute_visitor#visit_binder substitute_visitor#visit_fun_decl_ref subst bound_fn
+              (* Ask charon for the properly bound method signature. *)
+              let bound_method_sig : C.fun_sig C.binder C.item_binder =
+                Option.get (Charon.Substitute.lookup_method_sig env.crate trait_decl_id item_name)
               in
-              (* From this we construct a `fun_sig binder` which binds the
-                 method-specific generics. *)
-              let bound_sig : C.fun_sig C.binder =
-                let method_decl_id = bound_fn.C.binder_value.C.fun_id in
-                let method_decl = env.get_nth_function method_decl_id in
-                (* Get the signature from the `fun_decl` and substitute it to
-                   be valid under the binder. *)
-                let signature =
-                  substitute_visitor#visit_fun_sig
-                    (Charon.Substitute.make_subst_from_generics method_decl.signature.generics
-                       bound_fn.binder_value.fun_generics)
-                    method_decl.C.signature
-                in
-                { C.binder_params = bound_fn.binder_params; binder_value = signature }
+              (* First we substitute the trait generics. *)
+              let bound_method_sig : C.fun_sig C.binder =
+                Charon.Substitute.apply_args_to_item_binder clause_ref decl_generics
+                  (substitute_visitor#visit_binder substitute_visitor#visit_fun_sig)
+                  bound_method_sig
               in
 
               (* We then construct a polymorphic signature for this method.
@@ -1009,11 +1000,11 @@ let rec mk_clause_binders_and_args env ?depth (trait_clauses : C.trait_clause li
                   in
 
                   let signature =
-                    st_substitute_visitor#visit_fun_sig subst bound_sig.binder_value
+                    st_substitute_visitor#visit_fun_sig subst bound_method_sig.binder_value
                   in
                   (* Gotta shift the params too, as trait clause may refer to bound types. *)
                   let method_params =
-                    st_substitute_visitor#visit_generic_params subst bound_sig.binder_params
+                    st_substitute_visitor#visit_generic_params subst bound_method_sig.binder_params
                   in
                   (* Finally, update the parameters so they use the new, shifted indices. *)
                   let method_params =
@@ -2431,6 +2422,7 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
       get_nth_global;
       get_nth_trait_impl;
       get_nth_trait_decl;
+      crate;
       cg_binders = [];
       binders = [];
       type_binders = [];
