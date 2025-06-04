@@ -313,7 +313,7 @@ Eurydice_Int128_int128_t Eurydice_Int128_i128_div(Eurydice_Int128_int128_t a, Eu
   Eurydice_Int128_int128_t result = sign ? i128_of_u128(Eurydice_Int128_u128_neg(abs_quot))
                                 : i128_of_u128(abs_quot);
   if (a.hi >> 63 && result.hi == 0 && result.lo == 0)
-    result = Eurydice_Int128_i128_sub(result, { hi = 0, lo = 1 });
+    result = Eurydice_Int128_i128_sub(result, (Eurydice_Int128_int128_t){ .hi = 0, .lo = 1 });
   return result;
 }
 static inline
@@ -322,7 +322,7 @@ Eurydice_Int128_uint128_t Eurydice_Int128_u128_bor(Eurydice_Int128_uint128_t lhs
 }
 static inline
 Eurydice_Int128_int128_t Eurydice_Int128_i128_bor(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs) {
-  return *(Eurydice_Int128_int128_t*)&Eurydice_Int128_u128_bor(*(Eurydice_Int128_uint128_t*)&lhs, *(Eurydice_Int128_uint128_t*)&rhs);
+  return i128_of_u128(Eurydice_Int128_u128_bor(u128_of_i128(lhs), u128_of_i128(rhs)));
 }
 static inline
 Eurydice_Int128_uint128_t Eurydice_Int128_u128_band(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs) {
@@ -330,7 +330,7 @@ Eurydice_Int128_uint128_t Eurydice_Int128_u128_band(Eurydice_Int128_uint128_t lh
 }
 static inline
 Eurydice_Int128_int128_t Eurydice_Int128_i128_band(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs) {
-  return *(Eurydice_Int128_int128_t*)&Eurydice_Int128_u128_band(*(Eurydice_Int128_uint128_t*)&lhs, *(Eurydice_Int128_uint128_t*)&rhs);
+  return i128_of_u128(Eurydice_Int128_u128_band(u128_of_i128(lhs), u128_of_i128(rhs)));
 }
 static inline
 Eurydice_Int128_uint128_t Eurydice_Int128_u128_bxor(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs) {
@@ -338,7 +338,7 @@ Eurydice_Int128_uint128_t Eurydice_Int128_u128_bxor(Eurydice_Int128_uint128_t lh
 }
 static inline
 Eurydice_Int128_int128_t Eurydice_Int128_i128_bxor(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs) {
-  return *(Eurydice_Int128_int128_t*)&Eurydice_Int128_u128_bxor(*(Eurydice_Int128_uint128_t*)&lhs, *(Eurydice_Int128_uint128_t*)&rhs);
+  return i128_of_u128(Eurydice_Int128_u128_bxor(u128_of_i128(lhs), u128_of_i128(rhs)));
 }
 static inline
 Eurydice_Int128_uint128_t Eurydice_Int128_u128_shl(Eurydice_Int128_uint128_t x, uint32_t shift) {
@@ -353,7 +353,7 @@ Eurydice_Int128_uint128_t Eurydice_Int128_u128_shl(Eurydice_Int128_uint128_t x, 
 }
 static inline
 Eurydice_Int128_int128_t Eurydice_Int128_i128_shl(Eurydice_Int128_int128_t x, uint32_t shift) {
-  return *(Eurydice_Int128_int128_t*)&Eurydice_Int128_u128_shl(*(Eurydice_Int128_uint128_t*)&x, shift);
+  return i128_of_u128(Eurydice_Int128_u128_shl(u128_of_i128(x), shift));
 }
 static inline
 Eurydice_Int128_uint128_t Eurydice_Int128_u128_shr(Eurydice_Int128_uint128_t x, uint32_t shift) {
@@ -368,7 +368,7 @@ Eurydice_Int128_uint128_t Eurydice_Int128_u128_shr(Eurydice_Int128_uint128_t x, 
 }
 static inline
 Eurydice_Int128_int128_t Eurydice_Int128_i128_shr(Eurydice_Int128_int128_t x, uint32_t shift) {
-  return *(Eurydice_Int128_int128_t*)&Eurydice_Int128_u128_shr(*(Eurydice_Int128_uint128_t*)&x, shift);
+  return i128_of_u128(Eurydice_Int128_u128_shr(u128_of_i128(x), shift));
 }
 static inline
 Eurydice_Int128_uint128_t Eurydice_Int128_u128_bnot(Eurydice_Int128_uint128_t x) {
@@ -376,7 +376,7 @@ Eurydice_Int128_uint128_t Eurydice_Int128_u128_bnot(Eurydice_Int128_uint128_t x)
 }
 static inline
 Eurydice_Int128_int128_t Eurydice_Int128_i128_bnot(Eurydice_Int128_int128_t x) {
-  return *(Eurydice_Int128_int128_t*)&Eurydice_Int128_u128_bnot(*(Eurydice_Int128_uint128_t*)&x);
+  return i128_of_u128(Eurydice_Int128_u128_bnot(u128_of_i128(x)));
 }
 static inline
 bool Eurydice_Int128_u128_lt(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs) {
@@ -384,7 +384,7 @@ bool Eurydice_Int128_u128_lt(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint
 }
 static inline
 bool Eurydice_Int128_i128_lt(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs) {
-  return _u128_compare(*(Eurydice_Int128_uint128_t*)&lhs, *(Eurydice_Int128_uint128_t*)&rhs) < 0;
+  return _u128_compare(u128_of_i128(lhs), u128_of_i128(rhs)) < 0;
 }
 static inline
 bool Eurydice_Int128_u128_gt(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs) {
@@ -392,7 +392,7 @@ bool Eurydice_Int128_u128_gt(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint
 }
 static inline
 bool Eurydice_Int128_i128_gt(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs) {
-  return _u128_compare(*(Eurydice_Int128_uint128_t*)&lhs, *(Eurydice_Int128_uint128_t*)&rhs) > 0;
+  return _u128_compare(u128_of_i128(lhs), u128_of_i128(rhs)) > 0;
 }
 static inline
 bool Eurydice_Int128_u128_lte(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs) {
@@ -400,7 +400,7 @@ bool Eurydice_Int128_u128_lte(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uin
 }
 static inline
 bool Eurydice_Int128_i128_lte(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs) {
-  return _u128_compare(*(Eurydice_Int128_uint128_t*)&lhs, *(Eurydice_Int128_uint128_t*)&rhs) <= 0;
+  return _u128_compare(u128_of_i128(lhs), u128_of_i128(rhs)) <= 0;
 }
 static inline
 bool Eurydice_Int128_u128_gte(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs) {
@@ -408,7 +408,7 @@ bool Eurydice_Int128_u128_gte(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uin
 }
 static inline
 bool Eurydice_Int128_i128_gte(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs) {
-  return _u128_compare(*(Eurydice_Int128_uint128_t*)&lhs, *(Eurydice_Int128_uint128_t*)&rhs) >= 0;
+  return _u128_compare(u128_of_i128(lhs), u128_of_i128(rhs)) >= 0;
 }
 static inline
 bool Eurydice_Int128_u128_neq(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs) {
