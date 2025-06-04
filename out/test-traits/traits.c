@@ -38,7 +38,8 @@ void traits_main(void)
 {
   traits_Foo foos[2U] = { traits_Foo_Foo1, traits_Foo_Foo2 };
   /* original Rust expression is not an lvalue in C */
-  Eurydice_slice lvalue = Eurydice_array_to_subslice2(foos, (size_t)0U, (size_t)2U, traits_Foo);
+  Eurydice_slice
+  lvalue = Eurydice_array_to_subslice3(foos, (size_t)0U, (size_t)2U, traits_Foo *);
   if (!(traits_to_int_dd(&lvalue) != 2U))
   {
     return;
