@@ -7,6 +7,8 @@
 
 #include "issue_128.h"
 
+#include "Eurydice.h"
+
 void issue_128_fun_a(Eurydice_slice _x)
 {
 

@@ -409,11 +409,7 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* We collapse Ref(Array) into a pointer type, leveraging C's implicit decay between array
          types and pointer types. *)
       K.TBuf (typ_of_ty env t, false)
-  | TRef (_, TAdt (TBuiltin TStr, { types = []; _ }), _) ->
-      (* We perform on-the-fly elimination of addresses of strings (just like we
-         do for arrays) so as to type-check them correctly vis à vis krml's
-         Checker expectations. This means &'str translates to c_string *)
-      Krml.Checker.c_string
+  | TRef (_, TAdt (TBuiltin TStr, { types = []; _ }), _) -> Builtin.str_t
   | TRef (_, t, _) ->
       (* Normal reference *)
       K.TBuf (typ_of_ty env t, false)
@@ -440,8 +436,7 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       K.TBuf (typ_of_ty env t, false)
       (* Boxes are immediately translated to a pointer type -- we do not maintain a Box<T>
          definition in the krml internal AST. *)
-  | TAdt (TBuiltin TStr, { types = []; _ }) ->
-      failwith "Impossible -- strings always behind a pointer"
+  | TAdt (TBuiltin TStr, { types = []; _ }) -> Builtin.deref_str_t
   | TAdt (TBuiltin f, { types = args; const_generics; _ }) ->
       List.iter (fun x -> print_endline (C.show_const_generic x)) const_generics;
       fail "TODO: Adt/Builtin %s (%d) %d " (C.show_builtin_ty f) (List.length args)
@@ -612,11 +607,35 @@ let expression_of_scalar_value ({ C.int_ty; _ } as sv) =
   let w = width_of_integer_type int_ty in
   K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
 
+let ascii_of_utf8_str (str : string) =
+  let get_uchar_list (str : string) =
+    let rec get_uchar_list idx =
+      try
+        let uchar = Uchar.utf_decode_uchar @@ String.get_utf_8_uchar str idx in
+        let char_len = Uchar.utf_8_byte_length uchar in
+        uchar :: get_uchar_list (idx + char_len)
+      with
+      | Invalid_argument _ -> [] in
+    get_uchar_list 0 in
+  let uchar_list_to_ascii lst =
+    let to_str uchar =
+      if Uchar.is_char uchar then Uchar.to_char uchar |> Char.escaped
+      else Printf.sprintf "\\u{%x}" @@ Uchar.to_int uchar in
+    List.map to_str lst
+    |> String.concat "" in
+  uchar_list_to_ascii @@ get_uchar_list str
+
 let expression_of_literal (_env : env) (l : C.literal) : K.expr =
   match l with
   | VScalar sv -> expression_of_scalar_value sv
   | VBool b -> K.(with_type TBool (EBool b))
-  | VStr s -> K.(with_type Krml.Checker.c_string (EString s))
+  | VStr s ->
+    let ascii = ascii_of_utf8_str s in
+    let len = String.length s in
+    K.(with_type Builtin.str_t (EFlat [
+      (Some "data", with_type Krml.Checker.c_string (EString ascii));
+      (Some "len", with_type Krml.Helpers.usize (EConstant (SizeT, string_of_int len)));
+    ]))
   | _ -> failwith "TODO: expression_of_literal"
 
 let expression_of_const_generic env cg =
@@ -1494,9 +1513,20 @@ let is_str env var_id =
 
 let is_dst_var env var_id = Option.is_some (is_dst env (snd (lookup env var_id)))
 
+let is_box_place (p : C.place) =
+  match p.ty with
+  | C.TAdt (TBuiltin TBox, _) -> true
+  | _ -> false
+
 let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   match p with
   | Use op -> expression_of_operand env op
+  (* Generally, `&*p` == `p`, EXCEPT for when `p` is a `Box`, in which case, `*p` means to take its internal value, which is a compiler magic *)
+  | RvRef ({ kind = PlaceProjection (p, Deref); _},_)
+  | RawPtr ({ kind = PlaceProjection (p, Deref); _},_) when not @@ is_box_place p ->
+    (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and `p` might be a reference to DST (fat pointer). *)
+    (* TODO: handle the `Box` place properly -- it would be the best if we simply make `Box` a non-magic. *)
+    expression_of_place env p
   | RvRef ({ kind = PlaceProjection ({ kind = PlaceLocal var_id; _ }, Deref); _ }, _)
     when is_str env var_id ->
       (* because we do not materialize the address of a string, we also have to
