@@ -15,6 +15,10 @@
 extern "C" {
 #endif
 
+typedef struct core_fmt_Arguments_s { uint8_t data[48U]; } core_fmt_Arguments;
+
+typedef struct core_fmt_Formatter_s { uint8_t data[24U]; } core_fmt_Formatter;
+
 #define core_result_Ok 0
 #define core_result_Err 1
 

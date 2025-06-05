@@ -25,6 +25,8 @@ core_convert_num___core__convert__From_u16__for_u64__70__from(uint16_t x0);
 static inline size_t
 core_convert_num___core__convert__From_u16__for_usize__96__from(uint16_t x0);
 
+typedef struct core_fmt_Arguments_s { uint8_t data[48U]; } core_fmt_Arguments;
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2

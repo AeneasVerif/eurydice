@@ -15,6 +15,10 @@
 extern "C" {
 #endif
 
+typedef struct core_fmt_Arguments_s { uint8_t data[48U]; } core_fmt_Arguments;
+
+typedef struct core_fmt_Formatter_s { uint8_t data[24U]; } core_fmt_Formatter;
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2

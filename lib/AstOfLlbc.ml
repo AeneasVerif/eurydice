@@ -2096,7 +2096,25 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       let env = push_type_binders env type_params in
 
       match kind with
-      | Union _ | Opaque | TDeclError _ -> None
+      | Union _ | TDeclError _ -> None
+      | Opaque -> begin
+        (* Opaque types should be expressed as its layout:
+           `typdef struct { uint8_t data[SIZE]; } Type;` *)
+        match decl.layout with
+        | Some { C.size = Some size; _ } ->
+          if const_generics <> [] || type_params <> [] then
+            fail "Internal error: the opaque type %a has layout, yet it is also generic."
+              plid name;
+          Some (K.(DType (name, [], 0, 0, Flat [
+            Some "data", (TArray (Krml.Helpers.uint8, (SizeT, string_of_int size)), false)
+          ])))
+        | _ ->
+          if const_generics <> [] || type_params <> [] then
+            L.log "AstOfLlbc" "The type %a is generic, hence no static layout info." plid name
+          else
+            L.log "AstOfLlbc" "Found opaque type with no layout: %a" plid name;
+          None
+      end
       | Struct fields ->
           let fields =
             List.mapi

@@ -46,6 +46,8 @@ core_option_Option_77;
 extern core_option_Option_77
 core_cmp_impls___core__cmp__PartialOrd_i32__for_i32__76__partial_cmp(int32_t *x0, int32_t *x1);
 
+typedef struct core_fmt_Arguments_s { uint8_t data[48U]; } core_fmt_Arguments;
+
 /**
 A monomorphic instance of core.option.Option
 with types int32_t

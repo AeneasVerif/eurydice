@@ -17,6 +17,8 @@ extern "C" {
 
 extern size_t core_clone_impls___core__clone__Clone_for_usize__5__clone(size_t *x0);
 
+typedef struct core_fmt_Arguments_s { uint8_t data[48U]; } core_fmt_Arguments;
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2
