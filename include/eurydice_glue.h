@@ -13,6 +13,7 @@
 
 #include "krml/internal/target.h"
 #include "krml/lowstar_endianness.h"
+#include "eurydice_headers/int128.h"
 
 // C++ HELPERS
 
@@ -513,3 +514,4 @@ typedef struct {
     *ptr = new_v;                                                              \
     old_v;                                                                     \
   })
+
