@@ -18,6 +18,8 @@ extern "C" {
 static inline uint64_t
 core_convert_num___core__convert__From_u8__for_u64__66__from(uint8_t x0);
 
+typedef struct core_fmt_Arguments_s { uint8_t data[48U]; } core_fmt_Arguments;
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2

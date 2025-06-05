@@ -2096,7 +2096,19 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       let env = push_type_binders env type_params in
 
       match kind with
-      | Union _ | Opaque | TDeclError _ -> None
+      | Union _ | TDeclError _ -> None
+      | Opaque -> begin
+        (* Opaque types should be expressed as its layout:
+           `typdef struct { uint8_t data[SIZE]; } Type;` *)
+        match decl.layout with
+        | Some { C.size = Some size; _ } ->
+          Some (K.(DType (name, [], 0, 0, Flat [
+            Some "data", (TArray (Krml.Helpers.uint8, (SizeT, string_of_int size)), false)
+          ])))
+        | _ ->
+          L.log "AstOfLlbc" "Found opaque type with no layout: %a" plid name;
+          None
+      end
       | Struct fields ->
           let fields =
             List.mapi

@@ -32,6 +32,8 @@ void const_generics_main(void);
 
 typedef uint8_t core_panicking_AssertKind;
 
+typedef struct core_fmt_Arguments_s { uint8_t data[48U]; } core_fmt_Arguments;
+
 /**
 A monomorphic instance of const_generics.Pair
 with types uint32_t, uint32_t

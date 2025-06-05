@@ -23,6 +23,8 @@ bool array2d_f(uint32_t x[4U][2U]);
 
 typedef uint8_t core_panicking_AssertKind;
 
+typedef struct core_fmt_Arguments_s { uint8_t data[48U]; } core_fmt_Arguments;
+
 void array2d_main(void);
 
 extern bool

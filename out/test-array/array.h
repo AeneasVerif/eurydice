@@ -28,6 +28,8 @@ array_Foo;
 
 typedef uint8_t core_panicking_AssertKind;
 
+typedef struct core_fmt_Arguments_s { uint8_t data[48U]; } core_fmt_Arguments;
+
 array_Foo array_mk_foo(void);
 
 array_Foo array_mk_foo2(void);
