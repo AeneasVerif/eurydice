@@ -15,20 +15,6 @@
 extern "C" {
 #endif
 
-/**
-A monomorphic instance of core.ops.range.RangeTo
-with types size_t
-
-*/
-typedef size_t core_ops_range_RangeTo_08;
-
-/**
-A monomorphic instance of core.ops.range.RangeFrom
-with types size_t
-
-*/
-typedef size_t core_ops_range_RangeFrom_08;
-
 typedef struct Eurydice_str_s
 {
   Prims_string data;

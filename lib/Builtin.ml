@@ -285,6 +285,14 @@ let replace =
 let dst = [ "Eurydice" ], "dst"
 let derefed_slice = [ "Eurydice" ], "derefed_slice"
 
+let str_t_name = [ "Eurydice" ], "str"
+(** The C counterpart of `&str` *)
+let str_t = K.TQualified str_t_name
+
+let deref_str_t = K.TQualified ([ "Eurydice" ], "deref_str")
+
+
+
 let dst_def =
   K.DType
     ( dst,
@@ -297,6 +305,18 @@ let dst_def =
           Some "len", (TInt SizeT, false);
           (* a number of elements, just like slices *)
         ] )
+let str_t_def =
+  K.DType
+    ( str_t_name,
+      [],
+      0,
+      0,
+      Flat
+        [
+          Some "data", (Krml.Checker.c_string, false);
+          Some "len", (TInt SizeT, false);
+        ] )
+
 
 let mk_dst t : K.typ = TApp (dst, [ t ])
 
@@ -447,7 +467,7 @@ let files =
            shr_pv_u8;
            min_u32;
          ]
-       @ [ nonzero_def; static_assert; dst_def ]
+       @ [ nonzero_def; static_assert; dst_def; str_t_def ]
      in
      "Eurydice", externals);
   ]

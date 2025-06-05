@@ -7,6 +7,8 @@
 
 #include "partial_eq.h"
 
+#include "Eurydice.h"
+
 /**
 This function found in impl {(core::cmp::PartialEq<partial_eq::Enum> for partial_eq::Enum)#1}
 */
@@ -36,6 +38,8 @@ This function found in impl {(core::fmt::Debug for partial_eq::Enum)#2}
 */
 inline core_result_Result_10 partial_eq_fmt_19(partial_eq_Enum *self, core_fmt_Formatter *f)
 {
-  return core_fmt__core__fmt__Formatter__a__11__write_str(f, "A");
+  return
+    core_fmt__core__fmt__Formatter__a__11__write_str(f,
+      (KRML_CLITERAL(Eurydice_str){ .data = "A", .len = (size_t)1U }));
 }
 
