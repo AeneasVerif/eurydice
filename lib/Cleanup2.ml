@@ -312,28 +312,24 @@ let remove_array_repeats =
   end
 
 let remove_array_from_fn files =
-  let defs =
-    Krml.Helpers.build_map files (fun tbl d ->
-        match d with
-        | DFunction (_, _, _, _, _, name, _, body) -> Hashtbl.add tbl name body
-        | _ -> ())
+  let must_inline = Hashtbl.create 42 in
+  let record_inline e = 
+    Hashtbl.add must_inline (H.assert_elid e.node) ()
   in
-  begin
+  let criterion = Hashtbl.mem must_inline in
+  let files =
     object
       inherit [_] map as super
-
-      method! visit_DFunction _ cc flags n_cgs n t name bs e =
-        assert (n_cgs = 0 && n = 0);
-        Hashtbl.add defs name e;
-        super#visit_DFunction () cc flags n_cgs n t name bs e
 
       method! visit_EApp env e es =
         match e.node with
         | ETApp
             ( { node = EQualified ([ "core"; "array" ], "from_fn"); _ },
               [ len ],
-              [ call_mut; _call_once ],
+              [ call_mut; call_once ],
               [ t_elements; _t_captured_state ] ) ->
+            record_inline call_mut;
+            record_inline call_once;
             (* Same as below, but catching the case where the type of elements is an
                array and has undergone outparam optimization (i.e. the closure,
                instead of having type size_t -> t_element, has type size_t -> t_element ->
@@ -367,7 +363,9 @@ let remove_array_from_fn files =
                       ]))
                     )))
 
-        | ETApp ({ node = EQualified ("core" :: "array" :: _, "map"); _ }, [ len ], [ call_mut; _call_once], ts) ->
+        | ETApp ({ node = EQualified ("core" :: "array" :: _, "map"); _ }, [ len ], [ call_mut; call_once], ts) ->
+            record_inline call_mut;
+            record_inline call_once;
             let t_src, t_dst =
               match ts with
               | [ t_src; t_state; t_dst ] ->
@@ -398,10 +396,23 @@ let remove_array_from_fn files =
                        with_type t_dst (EApp (call_mut, [ lift1 e_state; e_src_i ])) ))
               )
         | _ -> super#visit_EApp env e es
-    end
-  end
-    #visit_files
-    () files
+    end #visit_files () files
+  in
+  files, criterion
+
+let inline_array_closures files criterion =
+  (* PPrint.(Krml.(Print.(print (PrintAst.print_files files ^^ hardline)))); *)
+  let inline_one = Krml.Inlining.mk_inliner files criterion in
+  let files = filter_decls (function
+    | DFunction (cc, flags, n_cgs, n, ret, name, binders, _) ->
+        if criterion name then
+          None
+        else
+          Some (DFunction (cc, flags, n_cgs, n, ret, name, binders, inline_one name))
+    | d -> Some d
+  ) files in
+  files
+
 
 let rewrite_slice_to_array =
   object (_self)

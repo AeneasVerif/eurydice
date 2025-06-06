@@ -54,6 +54,7 @@ out/test-%/main.c: test/main.c
 test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c
 test-nested_arrays: EXTRA = -funroll-loops 0
 test-array: EXTRA = -fcomments
+test-array: CFLAGS += -Wno-unused-but-set-variable
 test-symcrust: CFLAGS += -Wno-unused-function
 
 test-%: test/%.llbc out/test-%/main.c | all

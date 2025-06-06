@@ -257,11 +257,13 @@ Supported options:|}
   fill_readonly_table files;
   let files = Krml.Simplify.optimize_lets files in
   Eurydice.Logging.log "Phase2.55" "%a" pfiles files;
-  let files = Eurydice.Cleanup2.remove_array_from_fn files in
+  let files, criterion = Eurydice.Cleanup2.remove_array_from_fn files in
   Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
   (* remove_array_from_fn, above, creates further opportunities for removing unused functions. *)
   let files = Krml.Inlining.drop_unused files in
   let files = Eurydice.Cleanup2.remove_implicit_array_copies#visit_files () files in
+  (* Inlining does not commute with passing array by values *)
+  let files = Eurydice.Cleanup2.inline_array_closures files criterion in
   (* Creates opportunities for removing unused variables *)
   let files = Eurydice.Cleanup2.remove_assign_return#visit_files () files in
   (* These two need to come before... *)
