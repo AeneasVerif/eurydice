@@ -32,6 +32,10 @@ fn mk_incr<const K: usize>() -> [u32; K] {
     core::array::from_fn(|i| i as u32)
 }
 
+fn nested_from_fn<const K: usize>() -> [[usize; K]; K] {
+    core::array::from_fn(|j| core::array::from_fn(|i| i+j))
+}
+
 fn plus_one<const K: usize>(x: [u32; K]) -> [u16; K] {
     x.map(|x| (x + 1) as u16)
 }
@@ -56,4 +60,8 @@ fn main() {
     // XXX4
     let a = plus_one([0u32]);
     assert_eq!(a[0], 1u16);
+
+    // XXX5
+    let a = nested_from_fn::<4>();
+    assert_eq!(a[3][3], 6);
 }

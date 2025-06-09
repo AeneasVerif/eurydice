@@ -45,6 +45,36 @@ with const generics
 */
 uint64_t where_clauses_fncg_f_43(void);
 
+/**
+This function found in impl {(where_clauses_fncg::Foo<K> for u64)}
+*/
+/**
+A monomorphic instance of where_clauses_fncg.bar_ea
+with const generics
+- K= 12
+- L= 4
+*/
+uint64_t where_clauses_fncg_bar_ea_fa(uint8_t x[12U][4U], uint8_t _[4U][12U]);
+
+/**
+This function found in impl {(where_clauses_fncg::UseFoo for ())#1}
+*/
+/**
+A monomorphic instance of where_clauses_fncg.method_foo_eb
+with types uint64_t
+with const generics
+- K= 12
+*/
+uint64_t where_clauses_fncg_method_foo_eb_7c(void);
+
+/**
+A monomorphic instance of where_clauses_fncg.g
+with types ()
+with const generics
+
+*/
+uint64_t where_clauses_fncg_g_35(void);
+
 void where_clauses_fncg_main(void);
 
 #if defined(__cplusplus)

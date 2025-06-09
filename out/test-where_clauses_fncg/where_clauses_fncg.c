@@ -36,6 +36,47 @@ uint64_t where_clauses_fncg_f_43(void)
   return where_clauses_fncg_bar_ea_7b(buf, repeat_expression);
 }
 
+/**
+This function found in impl {(where_clauses_fncg::Foo<K> for u64)}
+*/
+/**
+A monomorphic instance of where_clauses_fncg.bar_ea
+with const generics
+- K= 12
+- L= 4
+*/
+uint64_t where_clauses_fncg_bar_ea_fa(uint8_t x[12U][4U], uint8_t _[4U][12U])
+{
+  return (uint64_t)x[0U][0U];
+}
+
+/**
+This function found in impl {(where_clauses_fncg::UseFoo for ())#1}
+*/
+/**
+A monomorphic instance of where_clauses_fncg.method_foo_eb
+with types uint64_t
+with const generics
+- K= 12
+*/
+uint64_t where_clauses_fncg_method_foo_eb_7c(void)
+{
+  uint8_t buf[12U][4U] = { { 0U } };
+  uint8_t repeat_expression[4U][12U] = { { 0U } };
+  return where_clauses_fncg_bar_ea_fa(buf, repeat_expression);
+}
+
+/**
+A monomorphic instance of where_clauses_fncg.g
+with types ()
+with const generics
+
+*/
+uint64_t where_clauses_fncg_g_35(void)
+{
+  return where_clauses_fncg_method_foo_eb_7c();
+}
+
 typedef struct _uint64_t__x2_s
 {
   uint64_t *fst;
@@ -46,10 +87,18 @@ _uint64_t__x2;
 void where_clauses_fncg_main(void)
 {
   uint64_t r = where_clauses_fncg_f_43();
-  uint64_t expected = 0ULL;
-  _uint64_t__x2 uu____0 = { .fst = &r, .snd = &expected };
-  uint64_t *left_val = uu____0.fst;
-  uint64_t *right_val = uu____0.snd;
+  /* original Rust expression is not an lvalue in C */
+  uint64_t lvalue0 = 0ULL;
+  _uint64_t__x2 uu____0 = { .fst = &r, .snd = &lvalue0 };
+  uint64_t *left_val0 = uu____0.fst;
+  uint64_t *right_val0 = uu____0.snd;
+  EURYDICE_ASSERT(left_val0[0U] == right_val0[0U], "panic!");
+  uint64_t r0 = where_clauses_fncg_g_35();
+  /* original Rust expression is not an lvalue in C */
+  uint64_t lvalue = 0ULL;
+  _uint64_t__x2 uu____1 = { .fst = &r0, .snd = &lvalue };
+  uint64_t *left_val = uu____1.fst;
+  uint64_t *right_val = uu____1.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
 }
 
