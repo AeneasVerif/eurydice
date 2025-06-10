@@ -2252,12 +2252,13 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
            `typdef struct { uint8_t data[SIZE]; } Type;` *)
         match decl.layout with
         | Some { C.size = Some size; _ } ->
-          if const_generics <> [] || type_params <> [] then
-            fail "Internal error: the opaque type %a has layout, yet it is also generic."
-              plid name;
-          Some (K.(DType (name, [], 0, 0, Flat [
-            Some "data", (TArray (Krml.Helpers.uint8, (SizeT, string_of_int size)), false)
-          ])))
+          if const_generics <> [] || type_params <> [] then begin
+            L.log "AstOfLlbc" "The type %a has layout info but it is generic, dropped. Recommendation: generate the LLBC with `--monomorphize` option." plid name;
+            None
+          end else
+            Some (K.(DType (name, [], 0, 0, Flat [
+              Some "data", (TArray (Krml.Helpers.uint8, (SizeT, string_of_int size)), false)
+            ])))
         | _ ->
           if const_generics <> [] || type_params <> [] then
             L.log "AstOfLlbc" "The type %a is generic, hence no static layout info." plid name
