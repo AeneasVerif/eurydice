@@ -48,35 +48,9 @@ let expand_array_copies files =
     #visit_files
     () files
 
-(* Rust is super lenient regarding the type of shift operators, we impose u32 -- see
-   https://doc.rust-lang.org/std/ops/trait.Shl.html *)
-let adjust_shifts files =
-  begin
-    object
-      inherit [_] map as super
-
-      method! visit_EApp env e es =
-        let open Krml in
-        match e.node, es with
-        | EOp ((BShiftL | BShiftR), _), [ e1; e2 ] -> begin
-            match e2.node with
-            | EConstant (_, s) ->
-                let i = int_of_string s in
-                assert (i >= 0);
-                EApp (e, [ e1; Krml.Helpers.mk_uint32 i ])
-            | _ ->
-                EApp (e, [ e1; with_type (TInt Constant.UInt32) (ECast (e2, TInt Constant.UInt32)) ])
-          end
-        | _ -> super#visit_EApp env e es
-    end
-  end
-    #visit_files
-    () files
-
 let precleanup files =
   let files = expand_array_copies files in
   let files = flatten_sequences files in
-  let files = adjust_shifts files in
   files
 
 let merge files =
