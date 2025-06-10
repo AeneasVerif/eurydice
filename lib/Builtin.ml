@@ -555,6 +555,7 @@ let files =
                [ Krml.Common.Private ]
            in
            K.DExternal (None, flags, List.length cg_args, n_type_args, name, typ, arg_names))
+        begin
          [
            array_to_slice;
            array_to_subslice;
@@ -585,8 +586,9 @@ let files =
            shr_pv_u8;
            min_u32;
          ]
-       @ [ nonzero_def; static_assert; dst_def; str_t_def ]
        @ builtin_funcs
+      end
+       @ [ nonzero_def; static_assert; dst_def; str_t_def ]
      in
      "Eurydice", externals);
   ]
