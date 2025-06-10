@@ -6,4 +6,4 @@ out/*/a.out
 *.DS_Store
 *.orig
 *.llbc
-eurydice
+/eurydice
