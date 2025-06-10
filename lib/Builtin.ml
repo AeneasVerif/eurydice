@@ -288,7 +288,9 @@ let derefed_slice = [ "Eurydice" ], "derefed_slice"
 let str_t_name = [ "Eurydice" ], "str"
 (** The C counterpart of `&str` *)
 let str_t = K.TQualified str_t_name
-
+(** The C counterpart of `str` and serves twofold functionalities:
+    (1) when in expressions, it serves as a placeholder to get referenced again;
+    (2) when in customised DST definition, it is defined as [char []] to have 0-length. *)
 let deref_str_t = K.TQualified ([ "Eurydice" ], "deref_str")
 
 
@@ -308,7 +310,7 @@ let dst_def =
 let str_t_def =
   K.DType
     ( str_t_name,
-      [],
+      [ Private ],
       0,
       0,
       Flat

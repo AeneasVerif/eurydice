@@ -7,8 +7,6 @@
 
 #include "slice_array.h"
 
-#include "Eurydice.h"
-
 typedef struct _uint8_t__x2_s
 {
   uint8_t *fst;

@@ -7,8 +7,6 @@
 
 #include "dst.h"
 
-#include "Eurydice.h"
-
 Eurydice_dst_31 dst_alloc(void)
 {
   Eurydice_dst_31 lit0;

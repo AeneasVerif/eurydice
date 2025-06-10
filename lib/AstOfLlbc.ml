@@ -609,21 +609,22 @@ let expression_of_scalar_value ({ C.int_ty; _ } as sv) =
 
 let ascii_of_utf8_str (str : string) =
   let get_uchar_list (str : string) =
-    let rec get_uchar_list idx =
+    let rec get_uchar_list acc idx =
       try
-        let uchar = Uchar.utf_decode_uchar @@ String.get_utf_8_uchar str idx in
+        let uchar = Uchar.utf_decode_uchar (String.get_utf_8_uchar str idx) in
         let char_len = Uchar.utf_8_byte_length uchar in
-        uchar :: get_uchar_list (idx + char_len)
+        get_uchar_list (uchar :: acc) (idx + char_len)
       with
-      | Invalid_argument _ -> [] in
-    get_uchar_list 0 in
+      | Invalid_argument _ -> List.rev acc in
+    get_uchar_list [] 0 in
   let uchar_list_to_ascii lst =
     let to_str uchar =
       if Uchar.is_char uchar then Uchar.to_char uchar |> Char.escaped
       else Printf.sprintf "\\u{%x}" @@ Uchar.to_int uchar in
     List.map to_str lst
     |> String.concat "" in
-  uchar_list_to_ascii @@ get_uchar_list str
+  get_uchar_list str
+  |> uchar_list_to_ascii
 
 let expression_of_literal (_env : env) (l : C.literal) : K.expr =
   match l with
@@ -1521,9 +1522,16 @@ let is_box_place (p : C.place) =
 let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   match p with
   | Use op -> expression_of_operand env op
-  (* Generally, `&*p` == `p`, EXCEPT for when `p` is a `Box`, in which case, `*p` means to take its internal value, which is a compiler magic *)
+  (* Generally, MIR / current LLBC is guaranteed to apply `Deref` only to places that are
+     references or raw pointers, in these cases `&*p` == `p`.
+     The `Deref` traits types are desugared to function calls to `deref`.
+     The ONLY exception is when the place is a `Box`. That is, MIR/LLBC might generate `*b`
+     where `b` is a `Box`. This refers to taking the value out of the `Box`.
+     Recall that `Box` is a wrapper of `Unique`, which is in turn a wrapper of a `NonNull`,
+     which is a wrapper of a raw pointer. Hence, `*b` when `b` is a `Box` is equivalent to
+     `*(b.0.pointer.pointer)`. This is a compiler magic. *)
   | RvRef ({ kind = PlaceProjection (p, Deref); _},_)
-  | RawPtr ({ kind = PlaceProjection (p, Deref); _},_) when not @@ is_box_place p ->
+  | RawPtr ({ kind = PlaceProjection (p, Deref); _},_) when not (is_box_place p) ->
     (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and `p` might be a reference to DST (fat pointer). *)
     (* TODO: handle the `Box` place properly -- it would be the best if we simply make `Box` a non-magic. *)
     expression_of_place env p

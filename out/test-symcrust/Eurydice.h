@@ -27,13 +27,6 @@ typedef struct core_ops_range_Range_08_s
 }
 core_ops_range_Range_08;
 
-typedef struct Eurydice_str_s
-{
-  Prims_string data;
-  size_t len;
-}
-Eurydice_str;
-
 #if defined(__cplusplus)
 }
 #endif

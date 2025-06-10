@@ -29,13 +29,6 @@ with types size_t
 */
 typedef size_t core_ops_range_RangeFrom_08;
 
-typedef struct Eurydice_str_s
-{
-  Prims_string data;
-  size_t len;
-}
-Eurydice_str;
-
 #if defined(__cplusplus)
 }
 #endif

@@ -27,17 +27,6 @@ extern size_t core_clone_impls___core__clone__Clone_for_usize__5__clone(size_t *
 
 typedef int8_t core_cmp_Ordering;
 
-extern core_cmp_Ordering
-core_cmp_impls___core__cmp__Ord_for_u32__65__cmp(uint32_t *x0, uint32_t *x1);
-
-extern uint32_t core_cmp_impls___core__cmp__Ord_for_u32__65__min(uint32_t x0, uint32_t x1);
-
-extern bool
-core_cmp_impls___core__cmp__PartialEq_u32__for_u32__24__eq(uint32_t *x0, uint32_t *x1);
-
-extern bool
-core_cmp_impls___core__cmp__PartialEq_usize__for_usize__21__eq(size_t *x0, size_t *x1);
-
 #define core_option_None 0
 #define core_option_Some 1
 
@@ -54,6 +43,17 @@ typedef struct core_option_Option_77_s
   core_cmp_Ordering f0;
 }
 core_option_Option_77;
+
+extern core_cmp_Ordering
+core_cmp_impls___core__cmp__Ord_for_u32__65__cmp(uint32_t *x0, uint32_t *x1);
+
+extern uint32_t core_cmp_impls___core__cmp__Ord_for_u32__65__min(uint32_t x0, uint32_t x1);
+
+extern bool
+core_cmp_impls___core__cmp__PartialEq_u32__for_u32__24__eq(uint32_t *x0, uint32_t *x1);
+
+extern bool
+core_cmp_impls___core__cmp__PartialEq_usize__for_usize__21__eq(size_t *x0, size_t *x1);
 
 extern core_option_Option_77
 core_cmp_impls___core__cmp__PartialOrd_u32__for_u32__64__partial_cmp(
