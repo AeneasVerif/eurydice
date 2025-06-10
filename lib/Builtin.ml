@@ -555,39 +555,7 @@ let files =
                [ Krml.Common.Private ]
            in
            K.DExternal (None, flags, List.length cg_args, n_type_args, name, typ, arg_names))
-        begin
-         [
-           array_to_slice;
-           array_to_subslice;
-           array_to_subslice_to;
-           array_to_subslice_from;
-           array_repeat;
-           array_into_iter;
-           slice_index;
-           slice_index_outparam;
-           slice_subslice;
-           slice_subslice_to;
-           slice_subslice_from;
-           slice_to_array;
-           slice_to_array2;
-           range_iterator_step_by;
-           range_step_by_iterator_next;
-           vec_push;
-           vec_new;
-           vec_len;
-           vec_drop;
-           vec_index;
-           box_new;
-           box_new_array;
-           replace;
-           slice_of_dst;
-           slice_of_boxed_array;
-           bitand_pv_u8;
-           shr_pv_u8;
-           min_u32;
-         ]
-       @ builtin_funcs
-      end
+        builtin_funcs
        @ [ nonzero_def; static_assert; dst_def; str_t_def ]
      in
      "Eurydice", externals);
