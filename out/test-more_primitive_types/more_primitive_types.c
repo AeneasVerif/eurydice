@@ -7,8 +7,6 @@
 
 #include "more_primitive_types.h"
 
-#include "internal/Eurydice.h"
-
 int32_t more_primitive_types_int128_operations(more_primitive_types_MorePrimitiveTypes *p)
 {
   Eurydice_Int128_int128_t uu____0 = p->int128;

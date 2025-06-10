@@ -182,7 +182,6 @@ Supported options:|}
     match config with
     | None -> files
     | Some config ->
-        let config = config in
         let files = Eurydice.Bundles.bundle files config in
         let files = Eurydice.Bundles.libraries files in
         let files = Krml.Bundles.topological_sort files in
