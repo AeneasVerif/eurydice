@@ -43,9 +43,11 @@ clean-and-test:
 	$(MAKE) clean-llbc
 	$(MAKE) test
 
+test/symcrust2.llbc: CHARON_FLAGS = --extract-opaque-bodies
+
 .PRECIOUS: %.llbc
 %.llbc: %.rs
-	$(CHARON) rustc --preset=eurydice --dest-file "$@" -- $<
+	$(CHARON) $(CHARON_FLAGS) rustc --preset=eurydice --dest-file "$@" -- $<
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
