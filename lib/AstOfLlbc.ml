@@ -1632,31 +1632,24 @@ let is_box_place (p : C.place) =
 let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   match p with
   | Use op -> expression_of_operand env op
-  (* Generally, MIR / current LLBC is guaranteed to apply `Deref` only to places that are
-     references or raw pointers, in these cases `&*p` == `p`.
-     The `Deref` traits types are desugared to function calls to `deref`.
-     The ONLY exception is when the place is a `Box`. That is, MIR/LLBC might generate `*b`
-     where `b` is a `Box`. This refers to taking the value out of the `Box`.
-     Recall that `Box` is a wrapper of `Unique`, which is in turn a wrapper of a `NonNull`,
-     which is a wrapper of a raw pointer. Hence, `*b` when `b` is a `Box` is equivalent to
-     `*(b.0.pointer.pointer)`. This is a compiler magic. *)
+  (* Generally, MIR / current LLBC is guaranteed to apply [Deref] only to places that are
+     references or raw pointers, in these cases [&*p] == [p].
+     The [Deref] traits types are desugared to function calls to [deref].
+     The ONLY exception is when the place is a [Box]. That is, MIR/LLBC might generate [*b]
+     where [b] is a [Box]. This refers to taking the value out of the [Box].
+     Recall that [Box] is a wrapper of [Unique], which is in turn a wrapper of a [NonNull],
+     which is a wrapper of a raw pointer. Hence, [*b] when [b] is a [Box] is equivalent to
+     [*(b.0.pointer.pointer)]. This is a compiler magic.
+     
+     However, in Eurydice *now*, [Box] types are instantly unboxed to raw pointers, which 
+     coincides exactly with our current implementation, hence no extra handling is needed.
+     In the future however, we might want to handle [Box] types differently, so this is a note
+     to ourselves to be careful with this.
+     *)
   | RvRef ({ kind = PlaceProjection (p, Deref); _},_)
-  | RawPtr ({ kind = PlaceProjection (p, Deref); _},_) when not (is_box_place p) ->
-    (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and `p` might be a reference to DST (fat pointer). *)
-    (* TODO: handle the `Box` place properly -- it would be the best if we simply make `Box` a non-magic. *)
+  | RawPtr ({ kind = PlaceProjection (p, Deref); _},_) ->
+    (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and [p] might be a reference to DST (fat pointer). *)
     expression_of_place env p
-  | RvRef ({ kind = PlaceProjection ({ kind = PlaceLocal var_id; _ }, Deref); _ }, _)
-    when is_str env var_id ->
-      (* because we do not materialize the address of a string, we also have to
-         avoid dereferencing it. For now, we simply avoid reborrows and treat them as simply passing
-         the same constant string around (which in C is passed by address naturally).
-         TODO: this is a temporary fix and we need to represent &str the same way as &[u8]. *)
-      expression_of_var_id env var_id
-  | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _)
-    when is_dst env (typ_of_ty env p.ty) <> None || is_slice env (typ_of_ty env p.ty) ->
-      (* this is case three, see "support for DSTs", above. *)
-      (* TODO: is this something we want to generalize for code quality? *)
-      expression_of_place env p
   | RvRef
       ( ({
            kind =
