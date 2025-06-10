@@ -27,8 +27,13 @@ let mk_result t1 t2 = K.TApp (result, [ t1; t2 ])
 let nonzero = [ "core"; "num"; "nonzero" ], "NonZero"
 let mk_nonzero t = K.TApp (nonzero, [ t ])
 
-(* A record to hold a builtin function with all relevant information for both
-   krml and the transpilation phase in AstOfLlbc *)
+(* Internal types *)
+let char_t = K.(TInt UInt32)
+let int128_t = K.TQualified (["Eurydice"; "Int128" ], "int128_t")
+let uint128_t = K.TQualified (["Eurydice"; "Int128" ], "uint128_t")
+
+(** A record to hold a builtin *function* with all relevant information for both
+    krml and the transpilation phase in AstOfLlbc *)
 
 type builtin = {
   name : K.lident;
@@ -41,6 +46,79 @@ type builtin = {
 let expr_of_builtin { name; typ; cg_args; _ } =
   let typ = List.fold_right (fun t acc -> K.TArrow (t, acc)) cg_args typ in
   K.(with_type typ (EQualified name))
+
+module Op128Map = Map.Make(struct
+  type t = string * string
+  let compare = Stdlib.compare
+end)
+
+(* Builtins for i128 and u128 are defined here but implemented in C. *)
+let mk_128_builtin_op kind op lhs_typ rhs_typ ret_typ =
+  let name = [ "Eurydice"; "Int128" ], kind ^ "128_" ^ op in
+  let args, arg_names =
+    match rhs_typ with
+    | K.TUnit -> [ lhs_typ ], [ "lhs" ]
+    | rhs -> [ lhs_typ; rhs ], [ "lhs"; "rhs" ]
+  in
+  {
+    name;
+    typ = Krml.Helpers.fold_arrow args ret_typ;
+    n_type_args = 0;
+    cg_args = [];
+    arg_names;
+  }
+let op_128_cfgs = [
+  (("i", "from_bits"), (Krml.Helpers.uint64, Krml.Helpers.uint64, int128_t));
+  (("i", "add"), (int128_t, int128_t, int128_t));
+  (("i", "sub"), (int128_t, int128_t, int128_t));
+  (("i", "mul"), (int128_t, int128_t, int128_t));
+  (("i", "div"), (int128_t, int128_t, int128_t));
+  (("i", "mod"), (int128_t, int128_t, int128_t));
+  (("i", "bor"), (int128_t, int128_t, int128_t));
+  (("i", "band"), (int128_t, int128_t, int128_t));
+  (("i", "bxor"), (int128_t, int128_t, int128_t));
+  (("i", "shl"), (int128_t, TInt UInt32, int128_t));
+  (("i", "shr"), (int128_t, TInt UInt32, int128_t));
+  (("i", "bnot"), (int128_t, K.TUnit, int128_t));
+  (("i", "neg"), (int128_t, K.TUnit, int128_t));
+  (("u", "neg"), (uint128_t, K.TUnit, uint128_t));
+  (("i", "eq"), (int128_t, int128_t, TBool));
+  (("i", "lt"), (int128_t, int128_t, TBool));
+  (("i", "gt"), (int128_t, int128_t, TBool));
+  (("i", "lte"), (int128_t, int128_t, TBool));
+  (("i", "gte"), (int128_t, int128_t, TBool));
+  (("i", "neq"), (int128_t, int128_t, TBool));
+  (("i", "addW"), (int128_t, int128_t, int128_t));
+  (("i", "subW"), (int128_t, int128_t, int128_t));
+  (("i", "divW"), (int128_t, int128_t, int128_t));
+  (("i", "multW"), (int128_t, int128_t, int128_t));
+  (("u", "from_bits"), (Krml.Helpers.uint64, Krml.Helpers.uint64, uint128_t));
+  (("u", "add"), (uint128_t, uint128_t, uint128_t));
+  (("u", "sub"), (uint128_t, uint128_t, uint128_t));
+  (("u", "mul"), (uint128_t, uint128_t, uint128_t));
+  (("u", "div"), (uint128_t, uint128_t, uint128_t));
+  (("u", "mod"), (uint128_t, uint128_t, uint128_t));
+  (("u", "bor"), (uint128_t, uint128_t, uint128_t));
+  (("u", "band"), (uint128_t, uint128_t, uint128_t));
+  (("u", "bxor"), (uint128_t, uint128_t, uint128_t));
+  (("u", "shl"), (uint128_t, TInt UInt32, uint128_t));
+  (("u", "shr"), (uint128_t, TInt UInt32, uint128_t));
+  (("u", "bnot"), (uint128_t, K.TUnit, uint128_t));
+  (("u", "eq"), (uint128_t, uint128_t, TBool));
+  (("u", "lt"), (uint128_t, uint128_t, TBool));
+  (("u", "gt"), (uint128_t, uint128_t, TBool));
+  (("u", "lte"), (uint128_t, uint128_t, TBool));
+  (("u", "gte"), (uint128_t, uint128_t, TBool));
+  (("u", "neq"), (uint128_t, uint128_t, TBool));
+  (("u", "addW"), (uint128_t, uint128_t, uint128_t));
+  (("u", "subW"), (uint128_t, uint128_t, uint128_t));
+  (("u", "divW"), (uint128_t, uint128_t, uint128_t));
+  (("u", "multW"), (uint128_t, uint128_t, uint128_t));
+] |> List.fold_left (fun acc ((kind, op), (lhs_typ, rhs_typ, ret_typ)) ->
+  Op128Map.add (kind, op) (mk_128_builtin_op kind op lhs_typ rhs_typ ret_typ) acc
+) Op128Map.empty
+let get_128_op (kind, op) : K.expr =
+  expr_of_builtin @@ Op128Map.find (kind, op) op_128_cfgs
 
 let array_to_slice =
   {
@@ -422,6 +500,44 @@ type usage = Used | Unused
 
 let replacements = List.map (fun decl -> K.lid_of_decl decl, (decl, ref Unused)) [ unwrap ]
 
+let builtin_funcs =
+  [
+    array_to_slice;
+    array_to_subslice;
+    array_to_subslice_to;
+    array_to_subslice_from;
+    array_repeat;
+    array_into_iter;
+    slice_index;
+    slice_index_outparam;
+    slice_subslice;
+    slice_subslice_to;
+    slice_subslice_from;
+    slice_to_array;
+    slice_to_array2;
+    range_iterator_step_by;
+    range_step_by_iterator_next;
+    vec_push;
+    vec_new;
+    vec_len;
+    vec_drop;
+    vec_index;
+    box_new;
+    box_new_array;
+    replace;
+    slice_of_dst;
+    slice_of_boxed_array;
+    bitand_pv_u8;
+    shr_pv_u8;
+    min_u32;
+  ]
+  (* Declares the 128-bit operations *)
+  @ begin
+  Op128Map.to_seq op_128_cfgs
+  |> List.of_seq
+  |> List.map snd
+  end
+
 let files =
   [
     Krml.Builtin.lowstar_ignore;
@@ -470,6 +586,7 @@ let files =
            min_u32;
          ]
        @ [ nonzero_def; static_assert; dst_def; str_t_def ]
+       @ builtin_funcs
      in
      "Eurydice", externals);
   ]
@@ -488,6 +605,10 @@ let adjust (f, decls) =
               d
             with Not_found -> d))
       decls )
+
+let is_a_builtin_func_name (name : K.lident) =
+  (* Potentially make the list of built-in funcs a Map to speed up if necessary. *)
+  List.exists (fun { name = n; _ } -> n = name) builtin_funcs
 
 let check () =
   List.iter

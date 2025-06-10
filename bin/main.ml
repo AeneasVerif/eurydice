@@ -87,7 +87,7 @@ Supported options:|}
       extern_c := true;
       cxx_compat := true;
       unroll_loops := !funroll_loops;
-      static_header := [ Bundle.Prefix [ "core"; "convert" ]; Bundle.Prefix [ "core"; "num" ] ];
+      static_header := [ Bundle.Prefix [ "core"; "convert" ]; Bundle.Prefix [ "core"; "num" ]; Bundle.Prefix [ "Eurydice"; "Int128" ] ];
       Warn.parse_warn_error (!warn_error ^ "+8"));
     Monomorphization.NameGen.short_names := true;
     AstToCStar.no_return_type_lids :=
@@ -182,7 +182,6 @@ Supported options:|}
     match config with
     | None -> files
     | Some config ->
-        let config = config in
         let files = Eurydice.Bundles.bundle files config in
         let files = Eurydice.Bundles.libraries files in
         let files = Krml.Bundles.topological_sort files in
