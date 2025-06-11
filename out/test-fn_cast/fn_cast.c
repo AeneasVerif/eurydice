@@ -9,10 +9,10 @@
 
 /**
 A monomorphic instance of fn_cast.applies
-with types int32_t
+with types int32_t, int32_t
 
 */
-int32_t *fn_cast_applies_a8(int32_t *(*f)(int32_t *x0), int32_t *arg)
+int32_t *fn_cast_applies_99(int32_t *(*f)(int32_t *x0), int32_t *arg)
 {
   return f(arg);
 }
@@ -41,7 +41,7 @@ void fn_cast_main(void)
   /* original Rust expression is not an lvalue in C */
   int32_t lvalue = (int32_t)1;
   _int32_t__x2
-  uu____0 = { .fst = fn_cast_applies_a8(fn_cast_id_ref_a8, &lvalue0), .snd = &lvalue };
+  uu____0 = { .fst = fn_cast_applies_99(fn_cast_id_ref_a8, &lvalue0), .snd = &lvalue };
   int32_t *left_val = uu____0.fst;
   int32_t *right_val = uu____0.snd;
   EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");

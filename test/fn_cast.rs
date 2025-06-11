@@ -2,7 +2,7 @@ fn id_ref<'a, T>(x: &'a T) -> &'a T {
     x
 }
 
-fn applies<'a, 'b, T>(f : fn(&'a T) -> &'b T, arg : &'a T) -> &'b T {
+fn applies<'a, 'b, T, R>(f : fn(&'a T) -> &'b R, arg : &'a T) -> &'b R {
   f(arg)
 }
 

@@ -23,10 +23,10 @@ typedef uint8_t core_panicking_AssertKind;
 
 /**
 A monomorphic instance of fn_cast.applies
-with types int32_t
+with types int32_t, int32_t
 
 */
-int32_t *fn_cast_applies_a8(int32_t *(*f)(int32_t *x0), int32_t *arg);
+int32_t *fn_cast_applies_99(int32_t *(*f)(int32_t *x0), int32_t *arg);
 
 /**
 A monomorphic instance of fn_cast.id_ref
