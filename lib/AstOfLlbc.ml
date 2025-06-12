@@ -1604,6 +1604,17 @@ let is_str env var_id =
 
 let is_dst_var env var_id = Option.is_some (is_dst env (snd (lookup env var_id)))
 
+let rec differs_in_lifetime_only (f : C.ty) (t : C.ty) =
+  match f, t with
+  | C.TRawPtr (f, fk), C.TRawPtr (t, tk)
+  | C.TRef (_, f, fk), C.TRef (_, t, tk) -> fk = tk && differs_in_lifetime_only f t
+  | C.TArrow f, C.TArrow t ->
+    let f_args, f_ret = f.binder_value in
+    let t_args, t_ret = t.binder_value in
+    List.length f_args = List.length t_args &&
+    List.for_all2 differs_in_lifetime_only (f_ret :: f_args) (t_ret :: t_args)
+  | _otw -> f = t
+
 let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   match p with
   | Use op -> expression_of_operand env op
@@ -1736,8 +1747,11 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
         match ck with
         (* Here are `literal_type`s *)
         | C.CastScalar (f, t) -> f = t
+        | C.CastFnPtr (f, t) ->
+          (* When converted to C, the lifetime parameters are dropped. So if two types differs only in lifetime, we consider them to be equivalent. Rust should always guarantee this, but an additional check here is provided for robustness. *)
+          differs_in_lifetime_only f t
         (* The following are `type`s *)
-        | C.CastRawPtr (f, t) | C.CastFnPtr (f, t) | C.CastUnsize (f, t) | C.CastTransmute (f, t) ->
+        | C.CastRawPtr (f, t) | C.CastUnsize (f, t) | C.CastTransmute (f, t) ->
             f = t
       in
       if is_ident then
