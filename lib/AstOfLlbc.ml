@@ -2163,13 +2163,10 @@ and expression_of_statement (env : env) (ret_var : C.local_id) (s : C.statement)
   }
 
 and expression_of_block (env : env) (ret_var : C.local_id) (b : C.block) : K.expr =
-  (* TODO: for now we reproduce the exact nesting situtation that we had
-     before. We should eventually just us a full karamel list. *)
   let statements = List.map (expression_of_statement env ret_var) b.statements in
   match List.rev statements with
   | [] -> Krml.Helpers.eunit
-  | last :: rest ->
-      List.fold_left (fun e2 e1 -> K.(with_type e2.typ (ESequence [ e1; e2 ]))) last rest
+  | last :: _ -> K.(with_type last.typ (ESequence statements))
 
 (** Top-level declarations: orchestration *)
 
