@@ -64,7 +64,7 @@ type env = {
   get_nth_trait_decl : C.TraitDeclId.id -> C.trait_decl;
   crate : C.crate;
   (* Needed by the name matching logic *)
-  name_ctx : C.statement Charon.NameMatcher.ctx;
+  name_ctx : C.block Charon.NameMatcher.ctx;
   generic_params : C.generic_params;
   (* We have three lists of binders, which allow us to go from a Rust variable
      to a corresponding krml AST variable; everything is in De Bruijn, so
@@ -611,9 +611,9 @@ let expression_of_var_id (env : env) (v : C.local_id) : K.expr =
   let i, t = lookup env v in
   K.(with_type t (EBound i))
 
-(** Assume here the maximum length is 128-bit -- will throw away the larger if larger.
-    This is a helper function to split a 128-bit integer into two 64-bit integers and is not assumed to be used in other contexts.
-    Returns the **expr** pair (high64bits, low64bits) *)
+(** Assume here the maximum length is 128-bit -- will throw away the larger if larger. This is a
+    helper function to split a 128-bit integer into two 64-bit integers and is not assumed to be
+    used in other contexts. Returns the **expr** pair (high64bits, low64bits) *)
 let split_128bit (value : Z.t) =
   let mask128 = Z.sub (Z.shift_left Z.one 128) Z.one in
   let mask64 = Z.sub (Z.shift_left Z.one 64) Z.one in
@@ -625,9 +625,10 @@ let split_128bit (value : Z.t) =
   let high64 = Z.shift_right value 64 in
   let to_expr_u64bits v =
     let print_Z z = Z.format "%#x" z in
-    K.with_type (K.TInt UInt64) @@ (K.EConstant (UInt64, print_Z v))
+    K.with_type (K.TInt UInt64) @@ K.EConstant (UInt64, print_Z v)
   in
-  (to_expr_u64bits high64, to_expr_u64bits low64)
+  to_expr_u64bits high64, to_expr_u64bits low64
+
 let expression_of_int128_t (value : Z.t) =
   let i128_max = Z.sub (Z.shift_left Z.one 127) Z.one in
   if value > i128_max then
@@ -637,20 +638,22 @@ let expression_of_int128_t (value : Z.t) =
     failwith "value is smaller than the minimum value of i128";
   let high64, low64 = split_128bit value in
   K.(with_type Builtin.int128_t (EApp (Builtin.(get_128_op ("i", "from_bits")), [ high64; low64 ])))
+
 let expression_of_uint128_t (value : Z.t) =
   let u128_max = Z.sub (Z.shift_left Z.one 128) Z.one in
   if value > u128_max then
     failwith "value is larger than the maximum value of u128";
   let high64, low64 = split_128bit value in
-  K.(with_type Builtin.uint128_t (EApp (Builtin.(get_128_op ("u", "from_bits")), [ high64; low64 ])))
+  K.(
+    with_type Builtin.uint128_t (EApp (Builtin.(get_128_op ("u", "from_bits")), [ high64; low64 ])))
 
 let expression_of_scalar_value ({ C.int_ty; _ } as sv) : K.expr =
   match int_ty with
   | C.I128 -> expression_of_int128_t sv.value
   | C.U128 -> expression_of_uint128_t sv.value
   | _ ->
-    let w = width_of_integer_type int_ty in
-    K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
+      let w = width_of_integer_type int_ty in
+      K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
 
 let expression_of_literal (_env : env) (l : C.literal) : K.expr =
   match l with
@@ -659,8 +662,8 @@ let expression_of_literal (_env : env) (l : C.literal) : K.expr =
   | VStr s -> K.(with_type Krml.Checker.c_string (EString s))
   | VChar c -> K.(with_type Builtin.char_t (EConstant (UInt32, string_of_int @@ Uchar.to_int c)))
   | VByteStr lst ->
-    let str = List.map (Printf.sprintf "%#x") lst |> String.concat "" in
-    K.(with_type Krml.Checker.c_string (EString str))
+      let str = List.map (Printf.sprintf "%#x") lst |> String.concat "" in
+      K.(with_type Krml.Checker.c_string (EString str))
   | VFloat _ -> failwith "TODO: float value still not supported!"
 
 let expression_of_const_generic env cg =
@@ -838,7 +841,6 @@ let op_of_binop (op : C.binop) : Krml.Constant.op =
   | C.Shr -> BShiftR
   | _ -> fail "unsupported operator: %s" (C.show_binop op)
 
-
 let op_128_of_op kind (op : K.op) : K.expr =
   let op_name =
     match op with
@@ -872,12 +874,14 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
   (* For 128-bit integers, the case is different: convert the operator & match the case here *)
   let op, ret_t =
     if first.typ = Builtin.int128_t || first.typ = Builtin.uint128_t then
-        let op =
-          if first.typ = Builtin.int128_t then op_128_of_op "i" op
-          else op_128_of_op "u" op
-        in
-        let ret_t, _ = Krml.Helpers.flatten_arrow op.typ in
-        op, ret_t
+      let op =
+        if first.typ = Builtin.int128_t then
+          op_128_of_op "i" op
+        else
+          op_128_of_op "u" op
+      in
+      let ret_t, _ = Krml.Helpers.flatten_arrow op.typ in
+      op, ret_t
     else
       (* Otherwise, simply the normal case *)
       let w =
@@ -916,22 +920,22 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
     |> List.mem lident
   in
   let modify_rest : K.expr list -> K.expr list = function
-  | [ e2 ] -> begin
-    match e2.node with
-    | EConstant (_, s) ->
-        let i = int_of_string s in
-        assert (i >= 0);
-        [ Krml.Helpers.mk_uint32 i ]
+    | [ e2 ] -> begin
+        match e2.node with
+        | EConstant (_, s) ->
+            let i = int_of_string s in
+            assert (i >= 0);
+            [ Krml.Helpers.mk_uint32 i ]
+        | _ -> [ K.(with_type (TInt UInt32) (ECast (e2, TInt UInt32))) ]
+      end
     | _ ->
-        [ K.(with_type (TInt UInt32) (ECast (e2, TInt UInt32))) ]
-  end
-  | _ -> failwith
-    "Invalid call to binary operator `shiftl` or `shiftr` -- the number of operands is not 2"
+        failwith
+          "Invalid call to binary operator `shiftl` or `shiftr` -- the number of operands is not 2"
   in
   (* Modify here *)
   let rest =
     match op.node with
-    | EOp (BShiftL,_) | EOp (BShiftR,_) -> modify_rest rest
+    | EOp (BShiftL, _) | EOp (BShiftR, _) -> modify_rest rest
     | EQualified lident when is_128_bit_shift_lident lident -> modify_rest rest
     | _ -> rest
   in
@@ -1862,36 +1866,28 @@ let expression_of_fn_op_move (env : env) ({ func; args; dest } : C.call) =
   let rhs = K.with_type ret_t @@ K.EApp (fHd, args) in
   Krml.Helpers.with_unit @@ K.EAssign (lhs, rhs)
 
-(** Handles only the `SwitchInt` for 128-bit integers.
-    Turn the switch expression into if-then-else expressions.
-    This is to work around the Krml integer type limitations. *)
-let rec expression_of_switch_128bits
-    env
-    ret_var
-    scrutinee
-    branches
-    default : K.expr =
+(** Handles only the `SwitchInt` for 128-bit integers. Turn the switch expression into if-then-else
+    expressions. This is to work around the Krml integer type limitations. *)
+let rec expression_of_switch_128bits env ret_var scrutinee branches default : K.expr =
   let scrutinee = expression_of_operand env scrutinee in
-  let else_branch = expression_of_statement env ret_var default in
+  let else_branch = expression_of_block env ret_var default in
   let folder (svs, stmt) else_branch =
     (* [i1, i2, ..., in] ==> scrutinee == i1 || scrutinee == i2 || ... || scrutinee == in *)
     let guard =
       let make_eq sv = mk_op_app Eq scrutinee [ expression_of_scalar_value sv ] in
-      List.map make_eq svs
-      |> function
+      List.map make_eq svs |> function
       | [] -> Krml.Helpers.etrue
-      | x :: lst -> List.fold_left (Krml.Helpers.mk_or) x lst
+      | x :: lst -> List.fold_left Krml.Helpers.mk_or x lst
     in
     (* the "then" body of the if-then-else expression *)
-    let body = expression_of_statement env ret_var stmt in
+    let body = expression_of_block env ret_var stmt in
     (* combines the types: compare each branch and then generate the correct type *)
     let typ = lesser body.K.typ else_branch.K.typ in
     K.(with_type typ (EIfThenElse (guard, body, else_branch)))
   in
   List.fold_right folder branches else_branch
 
-and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_statement) :
-    K.expr =
+and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_statement) : K.expr =
   match s with
   | Assign (p, rv) ->
       let p = expression_of_place env p in
@@ -2081,13 +2077,9 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
   | Break _ -> K.(with_type TAny EBreak)
   | Continue _ -> K.(with_type TAny EContinue)
   | Nop -> Krml.Helpers.eunit
-  | Sequence (s1, s2) ->
-      let e1 = expression_of_statement env ret_var s1 in
-      let e2 = expression_of_statement env ret_var s2 in
-      K.(with_type e2.typ (ESequence [ e1; e2 ]))
   | Switch (If (op, s1, s2)) ->
-      let e1 = expression_of_statement env ret_var s1 in
-      let e2 = expression_of_statement env ret_var s2 in
+      let e1 = expression_of_block env ret_var s1 in
+      let e2 = expression_of_block env ret_var s2 in
       let t = lesser e1.typ e2.typ in
       K.(with_type t (EIfThenElse (expression_of_operand env op, e1, e2)))
   | Switch (SwitchInt (scrutinee, int_ty, branches, default)) ->
@@ -2100,10 +2092,10 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
             (fun (svs, stmt) ->
               List.map
                 (fun sv ->
-                  K.SConstant (constant_of_scalar_value sv), expression_of_statement env ret_var stmt)
+                  K.SConstant (constant_of_scalar_value sv), expression_of_block env ret_var stmt)
                 svs)
             branches
-          @ [ K.SWild, expression_of_statement env ret_var default ]
+          @ [ K.SWild, expression_of_block env ret_var default ]
         in
         let t = Krml.KList.reduce lesser (List.map (fun (_, e) -> e.K.typ) branches) in
         K.(with_type t (ESwitch (scrutinee, branches)))
@@ -2140,7 +2132,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
                     K.PCons (variant_name, dummies)
                 in
                 let pat = K.with_type scrutinee.typ pat in
-                [], pat, expression_of_statement env ret_var branch)
+                [], pat, expression_of_block env ret_var branch)
               variant_ids)
           branches
       in
@@ -2149,13 +2141,12 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
         @
         match default with
         | Some default ->
-            [ [], K.with_type scrutinee.typ K.PWild, expression_of_statement env ret_var default ]
+            [ [], K.with_type scrutinee.typ K.PWild, expression_of_block env ret_var default ]
         | None -> []
       in
       let t = Krml.KList.reduce lesser (List.map (fun (_, _, e) -> e.K.typ) branches) in
       K.(with_type t (EMatch (Unchecked, scrutinee, branches)))
-  | Loop s ->
-      K.(with_type TUnit (EWhile (Krml.Helpers.etrue, expression_of_statement env ret_var s)))
+  | Loop s -> K.(with_type TUnit (EWhile (Krml.Helpers.etrue, expression_of_block env ret_var s)))
   | _ ->
       failwith
         ("Unsupported statement: "
@@ -2170,6 +2161,12 @@ and expression_of_statement (env : env) (ret_var : C.local_id) (s : C.statement)
        else
          []);
   }
+
+and expression_of_block (env : env) (ret_var : C.local_id) (b : C.block) : K.expr =
+  let statements = List.map (expression_of_statement env ret_var) b.statements in
+  match List.rev statements with
+  | [] -> Krml.Helpers.eunit
+  | last :: _ -> K.(with_type last.typ (ESequence statements))
 
 (** Top-level declarations: orchestration *)
 
@@ -2428,7 +2425,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                   (List.map (fun o -> o.K.typ) arg_binders);
                 let body =
                   with_locals env return_type (return_var :: locals) (fun env ->
-                      expression_of_statement env return_var.index body)
+                      expression_of_block env return_var.index body)
                 in
                 let flags =
                   match item_meta.attr_info.inline with
@@ -2471,7 +2468,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
             let ret_var = List.hd body.locals.locals in
             let body =
               with_locals env ty body.locals.locals (fun env ->
-                  expression_of_statement env ret_var.index body.body)
+                  expression_of_block env ret_var.index body.body)
             in
             Some (K.DGlobal ([ Krml.Common.Const "" ], lid_of_name env name, 0, ty, body))
         | None -> Some (K.DExternal (None, [], 0, 0, lid_of_name env name, ty, []))
