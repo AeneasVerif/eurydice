@@ -64,7 +64,7 @@ type env = {
   get_nth_trait_decl : C.TraitDeclId.id -> C.trait_decl;
   crate : C.crate;
   (* Needed by the name matching logic *)
-  name_ctx : C.statement Charon.NameMatcher.ctx;
+  name_ctx : C.block Charon.NameMatcher.ctx;
   generic_params : C.generic_params;
   (* We have three lists of binders, which allow us to go from a Rust variable
      to a corresponding krml AST variable; everything is in De Bruijn, so
@@ -1870,7 +1870,7 @@ let expression_of_fn_op_move (env : env) ({ func; args; dest } : C.call) =
     expressions. This is to work around the Krml integer type limitations. *)
 let rec expression_of_switch_128bits env ret_var scrutinee branches default : K.expr =
   let scrutinee = expression_of_operand env scrutinee in
-  let else_branch = expression_of_statement env ret_var default in
+  let else_branch = expression_of_block env ret_var default in
   let folder (svs, stmt) else_branch =
     (* [i1, i2, ..., in] ==> scrutinee == i1 || scrutinee == i2 || ... || scrutinee == in *)
     let guard =
@@ -1880,7 +1880,7 @@ let rec expression_of_switch_128bits env ret_var scrutinee branches default : K.
       | x :: lst -> List.fold_left Krml.Helpers.mk_or x lst
     in
     (* the "then" body of the if-then-else expression *)
-    let body = expression_of_statement env ret_var stmt in
+    let body = expression_of_block env ret_var stmt in
     (* combines the types: compare each branch and then generate the correct type *)
     let typ = lesser body.K.typ else_branch.K.typ in
     K.(with_type typ (EIfThenElse (guard, body, else_branch)))
@@ -2077,13 +2077,9 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
   | Break _ -> K.(with_type TAny EBreak)
   | Continue _ -> K.(with_type TAny EContinue)
   | Nop -> Krml.Helpers.eunit
-  | Sequence (s1, s2) ->
-      let e1 = expression_of_statement env ret_var s1 in
-      let e2 = expression_of_statement env ret_var s2 in
-      K.(with_type e2.typ (ESequence [ e1; e2 ]))
   | Switch (If (op, s1, s2)) ->
-      let e1 = expression_of_statement env ret_var s1 in
-      let e2 = expression_of_statement env ret_var s2 in
+      let e1 = expression_of_block env ret_var s1 in
+      let e2 = expression_of_block env ret_var s2 in
       let t = lesser e1.typ e2.typ in
       K.(with_type t (EIfThenElse (expression_of_operand env op, e1, e2)))
   | Switch (SwitchInt (scrutinee, int_ty, branches, default)) ->
@@ -2096,11 +2092,10 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
             (fun (svs, stmt) ->
               List.map
                 (fun sv ->
-                  ( K.SConstant (constant_of_scalar_value sv),
-                    expression_of_statement env ret_var stmt ))
+                  K.SConstant (constant_of_scalar_value sv), expression_of_block env ret_var stmt)
                 svs)
             branches
-          @ [ K.SWild, expression_of_statement env ret_var default ]
+          @ [ K.SWild, expression_of_block env ret_var default ]
         in
         let t = Krml.KList.reduce lesser (List.map (fun (_, e) -> e.K.typ) branches) in
         K.(with_type t (ESwitch (scrutinee, branches)))
@@ -2137,7 +2132,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
                     K.PCons (variant_name, dummies)
                 in
                 let pat = K.with_type scrutinee.typ pat in
-                [], pat, expression_of_statement env ret_var branch)
+                [], pat, expression_of_block env ret_var branch)
               variant_ids)
           branches
       in
@@ -2146,13 +2141,12 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
         @
         match default with
         | Some default ->
-            [ [], K.with_type scrutinee.typ K.PWild, expression_of_statement env ret_var default ]
+            [ [], K.with_type scrutinee.typ K.PWild, expression_of_block env ret_var default ]
         | None -> []
       in
       let t = Krml.KList.reduce lesser (List.map (fun (_, _, e) -> e.K.typ) branches) in
       K.(with_type t (EMatch (Unchecked, scrutinee, branches)))
-  | Loop s ->
-      K.(with_type TUnit (EWhile (Krml.Helpers.etrue, expression_of_statement env ret_var s)))
+  | Loop s -> K.(with_type TUnit (EWhile (Krml.Helpers.etrue, expression_of_block env ret_var s)))
   | _ ->
       failwith
         ("Unsupported statement: "
@@ -2167,6 +2161,15 @@ and expression_of_statement (env : env) (ret_var : C.local_id) (s : C.statement)
        else
          []);
   }
+
+and expression_of_block (env : env) (ret_var : C.local_id) (b : C.block) : K.expr =
+  (* TODO: for now we reproduce the exact nesting situtation that we had
+     before. We should eventually just us a full karamel list. *)
+  let statements = List.map (expression_of_statement env ret_var) b.statements in
+  match List.rev statements with
+  | [] -> Krml.Helpers.eunit
+  | last :: rest ->
+      List.fold_left (fun e2 e1 -> K.(with_type e2.typ (ESequence [ e1; e2 ]))) last rest
 
 (** Top-level declarations: orchestration *)
 
@@ -2425,7 +2428,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                   (List.map (fun o -> o.K.typ) arg_binders);
                 let body =
                   with_locals env return_type (return_var :: locals) (fun env ->
-                      expression_of_statement env return_var.index body)
+                      expression_of_block env return_var.index body)
                 in
                 let flags =
                   match item_meta.attr_info.inline with
@@ -2468,7 +2471,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
             let ret_var = List.hd body.locals.locals in
             let body =
               with_locals env ty body.locals.locals (fun env ->
-                  expression_of_statement env ret_var.index body.body)
+                  expression_of_block env ret_var.index body.body)
             in
             Some (K.DGlobal ([ Krml.Common.Const "" ], lid_of_name env name, 0, ty, body))
         | None -> Some (K.DExternal (None, [], 0, 0, lid_of_name env name, ty, []))
