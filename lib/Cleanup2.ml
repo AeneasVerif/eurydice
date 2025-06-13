@@ -593,7 +593,7 @@ let resugar_loops =
           ?e_increment
         ));
       while true {
-        let x = core::iter::adapters::step_by::?::next<?, ?t1>(&(&iter)[0]);
+        let x = core::iter::adapters::step_by::?::next<?, ?t1>(&iter);
         match x {
           None -> break,
           Some ? -> ?e_body
@@ -622,7 +622,7 @@ let resugar_loops =
           ?e_increment
         ));
       while true {
-        match (core::iter::adapters::step_by::?::next<?, ?t1>(&(&iter)[0])) {
+        match (core::iter::adapters::step_by::?::next<?, ?t1>(&iter)) {
           None -> break,
           Some ? -> ?e_body
         }
@@ -650,7 +650,7 @@ let resugar_loops =
           ?e_increment
         ));
       while true {
-        let x = core::iter::adapters::step_by::?::next<?, ?t1>(&(&iter)[0]);
+        let x = core::iter::adapters::step_by::?::next<?, ?t1>(&iter);
         match x {
           None -> break,
           Some ? -> ?e_body
@@ -677,7 +677,7 @@ let resugar_loops =
           ?e_increment
         ));
       while true {
-        match (core::iter::adapters::step_by::?::next<?, ?t1>(&(&iter)[0])) {
+        match (core::iter::adapters::step_by::?::next<?, ?t1>(&iter)) {
           None -> break,
           Some ? -> ?e_body
         }
@@ -699,7 +699,7 @@ let resugar_loops =
           <core::ops::range::Range<?..>, ?..>
           ({ start: ?e_start, end: ?e_end });
       while true {
-        let x = core::iter::range::?::next<?t1>(&(&iter)[0]);
+        let x = core::iter::range::?::next<?t1>(&iter);
         match x {
           None -> break,
           Some ? -> ?e_body
@@ -721,7 +721,7 @@ let resugar_loops =
           <core::ops::range::Range<?..>, ?..>
           ({ start: ?e_start, end: ?e_end });
       while true {
-        match (core::iter::range::?::next<?t1>(&(&iter)[0])) {
+        match (core::iter::range::?::next<?t1>(&iter)) {
           None -> break,
           Some ? -> ?e_body
         }
@@ -742,7 +742,7 @@ let resugar_loops =
           <core::ops::range::Range<?>, ?..>
           ({ start: ?e_start, end: ?e_end });
       while true {
-        let x = core::iter::range::?::next<?t1>(&(&iter)[0]);
+        let x = core::iter::range::?::next<?t1>(&iter);
         match x {
           None -> break,
           Some ? -> ?e_body
@@ -766,7 +766,7 @@ let resugar_loops =
           <core::ops::range::Range<?>, ?..>
           ({ start: ?e_start, end: ?e_end });
       while true {
-        match (core::iter::range::?::next<?t1>(&(&iter)[0])) {
+        match (core::iter::range::?::next<?t1>(&iter)) {
           None -> break,
           Some ? -> ?e_body
         }

@@ -412,11 +412,7 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* We collapse Ref(Array) into a pointer type, leveraging C's implicit decay between array
          types and pointer types. *)
       K.TBuf (typ_of_ty env t, false)
-  | TRef (_, TAdt (TBuiltin TStr, { types = []; _ }), _) ->
-      (* We perform on-the-fly elimination of addresses of strings (just like we
-         do for arrays) so as to type-check them correctly vis à vis krml's
-         Checker expectations. This means &'str translates to c_string *)
-      Krml.Checker.c_string
+  | TRef (_, TAdt (TBuiltin TStr, { types = []; _ }), _) -> Builtin.str_t
   | TRef (_, t, _) ->
       (* Normal reference *)
       K.TBuf (typ_of_ty env t, false)
@@ -443,8 +439,7 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       K.TBuf (typ_of_ty env t, false)
       (* Boxes are immediately translated to a pointer type -- we do not maintain a Box<T>
          definition in the krml internal AST. *)
-  | TAdt (TBuiltin TStr, { types = []; _ }) ->
-      failwith "Impossible -- strings always behind a pointer"
+  | TAdt (TBuiltin TStr, { types = []; _ }) -> Builtin.deref_str_t
   | TAdt (TBuiltin f, { types = args; const_generics; _ }) ->
       List.iter (fun x -> print_endline (C.show_const_generic x)) const_generics;
       fail "TODO: Adt/Builtin %s (%d) %d " (C.show_builtin_ty f) (List.length args)
@@ -659,7 +654,13 @@ let expression_of_literal (_env : env) (l : C.literal) : K.expr =
   match l with
   | VScalar sv -> expression_of_scalar_value sv
   | VBool b -> K.(with_type TBool (EBool b))
-  | VStr s -> K.(with_type Krml.Checker.c_string (EString s))
+  | VStr s ->
+    let ascii = Utf8.ascii_of_utf8_str s in
+    let len = String.length s in
+    K.(with_type Builtin.str_t (EFlat [
+      (Some "data", with_type Krml.Checker.c_string (EString ascii));
+      (Some "len", with_type Krml.Helpers.usize (EConstant (SizeT, string_of_int len)));
+    ]))
   | VChar c -> K.(with_type Builtin.char_t (EConstant (UInt32, string_of_int @@ Uchar.to_int c)))
   | VByteStr lst ->
       let str = List.map (Printf.sprintf "%#x") lst |> String.concat "" in
@@ -1608,6 +1609,11 @@ let is_str env var_id =
 
 let is_dst_var env var_id = Option.is_some (is_dst env (snd (lookup env var_id)))
 
+let is_box_place (p : C.place) =
+  match p.ty with
+  | C.TAdt (TBuiltin TBox, _) -> true
+  | _ -> false
+
 let rec differs_in_lifetime_only (f : C.ty) (t : C.ty) =
   match f, t with
   | C.TRawPtr (f, fk), C.TRawPtr (t, tk)
@@ -1622,18 +1628,24 @@ let rec differs_in_lifetime_only (f : C.ty) (t : C.ty) =
 let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   match p with
   | Use op -> expression_of_operand env op
-  | RvRef ({ kind = PlaceProjection ({ kind = PlaceLocal var_id; _ }, Deref); _ }, _)
-    when is_str env var_id ->
-      (* because we do not materialize the address of a string, we also have to
-         avoid dereferencing it. For now, we simply avoid reborrows and treat them as simply passing
-         the same constant string around (which in C is passed by address naturally).
-         TODO: this is a temporary fix and we need to represent &str the same way as &[u8]. *)
-      expression_of_var_id env var_id
-  | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _)
-    when is_dst env (typ_of_ty env p.ty) <> None || is_slice env (typ_of_ty env p.ty) ->
-      (* this is case three, see "support for DSTs", above. *)
-      (* TODO: is this something we want to generalize for code quality? *)
-      expression_of_place env p
+  (* Generally, MIR / current LLBC is guaranteed to apply [Deref] only to places that are
+     references or raw pointers, in these cases [&*p] == [p].
+     The [Deref] traits types are desugared to function calls to [deref].
+     The ONLY exception is when the place is a [Box]. That is, MIR/LLBC might generate [*b]
+     where [b] is a [Box]. This refers to taking the value out of the [Box].
+     Recall that [Box] is a wrapper of [Unique], which is in turn a wrapper of a [NonNull],
+     which is a wrapper of a raw pointer. Hence, [*b] when [b] is a [Box] is equivalent to
+     [*(b.0.pointer.pointer)]. This is a compiler magic.
+     
+     However, in Eurydice *now*, [Box] types are instantly unboxed to raw pointers, which 
+     coincides exactly with our current implementation, hence no extra handling is needed.
+     In the future however, we might want to handle [Box] types differently, so this is a note
+     to ourselves to be careful with this.
+     *)
+  | RvRef ({ kind = PlaceProjection (p, Deref); _},_)
+  | RawPtr ({ kind = PlaceProjection (p, Deref); _},_) ->
+    (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and [p] might be a reference to DST (fat pointer). *)
+    expression_of_place env p
   | RvRef
       ( ({
            kind =

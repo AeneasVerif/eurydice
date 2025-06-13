@@ -15,13 +15,15 @@
 extern "C" {
 #endif
 
+#include "Eurydice.h"
+
 #define core_result_Ok 0
 #define core_result_Err 1
 
 typedef uint8_t core_result_Result_10;
 
 extern core_result_Result_10
-core_fmt__core__fmt__Formatter__a__11__write_str(core_fmt_Formatter *x0, Prims_string x1);
+core_fmt__core__fmt__Formatter__a__11__write_str(core_fmt_Formatter *x0, Eurydice_str x1);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1

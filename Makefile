@@ -55,7 +55,9 @@ test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c
 test-nested_arrays: EXTRA = -funroll-loops 0
 test-array: EXTRA = -fcomments
 test-symcrust: CFLAGS += -Wno-unused-function
+test-more_str: EXTRA_C = ../../test/core_str_lib.c
 test-more_primitive_types: EXTRA = --config test/more_primitive_types.yaml
+
 
 test-%: test/%.llbc out/test-%/main.c | all
 	$(EURYDICE) $(EXTRA) --output out/test-$* $<
