@@ -647,31 +647,12 @@ let expression_of_scalar_value ({ C.int_ty; _ } as sv) : K.expr =
     let w = width_of_integer_type int_ty in
     K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
 
-let ascii_of_utf8_str (str : string) =
-  let get_uchar_list (str : string) =
-    let rec get_uchar_list acc idx =
-      try
-        let uchar = Uchar.utf_decode_uchar (String.get_utf_8_uchar str idx) in
-        let char_len = Uchar.utf_8_byte_length uchar in
-        get_uchar_list (uchar :: acc) (idx + char_len)
-      with
-      | Invalid_argument _ -> List.rev acc in
-    get_uchar_list [] 0 in
-  let uchar_list_to_ascii lst =
-    let to_str uchar =
-      if Uchar.is_char uchar then Uchar.to_char uchar |> Char.escaped
-      else Printf.sprintf "\\u{%x}" @@ Uchar.to_int uchar in
-    List.map to_str lst
-    |> String.concat "" in
-  get_uchar_list str
-  |> uchar_list_to_ascii
-
 let expression_of_literal (_env : env) (l : C.literal) : K.expr =
   match l with
   | VScalar sv -> expression_of_scalar_value sv
   | VBool b -> K.(with_type TBool (EBool b))
   | VStr s ->
-    let ascii = ascii_of_utf8_str s in
+    let ascii = Utf8.ascii_of_utf8_str s in
     let len = String.length s in
     K.(with_type Builtin.str_t (EFlat [
       (Some "data", with_type Krml.Checker.c_string (EString ascii));
