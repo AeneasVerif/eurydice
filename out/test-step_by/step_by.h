@@ -69,26 +69,26 @@ A monomorphic instance of core.option.Option
 with types size_t
 
 */
-typedef struct core_option_Option_08_s
+typedef struct core_option_Option_d7_s
 {
   core_option_Option_77_tags tag;
   size_t f0;
 }
-core_option_Option_08;
+core_option_Option_d7;
 
 /**
 A monomorphic instance of K.
 with types size_t, core_option_Option size_t
 
 */
-typedef struct tuple_04_s
+typedef struct tuple_d2_s
 {
   size_t fst;
-  core_option_Option_08 snd;
+  core_option_Option_d7 snd;
 }
-tuple_04;
+tuple_d2;
 
-extern tuple_04
+extern tuple_d2
 core_iter_range___core__iter__range__Step_for_i32__40__steps_between(int32_t *x0, int32_t *x1);
 
 #define core_panicking_AssertKind_Eq 0
