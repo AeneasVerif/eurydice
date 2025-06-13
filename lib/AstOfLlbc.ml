@@ -655,12 +655,15 @@ let expression_of_literal (_env : env) (l : C.literal) : K.expr =
   | VScalar sv -> expression_of_scalar_value sv
   | VBool b -> K.(with_type TBool (EBool b))
   | VStr s ->
-    let ascii = Utf8.ascii_of_utf8_str s in
-    let len = String.length s in
-    K.(with_type Builtin.str_t (EFlat [
-      (Some "data", with_type Krml.Checker.c_string (EString ascii));
-      (Some "len", with_type Krml.Helpers.usize (EConstant (SizeT, string_of_int len)));
-    ]))
+      let ascii = Utf8.ascii_of_utf8_str s in
+      let len = String.length s in
+      K.(
+        with_type Builtin.str_t
+          (EFlat
+             [
+               Some "data", with_type Krml.Checker.c_string (EString ascii);
+               Some "len", with_type Krml.Helpers.usize (EConstant (SizeT, string_of_int len));
+             ]))
   | VChar c -> K.(with_type Builtin.char_t (EConstant (UInt32, string_of_int @@ Uchar.to_int c)))
   | VByteStr lst ->
       let str = List.map (Printf.sprintf "%#x") lst |> String.concat "" in
@@ -1616,13 +1619,13 @@ let is_box_place (p : C.place) =
 
 let rec differs_in_lifetime_only (f : C.ty) (t : C.ty) =
   match f, t with
-  | C.TRawPtr (f, fk), C.TRawPtr (t, tk)
-  | C.TRef (_, f, fk), C.TRef (_, t, tk) -> fk = tk && differs_in_lifetime_only f t
+  | C.TRawPtr (f, fk), C.TRawPtr (t, tk) | C.TRef (_, f, fk), C.TRef (_, t, tk) ->
+      fk = tk && differs_in_lifetime_only f t
   | C.TArrow f, C.TArrow t ->
-    let f_args, f_ret = f.binder_value in
-    let t_args, t_ret = t.binder_value in
-    List.length f_args = List.length t_args &&
-    List.for_all2 differs_in_lifetime_only (f_ret :: f_args) (t_ret :: t_args)
+      let f_args, f_ret = f.binder_value in
+      let t_args, t_ret = t.binder_value in
+      List.length f_args = List.length t_args
+      && List.for_all2 differs_in_lifetime_only (f_ret :: f_args) (t_ret :: t_args)
   | _otw -> f = t
 
 let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
@@ -1642,10 +1645,10 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
      In the future however, we might want to handle [Box] types differently, so this is a note
      to ourselves to be careful with this.
      *)
-  | RvRef ({ kind = PlaceProjection (p, Deref); _},_)
-  | RawPtr ({ kind = PlaceProjection (p, Deref); _},_) ->
-    (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and [p] might be a reference to DST (fat pointer). *)
-    expression_of_place env p
+  | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _)
+  | RawPtr ({ kind = PlaceProjection (p, Deref); _ }, _) ->
+      (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and [p] might be a reference to DST (fat pointer). *)
+      expression_of_place env p
   | RvRef
       ( ({
            kind =
@@ -1764,11 +1767,10 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
         (* Here are `literal_type`s *)
         | C.CastScalar (f, t) -> f = t
         | C.CastFnPtr (f, t) ->
-          (* When converted to C, the lifetime parameters are dropped. So if two types differs only in lifetime, we consider them to be equivalent. Rust should always guarantee this, but an additional check here is provided for robustness. *)
-          differs_in_lifetime_only f t
+            (* When converted to C, the lifetime parameters are dropped. So if two types differs only in lifetime, we consider them to be equivalent. Rust should always guarantee this, but an additional check here is provided for robustness. *)
+            differs_in_lifetime_only f t
         (* The following are `type`s *)
-        | C.CastRawPtr (f, t) | C.CastUnsize (f, t) | C.CastTransmute (f, t) ->
-            f = t
+        | C.CastRawPtr (f, t) | C.CastUnsize (f, t) | C.CastTransmute (f, t) -> f = t
       in
       if is_ident then
         expression_of_operand env e
