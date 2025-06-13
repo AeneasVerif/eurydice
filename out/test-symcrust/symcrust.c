@@ -55,7 +55,7 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
         Eurydice_slice
         uu____0 = Eurydice_slice_subslice2(dst, cbDstWritten, cbDstWritten + (size_t)4U, uint8_t);
         uint8_t ret[4U];
-        core_num__u32_8__to_le_bytes(accumulator, ret);
+        core_num__u32__to_le_bytes(accumulator, ret);
         Eurydice_slice_copy(uu____0, Eurydice_array_to_slice((size_t)4U, ret, uint8_t), uint8_t);
         cbDstWritten = cbDstWritten + (size_t)4U;
         accumulator = 0U;

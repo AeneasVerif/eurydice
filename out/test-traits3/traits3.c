@@ -8,9 +8,9 @@
 #include "traits3.h"
 
 /**
-This function found in impl {(traits3::internal::KeccakItem<2: usize> for (u64, u64))#1}
+This function found in impl {traits3::internal::KeccakItem<2: usize> for (u64, u64)}
 */
-uint64_t_x2 traits3_zero_f1(void)
+uint64_t_x2 traits3_zero_76(void)
 {
   return (KRML_CLITERAL(uint64_t_x2){ .fst = 0ULL, .snd = 0ULL });
 }

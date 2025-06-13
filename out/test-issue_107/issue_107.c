@@ -13,9 +13,9 @@ void issue_107_main(void)
 }
 
 /**
-This function found in impl {(issue_107::Fun for issue_107::MyStruct)}
+This function found in impl {issue_107::Fun for issue_107::MyStruct}
 */
-uint8_t issue_107_f_18(void)
+uint8_t issue_107_f_90(void)
 {
   return 5U;
 }

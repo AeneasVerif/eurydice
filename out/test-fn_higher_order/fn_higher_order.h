@@ -15,9 +15,9 @@
 extern "C" {
 #endif
 
-extern int32_t core_clone_impls___core__clone__Clone_for_i32__14__clone(int32_t *x0);
+extern int32_t core_clone_impls__core__clone__Clone_for_i32__clone(int32_t *x0);
 
-extern size_t core_clone_impls___core__clone__Clone_for_usize__5__clone(size_t *x0);
+extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(size_t *x0);
 
 #define core_cmp_Ordering_Less -1
 #define core_cmp_Ordering_Equal 0
@@ -25,8 +25,7 @@ extern size_t core_clone_impls___core__clone__Clone_for_usize__5__clone(size_t *
 
 typedef int8_t core_cmp_Ordering;
 
-extern bool
-core_cmp_impls___core__cmp__PartialEq_usize__for_usize__21__eq(size_t *x0, size_t *x1);
+extern bool core_cmp_impls__core__cmp__PartialEq_usize__for_usize__eq(size_t *x0, size_t *x1);
 
 #define core_option_None 0
 #define core_option_Some 1
@@ -46,10 +45,7 @@ typedef struct core_option_Option_77_s
 core_option_Option_77;
 
 extern core_option_Option_77
-core_cmp_impls___core__cmp__PartialOrd_usize__for_usize__58__partial_cmp(
-  size_t *x0,
-  size_t *x1
-);
+core_cmp_impls__core__cmp__PartialOrd_usize__for_usize__partial_cmp(size_t *x0, size_t *x1);
 
 /**
 A monomorphic instance of core.option.Option
@@ -64,10 +60,10 @@ typedef struct core_option_Option_08_s
 core_option_Option_08;
 
 extern core_option_Option_08
-core_iter_range___core__iter__range__Step_for_usize__43__backward_checked(size_t x0, size_t x1);
+core_iter_range__core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
 
 extern core_option_Option_08
-core_iter_range___core__iter__range__Step_for_usize__43__forward_checked(size_t x0, size_t x1);
+core_iter_range__core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
 
 /**
 A monomorphic instance of K.
@@ -82,7 +78,7 @@ typedef struct tuple_04_s
 tuple_04;
 
 extern tuple_04
-core_iter_range___core__iter__range__Step_for_usize__43__steps_between(size_t *x0, size_t *x1);
+core_iter_range__core__iter__range__Step_for_usize__steps_between(size_t *x0, size_t *x1);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
