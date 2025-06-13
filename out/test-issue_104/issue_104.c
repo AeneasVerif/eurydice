@@ -15,7 +15,7 @@ with const generics
 */
 uint8_t issue_104_sth_50(void)
 {
-  return ISSUE_104___ISSUE_104__FUN_FOR_ISSUE_104__S___VAL;
+  return ISSUE_104__ISSUE_104__FUN_FOR_ISSUE_104__S__VAL;
 }
 
 uint8_t issue_104_call(void)

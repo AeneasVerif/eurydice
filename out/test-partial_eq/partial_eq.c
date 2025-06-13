@@ -10,9 +10,9 @@
 #include "Eurydice.h"
 
 /**
-This function found in impl {(core::cmp::PartialEq<partial_eq::Enum> for partial_eq::Enum)#1}
+This function found in impl {core::cmp::PartialEq<partial_eq::Enum> for partial_eq::Enum}
 */
-inline bool partial_eq_eq_dd(partial_eq_Enum *self, partial_eq_Enum *other)
+inline bool partial_eq_eq_31(partial_eq_Enum *self, partial_eq_Enum *other)
 {
   return true;
 }
@@ -30,16 +30,16 @@ void partial_eq_main(void)
   _partial_eq_Enum__x2 uu____0 = { .fst = &expected, .snd = &expected };
   partial_eq_Enum *left_val = uu____0.fst;
   partial_eq_Enum *right_val = uu____0.snd;
-  EURYDICE_ASSERT(partial_eq_eq_dd(left_val, right_val), "panic!");
+  EURYDICE_ASSERT(partial_eq_eq_31(left_val, right_val), "panic!");
 }
 
 /**
-This function found in impl {(core::fmt::Debug for partial_eq::Enum)#2}
+This function found in impl {core::fmt::Debug for partial_eq::Enum}
 */
-inline core_result_Result_10 partial_eq_fmt_19(partial_eq_Enum *self, core_fmt_Formatter *f)
+inline core_result_Result_10 partial_eq_fmt_29(partial_eq_Enum *self, core_fmt_Formatter *f)
 {
   return
-    core_fmt__core__fmt__Formatter__a__11__write_str(f,
+    core_fmt__core__fmt__Formatter__a___write_str(f,
       (KRML_CLITERAL(Eurydice_str){ .data = "A", .len = (size_t)1U }));
 }
 

@@ -26,7 +26,7 @@ void const_generics_serialize_3b(Eurydice_slice re, uint8_t ret[8U])
       size_t,
       Eurydice_derefed_slice);
   uint8_t ret0[4U];
-  core_num__u32_8__to_be_bytes(Eurydice_slice_index(re, (size_t)0U, uint32_t, uint32_t *), ret0);
+  core_num__u32__to_be_bytes(Eurydice_slice_index(re, (size_t)0U, uint32_t, uint32_t *), ret0);
   Eurydice_slice_copy(uu____0, Eurydice_array_to_slice((size_t)4U, ret0, uint8_t), uint8_t);
   Eurydice_slice
   uu____1 =
@@ -37,7 +37,7 @@ void const_generics_serialize_3b(Eurydice_slice re, uint8_t ret[8U])
       size_t,
       Eurydice_derefed_slice);
   uint8_t ret1[4U];
-  core_num__u32_8__to_be_bytes(Eurydice_slice_index(re, (size_t)1U, uint32_t, uint32_t *), ret1);
+  core_num__u32__to_be_bytes(Eurydice_slice_index(re, (size_t)1U, uint32_t, uint32_t *), ret1);
   Eurydice_slice_copy(uu____1, Eurydice_array_to_slice((size_t)4U, ret1, uint8_t), uint8_t);
   memcpy(ret, out, (size_t)8U * sizeof (uint8_t));
 }
