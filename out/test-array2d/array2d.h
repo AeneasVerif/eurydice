@@ -25,8 +25,7 @@ typedef uint8_t core_panicking_AssertKind;
 
 void array2d_main(void);
 
-extern bool
-core_cmp_impls___core__cmp__PartialEq_u32__for_u32__24__eq(uint32_t *x0, uint32_t *x1);
+extern bool core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(uint32_t *x0, uint32_t *x1);
 
 #if defined(__cplusplus)
 }

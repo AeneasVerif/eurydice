@@ -16,14 +16,14 @@ extern "C" {
 #endif
 
 /**
-This function found in impl {(trait_generics::MyFnOnce for trait_generics::Foo<K>)}
+This function found in impl {trait_generics::MyFnOnce for trait_generics::Foo<K>}
 */
 /**
-A monomorphic instance of trait_generics.call_once_dc
+A monomorphic instance of trait_generics.call_once_a3
 with const generics
 - K= 10
 */
-uint32_t trait_generics_call_once_dc_95(void);
+uint32_t trait_generics_call_once_a3_95(void);
 
 /**
 A monomorphic instance of trait_generics.from_fn
