@@ -20,14 +20,14 @@ A monomorphic instance of core.ops.range.RangeTo
 with types size_t
 
 */
-typedef size_t core_ops_range_RangeTo_08;
+typedef size_t core_ops_range_RangeTo_d7;
 
 /**
 A monomorphic instance of core.ops.range.RangeFrom
 with types size_t
 
 */
-typedef size_t core_ops_range_RangeFrom_08;
+typedef size_t core_ops_range_RangeFrom_d7;
 
 #if defined(__cplusplus)
 }

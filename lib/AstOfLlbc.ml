@@ -1849,9 +1849,14 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
       K.with_type
         (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
         (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
-  | Global { id; _ } ->
+  | Global { id; _ } | GlobalRef ({ id; _ },_) -> begin
       let global = env.get_nth_global id in
-      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
+      let e = K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name)) in
+      match p with
+      | Global _ -> e
+      | GlobalRef _ -> K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
+      | _ -> failwith "IMPOSSIBLE"
+  end
   | rvalue ->
       failwith
         ("unsupported rvalue: `"
@@ -2495,6 +2500,12 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
   | IdGlobal id ->
       let global = env.get_nth_global id in
       let { C.item_meta; ty; def_id; _ } = global in
+      let flags =
+        [ Krml.Common.Const "" ] @
+        match global.global_kind with
+        | NamedConst | AnonConst -> [ Macro ]
+        | Static -> [ ]
+      in
       let name = item_meta.name in
       let def = env.get_nth_global def_id in
       L.log "AstOfLlbc" "Visiting global: %s\n%s" (string_of_name env name)
@@ -2511,7 +2522,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               with_locals env ty body.locals.locals (fun env ->
                   expression_of_block env ret_var.index body.body)
             in
-            Some (K.DGlobal ([ Krml.Common.Const "" ], lid_of_name env name, 0, ty, body))
+            Some (K.DGlobal (flags, lid_of_name env name, 0, ty, body))
         | None -> Some (K.DExternal (None, [], 0, 0, lid_of_name env name, ty, []))
       end
   | IdTraitDecl _ | IdTraitImpl _ -> None

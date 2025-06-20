@@ -7,7 +7,7 @@
 
 #include "nested_arrays.h"
 
-const uint32_t nested_arrays_ZERO[8U] = { 0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U };
+uint32_t nested_arrays_ZERO_local_0[8U] = { 0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U };
 
 typedef struct _uint32_t__x2_s
 {
@@ -24,7 +24,7 @@ void nested_arrays_main(void)
     uint32_t repeat_expression[3U][8U];
     for (size_t i = (size_t)0U; i < (size_t)3U; i++)
     {
-      memcpy(repeat_expression[i], nested_arrays_ZERO, (size_t)8U * sizeof (uint32_t));
+      memcpy(repeat_expression[i], NESTED_ARRAYS_ZERO, (size_t)8U * sizeof (uint32_t));
     }
     memcpy(keys[i0], repeat_expression, (size_t)3U * sizeof (uint32_t [8U]));
   }

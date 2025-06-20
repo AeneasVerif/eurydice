@@ -270,9 +270,10 @@ Supported options:|}
   (* This chunk which reuses key elements of simplify2 *)
   let files = Eurydice.Cleanup2.check_addrof#visit_files () files in
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
-  let files = Krml.Simplify.hoist#visit_files [] files in
+  let files = Eurydice.Cleanup2.hoist#visit_files [] files in
   Eurydice.Logging.log "Phase2.75" "%a" pfiles files;
-  let files = Krml.Simplify.fixup_hoist#visit_files () files in
+  let files = Eurydice.Cleanup2.fixup_hoist#visit_files () files in
+  let files = Eurydice.Cleanup2.globalise_global_locals files in
   Eurydice.Logging.log "Phase2.8" "%a" pfiles files;
   let files = Eurydice.Cleanup2.reconstruct_for_loops#visit_files () files in
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in

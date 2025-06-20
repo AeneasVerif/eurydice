@@ -7,13 +7,12 @@
 
 #include "repeat.h"
 
-const uint32_t repeat_C1[1U] = { 0U };
+uint32_t repeat_C1_local_0[1U] = { 0U };
 
-const uint32_t repeat_C2[1U][1U] = { { 0U } };
+uint32_t repeat_C2_local_0[1U][1U] = { { 0U } };
 
-const
 uint8_t
-repeat_REJECTION_SAMPLE_SHUFFLE_TABLE[256U][16U] =
+repeat_REJECTION_SAMPLE_SHUFFLE_TABLE_local_0[256U][16U] =
   {
     {
       255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U, 255U
@@ -282,7 +281,7 @@ void repeat_main(void)
 {
   if
   (
-    !(repeat_C1[0U] + repeat_C2[0U][0U] + (uint32_t)repeat_REJECTION_SAMPLE_SHUFFLE_TABLE[255U][0U]
+    !(REPEAT_C1[0U] + REPEAT_C2[0U][0U] + (uint32_t)REPEAT_REJECTION_SAMPLE_SHUFFLE_TABLE[255U][0U]
     != 0U)
   )
   {

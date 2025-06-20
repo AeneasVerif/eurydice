@@ -50,17 +50,17 @@ A monomorphic instance of core.option.Option
 with types size_t
 
 */
-typedef struct core_option_Option_08_s
+typedef struct core_option_Option_d7_s
 {
   core_option_Option_77_tags tag;
   size_t f0;
 }
-core_option_Option_08;
+core_option_Option_d7;
 
-extern core_option_Option_08
+extern core_option_Option_d7
 core_iter_range__core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
 
-extern core_option_Option_08
+extern core_option_Option_d7
 core_iter_range__core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
 
 /**
@@ -68,14 +68,14 @@ A monomorphic instance of K.
 with types size_t, core_option_Option size_t
 
 */
-typedef struct tuple_04_s
+typedef struct tuple_d2_s
 {
   size_t fst;
-  core_option_Option_08 snd;
+  core_option_Option_d7 snd;
 }
-tuple_04;
+tuple_d2;
 
-extern tuple_04
+extern tuple_d2
 core_iter_range__core__iter__range__Step_for_usize__steps_between(size_t *x0, size_t *x1);
 
 #define core_panicking_AssertKind_Eq 0
@@ -86,7 +86,9 @@ typedef uint8_t core_panicking_AssertKind;
 
 typedef uint32_t nested_arrays_Key[8U];
 
-extern const uint32_t nested_arrays_ZERO[8U];
+extern uint32_t nested_arrays_ZERO_local_0[8U];
+
+#define NESTED_ARRAYS_ZERO (nested_arrays_ZERO_local_0)
 
 void nested_arrays_main(void);
 

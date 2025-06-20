@@ -16,7 +16,7 @@ with const generics
 - K= 8
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_16_7b(uint8_t x[8U][4U], uint8_t _[4U][8U])
+uint64_t where_clauses_fncg_bar_16_c0(uint8_t x[8U][4U], uint8_t _[4U][8U])
 {
   return (uint64_t)x[0U][0U];
 }
@@ -29,11 +29,11 @@ with const generics
 - L= 8
 - M= 10
 */
-uint64_t where_clauses_fncg_f_43(void)
+uint64_t where_clauses_fncg_f_40(void)
 {
   uint8_t buf[8U][4U] = { { 0U } };
   uint8_t repeat_expression[4U][8U] = { { 0U } };
-  return where_clauses_fncg_bar_16_7b(buf, repeat_expression);
+  return where_clauses_fncg_bar_16_c0(buf, repeat_expression);
 }
 
 /**
@@ -45,7 +45,7 @@ with const generics
 - K= 12
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_16_fa(uint8_t x[12U][4U], uint8_t _[4U][12U])
+uint64_t where_clauses_fncg_bar_16_fe(uint8_t x[12U][4U], uint8_t _[4U][12U])
 {
   return (uint64_t)x[0U][0U];
 }
@@ -59,11 +59,11 @@ with types uint64_t
 with const generics
 - K= 12
 */
-uint64_t where_clauses_fncg_method_foo_db_7c(void)
+uint64_t where_clauses_fncg_method_foo_db_78(void)
 {
   uint8_t buf[12U][4U] = { { 0U } };
   uint8_t repeat_expression[4U][12U] = { { 0U } };
-  return where_clauses_fncg_bar_16_fa(buf, repeat_expression);
+  return where_clauses_fncg_bar_16_fe(buf, repeat_expression);
 }
 
 /**
@@ -74,7 +74,7 @@ with const generics
 */
 uint64_t where_clauses_fncg_g_ec(void)
 {
-  return where_clauses_fncg_method_foo_db_7c();
+  return where_clauses_fncg_method_foo_db_78();
 }
 
 typedef struct _uint64_t__x2_s
@@ -86,7 +86,7 @@ _uint64_t__x2;
 
 void where_clauses_fncg_main(void)
 {
-  uint64_t r = where_clauses_fncg_f_43();
+  uint64_t r = where_clauses_fncg_f_40();
   /* original Rust expression is not an lvalue in C */
   uint64_t lvalue0 = 0ULL;
   _uint64_t__x2 uu____0 = { .fst = &r, .snd = &lvalue0 };

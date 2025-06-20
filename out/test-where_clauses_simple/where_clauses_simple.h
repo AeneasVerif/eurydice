@@ -37,7 +37,7 @@ A monomorphic instance of where_clauses_simple.of_u16_81
 with const generics
 - K= 3
 */
-size_t where_clauses_simple_of_u16_81_e0(uint16_t x);
+size_t where_clauses_simple_of_u16_81_18(uint16_t x);
 
 /**
 This function found in impl {where_clauses_simple::Ops<K> for usize}
@@ -47,7 +47,7 @@ A monomorphic instance of where_clauses_simple.add_81
 with const generics
 - K= 3
 */
-size_t where_clauses_simple_add_81_e0(uint16_t x[3U], size_t y);
+size_t where_clauses_simple_add_81_18(uint16_t x[3U], size_t y);
 
 /**
 A monomorphic instance of where_clauses_simple.fn_k
@@ -55,7 +55,7 @@ with types size_t
 with const generics
 - K= 3
 */
-size_t where_clauses_simple_fn_k_71(void);
+size_t where_clauses_simple_fn_k_77(void);
 
 void where_clauses_simple_k_calls_k(void);
 
@@ -75,7 +75,7 @@ with types uint64_t
 with const generics
 - K= 1
 */
-uint64_t where_clauses_simple_fn_k_3a(void);
+uint64_t where_clauses_simple_fn_k_0e(void);
 
 void where_clauses_simple_k_calls_one(void);
 
@@ -87,7 +87,7 @@ A monomorphic instance of where_clauses_simple.of_u16_81
 with const generics
 - K= 1
 */
-size_t where_clauses_simple_of_u16_81_74(uint16_t x);
+size_t where_clauses_simple_of_u16_81_ad(uint16_t x);
 
 /**
 This function found in impl {where_clauses_simple::Ops<K> for usize}
@@ -97,7 +97,7 @@ A monomorphic instance of where_clauses_simple.add_81
 with const generics
 - K= 1
 */
-size_t where_clauses_simple_add_81_74(uint16_t x[1U], size_t y);
+size_t where_clauses_simple_add_81_ad(uint16_t x[1U], size_t y);
 
 /**
 A monomorphic instance of where_clauses_simple.fn_1
@@ -105,7 +105,7 @@ with types size_t
 with const generics
 
 */
-size_t where_clauses_simple_fn_1_e6(void);
+size_t where_clauses_simple_fn_1_8c(void);
 
 void where_clauses_simple_one_calls_k(void);
 
@@ -124,12 +124,12 @@ A monomorphic instance of K.
 with types uint64_t, size_t
 
 */
-typedef struct tuple_65_s
+typedef struct tuple_81_s
 {
   uint64_t fst;
   size_t snd;
 }
-tuple_65;
+tuple_81;
 
 /**
 A monomorphic instance of where_clauses_simple.double
@@ -137,19 +137,19 @@ with types uint64_t, size_t
 with const generics
 
 */
-tuple_65 where_clauses_simple_double_21(uint64_t x, size_t y);
+tuple_81 where_clauses_simple_double_b3(uint64_t x, size_t y);
 
 /**
 A monomorphic instance of K.
 with types size_t, uint64_t
 
 */
-typedef struct tuple_b6_s
+typedef struct tuple_4e_s
 {
   size_t fst;
   uint64_t snd;
 }
-tuple_b6;
+tuple_4e;
 
 /**
 A monomorphic instance of where_clauses_simple.double_k
@@ -157,7 +157,7 @@ with types size_t, uint64_t
 with const generics
 - K= 3
 */
-tuple_b6 where_clauses_simple_double_k_7b(size_t x, uint64_t y);
+tuple_4e where_clauses_simple_double_k_d1(size_t x, uint64_t y);
 
 void where_clauses_simple_main(void);
 
