@@ -9,11 +9,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1750419050,
-        "narHash": "sha256-BVtjgUbCbF+whn2f02XFf1I+R6WjLjyDD0IBwMNYNCs=",
+        "lastModified": 1750428484,
+        "narHash": "sha256-O4A8IQN8mJCfGFVXa3ULyLNPZIdEeCTV4gha334s2mU=",
         "owner": "aeneasverif",
         "repo": "charon",
-        "rev": "f0ed1e6585dc7f5fac2216936991627dbf9f0699",
+        "rev": "03f6136bea6b2b0f1d6701b0569cc49611d9de4a",
         "type": "github"
       },
       "original": {
