@@ -563,12 +563,9 @@ let build_macros (macros : Krml.Idents.LidSet.t ref) =
     inherit [_] map as super
 
     method! visit_DGlobal env flags name n t body =
-      if Krml.Helpers.is_bufcreate body then
-        super#visit_DGlobal env flags name n t body
-      else begin
-        (macros := Krml.Idents.LidSet.(union !macros (singleton name)));
-        DGlobal (flags @ [ Macro ], name, n, t, body)
-      end
+      if List.exists (fun x -> x = Krml.Common.Macro) flags then
+        macros := Krml.Idents.LidSet.(union !macros (singleton name));
+      super#visit_DGlobal env flags name n t body
   end
 
 let build_macros files =
@@ -1096,6 +1093,8 @@ let check_addrof =
                 Krml.Ast.meta = [ CommentBefore "original Rust expression is not an lvalue in C" ];
               }
             in
+            (* Recursively do for the internal expression *)
+            let e = self#visit_expr_w () e in
             ELet (b, e, with_type t (EAddrOf (with_type e.typ (EBound 0))))
   end
 
@@ -1132,3 +1131,81 @@ let inline_loops =
       else
         DFunction (cc, flags, n_cgs, n, t, name, binders, body)
   end
+
+(** A better version of hoist (than [Krml.Simplify.hoist]), also work for [DGlobal]. *)
+let hoist = let open Krml in object(self)
+  inherit [_] map as super
+
+  method hoist_top_level loc name binders expr =
+    let loc = Loc.(InTop name :: loc) in
+    (* TODO: no nested let-bindings in top-level value declarations either *)
+    let binders, expr = open_binders binders expr in
+    let expr = Krml.Simplify.hoist_stmt loc expr in
+    close_binders binders expr
+
+  method! visit_file loc file =
+    super#visit_file Loc.(File (fst file) :: loc) file
+
+  method! visit_DFunction loc cc flags n_cgs n ret name binders expr =
+    let expr = self#hoist_top_level loc name binders expr in
+    DFunction (cc, flags, n_cgs, n, ret, name, binders, expr)
+
+  method! visit_DGlobal loc flags name n ret expr =
+    let expr = self#hoist_top_level loc name [] expr in
+    DGlobal (flags, name, n, ret, expr)
+end
+
+(** Also fix for [DGlobal] as [hoist] above *)
+let fixup_hoist = object
+  inherit [_] map
+
+  method! visit_DFunction _ cc flags n_cgs n ret name binders expr =
+    DFunction (cc, flags, n_cgs, n, ret, name, binders, Krml.Simplify.fixup_return_pos expr)
+
+  method! visit_DGlobal () flags name n ret expr =
+    DGlobal (flags, name, n, ret, Krml.Simplify.fixup_return_pos expr)
+end
+
+(** For any [DGlobal], if the expression has any locals remaining
+    We should let them also be globals, so to make the overall expr valid.
+
+    I.e., we make:
+    [T VAL = let v1 : T1 = e1 in
+             let v2 : T2 = e2 in
+             ...
+             let vN : TN = eN in
+             e;]
+    become:
+    [T1 VAL_local_1 = e1;
+     T2 VAL_local_2 = e2[v1/VAL_local_1];
+     ...
+     TN VAL_local_N = eN[v1/VAL_local_1; v2/VAL_local_2; ...; vN-1/VAL_local_(N-1)];
+     T VAL = e;]
+
+     Notably, the locals should be renamed to avoid potential naming conflicts.
+*)
+let globalise_global_locals files =
+  let mapper = function
+  | DGlobal (flags, name, n_cgs, ty, expr) ->
+    let rec decompose_expr id infoAcc expr =
+      match expr.node with
+      | ELet (_, e1, e2) ->
+        let name =
+          let lst,name = name in
+          lst, name ^ "$local$" ^ string_of_int id
+        in
+        (* Replace the variable with the new globalised name. *)
+        let e2 = subst Krml.Ast.(with_type e1.typ (EQualified name)) 0 e2 in
+        decompose_expr (id + 1) ((name, e1) :: infoAcc) e2
+      | _ -> List.rev infoAcc, expr
+    in
+    let info, expr = decompose_expr 0 [] expr in
+    let make_decl (name, expr) =
+      DGlobal ([], name, n_cgs, expr.typ, expr)
+    in
+    List.map make_decl info @
+    [DGlobal (flags, name, n_cgs, ty, expr)]
+  | decl -> [decl]
+  in
+  List.map (fun (name, decls) -> (name, List.concat_map mapper decls)) files
+
