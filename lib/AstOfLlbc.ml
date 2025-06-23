@@ -846,6 +846,8 @@ let op_of_binop (op : C.binop) : Krml.Constant.op =
   | C.WrappingMul -> Mult
   | C.Shl -> BShiftL
   | C.Shr -> BShiftR
+  | C.WrappingShl -> BShiftL
+  | C.WrappingShr -> BShiftR
   | _ -> fail "unsupported operator: %s" (C.show_binop op)
 
 let op_128_of_op kind (op : K.op) : K.expr =
