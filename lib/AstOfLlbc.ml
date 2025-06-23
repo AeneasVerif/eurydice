@@ -165,13 +165,8 @@ let assert_slice (t : K.typ) =
 
 let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
   match p with
-  | PeIdent (s, _) -> s
-  | PeImpl (i, _) ->
-      (* The default format changed slightly. This reproduces the old one so as
-         not to break existing symbol names. *)
-      let i_as_str = Charon.PrintTypes.impl_elem_to_string env.format_env i in
-      "{" ^ i_as_str ^ "}"
-  | PeMonomorphized _ -> Charon.PrintTypes.path_elem_to_string env.format_env p
+  | PeIdent (s, _) -> s (* We ignore disambiguators *)
+  | _ -> Charon.PrintTypes.path_elem_to_string env.format_env p
 
 let string_of_name env ps = String.concat "::" (List.map (string_of_path_elem env) ps)
 
@@ -446,8 +441,8 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* Appears in some trait methods, so let's try to handle that. *)
       K.TBuf (typ_of_ty env t, false)
   | TTraitType _ -> failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
-  | TArrow binder ->
-      let ts, t = binder.binder_value in
+  | TFnPtr fn_sig ->
+      let ts, t = fn_sig.binder_value in
       let typs = List.map (typ_of_ty env) ts in
       let typs =
         match typs with
@@ -462,6 +457,11 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
                instead."
         | typ -> Krml.Helpers.fold_arrow typs typ
       end
+  | TFnDef bound_fn_ref -> begin
+      match Charon.Substitute.lookup_fndef_sig env.crate bound_fn_ref with
+      | None -> failwith "Missing function declaration"
+      | Some fn_sig -> pre_typ_of_ty env (TFnPtr fn_sig)
+    end
   | TError _ -> failwith "Found type error in charon's output"
 
 and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
@@ -1623,17 +1623,6 @@ let is_box_place (p : C.place) =
   | C.TAdt { id = TBuiltin TBox; _ } -> true
   | _ -> false
 
-let rec differs_in_lifetime_only (f : C.ty) (t : C.ty) =
-  match f, t with
-  | C.TRawPtr (f, fk), C.TRawPtr (t, tk) | C.TRef (_, f, fk), C.TRef (_, t, tk) ->
-      fk = tk && differs_in_lifetime_only f t
-  | C.TArrow f, C.TArrow t ->
-      let f_args, f_ret = f.binder_value in
-      let t_args, t_ret = t.binder_value in
-      List.length f_args = List.length t_args
-      && List.for_all2 differs_in_lifetime_only (f_ret :: f_args) (t_ret :: t_args)
-  | _otw -> f = t
-
 let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   match p with
   | Use op -> expression_of_operand env op
@@ -1786,9 +1775,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
         match ck with
         (* Here are `literal_type`s *)
         | C.CastScalar (f, t) -> f = t
-        | C.CastFnPtr (f, t) ->
-            (* When converted to C, the lifetime parameters are dropped. So if two types differs only in lifetime, we consider them to be equivalent. Rust should always guarantee this, but an additional check here is provided for robustness. *)
-            differs_in_lifetime_only f t
+        (* All Rust function casts reuse the same function pointer address. *)
+        | C.CastFnPtr _ -> true
         (* The following are `type`s *)
         | C.CastRawPtr (f, t) | C.CastUnsize (f, t) | C.CastTransmute (f, t) -> f = t
       in
