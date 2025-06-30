@@ -7,3 +7,4 @@ out/*/a.out
 *.orig
 *.llbc
 eurydice
+/.vscode
