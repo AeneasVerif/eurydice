@@ -23,19 +23,9 @@ extern bool core_cmp_impls__core__cmp__PartialEq_____for_____eq(void **x0, void 
 
 typedef uint8_t core_panicking_AssertKind;
 
-extern void *global_ref_C_VAL_local_0;
-
-extern void **global_ref_C_VAL_local_1;
-
 extern void ***global_ref_C_VAL_local_2;
 
 #define GLOBAL_REF_C_VAL (&global_ref_C_VAL_local_2)
-
-extern int32_t global_ref_S_VAL_local_0;
-
-extern int32_t *global_ref_S_VAL_local_1;
-
-extern int32_t **global_ref_S_VAL_local_2;
 
 extern int32_t ***const global_ref_S_VAL;
 

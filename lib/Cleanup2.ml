@@ -1200,8 +1200,25 @@ let globalise_global_locals files =
       | _ -> List.rev infoAcc, expr
     in
     let info, expr = decompose_expr 0 [] expr in
+    (* Make the new globals private if possible -- with exception that
+       if it is a non-private macro, then the involved new globals should not be private *)
+    let module NameSet = Krml.Idents.LidSet in
+    let no_priv_names =
+      if List.mem Krml.Common.Macro flags && 
+         not (List.mem Krml.Common.Private flags) then
+        object
+          inherit [_] reduce
+          method private zero = NameSet.empty
+          method private plus = NameSet.union
+          method! visit_EQualified _ name = NameSet.singleton name
+        end#visit_expr_w () expr
+      else NameSet.empty
+    in
     let make_decl (name, expr) =
-      DGlobal ([], name, n_cgs, expr.typ, expr)
+      let flags =
+        if NameSet.mem name no_priv_names then []
+        else [ Krml.Common.Private ] in
+      DGlobal (flags, name, n_cgs, expr.typ, expr)
     in
     List.map make_decl info @
     [DGlobal (flags, name, n_cgs, ty, expr)]

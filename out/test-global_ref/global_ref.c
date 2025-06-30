@@ -7,19 +7,19 @@
 
 #include "global_ref.h"
 
-void *global_ref_C_VAL_local_0 = (void *)0U;
+static void *C_VAL_local_0 = (void *)0U;
 
-void **global_ref_C_VAL_local_1 = &global_ref_C_VAL_local_0;
+static void **C_VAL_local_1 = &C_VAL_local_0;
 
-void ***global_ref_C_VAL_local_2 = &global_ref_C_VAL_local_1;
+void ***global_ref_C_VAL_local_2 = &C_VAL_local_1;
 
-int32_t global_ref_S_VAL_local_0 = (int32_t)0;
+static int32_t S_VAL_local_0 = (int32_t)0;
 
-int32_t *global_ref_S_VAL_local_1 = &global_ref_S_VAL_local_0;
+static int32_t *S_VAL_local_1 = &S_VAL_local_0;
 
-int32_t **global_ref_S_VAL_local_2 = &global_ref_S_VAL_local_1;
+static int32_t **S_VAL_local_2 = &S_VAL_local_1;
 
-int32_t ***const global_ref_S_VAL = &global_ref_S_VAL_local_2;
+int32_t ***const global_ref_S_VAL = &S_VAL_local_2;
 
 typedef struct _____x2_s
 {
