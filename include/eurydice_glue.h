@@ -93,7 +93,7 @@ typedef struct {
 // cast to something that can decay (see remark above about how pointer
 // arithmetic works in C), meaning either pointer or array type.
 #define EURYDICE_SLICE(x, start, end)                                          \
-  (KRML_CLITERAL(Eurydice_slice){(void *)(x + start), end - start})
+  (KRML_CLITERAL(Eurydice_slice){(void *)(x + start), end - (start)})
 
 // Slice length
 #define EURYDICE_SLICE_LEN(s, _) (s).len
@@ -185,7 +185,7 @@ typedef struct {
         EURYDICE_CFIELD(.snd =) KRML_CLITERAL(Eurydice_slice) {                \
       EURYDICE_CFIELD(.ptr =)                                                  \
       ((char *)slice.ptr + mid * sizeof(element_type)),                        \
-          EURYDICE_CFIELD(.len =)(slice.len - mid)                             \
+          EURYDICE_CFIELD(.len =)(slice.len - (mid))                           \
     }                                                                          \
   }
 
