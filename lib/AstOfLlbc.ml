@@ -1713,6 +1713,15 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
+    (* from FnDef to FnPtr *)
+  | UnaryOp (Cast (CastFnPtr (TFnDef _, TFnPtr _to)), e) ->
+      let dst = typ_of_ty env (TFnPtr _to) in
+      K.with_type dst (K.ECast (expression_of_operand env e, dst))
+    (* possible safe fn to unsafe fn, same in C *)
+  | UnaryOp (Cast (CastFnPtr (TFnPtr _, TFnPtr _)), e) ->
+     expression_of_operand env e
+  | UnaryOp (Cast (CastFnPtr (TAdt _, TFnPtr _)), _) ->
+     failwith "unsupported: casting from closure to function pointer"
   | UnaryOp (Cast (CastUnsize (ty_from, ty_to) as ck), e) ->
       (* DSTs: we only support going from T<[U;N]> to T<[U]>. The former is sized, the latter is
          unsized and becomes a fat pointer. We build this coercion by hand, and slightly violate C's
@@ -1788,10 +1797,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
         match ck with
         (* Here are `literal_type`s *)
         | C.CastScalar (f, t) -> f = t
-        (* All Rust function casts reuse the same function pointer address. *)
-        | C.CastFnPtr _ -> true
         (* The following are `type`s *)
-        | C.CastRawPtr (f, t) | C.CastUnsize (f, t) | C.CastTransmute (f, t) -> f = t
+        | C.CastFnPtr (f, t) | C.CastRawPtr (f, t) | C.CastUnsize (f, t) | C.CastTransmute (f, t) -> f = t
       in
       if is_ident then
         expression_of_operand env e
