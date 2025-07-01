@@ -224,6 +224,8 @@ module RustNames = struct
     parse_pattern "ArrayToSliceShared<'_, @T, @N>", Builtin.array_to_slice;
     parse_pattern "ArrayToSliceMut<'_, @T, @N>", Builtin.array_to_slice;
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], &'_ [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ mut [@T], &'_ mut [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
 
     (* iterators XXX are any of these used? *)
     parse_pattern "core::iter::traits::collect::IntoIterator<[@; @]>::into_iter", Builtin.array_into_iter;
@@ -1380,16 +1382,25 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   L.log "Calls" "%s--> type_args: %s" depth
     (String.concat ", " (List.map (Charon.PrintTypes.ty_to_string env.format_env) type_args));
 
-  (* Translate effective type and cg arguments. *)
-  let type_args = List.map (typ_of_ty env) type_args in
-  let const_generic_args = List.map (expression_of_const_generic env) const_generic_args in
-
   (* The function itself, along with information about its *signature*. *)
   let f, { ts; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_known_builtin } =
     lookup_fun env depth fn_ptr
   in
   L.log "Calls" "%s--> %d inputs: %a" depth (List.length inputs) ptyps inputs;
   L.log "Calls" "%s--> is_known_builtin?: %b" depth is_known_builtin;
+
+  (* Translate effective type and cg arguments. *)
+  let const_generic_args =
+    match f, type_args with
+    | EQualified lid, [ _; TRef (_, TAdt { id = TBuiltin TArray; generics = { types = [ _ ]; const_generics = [ cg ]; _ }}, _); _]
+      when lid = Builtin.slice_to_ref_array.name ->
+        (* Special case, we *do* need to retain the length, which would disappear if we simply did
+           typ_of_ty (owing to array decay rules). *)
+        [ expression_of_const_generic env cg ]
+    | _ ->
+        List.map (expression_of_const_generic env) const_generic_args
+  in
+  let type_args = List.map (typ_of_ty env) type_args in
 
   (* Handling trait implementations for generic trait bounds in the callee. We
      synthesize krml expressions that correspond to each one of the trait methods
@@ -1825,7 +1836,11 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
             let fields =
               match kind with
               | Struct fields -> fields
-              | _ -> failwith "not a struct"
+              | Enum _ -> failwith "TODO: Enum"
+              | Union _ -> failwith "TODO: Union"
+              | Opaque -> failwith "TODO: Opaque"
+              | Alias _ -> failwith "TODO: Alias"
+              | TDeclError _ -> failwith "TODO: TDeclError"
             in
             K.with_type t
               (K.EFlat
@@ -2256,8 +2271,12 @@ let check_if_dst (env : env) (id : C.any_decl_id) : env =
           let lid = lid_of_name env decl.item_meta.name in
           match decl.kind with
           | Struct fields ->
-              let field_name = (Krml.KList.last fields).C.field_name in
-              { env with dsts = LidMap.add lid (Option.get field_name) env.dsts }
+              if fields = [] then begin
+                Krml.KPrint.beprintf "Unsupported: DST %s has no fields\n" name;
+                env
+              end else
+                let field_name = (Krml.KList.last fields).C.field_name in
+                { env with dsts = LidMap.add lid (Option.get field_name) env.dsts }
           | _ ->
               Krml.KPrint.beprintf "Unsupported: DST %s has no field name\n" name;
               env
@@ -2552,24 +2571,41 @@ let known_failures =
       "core::convert::{core::convert::TryInto<@T, @U>}::try_into";
     ]
 
+let replacements = List.map (fun (p, d) -> Charon.NameMatcher.parse_pattern p, d) [
+  "core::result::{core::result::Result<@T, @E>}::unwrap", Builtin.unwrap;
+  (* FIXME: remove the line below once libcrux passes --include 'core::num::*::BITS'
+     --include 'core::num::*::MAX' to charon, AND does a single invocation of charon (instead of
+     three currently) *)
+  "core::num::{u32}::BITS", (fun lid -> Krml.Ast.DGlobal ([], lid, 0, Krml.Helpers.uint32, Krml.Helpers.mk_uint32 32));
+]
+
 (* Catch-all error handler (last resort) *)
 let decl_of_id env decl =
-  try decl_of_id env decl
-  with e ->
-    let matches p =
-      Charon.NameMatcher.match_name env.name_ctx RustNames.config p (name_of_id env decl)
-    in
-    if not (List.exists matches known_failures) then begin
-      Printf.eprintf "ERROR translating %s: %s\n%s"
-        (string_of_pattern (pattern_of_name env (name_of_id env decl)))
-        (Printexc.to_string e) (Printexc.get_backtrace ());
-      if not !Options.keep_going then
-        exit 255
-      else
-        None
-    end
-    else
-      None
+  match List.find_map (fun (p, d) ->
+    match Charon.NameMatcher.match_name env.name_ctx RustNames.config p (name_of_id env decl) with
+    | true -> Some d
+    | false -> None
+    | exception _ -> None
+  ) replacements
+  with
+  | Some d -> Some (d (lid_of_name env (name_of_id env decl)))
+  | None -> 
+      try decl_of_id env decl
+      with e ->
+        let matches p =
+          Charon.NameMatcher.match_name env.name_ctx RustNames.config p (name_of_id env decl)
+        in
+        if not (List.exists matches known_failures) then begin
+          Printf.eprintf "ERROR translating %s: %s\n%s"
+            (string_of_pattern (pattern_of_name env (name_of_id env decl)))
+            (Printexc.to_string e) (Printexc.get_backtrace ());
+          if not !Options.keep_going then
+            exit 255
+          else
+            None
+        end
+        else
+          None
 
 let flatten_declarations (d : C.declaration_group list) : C.any_decl_id list =
   List.flatten (List.map declaration_group_to_list d)
@@ -2593,6 +2629,7 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   } =
     crate
   in
+  (* FIXME once libcrux passes --preset=eurydice to charon *)
   if options.remove_associated_types <> [ "*" ] then begin
     Printf.eprintf "ERROR: Eurydice expects Charon to be invoked with `--preset=eurydice`\n";
     exit 255

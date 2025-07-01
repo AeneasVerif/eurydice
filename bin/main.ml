@@ -94,12 +94,12 @@ Supported options:|}
       [
         [ "Eurydice" ], "slice_index";
         [ "Eurydice" ], "slice_subslice";
-        [ "Eurydice" ], "slice_subslice2";
+        [ "Eurydice" ], "slice_subslice3";
         [ "Eurydice" ], "slice_subslice_to";
         [ "Eurydice" ], "slice_subslice_from";
         [ "Eurydice" ], "array_to_slice";
         [ "Eurydice" ], "array_to_subslice";
-        [ "Eurydice" ], "array_to_subslice2";
+        [ "Eurydice" ], "array_to_subslice3";
         [ "Eurydice" ], "array_to_subslice_to";
         [ "Eurydice" ], "array_to_subslice_from";
         [ "Eurydice" ], "array_repeat";
@@ -157,11 +157,10 @@ Supported options:|}
           (List.map
              (fun filename ->
                let llbc = Eurydice.LoadLlbc.load_file filename in
-               Eurydice.Builtin.adjust (Eurydice.AstOfLlbc.file_of_crate llbc))
+               Eurydice.AstOfLlbc.file_of_crate llbc)
              !files);
       ]
   in
-  Eurydice.Builtin.check ();
 
   Printf.printf "1️⃣ LLBC ➡️  AST\n";
   let files = Eurydice.PreCleanup.precleanup files in
@@ -242,7 +241,8 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
   Eurydice.Logging.log "Phase2.26" "%a" pfiles files;
   let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
-  let _, files = Krml.DataTypes.everything files in
+  let (map, _, _), files = Krml.DataTypes.everything files in
+  Eurydice.Cleanup2.fixup_monomorphization_map map;
   Eurydice.Logging.log "Phase2.3" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_ite#visit_files () files in
   Eurydice.Logging.log "Phase2.4" "%a" pfiles files;
