@@ -523,6 +523,7 @@ let builtin_funcs =
     slice_subslice_to;
     slice_subslice_from;
     slice_to_array;
+    slice_to_ref_array;
     slice_to_array2;
     range_iterator_step_by;
     range_step_by_iterator_next;
