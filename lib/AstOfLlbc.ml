@@ -977,6 +977,8 @@ let blocklisted_trait_decls =
     "core::cmp::PartialEq";
     (* These don't have methods *)
     "core::marker::Sized";
+    "core::marker::MetaSized";
+    "core::marker::PointeeSized";
     "core::marker::Send";
     "core::marker::Sync";
     "core::marker::Tuple";
