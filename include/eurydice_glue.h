@@ -298,6 +298,14 @@ static inline uint32_t core_num__u8__count_ones(uint8_t x0) {
 #endif
 }
 
+static inline uint32_t core_num__u32__count_ones(uint32_t x0) {
+#ifdef _MSC_VER
+  return __popcnt(x0);
+#else
+  return __builtin_popcount(x0);
+#endif
+}
+
 static inline uint32_t core_num__i32__count_ones(int32_t x0) {
 #ifdef _MSC_VER
   return __popcnt(x0);

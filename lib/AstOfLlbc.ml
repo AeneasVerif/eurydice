@@ -2572,7 +2572,11 @@ let known_failures =
     ]
 
 let replacements = List.map (fun (p, d) -> Charon.NameMatcher.parse_pattern p, d) [
-  "core::result::{core::result::Result<@T, @E>}::unwrap", Builtin.unwrap
+  "core::result::{core::result::Result<@T, @E>}::unwrap", Builtin.unwrap;
+  (* FIXME: remove the line below once libcrux passes --include 'core::num::*::BITS'
+     --include 'core::num::*::MAX' to charon, AND does a single invocation of charon (instead of
+     three currently) *)
+  "core::num::{u32}::BITS", (fun lid -> Krml.Ast.DGlobal ([], lid, 0, Krml.Helpers.uint32, Krml.Helpers.mk_uint32 32));
 ]
 
 (* Catch-all error handler (last resort) *)
@@ -2625,7 +2629,7 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   } =
     crate
   in
-  (* FIXME once libcrux moves to the proper option *)
+  (* FIXME once libcrux passes --preset=eurydice to charon *)
   if options.remove_associated_types <> [ "*" ] then begin
     Printf.eprintf "ERROR: Eurydice expects Charon to be invoked with `--preset=eurydice`\n";
     exit 255
