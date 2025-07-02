@@ -1720,8 +1720,6 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
     (* possible safe fn to unsafe fn, same in C *)
   | UnaryOp (Cast (CastFnPtr (TFnPtr _, TFnPtr _)), e) ->
      expression_of_operand env e
-  | UnaryOp (Cast (CastFnPtr (TAdt _, TFnPtr _)), _) ->
-     failwith "unsupported: casting from closure to function pointer"
   | UnaryOp (Cast (CastUnsize (ty_from, ty_to) as ck), e) ->
       (* DSTs: we only support going from T<[U;N]> to T<[U]>. The former is sized, the latter is
          unsized and becomes a fat pointer. We build this coercion by hand, and slightly violate C's
