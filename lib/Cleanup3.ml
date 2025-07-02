@@ -171,4 +171,3 @@ let also_skip_prefix_for_external_types (scope_env, _) =
         if actual <> fst target then
           KPrint.bprintf "Warning! The skip_prefix options generate name conflicts\n"
   end
-

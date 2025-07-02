@@ -151,10 +151,10 @@ typedef struct {
 #define Eurydice_slice_copy(dst, src, t)                                       \
   memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 
-#define core_array___Array_T__N___as_slice(len_, ptr_, t, _ret_t)           \
+#define core_array___Array_T__N___as_slice(len_, ptr_, t, _ret_t)              \
   KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
 
-#define core_array__core__clone__Clone_for__Array_T__N___clone(           \
+#define core_array__core__clone__Clone_for__Array_T__N___clone(                \
     len, src, dst, elem_type, _ret_t)                                          \
   (memcpy(dst, src, len * sizeof(elem_type)))
 #define TryFromSliceError uint8_t
@@ -163,10 +163,10 @@ typedef struct {
 #define Eurydice_array_eq(sz, a1, a2, t, _)                                    \
   (memcmp(a1, a2, sz * sizeof(t)) == 0)
 #define core_array_equality__core__cmp__PartialEq__Array_U__N___for__Array_T__N___eq( \
-    sz, a1, a2, t, _, _ret_t)                                                           \
+    sz, a1, a2, t, _, _ret_t)                                                         \
   Eurydice_array_eq(sz, a1, a2, t, _)
 #define core_array_equality__core__cmp__PartialEq__0___Slice_U____for__Array_T__N___eq( \
-    sz, a1, a2, t, _, _ret_t)                                                               \
+    sz, a1, a2, t, _, _ret_t)                                                           \
   Eurydice_array_eq(sz, a1, ((a2)->ptr), t, _)
 
 #define Eurydice_slice_split_at(slice, mid, element_type, ret_t)               \
@@ -197,9 +197,9 @@ typedef struct {
                            sizeof(t_arr))
 
 #define Eurydice_slice_to_ref_array(len_, src, t_ptr, t_arr, t_err, t_res)     \
-  (src.len >= len_ ?                                                           \
-    ((t_res){ .tag = core_result_Ok, .val = { .case_Ok = src.ptr }}) :         \
-    ((t_res){ .tag = core_result_Err, .val = { .case_Err = 0 }}))
+  (src.len >= len_                                                             \
+       ? ((t_res){.tag = core_result_Ok, .val = {.case_Ok = src.ptr}})         \
+       : ((t_res){.tag = core_result_Err, .val = {.case_Err = 0}}))
 
 static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
                                             Eurydice_slice src, size_t sz) {
@@ -314,8 +314,8 @@ static inline uint32_t core_num__i32__count_ones(int32_t x0) {
 #endif
 }
 
-static inline size_t
-core_cmp_impls__core__cmp__Ord_for_usize__min(size_t a, size_t b) {
+static inline size_t core_cmp_impls__core__cmp__Ord_for_usize__min(size_t a,
+                                                                   size_t b) {
   if (a <= b)
     return a;
   else
@@ -333,8 +333,7 @@ static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1) {
   return (x0 << x1 | x0 >> (64 - x1));
 }
 
-static inline void core_ops_arith__i32__add_assign(int32_t *x0,
-                                                   int32_t *x1) {
+static inline void core_ops_arith__i32__add_assign(int32_t *x0, int32_t *x1) {
   *x0 = *x0 + *x1;
 }
 
@@ -349,8 +348,8 @@ static inline uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
 }
 
 static inline uint8_t
-core_ops_bit__core__ops__bit__BitAnd_u8__u8__for___a__u8___bitand(
-    uint8_t *x0, uint8_t x1) {
+core_ops_bit__core__ops__bit__BitAnd_u8__u8__for___a__u8___bitand(uint8_t *x0,
+                                                                  uint8_t x1) {
   return Eurydice_bitand_pv_u8(x0, x1);
 }
 
@@ -439,8 +438,7 @@ typedef struct {
 #define core_slice___Slice_T___iter(x, t, _ret_t)                              \
   ((Eurydice_slice_iterator){.s = x, .index = 0})
 #define core_slice_iter_Iter Eurydice_slice_iterator
-#define core_slice_iter__core__slice__iter__Iter__a__T__next(iter, t,     \
-                                                                  ret_t)       \
+#define core_slice_iter__core__slice__iter__Iter__a__T__next(iter, t, ret_t)   \
   (((iter)->index == (iter)->s.len)                                            \
        ? (KRML_CLITERAL(ret_t){.tag = core_option_None})                       \
        : (KRML_CLITERAL(ret_t){                                                \
@@ -465,8 +463,7 @@ typedef const char *Prims_string;
 typedef void *core_fmt_Formatter;
 typedef void *core_fmt_Arguments;
 typedef void *core_fmt_rt_Argument;
-#define core_fmt_rt__core__fmt__rt__Argument__a___new_display(x1, x2, x3,    \
-                                                                x4)            \
+#define core_fmt_rt__core__fmt__rt__Argument__a___new_display(x1, x2, x3, x4)  \
   NULL
 
 // BOXES
@@ -485,11 +482,11 @@ static inline char *malloc_and_init(size_t sz, char *init) {
 #define Eurydice_box_new_array(len, ptr, t, t_dst)                             \
   ((t_dst)(malloc_and_init(len * sizeof(t), (char *)(ptr))))
 
-// FIXME this needs to handle allocation failure errors, but this seems hard to do without
-// evaluating malloc_and_init twice...
+// FIXME this needs to handle allocation failure errors, but this seems hard to
+// do without evaluating malloc_and_init twice...
 #define alloc_boxed__alloc__boxed__Box_T___try_new(init, t, t_ret)             \
-  ((t_ret){ .tag = core_result_Ok, .f0 = (t*) malloc_and_init(sizeof(t), (char*)(&init)) })
-
+  ((t_ret){.tag = core_result_Ok,                                              \
+           .f0 = (t *)malloc_and_init(sizeof(t), (char *)(&init))})
 
 // VECTORS
 
@@ -499,8 +496,8 @@ static inline char *malloc_and_init(size_t sz, char *init) {
  * `len`, which here tends to refer to a number of elements, and instead use a
  * size.) */
 typedef struct {
-  void *ptr;
-  size_t sz;        /* the number of elements */
+  char *ptr;
+  size_t sz;       /* current size, in bytes */
   size_t capacity; /* the size of the allocation, in number of BYTES */
 } Eurydice_vec_s, *Eurydice_vec;
 
@@ -550,4 +547,3 @@ typedef Eurydice_vec alloc_vec_Vec;
     *ptr = new_v;                                                              \
     old_v;                                                                     \
   })
-

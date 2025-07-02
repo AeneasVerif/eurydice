@@ -1392,13 +1392,21 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   (* Translate effective type and cg arguments. *)
   let const_generic_args =
     match f, type_args with
-    | EQualified lid, [ _; TRef (_, TAdt { id = TBuiltin TArray; generics = { types = [ _ ]; const_generics = [ cg ]; _ }}, _); _]
+    | ( EQualified lid,
+        [
+          _;
+          TRef
+            ( _,
+              TAdt
+                { id = TBuiltin TArray; generics = { types = [ _ ]; const_generics = [ cg ]; _ } },
+              _ );
+          _;
+        ] )
       when lid = Builtin.slice_to_ref_array.name ->
         (* Special case, we *do* need to retain the length, which would disappear if we simply did
            typ_of_ty (owing to array decay rules). *)
         [ expression_of_const_generic env cg ]
-    | _ ->
-        List.map (expression_of_const_generic env) const_generic_args
+    | _ -> List.map (expression_of_const_generic env) const_generic_args
   in
   let type_args = List.map (typ_of_ty env) type_args in
 
@@ -2274,7 +2282,8 @@ let check_if_dst (env : env) (id : C.any_decl_id) : env =
               if fields = [] then begin
                 Krml.KPrint.beprintf "Unsupported: DST %s has no fields\n" name;
                 env
-              end else
+              end
+              else
                 let field_name = (Krml.KList.last fields).C.field_name in
                 { env with dsts = LidMap.add lid (Option.get field_name) env.dsts }
           | _ ->
@@ -2571,25 +2580,33 @@ let known_failures =
       "core::convert::{core::convert::TryInto<@T, @U>}::try_into";
     ]
 
-let replacements = List.map (fun (p, d) -> Charon.NameMatcher.parse_pattern p, d) [
-  "core::result::{core::result::Result<@T, @E>}::unwrap", Builtin.unwrap;
-  (* FIXME: remove the line below once libcrux passes --include 'core::num::*::BITS'
+let replacements =
+  List.map
+    (fun (p, d) -> Charon.NameMatcher.parse_pattern p, d)
+    [
+      "core::result::{core::result::Result<@T, @E>}::unwrap", Builtin.unwrap;
+      (* FIXME: remove the line below once libcrux passes --include 'core::num::*::BITS'
      --include 'core::num::*::MAX' to charon, AND does a single invocation of charon (instead of
      three currently) *)
-  "core::num::{u32}::BITS", (fun lid -> Krml.Ast.DGlobal ([], lid, 0, Krml.Helpers.uint32, Krml.Helpers.mk_uint32 32));
-]
+      ( "core::num::{u32}::BITS",
+        fun lid -> Krml.Ast.DGlobal ([], lid, 0, Krml.Helpers.uint32, Krml.Helpers.mk_uint32 32) );
+    ]
 
 (* Catch-all error handler (last resort) *)
 let decl_of_id env decl =
-  match List.find_map (fun (p, d) ->
-    match Charon.NameMatcher.match_name env.name_ctx RustNames.config p (name_of_id env decl) with
-    | true -> Some d
-    | false -> None
-    | exception _ -> None
-  ) replacements
+  match
+    List.find_map
+      (fun (p, d) ->
+        match
+          Charon.NameMatcher.match_name env.name_ctx RustNames.config p (name_of_id env decl)
+        with
+        | true -> Some d
+        | false -> None
+        | exception _ -> None)
+      replacements
   with
   | Some d -> Some (d (lid_of_name env (name_of_id env decl)))
-  | None -> 
+  | None -> (
       try decl_of_id env decl
       with e ->
         let matches p =
@@ -2605,7 +2622,7 @@ let decl_of_id env decl =
             None
         end
         else
-          None
+          None)
 
 let flatten_declarations (d : C.declaration_group list) : C.any_decl_id list =
   List.flatten (List.map declaration_group_to_list d)
