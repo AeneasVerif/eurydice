@@ -1226,3 +1226,19 @@ let globalise_global_locals files =
   in
   List.map (fun (name, decls) -> (name, List.concat_map mapper decls)) files
 
+let fixup_monomorphization_map map =
+  let replace = object(self)
+    inherit [_] Krml.Ast.map
+    method! visit_TQualified () lid =
+      match Hashtbl.find_opt map lid with
+      | Some (Krml.DataTypes.Eliminate t) ->
+          self#visit_typ () t
+      | _ ->
+          TQualified lid
+  end in
+  Seq.iter (fun ((lid, ts, cgs), v) ->
+    let ts = List.map (replace#visit_typ ()) ts in
+    Hashtbl.add Krml.MonomorphizationState.state (lid, ts, cgs) v
+  ) (Hashtbl.to_seq Krml.MonomorphizationState.state)
+
+

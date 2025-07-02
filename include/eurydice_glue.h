@@ -93,7 +93,7 @@ typedef struct {
 // cast to something that can decay (see remark above about how pointer
 // arithmetic works in C), meaning either pointer or array type.
 #define EURYDICE_SLICE(x, start, end)                                          \
-  (KRML_CLITERAL(Eurydice_slice){(void *)(x + start), end - start})
+  (KRML_CLITERAL(Eurydice_slice){(void *)(x + start), end - (start)})
 
 // Slice length
 #define EURYDICE_SLICE_LEN(s, _) (s).len
@@ -116,6 +116,11 @@ typedef struct {
 #define Eurydice_slice_subslice2(s, start, end, t)                             \
   EURYDICE_SLICE((t *)s.ptr, (start), (end))
 
+// Previous version above does not work when t is an array type (as usual). Will
+// be deprecated soon.
+#define Eurydice_slice_subslice3(s, start, end, t_ptr)                         \
+  EURYDICE_SLICE((t_ptr)s.ptr, start, end)
+
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _0, _1)             \
   EURYDICE_SLICE((t *)s.ptr, 0, subslice_end_pos)
 
@@ -129,8 +134,8 @@ typedef struct {
   EURYDICE_SLICE((t *)x, r.start, r.end)
 
 // Same as above, variant for when start and end are statically known
-#define Eurydice_array_to_subslice2(x, start, end, t)                          \
-  EURYDICE_SLICE((t *)x, (start), (end))
+#define Eurydice_array_to_subslice3(x, start, end, t_ptr)                      \
+  EURYDICE_SLICE((t_ptr)x, start, end)
 
 #define Eurydice_array_repeat(dst, len, init, t)                               \
   ERROR "should've been desugared"
@@ -180,7 +185,7 @@ typedef struct {
         EURYDICE_CFIELD(.snd =) KRML_CLITERAL(Eurydice_slice) {                \
       EURYDICE_CFIELD(.ptr =)                                                  \
       ((char *)slice.ptr + mid * sizeof(element_type)),                        \
-          EURYDICE_CFIELD(.len =)(slice.len - mid)                             \
+          EURYDICE_CFIELD(.len =)(slice.len - (mid))                           \
     }                                                                          \
   }
 
@@ -190,6 +195,11 @@ typedef struct {
 #define Eurydice_slice_to_array2(dst, src, _0, t_arr, _1)                      \
   Eurydice_slice_to_array3(&(dst)->tag, (char *)&(dst)->val.case_Ok, src,      \
                            sizeof(t_arr))
+
+#define Eurydice_slice_to_ref_array(len_, src, t_ptr, t_arr, t_err, t_res)     \
+  (src.len >= len_ ?                                                           \
+    ((t_res){ .tag = core_result_Ok, .val = { .case_Ok = src.ptr }}) :         \
+    ((t_res){ .tag = core_result_Err, .val = { .case_Err = 0 }}))
 
 static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
                                             Eurydice_slice src, size_t sz) {
@@ -281,6 +291,14 @@ core_convert_num__core__convert__From_u16__for_usize__from(uint16_t x) {
 }
 
 static inline uint32_t core_num__u8__count_ones(uint8_t x0) {
+#ifdef _MSC_VER
+  return __popcnt(x0);
+#else
+  return __builtin_popcount(x0);
+#endif
+}
+
+static inline uint32_t core_num__u32__count_ones(uint32_t x0) {
 #ifdef _MSC_VER
   return __popcnt(x0);
 #else
@@ -432,9 +450,15 @@ typedef struct {
 #define core_option__core__option__Option_T__TraitClause_0___is_some(X, _0,    \
                                                                      _1)       \
   ((X)->tag == 1)
+
 // STRINGS
 
 typedef const char *Prims_string;
+
+// UNSAFE CODE
+
+#define core_slice___Slice_T___as_mut_ptr(x, t, _) (x.ptr)
+#define core_mem_size_of(t, _) (sizeof(t))
 
 // MISC (UNTESTED)
 
@@ -450,7 +474,8 @@ typedef void *core_fmt_rt_Argument;
 // Crimes.
 static inline char *malloc_and_init(size_t sz, char *init) {
   char *ptr = (char *)malloc(sz);
-  memcpy(ptr, init, sz);
+  if (ptr != NULL)
+    memcpy(ptr, init, sz);
   return ptr;
 }
 
@@ -460,16 +485,28 @@ static inline char *malloc_and_init(size_t sz, char *init) {
 #define Eurydice_box_new_array(len, ptr, t, t_dst)                             \
   ((t_dst)(malloc_and_init(len * sizeof(t), (char *)(ptr))))
 
-// VECTORS (ANCIENT, POSSIBLY UNTESTED)
+// FIXME this needs to handle allocation failure errors, but this seems hard to do without
+// evaluating malloc_and_init twice...
+#define alloc_boxed__alloc__boxed__Box_T___try_new(init, t, t_ret)             \
+  ((t_ret){ .tag = core_result_Ok, .f0 = (t*) malloc_and_init(sizeof(t), (char*)(&init)) })
 
-/* For now these are passed by value -- three words. We could conceivably change
- * the representation to heap-allocate this struct and only pass around the
- * pointer (one word). */
+
+// VECTORS
+
+/* This is heap-allocated. We copy the layout of
+ * https://doc.rust-lang.org/std/vec/struct.Vec.html and keep the size and
+ * capacity. (For consistency with other definitions in this file, we do not use
+ * `len`, which here tends to refer to a number of elements, and instead use a
+ * size.) */
 typedef struct {
   void *ptr;
-  size_t len;        /* the number of elements */
-  size_t alloc_size; /* the size of the allocation, in number of BYTES */
+  size_t sz;        /* the number of elements */
+  size_t capacity; /* the size of the allocation, in number of BYTES */
 } Eurydice_vec_s, *Eurydice_vec;
+
+typedef Eurydice_vec alloc_vec_Vec;
+
+// VECTORS (ANCIENT, POSSIBLY UNTESTED)
 
 /* Here, we set everything to zero rather than use a non-standard GCC
  * statement-expression -- this suitably initializes ptr to NULL and len and
