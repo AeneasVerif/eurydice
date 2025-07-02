@@ -1854,14 +1854,13 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
       K.with_type
         (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
         (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
-  | Global { id; _ } | GlobalRef ({ id; _ },_) -> begin
+  | Global { id; _ } ->
+    let global = env.get_nth_global id in
+    K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
+  | GlobalRef ({ id; _ },_) ->
       let global = env.get_nth_global id in
       let e = K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name)) in
-      match p with
-      | Global _ -> e
-      | GlobalRef _ -> K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
-      | _ -> failwith "IMPOSSIBLE"
-  end
+      K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
   | rvalue ->
       failwith
         ("unsupported rvalue: `"

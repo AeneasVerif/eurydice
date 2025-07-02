@@ -563,7 +563,7 @@ let build_macros (macros : Krml.Idents.LidSet.t ref) =
     inherit [_] map as super
 
     method! visit_DGlobal env flags name n t body =
-      if List.exists (fun x -> x = Krml.Common.Macro) flags then
+      if List.mem Krml.Common.Macro flags then
         macros := Krml.Idents.LidSet.(union !macros (singleton name));
       super#visit_DGlobal env flags name n t body
   end
@@ -1184,10 +1184,10 @@ end
 
      Notably, the locals should be renamed to avoid potential naming conflicts.
 *)
-let globalise_global_locals files =
+let globalize_global_locals files =
   let mapper = function
   | DGlobal (flags, name, n_cgs, ty, expr) ->
-    let rec decompose_expr id infoAcc expr =
+    let rec decompose_expr id info_acc expr =
       match expr.node with
       | ELet (_, e1, e2) ->
         let name =
@@ -1196,8 +1196,8 @@ let globalise_global_locals files =
         in
         (* Replace the variable with the new globalised name. *)
         let e2 = subst Krml.Ast.(with_type e1.typ (EQualified name)) 0 e2 in
-        decompose_expr (id + 1) ((name, e1) :: infoAcc) e2
-      | _ -> List.rev infoAcc, expr
+        decompose_expr (id + 1) ((name, e1) :: info_acc) e2
+      | _ -> List.rev info_acc, expr
     in
     let info, expr = decompose_expr 0 [] expr in
     (* Make the new globals private if possible -- with exception that
