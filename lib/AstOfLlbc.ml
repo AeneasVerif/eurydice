@@ -1810,13 +1810,14 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
   | Discriminant _ -> failwith "expression_of_rvalue Discriminant"
   | Aggregate (AggregatedAdt ({ id = TTuple; _ }, _, None), ops) ->
-      let ops = List.map (expression_of_operand env) ops in
-      let ts = List.map (fun x -> x.K.typ) ops in
-      if ops = [] then
-        K.with_type TUnit K.EUnit
-      else begin
-        assert (List.length ops > 1);
-        K.with_type (TTuple ts) (K.ETuple ops)
+      begin
+        match ops with
+        | [] -> K.with_type TUnit K.EUnit
+        | [op] -> expression_of_operand env op
+        | _ ->
+           let ops = List.map (expression_of_operand env) ops in
+           let ts = List.map (fun x -> x.K.typ) ops in
+           K.with_type (TTuple ts) (K.ETuple ops)
       end
   | Aggregate
       ( AggregatedAdt
