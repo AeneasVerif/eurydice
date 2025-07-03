@@ -1721,13 +1721,13 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
-    (* from FnDef to FnPtr *)
   | UnaryOp (Cast (CastFnPtr (TFnDef _, TFnPtr _to)), e) ->
+      (* From FnDef to FnPtr *)
       let dst = typ_of_ty env (TFnPtr _to) in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
-    (* possible safe fn to unsafe fn, same in C *)
   | UnaryOp (Cast (CastFnPtr (TFnPtr _, TFnPtr _)), e) ->
-     expression_of_operand env e
+      (* possible safe fn to unsafe fn, same in C *)
+      expression_of_operand env e
   | UnaryOp (Cast (CastUnsize (ty_from, ty_to) as ck), e) ->
       (* DSTs: we only support going from T<[U;N]> to T<[U]>. The former is sized, the latter is
          unsized and becomes a fat pointer. We build this coercion by hand, and slightly violate C's
