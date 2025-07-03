@@ -52,17 +52,17 @@ A monomorphic instance of core.option.Option
 with types size_t
 
 */
-typedef struct core_option_Option_d7_s
+typedef struct core_option_Option_08_s
 {
   core_option_Option_77_tags tag;
   size_t f0;
 }
-core_option_Option_d7;
+core_option_Option_08;
 
-extern core_option_Option_d7
+extern core_option_Option_08
 core_iter_range__core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
 
-extern core_option_Option_d7
+extern core_option_Option_08
 core_iter_range__core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
 
 /**
@@ -70,14 +70,14 @@ A monomorphic instance of K.
 with types size_t, core_option_Option size_t
 
 */
-typedef struct tuple_d2_s
+typedef struct tuple_04_s
 {
   size_t fst;
-  core_option_Option_d7 snd;
+  core_option_Option_08 snd;
 }
-tuple_d2;
+tuple_04;
 
-extern tuple_d2
+extern tuple_04
 core_iter_range__core__iter__range__Step_for_usize__steps_between(size_t *x0, size_t *x1);
 
 #define core_panicking_AssertKind_Eq 0
@@ -97,7 +97,7 @@ with const generics
 - N= 5
 */
 size_t
-fn_higher_order_compose_cg_apply_73(
+fn_higher_order_compose_cg_apply_fd(
   size_t (*f)(size_t *x0),
   size_t (*g)(size_t x0),
   size_t *arg
@@ -108,14 +108,14 @@ A monomorphic instance of fn_higher_order.sum_lst
 with const generics
 - N= 5
 */
-size_t fn_higher_order_sum_lst_62(size_t *lst);
+size_t fn_higher_order_sum_lst_c9(size_t *lst);
 
 /**
 A monomorphic instance of fn_higher_order.id
 with types size_t
 
 */
-size_t fn_higher_order_id_da(size_t r);
+size_t fn_higher_order_id_37(size_t r);
 
 /**
 A monomorphic instance of fn_higher_order.compose_cg_apply
@@ -124,7 +124,7 @@ with const generics
 - N= 3
 */
 int32_t
-fn_higher_order_compose_cg_apply_ce(
+fn_higher_order_compose_cg_apply_82(
   int32_t (*f)(int32_t *x0),
   int32_t (*g)(int32_t x0),
   int32_t *arg

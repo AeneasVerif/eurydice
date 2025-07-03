@@ -31,7 +31,7 @@ with const generics
 - N= 5
 */
 size_t
-fn_higher_order_compose_cg_apply_73(
+fn_higher_order_compose_cg_apply_fd(
   size_t (*f)(size_t *x0),
   size_t (*g)(size_t x0),
   size_t *arg
@@ -46,7 +46,7 @@ A monomorphic instance of fn_higher_order.sum_lst
 with const generics
 - N= 5
 */
-size_t fn_higher_order_sum_lst_62(size_t *lst)
+size_t fn_higher_order_sum_lst_c9(size_t *lst)
 {
   size_t sum = (size_t)0U;
   KRML_MAYBE_FOR5(i,
@@ -63,7 +63,7 @@ A monomorphic instance of fn_higher_order.id
 with types size_t
 
 */
-size_t fn_higher_order_id_da(size_t r)
+size_t fn_higher_order_id_37(size_t r)
 {
   return r;
 }
@@ -75,7 +75,7 @@ with const generics
 - N= 3
 */
 int32_t
-fn_higher_order_compose_cg_apply_ce(
+fn_higher_order_compose_cg_apply_82(
   int32_t (*f)(int32_t *x0),
   int32_t (*g)(int32_t x0),
   int32_t *arg
@@ -114,13 +114,13 @@ void fn_higher_order_use_compose_cg(void)
   size_t buf0[5U] = { (size_t)1U, (size_t)2U, (size_t)3U, (size_t)4U, (size_t)5U };
   size_t
   x =
-    fn_higher_order_compose_cg_apply_73(fn_higher_order_sum_lst_62,
-      fn_higher_order_id_da,
+    fn_higher_order_compose_cg_apply_fd(fn_higher_order_sum_lst_c9,
+      fn_higher_order_id_37,
       buf0);
   int32_t buf[3U] = { (int32_t)10, (int32_t)11, (int32_t)12 };
   int32_t
   y =
-    fn_higher_order_compose_cg_apply_ce(fn_higher_order_more_sum_lst,
+    fn_higher_order_compose_cg_apply_82(fn_higher_order_more_sum_lst,
       fn_higher_order_id_a8,
       buf);
   /* original Rust expression is not an lvalue in C */

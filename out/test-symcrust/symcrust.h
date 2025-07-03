@@ -68,17 +68,17 @@ A monomorphic instance of core.option.Option
 with types size_t
 
 */
-typedef struct core_option_Option_d7_s
+typedef struct core_option_Option_08_s
 {
   core_option_Option_77_tags tag;
   size_t f0;
 }
-core_option_Option_d7;
+core_option_Option_08;
 
-extern core_option_Option_d7
+extern core_option_Option_08
 core_iter_range__core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
 
-extern core_option_Option_d7
+extern core_option_Option_08
 core_iter_range__core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
 
 /**
@@ -86,14 +86,14 @@ A monomorphic instance of K.
 with types size_t, core_option_Option size_t
 
 */
-typedef struct tuple_d2_s
+typedef struct tuple_04_s
 {
   size_t fst;
-  core_option_Option_d7 snd;
+  core_option_Option_08 snd;
 }
-tuple_d2;
+tuple_04;
 
-extern tuple_d2
+extern tuple_04
 core_iter_range__core__iter__range__Step_for_usize__steps_between(size_t *x0, size_t *x1);
 
 static inline void core_num__u32__to_le_bytes(uint32_t x0, uint8_t x1[4U]);

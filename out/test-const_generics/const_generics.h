@@ -22,7 +22,7 @@ A monomorphic instance of const_generics.serialize
 with const generics
 - OUT_LEN= 8
 */
-void const_generics_serialize_ba(Eurydice_slice re, uint8_t ret[8U]);
+void const_generics_serialize_3b(Eurydice_slice re, uint8_t ret[8U]);
 
 void const_generics_main(void);
 
@@ -39,12 +39,12 @@ with const generics
 - $2size_t
 - $2size_t
 */
-typedef struct const_generics_Pair_b1_s
+typedef struct const_generics_Pair_4e_s
 {
   uint32_t left[2U];
   uint32_t right[2U];
 }
-const_generics_Pair_b1;
+const_generics_Pair_4e;
 
 /**
 A monomorphic instance of const_generics.Pair
@@ -53,12 +53,12 @@ with const generics
 - $2size_t
 - $4size_t
 */
-typedef struct const_generics_Pair_e0_s
+typedef struct const_generics_Pair_a5_s
 {
   uint32_t left[2U];
   uint64_t right[4U];
 }
-const_generics_Pair_e0;
+const_generics_Pair_a5;
 
 /**
 A monomorphic instance of const_generics.Pair
@@ -67,12 +67,12 @@ with const generics
 - $4size_t
 - $2size_t
 */
-typedef struct const_generics_Pair_31_s
+typedef struct const_generics_Pair_87_s
 {
   uint64_t left[4U];
   uint32_t right[2U];
 }
-const_generics_Pair_31;
+const_generics_Pair_87;
 
 /**
 A monomorphic instance of const_generics.mk_pairs
@@ -81,7 +81,7 @@ with const generics
 - N= 2
 - M= 4
 */
-const_generics_Pair_b1 const_generics_mk_pairs_a3(uint32_t x, uint64_t y);
+const_generics_Pair_4e const_generics_mk_pairs_e0(uint32_t x, uint64_t y);
 
 void const_generics_main1(void);
 
@@ -91,7 +91,7 @@ with const generics
 - FOO= 1
 - BAR= 2
 */
-bool const_generics_f_11(uint32_t x, size_t y);
+bool const_generics_f_e5(uint32_t x, size_t y);
 
 /**
 A monomorphic instance of const_generics.f
@@ -99,7 +99,7 @@ with const generics
 - FOO= 3
 - BAR= 4
 */
-bool const_generics_f_69(uint32_t x, size_t y);
+bool const_generics_f_70(uint32_t x, size_t y);
 
 /**
 A monomorphic instance of const_generics.g
@@ -107,7 +107,7 @@ with const generics
 - BAR= 3
 - FOO= 4
 */
-bool const_generics_g_69(uint32_t x, size_t y);
+bool const_generics_g_70(uint32_t x, size_t y);
 
 void const_generics_main3(void);
 
