@@ -343,7 +343,11 @@ let remove_array_from_fn files =
                the closure may itself be an application of the closure to the state
                (but not always... is this unit argument elimination kicking in? not
                sure). *)
-            let state, dst = match es with [ x; y ] -> x, y | _ -> assert false in
+            let state, dst =
+              match es with
+              | [ x; y ] -> x, y
+              | _ -> assert false
+            in
             let lift1 = Krml.DeBruijn.lift 1 in
             let t_dst = H.assert_tbuf_or_tarray dst.typ in
             EFor
@@ -352,22 +356,31 @@ let remove_array_from_fn files =
                 H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
                 H.mk_incr_usize (* i++ *),
                 let i = with_type H.usize (EBound 0) in
-                Krml.Helpers.with_unit (
-                  if H.is_array t_dst then
-                    EApp (call_mut, [
-                      with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
-                      with_type (TInt SizeT) (EBound 0);
-                      with_type t_dst (EBufRead (lift1 dst, i))
-                    ])
-                  else
-                    EBufWrite (Krml.DeBruijn.lift 1 dst, i,
-                      with_type t_dst (EApp (call_mut, [
-                        with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
-                        with_type (TInt SizeT) (EBound 0)
-                      ]))
-                    )))
-
-        | ETApp ({ node = EQualified ("core" :: "array" :: _, "map"); _ }, [ len ], [ call_mut; _call_once], ts) ->
+                Krml.Helpers.with_unit
+                  (if H.is_array t_dst then
+                     EApp
+                       ( call_mut,
+                         [
+                           with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
+                           with_type (TInt SizeT) (EBound 0);
+                           with_type t_dst (EBufRead (lift1 dst, i));
+                         ] )
+                   else
+                     EBufWrite
+                       ( Krml.DeBruijn.lift 1 dst,
+                         i,
+                         with_type t_dst
+                           (EApp
+                              ( call_mut,
+                                [
+                                  with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
+                                  with_type (TInt SizeT) (EBound 0);
+                                ] )) )) )
+        | ETApp
+            ( { node = EQualified ("core" :: "array" :: _, "map"); _ },
+              [ len ],
+              [ call_mut; _call_once ],
+              ts ) ->
             let t_src, t_dst =
               match ts with
               | [ t_src; t_state; t_dst ] ->
@@ -393,9 +406,7 @@ let remove_array_from_fn files =
                 let e_src_i = with_type t_src (EBufRead (lift1 e_src, i)) in
                 Krml.Helpers.with_unit
                   (EBufWrite
-                     ( lift1 e_dst,
-                       i,
-                       with_type t_dst (EApp (call_mut, [ lift1 e_state; e_src_i ])) ))
+                     (lift1 e_dst, i, with_type t_dst (EApp (call_mut, [ lift1 e_state; e_src_i ]))))
               )
         | _ -> super#visit_EApp env e es
     end
@@ -1227,18 +1238,18 @@ let globalize_global_locals files =
   List.map (fun (name, decls) -> (name, List.concat_map mapper decls)) files
 
 let fixup_monomorphization_map map =
-  let replace = object(self)
-    inherit [_] Krml.Ast.map
-    method! visit_TQualified () lid =
-      match Hashtbl.find_opt map lid with
-      | Some (Krml.DataTypes.Eliminate t) ->
-          self#visit_typ () t
-      | _ ->
-          TQualified lid
-  end in
-  Seq.iter (fun ((lid, ts, cgs), v) ->
-    let ts = List.map (replace#visit_typ ()) ts in
-    Hashtbl.add Krml.MonomorphizationState.state (lid, ts, cgs) v
-  ) (Hashtbl.to_seq Krml.MonomorphizationState.state)
+  let replace =
+    object (self)
+      inherit [_] Krml.Ast.map
 
-
+      method! visit_TQualified () lid =
+        match Hashtbl.find_opt map lid with
+        | Some (Krml.DataTypes.Eliminate t) -> self#visit_typ () t
+        | _ -> TQualified lid
+    end
+  in
+  Seq.iter
+    (fun ((lid, ts, cgs), v) ->
+      let ts = List.map (replace#visit_typ ()) ts in
+      Hashtbl.add Krml.MonomorphizationState.state (lid, ts, cgs) v)
+    (Hashtbl.to_seq Krml.MonomorphizationState.state)

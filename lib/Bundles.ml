@@ -165,7 +165,8 @@ let parse_file (v : Yaml.value) : file =
       in
       if !count < List.length ls then
         parsing_error "extraneous fields in file";
-      Krml.Options.(add_early_include := include_ @ c_include_ @ include_internal @ !add_early_include);
+      Krml.Options.(
+        add_early_include := include_ @ c_include_ @ include_internal @ !add_early_include);
       {
         name;
         definitions;
