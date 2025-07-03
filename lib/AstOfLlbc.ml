@@ -824,7 +824,7 @@ let expression_of_place (env : env) (p : C.place) : K.expr =
 let op_of_unop (op : C.unop) : Krml.Constant.op =
   match op with
   | C.Not -> BNot
-  | C.Neg -> Neg
+  | C.Neg _ -> Neg
   | _ -> failwith (C.show_unop op)
 
 let op_of_binop (op : C.binop) : Krml.Constant.op =
@@ -838,16 +838,13 @@ let op_of_binop (op : C.binop) : Krml.Constant.op =
   | C.Ne -> Neq
   | C.Ge -> Gte
   | C.Gt -> Gt
-  | C.Div -> Div
-  | C.Rem -> Mod
-  | C.Add -> Add
-  | C.Sub -> Sub
-  | C.Mul -> Mult
-  | C.WrappingAdd -> Add
-  | C.WrappingSub -> Sub
-  | C.WrappingMul -> Mult
-  | C.Shl -> BShiftL
-  | C.Shr -> BShiftR
+  | C.Div _ -> Div
+  | C.Rem _ -> Mod
+  | C.Add _ -> Add
+  | C.Sub _ -> Sub
+  | C.Mul _ -> Mult
+  | C.Shl _ -> BShiftL
+  | C.Shr _ -> BShiftR
   | _ -> fail "unsupported operator: %s" (C.show_binop op)
 
 let op_128_of_op kind (op : K.op) : K.expr =
@@ -1655,8 +1652,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
      Recall that [Box] is a wrapper of [Unique], which is in turn a wrapper of a [NonNull],
      which is a wrapper of a raw pointer. Hence, [*b] when [b] is a [Box] is equivalent to
      [*(b.0.pointer.pointer)]. This is a compiler magic.
-     
-     However, in Eurydice *now*, [Box] types are instantly unboxed to raw pointers, which 
+
+     However, in Eurydice *now*, [Box] types are instantly unboxed to raw pointers, which
      coincides exactly with our current implementation, hence no extra handling is needed.
      In the future however, we might want to handle [Box] types differently, so this is a note
      to ourselves to be careful with this.
