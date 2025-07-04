@@ -114,14 +114,14 @@ void fn_higher_order_use_compose_cg(void)
   size_t buf0[5U] = { (size_t)1U, (size_t)2U, (size_t)3U, (size_t)4U, (size_t)5U };
   size_t
   x =
-    fn_higher_order_compose_cg_apply_fd((size_t (*)(size_t *x0))fn_higher_order_sum_lst_c9,
-      (size_t (*)(size_t x0))fn_higher_order_id_37,
+    fn_higher_order_compose_cg_apply_fd(fn_higher_order_sum_lst_c9,
+      fn_higher_order_id_37,
       buf0);
   int32_t buf[3U] = { (int32_t)10, (int32_t)11, (int32_t)12 };
   int32_t
   y =
-    fn_higher_order_compose_cg_apply_82((int32_t (*)(int32_t *x0))fn_higher_order_more_sum_lst,
-      (int32_t (*)(int32_t x0))fn_higher_order_id_a8,
+    fn_higher_order_compose_cg_apply_82(fn_higher_order_more_sum_lst,
+      fn_higher_order_id_a8,
       buf);
   /* original Rust expression is not an lvalue in C */
   size_t lvalue = (size_t)20U;

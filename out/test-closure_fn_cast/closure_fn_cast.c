@@ -43,7 +43,7 @@ int32_t closure_fn_cast_main_closure_as_fn(int32_t arg1)
 
 void closure_fn_cast_main(void)
 {
-  int32_t (*f)(int32_t x0) = (int32_t (*)(int32_t x0))closure_fn_cast_main_closure_as_fn;
+  int32_t (*f)(int32_t x0) = closure_fn_cast_main_closure_as_fn;
   LowStar_Ignore_ignore(f((int32_t)1), int32_t, void *);
 }
 

@@ -1721,10 +1721,13 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
-  | UnaryOp (Cast (CastFnPtr (TFnDef _, TFnPtr _to)), e) ->
+  | UnaryOp (Cast (CastFnPtr (TFnDef _from, TFnPtr _to)), e) ->
       (* From FnDef to FnPtr *)
-      let dst = typ_of_ty env (TFnPtr _to) in
-      K.with_type dst (K.ECast (expression_of_operand env e, dst))
+      if Charon.Substitute.lookup_fndef_sig env.crate _from = Some _to then
+        expression_of_operand env e
+      else
+        let dst = typ_of_ty env (TFnPtr _to) in
+        K.with_type dst (K.ECast (expression_of_operand env e, dst))
   | UnaryOp (Cast (CastFnPtr (TFnPtr _, TFnPtr _)), e) ->
       (* possible safe fn to unsafe fn, same in C *)
       expression_of_operand env e
