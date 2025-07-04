@@ -1943,7 +1943,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
   | SetDiscriminant (_, _) -> failwith "C.SetDiscriminant"
   | StorageLive _ -> Krml.Helpers.eunit
   | StorageDead _ -> Krml.Helpers.eunit
-  | Deinit p | Drop p ->
+  | Deinit p | Drop (p, _) ->
       let _ = expression_of_place env p in
       begin
         match p.ty with
