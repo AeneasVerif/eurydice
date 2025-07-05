@@ -86,7 +86,9 @@ typedef uint8_t core_panicking_AssertKind;
 
 typedef uint32_t nested_arrays_Key[8U];
 
-extern const uint32_t nested_arrays_ZERO[8U];
+extern uint32_t nested_arrays_ZERO_local_0[8U];
+
+#define NESTED_ARRAYS_ZERO (nested_arrays_ZERO_local_0)
 
 void nested_arrays_main(void);
 
