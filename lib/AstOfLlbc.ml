@@ -1718,6 +1718,16 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
+  | UnaryOp (Cast (CastFnPtr (TFnDef _from, TFnPtr _to)), e) ->
+      (* From FnDef to FnPtr *)
+      if Charon.Substitute.lookup_fndef_sig env.crate _from = Some _to then
+        expression_of_operand env e
+      else
+        let dst = typ_of_ty env (TFnPtr _to) in
+        K.with_type dst (K.ECast (expression_of_operand env e, dst))
+  | UnaryOp (Cast (CastFnPtr (TFnPtr _, TFnPtr _)), e) ->
+      (* possible safe fn to unsafe fn, same in C *)
+      expression_of_operand env e
   | UnaryOp (Cast (CastUnsize (ty_from, ty_to) as ck), e) ->
       (* DSTs: we only support going from T<[U;N]> to T<[U]>. The former is sized, the latter is
          unsized and becomes a fat pointer. We build this coercion by hand, and slightly violate C's
@@ -1793,10 +1803,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
         match ck with
         (* Here are `literal_type`s *)
         | C.CastScalar (f, t) -> f = t
-        (* All Rust function casts reuse the same function pointer address. *)
-        | C.CastFnPtr _ -> true
         (* The following are `type`s *)
-        | C.CastRawPtr (f, t) | C.CastUnsize (f, t) | C.CastTransmute (f, t) -> f = t
+        | C.CastFnPtr (f, t) | C.CastRawPtr (f, t) | C.CastUnsize (f, t) | C.CastTransmute (f, t) -> f = t
       in
       if is_ident then
         expression_of_operand env e
@@ -1808,13 +1816,14 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
   | Discriminant _ -> failwith "expression_of_rvalue Discriminant"
   | Aggregate (AggregatedAdt ({ id = TTuple; _ }, _, None), ops) ->
-      let ops = List.map (expression_of_operand env) ops in
-      let ts = List.map (fun x -> x.K.typ) ops in
-      if ops = [] then
-        K.with_type TUnit K.EUnit
-      else begin
-        assert (List.length ops > 1);
-        K.with_type (TTuple ts) (K.ETuple ops)
+      begin
+        match ops with
+        | [] -> K.with_type TUnit K.EUnit
+        | [op] -> expression_of_operand env op
+        | _ ->
+           let ops = List.map (expression_of_operand env) ops in
+           let ts = List.map (fun x -> x.K.typ) ops in
+           K.with_type (TTuple ts) (K.ETuple ops)
       end
   | Aggregate
       ( AggregatedAdt
