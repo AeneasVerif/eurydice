@@ -23,7 +23,7 @@ A monomorphic instance of trait_generics.call_once_a3
 with const generics
 - K= 10
 */
-uint32_t trait_generics_call_once_a3_95(void);
+uint32_t trait_generics_call_once_a3_42(void);
 
 /**
 A monomorphic instance of trait_generics.from_fn
@@ -31,7 +31,7 @@ with types trait_generics_Foo[[$10size_t]]
 with const generics
 
 */
-void trait_generics_from_fn_3c(void);
+void trait_generics_from_fn_44(void);
 
 void trait_generics_main(void);
 

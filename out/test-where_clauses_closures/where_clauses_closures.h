@@ -42,7 +42,7 @@ with types size_t
 with const generics
 - K= 1
 */
-size_t where_clauses_closures_test_call_mut_1a_e3(void **_, size_t tupled_args);
+size_t where_clauses_closures_test_call_mut_1a_db(void **_, size_t tupled_args);
 
 /**
 This function found in impl {core::ops::function::FnOnce<(usize), T> for where_clauses_closures::test::closure<T, K>[TraitClause@0, TraitClause@1, TraitClause@2]}
@@ -53,7 +53,7 @@ with types size_t
 with const generics
 - K= 1
 */
-size_t where_clauses_closures_test_call_once_79_e3(size_t _);
+size_t where_clauses_closures_test_call_once_79_db(size_t _);
 
 typedef struct size_t_x2_s
 {
@@ -68,7 +68,7 @@ with types size_t
 with const generics
 - K= 1
 */
-size_t_x2 where_clauses_closures_test_e3(void);
+size_t_x2 where_clauses_closures_test_db(void);
 
 void where_clauses_closures_main(void);
 
