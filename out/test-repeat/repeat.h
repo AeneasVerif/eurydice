@@ -15,17 +15,11 @@
 extern "C" {
 #endif
 
-extern uint32_t repeat_C1_local_0[1U];
+extern const uint32_t repeat_C1[1U];
 
-#define REPEAT_C1 (repeat_C1_local_0)
+extern const uint32_t repeat_C2[1U][1U];
 
-extern uint32_t repeat_C2_local_0[1U][1U];
-
-#define REPEAT_C2 (repeat_C2_local_0)
-
-extern uint8_t repeat_REJECTION_SAMPLE_SHUFFLE_TABLE_local_0[256U][16U];
-
-#define REPEAT_REJECTION_SAMPLE_SHUFFLE_TABLE (repeat_REJECTION_SAMPLE_SHUFFLE_TABLE_local_0)
+extern const uint8_t repeat_REJECTION_SAMPLE_SHUFFLE_TABLE[256U][16U];
 
 void repeat_main(void);
 

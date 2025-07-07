@@ -15,9 +15,7 @@
 extern "C" {
 #endif
 
-extern uint8_t nested_arrays2_TABLE_local_0[1U][1U];
-
-#define NESTED_ARRAYS2_TABLE (nested_arrays2_TABLE_local_0)
+extern const uint8_t nested_arrays2_TABLE[1U][1U];
 
 void nested_arrays2_main(void);
 

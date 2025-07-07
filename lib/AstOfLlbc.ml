@@ -2523,17 +2523,27 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
   | IdGlobal id ->
       let global = env.get_nth_global id in
       let { C.item_meta; ty; def_id; _ } = global in
-      let flags =
-        [ Krml.Common.Const "" ] @
-        match global.global_kind with
-        | NamedConst | AnonConst -> [ Macro ]
-        | Static -> [ ]
-      in
       let name = item_meta.name in
       let def = env.get_nth_global def_id in
       L.log "AstOfLlbc" "Visiting global: %s\n%s" (string_of_name env name)
         (Charon.PrintLlbcAst.Ast.global_decl_to_string env.format_env "  " "  " def);
       let ty = typ_of_ty env ty in
+      let flags =
+        [ Krml.Common.Const "" ] @
+        match global.global_kind with
+        | NamedConst | AnonConst ->
+            (* This is trickier: const can be evaluated at compile-time, so in theory, we could just
+               emit a macro, except (!) in C, arrays need to be top-level declarations (not macros)
+               because even with compound literals, you can't do `((int[1]){0})[0]` in expression
+               position.
+
+               We can't use the test "is_bufcreate" because the expression might only be a bufcreate
+               *after* simplification, so we rely on the type here. *)
+            if Krml.Helpers.is_array ty then [] else [ Macro ]
+        | Static ->
+            (* This one needs to have an address, so definitely not emitting it as a macro. *)
+            []
+      in
       let body = env.get_nth_function def.body in
       L.log "AstOfLlbc" "Corresponding body:%s"
         (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " body);

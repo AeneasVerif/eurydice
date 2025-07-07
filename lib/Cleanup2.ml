@@ -1144,25 +1144,13 @@ let inline_loops =
   end
 
 (** A better version of hoist (than [Krml.Simplify.hoist]), also work for [DGlobal]. *)
-let hoist = let open Krml in object(self)
-  inherit [_] map as super
-
-  method hoist_top_level loc name binders expr =
-    let loc = Loc.(InTop name :: loc) in
-    (* TODO: no nested let-bindings in top-level value declarations either *)
-    let binders, expr = open_binders binders expr in
-    let expr = Krml.Simplify.hoist_stmt loc expr in
-    close_binders binders expr
-
-  method! visit_file loc file =
-    super#visit_file Loc.(File (fst file) :: loc) file
-
-  method! visit_DFunction loc cc flags n_cgs n ret name binders expr =
-    let expr = self#hoist_top_level loc name binders expr in
-    DFunction (cc, flags, n_cgs, n, ret, name, binders, expr)
+let hoist = object
+  inherit Krml.Simplify.hoist
 
   method! visit_DGlobal loc flags name n ret expr =
-    let expr = self#hoist_top_level loc name [] expr in
+    let loc = Krml.Loc.(InTop name :: loc) in
+    let lhs, expr = Krml.Simplify.maybe_hoist_initializer loc ret expr in
+    let expr = H.nest lhs ret expr in
     DGlobal (flags, name, n, ret, expr)
 end
 
