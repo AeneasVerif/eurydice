@@ -10,11 +10,11 @@
 Eurydice_dst_31 dst_alloc(void)
 {
   Eurydice_dst_31 lit0;
-  dst_S_31 lit;
+  dst_S_dd lit;
   lit.foo = 0U;
   uint32_t repeat_expression[4U] = { 0U };
   memcpy(lit.my_data, repeat_expression, (size_t)4U * sizeof (uint32_t));
-  lit0.ptr = (dst_T *)Eurydice_box_new(lit, dst_S_31, dst_S_31 *);
+  lit0.ptr = (dst_T *)Eurydice_box_new(lit, dst_S_dd, dst_S_dd *);
   lit0.len = (size_t)4U;
   return lit0;
 }
@@ -22,11 +22,11 @@ Eurydice_dst_31 dst_alloc(void)
 Eurydice_dst_f1 dst_alloc3(void)
 {
   Eurydice_dst_f1 lit0;
-  dst_S_cd lit;
+  dst_S_a4 lit;
   lit.foo = 0U;
   uint32_t repeat_expression[4U][3U] = { { 0U } };
   memcpy(lit.my_data, repeat_expression, (size_t)4U * sizeof (uint32_t [3U]));
-  lit0.ptr = (dst_T3 *)Eurydice_box_new(lit, dst_S_cd, dst_S_cd *);
+  lit0.ptr = (dst_T3 *)Eurydice_box_new(lit, dst_S_a4, dst_S_a4 *);
   lit0.len = (size_t)4U;
   return lit0;
 }
@@ -131,13 +131,13 @@ void dst_main3(void)
 
 Eurydice_dst_7a dst_mk(void)
 {
-  dst_T2_31 x;
+  dst_T2_dd x;
   x.header = (size_t)0U;
   uint32_t repeat_expression[4U] = { 0U };
   memcpy(x.my_data, repeat_expression, (size_t)4U * sizeof (uint32_t));
   x.my_data[1U] = 2U;
   Eurydice_dst_7a
-  y = { .ptr = (dst_T2_be *)Eurydice_box_new(x, dst_T2_31, dst_T2_31 *), .len = (size_t)4U };
+  y = { .ptr = (dst_T2_be *)Eurydice_box_new(x, dst_T2_dd, dst_T2_dd *), .len = (size_t)4U };
   return y;
 }
 
@@ -166,7 +166,7 @@ void dst_main(void)
 {
   dst_check_regular_field(dst_alloc());
   dst_check_var_field(dst_alloc());
-  dst_S_31 x;
+  dst_S_dd x;
   x.foo = 0U;
   uint32_t repeat_expression[4U] = { 0U };
   memcpy(x.my_data, repeat_expression, (size_t)4U * sizeof (uint32_t));

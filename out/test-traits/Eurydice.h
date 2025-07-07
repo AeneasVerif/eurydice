@@ -20,12 +20,12 @@ A monomorphic instance of core.ops.range.Range
 with types size_t
 
 */
-typedef struct core_ops_range_Range_d7_s
+typedef struct core_ops_range_Range_08_s
 {
   size_t start;
   size_t end;
 }
-core_ops_range_Range_d7;
+core_ops_range_Range_08;
 
 #if defined(__cplusplus)
 }

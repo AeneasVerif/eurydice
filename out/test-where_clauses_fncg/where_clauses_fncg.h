@@ -32,7 +32,7 @@ with const generics
 - K= 8
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_16_c0(uint8_t x[8U][4U], uint8_t _[4U][8U]);
+uint64_t where_clauses_fncg_bar_16_7b(uint8_t x[8U][4U], uint8_t _[4U][8U]);
 
 /**
 A monomorphic instance of where_clauses_fncg.f
@@ -42,7 +42,7 @@ with const generics
 - L= 8
 - M= 10
 */
-uint64_t where_clauses_fncg_f_40(void);
+uint64_t where_clauses_fncg_f_43(void);
 
 /**
 This function found in impl {where_clauses_fncg::Foo<K> for u64}
@@ -53,7 +53,7 @@ with const generics
 - K= 12
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_16_fe(uint8_t x[12U][4U], uint8_t _[4U][12U]);
+uint64_t where_clauses_fncg_bar_16_fa(uint8_t x[12U][4U], uint8_t _[4U][12U]);
 
 /**
 This function found in impl {where_clauses_fncg::UseFoo for ()}
@@ -64,7 +64,7 @@ with types uint64_t
 with const generics
 - K= 12
 */
-uint64_t where_clauses_fncg_method_foo_db_78(void);
+uint64_t where_clauses_fncg_method_foo_db_7c(void);
 
 /**
 A monomorphic instance of where_clauses_fncg.g

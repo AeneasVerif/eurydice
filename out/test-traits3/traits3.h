@@ -33,7 +33,7 @@ with types (uint64_t * uint64_t)
 with const generics
 - N= 2
 */
-void traits3_keccak_a7(void);
+void traits3_keccak_cc(void);
 
 void traits3_keccakx2(void);
 

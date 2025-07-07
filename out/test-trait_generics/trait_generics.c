@@ -15,7 +15,7 @@ A monomorphic instance of trait_generics.call_once_a3
 with const generics
 - K= 10
 */
-uint32_t trait_generics_call_once_a3_42(void)
+uint32_t trait_generics_call_once_a3_95(void)
 {
   return 0U;
 }
@@ -26,13 +26,13 @@ with types trait_generics_Foo[[$10size_t]]
 with const generics
 
 */
-void trait_generics_from_fn_44(void)
+void trait_generics_from_fn_3c(void)
 {
-  LowStar_Ignore_ignore(trait_generics_call_once_a3_42(), uint32_t, void *);
+  LowStar_Ignore_ignore(trait_generics_call_once_a3_95(), uint32_t, void *);
 }
 
 void trait_generics_main(void)
 {
-  trait_generics_from_fn_44();
+  trait_generics_from_fn_3c();
 }
 

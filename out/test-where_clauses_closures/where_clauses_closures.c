@@ -32,7 +32,7 @@ with types size_t
 with const generics
 - K= 1
 */
-size_t where_clauses_closures_test_call_mut_1a_db(void **_, size_t tupled_args)
+size_t where_clauses_closures_test_call_mut_1a_e3(void **_, size_t tupled_args)
 {
   size_t i = tupled_args;
   return where_clauses_closures_of_usize_af(i);
@@ -47,11 +47,11 @@ with types size_t
 with const generics
 - K= 1
 */
-size_t where_clauses_closures_test_call_once_79_db(size_t _)
+size_t where_clauses_closures_test_call_once_79_e3(size_t _)
 {
   /* original Rust expression is not an lvalue in C */
   void *lvalue = (void *)0U;
-  return where_clauses_closures_test_call_mut_1a_db(&lvalue, _);
+  return where_clauses_closures_test_call_mut_1a_e3(&lvalue, _);
 }
 
 /**
@@ -60,13 +60,13 @@ with types size_t
 with const generics
 - K= 1
 */
-size_t_x2 where_clauses_closures_test_db(void)
+size_t_x2 where_clauses_closures_test_e3(void)
 {
   size_t x[1U];
   {
     /* original Rust expression is not an lvalue in C */
     void *lvalue = (void *)0U;
-    x[0U] = where_clauses_closures_test_call_mut_1a_db(&lvalue, (size_t)0U);
+    x[0U] = where_clauses_closures_test_call_mut_1a_e3(&lvalue, (size_t)0U);
   }
   size_t y = where_clauses_closures_zero_af();
   size_t_x2 lit;
@@ -84,7 +84,7 @@ _size_t__x2;
 
 void where_clauses_closures_main(void)
 {
-  size_t_x2 uu____0 = where_clauses_closures_test_db();
+  size_t_x2 uu____0 = where_clauses_closures_test_e3();
   size_t x = uu____0.fst;
   size_t y = uu____0.snd;
   _size_t__x2 uu____1 = { .fst = &x, .snd = &y };
