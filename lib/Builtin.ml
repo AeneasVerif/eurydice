@@ -499,6 +499,42 @@ let unwrap =
                    with_type t_T (EAbort (Some t_T, Some "unwrap not Ok")) );
                ] )) )
 
+(* Easier this way rather than implement a macro with an expression-statement.
+
+   external core_slice_{@Slice<T>}_swap <1>:<cg: 0>
+    Eurydice_slice
+    0 ->
+    size_t ->
+      size_t ->
+        ()
+*)
+let slice_swap =
+  let open Krml in
+  let open Ast in
+  let t = TBound 0 in
+  let binders = [
+    Helpers.fresh_binder ~mut:true "s" (mk_slice t);
+    Helpers.fresh_binder "i" (TInt SizeT);
+    Helpers.fresh_binder "j" (TInt SizeT)
+  ] in
+  (* with slice type *)
+  let ws = with_type (mk_slice t) in
+  (* with usize type *)
+  let wu = with_type (TInt SizeT) in
+  let index t s i =
+    with_type t (EApp (expr_of_builtin slice_index, [ s; i ]))
+  in
+  fun lid ->
+    DFunction (None, [ Private ], 0, 1, TUnit, lid, binders,
+      (* let tmp = s[i]; *)
+      with_type TUnit (ELet (Helpers.fresh_binder "tmp" t, index t (ws (EBound 2)) (wu (EBound 1)),
+        with_type TUnit (ESequence [
+          (* s[i] = s[j] *)
+          with_type TUnit (EAssign (index t (ws (EBound 3)) (wu (EBound 2)), index t (ws (EBound 3)) (wu (EBound 1))));
+          (* s[j] = tmp *)
+          with_type TUnit (EAssign (index t (ws (EBound 3)) (wu (EBound 1)), with_type t (EBound 0)))
+        ]))))
+
 let nonzero_def = K.DType (nonzero, [], 0, 1, Abbrev (TBound 0))
 
 (* -------------------------------------------------------------------------- *)

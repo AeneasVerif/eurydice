@@ -2585,6 +2585,7 @@ let replacements =
     (fun (p, d) -> Charon.NameMatcher.parse_pattern p, d)
     [
       "core::result::{core::result::Result<@T, @E>}::unwrap", Builtin.unwrap;
+      "core::slice::{[@T]}::swap", Builtin.slice_swap;
       (* FIXME: remove the line below once libcrux passes --include 'core::num::*::BITS'
      --include 'core::num::*::MAX' to charon, AND does a single invocation of charon (instead of
      three currently) *)
