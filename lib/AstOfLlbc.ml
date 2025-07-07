@@ -1347,7 +1347,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
      concrete trait implementation method call, or an abstract trait method call
      (e.g. a call to T::f when T is a trait bound in scope). *)
   L.log "Calls" "%sVisiting call: %s" depth
-    (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
+    (Charon.PrintTypes.fn_ptr_to_string env.format_env fn_ptr);
   L.log "Calls" "%s--> %d type_args, %d const_generics, %d trait_refs" depth (List.length type_args)
     (List.length const_generic_args) (List.length trait_refs);
 
@@ -1565,7 +1565,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
         let ret, args = Krml.Helpers.flatten_arrow t in
         if List.length const_generic_args + List.length fn_ptrs > List.length args then
           L.log "Calls" "ERROR in %s"
-            (Charon.PrintExpressions.fn_ptr_to_string env.format_env fn_ptr);
+            (Charon.PrintTypes.fn_ptr_to_string env.format_env fn_ptr);
         let _, args =
           Krml.KList.split (List.length const_generic_args + List.length fn_ptrs) args
         in
