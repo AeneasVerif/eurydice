@@ -296,51 +296,6 @@ let slice_to_ref_array =
     arg_names = [ "s" ];
   }
 
-let vec_new =
-  {
-    name = [ "Eurydice" ], "vec_new";
-    typ = Krml.Helpers.fold_arrow [ TUnit ] (mk_vec (TBound 0));
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [];
-  }
-
-let vec_push =
-  {
-    name = [ "Eurydice" ], "vec_push";
-    typ = Krml.Helpers.fold_arrow [ mk_vec (TBound 0); TBound 0 ] TUnit;
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [ "v"; "x" ];
-  }
-
-let vec_len =
-  {
-    name = [ "Eurydice" ], "vec_len";
-    typ = Krml.Helpers.fold_arrow [ mk_vec (TBound 0) ] (TInt SizeT);
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [ "v" ];
-  }
-
-let vec_drop =
-  {
-    name = [ "Eurydice" ], "vec_drop";
-    typ = Krml.Helpers.fold_arrow [ mk_vec (TBound 0) ] TUnit;
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [ "v" ];
-  }
-
-let vec_index =
-  {
-    name = [ "Eurydice" ], "vec_index";
-    typ = Krml.Helpers.fold_arrow [ mk_vec (TBound 0); TInt SizeT ] (TBuf (TBound 0, false));
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [ "v"; "i" ];
-  }
-
 let box_new =
   {
     name = [ "Eurydice" ], "box_new";
@@ -570,11 +525,6 @@ let builtin_funcs =
     slice_to_array2;
     range_iterator_step_by;
     range_step_by_iterator_next;
-    vec_push;
-    vec_new;
-    vec_len;
-    vec_drop;
-    vec_index;
     box_new;
     box_new_array;
     replace;

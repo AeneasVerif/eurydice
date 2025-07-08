@@ -521,7 +521,7 @@ static inline Eurydice_vec Eurydice_vec_try_with_capacity(size_t len, size_t ele
 }
 
 // TODO: have Eurydice generate this instead of relying on a non-standard extension
-#define alloc_vec__alloc__vec__Vec_T__alloc__alloc__Global___try_with_capacity(len, t_elt, t_ret) \
+#define alloc_vec__alloc__vec__Vec_T___try_with_capacity(len, t_elt, t_ret) \
   ({ \
     Eurydice_vec v = Eurydice_vec_try_with_capacity(len, sizeof(t_elt)); \
     t_ret r; \
@@ -536,7 +536,7 @@ static inline Eurydice_vec Eurydice_vec_try_with_capacity(size_t len, size_t ele
     r; \
   })
 
-#define alloc_vec__alloc__vec__Vec_T__A___resize(/* Eurydice_vec * */ v, /* size_t */ new_len, /* T */ elt, T, _0, _1) \
+#define alloc_vec__alloc__vec__Vec_T___resize(/* Eurydice_vec * */ v, /* size_t */ new_len, /* T */ elt, T, _0, _1) \
   do { \
     if (new_len <= (v)->capacity) \
       (v)->len = new_len; \
@@ -550,5 +550,5 @@ static inline Eurydice_vec Eurydice_vec_try_with_capacity(size_t len, size_t ele
     } \
   } while(0)
 
-#define alloc_vec__alloc__vec__Vec_T__A___into_boxed_slice(/* Eurydice_vec */ v, T, _0, _1) \
+#define alloc_vec__alloc__vec__Vec_T___into_boxed_slice(/* Eurydice_vec */ v, T, _0, _1) \
   ((Eurydice_slice){ .ptr = (v).ptr, .len = (v).len })
