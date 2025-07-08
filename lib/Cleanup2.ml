@@ -574,12 +574,9 @@ let build_macros (macros : Krml.Idents.LidSet.t ref) =
     inherit [_] map as super
 
     method! visit_DGlobal env flags name n t body =
-      if Krml.Helpers.is_bufcreate body then
-        super#visit_DGlobal env flags name n t body
-      else begin
-        (macros := Krml.Idents.LidSet.(union !macros (singleton name)));
-        DGlobal (flags @ [ Macro ], name, n, t, body)
-      end
+      if List.mem Krml.Common.Macro flags then
+        macros := Krml.Idents.LidSet.(union !macros (singleton name));
+      super#visit_DGlobal env flags name n t body
   end
 
 let build_macros files =
@@ -1107,6 +1104,8 @@ let check_addrof =
                 Krml.Ast.meta = [ CommentBefore "original Rust expression is not an lvalue in C" ];
               }
             in
+            (* Recursively do for the internal expression *)
+            let e = self#visit_expr_w () e in
             ELet (b, e, with_type t (EAddrOf (with_type e.typ (EBound 0))))
   end
 
@@ -1143,6 +1142,88 @@ let inline_loops =
       else
         DFunction (cc, flags, n_cgs, n, t, name, binders, body)
   end
+
+(** A better version of hoist (than [Krml.Simplify.hoist]), also work for [DGlobal]. *)
+let hoist = object
+  inherit Krml.Simplify.hoist
+
+  method! visit_DGlobal loc flags name n ret expr =
+    let loc = Krml.Loc.(InTop name :: loc) in
+    let lhs, expr = Krml.Simplify.maybe_hoist_initializer loc ret expr in
+    let expr = H.nest lhs ret expr in
+    DGlobal (flags, name, n, ret, expr)
+end
+
+(** Also fix for [DGlobal] as [hoist] above *)
+let fixup_hoist = object
+  inherit [_] map
+
+  method! visit_DFunction _ cc flags n_cgs n ret name binders expr =
+    DFunction (cc, flags, n_cgs, n, ret, name, binders, Krml.Simplify.fixup_return_pos expr)
+
+  method! visit_DGlobal () flags name n ret expr =
+    DGlobal (flags, name, n, ret, Krml.Simplify.fixup_return_pos expr)
+end
+
+(** For any [DGlobal], if the expression has any locals remaining
+    We should let them also be globals, so to make the overall expr valid.
+
+    I.e., we make:
+    [T VAL = let v1 : T1 = e1 in
+             let v2 : T2 = e2 in
+             ...
+             let vN : TN = eN in
+             e;]
+    become:
+    [T1 VAL_local_1 = e1;
+     T2 VAL_local_2 = e2[v1/VAL_local_1];
+     ...
+     TN VAL_local_N = eN[v1/VAL_local_1; v2/VAL_local_2; ...; vN-1/VAL_local_(N-1)];
+     T VAL = e;]
+
+     Notably, the locals should be renamed to avoid potential naming conflicts.
+*)
+let globalize_global_locals files =
+  let mapper = function
+  | DGlobal (flags, name, n_cgs, ty, expr) ->
+    let rec decompose_expr id info_acc expr =
+      match expr.node with
+      | ELet (_, e1, e2) ->
+        let name =
+          let lst,name = name in
+          lst, name ^ "$local$" ^ string_of_int id
+        in
+        (* Replace the variable with the new globalised name. *)
+        let e2 = subst Krml.Ast.(with_type e1.typ (EQualified name)) 0 e2 in
+        decompose_expr (id + 1) ((name, e1) :: info_acc) e2
+      | _ -> List.rev info_acc, expr
+    in
+    let info, expr = decompose_expr 0 [] expr in
+    (* Make the new globals private if possible -- with exception that
+       if it is a non-private macro, then the involved new globals should not be private *)
+    let module NameSet = Krml.Idents.LidSet in
+    let no_priv_names =
+      if List.mem Krml.Common.Macro flags && 
+         not (List.mem Krml.Common.Private flags) then
+        object
+          inherit [_] reduce
+          method private zero = NameSet.empty
+          method private plus = NameSet.union
+          method! visit_EQualified _ name = NameSet.singleton name
+        end#visit_expr_w () expr
+      else NameSet.empty
+    in
+    let make_decl (name, expr) =
+      let flags =
+        if NameSet.mem name no_priv_names then []
+        else [ Krml.Common.Private ] in
+      DGlobal (flags, name, n_cgs, expr.typ, expr)
+    in
+    List.map make_decl info @
+    [DGlobal (flags, name, n_cgs, ty, expr)]
+  | decl -> [decl]
+  in
+  List.map (fun (name, decls) -> (name, List.concat_map mapper decls)) files
 
 let fixup_monomorphization_map map =
   let replace =
