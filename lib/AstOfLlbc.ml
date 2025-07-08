@@ -706,6 +706,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
   match p.kind with
   | PlaceLocal var_id ->
       let i, t = lookup env var_id in
+      L.log "AstOfLlbc" "PlaceLocal of type :%a" ptyp t;
       K.(with_type t (EBound i))
   | PlaceProjection (sub_place, pe) -> begin
       (* Can't evaluate this here because of the special case for DSTs. *)
@@ -1968,6 +1969,7 @@ let rec expression_of_switch_128bits env ret_var scrutinee branches default : K.
   List.fold_right folder branches else_branch
 
 and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_statement) : K.expr =
+  L.log "AstOfLlbc" "Translating statement: %s:" (Charon.PrintLlbcAst.Ast.raw_statement_to_string env.format_env "" "" s);
   match s with
   | Assign (p, rv) ->
       let p = expression_of_place env p in
