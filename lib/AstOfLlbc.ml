@@ -1869,8 +1869,12 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
         (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
         (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
   | Global { id; _ } ->
+    let global = env.get_nth_global id in
+    K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
+  | GlobalRef ({ id; _ },_) ->
       let global = env.get_nth_global id in
-      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
+      let e = K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name)) in
+      K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
   | rvalue ->
       failwith
         ("unsupported rvalue: `"
@@ -2524,6 +2528,22 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       L.log "AstOfLlbc" "Visiting global: %s\n%s" (string_of_name env name)
         (Charon.PrintLlbcAst.Ast.global_decl_to_string env.format_env "  " "  " def);
       let ty = typ_of_ty env ty in
+      let flags =
+        [ Krml.Common.Const "" ] @
+        match global.global_kind with
+        | NamedConst | AnonConst ->
+            (* This is trickier: const can be evaluated at compile-time, so in theory, we could just
+               emit a macro, except (!) in C, arrays need to be top-level declarations (not macros)
+               because even with compound literals, you can't do `((int[1]){0})[0]` in expression
+               position.
+
+               We can't use the test "is_bufcreate" because the expression might only be a bufcreate
+               *after* simplification, so we rely on the type here. *)
+            if Krml.Helpers.is_array ty then [] else [ Macro ]
+        | Static ->
+            (* This one needs to have an address, so definitely not emitting it as a macro. *)
+            []
+      in
       let body = env.get_nth_function def.body in
       L.log "AstOfLlbc" "Corresponding body:%s"
         (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " body);
@@ -2535,7 +2555,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               with_locals env ty body.locals.locals (fun env ->
                   expression_of_block env ret_var.index body.body)
             in
-            Some (K.DGlobal ([ Krml.Common.Const "" ], lid_of_name env name, 0, ty, body))
+            Some (K.DGlobal (flags, lid_of_name env name, 0, ty, body))
         | None -> Some (K.DExternal (None, [], 0, 0, lid_of_name env name, ty, []))
       end
   | IdTraitDecl _ | IdTraitImpl _ -> None

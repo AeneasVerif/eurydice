@@ -57,6 +57,7 @@ test-array: EXTRA = -fcomments
 test-symcrust: CFLAGS += -Wno-unused-function
 test-more_str: EXTRA_C = ../../test/core_str_lib.c
 test-more_primitive_types: EXTRA = --config test/more_primitive_types.yaml
+test-global_ref: EXTRA_C = ../../test/core_cmp_lib.c
 
 
 test-%: test/%.llbc out/test-%/main.c | all
