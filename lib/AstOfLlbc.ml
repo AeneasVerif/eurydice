@@ -62,11 +62,6 @@ type var_id =
 type decl_obligation =
   ObliArray of C.ty * C.const_generic
 
-module DeclObliMap = Map.Make(struct
-  type t = decl_obligation
-  let compare = compare
-end)
-
 type env = {
   (* Lookup functions to resolve various id's into actual declarations. *)
   get_nth_function : C.FunDeclId.id -> C.fun_decl;
@@ -128,7 +123,7 @@ type env = {
      flexible member *)
   dsts : string LidMap.t;
   (* A set of declaration obligations generated on-the-fly *)
-  mutable decl_oblis : string DeclObliMap.t;
+  mutable decl_oblis : decl_obligation LidMap.t;
 }
 
 let debug env =
@@ -393,15 +388,15 @@ let lookup_field env typ_id field_id =
 (** special treatment for the array type: translating [T;N] to
     typedef struct{T data[N];} arr$T$N  *)
 
-let string_of_array (env: env) (ty: C.ty) (cg: C.const_generic) : string =
+let lid_of_array (env: env) (ty: C.ty) (cg: C.const_generic) : K.lident =
   let string_T = Charon.PrintTypes.ty_to_string env.format_env ty in
   match cg with
   | CgValue _ ->
      let const_N = constant_of_scalar_value (assert_cg_scalar cg) in
-     "arr$" ^ string_T ^ "$" ^ (snd const_N)
+     ([],"arr$" ^ string_T ^ "$" ^ (snd const_N))
   | CgVar var ->
      let int, _ = lookup_cg_in_types env (C.expect_free_var var) in
-     "arr$" ^ string_T ^ "$" ^ string_of_int int
+     ([],"arr$" ^ string_T ^ "$" ^ string_of_int int)
   | _ -> failwith "TODO: CgGlobal"
 
 
@@ -431,8 +426,8 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TRef (_, TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } }, _) ->
       (* We collapse Ref(Array) into a pointer type, leveraging C's implicit decay between array
          types and pointer types. *)
-      let name = string_of_array env t cg in
-      env.decl_oblis <- DeclObliMap.add (ObliArray (t,cg)) name env.decl_oblis; 
+      let lid = lid_of_array env t cg in
+      env.decl_oblis <- LidMap.add lid (ObliArray (t,cg)) env.decl_oblis; 
       K.TBuf (typ_of_ty env t, false)
   | TRef (_, TAdt { id = TBuiltin TStr; generics = { types = []; _ } }, _) -> Builtin.str_t
   | TRef (_, t, _) ->
@@ -452,6 +447,8 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
         | _ -> TTuple (List.map (typ_of_ty env) args)
       end
   | TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } } ->
+      let lid = lid_of_array env t cg in
+      env.decl_oblis <- LidMap.add lid (ObliArray (t,cg)) env.decl_oblis; 
       maybe_cg_array env t cg
   | TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
       (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
@@ -2686,6 +2683,28 @@ let decls_of_declarations (env : env) (d : C.any_decl_id list) : K.decl list =
   L.log "Progress" "%s: %d/%d" env.crate_name !seen !total;
   Krml.KList.filter_some @@ List.map (decl_of_id env) d
 
+let impl_obligation (env: env) (obpair : K.lident * decl_obligation) : K.decl =
+  let lid = fst obpair in
+  let ob = snd obpair in
+  (*let ty = fst (snd obpair) in
+  let cg = snd (snd obpair) in *)
+  let type_array =
+    match ob with
+    |ObliArray (ty, CgValue v) ->
+      let const_N = constant_of_scalar_value (assert_cg_scalar (CgValue v)) in
+      K.TArray (typ_of_ty env ty, const_N)
+    |ObliArray (ty, CgVar var) ->
+      let id,cg_t = lookup_cg_in_types env (C.expect_free_var var) in
+      assert (cg_t = K.TInt SizeT);
+      K.TCgArray (typ_of_ty env ty, id)
+    |_ -> failwith "TODO: CgGlobal"
+  in
+  K.DType (lid, [], 1, 1, Flat [(Some "data",(type_array,true))])
+     
+let impl_obligations (env: env) (obpairs : (K.lident * decl_obligation) list) : K.decl list =
+  List.map (impl_obligation env) obpairs
+
+
 let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   let {
     C.name;
@@ -2731,8 +2750,8 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
       name_ctx;
       generic_params = Charon.TypesUtils.empty_generic_params;
       dsts = LidMap.empty;
-      decl_oblis = DeclObliMap.empty;
+      decl_oblis = LidMap.empty;
     }
   in
   let env = List.fold_left check_if_dst env declarations in
-  name, decls_of_declarations env declarations
+  name, decls_of_declarations env declarations @ impl_obligations env (LidMap.bindings env.decl_oblis)
