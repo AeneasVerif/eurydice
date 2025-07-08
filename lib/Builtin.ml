@@ -525,21 +525,25 @@ let slice_swap =
   let ws = with_type (mk_slice t) in
   (* with usize type *)
   let wu = with_type (TInt SizeT) in
-  let index t s i =
-    with_type t (EApp (expr_of_builtin slice_index, [ s; i ]))
+  let index s i =
+    let slice_index = expr_of_builtin slice_index in
+    let slice_index = with_type (DeBruijn.subst_tn [ t ] slice_index.typ)
+      (ETApp (slice_index, [ ], [], [ t ]))
+    in
+    with_type t (EApp (slice_index, [ s; i ]))
   in
-  let lhs t s i =
-    with_type t (EBufRead (with_type (TBuf (t, false)) (EAddrOf (index t s i)), Helpers.zero_usize))
+  let lhs s i =
+    with_type t (EBufRead (with_type (TBuf (t, false)) (EAddrOf (index s i)), Helpers.zero_usize))
   in
   fun lid ->
     DFunction (None, [ Private ], 0, 1, TUnit, lid, binders,
       (* let tmp = s[i]; *)
-      with_type TUnit (ELet (Helpers.fresh_binder "tmp" t, index t (ws (EBound 2)) (wu (EBound 1)),
+      with_type TUnit (ELet (Helpers.fresh_binder "tmp" t, index (ws (EBound 2)) (wu (EBound 1)),
         with_type TUnit (ESequence [
           (* s[i] = s[j] *)
-          with_type TUnit (EAssign (lhs t (ws (EBound 3)) (wu (EBound 2)), index t (ws (EBound 3)) (wu (EBound 1))));
+          with_type TUnit (EAssign (lhs (ws (EBound 3)) (wu (EBound 2)), index (ws (EBound 3)) (wu (EBound 1))));
           (* s[j] = tmp *)
-          with_type TUnit (EAssign (lhs t (ws (EBound 3)) (wu (EBound 1)), with_type t (EBound 0)))
+          with_type TUnit (EAssign (lhs (ws (EBound 3)) (wu (EBound 1)), with_type t (EBound 0)))
         ]))))
 
 let nonzero_def = K.DType (nonzero, [], 0, 1, Abbrev (TBound 0))
