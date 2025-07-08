@@ -466,7 +466,11 @@ let static_assert, static_assert_ref =
   ( K.DExternal (None, [ Krml.Common.Private; Macro ], 0, 0, name, typ, [ "test"; "msg" ]),
     K.(with_type typ (EQualified name)) )
 
-(* Replacements, now applied on-the-fly in AstOfLlbc *)
+(* Replacements, now applied on-the-fly in AstOfLlbc.
+
+ IMPORTANT: such replacements are written in abstract syntax that *already* has cleanups applied,
+ meaning that some passes like Cleanup1.remove_assignments and un-necessary and will actually error
+ out. We maintain a list of such functions in Cleanup1, to be kept in sync with this. *)
 
 let unwrap =
   let open Krml in
@@ -524,15 +528,18 @@ let slice_swap =
   let index t s i =
     with_type t (EApp (expr_of_builtin slice_index, [ s; i ]))
   in
+  let lhs t s i =
+    with_type t (EBufRead (with_type (TBuf (t, false)) (EAddrOf (index t s i)), Helpers.zero_usize))
+  in
   fun lid ->
     DFunction (None, [ Private ], 0, 1, TUnit, lid, binders,
       (* let tmp = s[i]; *)
       with_type TUnit (ELet (Helpers.fresh_binder "tmp" t, index t (ws (EBound 2)) (wu (EBound 1)),
         with_type TUnit (ESequence [
           (* s[i] = s[j] *)
-          with_type TUnit (EAssign (index t (ws (EBound 3)) (wu (EBound 2)), index t (ws (EBound 3)) (wu (EBound 1))));
+          with_type TUnit (EAssign (lhs t (ws (EBound 3)) (wu (EBound 2)), index t (ws (EBound 3)) (wu (EBound 1))));
           (* s[j] = tmp *)
-          with_type TUnit (EAssign (index t (ws (EBound 3)) (wu (EBound 1)), with_type t (EBound 0)))
+          with_type TUnit (EAssign (lhs t (ws (EBound 3)) (wu (EBound 1)), with_type t (EBound 0)))
         ]))))
 
 let nonzero_def = K.DType (nonzero, [], 0, 1, Abbrev (TBound 0))
