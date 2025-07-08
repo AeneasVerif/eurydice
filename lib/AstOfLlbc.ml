@@ -55,6 +55,18 @@ type var_id =
   | ConstGenericVar of C.const_generic_var_id
   | Var of C.local_id * C.ety (* the ety aids code-generation, sometimes *)
 
+(* The type of obligation for extra declarations needed during the translation
+   The minimal necessary information should be stored in the env and extended to
+   complete declaration at the end*)
+
+type decl_obligation =
+  ObliArray of C.ty * C.const_generic
+
+module DeclObliMap = Map.Make(struct
+  type t = decl_obligation
+  let compare = compare
+end)
+
 type env = {
   (* Lookup functions to resolve various id's into actual declarations. *)
   get_nth_function : C.FunDeclId.id -> C.fun_decl;
@@ -115,6 +127,8 @@ type env = {
   (* A set of all the DSTs (dynamically-sized types) that we know about, and the name of their
      flexible member *)
   dsts : string LidMap.t;
+  (* A set of declaration obligations generated on-the-fly *)
+  mutable decl_oblis : string DeclObliMap.t;
 }
 
 let debug env =
@@ -375,6 +389,22 @@ let lookup_field env typ_id field_id =
   let field = List.nth fields i in
   ensure_named i field.field_name
 
+
+(** special treatment for the array type: translating [T;N] to
+    typedef struct{T data[N];} arr$T$N  *)
+
+let string_of_array (env: env) (ty: C.ty) (cg: C.const_generic) : string =
+  let string_T = Charon.PrintTypes.ty_to_string env.format_env ty in
+  match cg with
+  | CgValue _ ->
+     let const_N = constant_of_scalar_value (assert_cg_scalar cg) in
+     "arr$" ^ string_T ^ "$" ^ (snd const_N)
+  | CgVar var ->
+     let int, _ = lookup_cg_in_types env (C.expect_free_var var) in
+     "arr$" ^ string_T ^ "$" ^ string_of_int int
+  | _ -> failwith "TODO: CgGlobal"
+
+
 let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   match ty with
   | TVar var -> K.TBound (lookup_typ env (C.expect_free_var var))
@@ -396,11 +426,13 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TAdt
       {
         id = TBuiltin TBox;
-        generics = { types = [ TAdt { id = TBuiltin TArray; generics = { types = [ t ]; _ } } ]; _ };
+        generics = { types = [ TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } } ]; _ };
       }
-  | TRef (_, TAdt { id = TBuiltin TArray; generics = { types = [ t ]; _ } }, _) ->
+  | TRef (_, TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } }, _) ->
       (* We collapse Ref(Array) into a pointer type, leveraging C's implicit decay between array
          types and pointer types. *)
+      let name = string_of_array env t cg in
+      env.decl_oblis <- DeclObliMap.add (ObliArray (t,cg)) name env.decl_oblis; 
       K.TBuf (typ_of_ty env t, false)
   | TRef (_, TAdt { id = TBuiltin TStr; generics = { types = []; _ } }, _) -> Builtin.str_t
   | TRef (_, t, _) ->
@@ -2699,6 +2731,7 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
       name_ctx;
       generic_params = Charon.TypesUtils.empty_generic_params;
       dsts = LidMap.empty;
+      decl_oblis = DeclObliMap.empty;
     }
   in
   let env = List.fold_left check_if_dst env declarations in
