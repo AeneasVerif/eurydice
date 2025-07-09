@@ -62,6 +62,11 @@ type var_id =
 type decl_obligation =
   ObliArray of C.ty * C.const_generic
 
+module ObliMap = Map.Make(struct
+  type t = decl_obligation
+  let compare = compare
+end)
+
 type env = {
   (* Lookup functions to resolve various id's into actual declarations. *)
   get_nth_function : C.FunDeclId.id -> C.fun_decl;
@@ -123,7 +128,7 @@ type env = {
      flexible member *)
   dsts : string LidMap.t;
   (* A set of declaration obligations generated on-the-fly *)
-  mutable decl_oblis : decl_obligation LidMap.t;
+  decl_oblis : decl_obligation -> unit;
 }
 
 let debug env =
@@ -448,7 +453,7 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       end
   | TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } } ->
       let lid = lid_of_array env t cg in
-      env.decl_oblis <- LidMap.add lid (ObliArray (t,cg)) env.decl_oblis; 
+      env.decl_oblis (ObliArray (t,cg));
       K.TQualified lid
   | TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
       (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
@@ -1617,7 +1622,7 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
         match p.ty with
         | C.TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } } ->
            let lid = lid_of_array env t cg in
-           env.decl_oblis <- LidMap.add lid (ObliArray (t,cg)) env.decl_oblis;
+           env.decl_oblis (ObliArray (t,cg));
            L.log "AstOfLlbc" "Added Obligation in operand";
            K.with_type (K.TQualified lid) (K.EFlat [(Some "data",e)])
         | _ -> e
@@ -2695,26 +2700,14 @@ let decls_of_declarations (env : env) (d : C.any_decl_id list) : K.decl list =
   L.log "Progress" "%s: %d/%d" env.crate_name !seen !total;
   Krml.KList.filter_some @@ List.map (decl_of_id env) d
 
-let impl_obligation (env: env) (obpair : K.lident * decl_obligation) : K.decl =
-  let lid = fst obpair in
-  let ob = snd obpair in
-  (*let ty = fst (snd obpair) in
-  let cg = snd (snd obpair) in *)
-  let type_array =
-    match ob with
-    |ObliArray (ty, CgValue v) ->
-      let const_N = constant_of_scalar_value (assert_cg_scalar (CgValue v)) in
-      K.TArray (typ_of_ty env ty, const_N)
-    |ObliArray (ty, CgVar var) ->
-      let id,cg_t = lookup_cg_in_types env (C.expect_free_var var) in
-      assert (cg_t = K.TInt SizeT);
-      K.TCgArray (typ_of_ty env ty, id)
-    |_ -> failwith "TODO: CgGlobal"
-  in
-  K.DType (lid, [], 1, 1, Flat [(Some "data",(type_array,true))])
+let impl_obligation (env: env) (ob: decl_obligation) : K.decl =
+    match ob with ObliArray (ty, cg) ->
+      let lid = lid_of_array env ty cg in
+      let typ_array = maybe_cg_array env ty cg in
+      K.DType (lid, [], 1, 1, Flat [(Some "data",(typ_array,true))])
      
-let impl_obligations (env: env) (obpairs : (K.lident * decl_obligation) list) : K.decl list =
-  List.map (impl_obligation env) obpairs
+let impl_obligations (env: env) (obpairs : (decl_obligation * unit) list) : K.decl list =
+  List.map (impl_obligation env) (List.map fst obpairs)
 
 
 let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
@@ -2746,6 +2739,8 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   let get_nth_trait_decl id = C.TraitDeclId.Map.find id trait_decls in
   let format_env = Charon.PrintLlbcAst.Crate.crate_to_fmt_env crate in
   let name_ctx = Charon.NameMatcher.ctx_from_crate crate in
+  let obli_map = ref ObliMap.empty in
+  let obli_update ob = obli_map := ObliMap.add ob () !obli_map in 
   let env =
     {
       get_nth_function;
@@ -2762,8 +2757,8 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
       name_ctx;
       generic_params = Charon.TypesUtils.empty_generic_params;
       dsts = LidMap.empty;
-      decl_oblis = LidMap.empty;
+      decl_oblis = obli_update;
     }
   in
   let env = List.fold_left check_if_dst env declarations in
-  name, decls_of_declarations env declarations @ impl_obligations env (LidMap.bindings env.decl_oblis)
+  name, decls_of_declarations env declarations @ impl_obligations env (ObliMap.bindings !obli_map)
