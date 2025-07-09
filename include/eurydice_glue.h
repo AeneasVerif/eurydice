@@ -96,7 +96,7 @@ typedef struct {
 // cast to something that can decay (see remark above about how pointer
 // arithmetic works in C), meaning either pointer or array type.
 #define EURYDICE_SLICE(x, start, end)                                          \
-  (KRML_CLITERAL(Eurydice_slice){(void *)(x + start), end - start})
+  (KRML_CLITERAL(Eurydice_slice){(void *)(x + start), end - (start)})
 
 // Slice length
 #define EURYDICE_SLICE_LEN(s, _) (s).len
@@ -119,6 +119,11 @@ typedef struct {
 #define Eurydice_slice_subslice2(s, start, end, t)                             \
   EURYDICE_SLICE((t *)s.ptr, (start), (end))
 
+// Previous version above does not work when t is an array type (as usual). Will
+// be deprecated soon.
+#define Eurydice_slice_subslice3(s, start, end, t_ptr)                         \
+  EURYDICE_SLICE((t_ptr)s.ptr, start, end)
+
 #define Eurydice_slice_subslice_to(s, subslice_end_pos, t, _0, _1)             \
   EURYDICE_SLICE((t *)s.ptr, 0, subslice_end_pos)
 
@@ -132,8 +137,8 @@ typedef struct {
   EURYDICE_SLICE((t *)x, r.start, r.end)
 
 // Same as above, variant for when start and end are statically known
-#define Eurydice_array_to_subslice2(x, start, end, t)                          \
-  EURYDICE_SLICE((t *)x, (start), (end))
+#define Eurydice_array_to_subslice3(x, start, end, t_ptr)                      \
+  EURYDICE_SLICE((t_ptr)x, start, end)
 
 #define Eurydice_array_repeat(dst, len, init, t)                               \
   ERROR "should've been desugared"
@@ -149,10 +154,10 @@ typedef struct {
 #define Eurydice_slice_copy(dst, src, t)                                       \
   memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 
-#define core_array___Array_T__N__23__as_slice(len_, ptr_, t, _ret_t)           \
+#define core_array___Array_T__N___as_slice(len_, ptr_, t, _ret_t)              \
   KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
 
-#define core_array___core__clone__Clone_for__Array_T__N___20__clone(           \
+#define core_array__core__clone__Clone_for__Array_T__N___clone(                \
     len, src, dst, elem_type, _ret_t)                                          \
   (memcpy(dst, src, len * sizeof(elem_type)))
 #define TryFromSliceError uint8_t
@@ -160,11 +165,11 @@ typedef struct {
 
 #define Eurydice_array_eq(sz, a1, a2, t, _)                                    \
   (memcmp(a1, a2, sz * sizeof(t)) == 0)
-#define core_array_equality___core__cmp__PartialEq__Array_U__N___for__Array_T__N____eq( \
-    sz, a1, a2, t, _, _ret_t)                                                           \
+#define core_array_equality__core__cmp__PartialEq__Array_U__N___for__Array_T__N___eq( \
+    sz, a1, a2, t, _, _ret_t)                                                         \
   Eurydice_array_eq(sz, a1, a2, t, _)
-#define core_array_equality___core__cmp__PartialEq__0___Slice_U____for__Array_T__N___3__eq( \
-    sz, a1, a2, t, _, _ret_t)                                                               \
+#define core_array_equality__core__cmp__PartialEq__0___Slice_U____for__Array_T__N___eq( \
+    sz, a1, a2, t, _, _ret_t)                                                           \
   Eurydice_array_eq(sz, a1, ((a2)->ptr), t, _)
 
 #define Eurydice_slice_split_at(slice, mid, element_type, ret_t)               \
@@ -183,7 +188,7 @@ typedef struct {
         EURYDICE_CFIELD(.snd =) KRML_CLITERAL(Eurydice_slice) {                \
       EURYDICE_CFIELD(.ptr =)                                                  \
       ((char *)slice.ptr + mid * sizeof(element_type)),                        \
-          EURYDICE_CFIELD(.len =)(slice.len - mid)                             \
+          EURYDICE_CFIELD(.len =)(slice.len - (mid))                           \
     }                                                                          \
   }
 
@@ -193,6 +198,11 @@ typedef struct {
 #define Eurydice_slice_to_array2(dst, src, _0, t_arr, _1)                      \
   Eurydice_slice_to_array3(&(dst)->tag, (char *)&(dst)->val.case_Ok, src,      \
                            sizeof(t_arr))
+
+#define Eurydice_slice_to_ref_array(len_, src, t_ptr, t_arr, t_err, t_res)     \
+  (src.len >= len_                                                             \
+       ? ((t_res){.tag = core_result_Ok, .val = {.case_Ok = src.ptr}})         \
+       : ((t_res){.tag = core_result_Err, .val = {.case_Err = 0}}))
 
 static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
                                             Eurydice_slice src, size_t sz) {
@@ -241,49 +251,49 @@ typedef char Eurydice_derefed_slice[];
 extern "C" {
 #endif
 
-static inline void core_num__u32_8__to_be_bytes(uint32_t src, uint8_t dst[4]) {
+static inline void core_num__u32__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   // TODO: why not store32_be?
   uint32_t x = htobe32(src);
   memcpy(dst, &x, 4);
 }
 
-static inline void core_num__u32_8__to_le_bytes(uint32_t src, uint8_t dst[4]) {
+static inline void core_num__u32__to_le_bytes(uint32_t src, uint8_t dst[4]) {
   store32_le(dst, src);
 }
 
-static inline uint32_t core_num__u32_8__from_le_bytes(uint8_t buf[4]) {
+static inline uint32_t core_num__u32__from_le_bytes(uint8_t buf[4]) {
   return load32_le(buf);
 }
 
-static inline void core_num__u64_9__to_le_bytes(uint64_t v, uint8_t buf[8]) {
+static inline void core_num__u64__to_le_bytes(uint64_t v, uint8_t buf[8]) {
   store64_le(buf, v);
 }
 
-static inline uint64_t core_num__u64_9__from_le_bytes(uint8_t buf[8]) {
+static inline uint64_t core_num__u64__from_le_bytes(uint8_t buf[8]) {
   return load64_le(buf);
 }
 
 static inline int64_t
-core_convert_num___core__convert__From_i32__for_i64__59__from(int32_t x) {
+core_convert_num__core__convert__From_i32__for_i64__from(int32_t x) {
   return x;
 }
 
 static inline uint64_t
-core_convert_num___core__convert__From_u8__for_u64__66__from(uint8_t x) {
+core_convert_num__core__convert__From_u8__for_u64__from(uint8_t x) {
   return x;
 }
 
 static inline uint64_t
-core_convert_num___core__convert__From_u16__for_u64__70__from(uint16_t x) {
+core_convert_num__core__convert__From_u16__for_u64__from(uint16_t x) {
   return x;
 }
 
 static inline size_t
-core_convert_num___core__convert__From_u16__for_usize__96__from(uint16_t x) {
+core_convert_num__core__convert__From_u16__for_usize__from(uint16_t x) {
   return x;
 }
 
-static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
+static inline uint32_t core_num__u8__count_ones(uint8_t x0) {
 #ifdef _MSC_VER
   return __popcnt(x0);
 #else
@@ -291,7 +301,7 @@ static inline uint32_t core_num__u8_6__count_ones(uint8_t x0) {
 #endif
 }
 
-static inline uint32_t core_num__i32_2__count_ones(int32_t x0) {
+static inline uint32_t core_num__u32__count_ones(uint32_t x0) {
 #ifdef _MSC_VER
   return __popcnt(x0);
 #else
@@ -299,8 +309,16 @@ static inline uint32_t core_num__i32_2__count_ones(int32_t x0) {
 #endif
 }
 
-static inline size_t
-core_cmp_impls___core__cmp__Ord_for_usize__59__min(size_t a, size_t b) {
+static inline uint32_t core_num__i32__count_ones(int32_t x0) {
+#ifdef _MSC_VER
+  return __popcnt(x0);
+#else
+  return __builtin_popcount(x0);
+#endif
+}
+
+static inline size_t core_cmp_impls__core__cmp__Ord_for_usize__min(size_t a,
+                                                                   size_t b) {
   if (a <= b)
     return a;
   else
@@ -308,18 +326,17 @@ core_cmp_impls___core__cmp__Ord_for_usize__59__min(size_t a, size_t b) {
 }
 
 // unsigned overflow wraparound semantics in C
-static inline uint16_t core_num__u16_7__wrapping_add(uint16_t x, uint16_t y) {
+static inline uint16_t core_num__u16__wrapping_add(uint16_t x, uint16_t y) {
   return x + y;
 }
-static inline uint8_t core_num__u8_6__wrapping_sub(uint8_t x, uint8_t y) {
+static inline uint8_t core_num__u8__wrapping_sub(uint8_t x, uint8_t y) {
   return x - y;
 }
-static inline uint64_t core_num__u64_9__rotate_left(uint64_t x0, uint32_t x1) {
+static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1) {
   return (x0 << x1 | x0 >> (64 - x1));
 }
 
-static inline void core_ops_arith__i32_319__add_assign(int32_t *x0,
-                                                       int32_t *x1) {
+static inline void core_ops_arith__i32__add_assign(int32_t *x0, int32_t *x1) {
   *x0 = *x0 + *x1;
 }
 
@@ -334,20 +351,20 @@ static inline uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
 }
 
 static inline uint8_t
-core_ops_bit___core__ops__bit__BitAnd_u8__u8__for___a__u8___46__bitand(
-    uint8_t *x0, uint8_t x1) {
+core_ops_bit__core__ops__bit__BitAnd_u8__u8__for___a__u8___bitand(uint8_t *x0,
+                                                                  uint8_t x1) {
   return Eurydice_bitand_pv_u8(x0, x1);
 }
 
 static inline uint8_t
-core_ops_bit___core__ops__bit__Shr_i32__u8__for___a__u8___792__shr(uint8_t *x0,
-                                                                   int32_t x1) {
+core_ops_bit__core__ops__bit__Shr_i32__u8__for___a__u8___shr(uint8_t *x0,
+                                                             int32_t x1) {
   return Eurydice_shr_pv_u8(x0, x1);
 }
 
 #define core_num_nonzero_private_NonZeroUsizeInner size_t
 static inline core_num_nonzero_private_NonZeroUsizeInner
-core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__NonZeroUsizeInner__26__clone(
+core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__NonZeroUsizeInner___clone(
     core_num_nonzero_private_NonZeroUsizeInner *x0) {
   return *x0;
 }
@@ -365,12 +382,12 @@ core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__N
        : (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 1,                      \
                                EURYDICE_CFIELD(.f0 =)(iter_ptr)->start++}))
 
-#define core_iter_range___core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___6__next \
+#define core_iter_range__core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___next \
   Eurydice_range_iter_next
 
 // See note in karamel/lib/Inlining.ml if you change this
 #define Eurydice_into_iter(x, t, _ret_t, _) (x)
-#define core_iter_traits_collect___core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__1__into_iter \
+#define core_iter_traits_collect__core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter \
   Eurydice_into_iter
 
 typedef struct {
@@ -407,10 +424,10 @@ static inline Eurydice_slice chunk_next(Eurydice_chunks *chunks,
   (((iter)->slice.len == 0) ? ((ret_t){.tag = core_option_None})               \
                             : ((ret_t){.tag = core_option_Some,                \
                                        .f0 = chunk_next(iter, sizeof(t))}))
-#define core_slice_iter___core__iter__traits__iterator__Iterator_for_core__slice__iter__Chunks__a__T___70__next \
+#define core_slice_iter__core__iter__traits__iterator__Iterator_for_core__slice__iter__Chunks__a__T___next \
   Eurydice_chunks_next
 // This name changed on 20240627
-#define core_slice_iter___core__iter__traits__iterator__Iterator_for_core__slice__iter__Chunks__a__T___71__next \
+#define core_slice_iter__core__iter__traits__iterator__Iterator_for_core__slice__iter__Chunks__a__T___next \
   Eurydice_chunks_next
 #define core_slice_iter__core__slice__iter__ChunksExact__a__T__89__next(       \
     iter, t, _ret_t)                                                           \
@@ -424,8 +441,7 @@ typedef struct {
 #define core_slice___Slice_T___iter(x, t, _ret_t)                              \
   ((Eurydice_slice_iterator){.s = x, .index = 0})
 #define core_slice_iter_Iter Eurydice_slice_iterator
-#define core_slice_iter__core__slice__iter__Iter__a__T__181__next(iter, t,     \
-                                                                  ret_t)       \
+#define core_slice_iter__core__slice__iter__Iter__a__T__next(iter, t, ret_t)   \
   (((iter)->index == (iter)->s.len)                                            \
        ? (KRML_CLITERAL(ret_t){.tag = core_option_None})                       \
        : (KRML_CLITERAL(ret_t){                                                \
@@ -435,17 +451,22 @@ typedef struct {
 #define core_option__core__option__Option_T__TraitClause_0___is_some(X, _0,    \
                                                                      _1)       \
   ((X)->tag == 1)
+
 // STRINGS
 
 typedef const char *Prims_string;
+
+// UNSAFE CODE
+
+#define core_slice___Slice_T___as_mut_ptr(x, t, _) (x.ptr)
+#define core_mem_size_of(t, _) (sizeof(t))
 
 // MISC (UNTESTED)
 
 typedef void *core_fmt_Formatter;
 typedef void *core_fmt_Arguments;
 typedef void *core_fmt_rt_Argument;
-#define core_fmt_rt__core__fmt__rt__Argument__a__1__new_display(x1, x2, x3,    \
-                                                                x4)            \
+#define core_fmt_rt__core__fmt__rt__Argument__a___new_display(x1, x2, x3, x4)  \
   NULL
 
 // BOXES
@@ -453,7 +474,8 @@ typedef void *core_fmt_rt_Argument;
 // Crimes.
 static inline char *malloc_and_init(size_t sz, char *init) {
   char *ptr = (char *)malloc(sz);
-  memcpy(ptr, init, sz);
+  if (ptr != NULL)
+    memcpy(ptr, init, sz);
   return ptr;
 }
 
@@ -463,16 +485,28 @@ static inline char *malloc_and_init(size_t sz, char *init) {
 #define Eurydice_box_new_array(len, ptr, t, t_dst)                             \
   ((t_dst)(malloc_and_init(len * sizeof(t), (char *)(ptr))))
 
-// VECTORS (ANCIENT, POSSIBLY UNTESTED)
+// FIXME this needs to handle allocation failure errors, but this seems hard to
+// do without evaluating malloc_and_init twice...
+#define alloc_boxed__alloc__boxed__Box_T___try_new(init, t, t_ret)             \
+  ((t_ret){.tag = core_result_Ok,                                              \
+           .f0 = (t *)malloc_and_init(sizeof(t), (char *)(&init))})
 
-/* For now these are passed by value -- three words. We could conceivably change
- * the representation to heap-allocate this struct and only pass around the
- * pointer (one word). */
+// VECTORS
+
+/* This is heap-allocated. We copy the layout of
+ * https://doc.rust-lang.org/std/vec/struct.Vec.html and keep the size and
+ * capacity. (For consistency with other definitions in this file, we do not use
+ * `len`, which here tends to refer to a number of elements, and instead use a
+ * size.) */
 typedef struct {
-  void *ptr;
-  size_t len;        /* the number of elements */
-  size_t alloc_size; /* the size of the allocation, in number of BYTES */
+  char *ptr;
+  size_t sz;       /* current size, in bytes */
+  size_t capacity; /* the size of the allocation, in number of BYTES */
 } Eurydice_vec_s, *Eurydice_vec;
+
+typedef Eurydice_vec alloc_vec_Vec;
+
+// VECTORS (ANCIENT, POSSIBLY UNTESTED)
 
 /* Here, we set everything to zero rather than use a non-standard GCC
  * statement-expression -- this suitably initializes ptr to NULL and len and
@@ -516,4 +550,3 @@ typedef struct {
     *ptr = new_v;                                                              \
     old_v;                                                                     \
   })
-

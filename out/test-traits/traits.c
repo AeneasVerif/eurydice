@@ -10,9 +10,9 @@
 #include "Eurydice.h"
 
 /**
-This function found in impl {(traits::ToInt for traits::Foo)}
+This function found in impl {traits::ToInt for traits::Foo}
 */
-uint32_t traits_to_int_7d(traits_Foo *self)
+uint32_t traits_to_int_ac(traits_Foo *self)
 {
   if (!(self[0U] == traits_Foo_Foo1))
   {
@@ -22,24 +22,25 @@ uint32_t traits_to_int_7d(traits_Foo *self)
 }
 
 /**
-This function found in impl {(traits::ToInt for &0 (@Slice<traits::Foo>))#1}
+This function found in impl {traits::ToInt for &0 (@Slice<traits::Foo>)}
 */
-uint32_t traits_to_int_dd(Eurydice_slice *self)
+uint32_t traits_to_int_88(Eurydice_slice *self)
 {
   uint32_t
   uu____0 =
-    traits_to_int_7d(&Eurydice_slice_index(self[0U], (size_t)0U, traits_Foo, traits_Foo *));
+    traits_to_int_ac(&Eurydice_slice_index(self[0U], (size_t)0U, traits_Foo, traits_Foo *));
   return
     uu____0 *
-      traits_to_int_7d(&Eurydice_slice_index(self[0U], (size_t)1U, traits_Foo, traits_Foo *));
+      traits_to_int_ac(&Eurydice_slice_index(self[0U], (size_t)1U, traits_Foo, traits_Foo *));
 }
 
 void traits_main(void)
 {
   traits_Foo foos[2U] = { traits_Foo_Foo1, traits_Foo_Foo2 };
   /* original Rust expression is not an lvalue in C */
-  Eurydice_slice lvalue = Eurydice_array_to_subslice2(foos, (size_t)0U, (size_t)2U, traits_Foo);
-  if (!(traits_to_int_dd(&lvalue) != 2U))
+  Eurydice_slice
+  lvalue = Eurydice_array_to_subslice3(foos, (size_t)0U, (size_t)2U, traits_Foo *);
+  if (!(traits_to_int_88(&lvalue) != 2U))
   {
     return;
   }

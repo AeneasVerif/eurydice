@@ -132,10 +132,10 @@ let add_extra_type_to_slice_index =
           EApp
             ( with_type TUnit
                 (ETApp
-                   ( with_type TUnit (EQualified ([ "Eurydice" ], "slice_subslice2")),
+                   ( with_type TUnit (EQualified ([ "Eurydice" ], "slice_subslice3")),
                      [],
                      [],
-                     [ t_elements ] )),
+                     [ TBuf (t_elements, false) ] )),
               [ e_slice; e_start; e_end ] )
       | ( ETApp
             ({ node = EQualified ([ "Eurydice" ], "array_to_subslice"); _ }, _, [], t_elements :: _),
@@ -151,10 +151,10 @@ let add_extra_type_to_slice_index =
           EApp
             ( with_type TUnit
                 (ETApp
-                   ( with_type TUnit (EQualified ([ "Eurydice" ], "array_to_subslice2")),
+                   ( with_type TUnit (EQualified ([ "Eurydice" ], "array_to_subslice3")),
                      [],
                      [],
-                     [ t_elements ] )),
+                     [ TBuf (t_elements, false) ] )),
               [ e_slice; e_start; e_end ] )
       | _ -> super#visit_EApp env e es
   end
@@ -171,4 +171,3 @@ let also_skip_prefix_for_external_types (scope_env, _) =
         if actual <> fst target then
           KPrint.bprintf "Warning! The skip_prefix options generate name conflicts\n"
   end
-

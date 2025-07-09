@@ -87,19 +87,24 @@ Supported options:|}
       extern_c := true;
       cxx_compat := true;
       unroll_loops := !funroll_loops;
-      static_header := [ Bundle.Prefix [ "core"; "convert" ]; Bundle.Prefix [ "core"; "num" ]; Bundle.Prefix [ "Eurydice"; "Int128" ] ];
+      static_header :=
+        [
+          Bundle.Prefix [ "core"; "convert" ];
+          Bundle.Prefix [ "core"; "num" ];
+          Bundle.Prefix [ "Eurydice"; "Int128" ];
+        ];
       Warn.parse_warn_error (!warn_error ^ "+8"));
     Monomorphization.NameGen.short_names := true;
     AstToCStar.no_return_type_lids :=
       [
         [ "Eurydice" ], "slice_index";
         [ "Eurydice" ], "slice_subslice";
-        [ "Eurydice" ], "slice_subslice2";
+        [ "Eurydice" ], "slice_subslice3";
         [ "Eurydice" ], "slice_subslice_to";
         [ "Eurydice" ], "slice_subslice_from";
         [ "Eurydice" ], "array_to_slice";
         [ "Eurydice" ], "array_to_subslice";
-        [ "Eurydice" ], "array_to_subslice2";
+        [ "Eurydice" ], "array_to_subslice3";
         [ "Eurydice" ], "array_to_subslice_to";
         [ "Eurydice" ], "array_to_subslice_from";
         [ "Eurydice" ], "array_repeat";
@@ -157,11 +162,10 @@ Supported options:|}
           (List.map
              (fun filename ->
                let llbc = Eurydice.LoadLlbc.load_file filename in
-               Eurydice.Builtin.adjust (Eurydice.AstOfLlbc.file_of_crate llbc))
+               Eurydice.AstOfLlbc.file_of_crate llbc)
              !files);
       ]
   in
-  Eurydice.Builtin.check ();
 
   Printf.printf "1️⃣ LLBC ➡️  AST\n";
   let files = Eurydice.PreCleanup.precleanup files in
@@ -242,7 +246,8 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
   Eurydice.Logging.log "Phase2.26" "%a" pfiles files;
   let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
-  let _, files = Krml.DataTypes.everything files in
+  let (map, _, _), files = Krml.DataTypes.everything files in
+  Eurydice.Cleanup2.fixup_monomorphization_map map;
   Eurydice.Logging.log "Phase2.3" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_ite#visit_files () files in
   Eurydice.Logging.log "Phase2.4" "%a" pfiles files;
@@ -270,9 +275,10 @@ Supported options:|}
   (* This chunk which reuses key elements of simplify2 *)
   let files = Eurydice.Cleanup2.check_addrof#visit_files () files in
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
-  let files = Krml.Simplify.hoist#visit_files [] files in
+  let files = Eurydice.Cleanup2.hoist#visit_files [] files in
+  let files = Eurydice.Cleanup2.fixup_hoist#visit_files () files in
   Eurydice.Logging.log "Phase2.75" "%a" pfiles files;
-  let files = Krml.Simplify.fixup_hoist#visit_files () files in
+  let files = Eurydice.Cleanup2.globalize_global_locals files in
   Eurydice.Logging.log "Phase2.8" "%a" pfiles files;
   let files = Eurydice.Cleanup2.reconstruct_for_loops#visit_files () files in
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in

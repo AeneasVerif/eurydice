@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-static inline void core_num__u32_8__to_be_bytes(uint32_t x0, uint8_t x1[4U]);
+static inline void core_num__u32__to_be_bytes(uint32_t x0, uint8_t x1[4U]);
 
 /**
 A monomorphic instance of const_generics.serialize
@@ -111,11 +111,11 @@ bool const_generics_g_69(uint32_t x, size_t y);
 
 void const_generics_main3(void);
 
-extern uint32_t core_clone_impls___core__clone__Clone_for_u32__8__clone(uint32_t *x0);
+extern uint32_t core_clone_impls__core__clone__Clone_for_u32__clone(uint32_t *x0);
 
-extern uint64_t core_clone_impls___core__clone__Clone_for_u64__9__clone(uint64_t *x0);
+extern uint64_t core_clone_impls__core__clone__Clone_for_u64__clone(uint64_t *x0);
 
-extern uint8_t core_clone_impls___core__clone__Clone_for_u8__6__clone(uint8_t *x0);
+extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(uint8_t *x0);
 
 #if defined(__cplusplus)
 }

@@ -8,50 +8,50 @@
 #include "where_clauses_closures.h"
 
 /**
-This function found in impl {(where_clauses_closures::Ops<1: usize> for usize)}
+This function found in impl {where_clauses_closures::Ops<1: usize> for usize}
 */
-size_t where_clauses_closures_zero_d6(void)
+size_t where_clauses_closures_zero_af(void)
 {
   return (size_t)0U;
 }
 
 /**
-This function found in impl {(where_clauses_closures::Ops<1: usize> for usize)}
+This function found in impl {where_clauses_closures::Ops<1: usize> for usize}
 */
-size_t where_clauses_closures_of_usize_d6(size_t x)
+size_t where_clauses_closures_of_usize_af(size_t x)
 {
   return x;
 }
 
 /**
-This function found in impl {(core::ops::function::FnMut<(usize), T> for where_clauses_closures::test::closure<T, K>[TraitClause@0, TraitClause@1, TraitClause@2])}
+This function found in impl {core::ops::function::FnMut<(usize), T> for where_clauses_closures::test::closure<T, K>[TraitClause@0, TraitClause@1, TraitClause@2]}
 */
 /**
-A monomorphic instance of where_clauses_closures.test.call_mut_c3
+A monomorphic instance of where_clauses_closures.test.call_mut_1a
 with types size_t
 with const generics
 - K= 1
 */
-size_t where_clauses_closures_test_call_mut_c3_db(void **_, size_t tupled_args)
+size_t where_clauses_closures_test_call_mut_1a_e3(void **_, size_t tupled_args)
 {
   size_t i = tupled_args;
-  return where_clauses_closures_of_usize_d6(i);
+  return where_clauses_closures_of_usize_af(i);
 }
 
 /**
-This function found in impl {(core::ops::function::FnOnce<(usize), T> for where_clauses_closures::test::closure<T, K>[TraitClause@0, TraitClause@1, TraitClause@2])}
+This function found in impl {core::ops::function::FnOnce<(usize), T> for where_clauses_closures::test::closure<T, K>[TraitClause@0, TraitClause@1, TraitClause@2]}
 */
 /**
-A monomorphic instance of where_clauses_closures.test.call_once_ef
+A monomorphic instance of where_clauses_closures.test.call_once_79
 with types size_t
 with const generics
 - K= 1
 */
-size_t where_clauses_closures_test_call_once_ef_db(size_t _)
+size_t where_clauses_closures_test_call_once_79_e3(size_t _)
 {
   /* original Rust expression is not an lvalue in C */
   void *lvalue = (void *)0U;
-  return where_clauses_closures_test_call_mut_c3_db(&lvalue, _);
+  return where_clauses_closures_test_call_mut_1a_e3(&lvalue, _);
 }
 
 /**
@@ -60,15 +60,15 @@ with types size_t
 with const generics
 - K= 1
 */
-size_t_x2 where_clauses_closures_test_db(void)
+size_t_x2 where_clauses_closures_test_e3(void)
 {
   size_t x[1U];
   {
     /* original Rust expression is not an lvalue in C */
     void *lvalue = (void *)0U;
-    x[0U] = where_clauses_closures_test_call_mut_c3_db(&lvalue, (size_t)0U);
+    x[0U] = where_clauses_closures_test_call_mut_1a_e3(&lvalue, (size_t)0U);
   }
-  size_t y = where_clauses_closures_zero_d6();
+  size_t y = where_clauses_closures_zero_af();
   size_t_x2 lit;
   lit.fst = x[0U];
   lit.snd = y;
@@ -84,7 +84,7 @@ _size_t__x2;
 
 void where_clauses_closures_main(void)
 {
-  size_t_x2 uu____0 = where_clauses_closures_test_db();
+  size_t_x2 uu____0 = where_clauses_closures_test_e3();
   size_t x = uu____0.fst;
   size_t y = uu____0.snd;
   _size_t__x2 uu____1 = { .fst = &x, .snd = &y };

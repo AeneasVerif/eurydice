@@ -141,6 +141,17 @@ let parse_file (v : Yaml.value) : file =
               include_
         | Some _ -> parsing_error "include_in_h must be a list"
       in
+      let include_internal =
+        match lookup "include_in_internal_h" with
+        | None -> []
+        | Some (`A include_) ->
+            List.map
+              (function
+                | `String s -> Krml.Options.InternalOnly name, s
+                | _ -> parsing_error "include_in_internal_h must be a string")
+              include_
+        | Some _ -> parsing_error "include_in_internal_h must be a list"
+      in
       let c_include_ =
         match lookup "include_in_c" with
         | None -> []
@@ -154,7 +165,8 @@ let parse_file (v : Yaml.value) : file =
       in
       if !count < List.length ls then
         parsing_error "extraneous fields in file";
-      Krml.Options.(add_early_include := include_ @ c_include_ @ !add_early_include);
+      Krml.Options.(
+        add_early_include := include_ @ c_include_ @ include_internal @ !add_early_include);
       {
         name;
         definitions;

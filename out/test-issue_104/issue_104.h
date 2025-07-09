@@ -21,7 +21,7 @@ extern "C" {
 
 typedef uint8_t core_panicking_AssertKind;
 
-#define ISSUE_104___ISSUE_104__FUN_FOR_ISSUE_104__S___VAL (5U)
+#define ISSUE_104__ISSUE_104__FUN_FOR_ISSUE_104__S__VAL (5U)
 
 /**
 A monomorphic instance of issue_104.sth

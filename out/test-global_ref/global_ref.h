@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __array2d_H
-#define __array2d_H
+#ifndef __global_ref_H
+#define __global_ref_H
 
 #include "eurydice_glue.h"
 
@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-bool array2d_f(uint32_t x[4U][2U]);
+extern bool core_cmp_impls__core__cmp__PartialEq_____for_____eq(void **x0, void **x1);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -23,13 +23,17 @@ bool array2d_f(uint32_t x[4U][2U]);
 
 typedef uint8_t core_panicking_AssertKind;
 
-void array2d_main(void);
+extern void ***global_ref_C_VAL_local_2;
 
-extern bool core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(uint32_t *x0, uint32_t *x1);
+#define GLOBAL_REF_C_VAL (&global_ref_C_VAL_local_2)
+
+extern int32_t ***const global_ref_S_VAL;
+
+void global_ref_main(void);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define __array2d_H_DEFINED
+#define __global_ref_H_DEFINED
 #endif

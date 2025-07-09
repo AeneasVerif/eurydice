@@ -1,3 +1,5 @@
+#pragma once
+
 // New types & definitions for 128-bit integers
 
 #if defined(__SIZEOF_INT128__)
@@ -5,6 +7,8 @@
 #endif
 
 #ifdef HAS_INT128
+#include <inttypes.h>
+
 typedef __int128_t Eurydice_Int128_int128_t;
 typedef __uint128_t Eurydice_Int128_uint128_t;
 

@@ -8,15 +8,15 @@
 #include "where_clauses_fncg.h"
 
 /**
-This function found in impl {(where_clauses_fncg::Foo<K> for u64)}
+This function found in impl {where_clauses_fncg::Foo<K> for u64}
 */
 /**
-A monomorphic instance of where_clauses_fncg.bar_ea
+A monomorphic instance of where_clauses_fncg.bar_16
 with const generics
 - K= 8
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_ea_c0(uint8_t x[8U][4U], uint8_t _[4U][8U])
+uint64_t where_clauses_fncg_bar_16_7b(uint8_t x[8U][4U], uint8_t _[4U][8U])
 {
   return (uint64_t)x[0U][0U];
 }
@@ -29,41 +29,41 @@ with const generics
 - L= 8
 - M= 10
 */
-uint64_t where_clauses_fncg_f_40(void)
+uint64_t where_clauses_fncg_f_43(void)
 {
   uint8_t buf[8U][4U] = { { 0U } };
   uint8_t repeat_expression[4U][8U] = { { 0U } };
-  return where_clauses_fncg_bar_ea_c0(buf, repeat_expression);
+  return where_clauses_fncg_bar_16_7b(buf, repeat_expression);
 }
 
 /**
-This function found in impl {(where_clauses_fncg::Foo<K> for u64)}
+This function found in impl {where_clauses_fncg::Foo<K> for u64}
 */
 /**
-A monomorphic instance of where_clauses_fncg.bar_ea
+A monomorphic instance of where_clauses_fncg.bar_16
 with const generics
 - K= 12
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_ea_fe(uint8_t x[12U][4U], uint8_t _[4U][12U])
+uint64_t where_clauses_fncg_bar_16_fa(uint8_t x[12U][4U], uint8_t _[4U][12U])
 {
   return (uint64_t)x[0U][0U];
 }
 
 /**
-This function found in impl {(where_clauses_fncg::UseFoo for ())#1}
+This function found in impl {where_clauses_fncg::UseFoo for ()}
 */
 /**
-A monomorphic instance of where_clauses_fncg.method_foo_eb
+A monomorphic instance of where_clauses_fncg.method_foo_db
 with types uint64_t
 with const generics
 - K= 12
 */
-uint64_t where_clauses_fncg_method_foo_eb_78(void)
+uint64_t where_clauses_fncg_method_foo_db_7c(void)
 {
   uint8_t buf[12U][4U] = { { 0U } };
   uint8_t repeat_expression[4U][12U] = { { 0U } };
-  return where_clauses_fncg_bar_ea_fe(buf, repeat_expression);
+  return where_clauses_fncg_bar_16_fa(buf, repeat_expression);
 }
 
 /**
@@ -72,9 +72,9 @@ with types ()
 with const generics
 
 */
-uint64_t where_clauses_fncg_g_35(void)
+uint64_t where_clauses_fncg_g_ec(void)
 {
-  return where_clauses_fncg_method_foo_eb_78();
+  return where_clauses_fncg_method_foo_db_7c();
 }
 
 typedef struct _uint64_t__x2_s
@@ -86,14 +86,14 @@ _uint64_t__x2;
 
 void where_clauses_fncg_main(void)
 {
-  uint64_t r = where_clauses_fncg_f_40();
+  uint64_t r = where_clauses_fncg_f_43();
   /* original Rust expression is not an lvalue in C */
   uint64_t lvalue0 = 0ULL;
   _uint64_t__x2 uu____0 = { .fst = &r, .snd = &lvalue0 };
   uint64_t *left_val0 = uu____0.fst;
   uint64_t *right_val0 = uu____0.snd;
   EURYDICE_ASSERT(left_val0[0U] == right_val0[0U], "panic!");
-  uint64_t r0 = where_clauses_fncg_g_35();
+  uint64_t r0 = where_clauses_fncg_g_ec();
   /* original Rust expression is not an lvalue in C */
   uint64_t lvalue = 0ULL;
   _uint64_t__x2 uu____1 = { .fst = &r0, .snd = &lvalue };
