@@ -418,7 +418,7 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* We compile slices to fat pointers, which hold the pointer underneath -- no need for an
          extra reference here. *)
       Builtin.mk_slice (typ_of_ty env t)
-  | TAdt
+  (* | TAdt
       {
         id = TBuiltin TBox;
         generics = { types = [ TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } } ]; _ };
@@ -428,7 +428,7 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
          types and pointer types. *)
       let lid = lid_of_array env t cg in
       env.decl_oblis <- LidMap.add lid (ObliArray (t,cg)) env.decl_oblis; 
-      K.TBuf (typ_of_ty env t, false)
+      K.TBuf (typ_of_ty env t, false) *)
   | TRef (_, TAdt { id = TBuiltin TStr; generics = { types = []; _ } }, _) -> Builtin.str_t
   | TRef (_, t, _) ->
       (* Normal reference *)
@@ -449,7 +449,7 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } } ->
       let lid = lid_of_array env t cg in
       env.decl_oblis <- LidMap.add lid (ObliArray (t,cg)) env.decl_oblis; 
-      maybe_cg_array env t cg
+      K.TQualified lid
   | TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
       (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
       TApp (Builtin.derefed_slice, [ typ_of_ty env t ])
@@ -502,7 +502,7 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
          from this to the DST above. *)
       t
 
-and maybe_cg_array env t cg =
+let maybe_cg_array (env : env) (t : C.ty) (cg : C.const_generic) =
   match cg with
   | CgValue _ -> K.TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))
   | CgVar var ->
@@ -715,10 +715,10 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       (* L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr sub_e (C.show_ty sub_place.ty) *)
       (*   (C.show_projection_elem pe); *)
       match pe, sub_place, sub_place.ty with
-      | C.Deref, _, TRef (_, TAdt { id = TBuiltin TArray; generics = { types = [ t ]; _ } }, _)
+      (*| C.Deref, _, TRef (_, TAdt { id = TBuiltin TArray; generics = { types = [ t ]; _ } }, _)
       | C.Deref, _, TRawPtr (TAdt { id = TBuiltin TArray; generics = { types = [ t ]; _ } }, _) ->
           (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
-          K.with_type (TBuf (typ_of_ty env t, false)) !*sub_e.K.node
+          K.with_type (TBuf (typ_of_ty env t, false)) !*sub_e.K.node *)
       | C.Deref, _, TRef (_, TAdt { id = TBuiltin TSlice; _ }, _)
       | C.Deref, _, TRawPtr (TAdt { id = TBuiltin TSlice; _ }, _) -> !*sub_e
       | ( C.Deref,
@@ -727,7 +727,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           (* All types represented as a pointer at run-time, compiled to a C pointer *)
           begin
             match !*sub_e.K.typ with
-            | TBuf (t_pointee, _) | TArray (t_pointee, _) ->
+            | TBuf (t_pointee, _) | TArray (t_pointee, _) -> (**??*)
                 Krml.Helpers.(mk_deref t_pointee !*sub_e.K.node)
             | t ->
                 L.log "AstOfLlbc" "UNHANDLED DEREFERENCE\ne=%a\nt=%a\nty=%s\npe=%s\n" pexpr !*sub_e
@@ -979,7 +979,7 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
 let maybe_addrof (_env : env) (ty : C.ty) (e : K.expr) =
   (* ty is the *original* Rust type *)
   match ty with
-  | TAdt { id = TBuiltin (TArray | TSlice); _ } -> e
+  | TAdt { id = TBuiltin (TSlice); _ } -> e
   | _ -> K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
 
 (** Handling trait clauses as dictionaries *)
@@ -1610,11 +1610,16 @@ let expression_of_fn_ptr env (fn_ptr : C.fn_ptr) = expression_of_fn_ptr env "" f
 let expression_of_operand (env : env) (op : C.operand) : K.expr =
   match op with
   | Copy p ->
+     (** is this necessary? if all the types of array are already translated into struct in [typ_of_ty],
+         then [expr_of_place] should not produce any array type places anymore*)
       let e = expression_of_place env p in
       begin
         match p.ty with
-        | C.TAdt { id = TBuiltin TArray; generics = { const_generics = [ cg ]; _ } } ->
-            mk_deep_copy e (expression_of_const_generic env cg)
+        | C.TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } } ->
+           let lid = lid_of_array env t cg in
+           env.decl_oblis <- LidMap.add lid (ObliArray (t,cg)) env.decl_oblis;
+           L.log "AstOfLlbc" "Added Obligation in operand";
+           K.with_type (K.TQualified lid) (K.EFlat [(Some "data",e)])
         | _ -> e
       end
   | Move p -> expression_of_place env p
@@ -2011,6 +2016,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
       (* Special treatment *)
       let e = expression_of_operand env e in
       let t = typ_of_ty env ty in
+      let t_array = maybe_cg_array env ty c in
       let len = expression_of_const_generic env c in
       let dest = expression_of_place env dest in
       let repeat =
@@ -2026,7 +2032,8 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
             Krml.DeBruijn.(subst_t t 0 (subst_ct diff len 0 Builtin.array_repeat.typ))
             (ETApp (repeat, [ len ], [], [ t ])))
       in
-      Krml.Helpers.with_unit K.(EAssign (dest, with_type dest.typ (EApp (repeat, [ e ]))))
+      Krml.Helpers.with_unit K.(EAssign (dest, with_type dest.typ
+                                 (EFlat [(Some "data",(with_type t_array (EApp (repeat, [ e ]))))])))
   | Call
       {
         func =
@@ -2108,7 +2115,10 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
 
          This 100% does not work in case of a polymorphic function that is later monomorphized,
          meaning we really should be doing this transformation post-monomorphization. *)
-      let hd, output_t =
+
+      (** Array handling: commented special case for array *)
+      (*
+        let hd, output_t =
         match hd.node with
         | K.ETApp ({ node = EQualified lid; _ }, [], [], [ TArray (t, n) ])
           when lid = Builtin.box_new.name ->
@@ -2120,7 +2130,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
                   (ETApp (Builtin.(expr_of_builtin box_new_array), [ len ], [], [ t ]))),
               output_t )
         | _ -> hd, output_t
-      in
+      in *)
 
       let rhs =
         if args = [] then
@@ -2138,7 +2148,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
         in
         match fn_ptr.func, fn_ptr.generics.types @ extra_types with
         | ( FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })),
-            [ TAdt { id = TBuiltin (TArray | TSlice); _ } ] ) ->
+            [ TAdt { id = TBuiltin (TArray | TSlice); _ } ] ) -> (** Array handling: this part is useless? *)
             (* Will decay. See comment above maybe_addrof *)
             rhs
         | ( FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })),
