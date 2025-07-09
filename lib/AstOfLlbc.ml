@@ -1614,10 +1614,10 @@ let expression_of_fn_ptr env (fn_ptr : C.fn_ptr) = expression_of_fn_ptr env "" f
 
 let expression_of_operand (env : env) (op : C.operand) : K.expr =
   match op with
-  | Copy p ->
+  | Copy p -> expression_of_place env p
      (** is this necessary? if all the types of array are already translated into struct in [typ_of_ty],
          then [expr_of_place] should not produce any array type places anymore*)
-      let e = expression_of_place env p in
+     (* let e = expression_of_place env p in
       begin
         match p.ty with
         | C.TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } } ->
@@ -1626,7 +1626,7 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
            L.log "AstOfLlbc" "Added Obligation in operand";
            K.with_type (K.TQualified lid) (K.EFlat [(Some "data",e)])
         | _ -> e
-      end
+      end *)
   | Move p -> expression_of_place env p
   | Constant { value = CLiteral l; _ } -> expression_of_literal env l
   | Constant { value = CVar var; _ } -> expression_of_cg_var_id env (C.expect_free_var var)
@@ -2704,6 +2704,7 @@ let impl_obligation (env: env) (ob: decl_obligation) : K.decl =
     match ob with ObliArray (ty, cg) ->
       let lid = lid_of_array env ty cg in
       let typ_array = maybe_cg_array env ty cg in
+      L.log "AstOfLlbc" "append new decl of struct: %a" plid lid;
       K.DType (lid, [], 1, 1, Flat [(Some "data",(typ_array,true))])
      
 let impl_obligations (env: env) (obpairs : (decl_obligation * unit) list) : K.decl list =
@@ -2761,4 +2762,5 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
     }
   in
   let env = List.fold_left check_if_dst env declarations in
-  name, decls_of_declarations env declarations @ impl_obligations env (ObliMap.bindings !obli_map)
+  let trans_decls = decls_of_declarations env declarations in
+  name,  trans_decls @ impl_obligations env (ObliMap.bindings !obli_map)
