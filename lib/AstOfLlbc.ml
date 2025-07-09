@@ -1612,6 +1612,8 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
 
 let expression_of_fn_ptr env (fn_ptr : C.fn_ptr) = expression_of_fn_ptr env "" fn_ptr
 
+let expression_of_array (expr_array : K.expr) = K.EFlat [(Some "data", expr_array)]
+
 let expression_of_operand (env : env) (op : C.operand) : K.expr =
   match op with
   | Copy p -> expression_of_place env p
@@ -1894,9 +1896,11 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | Aggregate (AggregatedAdt ({ id = TBuiltin _; _ }, _, _), _) ->
       failwith "unsupported: AggregatedAdt / TAssume"
   | Aggregate (AggregatedArray (t, cg), ops) ->
-      K.with_type
+      let array_expr = K.with_type
         (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
-        (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
+        (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops)) in
+      let lid = lid_of_array env t cg in
+      K.with_type (K.TQualified lid) (expression_of_array array_expr)
   | Global { id; _ } ->
       let global = env.get_nth_global id in
       K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
@@ -2038,7 +2042,8 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
             (ETApp (repeat, [ len ], [], [ t ])))
       in
       Krml.Helpers.with_unit K.(EAssign (dest, with_type dest.typ
-                                 (EFlat [(Some "data",(with_type t_array (EApp (repeat, [ e ]))))])))
+                               (expression_of_array (with_type t_array (EApp (repeat, [e]))))))
+
   | Call
       {
         func =
