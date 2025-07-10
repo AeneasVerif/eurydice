@@ -552,18 +552,23 @@ let remove_trivial_ite =
       | _ -> super#visit_ESwitch env scrut branches
   end
 
-let must_explode t =
+let contains_array t =
   begin
     object (_self)
-      inherit [_] reduce as super
+      inherit [_] reduce as _super
       method zero = false
       method plus = ( || )
-      method! visit_expr ((_, t) as env) e =
-        H.is_array t && not (is_suitable_array_initializer e.node) || super#visit_expr env e
+      method! visit_TBuf _ _ _ = false
+      method! visit_TArray _ _ _ = true
+      method! visit_TCgArray _ _ _ = true
     end
   end
     #visit_expr_w
     () t
+
+let must_explode e =
+  (* Not that this visits the whole type (including the type of fields) *)
+  contains_array e && not (is_suitable_array_initializer e.node)
 
 let remove_literals tbl =
   object (_self)
