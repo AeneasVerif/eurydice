@@ -164,9 +164,7 @@ let assert_slice (t : K.typ) =
   | _ -> fail "Not a slice: %a" ptyp t
 
 let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
-  match p with
-  | PeIdent (s, _) -> s (* We ignore disambiguators *)
-  | _ -> Charon.PrintTypes.path_elem_to_string env.format_env p
+  Charon.PrintTypes.path_elem_to_string env.format_env p
 
 let string_of_name env ps = String.concat "::" (List.map (string_of_path_elem env) ps)
 
@@ -383,10 +381,8 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TLiteral t -> typ_of_literal_ty env t
   | TNever -> failwith "Impossible: Never"
   | TDynTrait _ -> failwith "TODO: dyn Trait"
-  | TRef (_, TAdt { id; generics = { types = [ t ]; _ } as generics }, _)
+  | TAdt { id; generics = { types = [ t ]; _ } as generics }
     when RustNames.is_vec env id generics ->
-      (* We compile vecs to fat pointers, which hold the pointer underneath -- no need for an
-         extra reference here. *)
       Builtin.mk_vec (typ_of_ty env t)
   | TAdt
       {
@@ -410,8 +406,6 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TRef (_, t, _) ->
       (* Normal reference *)
       K.TBuf (typ_of_ty env t, false)
-  | TAdt { id; generics = { types = [ t ]; _ } as generics } when RustNames.is_vec env id generics
-    -> Builtin.mk_vec (typ_of_ty env t)
   | TAdt { id = TAdtId id; generics = { types = args; const_generics = generic_args; _ } } ->
       let ts = List.map (typ_of_ty env) args in
       let cgs = List.map (cg_of_const_generic env) generic_args in
@@ -697,9 +691,6 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           K.with_type (TBuf (typ_of_ty env t, false)) !*sub_e.K.node
       | C.Deref, _, TRef (_, TAdt { id = TBuiltin TSlice; _ }, _)
       | C.Deref, _, TRawPtr (TAdt { id = TBuiltin TSlice; _ }, _) -> !*sub_e
-      | C.Deref, _, TRef (_, TAdt { id; generics }, _)
-      | C.Deref, _, TRawPtr (TAdt { id; generics }, _)
-        when RustNames.is_vec env id generics -> !*sub_e
       | ( C.Deref,
           _,
           (TRawPtr _ | TRef _ | TAdt { id = TBuiltin TBox; generics = { types = [ _ ]; _ } }) ) ->
@@ -955,10 +946,9 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
    translation that does not work with polymorphism, so perhaps there ought to
    be a MAYBE_CAST operator that gets desugared post-krml monomorphization. TBD.
 *)
-let maybe_addrof (env : env) (ty : C.ty) (e : K.expr) =
+let maybe_addrof (_env : env) (ty : C.ty) (e : K.expr) =
   (* ty is the *original* Rust type *)
   match ty with
-  | TAdt { id; generics } when RustNames.is_vec env id generics -> e
   | TAdt { id = TBuiltin (TArray | TSlice); _ } -> e
   | _ -> K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
 
@@ -2616,6 +2606,7 @@ let replacements =
     (fun (p, d) -> Charon.NameMatcher.parse_pattern p, d)
     [
       "core::result::{core::result::Result<@T, @E>}::unwrap", Builtin.unwrap;
+      "core::slice::{[@T]}::swap", Builtin.slice_swap;
       (* FIXME: remove the line below once libcrux passes --include 'core::num::*::BITS'
      --include 'core::num::*::MAX' to charon, AND does a single invocation of charon (instead of
      three currently) *)
