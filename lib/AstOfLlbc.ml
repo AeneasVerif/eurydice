@@ -1727,7 +1727,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | UnaryOp (Cast (CastFnPtr (TFnPtr _, TFnPtr _)), e) ->
       (* possible safe fn to unsafe fn, same in C *)
       expression_of_operand env e
-  | UnaryOp (Cast (CastUnsize (ty_from, ty_to) as ck), e) ->
+  | UnaryOp (Cast (CastUnsize (ty_from, ty_to, _) as ck), e) ->
       (* DSTs: we only support going from T<[U;N]> to T<[U]>. The former is sized, the latter is
          unsized and becomes a fat pointer. We build this coercion by hand, and slightly violate C's
          strict aliasing rules. *)
@@ -1803,8 +1803,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
         (* Here are `literal_type`s *)
         | C.CastScalar (f, t) -> f = t
         (* The following are `type`s *)
-        | C.CastFnPtr (f, t) | C.CastRawPtr (f, t) | C.CastUnsize (f, t) | C.CastTransmute (f, t) ->
-            f = t
+        | C.CastFnPtr (f, t) | C.CastRawPtr (f, t) | C.CastUnsize (f, t, _) | C.CastTransmute (f, t)
+          -> f = t
       in
       if is_ident then
         expression_of_operand env e
