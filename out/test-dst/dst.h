@@ -52,12 +52,12 @@ A monomorphic instance of dst.S
 with types uint32_t[4size_t]
 
 */
-typedef struct dst_S_31_s
+typedef struct dst_S_dd_s
 {
   uint32_t foo;
   uint32_t my_data[4U];
 }
-dst_S_31;
+dst_S_dd;
 
 Eurydice_dst_31 dst_alloc(void);
 
@@ -78,12 +78,12 @@ A monomorphic instance of dst.S
 with types uint32_t[3size_t][4size_t]
 
 */
-typedef struct dst_S_cd_s
+typedef struct dst_S_a4_s
 {
   uint32_t foo;
   uint32_t my_data[4U][3U];
 }
-dst_S_cd;
+dst_S_a4;
 
 Eurydice_dst_f1 dst_alloc3(void);
 
@@ -128,12 +128,12 @@ A monomorphic instance of dst.T2
 with types uint32_t[4size_t]
 
 */
-typedef struct dst_T2_31_s
+typedef struct dst_T2_dd_s
 {
   size_t header;
   uint32_t my_data[4U];
 }
-dst_T2_31;
+dst_T2_dd;
 
 Eurydice_dst_7a dst_mk(void);
 

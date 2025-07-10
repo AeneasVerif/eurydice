@@ -30,13 +30,13 @@ _size_t__x2;
 
 void floating_points_main(void)
 {
-  float32_t f = (float32_t)1;
+  float32_t f = 1;
   float32_t arr[100U];
   for (size_t i = (size_t)0U; i < (size_t)100U; i++)
   {
     arr[i] = f;
   }
-  float64_t d = (float64_t)1;
+  float64_t d = 1;
   float64_t arr2[100U];
   for (size_t i = (size_t)0U; i < (size_t)100U; i++)
   {
@@ -45,7 +45,7 @@ void floating_points_main(void)
   _float32_t__x2 uu____0;
   uu____0.fst = arr;
   /* original Rust expression is not an lvalue in C */
-  float32_t lvalue0 = (float32_t)1;
+  float32_t lvalue0 = 1;
   uu____0.snd = &lvalue0;
   float32_t *left_val = uu____0.fst;
   float32_t *right_val0 = uu____0.snd;
@@ -53,7 +53,7 @@ void floating_points_main(void)
   _float64_t__x2 uu____1;
   uu____1.fst = arr2;
   /* original Rust expression is not an lvalue in C */
-  float64_t lvalue1 = (float64_t)1;
+  float64_t lvalue1 = 1;
   uu____1.snd = &lvalue1;
   float64_t *left_val0 = uu____1.fst;
   float64_t *right_val1 = uu____1.snd;
