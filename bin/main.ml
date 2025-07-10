@@ -143,6 +143,7 @@ Supported options:|}
            | [ "Eurydice" ], "slice_index"
            | [ "Eurydice" ], "slice_subslice"
            | [ "Eurydice" ], "array_to_slice"
+           | [ "Eurydice" ], "array_repeat"
            | "core" :: "num" :: _, ("rotate_left" | "from_le_bytes" | "wrapping_add") -> true
            | _ -> false)
         || Hashtbl.mem readonly_lids lid

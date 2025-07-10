@@ -6,6 +6,45 @@ open Krml.PrintAst.Ops
 
 (* Target cleanups invoked from bin/main.ml *)
 
+(* A note on the various cleanup phases for arrays to preserve the semantics of Rust. Assume
+   `struct S { y: [u32; 4] }`.
+   ... pass by ref
+   1. remove_array_repeats: [e; N] becomes bufcreate e N, or bufcreateL, depending on some
+      heuristics -- see comments in this phase 
+   2. remove_literals: let x = S { y: foo } --> let x; x.y := foo; x
+      where the assignment has an array type -- this is because y would decay in C and as such
+      cannot appear in the initializer.
+   3. remove_implicit_array_copies: handles x := e1 at array types, including nested array cases
+   ... hoist
+
+*)
+
+(* In the initial value of a variable, is this a suitable expression to initialize something that
+   has an array type? *)
+let is_suitable_array_initializer =
+  let rec subarrays_only_literals e =
+    (* Underneath an initializer list *)
+    match e.typ with
+    | TArray _ ->
+        (* In the case of nested arrays *)
+        begin
+          match e.node with
+          | EBufCreateL (_, es) ->
+              (* We only allow sub-initializer lists *)
+              List.for_all subarrays_only_literals es
+          | _ ->
+              (* Anything else (e.g. variable) is not copy-assignment in C *)
+              false
+        end
+    | _ ->
+        (* If this is not a nested array, then anything goes *)
+        true
+  in
+  function
+  | EAny | EBufCreate _ -> true
+  | EBufCreateL (_, es) -> List.for_all subarrays_only_literals es
+  | _ -> false
+
 (* A general phase that removes assignments at array types. Note that all array repeat expressions
    are desugared before this. We try to reduce all cases to the assignment case (e1 := e2). *)
 let remove_implicit_array_copies =
@@ -70,32 +109,9 @@ let remove_implicit_array_copies =
               lift 1 (self#visit_expr_w () e2) )
 
     method! visit_ELet (((), _) as env) b e1 e2 =
-      let rec subarrays_only_literals e =
-        (* Underneath an initializer list *)
-        match e.typ with
-        | TArray _ ->
-            (* In the case of nested arrays *)
-            begin
-              match e.node with
-              | EBufCreateL (_, es) ->
-                  (* We only allow sub-initializer lists *)
-                  List.for_all subarrays_only_literals es
-              | _ ->
-                  (* Anything else (e.g. variable) is not copy-assignment in C *)
-                  false
-            end
-        | _ ->
-            (* If this is not a nested array, then anything goes *)
-            true
-      in
-      let is_suitable_initializer = function
-        | EAny | EBufCreate _ -> true
-        | EBufCreateL (_, es) -> List.for_all subarrays_only_literals es
-        | _ -> false
-      in
       match b.typ, e1.node with
       (* INVALID INITIALIZATION: let b = e1 in e2 -- explode into assignments, recursively *)
-      | TArray (_, n), _ when not (is_suitable_initializer e1.node) ->
+      | TArray (_, n), _ when not (is_suitable_array_initializer e1.node) ->
           (* let b = <uninitialized> in *)
           ELet
             ( b,
@@ -184,13 +200,20 @@ let remove_array_repeats =
       match e.node, es with
       | ETApp ({ node = EQualified lid; _ }, [ _ ], _, [ _ ]), [ _ ]
         when lid = Builtin.array_repeat.name ->
-          (self#visit_expr env
-             (with_type (snd env)
-                (ELet
-                   ( H.fresh_binder "repeat_expression" (snd env),
-                     with_type (snd env) (EApp (e, es)),
-                     with_type (snd env) (EBound 0) ))))
-            .node
+          (* Same logic as below: if we can do something smart (like, only zeroes), then we expand,
+             let the subsequent `hoist` phase lift this into a let-binding, and code-gen will optimize this into
+             { 0 }. If we can't do something smart, we let-bind, and fall back onto the general case. *)
+          begin try
+            (self#expand_repeat false (with_type (snd env) (EApp (e, es)))).node
+          with Not_found ->
+            (self#visit_expr env
+               (with_type (snd env)
+                  (ELet
+                     ( H.fresh_binder "repeat_expression" (snd env),
+                       with_type (snd env) (EApp (e, es)),
+                       with_type (snd env) (EBound 0) ))))
+              .node
+          end
       | _ -> super#visit_EApp env e es
 
     method private assert_length len =
@@ -264,7 +287,7 @@ let remove_array_repeats =
       | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
         when lid = Builtin.array_repeat.name -> begin
           try
-            (* Case 1. *)
+            (* Case 1 (only zeroes). *)
             let r = ELet (b, (self#expand_repeat false) e1, self#visit_expr env e2) in
             r
           with Not_found -> (
@@ -529,16 +552,14 @@ let remove_trivial_ite =
       | _ -> super#visit_ESwitch env scrut branches
   end
 
-(* This is not a good criterion -- way too conservative! *)
-let contains_array t =
+let must_explode t =
   begin
     object (_self)
-      inherit [_] reduce as _super
+      inherit [_] reduce as super
       method zero = false
       method plus = ( || )
-      method! visit_TBuf _ _ _ = false
-      method! visit_TArray _ _ _ = true
-      method! visit_TCgArray _ _ _ = true
+      method! visit_expr ((_, t) as env) e =
+        H.is_array t && not (is_suitable_array_initializer e.node) || super#visit_expr env e
     end
   end
     #visit_expr_w
@@ -550,13 +571,13 @@ let remove_literals tbl =
     inherit! Krml.Structs.remove_literals tbl as super_krml
 
     method! visit_ELet env b e1 e2 =
-      if contains_array e1 then
+      if must_explode e1 then
         super_krml#visit_ELet env b e1 e2
       else
         super_map#visit_ELet env b e1 e2
 
     method! visit_EFlat (((), t) as env) fields =
-      if contains_array (with_type t (EFlat fields)) then
+      if must_explode (with_type t (EFlat fields)) then
         super_krml#visit_EFlat env fields
       else
         super_map#visit_EFlat env fields
