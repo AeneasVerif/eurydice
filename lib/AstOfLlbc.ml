@@ -452,8 +452,12 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
         | _ -> TTuple (List.map (typ_of_ty env) args)
       end
   | TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } } ->
+     L.log "AstOfLlbc" "Trying to add DeclObli for Charon array %s with generics %s"
+     (Charon.PrintTypes.ty_to_string env.format_env ty)
+     (Charon.PrintTypes.const_generic_to_string env.format_env cg);
      let lid = lid_of_array env t cg in
      let t_array = maybe_cg_array env t cg in
+     L.log "AstOfLlbc" "DeclObli successfully added";
      env.decl_oblis (ObliArray (lid,t_array));
      K.TQualified lid
   | TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
@@ -2778,4 +2782,7 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   in
   let env = List.fold_left check_if_dst env declarations in
   let trans_decls = decls_of_declarations env declarations in
-  name,  trans_decls @ impl_obligations (ObliMap.bindings !obli_map)
+  L.log "AstofLlbc" "Translated decls";
+  let extra_decls = impl_obligations (ObliMap.bindings !obli_map) in
+  L.log "AstofLlbc" "Added extra decls";
+  name,  trans_decls @ extra_decls
