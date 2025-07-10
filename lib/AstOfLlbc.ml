@@ -164,9 +164,7 @@ let assert_slice (t : K.typ) =
   | _ -> fail "Not a slice: %a" ptyp t
 
 let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
-  match p with
-  | PeIdent (s, _) -> s (* We ignore disambiguators *)
-  | _ -> Charon.PrintTypes.path_elem_to_string env.format_env p
+  Charon.PrintTypes.path_elem_to_string env.format_env p
 
 let string_of_name env ps = String.concat "::" (List.map (string_of_path_elem env) ps)
 

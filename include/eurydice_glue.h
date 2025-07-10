@@ -252,6 +252,10 @@ typedef char Eurydice_derefed_slice[];
 extern "C" {
 #endif
 
+static inline uint16_t core_num__u16__from_le_bytes(uint8_t buf[2]) {
+  return load16_le(buf);
+}
+
 static inline void core_num__u32__to_be_bytes(uint32_t src, uint8_t dst[4]) {
   // TODO: why not store32_be?
   uint32_t x = htobe32(src);
@@ -327,12 +331,52 @@ static inline size_t core_cmp_impls__core__cmp__Ord_for_usize__min(size_t a,
 }
 
 // unsigned overflow wraparound semantics in C
-static inline uint16_t core_num__u16__wrapping_add(uint16_t x, uint16_t y) {
-  return x + y;
-}
 static inline uint8_t core_num__u8__wrapping_sub(uint8_t x, uint8_t y) {
   return x - y;
 }
+static inline uint8_t core_num__u8__wrapping_add(uint8_t x, uint8_t y) {
+  return x + y;
+}
+static inline uint8_t core_num__u8__wrapping_mul(uint8_t x, uint8_t y) {
+  return x * y;
+}
+static inline uint16_t core_num__u16__wrapping_sub(uint16_t x, uint16_t y) {
+  return x - y;
+}
+static inline uint16_t core_num__u16__wrapping_add(uint16_t x, uint16_t y) {
+  return x + y;
+}
+static inline uint16_t core_num__u16__wrapping_mul(uint16_t x, uint16_t y) {
+  return x * y;
+}
+static inline uint32_t core_num__u32__wrapping_sub(uint32_t x, uint32_t y) {
+  return x - y;
+}
+static inline uint32_t core_num__u32__wrapping_add(uint32_t x, uint32_t y) {
+  return x + y;
+}
+static inline uint32_t core_num__u32__wrapping_mul(uint32_t x, uint32_t y) {
+  return x * y;
+}
+static inline uint64_t core_num__u64__wrapping_sub(uint64_t x, uint64_t y) {
+  return x - y;
+}
+static inline uint64_t core_num__u64__wrapping_add(uint64_t x, uint64_t y) {
+  return x + y;
+}
+static inline uint64_t core_num__u64__wrapping_mul(uint64_t x, uint64_t y) {
+  return x * y;
+}
+static inline size_t core_num__usize__wrapping_sub(size_t x, size_t y) {
+  return x - y;
+}
+static inline size_t core_num__usize__wrapping_add(size_t x, size_t y) {
+  return x + y;
+}
+static inline size_t core_num__usize__wrapping_mul(size_t x, size_t y) {
+  return x * y;
+}
+
 static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1) {
   return (x0 << x1 | x0 >> (64 - x1));
 }
