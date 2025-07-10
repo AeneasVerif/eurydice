@@ -2050,7 +2050,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
           FnOpRegular
             {
               func = FunId (FBuiltin (Index { is_array = true; mutability = _; is_range = false }));
-              generics = { types = [ ty ]; _ };
+              generics = { types = [ ty ]; const_generics = [cg]; _ };
               _;
             };
         args = [ e1; e2 ];
@@ -2058,9 +2058,20 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
         _;
       } ->
       (* Special treatment because of the usage of maybe_addrof *)
+      (* Special treatment for e1[e2] of array which are translated into struct
+         e1[e2] is translated as fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T
+
+         Since [T;N] is transalted into arr$T$N, we need to first dereference
+         the e1 to get the struct, and then take its field "data" to get the
+         array *)
       let e1 = expression_of_operand env e1 in
       let e2 = expression_of_operand env e2 in
       let t = typ_of_ty env ty in
+      let t_array = maybe_cg_array env ty cg in
+      let lid = lid_of_array env ty cg in
+      let t_struct = K.TQualified lid in
+      let e1 = Krml.Helpers.(mk_deref t_struct e1.K.node) in
+      let e1 = K.with_type t_array (K.EField (e1,"data")) in
       let dest = expression_of_place env dest in
       Krml.Helpers.with_unit
         K.(EAssign (dest, maybe_addrof env ty (with_type t (EBufRead (e1, e2)))))
