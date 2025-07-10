@@ -60,7 +60,7 @@ type var_id =
    complete declaration at the end*)
 
 type decl_obligation =
-  ObliArray of C.ty * C.const_generic
+  ObliArray of K.lident * K.typ
 
 module ObliMap = Map.Make(struct
   type t = decl_obligation
@@ -452,9 +452,10 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
         | _ -> TTuple (List.map (typ_of_ty env) args)
       end
   | TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } } ->
-      let lid = lid_of_array env t cg in
-      env.decl_oblis (ObliArray (t,cg));
-      K.TQualified lid
+     let lid = lid_of_array env t cg in
+     let t_array = maybe_cg_array env t cg in
+     env.decl_oblis (ObliArray (lid,t_array));
+     K.TQualified lid
   | TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
       (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
       TApp (Builtin.derefed_slice, [ typ_of_ty env t ])
@@ -507,7 +508,7 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
          from this to the DST above. *)
       t
 
-let maybe_cg_array (env : env) (t : C.ty) (cg : C.const_generic) =
+and maybe_cg_array (env : env) (t : C.ty) (cg : C.const_generic) =
   match cg with
   | CgValue _ -> K.TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))
   | CgVar var ->
@@ -2716,15 +2717,13 @@ let decls_of_declarations (env : env) (d : C.any_decl_id list) : K.decl list =
   L.log "Progress" "%s: %d/%d" env.crate_name !seen !total;
   Krml.KList.filter_some @@ List.map (decl_of_id env) d
 
-let impl_obligation (env: env) (ob: decl_obligation) : K.decl =
-    match ob with ObliArray (ty, cg) ->
-      let lid = lid_of_array env ty cg in
-      let typ_array = maybe_cg_array env ty cg in
+let impl_obligation (ob: decl_obligation) : K.decl =
+    match ob with ObliArray (lid, t_array) ->
       L.log "AstOfLlbc" "append new decl of struct: %a" plid lid;
-      K.DType (lid, [], 1, 1, Flat [(Some "data",(typ_array,true))])
+      K.DType (lid, [], 1, 1, Flat [(Some "data",(t_array,true))])
      
-let impl_obligations (env: env) (obpairs : (decl_obligation * unit) list) : K.decl list =
-  List.map (impl_obligation env) (List.map fst obpairs)
+let impl_obligations (obpairs : (decl_obligation * unit) list) : K.decl list =
+  List.map impl_obligation (List.map fst obpairs)
 
 
 let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
@@ -2779,4 +2778,4 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   in
   let env = List.fold_left check_if_dst env declarations in
   let trans_decls = decls_of_declarations env declarations in
-  name,  trans_decls @ impl_obligations env (ObliMap.bindings !obli_map)
+  name,  trans_decls @ impl_obligations (ObliMap.bindings !obli_map)
