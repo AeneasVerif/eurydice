@@ -59,14 +59,6 @@ type var_id =
    The minimal necessary information should be stored in the env and extended to
    complete declaration at the end*)
 
-type decl_obligation =
-  ObliArray of K.lident * K.typ
-
-module ObliMap = Map.Make(struct
-  type t = decl_obligation
-  let compare = compare
-end)
-
 type env = {
   (* Lookup functions to resolve various id's into actual declarations. *)
   get_nth_function : C.FunDeclId.id -> C.fun_decl;
@@ -127,8 +119,6 @@ type env = {
   (* A set of all the DSTs (dynamically-sized types) that we know about, and the name of their
      flexible member *)
   dsts : string LidMap.t;
-  (* A set of declaration obligations generated on-the-fly *)
-  decl_oblis : decl_obligation -> unit;
 }
 
 let debug env =
@@ -390,20 +380,29 @@ let lookup_field env typ_id field_id =
   ensure_named i field.field_name
 
 
-(** special treatment for the array type: translating [T;N] to
-    typedef struct{T data[N];} arr$T$N  *)
+(** special treatment for the array type: translating [T;C] as rust generic type
+    struct <const C:usize, T> { data : [T;C]; } *)
 
-let lid_of_array (env: env) (ty: C.ty) (cg: C.const_generic) : K.lident =
-  let string_T = Charon.PrintTypes.ty_to_string env.format_env ty in
+let lid_of_Arr = ([],"Arr$")
+
+let decl_of_Arr =
+  K.DType (lid_of_Arr, [], 1, 0, Flat [(Some "data", (K.TCgArray (TBound 0,0), true))])
+  (* []  : no flags
+     1  : we have one const generic C
+     0  : we have one type argument T (counted from 0)
+  *)
+
+let expression_of_struct_Arr (expr_array : K.expr) = K.EFlat [(Some "data", expr_array)]
+
+(* only used for array now *)
+let cg_of_cg (env : env) (cg: C.const_generic) : K.cg =
   match cg with
-  | CgValue _ ->
-     let const_N = constant_of_scalar_value (assert_cg_scalar cg) in
-     ([],"arr$" ^ string_T ^ "$" ^ (snd const_N))
+  | CgValue _ -> K.CgConst (constant_of_scalar_value (assert_cg_scalar cg))
   | CgVar var ->
-     let int, _ = lookup_cg_in_types env (C.expect_free_var var) in
-     ([],"arr$" ^ string_T ^ "$" ^ string_of_int int)
+     let id, cg_t = lookup_cg_in_types env (C.expect_free_var var) in
+     assert (cg_t = K.TInt SizeT);
+     K.CgVar id
   | _ -> failwith "TODO: CgGlobal"
-
 
 let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   match ty with
@@ -423,17 +422,6 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* We compile slices to fat pointers, which hold the pointer underneath -- no need for an
          extra reference here. *)
       Builtin.mk_slice (typ_of_ty env t)
-  (* | TAdt
-      {
-        id = TBuiltin TBox;
-        generics = { types = [ TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } } ]; _ };
-      }
-  | TRef (_, TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } }, _) ->
-      (* We collapse Ref(Array) into a pointer type, leveraging C's implicit decay between array
-         types and pointer types. *)
-      let lid = lid_of_array env t cg in
-      env.decl_oblis <- LidMap.add lid (ObliArray (t,cg)) env.decl_oblis; 
-      K.TBuf (typ_of_ty env t, false) *)
   | TRef (_, TAdt { id = TBuiltin TStr; generics = { types = []; _ } }, _) -> Builtin.str_t
   | TRef (_, t, _) ->
       (* Normal reference *)
@@ -455,11 +443,7 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
      L.log "AstOfLlbc" "Trying to add DeclObli for Charon array %s with generics %s"
      (Charon.PrintTypes.ty_to_string env.format_env ty)
      (Charon.PrintTypes.const_generic_to_string env.format_env cg);
-     let lid = lid_of_array env t cg in
-     let t_array = maybe_cg_array env t cg in
-     L.log "AstOfLlbc" "DeclObli successfully added";
-     env.decl_oblis (ObliArray (lid,t_array));
-     K.TQualified lid
+     typ_of_struct_arr env t cg
   | TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
       (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
       TApp (Builtin.derefed_slice, [ typ_of_ty env t ])
@@ -512,7 +496,12 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
          from this to the DST above. *)
       t
 
-and maybe_cg_array (env : env) (t : C.ty) (cg : C.const_generic) =
+and typ_of_struct_arr (env: env) (t: C.ty) (cg: C.const_generic) : K.typ =
+  let typ_t = typ_of_ty env t in
+  let cg = cg_of_cg env cg in
+  K.TCgApp (K.TApp (lid_of_Arr, [typ_t]),cg)
+  
+let maybe_cg_array (env : env) (t : C.ty) (cg : C.const_generic) =
   match cg with
   | CgValue _ -> K.TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))
   | CgVar var ->
@@ -525,10 +514,11 @@ and maybe_cg_array (env : env) (t : C.ty) (cg : C.const_generic) =
 
 (* To be desugared later into variable hoisting, allocating suitable storage space, followed by a
    memcpy -- this is just a placeholder and isn't even type-checked. *)
-let mk_deep_copy (e : K.expr) (l : K.expr) =
+
+(*let mk_deep_copy (e : K.expr) (l : K.expr) =
   let builtin_copy_operator = K.EQualified Builtin.array_copy in
   let builtin_copy_operator_t = K.TArrow (TAny, TAny) in
-  K.(with_type TAny (EApp (with_type builtin_copy_operator_t builtin_copy_operator, [ e; l ])))
+  K.(with_type TAny (EApp (with_type builtin_copy_operator_t builtin_copy_operator, [ e; l ]))) *)
 
 (* Environment: expressions *)
 
@@ -1617,8 +1607,6 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
 
 let expression_of_fn_ptr env (fn_ptr : C.fn_ptr) = expression_of_fn_ptr env "" fn_ptr
 
-let expression_of_array (expr_array : K.expr) = K.EFlat [(Some "data", expr_array)]
-
 let expression_of_operand (env : env) (op : C.operand) : K.expr =
   match op with
   | Copy p -> expression_of_place env p
@@ -1904,8 +1892,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
       let array_expr = K.with_type
         (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
         (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops)) in
-      let lid = lid_of_array env t cg in
-      K.with_type (K.TQualified lid) (expression_of_array array_expr)
+      let typ_arr = typ_of_struct_arr env t cg in
+      K.with_type typ_arr (expression_of_struct_Arr array_expr)
   | Global { id; _ } ->
       let global = env.get_nth_global id in
       K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
@@ -2047,7 +2035,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
             (ETApp (repeat, [ len ], [], [ t ])))
       in
       Krml.Helpers.with_unit K.(EAssign (dest, with_type dest.typ
-                               (expression_of_array (with_type t_array (EApp (repeat, [e]))))))
+                               (expression_of_struct_Arr (with_type t_array (EApp (repeat, [e]))))))
 
   | Call
       {
@@ -2073,8 +2061,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
       let e2 = expression_of_operand env e2 in
       let t = typ_of_ty env ty in
       let t_array = maybe_cg_array env ty cg in
-      let lid = lid_of_array env ty cg in
-      let t_struct = K.TQualified lid in
+      let t_struct = typ_of_struct_arr env ty cg in
       let e1 = Krml.Helpers.(mk_deref t_struct e1.K.node) in
       let e1 = K.with_type t_array (K.EField (e1,"data")) in
       let dest = expression_of_place env dest in
@@ -2721,6 +2708,7 @@ let decls_of_declarations (env : env) (d : C.any_decl_id list) : K.decl list =
   L.log "Progress" "%s: %d/%d" env.crate_name !seen !total;
   Krml.KList.filter_some @@ List.map (decl_of_id env) d
 
+(*
 let impl_obligation (ob: decl_obligation) : K.decl =
     match ob with ObliArray (lid, t_array) ->
       L.log "AstOfLlbc" "append new decl of struct: %a" plid lid;
@@ -2728,7 +2716,7 @@ let impl_obligation (ob: decl_obligation) : K.decl =
      
 let impl_obligations (obpairs : (decl_obligation * unit) list) : K.decl list =
   List.map impl_obligation (List.map fst obpairs)
-
+  *)
 
 let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   let {
@@ -2759,8 +2747,6 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   let get_nth_trait_decl id = C.TraitDeclId.Map.find id trait_decls in
   let format_env = Charon.PrintLlbcAst.Crate.crate_to_fmt_env crate in
   let name_ctx = Charon.NameMatcher.ctx_from_crate crate in
-  let obli_map = ref ObliMap.empty in
-  let obli_update ob = obli_map := ObliMap.add ob () !obli_map in 
   let env =
     {
       get_nth_function;
@@ -2777,12 +2763,10 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
       name_ctx;
       generic_params = Charon.TypesUtils.empty_generic_params;
       dsts = LidMap.empty;
-      decl_oblis = obli_update;
     }
   in
   let env = List.fold_left check_if_dst env declarations in
   let trans_decls = decls_of_declarations env declarations in
   L.log "AstofLlbc" "Translated decls";
-  let extra_decls = impl_obligations (ObliMap.bindings !obli_map) in
-  L.log "AstofLlbc" "Added extra decls";
+  let extra_decls = [decl_of_Arr] in
   name,  trans_decls @ extra_decls
