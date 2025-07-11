@@ -27,6 +27,10 @@ let pmeta buf ({ meta; _ } : 'a with_type) =
 let mk typ meta node = { node; typ; meta }
 let is_sequence = Krml.Simplify.is_sequence
 
+let already_clean = function
+  | [ "core"; "slice"; _ ], "swap" -> true
+  | _ -> false
+
 let remove_assignments =
   object (self)
     inherit [_] map
@@ -49,7 +53,7 @@ let remove_assignments =
     method! visit_DFunction (to_close : remove_env) cc flags n_cgs n t name bs e =
       (* Krml.(KPrint.bprintf "visiting %a\n" PrintAst.Ops.plid name); *)
       assert (AtomMap.is_empty to_close);
-      DFunction (cc, flags, n_cgs, n, t, name, bs, self#peel_lets to_close e)
+      DFunction (cc, flags, n_cgs, n, t, name, bs, if already_clean name then e else self#peel_lets to_close e)
 
     method! visit_DGlobal (to_close : remove_env) flags n t name e =
       assert (AtomMap.is_empty to_close);
@@ -292,6 +296,9 @@ let remove_terminal_returns =
   object (self)
     inherit [_] map
 
+    method! visit_DFunction env cc flags n_cgs n t name bs e =
+      DFunction (cc, flags, n_cgs, n, t, name, bs, if already_clean name then e else self#visit_expr_w env e)
+
     method! visit_ELet (terminal, _) b e1 e2 =
       ELet (b, self#visit_expr_w false e1, self#visit_expr_w terminal e2)
 
@@ -327,6 +334,9 @@ let remove_terminal_returns =
 let remove_terminal_continues =
   object (self)
     inherit [_] map
+
+    method! visit_DFunction env cc flags n_cgs n t name bs e =
+      DFunction (cc, flags, n_cgs, n, t, name, bs, if already_clean name then e else self#visit_expr_w env e)
 
     method! visit_ELet (terminal, _) b e1 e2 =
       ELet (b, self#visit_expr_w false e1, self#visit_expr_w terminal e2)

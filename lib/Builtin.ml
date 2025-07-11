@@ -296,51 +296,6 @@ let slice_to_ref_array =
     arg_names = [ "s" ];
   }
 
-let vec_new =
-  {
-    name = [ "Eurydice" ], "vec_new";
-    typ = Krml.Helpers.fold_arrow [ TUnit ] (mk_vec (TBound 0));
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [];
-  }
-
-let vec_push =
-  {
-    name = [ "Eurydice" ], "vec_push";
-    typ = Krml.Helpers.fold_arrow [ mk_vec (TBound 0); TBound 0 ] TUnit;
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [ "v"; "x" ];
-  }
-
-let vec_len =
-  {
-    name = [ "Eurydice" ], "vec_len";
-    typ = Krml.Helpers.fold_arrow [ mk_vec (TBound 0) ] (TInt SizeT);
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [ "v" ];
-  }
-
-let vec_drop =
-  {
-    name = [ "Eurydice" ], "vec_drop";
-    typ = Krml.Helpers.fold_arrow [ mk_vec (TBound 0) ] TUnit;
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [ "v" ];
-  }
-
-let vec_index =
-  {
-    name = [ "Eurydice" ], "vec_index";
-    typ = Krml.Helpers.fold_arrow [ mk_vec (TBound 0); TInt SizeT ] (TBuf (TBound 0, false));
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [ "v"; "i" ];
-  }
-
 let box_new =
   {
     name = [ "Eurydice" ], "box_new";
@@ -466,7 +421,11 @@ let static_assert, static_assert_ref =
   ( K.DExternal (None, [ Krml.Common.Private; Macro ], 0, 0, name, typ, [ "test"; "msg" ]),
     K.(with_type typ (EQualified name)) )
 
-(* Replacements, now applied on-the-fly in AstOfLlbc *)
+(* Replacements, now applied on-the-fly in AstOfLlbc.
+
+ IMPORTANT: such replacements are written in abstract syntax that *already* has cleanups applied,
+ meaning that some passes like Cleanup1.remove_assignments and un-necessary and will actually error
+ out. We maintain a list of such functions in Cleanup1, to be kept in sync with this. *)
 
 let unwrap =
   let open Krml in
@@ -499,6 +458,49 @@ let unwrap =
                    with_type t_T (EAbort (Some t_T, Some "unwrap not Ok")) );
                ] )) )
 
+(* Easier this way rather than implement a macro with an expression-statement.
+
+   external core_slice_{@Slice<T>}_swap <1>:<cg: 0>
+    Eurydice_slice
+    0 ->
+    size_t ->
+      size_t ->
+        ()
+*)
+let slice_swap =
+  let open Krml in
+  let open Ast in
+  let t = TBound 0 in
+  let binders = [
+    Helpers.fresh_binder ~mut:true "s" (mk_slice t);
+    Helpers.fresh_binder "i" (TInt SizeT);
+    Helpers.fresh_binder "j" (TInt SizeT)
+  ] in
+  (* with slice type *)
+  let ws = with_type (mk_slice t) in
+  (* with usize type *)
+  let wu = with_type (TInt SizeT) in
+  let index s i =
+    let slice_index = expr_of_builtin slice_index in
+    let slice_index = with_type (DeBruijn.subst_tn [ t ] slice_index.typ)
+      (ETApp (slice_index, [ ], [], [ t ]))
+    in
+    with_type t (EApp (slice_index, [ s; i ]))
+  in
+  let lhs s i =
+    with_type t (EBufRead (with_type (TBuf (t, false)) (EAddrOf (index s i)), Helpers.zero_usize))
+  in
+  fun lid ->
+    DFunction (None, [ Private ], 0, 1, TUnit, lid, binders,
+      (* let tmp = s[i]; *)
+      with_type TUnit (ELet (Helpers.fresh_binder "tmp" t, index (ws (EBound 2)) (wu (EBound 1)),
+        with_type TUnit (ESequence [
+          (* s[i] = s[j] *)
+          with_type TUnit (EAssign (lhs (ws (EBound 3)) (wu (EBound 2)), index (ws (EBound 3)) (wu (EBound 1))));
+          (* s[j] = tmp *)
+          with_type TUnit (EAssign (lhs (ws (EBound 3)) (wu (EBound 1)), with_type t (EBound 0)))
+        ]))))
+
 let nonzero_def = K.DType (nonzero, [], 0, 1, Abbrev (TBound 0))
 
 (* -------------------------------------------------------------------------- *)
@@ -523,11 +525,6 @@ let builtin_funcs =
     slice_to_array2;
     range_iterator_step_by;
     range_step_by_iterator_next;
-    vec_push;
-    vec_new;
-    vec_len;
-    vec_drop;
-    vec_index;
     box_new;
     box_new_array;
     replace;

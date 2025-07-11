@@ -164,9 +164,7 @@ let assert_slice (t : K.typ) =
   | _ -> fail "Not a slice: %a" ptyp t
 
 let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
-  match p with
-  | PeIdent (s, _) -> s (* We ignore disambiguators *)
-  | _ -> Charon.PrintTypes.path_elem_to_string env.format_env p
+  Charon.PrintTypes.path_elem_to_string env.format_env p
 
 let string_of_name env ps = String.concat "::" (List.map (string_of_path_elem env) ps)
 
@@ -389,10 +387,8 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TLiteral t -> typ_of_literal_ty env t
   | TNever -> failwith "Impossible: Never"
   | TDynTrait _ -> failwith "TODO: dyn Trait"
-  | TRef (_, TAdt { id; generics = { types = [ t ]; _ } as generics }, _)
+  | TAdt { id; generics = { types = [ t ]; _ } as generics }
     when RustNames.is_vec env id generics ->
-      (* We compile vecs to fat pointers, which hold the pointer underneath -- no need for an
-         extra reference here. *)
       Builtin.mk_vec (typ_of_ty env t)
   | TAdt
       {
@@ -416,8 +412,6 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TRef (_, t, _) ->
       (* Normal reference *)
       K.TBuf (typ_of_ty env t, false)
-  | TAdt { id; generics = { types = [ t ]; _ } as generics } when RustNames.is_vec env id generics
-    -> Builtin.mk_vec (typ_of_ty env t)
   | TAdt { id = TAdtId id; generics = { types = args; const_generics = generic_args; _ } } ->
       let ts = List.map (typ_of_ty env) args in
       let cgs = List.map (cg_of_const_generic env) generic_args in
@@ -705,9 +699,6 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           K.with_type (TBuf (typ_of_ty env t, false)) !*sub_e.K.node
       | C.Deref, _, TRef (_, TAdt { id = TBuiltin TSlice; _ }, _)
       | C.Deref, _, TRawPtr (TAdt { id = TBuiltin TSlice; _ }, _) -> !*sub_e
-      | C.Deref, _, TRef (_, TAdt { id; generics }, _)
-      | C.Deref, _, TRawPtr (TAdt { id; generics }, _)
-        when RustNames.is_vec env id generics -> !*sub_e
       | ( C.Deref,
           _,
           (TRawPtr _ | TRef _ | TAdt { id = TBuiltin TBox; generics = { types = [ _ ]; _ } }) ) ->
@@ -963,10 +954,9 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
    translation that does not work with polymorphism, so perhaps there ought to
    be a MAYBE_CAST operator that gets desugared post-krml monomorphization. TBD.
 *)
-let maybe_addrof (env : env) (ty : C.ty) (e : K.expr) =
+let maybe_addrof (_env : env) (ty : C.ty) (e : K.expr) =
   (* ty is the *original* Rust type *)
   match ty with
-  | TAdt { id; generics } when RustNames.is_vec env id generics -> e
   | TAdt { id = TBuiltin (TArray | TSlice); _ } -> e
   | _ -> K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
 
@@ -1572,8 +1562,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
     | t ->
         let ret, args = Krml.Helpers.flatten_arrow t in
         if List.length const_generic_args + List.length fn_ptrs > List.length args then
-          L.log "Calls" "ERROR in %s"
-            (Charon.PrintTypes.fn_ptr_to_string env.format_env fn_ptr);
+          L.log "Calls" "ERROR in %s" (Charon.PrintTypes.fn_ptr_to_string env.format_env fn_ptr);
         let _, args =
           Krml.KList.split (List.length const_generic_args + List.length fn_ptrs) args
         in
@@ -1736,7 +1725,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | UnaryOp (Cast (CastFnPtr (TFnPtr _, TFnPtr _)), e) ->
       (* possible safe fn to unsafe fn, same in C *)
       expression_of_operand env e
-  | UnaryOp (Cast (CastUnsize (ty_from, ty_to) as ck), e) ->
+  | UnaryOp (Cast (CastUnsize (ty_from, ty_to, _) as ck), e) ->
       (* DSTs: we only support going from T<[U;N]> to T<[U]>. The former is sized, the latter is
          unsized and becomes a fat pointer. We build this coercion by hand, and slightly violate C's
          strict aliasing rules. *)
@@ -1812,7 +1801,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
         (* Here are `literal_type`s *)
         | C.CastScalar (f, t) -> f = t
         (* The following are `type`s *)
-        | C.CastFnPtr (f, t) | C.CastRawPtr (f, t) | C.CastUnsize (f, t) | C.CastTransmute (f, t) -> f = t
+        | C.CastFnPtr (f, t) | C.CastRawPtr (f, t) | C.CastUnsize (f, t, _) | C.CastTransmute (f, t)
+          -> f = t
       in
       if is_ident then
         expression_of_operand env e
@@ -1823,16 +1813,15 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | BinaryOp (op, o1, o2) ->
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
   | Discriminant _ -> failwith "expression_of_rvalue Discriminant"
-  | Aggregate (AggregatedAdt ({ id = TTuple; _ }, _, None), ops) ->
-      begin
-        match ops with
-        | [] -> K.with_type TUnit K.EUnit
-        | [op] -> expression_of_operand env op
-        | _ ->
-           let ops = List.map (expression_of_operand env) ops in
-           let ts = List.map (fun x -> x.K.typ) ops in
-           K.with_type (TTuple ts) (K.ETuple ops)
-      end
+  | Aggregate (AggregatedAdt ({ id = TTuple; _ }, _, None), ops) -> begin
+      match ops with
+      | [] -> K.with_type TUnit K.EUnit
+      | [ op ] -> expression_of_operand env op
+      | _ ->
+          let ops = List.map (expression_of_operand env) ops in
+          let ts = List.map (fun x -> x.K.typ) ops in
+          K.with_type (TTuple ts) (K.ETuple ops)
+    end
   | Aggregate
       ( AggregatedAdt
           ( { id = TAdtId typ_id; generics = { types = typ_args; const_generics; _ } },
@@ -1877,11 +1866,13 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
         (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
         (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
   | Global { id; _ } ->
-    let global = env.get_nth_global id in
-    K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
-  | GlobalRef ({ id; _ },_) ->
       let global = env.get_nth_global id in
-      let e = K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name)) in
+      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
+  | GlobalRef ({ id; _ }, _) ->
+      let global = env.get_nth_global id in
+      let e =
+        K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
+      in
       K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
   | rvalue ->
       failwith
@@ -2537,7 +2528,8 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
         (Charon.PrintLlbcAst.Ast.global_decl_to_string env.format_env "  " "  " def);
       let ty = typ_of_ty env ty in
       let flags =
-        [ Krml.Common.Const "" ] @
+        [ Krml.Common.Const "" ]
+        @
         match global.global_kind with
         | NamedConst | AnonConst ->
             (* This is trickier: const can be evaluated at compile-time, so in theory, we could just
@@ -2547,7 +2539,10 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
 
                We can't use the test "is_bufcreate" because the expression might only be a bufcreate
                *after* simplification, so we rely on the type here. *)
-            if Krml.Helpers.is_array ty then [] else [ Macro ]
+            if Krml.Helpers.is_array ty then
+              []
+            else
+              [ Macro ]
         | Static ->
             (* This one needs to have an address, so definitely not emitting it as a macro. *)
             []
@@ -2619,6 +2614,7 @@ let replacements =
     (fun (p, d) -> Charon.NameMatcher.parse_pattern p, d)
     [
       "core::result::{core::result::Result<@T, @E>}::unwrap", Builtin.unwrap;
+      "core::slice::{[@T]}::swap", Builtin.slice_swap;
       (* FIXME: remove the line below once libcrux passes --include 'core::num::*::BITS'
      --include 'core::num::*::MAX' to charon, AND does a single invocation of charon (instead of
      three currently) *)
