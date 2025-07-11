@@ -20,12 +20,12 @@ open Krml.PrintAst.Ops
 *)
 
 (* In the initial value of a variable, is this a suitable expression to initialize something that
-   has an array type? *)
-let is_suitable_array_initializer =
+   has an array type (or a struct that may contain arrays)? *)
+let rec is_suitable_array_initializer =
   let rec subarrays_only_literals e =
     (* Underneath an initializer list *)
-    match e.typ with
-    | TArray _ ->
+    match e.node, e.typ with
+    | _, TArray _ ->
         (* In the case of nested arrays *)
         begin
           match e.node with
@@ -36,6 +36,8 @@ let is_suitable_array_initializer =
               (* Anything else (e.g. variable) is not copy-assignment in C *)
               false
         end
+    | EFlat es, _ ->
+        List.for_all subarrays_only_literals (List.map snd es)
     | _ ->
         (* If this is not a nested array, then anything goes *)
         true
@@ -43,6 +45,7 @@ let is_suitable_array_initializer =
   function
   | EAny | EBufCreate _ -> true
   | EBufCreateL (_, es) -> List.for_all subarrays_only_literals es
+  | EFlat es -> List.for_all subarrays_only_literals (List.map snd es)
   | _ -> false
 
 (* A general phase that removes assignments at array types. Note that all array repeat expressions
