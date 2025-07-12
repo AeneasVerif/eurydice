@@ -573,7 +573,9 @@ let uu =
 
 let binder_of_var (env : env) (l : C.local) : K.binder =
   let name = Option.value ~default:(uu ()) l.name in
-  Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env l.var_ty)
+  let meta = match name with "left_val" | "right_val" -> [ K.AttemptInline ] | _ -> [] in
+  let binder = Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env l.var_ty) in
+  { binder with node = { binder.node with meta = meta @ binder.node.meta } }
 
 let find_nth_variant (env : env) (typ : C.type_decl_id) (var : C.variant_id) =
   match env.get_nth_type typ with
