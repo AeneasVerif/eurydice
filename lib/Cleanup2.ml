@@ -1179,7 +1179,7 @@ let hoist =
 
     method! visit_DGlobal loc flags name n ret expr =
       let loc = Krml.Loc.(InTop name :: loc) in
-      let lhs, expr = Krml.Simplify.maybe_hoist_initializer loc ret expr in
+      let lhs, expr = Krml.Simplify.maybe_hoist_initializer field_types loc ret expr in
       let expr = H.nest lhs ret expr in
       DGlobal (flags, name, n, ret, expr)
   end
