@@ -357,14 +357,15 @@ let remove_array_from_fn files =
               | TArrow (_, (TArrow (_, _to))) -> _to
               | _ -> assert false
             in
-            let t_dst =
+            let t_array =
               match len.node with
               | EConstant c -> TArray (t_element, c)
               | _ -> assert false
             in
             let x, dst_struct = H.mk_binding ~mut:true "arr_struct" t_struct in
-            let dst = with_type (t_dst) (EField (dst_struct, "data")) in
+            let dst = with_type (t_array) (EField (dst_struct, "data")) in
             let bindx = (x, with_type t_struct EAny) in
+            let t_dst = H.assert_tbuf_or_tarray t_array in
             let for_assign = 
               let lift1 = Krml.DeBruijn.lift 1 in
               with_type TUnit (EFor
@@ -374,18 +375,18 @@ let remove_array_from_fn files =
                   H.mk_incr_usize (* i++ *),
                   let i = with_type H.usize (EBound 0) in
                   Krml.Helpers.with_unit
-                    (* (if H.is_array t_dst then *)
+                    (if H.is_array t_dst then
+                     (* note: this nested array case needs to be changed? not sure. *)
                       (EApp
                         ( call_mut,
                          [
                            with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
                            with_type (TInt SizeT) (EBound 0);
                            with_type t_dst (EBufRead (lift1 dst, i));
-                ] ))))
-            in (H.nest [bindx] t_struct (with_type t_struct (ESequence [for_assign; dst_struct]))).node
-                   (* else
+                ] ))
+                   else
                      EBufWrite
-                       ( Krml.DeBruijn.lift 1 dst,
+                       ( lift1 dst,
                          i,
                          with_type t_dst
                            (EApp
@@ -393,7 +394,8 @@ let remove_array_from_fn files =
                                 [
                                   with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
                                   with_type (TInt SizeT) (EBound 0);
-                ] )) )) ) *)
+                ] )) )) ))
+             in (H.nest [bindx] t_struct (with_type t_struct (ESequence [for_assign; dst_struct]))).node
         | ETApp
             ( { node = EQualified ("core" :: "array" :: _, "map"); _ },
               [ len ],
