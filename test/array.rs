@@ -11,6 +11,7 @@ fn mut_foo(mut f: Foo) {
     f.x[0] = 1u32;
     let mut copy: [u32; 2] = f.y;
     copy[0] = 0u32;
+    assert!(copy[0]!=1u32);
 }
 
 fn mk_foo() -> Foo {
