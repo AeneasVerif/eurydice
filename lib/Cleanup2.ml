@@ -339,33 +339,51 @@ let remove_array_from_fn files =
                instead of having type size_t -> t_element, has type size_t -> t_element ->
                unit *)
             L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements;
-            (* First argument = closure, second argument = destination. Note that
-               the closure may itself be an application of the closure to the state
-               (but not always... is this unit argument elimination kicking in? not
-               sure). *)
-            let state, dst =
+            (* By translating array into struct, it is simply as return value of [from_fn]
+               instead of the 2nd arg as its reference. *)
+            let state =
               match es with
-              | [ x; y ] -> x, y
+              | [ x ] -> x 
               | _ -> assert false
             in
-            let lift1 = Krml.DeBruijn.lift 1 in
-            let t_dst = H.assert_tbuf_or_tarray dst.typ in
-            EFor
-              ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
-                H.zero_usize (* i: size_t = 0 *),
-                H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
-                H.mk_incr_usize (* i++ *),
-                let i = with_type H.usize (EBound 0) in
-                Krml.Helpers.with_unit
-                  (if H.is_array t_dst then
-                     EApp
-                       ( call_mut,
+            (* Constructing types, maybe there are some better helpers for this idk *)
+            let t_struct =
+              match e.typ with
+              | TArrow (_, _to) -> _to
+              | _ -> assert false
+            in
+            let t_element =
+              match call_mut.typ with
+              | TArrow (_, (TArrow (_, _to))) -> _to
+              | _ -> assert false
+            in
+            let t_dst =
+              match len.node with
+              | EConstant c -> TArray (t_element, c)
+              | _ -> assert false
+            in
+            let x, dst_struct = H.mk_binding ~mut:true "arr_struct" t_struct in
+            let dst = with_type (t_dst) (EField (dst_struct, "data")) in
+            let bindx = (x, with_type t_struct EAny) in
+            let for_assign = 
+              let lift1 = Krml.DeBruijn.lift 1 in
+              with_type TUnit (EFor
+                ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
+                  H.zero_usize (* i: size_t = 0 *),
+                  H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
+                  H.mk_incr_usize (* i++ *),
+                  let i = with_type H.usize (EBound 0) in
+                  Krml.Helpers.with_unit
+                    (* (if H.is_array t_dst then *)
+                      (EApp
+                        ( call_mut,
                          [
                            with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
                            with_type (TInt SizeT) (EBound 0);
                            with_type t_dst (EBufRead (lift1 dst, i));
-                         ] )
-                   else
+                ] ))))
+            in (H.nest [bindx] t_struct (with_type t_struct (ESequence [for_assign; dst_struct]))).node
+                   (* else
                      EBufWrite
                        ( Krml.DeBruijn.lift 1 dst,
                          i,
@@ -375,7 +393,7 @@ let remove_array_from_fn files =
                                 [
                                   with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
                                   with_type (TInt SizeT) (EBound 0);
-                                ] )) )) )
+                ] )) )) ) *)
         | ETApp
             ( { node = EQualified ("core" :: "array" :: _, "map"); _ },
               [ len ],
