@@ -410,14 +410,30 @@ let remove_array_from_fn files =
               | _ ->
                   failwith "TODO: unknown map closure shape; is it an array outparam? (see above)"
             in
-            let e_src, e_state, e_dst =
+            let e_src, e_state =
               match es with
-              | [ e_src; e_state; e_dst ] -> e_src, e_state, e_dst
+              | [ e_src; e_state ] -> e_src, e_state
               | _ -> failwith "unknown shape of arguments to array map"
+            in
+            let len_c =
+              match len.node with
+              | EConstant c -> c
+              | _ -> failwith "unable to get the const length for array map"
             in
             let lift1 = Krml.DeBruijn.lift 1 in
             let e_state = with_type (TBuf (e_state.typ, false)) (EAddrOf (lift1 e_state)) in
-            EFor
+            let e_src = with_type (TArray (t_src, len_c)) (EField (e_src, "data")) in
+            let t_dst_str =
+              match e.typ with
+              | TArrow (_, TArrow (_, _to)) -> _to
+              | _ -> assert false
+            in
+            let t_dst_arr = TArray (t_dst, len_c) in
+            let x, dst_struct = H.mk_binding ~mut:true "arr_mapped_str" t_dst_str in
+            let e_dst = with_type (t_dst_arr) (EField (dst_struct, "data")) in
+            let bindx = (x, with_type t_dst_str EAny) in
+            let for_assign = 
+              with_type TUnit (EFor
               ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
                 H.zero_usize (* i = 0 *),
                 H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
@@ -427,7 +443,8 @@ let remove_array_from_fn files =
                 Krml.Helpers.with_unit
                   (EBufWrite
                      (lift1 e_dst, i, with_type t_dst (EApp (call_mut, [ lift1 e_state; e_src_i ]))))
-              )
+              ))
+            in (H.nest [bindx] t_dst_str (with_type t_dst_str (ESequence [for_assign; dst_struct]))).node 
         | _ -> super#visit_EApp env e es
     end
   end
