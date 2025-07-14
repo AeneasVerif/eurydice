@@ -2614,6 +2614,7 @@ let replacements =
      three currently) *)
       ( "core::num::{u32}::BITS",
         fun lid -> Krml.Ast.DGlobal ([], lid, 0, Krml.Helpers.uint32, Krml.Helpers.mk_uint32 32) );
+      "alloc::vec::{alloc::vec::Vec<@T>}::try_with_capacity", Builtin.try_with_capacity;
     ]
 
 (* Catch-all error handler (last resort) *)
@@ -2629,7 +2630,10 @@ let decl_of_id env decl =
         | exception _ -> None)
       replacements
   with
-  | Some d -> Some (d (lid_of_name env (name_of_id env decl)))
+  | Some d ->
+      let lid = lid_of_name env (name_of_id env decl) in
+      L.log "AstOfLlbc" "Found replacement for %a" plid lid;
+      Some (d lid)
   | None -> (
       try decl_of_id env decl
       with e ->

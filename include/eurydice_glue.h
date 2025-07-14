@@ -69,7 +69,7 @@ using std::type_identity_t;
 //
 // Empty slices have `len == 0` and `ptr` always needs to be a valid pointer
 // that is not NULL (otherwise the construction in EURYDICE_SLICE computes `NULL
-// + start`).
+// + start`). 20250714: this is fine since C23.
 typedef struct {
   void *ptr;
   size_t len;
@@ -560,25 +560,14 @@ typedef struct {
 // However, unless we allow statement-expressions (GCC extension), we cannot do the above with
 // an expression, since we need to name the result of try_with_capacity to avoid evaluating it
 // twice.
-static inline Eurydice_vec Eurydice_vec_try_with_capacity(size_t len, size_t element_sz) {
+static inline Eurydice_vec Eurydice_vec_alloc2(size_t len, size_t element_sz) {
   return ((Eurydice_vec){ .ptr = (char*)malloc(len*element_sz), .len = len, .capacity = len });
 }
 
-// TODO: have Eurydice generate this instead of relying on a non-standard extension
-#define alloc_vec__alloc__vec__Vec_T___try_with_capacity(len, t_elt, t_ret) \
-  ({ \
-    Eurydice_vec v = Eurydice_vec_try_with_capacity(len, sizeof(t_elt)); \
-    t_ret r; \
-    if (v.ptr != NULL) { \
-      r = ((t_ret){ .tag = core_result_Ok, .val = { .case_Ok = v }}); \
-    } else { \
-      r = ((t_ret){ .tag = core_result_Err, .val = { .case_Err = { \
-         .tag = alloc_collections_AllocError, /* CHECK ??? */ \
-         .layout = { .size = len * sizeof(t_elt), .align = 8 } \
-       }}}); \
-    } \
-    r; \
-  })
+#define Eurydice_vec_alloc(len, t, _) (Eurydice_vec_alloc2((len), sizeof(t)))
+#define Eurydice_vec_overflows(len, t, _) (!((len) <= SIZE_MAX/(sizeof(t))))
+#define Eurydice_vec_failed(v, _, _1) ((v).ptr == NULL)
+#define Eurydice_layout(t, _) ((core_alloc_layout_Layout){ .size = sizeof(t), .align = _Alignof(t) })
 
 #define alloc_vec__alloc__vec__Vec_T___resize(/* Eurydice_vec * */ v, /* size_t */ new_len, /* T */ elt, T, _0, _1) \
   do { \

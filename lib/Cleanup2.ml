@@ -12,11 +12,14 @@ open Krml.PrintAst.Ops
    1. remove_array_repeats: [e; N] becomes bufcreate e N, or bufcreateL, depending on some
       heuristics -- see comments in this phase 
    2. remove_literals: let x = S { y: foo } --> let x; x.y := foo; x
-      where the assignment has an array type -- this is because y would decay in C and as such
-      cannot appear in the initializer.
+      where the assignment has an array type -- this is either because foo would decay in C and as
+      such cannot appear in the initializer; or because of foo if of a syntactic form that does not
+      suit itself to becoming an initializer (e.g. is an if-then-else).
    3. remove_implicit_array_copies: handles x := e1 at array types, including nested array cases
    ... hoist
 
+   Phase 2. performs a limited form of hoisting, There is an invariant that hoist cannot be more
+   aggressive than 2., otherwise, there will be array copy-assignments that won't be compiled.
 *)
 
 (* In the initial value of a variable, is this a suitable expression to initialize something that

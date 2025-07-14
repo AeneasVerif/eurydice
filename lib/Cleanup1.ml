@@ -29,6 +29,7 @@ let is_sequence = Krml.Simplify.is_sequence
 
 let already_clean = function
   | [ "core"; "slice"; _ ], "swap" -> true
+  | [ "alloc"; "vec"; _ ], "try_with_capacity" -> true
   | _ -> false
 
 let remove_assignments =
