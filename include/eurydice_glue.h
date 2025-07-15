@@ -538,12 +538,18 @@ static inline char *malloc_and_init(size_t sz, char *init) {
 
 // VECTORS
 
-/* We adapt the layout of https://doc.rust-lang.org/std/vec/struct.Vec.html,
- * dispensing with the nested RawVec -- basically, we follow what the
- * documentation says. Just like Eurydice_slice, we keep sizes in number of
- * elements. This means we pass three words by value whenever we carry a vector
- * around. Things that modify the vector take &mut's in Rust, or a Eurydice_vec*
- * in C. */
+// We adapt the layout of https://doc.rust-lang.org/std/vec/struct.Vec.html,
+// dispensing with the nested RawVec -- basically, we follow what the
+// documentation says. Just like Eurydice_slice, we keep sizes in number of
+// elements. This means we pass three words by value whenever we carry a vector
+// around. Things that modify the vector take &mut's in Rust, or a Eurydice_vec*
+// in C.
+//
+// Another design choice: just like Eurydice_slice, we treat Eurydice_vec as an
+// opaque type, and rely on macros receiving their type arguments at call-site
+// to perform necessary casts. A downside is that anything that looks into the
+// definition of Eurydice_vec must be exposed (from the eurydice point of view)
+// as an external -- see, for instance, Eurydice_vec_failed, below.
 typedef struct {
   char *ptr;
   size_t len;       /* current length, in elements */
