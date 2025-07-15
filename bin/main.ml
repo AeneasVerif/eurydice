@@ -295,6 +295,7 @@ Supported options:|}
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
   Eurydice.Logging.log "Phase2.9" "%a" pfiles files;
+  let files = Eurydice.Cleanup2.float_comments files in
   let files = Eurydice.Cleanup2.bonus_cleanups#visit_files [] files in
   (* Macros stemming from globals *)
   let files, macros = Eurydice.Cleanup2.build_macros files in

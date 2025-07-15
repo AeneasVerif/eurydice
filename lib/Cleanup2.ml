@@ -573,7 +573,7 @@ let contains_array t =
     () t
 
 let must_explode e =
-  (* Not that this visits the whole type (including the type of fields) *)
+  (* Note that this visits the whole type (including the type of fields) *)
   contains_array e && not (is_suitable_array_initializer e.node)
 
 let remove_literals tbl =
@@ -1270,3 +1270,55 @@ let fixup_monomorphization_map map =
       let ts = List.map (replace#visit_typ ()) ts in
       Hashtbl.add Krml.MonomorphizationState.state (lid, ts, cgs) v)
     (Hashtbl.to_seq Krml.MonomorphizationState.state)
+
+(* Hoist comments to be attached to the nearest statement *)
+let flush_comments e =
+  let comments = ref [] in
+  let prepend c = comments := c :: !comments in
+  let flush () =
+    let r = !comments in
+    comments := [];
+    r
+  in
+  let filter_meta meta =
+    meta |>
+    List.filter (function
+      | CommentBefore c -> prepend c; false
+      | _ -> true
+    ) |>
+    List.filter (function
+      | CommentAfter c -> prepend c; false
+      | _ -> true
+    )
+  in
+  let e =
+    object
+      inherit [_] map as super
+      method visit_with_type: 'node 'ret.  (_ -> 'node -> 'ret) -> _ -> 'node with_type -> 'ret with_type =
+        fun f env n ->
+          let n = super#visit_with_type f env n in
+          { n with meta = filter_meta n.meta }
+    end#visit_expr_w () e
+  in
+  e, !comments
+
+let rec float_comments (files: file list) =
+  (* let rec descend_lets e = *)
+  (*   match e.node with *)
+  (*   | ELet (b, e1, e2) -> *)
+  (*   | _ -> *)
+  (*       let e, comments = flush_comments e in *)
+  (*       let comments = List.map (fun x -> CommentBefore x) comments in *)
+  (*       { e with meta = comments @ e.meta } *)
+  (* in *)
+  object 
+    inherit [_] map
+
+    method! visit_ELet env e1 e2 =
+  (*       let e1, comments = flush_comments e1 in *)
+  (*       let comments = List.map (fun x -> CommentBefore x) comments in *)
+  (*       { e with node = ELet ({ b with meta = comments @ b.meta }, e1, descend_lets e2) } *)
+
+(*     method! visit_DFunction _ cc flags n_cgs n t name bs e = *)
+(*       DFunction (cc, flags, n_cgs, n, t, name, bs, descend_lets e) *)
+  end#visit_files () files
