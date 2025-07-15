@@ -51,11 +51,10 @@ let remove_implicit_array_copies =
                         (self#remove_assign n (lift lifting_index lhs_i) (lift lifting_index e)
                            (nest lifting_index (array_index + 1) es))
                   | _ ->
-                      with_type e2.typ
-                        (ELet
-                           ( H.sequence_binding (),
-                             H.with_unit (EAssign (lift lifting_index lhs_i, lift lifting_index e)),
-                             nest (lifting_index + 1) (array_index + 1) es )))
+                      with_type e2.typ (self#visit_ELet ((),TUnit)
+                             (H.sequence_binding ())
+                             (H.with_unit (EAssign (lift lifting_index lhs_i, lift lifting_index e)))
+                             (nest (lifting_index + 1) (array_index + 1) es )))
             in
             (nest 0 0 es).node
           end
