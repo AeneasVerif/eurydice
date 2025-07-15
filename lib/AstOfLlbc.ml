@@ -383,10 +383,8 @@ let lookup_field env typ_id field_id =
 (** special treatment for the array type: translating [T;C] as rust generic type
     struct <const C:usize, T> { data : [T;C]; } *)
 
-let lid_of_Arr = ([],"Arr$")
-
 let decl_of_Arr =
-  K.DType (lid_of_Arr, [], 1, 0, Flat [(Some "data", (K.TCgArray (TBound 0,0), true))])
+  K.DType (Builtin.arr , [], 1, 0, Flat [(Some "data", (K.TCgArray (TBound 0,0), true))])
   (* []  : no flags
      1  : we have one const generic C
      0  : we have one type argument T (counted from 0)
@@ -499,7 +497,7 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
 and typ_of_struct_arr (env: env) (t: C.ty) (cg: C.const_generic) : K.typ =
   let typ_t = typ_of_ty env t in
   let cg = cg_of_cg env cg in
-  K.TCgApp (K.TApp (lid_of_Arr, [typ_t]),cg)
+  Builtin.mk_arr typ_t cg
   
 let maybe_cg_array (env : env) (t : C.ty) (cg : C.const_generic) =
   match cg with

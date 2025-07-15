@@ -16,6 +16,8 @@ let range_from : K.lident = [ "core"; "ops"; "range" ], "RangeFrom"
 let mk_range_from (t : K.typ) : K.typ = K.TApp (range_from, [ t ])
 let option : K.lident = [ "core"; "option" ], "Option"
 let mk_option (t : K.typ) : K.typ = K.TApp (option, [ t ])
+let arr : K.lident = [ "Eurydice" ], "arr"
+let mk_arr (t : K.typ) (cg: K.cg) : K.typ = K.TCgApp (K.TApp (arr, [ t ]), cg)
 let array_copy = [ "Eurydice" ], "array_copy"
 let macros = Krml.Idents.LidSet.of_list []
 
@@ -122,7 +124,7 @@ let get_128_op (kind, op) : K.expr = expr_of_builtin @@ Op128Map.find (kind, op)
 let array_to_slice =
   {
     name = [ "Eurydice" ], "array_to_slice";
-    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, false) ] (mk_slice (TBound 0));
+    typ = Krml.Helpers.fold_arrow [ TBuf (mk_arr (TBound 0) (CgVar 0), false) ] (mk_slice (TBound 0));
     n_type_args = 1;
     cg_args = [ TInt SizeT ];
     arg_names = [ "a" ];
@@ -145,7 +147,7 @@ let array_to_subslice_to =
     name = [ "Eurydice" ], "array_to_subslice_to";
     typ =
       Krml.Helpers.fold_arrow
-        [ TBuf (TBound 2, false); mk_range_to (TInt SizeT) ]
+        [ TBuf (mk_arr (TBound 2) (CgVar 0), false); mk_range_to (TInt SizeT) ]
         (mk_slice (TBound 2));
     n_type_args = 3;
     cg_args = [ TInt SizeT ];
@@ -157,7 +159,7 @@ let array_to_subslice_from =
     name = [ "Eurydice" ], "array_to_subslice_from";
     typ =
       Krml.Helpers.fold_arrow
-        [ TBuf (TBound 2, false); mk_range_from (TInt SizeT) ]
+        [ TBuf (mk_arr (TBound 2) (CgVar 0), false); mk_range_from (TInt SizeT) ]
         (mk_slice (TBound 2));
     n_type_args = 3;
     cg_args = [ TInt SizeT ];
