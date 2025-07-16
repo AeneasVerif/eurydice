@@ -1272,13 +1272,13 @@ let fixup_monomorphization_map map =
     (Hashtbl.to_seq Krml.MonomorphizationState.state)
 
 (* Hoist comments to be attached to the nearest statement *)
-let flush_comments e =
+let float_comments files =
   let comments = ref [] in
   let prepend c = comments := c :: !comments in
   let flush () =
-    let r = !comments in
+    let r = List.rev !comments in
     comments := [];
-    r
+    List.map (fun x -> CommentBefore x) r
   in
   let filter_meta meta =
     meta |>
@@ -1291,34 +1291,46 @@ let flush_comments e =
       | _ -> true
     )
   in
-  let e =
-    object
-      inherit [_] map as super
-      method visit_with_type: 'node 'ret.  (_ -> 'node -> 'ret) -> _ -> 'node with_type -> 'ret with_type =
-        fun f env n ->
-          let n = super#visit_with_type f env n in
-          { n with meta = filter_meta n.meta }
-    end#visit_expr_w () e
-  in
-  e, !comments
+  object(self)
+    inherit [_] map as super
+    method visit_with_type: 'node 'ret.  (_ -> 'node -> 'ret) -> _ -> 'node with_type -> 'ret with_type =
+      fun f env n ->
+        let n = super#visit_with_type f env n in
+        { n with meta = filter_meta n.meta }
 
-let rec float_comments (files: file list) =
-  (* let rec descend_lets e = *)
-  (*   match e.node with *)
-  (*   | ELet (b, e1, e2) -> *)
-  (*   | _ -> *)
-  (*       let e, comments = flush_comments e in *)
-  (*       let comments = List.map (fun x -> CommentBefore x) comments in *)
-  (*       { e with meta = comments @ e.meta } *)
-  (* in *)
-  object 
-    inherit [_] map
+    method private process_block e =
+      let float_one e =
+        let e = self#visit_expr_w () e in
+        { e with meta = flush () @ e.meta }
+      in
+      match e.node with
+      | ELet (b, e1, e2) ->
+          let e1 = self#visit_expr_w () e1 in
+          let meta = flush () @ e.meta in
+          { e with node = ELet (b, e1, self#process_block e2); meta }
+      | ESequence es ->
+          { e with node = ESequence (List.map self#process_block es) }
+      | _ ->
+          float_one e
 
-    method! visit_ELet env e1 e2 =
-  (*       let e1, comments = flush_comments e1 in *)
-  (*       let comments = List.map (fun x -> CommentBefore x) comments in *)
-  (*       { e with node = ELet ({ b with meta = comments @ b.meta }, e1, descend_lets e2) } *)
+    method! visit_EFor env b e1 e2 e3 e4 =
+      let e4 = self#process_block e4 in
+      EFor (b, self#visit_expr env e1, self#visit_expr env e2, self#visit_expr env e3, e4)
 
-(*     method! visit_DFunction _ cc flags n_cgs n t name bs e = *)
-(*       DFunction (cc, flags, n_cgs, n, t, name, bs, descend_lets e) *)
+    method! visit_EWhile env e1 e2 =
+      let e2 = self#process_block e2 in
+      EWhile (self#visit_expr env e1, e2)
+
+    method! visit_EIfThenElse env e1 e2 e3 =
+      let e2 = self#process_block e2 in
+      let e3 = self#process_block e3 in
+      EIfThenElse (self#visit_expr env e1, e2, e3)
+
+    method! visit_ESwitch env e bs =
+      let bs = List.map (fun (c, e) -> c, self#process_block e) bs in
+      ESwitch (self#visit_expr env e, bs)
+
+    method! visit_DFunction _ cc flags n_cgs n t name bs e =
+      DFunction (cc, flags, n_cgs, n, t, name, bs, self#process_block e)
+
   end#visit_files () files
