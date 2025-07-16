@@ -2118,30 +2118,41 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
           args
       in
 
-      (* Another array-to-pointer, decay-related bit of reasoning. The box_new builtin, when applied
-         to an array type, looks like `x := box_new <[T; N]> e` where `e: [T; N]`; However, per the
-         conversion rules, Box<[T; N]> (the type) translates to `T*`, meaning that `x` expects a
-         `T*` but is assigned a `[T; N]*` (because the type application of box_new is not aware of
-         array decay when performing substitution).
+      (* Array handling: commented special case for arrays in builtin functions *)
+      (* Since the signature of builtin functions are defined in Builtin.ml. we need to
+         get the .data field from the translated struct of arrs here. Using array type and Efield
+         in both place of return value and rvalue for operends (auto decay)
+         seems to work so far *)
+      
+      let maybe_data_of_str = fun (e: K.expr) ->
+        match e.typ with
+        | K.TCgApp (K.TApp (lid, [ t ]), K.CgVar i) when lid = Builtin.arr ->
+           K.with_type (K.TCgArray (t, i)) (K.EField (e, "data"))
+        | K.TCgApp (K.TApp (lid, [ t ]), K.CgConst c) when lid = Builtin.arr ->
+           K.with_type (K.TArray (t, c)) (K.EField (e, "data"))
+        | TBuf (K.TCgApp (K.TApp (lid, [ t ]), K.CgVar i), false) when lid = Builtin.arr ->
+           let e = Krml.Helpers.(mk_deref (K.TCgApp (K.TApp (lid, [ t ]), K.CgVar i)) e.K.node) in
+           K.with_type (K.TCgArray (t, i)) (K.EField (e, "data"))
+        | TBuf (K.TCgApp (K.TApp (lid, [ t ]), K.CgConst c), false) when lid = Builtin.arr ->
+           let e = Krml.Helpers.(mk_deref (K.TCgApp (K.TApp (lid, [ t ]), K.CgConst c)) e.K.node) in
+           K.with_type (K.TArray (t, c)) (K.EField (e, "data"))
+        | _ -> e
+      in 
 
-         This 100% does not work in case of a polymorphic function that is later monomorphized,
-         meaning we really should be doing this transformation post-monomorphization. *)
+      let dest =
+        if _is_known_builtin then
+          maybe_data_of_str dest
+        else
+          dest
+      in
 
-      (** Array handling: commented special case for array *)
-      (*
-        let hd, output_t =
-        match hd.node with
-        | K.ETApp ({ node = EQualified lid; _ }, [], [], [ TArray (t, n) ])
-          when lid = Builtin.box_new.name ->
-            let len = K.with_type (TInt SizeT) (K.EConstant n) in
-            let output_t = K.TBuf (t, false) in
-            ( K.(
-                with_type
-                  (TArrow (TArray (t, n), output_t))
-                  (ETApp (Builtin.(expr_of_builtin box_new_array), [ len ], [], [ t ]))),
-              output_t )
-        | _ -> hd, output_t
-      in *)
+      let args =
+        if _is_known_builtin then
+          List.map maybe_data_of_str args
+        else
+          args
+      in
+               
 
       let rhs =
         if args = [] then
