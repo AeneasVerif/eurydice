@@ -1293,23 +1293,25 @@ let float_comments files =
   in
   object(self)
     inherit [_] map as super
-    method visit_with_type: 'node 'ret.  (_ -> 'node -> 'ret) -> _ -> 'node with_type -> 'ret with_type =
-      fun f env n ->
-        let n = super#visit_with_type f env n in
-        { n with meta = filter_meta n.meta }
+    method! visit_expr env e =
+      let e = super#visit_expr env e in
+      { e with meta = filter_meta e.meta }
 
     method private process_block e =
       let float_one e =
         let e = self#visit_expr_w () e in
-        { e with meta = flush () @ e.meta }
+        { e with meta = flush () }
       in
       match e.node with
       | ELet (b, e1, e2) ->
           let e1 = self#visit_expr_w () e1 in
-          let meta = flush () @ e.meta in
+          let e1 = { e1 with meta = filter_meta e1.meta } in
+          let b = { b with meta = filter_meta b.meta } in
+          let meta = flush () in
           { e with node = ELet (b, e1, self#process_block e2); meta }
       | ESequence es ->
-          { e with node = ESequence (List.map self#process_block es) }
+          let es = List.map float_one es in
+          { e with node = ESequence es; meta = filter_meta e.meta }
       | _ ->
           float_one e
 
