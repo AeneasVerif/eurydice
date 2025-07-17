@@ -1174,7 +1174,7 @@ let rec mk_clause_binders_and_args env ?depth (trait_clauses : C.trait_clause li
                    let clause_id' =
                      match clause_id' with
                      | Clause (Free clause_id') -> clause_id'
-                     | _ -> fail "not a clause??"
+                     | _ -> fail "not a clause?? %s" (C.show_trait_instance_id clause_id')
                    in
                    ParentClause (clause_ref, trait_decl_id, clause_id')
                  in
@@ -1204,7 +1204,7 @@ and lookup_signature env depth signature : lookup_result =
   L.log "Calls" "%s# Lookup Signature\n%s--> args: %s, ret: %s\n" depth depth
     (String.concat " ++ " (List.map (Charon.PrintTypes.ty_to_string env.format_env) inputs))
     (Charon.PrintTypes.ty_to_string env.format_env output);
-  L.log "Calls" "Type parameters for this signature: %s\n"
+  L.log "Calls" "%sType parameters for this signature: %s\n" depth
     (String.concat " ++ " (List.map Charon.PrintTypes.type_var_to_string type_params));
   let env = push_cg_binders env const_generics in
   let env = push_type_binders env type_params in
@@ -2265,8 +2265,6 @@ let check_if_dst (env : env) (id : C.any_decl_id) : env =
         List.filter
           (fun (tc : C.trait_clause) ->
             let trait_decl = env.get_nth_trait_decl tc.trait.binder_value.id in
-            L.log "AstOfLlbc" "%s"
-              (string_of_pattern (pattern_of_name env trait_decl.item_meta.name));
             matches trait_decl.item_meta.name)
           decl.generics.trait_clauses
       in
