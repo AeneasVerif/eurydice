@@ -6,6 +6,51 @@ open Krml.PrintAst.Ops
 
 (* Target cleanups invoked from bin/main.ml *)
 
+(* A note on the various cleanup phases for arrays to preserve the semantics of Rust. Assume
+   `struct S { y: [u32; 4] }`.
+   ... pass by ref
+   1. remove_array_repeats: [e; N] becomes bufcreate e N, or bufcreateL, depending on some
+      heuristics -- see comments in this phase 
+   2. remove_literals: let x = S { y: foo } --> let x; x.y := foo; x
+      where the assignment has an array type -- this is either because foo would decay in C and as
+      such cannot appear in the initializer; or because of foo if of a syntactic form that does not
+      suit itself to becoming an initializer (e.g. is an if-then-else).
+   3. remove_implicit_array_copies: handles x := e1 at array types, including nested array cases
+   ... hoist
+
+   Phase 2. performs a limited form of hoisting, There is an invariant that hoist cannot be more
+   aggressive than 2., otherwise, there will be array copy-assignments that won't be compiled.
+*)
+
+(* In the initial value of a variable, is this a suitable expression to initialize something that
+   has an array type (or a struct that may contain arrays)? *)
+let rec is_suitable_array_initializer =
+  let rec subarrays_only_literals e =
+    (* Underneath an initializer list *)
+    match e.node, e.typ with
+    | _, TArray _ ->
+        (* In the case of nested arrays *)
+        begin
+          match e.node with
+          | EBufCreateL (_, es) ->
+              (* We only allow sub-initializer lists *)
+              List.for_all subarrays_only_literals es
+          | _ ->
+              (* Anything else (e.g. variable) is not copy-assignment in C *)
+              false
+        end
+    | EFlat es, _ ->
+        List.for_all subarrays_only_literals (List.map snd es)
+    | _ ->
+        (* If this is not a nested array, then anything goes *)
+        true
+  in
+  function
+  | EAny | EBufCreate _ -> true
+  | EBufCreateL (_, es) -> List.for_all subarrays_only_literals es
+  | EFlat es -> List.for_all subarrays_only_literals (List.map snd es)
+  | _ -> false
+
 (* A general phase that removes assignments at array types. Note that all array repeat expressions
    are desugared before this. We try to reduce all cases to the assignment case (e1 := e2). *)
 let remove_implicit_array_copies =
@@ -70,32 +115,9 @@ let remove_implicit_array_copies =
               lift 1 (self#visit_expr_w () e2) )
 
     method! visit_ELet (((), _) as env) b e1 e2 =
-      let rec subarrays_only_literals e =
-        (* Underneath an initializer list *)
-        match e.typ with
-        | TArray _ ->
-            (* In the case of nested arrays *)
-            begin
-              match e.node with
-              | EBufCreateL (_, es) ->
-                  (* We only allow sub-initializer lists *)
-                  List.for_all subarrays_only_literals es
-              | _ ->
-                  (* Anything else (e.g. variable) is not copy-assignment in C *)
-                  false
-            end
-        | _ ->
-            (* If this is not a nested array, then anything goes *)
-            true
-      in
-      let is_suitable_initializer = function
-        | EAny | EBufCreate _ -> true
-        | EBufCreateL (_, es) -> List.for_all subarrays_only_literals es
-        | _ -> false
-      in
       match b.typ, e1.node with
       (* INVALID INITIALIZATION: let b = e1 in e2 -- explode into assignments, recursively *)
-      | TArray (_, n), _ when not (is_suitable_initializer e1.node) ->
+      | TArray (_, n), _ when not (is_suitable_array_initializer e1.node) ->
           (* let b = <uninitialized> in *)
           ELet
             ( b,
@@ -184,13 +206,20 @@ let remove_array_repeats =
       match e.node, es with
       | ETApp ({ node = EQualified lid; _ }, [ _ ], _, [ _ ]), [ _ ]
         when lid = Builtin.array_repeat.name ->
-          (self#visit_expr env
-             (with_type (snd env)
-                (ELet
-                   ( H.fresh_binder "repeat_expression" (snd env),
-                     with_type (snd env) (EApp (e, es)),
-                     with_type (snd env) (EBound 0) ))))
-            .node
+          (* Same logic as below: if we can do something smart (like, only zeroes), then we expand,
+             let the subsequent `hoist` phase lift this into a let-binding, and code-gen will optimize this into
+             { 0 }. If we can't do something smart, we let-bind, and fall back onto the general case. *)
+          begin try
+            (self#expand_repeat false (with_type (snd env) (EApp (e, es)))).node
+          with Not_found ->
+            (self#visit_expr env
+               (with_type (snd env)
+                  (ELet
+                     ( H.fresh_binder "repeat_expression" (snd env),
+                       with_type (snd env) (EApp (e, es)),
+                       with_type (snd env) (EBound 0) ))))
+              .node
+          end
       | _ -> super#visit_EApp env e es
 
     method private assert_length len =
@@ -264,7 +293,7 @@ let remove_array_repeats =
       | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
         when lid = Builtin.array_repeat.name -> begin
           try
-            (* Case 1. *)
+            (* Case 1 (only zeroes). *)
             let r = ELet (b, (self#expand_repeat false) e1, self#visit_expr env e2) in
             r
           with Not_found -> (
@@ -529,7 +558,6 @@ let remove_trivial_ite =
       | _ -> super#visit_ESwitch env scrut branches
   end
 
-(* This is not a good criterion -- way too conservative! *)
 let contains_array t =
   begin
     object (_self)
@@ -544,19 +572,23 @@ let contains_array t =
     #visit_expr_w
     () t
 
+let must_explode e =
+  (* Note that this visits the whole type (including the type of fields) *)
+  contains_array e && not (is_suitable_array_initializer e.node)
+
 let remove_literals tbl =
   object (_self)
     inherit [_] map as super_map
     inherit! Krml.Structs.remove_literals tbl as super_krml
 
     method! visit_ELet env b e1 e2 =
-      if contains_array e1 then
+      if must_explode e1 then
         super_krml#visit_ELet env b e1 e2
       else
         super_map#visit_ELet env b e1 e2
 
     method! visit_EFlat (((), t) as env) fields =
-      if contains_array (with_type t (EFlat fields)) then
+      if must_explode (with_type t (EFlat fields)) then
         super_krml#visit_EFlat env fields
       else
         super_map#visit_EFlat env fields
@@ -574,8 +606,8 @@ let build_macros (macros : Krml.Idents.LidSet.t ref) =
     inherit [_] map as super
 
     method! visit_DGlobal env flags name n t body =
-      if List.mem Krml.Common.Macro flags then
-        macros := Krml.Idents.LidSet.(union !macros (singleton name));
+      (if List.mem Krml.Common.Macro flags then
+         macros := Krml.Idents.LidSet.(union !macros (singleton name)));
       super#visit_DGlobal env flags name n t body
   end
 
@@ -1144,86 +1176,83 @@ let inline_loops =
   end
 
 (** A better version of hoist (than [Krml.Simplify.hoist]), also work for [DGlobal]. *)
-let hoist = object
-  inherit Krml.Simplify.hoist
+let hoist =
+  object
+    inherit Krml.Simplify.hoist
 
-  method! visit_DGlobal loc flags name n ret expr =
-    let loc = Krml.Loc.(InTop name :: loc) in
-    let lhs, expr = Krml.Simplify.maybe_hoist_initializer loc ret expr in
-    let expr = H.nest lhs ret expr in
-    DGlobal (flags, name, n, ret, expr)
-end
+    method! visit_DGlobal loc flags name n ret expr =
+      let loc = Krml.Loc.(InTop name :: loc) in
+      let lhs, expr = Krml.Simplify.maybe_hoist_initializer field_types loc ret expr in
+      let expr = H.nest lhs ret expr in
+      DGlobal (flags, name, n, ret, expr)
+  end
 
 (** Also fix for [DGlobal] as [hoist] above *)
-let fixup_hoist = object
-  inherit [_] map
+let fixup_hoist =
+  object
+    inherit [_] map
 
-  method! visit_DFunction _ cc flags n_cgs n ret name binders expr =
-    DFunction (cc, flags, n_cgs, n, ret, name, binders, Krml.Simplify.fixup_return_pos expr)
+    method! visit_DFunction _ cc flags n_cgs n ret name binders expr =
+      DFunction (cc, flags, n_cgs, n, ret, name, binders, Krml.Simplify.fixup_return_pos expr)
 
-  method! visit_DGlobal () flags name n ret expr =
-    DGlobal (flags, name, n, ret, Krml.Simplify.fixup_return_pos expr)
-end
+    method! visit_DGlobal () flags name n ret expr =
+      DGlobal (flags, name, n, ret, Krml.Simplify.fixup_return_pos expr)
+  end
 
-(** For any [DGlobal], if the expression has any locals remaining
-    We should let them also be globals, so to make the overall expr valid.
+(** For any [DGlobal], if the expression has any locals remaining We should let them also be
+    globals, so to make the overall expr valid.
 
-    I.e., we make:
-    [T VAL = let v1 : T1 = e1 in
-             let v2 : T2 = e2 in
-             ...
-             let vN : TN = eN in
-             e;]
+    I.e., we make: [T VAL = let v1 : T1 = e1 in let v2 : T2 = e2 in ... let vN : TN = eN in e;]
     become:
-    [T1 VAL_local_1 = e1;
-     T2 VAL_local_2 = e2[v1/VAL_local_1];
-     ...
-     TN VAL_local_N = eN[v1/VAL_local_1; v2/VAL_local_2; ...; vN-1/VAL_local_(N-1)];
-     T VAL = e;]
+    [T1 VAL_local_1 = e1; T2 VAL_local_2 = e2[v1/VAL_local_1]; ... TN VAL_local_N =
+     eN[v1/VAL_local_1; v2/VAL_local_2; ...; vN-1/VAL_local_(N-1)]; T VAL = e;]
 
-     Notably, the locals should be renamed to avoid potential naming conflicts.
-*)
+    Notably, the locals should be renamed to avoid potential naming conflicts. *)
 let globalize_global_locals files =
   let mapper = function
-  | DGlobal (flags, name, n_cgs, ty, expr) ->
-    let rec decompose_expr id info_acc expr =
-      match expr.node with
-      | ELet (_, e1, e2) ->
-        let name =
-          let lst,name = name in
-          lst, name ^ "$local$" ^ string_of_int id
+    | DGlobal (flags, name, n_cgs, ty, expr) ->
+        let rec decompose_expr id info_acc expr =
+          match expr.node with
+          | ELet (_, e1, e2) ->
+              let name =
+                let lst, name = name in
+                lst, name ^ "$local$" ^ string_of_int id
+              in
+              (* Replace the variable with the new globalised name. *)
+              let e2 = subst Krml.Ast.(with_type e1.typ (EQualified name)) 0 e2 in
+              decompose_expr (id + 1) ((name, e1) :: info_acc) e2
+          | _ -> List.rev info_acc, expr
         in
-        (* Replace the variable with the new globalised name. *)
-        let e2 = subst Krml.Ast.(with_type e1.typ (EQualified name)) 0 e2 in
-        decompose_expr (id + 1) ((name, e1) :: info_acc) e2
-      | _ -> List.rev info_acc, expr
-    in
-    let info, expr = decompose_expr 0 [] expr in
-    (* Make the new globals private if possible -- with exception that
+        let info, expr = decompose_expr 0 [] expr in
+        (* Make the new globals private if possible -- with exception that
        if it is a non-private macro, then the involved new globals should not be private *)
-    let module NameSet = Krml.Idents.LidSet in
-    let no_priv_names =
-      if List.mem Krml.Common.Macro flags && 
-         not (List.mem Krml.Common.Private flags) then
-        object
-          inherit [_] reduce
-          method private zero = NameSet.empty
-          method private plus = NameSet.union
-          method! visit_EQualified _ name = NameSet.singleton name
-        end#visit_expr_w () expr
-      else NameSet.empty
-    in
-    let make_decl (name, expr) =
-      let flags =
-        if NameSet.mem name no_priv_names then []
-        else [ Krml.Common.Private ] in
-      DGlobal (flags, name, n_cgs, expr.typ, expr)
-    in
-    List.map make_decl info @
-    [DGlobal (flags, name, n_cgs, ty, expr)]
-  | decl -> [decl]
+        let module NameSet = Krml.Idents.LidSet in
+        let no_priv_names =
+          if List.mem Krml.Common.Macro flags && not (List.mem Krml.Common.Private flags) then
+            (object
+               inherit [_] reduce
+               method private zero = NameSet.empty
+               method private plus = NameSet.union
+               method! visit_EQualified _ name = NameSet.singleton name
+            end)
+              #visit_expr_w
+              () expr
+          else
+            NameSet.empty
+        in
+        let make_decl (name, expr) =
+          let flags =
+            if NameSet.mem name no_priv_names then
+              []
+            else
+              [ Krml.Common.Private ]
+          in
+          DGlobal (flags, name, n_cgs, expr.typ, expr)
+        in
+        List.map make_decl info @ [ DGlobal (flags, name, n_cgs, ty, expr) ]
+    | decl -> [ decl ]
   in
-  List.map (fun (name, decls) -> (name, List.concat_map mapper decls)) files
+  List.map (fun (name, decls) -> name, List.concat_map mapper decls) files
 
 let fixup_monomorphization_map map =
   let replace =
@@ -1241,3 +1270,69 @@ let fixup_monomorphization_map map =
       let ts = List.map (replace#visit_typ ()) ts in
       Hashtbl.add Krml.MonomorphizationState.state (lid, ts, cgs) v)
     (Hashtbl.to_seq Krml.MonomorphizationState.state)
+
+(* Hoist comments to be attached to the nearest statement *)
+let float_comments files =
+  let comments = ref [] in
+  let prepend c = comments := c :: !comments in
+  let flush () =
+    let r = List.rev !comments in
+    comments := [];
+    List.map (fun x -> CommentBefore x) r
+  in
+  let filter_meta meta =
+    meta |>
+    List.filter (function
+      | CommentBefore c -> prepend c; false
+      | _ -> true
+    ) |>
+    List.filter (function
+      | CommentAfter c -> prepend c; false
+      | _ -> true
+    )
+  in
+  object(self)
+    inherit [_] map as super
+    method! visit_expr env e =
+      let e = super#visit_expr env e in
+      { e with meta = filter_meta e.meta }
+
+    method private process_block e =
+      let float_one e =
+        let e = self#visit_expr_w () e in
+        { e with meta = flush () }
+      in
+      match e.node with
+      | ELet (b, e1, e2) ->
+          let e1 = self#visit_expr_w () e1 in
+          let e1 = { e1 with meta = filter_meta e1.meta } in
+          let b = { b with meta = filter_meta b.meta } in
+          let meta = flush () in
+          { e with node = ELet (b, e1, self#process_block e2); meta }
+      | ESequence es ->
+          let es = List.map float_one es in
+          { e with node = ESequence es; meta = filter_meta e.meta }
+      | _ ->
+          float_one e
+
+    method! visit_EFor env b e1 e2 e3 e4 =
+      let e4 = self#process_block e4 in
+      EFor (b, self#visit_expr env e1, self#visit_expr env e2, self#visit_expr env e3, e4)
+
+    method! visit_EWhile env e1 e2 =
+      let e2 = self#process_block e2 in
+      EWhile (self#visit_expr env e1, e2)
+
+    method! visit_EIfThenElse env e1 e2 e3 =
+      let e2 = self#process_block e2 in
+      let e3 = self#process_block e3 in
+      EIfThenElse (self#visit_expr env e1, e2, e3)
+
+    method! visit_ESwitch env e bs =
+      let bs = List.map (fun (c, e) -> c, self#process_block e) bs in
+      ESwitch (self#visit_expr env e, bs)
+
+    method! visit_DFunction _ cc flags n_cgs n t name bs e =
+      DFunction (cc, flags, n_cgs, n, t, name, bs, self#process_block e)
+
+  end#visit_files () files

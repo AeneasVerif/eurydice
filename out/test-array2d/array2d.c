@@ -47,8 +47,6 @@ void array2d_main(void)
   bool actual = array2d_f(copy_of_y);
   bool expected = true;
   _bool__x2 uu____1 = { .fst = &actual, .snd = &expected };
-  bool *left_val = uu____1.fst;
-  bool *right_val = uu____1.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 

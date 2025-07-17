@@ -14,7 +14,7 @@ let count_atoms =
     method! visit_EOpen _ _ a = AtomSet.singleton a
   end
 
-type remove_env = (string * typ * node_meta list) AtomMap.t
+type remove_env = (string * typ * node_meta list * meta list) AtomMap.t
 
 let pmeta buf ({ meta; _ } : 'a with_type) =
   List.iter
@@ -26,6 +26,11 @@ let pmeta buf ({ meta; _ } : 'a with_type) =
 
 let mk typ meta node = { node; typ; meta }
 let is_sequence = Krml.Simplify.is_sequence
+
+let already_clean = function
+  | [ "core"; "slice"; _ ], "swap" -> true
+  | [ "alloc"; "vec"; _ ], "try_with_capacity" -> true
+  | _ -> false
 
 let remove_assignments =
   object (self)
@@ -39,7 +44,7 @@ let remove_assignments =
           (* Krml.(KPrint.bprintf "peeling %s\n" b.node.name); *)
           let b, e2 = open_binder b e2 in
           (* Krml.KPrint.bprintf "peel: let-binding meta %a\n" pmeta b; *)
-          let to_close = AtomMap.add b.node.atom (b.node.name, b.typ, b.meta) to_close in
+          let to_close = AtomMap.add b.node.atom (b.node.name, b.typ, b.meta, b.node.meta) to_close in
           self#peel_lets to_close e2
       | _ ->
           let e = Krml.Simplify.sequence_to_let#visit_expr_w () e in
@@ -49,7 +54,7 @@ let remove_assignments =
     method! visit_DFunction (to_close : remove_env) cc flags n_cgs n t name bs e =
       (* Krml.(KPrint.bprintf "visiting %a\n" PrintAst.Ops.plid name); *)
       assert (AtomMap.is_empty to_close);
-      DFunction (cc, flags, n_cgs, n, t, name, bs, self#peel_lets to_close e)
+      DFunction (cc, flags, n_cgs, n, t, name, bs, if already_clean name then e else self#peel_lets to_close e)
 
     method! visit_DGlobal (to_close : remove_env) flags n t name e =
       assert (AtomMap.is_empty to_close);
@@ -69,9 +74,9 @@ let remove_assignments =
         let bs =
           List.map
             (fun atom ->
-              let name, typ, meta = AtomMap.find atom not_yet_closed in
+              let name, typ, meta, binder_meta = AtomMap.find atom not_yet_closed in
               ( {
-                  node = { atom; name; mut = true; mark = ref Krml.Mark.default; meta = [] };
+                  node = { atom; name; mut = true; mark = ref Krml.Mark.default; meta = binder_meta };
                   typ;
                   meta;
                 },
@@ -172,10 +177,10 @@ let remove_assignments =
               (* Combined "close now" (above) + let-binding insertion in lieu of the assignment *)
               assert (is_sequence b.node.meta);
               let e2 = snd (open_binder b e2) in
-              let name, typ, meta = AtomMap.find atom not_yet_closed in
+              let name, typ, meta, binder_meta = AtomMap.find atom not_yet_closed in
               let b =
                 {
-                  node = { atom; name; mut = true; mark = ref Krml.Mark.default; meta = [] };
+                  node = { atom; name; mut = true; mark = ref Krml.Mark.default; meta = binder_meta };
                   typ;
                   meta = meta @ e1.meta;
                 }
@@ -292,6 +297,9 @@ let remove_terminal_returns =
   object (self)
     inherit [_] map
 
+    method! visit_DFunction env cc flags n_cgs n t name bs e =
+      DFunction (cc, flags, n_cgs, n, t, name, bs, if already_clean name then e else self#visit_expr_w env e)
+
     method! visit_ELet (terminal, _) b e1 e2 =
       ELet (b, self#visit_expr_w false e1, self#visit_expr_w terminal e2)
 
@@ -327,6 +335,9 @@ let remove_terminal_returns =
 let remove_terminal_continues =
   object (self)
     inherit [_] map
+
+    method! visit_DFunction env cc flags n_cgs n t name bs e =
+      DFunction (cc, flags, n_cgs, n, t, name, bs, if already_clean name then e else self#visit_expr_w env e)
 
     method! visit_ELet (terminal, _) b e1 e2 =
       ELet (b, self#visit_expr_w false e1, self#visit_expr_w terminal e2)

@@ -47,6 +47,10 @@ let expr_of_builtin { name; typ; cg_args; _ } =
   let typ = List.fold_right (fun t acc -> K.TArrow (t, acc)) cg_args typ in
   K.(with_type typ (EQualified name))
 
+let expr_of_builtin_t builtin ts =
+  let builtin = expr_of_builtin builtin in
+  K.(with_type (Krml.DeBruijn.subst_tn ts builtin.typ) (ETApp (builtin, [], [], ts)))
+
 module Op128Map = Map.Make (struct
   type t = string * string
 
@@ -296,51 +300,6 @@ let slice_to_ref_array =
     arg_names = [ "s" ];
   }
 
-let vec_new =
-  {
-    name = [ "Eurydice" ], "vec_new";
-    typ = Krml.Helpers.fold_arrow [ TUnit ] (mk_vec (TBound 0));
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [];
-  }
-
-let vec_push =
-  {
-    name = [ "Eurydice" ], "vec_push";
-    typ = Krml.Helpers.fold_arrow [ mk_vec (TBound 0); TBound 0 ] TUnit;
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [ "v"; "x" ];
-  }
-
-let vec_len =
-  {
-    name = [ "Eurydice" ], "vec_len";
-    typ = Krml.Helpers.fold_arrow [ mk_vec (TBound 0) ] (TInt SizeT);
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [ "v" ];
-  }
-
-let vec_drop =
-  {
-    name = [ "Eurydice" ], "vec_drop";
-    typ = Krml.Helpers.fold_arrow [ mk_vec (TBound 0) ] TUnit;
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [ "v" ];
-  }
-
-let vec_index =
-  {
-    name = [ "Eurydice" ], "vec_index";
-    typ = Krml.Helpers.fold_arrow [ mk_vec (TBound 0); TInt SizeT ] (TBuf (TBound 0, false));
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [ "v"; "i" ];
-  }
-
 let box_new =
   {
     name = [ "Eurydice" ], "box_new";
@@ -459,6 +418,49 @@ let min_u32 =
     arg_names = [ "x"; "y" ];
   }
 
+(* A non error-checking function that returns a vector whose ptr component is potentially NULL *)
+let vec_alloc =
+  {
+    name = [ "Eurydice" ], "vec_alloc";
+    typ = Krml.Helpers.fold_arrow [ TInt SizeT ] (mk_vec (TBound 0));
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [ "len" ]
+  }
+
+(* Will allocating len elements of type T overflow SIZE_MAX? *)
+let vec_overflows =
+  {
+    name = [ "Eurydice" ], "vec_overflows";
+    typ = Krml.Helpers.fold_arrow [ TInt SizeT ] TBool;
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [ "len" ]
+  }
+
+(* Since Eurydice_vec is opaque from the point of view of krml, we expose a helper (implemented with
+   a macro) that can determine whether this a failed allocation *)
+let vec_failed =
+  {
+    name = [ "Eurydice" ], "vec_failed";
+    typ = Krml.Helpers.fold_arrow [ mk_vec (TBound 0) ] TBool;
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [ "v" ]
+  }
+
+let layout_t = K.TQualified (["core"; "alloc"; "layout"],"Layout")
+
+(* Compute a layout from a type *)
+let layout =
+  {
+    name = [ "Eurydice" ], "layout";
+    typ = Krml.Helpers.fold_arrow [ TUnit ] layout_t;
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = []
+  }
+
 (* Not fully general *)
 let static_assert, static_assert_ref =
   let name = [ "Eurydice" ], "assert" in
@@ -466,7 +468,11 @@ let static_assert, static_assert_ref =
   ( K.DExternal (None, [ Krml.Common.Private; Macro ], 0, 0, name, typ, [ "test"; "msg" ]),
     K.(with_type typ (EQualified name)) )
 
-(* Replacements, now applied on-the-fly in AstOfLlbc *)
+(* Replacements, now applied on-the-fly in AstOfLlbc.
+
+ IMPORTANT: such replacements are written in abstract syntax that *already* has cleanups applied,
+ meaning that some passes like Cleanup1.remove_assignments and un-necessary and will actually error
+ out. We maintain a list of such functions in Cleanup1, to be kept in sync with this. *)
 
 let unwrap =
   let open Krml in
@@ -499,6 +505,118 @@ let unwrap =
                    with_type t_T (EAbort (Some t_T, Some "unwrap not Ok")) );
                ] )) )
 
+(* Easier this way rather than implement a macro with an expression-statement.
+
+   external core_slice_{@Slice<T>}_swap <1>:<cg: 0>
+    Eurydice_slice
+    0 ->
+    size_t ->
+      size_t ->
+        ()
+*)
+let slice_swap =
+  let open Krml in
+  let open Ast in
+  let t = TBound 0 in
+  let binders = [
+    Helpers.fresh_binder ~mut:true "s" (mk_slice t);
+    Helpers.fresh_binder "i" (TInt SizeT);
+    Helpers.fresh_binder "j" (TInt SizeT)
+  ] in
+  (* with slice type *)
+  let ws = with_type (mk_slice t) in
+  (* with usize type *)
+  let wu = with_type (TInt SizeT) in
+  let index s i =
+    let slice_index = expr_of_builtin_t slice_index [ t ] in
+    with_type t (EApp (slice_index, [ s; i ]))
+  in
+  let lhs s i =
+    with_type t (EBufRead (with_type (TBuf (t, false)) (EAddrOf (index s i)), Helpers.zero_usize))
+  in
+  fun lid ->
+    DFunction (None, [ Private ], 0, 1, TUnit, lid, binders,
+      (* let tmp = s[i]; *)
+      with_type TUnit (ELet (Helpers.fresh_binder "tmp" t, index (ws (EBound 2)) (wu (EBound 1)),
+        with_type TUnit (ESequence [
+          (* s[i] = s[j] *)
+          with_type TUnit (EAssign (lhs (ws (EBound 3)) (wu (EBound 2)), index (ws (EBound 3)) (wu (EBound 1))));
+          (* s[j] = tmp *)
+          with_type TUnit (EAssign (lhs (ws (EBound 3)) (wu (EBound 1)), with_type t (EBound 0)))
+        ]))))
+
+(* Formerly a macro, using GCC expression-statements:
+
+#define alloc_vec__alloc__vec__Vec_T___try_with_capacity(len, t_elt, t_ret) \
+  ({ \
+    size_t element_sz = sizeof(t_elt); \
+    Eurydice_vec v = Eurydice_vec_try_with_capacity(len, sizeof(t_elt)); \
+    t_ret r; \
+    if (!(len <= SIZE_MAX/element_sz)) \
+      r = ((t_ret){ .tag = core_result_Err, .val = { .case_Err = { .tag = alloc_collections_CapacityOverflow } } }); \
+    else if (v.ptr != NULL) { \
+      r = ((t_ret){ .tag = core_result_Ok, .val = { .case_Ok = v }}); \
+    } else { \
+      r = ((t_ret){ .tag = core_result_Err, .val = { .case_Err = { \
+         .tag = alloc_collections_AllocError, /* CHECK ??? */ \
+         .layout = { .size = len * sizeof(t_elt), .align = 8 } \
+       }}}); \
+    } \
+    r; \
+  })
+
+  Remember that this is all pre-monomorphization.
+
+*)
+let try_with_capacity =
+  let open Krml in
+  let open Ast in
+  let t = TBound 0 in
+  let t_try_reserve_error = TQualified (["alloc"; "collections"], "TryReserveError") in
+  (* Result<Vec<T>, TryReserveError> *)
+  let t_ret =
+    TApp ((["core"; "result"], "Result"), [ mk_vec t; t_try_reserve_error])
+  in
+  (* TryReserveError { kind = TryReserveErrorKind::Cons args } *)
+  let mk_try_reserve_error cons args =
+    with_type t_try_reserve_error (EFlat [
+      Some "kind", with_type (TQualified (["alloc"; "collections"], "TryReserveErrorKind")) (ECons (cons, args))
+    ])
+  in
+  let mk_res_error err =
+    with_type t_ret (ECons ("Err", [ err ]))
+  in
+  let mk_res_ok ok =
+    with_type t_ret (ECons ("Ok", [ ok ]))
+  in
+  let binders = [ Helpers.fresh_binder "len" (TInt SizeT) ] in
+  (* with size *)
+  let ws = with_type (TInt SizeT) in
+  fun lid ->
+    DFunction (None, [ Private ], 0, 1, t_ret, lid, binders,
+      with_type t_ret (EIfThenElse (
+        (* if vec_overflows<t_elt>(len) then *)
+        with_type TBool (EApp (expr_of_builtin_t vec_overflows [ t ], [ ws (EBound 0) ])),
+          (* Result::Error(TryReserveError { kind = TryReserveErrorKind::CapacityOverflow }) *)
+          mk_res_error (mk_try_reserve_error "CapacityOverflow" []),
+          (* else let v: vec<t_elt> = vec_alloc len in *)
+          with_type t_ret (ELet (Helpers.fresh_binder "v" (mk_vec t),
+            with_type (mk_vec t) (EApp (expr_of_builtin_t vec_alloc [ t ], [ ws (EBound 0) ])),
+            (* if vec_failed v then *)
+            with_type t_ret (EIfThenElse (
+              with_type TBool (EApp (expr_of_builtin_t vec_failed [ t ], [ with_type (mk_vec t) (EBound 0) ] )),
+              (* Result::Error(
+                  TryReserveError { kind = TryReserveErrorKind::AllocError { layout: layout<T>(), non_exhaustive: () }}
+                 )
+              *)
+              mk_res_error (mk_try_reserve_error "AllocError" [
+                (* "layout", *) with_type layout_t (EApp (expr_of_builtin_t layout [ t ], [ Helpers.eunit ]));
+                (* "non_exhaustive", *) Helpers.eunit
+              ]),
+              (* Result::Ok(v) *)
+              mk_res_ok (with_type (mk_vec t) (EBound 0)))))))))
+
+
 let nonzero_def = K.DType (nonzero, [], 0, 1, Abbrev (TBound 0))
 
 (* -------------------------------------------------------------------------- *)
@@ -523,11 +641,6 @@ let builtin_funcs =
     slice_to_array2;
     range_iterator_step_by;
     range_step_by_iterator_next;
-    vec_push;
-    vec_new;
-    vec_len;
-    vec_drop;
-    vec_index;
     box_new;
     box_new_array;
     replace;
@@ -536,6 +649,10 @@ let builtin_funcs =
     bitand_pv_u8;
     shr_pv_u8;
     min_u32;
+    vec_alloc;
+    vec_overflows;
+    vec_failed;
+    layout;
   ]
   (* Declares the 128-bit operations *)
   @ begin

@@ -31,9 +31,9 @@ with const generics
 */
 uint64_t where_clauses_fncg_f_43(void)
 {
-  uint8_t buf[8U][4U] = { { 0U } };
-  uint8_t repeat_expression[4U][8U] = { { 0U } };
-  return where_clauses_fncg_bar_16_7b(buf, repeat_expression);
+  uint8_t buf0[8U][4U] = { { 0U } };
+  uint8_t buf[4U][8U] = { { 0U } };
+  return where_clauses_fncg_bar_16_7b(buf0, buf);
 }
 
 /**
@@ -61,9 +61,9 @@ with const generics
 */
 uint64_t where_clauses_fncg_method_foo_db_7c(void)
 {
-  uint8_t buf[12U][4U] = { { 0U } };
-  uint8_t repeat_expression[4U][12U] = { { 0U } };
-  return where_clauses_fncg_bar_16_fa(buf, repeat_expression);
+  uint8_t buf0[12U][4U] = { { 0U } };
+  uint8_t buf[4U][12U] = { { 0U } };
+  return where_clauses_fncg_bar_16_fa(buf0, buf);
 }
 
 /**
@@ -90,15 +90,11 @@ void where_clauses_fncg_main(void)
   /* original Rust expression is not an lvalue in C */
   uint64_t lvalue0 = 0ULL;
   _uint64_t__x2 uu____0 = { .fst = &r, .snd = &lvalue0 };
-  uint64_t *left_val0 = uu____0.fst;
-  uint64_t *right_val0 = uu____0.snd;
-  EURYDICE_ASSERT(left_val0[0U] == right_val0[0U], "panic!");
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
   uint64_t r0 = where_clauses_fncg_g_ec();
   /* original Rust expression is not an lvalue in C */
   uint64_t lvalue = 0ULL;
   _uint64_t__x2 uu____1 = { .fst = &r0, .snd = &lvalue };
-  uint64_t *left_val = uu____1.fst;
-  uint64_t *right_val = uu____1.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 
