@@ -289,6 +289,7 @@ void array_main(void)
   array_Foo uu____0 = array_mk_foo2();
   uint32_t x[2U];
   memcpy(x, uu____0.x, (size_t)2U * sizeof (uint32_t));
+  /* XXX2 */
   uint32_t y[2U];
   memcpy(y, uu____0.y, (size_t)2U * sizeof (uint32_t));
   uint32_t unsigned0 = 0U;
@@ -297,7 +298,6 @@ void array_main(void)
   array_mut_array(uu____1);
   /* Passing arrays by value in Rust generates a copy in C */
   uint32_t copy_of_x[2U];
-  /* XXX2 */
   memcpy(copy_of_x, x, (size_t)2U * sizeof (uint32_t));
   /* Passing arrays by value in Rust generates a copy in C */
   uint32_t copy_of_y[2U];
