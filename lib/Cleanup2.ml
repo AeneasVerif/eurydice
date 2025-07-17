@@ -573,7 +573,7 @@ let contains_array t =
     () t
 
 let must_explode e =
-  (* Not that this visits the whole type (including the type of fields) *)
+  (* Note that this visits the whole type (including the type of fields) *)
   contains_array e && not (is_suitable_array_initializer e.node)
 
 let remove_literals tbl =
@@ -1270,3 +1270,69 @@ let fixup_monomorphization_map map =
       let ts = List.map (replace#visit_typ ()) ts in
       Hashtbl.add Krml.MonomorphizationState.state (lid, ts, cgs) v)
     (Hashtbl.to_seq Krml.MonomorphizationState.state)
+
+(* Hoist comments to be attached to the nearest statement *)
+let float_comments files =
+  let comments = ref [] in
+  let prepend c = comments := c :: !comments in
+  let flush () =
+    let r = List.rev !comments in
+    comments := [];
+    List.map (fun x -> CommentBefore x) r
+  in
+  let filter_meta meta =
+    meta |>
+    List.filter (function
+      | CommentBefore c -> prepend c; false
+      | _ -> true
+    ) |>
+    List.filter (function
+      | CommentAfter c -> prepend c; false
+      | _ -> true
+    )
+  in
+  object(self)
+    inherit [_] map as super
+    method! visit_expr env e =
+      let e = super#visit_expr env e in
+      { e with meta = filter_meta e.meta }
+
+    method private process_block e =
+      let float_one e =
+        let e = self#visit_expr_w () e in
+        { e with meta = flush () }
+      in
+      match e.node with
+      | ELet (b, e1, e2) ->
+          let e1 = self#visit_expr_w () e1 in
+          let e1 = { e1 with meta = filter_meta e1.meta } in
+          let b = { b with meta = filter_meta b.meta } in
+          let meta = flush () in
+          { e with node = ELet (b, e1, self#process_block e2); meta }
+      | ESequence es ->
+          let es = List.map float_one es in
+          { e with node = ESequence es; meta = filter_meta e.meta }
+      | _ ->
+          float_one e
+
+    method! visit_EFor env b e1 e2 e3 e4 =
+      let e4 = self#process_block e4 in
+      EFor (b, self#visit_expr env e1, self#visit_expr env e2, self#visit_expr env e3, e4)
+
+    method! visit_EWhile env e1 e2 =
+      let e2 = self#process_block e2 in
+      EWhile (self#visit_expr env e1, e2)
+
+    method! visit_EIfThenElse env e1 e2 e3 =
+      let e2 = self#process_block e2 in
+      let e3 = self#process_block e3 in
+      EIfThenElse (self#visit_expr env e1, e2, e3)
+
+    method! visit_ESwitch env e bs =
+      let bs = List.map (fun (c, e) -> c, self#process_block e) bs in
+      ESwitch (self#visit_expr env e, bs)
+
+    method! visit_DFunction _ cc flags n_cgs n t name bs e =
+      DFunction (cc, flags, n_cgs, n, t, name, bs, self#process_block e)
+
+  end#visit_files () files
