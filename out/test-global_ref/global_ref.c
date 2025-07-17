@@ -33,9 +33,7 @@ void global_ref_main(void)
   /* original Rust expression is not an lvalue in C */
   void *lvalue = (void *)0U;
   _____x2 uu____0 = { .fst = GLOBAL_REF_C_VAL[0U][0U], .snd = &lvalue };
-  void **left_val = uu____0.fst;
-  void **right_val = uu____0.snd;
-  EURYDICE_ASSERT(core_cmp_impls__core__cmp__PartialEq_____for_____eq(left_val, right_val),
+  EURYDICE_ASSERT(core_cmp_impls__core__cmp__PartialEq_____for_____eq(uu____0.fst, uu____0.snd),
     "panic!");
   EURYDICE_ASSERT(global_ref_S_VAL[0U][0U][0U] == (int32_t)0, "panic!");
 }

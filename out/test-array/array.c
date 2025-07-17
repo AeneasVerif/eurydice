@@ -306,52 +306,32 @@ void array_main(void)
   memcpy(lit.x, copy_of_x, (size_t)2U * sizeof (uint32_t));
   memcpy(lit.y, copy_of_y, (size_t)2U * sizeof (uint32_t));
   array_mut_foo(lit);
-  _uint32_t__x2 uu____4;
-  uu____4.fst = x;
-  uu____4.snd = &unsigned0;
-  uint32_t *left_val0 = uu____4.fst;
-  uint32_t *right_val0 = uu____4.snd;
-  EURYDICE_ASSERT(left_val0[0U] == right_val0[0U], "panic!");
+  _uint32_t__x2 uu____4 = { .fst = x, .snd = &unsigned0 };
+  EURYDICE_ASSERT(uu____4.fst[0U] == uu____4.snd[0U], "panic!");
   uint32_t a[10U];
   array_mk_incr_95(a);
-  _uint32_t__x2 uu____5;
-  uu____5.fst = &a[9U];
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue0 = 9U;
-  uu____5.snd = &lvalue0;
-  uint32_t *left_val1 = uu____5.fst;
-  uint32_t *right_val1 = uu____5.snd;
-  EURYDICE_ASSERT(left_val1[0U] == right_val1[0U], "panic!");
+  _uint32_t__x2 uu____5 = { .fst = &a[9U], .snd = &lvalue0 };
+  EURYDICE_ASSERT(uu____5.fst[0U] == uu____5.snd[0U], "panic!");
   uint32_t a0[10U];
   array_mk_incr2_95(a0);
   uint32_t expected = 10U;
-  _uint32_t__x2 uu____6;
-  uu____6.fst = &a0[9U];
-  uu____6.snd = &expected;
-  uint32_t *left_val = uu____6.fst;
-  uint32_t *right_val2 = uu____6.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val2[0U], "panic!");
+  _uint32_t__x2 uu____6 = { .fst = &a0[9U], .snd = &expected };
+  EURYDICE_ASSERT(uu____6.fst[0U] == uu____6.snd[0U], "panic!");
   uint16_t a1[1U];
   uint32_t buf[1U] = { 0U };
   array_plus_one_74(buf, a1);
-  _uint16_t__x2 uu____7;
-  uu____7.fst = a1;
   /* original Rust expression is not an lvalue in C */
   uint16_t lvalue1 = 1U;
-  uu____7.snd = &lvalue1;
-  uint16_t *left_val2 = uu____7.fst;
-  uint16_t *right_val3 = uu____7.snd;
-  EURYDICE_ASSERT(left_val2[0U] == right_val3[0U], "panic!");
+  _uint16_t__x2 uu____7 = { .fst = a1, .snd = &lvalue1 };
+  EURYDICE_ASSERT(uu____7.fst[0U] == uu____7.snd[0U], "panic!");
   /* XXX5 */
   size_t a2[4U][4U];
   array_nested_from_fn_ac(a2);
-  _size_t__x2 uu____8;
-  uu____8.fst = &a2[3U][3U];
   /* original Rust expression is not an lvalue in C */
   size_t lvalue = (size_t)6U;
-  uu____8.snd = &lvalue;
-  size_t *left_val3 = uu____8.fst;
-  size_t *right_val = uu____8.snd;
-  EURYDICE_ASSERT(left_val3[0U] == right_val[0U], "panic!");
+  _size_t__x2 uu____8 = { .fst = &a2[3U][3U], .snd = &lvalue };
+  EURYDICE_ASSERT(uu____8.fst[0U] == uu____8.snd[0U], "panic!");
 }
 

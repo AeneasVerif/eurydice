@@ -126,15 +126,11 @@ void fn_higher_order_use_compose_cg(void)
   /* original Rust expression is not an lvalue in C */
   size_t lvalue = (size_t)20U;
   _size_t__x2 uu____0 = { .fst = &x, .snd = &lvalue };
-  size_t *left_val0 = uu____0.fst;
-  size_t *right_val0 = uu____0.snd;
-  EURYDICE_ASSERT(left_val0[0U] == right_val0[0U], "panic!");
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
   int32_t lvalue0 = (int32_t)33;
   _int32_t__x2 uu____1 = { .fst = &y, .snd = &lvalue0 };
-  int32_t *left_val = uu____1.fst;
-  int32_t *right_val = uu____1.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 
 void fn_higher_order_main(void)

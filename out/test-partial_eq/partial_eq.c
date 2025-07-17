@@ -28,9 +28,7 @@ void partial_eq_main(void)
 {
   partial_eq_Enum expected = partial_eq_Enum_A;
   _partial_eq_Enum__x2 uu____0 = { .fst = &expected, .snd = &expected };
-  partial_eq_Enum *left_val = uu____0.fst;
-  partial_eq_Enum *right_val = uu____0.snd;
-  EURYDICE_ASSERT(partial_eq_eq_31(left_val, right_val), "panic!");
+  EURYDICE_ASSERT(partial_eq_eq_31(uu____0.fst, uu____0.snd), "panic!");
 }
 
 /**

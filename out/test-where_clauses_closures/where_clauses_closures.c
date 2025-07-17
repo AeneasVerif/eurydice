@@ -69,10 +69,7 @@ size_t_x2 where_clauses_closures_test_e3(void)
     x[0U] = where_clauses_closures_test_call_mut_1a_e3(&lvalue, (size_t)0U);
   }
   size_t y = where_clauses_closures_zero_af();
-  size_t_x2 lit;
-  lit.fst = x[0U];
-  lit.snd = y;
-  return lit;
+  return (KRML_CLITERAL(size_t_x2){ .fst = x[0U], .snd = y });
 }
 
 typedef struct _size_t__x2_s
@@ -88,8 +85,6 @@ void where_clauses_closures_main(void)
   size_t x = uu____0.fst;
   size_t y = uu____0.snd;
   _size_t__x2 uu____1 = { .fst = &x, .snd = &y };
-  size_t *left_val = uu____1.fst;
-  size_t *right_val = uu____1.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 
