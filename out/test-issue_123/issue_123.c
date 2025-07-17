@@ -44,17 +44,13 @@ void issue_123_main(void)
   /* original Rust expression is not an lvalue in C */
   ptrdiff_t lvalue1 = (ptrdiff_t)-1;
   _ptrdiff_t__x2 uu____0 = { .fst = &lvalue0, .snd = &lvalue1 };
-  ptrdiff_t *left_val0 = uu____0.fst;
-  ptrdiff_t *right_val0 = uu____0.snd;
-  EURYDICE_ASSERT(left_val0[0U] == right_val0[0U], "panic!");
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
   int32_t lvalue2 = issue_123_fun(issue_123_E_One);
   /* original Rust expression is not an lvalue in C */
   int32_t lvalue = (int32_t)1;
   _int32_t__x2 uu____1 = { .fst = &lvalue2, .snd = &lvalue };
-  int32_t *left_val = uu____1.fst;
-  int32_t *right_val = uu____1.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 
 /**

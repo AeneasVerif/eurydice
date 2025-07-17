@@ -21,31 +21,23 @@ void reborrow_main(void)
   /* original Rust expression is not an lvalue in C */
   uint8_t lvalue0 = 0U;
   _uint8_t__x2 uu____0 = { .fst = &lvalue0, .snd = px };
-  uint8_t *left_val0 = uu____0.fst;
-  uint8_t *right_val0 = uu____0.snd;
-  EURYDICE_ASSERT(left_val0[0U] == right_val0[0U], "panic!");
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
   uint8_t *py = px;
   /* original Rust expression is not an lvalue in C */
   uint8_t lvalue1 = 0U;
   _uint8_t__x2 uu____1 = { .fst = &lvalue1, .snd = py };
-  uint8_t *left_val1 = uu____1.fst;
-  uint8_t *right_val1 = uu____1.snd;
-  EURYDICE_ASSERT(left_val1[0U] == right_val1[0U], "panic!");
+  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
   uint8_t val = 0U;
   uint8_t *b = Eurydice_box_new(val, uint8_t, uint8_t *);
   uint8_t *pb = b;
   /* original Rust expression is not an lvalue in C */
   uint8_t lvalue2 = 0U;
   _uint8_t__x2 uu____2 = { .fst = &lvalue2, .snd = pb };
-  uint8_t *left_val2 = uu____2.fst;
-  uint8_t *right_val2 = uu____2.snd;
-  EURYDICE_ASSERT(left_val2[0U] == right_val2[0U], "panic!");
+  EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
   uint8_t *pb2 = pb;
   /* original Rust expression is not an lvalue in C */
   uint8_t lvalue = 0U;
   _uint8_t__x2 uu____3 = { .fst = &lvalue, .snd = pb2 };
-  uint8_t *left_val = uu____3.fst;
-  uint8_t *right_val = uu____3.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
 }
 
