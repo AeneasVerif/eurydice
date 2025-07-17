@@ -3,7 +3,7 @@ KRML_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../karamel
 EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
 CHARON		?= $(CHARON_HOME)/bin/charon
 
-BROKEN_TESTS		= where_clauses println closure chunks mutable_slice_range issue_37 issue_105 issue_99 issue_14 parentparent
+BROKEN_TESTS		= where_clauses println closure chunks mutable_slice_range issue_37 issue_105 issue_99 issue_14
 TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.rs))))
 
 # Warn on old versions of bash

@@ -1030,7 +1030,7 @@ let maybe_ts ts t =
    required for trait methods (passed as function pointers). Assumes type
    variables have been suitably bound in the environment.
 *)
-let rec mk_clause_binders_and_args env ?depth (trait_clauses : C.trait_clause list) :
+let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.trait_clause list) :
     (var_id * K.typ) list =
   let depth = Option.value ~default:"" depth in
   List.concat_map
@@ -1052,7 +1052,7 @@ let rec mk_clause_binders_and_args env ?depth (trait_clauses : C.trait_clause li
       let substitute_visitor = Charon.Substitute.st_substitute_visitor in
 
       let name = string_of_name env trait_decl.item_meta.name in
-      let clause_ref = C.Clause (Free clause_id) in
+      let clause_ref: C.trait_instance_id = Option.value ~default:(C.Clause (Free clause_id)) clause_ref in
 
       if List.mem name blocklisted_trait_decls then
         []
@@ -1160,39 +1160,15 @@ let rec mk_clause_binders_and_args env ?depth (trait_clauses : C.trait_clause li
               TraitClauseMethod { item_name; pretty_name; clause_id = clause_ref; ts }, t)
             trait_decl.C.methods
         (* 1 + 2, recursively, for parent traits *)
-        @ List.flatten
-            (List.mapi
-               (fun _i (parent_clause : C.trait_clause) ->
-                 (* Make the clause valid outside the scope of the trait decl. *)
-                 let parent_clause = substitute_visitor#visit_trait_clause subst parent_clause in
-                 (* Mapping of the methods of the parent clause *)
-                 let mapping =
-                   mk_clause_binders_and_args env ~depth:(depth ^ "--") [ parent_clause ]
-                 in
-                 let map_clause (clause_id' : C.trait_instance_id) : C.trait_instance_id =
-                   (* This is the parent clause `clause_id'` of `clause_id` -- see comments in charon/types.rs  *)
-                   let clause_id' =
-                     match clause_id' with
-                     | Clause (Free clause_id') -> clause_id'
-                     | _ -> fail "not a clause?? %s" (C.show_trait_instance_id clause_id')
-                   in
-                   ParentClause (clause_ref, trait_decl_id, clause_id')
-                 in
-                 List.map
-                   (fun (entry, t) ->
-                     let entry =
-                       match entry with
-                       | TraitClauseMethod { pretty_name; clause_id; item_name; ts } ->
-                           TraitClauseMethod
-                             { pretty_name; clause_id = map_clause clause_id; item_name; ts }
-                       | TraitClauseConstant { pretty_name; clause_id; item_name } ->
-                           TraitClauseConstant
-                             { pretty_name; clause_id = map_clause clause_id; item_name }
-                       | entry -> entry
-                     in
-                     entry, t)
-                   mapping)
-               trait_decl.C.parent_clauses)
+        @ List.concat_map
+           (fun (parent_clause : C.trait_clause) ->
+             (* Make the clause valid outside the scope of the trait decl. *)
+             let parent_clause = substitute_visitor#visit_trait_clause subst parent_clause in
+             (* Mapping of the methods of the parent clause *)
+             let clause_ref: C.trait_instance_id = ParentClause (clause_ref, trait_decl_id, parent_clause.clause_id) in
+             mk_clause_binders_and_args env ~depth:(depth ^ "--") ~clause_ref [ parent_clause ]
+            )
+           trait_decl.C.parent_clauses
       end)
     trait_clauses
 

@@ -8,7 +8,8 @@ trait C {
     fn foo(&mut self);
 }
 
-fn f<U: A> (x: U) {
+fn f<U: A> (mut x: U) {
+    x.foo()
 }
 
 fn main() {}
