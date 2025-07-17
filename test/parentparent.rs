@@ -1,18 +1,15 @@
-trait FnMut<F, T>: FnOnce<F, T> {
-    fn call_mut(&mut self, arg: F) -> T;
+trait A: B {
 }
 
-trait FnOnce<F, T>: Foo<F, T> {
-    fn call_once(&mut self, arg: F) -> T;
+trait B: C {
 }
 
-trait Foo<F, T> {
-    fn foo(&mut self, arg: F) -> T;
+trait C {
+    fn foo(&mut self);
 }
 
-fn f<F, T, U: FnMut<F, T>>(mut x: U, y: F) -> T {
-    x.call_mut(y)
+fn f<U: A> (mut x: U) {
+    x.foo()
 }
 
-fn main() {
-}
+fn main() {}
