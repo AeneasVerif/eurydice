@@ -141,8 +141,19 @@ Supported options:|}
            | [ "Eurydice" ], "vec_len"
            | [ "Eurydice" ], "vec_index"
            | [ "Eurydice" ], "slice_index"
+           | [ "Eurydice" ], "slice_len"
+           | [ "Eurydice" ], "slice_to_ref_array"
            | [ "Eurydice" ], "slice_subslice"
+           | [ "Eurydice" ], "slice_subslice2"
+           | [ "Eurydice" ], "slice_subslice3"
+           | [ "Eurydice" ], "slice_subslice_from"
            | [ "Eurydice" ], "array_to_slice"
+           | [ "Eurydice" ], "array_to_subslice"
+           | [ "Eurydice" ], "array_to_subslice2"
+           | [ "Eurydice" ], "array_to_subslice3"
+           | [ "Eurydice" ], "array_repeat"
+           | [ "core"; "mem" ], "size_of"
+           | "core" :: "slice" :: _, "as_mut_ptr"
            | "core" :: "num" :: _, ("rotate_left" | "from_le_bytes" | "wrapping_add") -> true
            | _ -> false)
         || Hashtbl.mem readonly_lids lid
@@ -284,6 +295,8 @@ Supported options:|}
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
   Eurydice.Logging.log "Phase2.9" "%a" pfiles files;
+  let files = Eurydice.Cleanup2.float_comments files in
+  Eurydice.Logging.log "Phase2.95" "%a" pfiles files;
   let files = Eurydice.Cleanup2.bonus_cleanups#visit_files [] files in
   (* Macros stemming from globals *)
   let files, macros = Eurydice.Cleanup2.build_macros files in
