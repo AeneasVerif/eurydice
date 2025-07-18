@@ -159,6 +159,22 @@ let add_extra_type_to_slice_index =
       | _ -> super#visit_EApp env e es
   end
 
+(*This identifies the decls which should be generated after monomorphism, but is already defined
+ in eurydice_glue.h for implementing the builtin functions. Currently only for arr<T;N> *)
+let is_builtin_lid lid = match lid with
+  | ([ "Eurydice" ], "arr_c4") (* arr {data:[u8;8]}*)
+  | ([ "Eurydice" ], "arr_e9") (* arr {data:[u8;4]}*)
+  | ([ "Eurydice" ], "arr_8b") (* arr {data:[u8,2]}*)
+     -> true
+  | _ -> false
+
+let remove_builtin_decls files =
+  let checker = function
+    | DType (lid, _, _, _, _) when is_builtin_lid lid -> None
+    | decl -> Some decl
+  in
+  List.map (fun (name, decls) -> name, List.filter_map checker decls) files
+
 let also_skip_prefix_for_external_types (scope_env, _) =
   let open Krml in
   object (_self)

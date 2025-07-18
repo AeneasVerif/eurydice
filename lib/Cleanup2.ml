@@ -1144,23 +1144,6 @@ let bonus_cleanups =
       | _ -> super#visit_ELet env b e1 e2
   end
 
-(*This identifies the decls which should be generated after monomorphism, but is already defined
- in eurydice_glue.h for implementing the builtin functions. Currently only for arr<T;N> *)
-let is_builtin_lid lid = match lid with
-  | ([ "Eurydice" ], "arr_c4") (* arr {data:[u8;8]}*)
-  | ([ "Eurydice" ], "arr_e9") (* arr {data:[u8;4]}*)
-  | ([ "Eurydice" ], "arr_8b") (* arr {data:[u8,2]}*)
-     -> true
-  | _ -> false
-
-let remove_builtin_decls files =
-  let checker = function
-    | DType (lid, _, _, _, _) when is_builtin_lid lid -> None
-    | decl -> Some decl
-  in
-  List.map (fun (name, decls) -> name, List.filter_map checker decls) files
-
-
 (* This is a potentially tricky phase because if it's too aggressive, it'll
    generate a copy -- for instance, f(&x[3]) is not the same as let tmp = x[3];
    f(&tmp). Such cases might be hidden behind macros! (Like

@@ -298,7 +298,6 @@ Supported options:|}
   let files = Eurydice.Cleanup2.float_comments files in
   Eurydice.Logging.log "Phase2.95" "%a" pfiles files;
   let files = Eurydice.Cleanup2.bonus_cleanups#visit_files [] files in
-  let files = Eurydice.Cleanup2.remove_builtin_decls files in
   (* Macros stemming from globals *)
   let files, macros = Eurydice.Cleanup2.build_macros files in
 
@@ -311,6 +310,7 @@ Supported options:|}
   Eurydice.Cleanup3.(also_skip_prefix_for_external_types scope_env)#visit_files () files;
   let files = Eurydice.Cleanup3.decay_cg_externals#visit_files (scope_env, false) files in
   let files = Eurydice.Cleanup3.add_extra_type_to_slice_index#visit_files () files in
+  let files = Eurydice.Cleanup3.remove_builtin_decls files in  
   Eurydice.Logging.log "Phase3.1" "%a" pfiles files;
   let macros =
     let cg_macros = Eurydice.Cleanup3.build_cg_macros#visit_files () files in
