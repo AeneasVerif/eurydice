@@ -252,30 +252,43 @@ typedef char Eurydice_derefed_slice[];
 extern "C" {
 #endif
 
-static inline uint16_t core_num__u16__from_le_bytes(uint8_t buf[2]) {
-  return load16_le(buf);
+
+typedef struct Eurydice_arr_8b_s { uint8_t data[2]; } Eurydice_arr_8b;
+typedef struct Eurydice_arr_e9_s { uint8_t data[4]; } Eurydice_arr_e9;
+typedef struct Eurydice_arr_c4_s { uint8_t data[8]; } Eurydice_arr_c4;
+  
+
+  
+static inline uint16_t core_num__u16__from_le_bytes(Eurydice_arr_8b buf) {
+  return load16_le(buf.data);
 }
 
-static inline void core_num__u32__to_be_bytes(uint32_t src, uint8_t dst[4]) {
+static inline Eurydice_arr_e9 core_num__u32__to_be_bytes(uint32_t src) {
   // TODO: why not store32_be?
+  Eurydice_arr_e9 a;
   uint32_t x = htobe32(src);
-  memcpy(dst, &x, 4);
+  memcpy(a.data, &x, 4);
+  return a;
 }
 
-static inline void core_num__u32__to_le_bytes(uint32_t src, uint8_t dst[4]) {
-  store32_le(dst, src);
+static inline Eurydice_arr_e9 core_num__u32__to_le_bytes(uint32_t src) {
+  Eurydice_arr_e9 a;
+  store32_le(a.data,src);
+  return a;
 }
 
-static inline uint32_t core_num__u32__from_le_bytes(uint8_t buf[4]) {
-  return load32_le(buf);
+static inline uint32_t core_num__u32__from_le_bytes(Eurydice_arr_e9 buf) {
+  return load32_le(buf.data);
 }
 
-static inline void core_num__u64__to_le_bytes(uint64_t v, uint8_t buf[8]) {
-  store64_le(buf, v);
+static inline Eurydice_arr_c4 core_num__u64__to_le_bytes(uint64_t v) {
+  Eurydice_arr_c4 a;
+  store64_le(a.data, v);
+  return a;
 }
 
-static inline uint64_t core_num__u64__from_le_bytes(uint8_t buf[8]) {
-  return load64_le(buf);
+static inline uint64_t core_num__u64__from_le_bytes(Eurydice_arr_c4 buf) {
+  return load64_le(buf.data);
 }
 
 static inline int64_t

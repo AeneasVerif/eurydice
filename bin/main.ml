@@ -298,6 +298,7 @@ Supported options:|}
   let files = Eurydice.Cleanup2.float_comments files in
   Eurydice.Logging.log "Phase2.95" "%a" pfiles files;
   let files = Eurydice.Cleanup2.bonus_cleanups#visit_files [] files in
+  let files = Eurydice.Cleanup2.remove_builtin_decls files in
   (* Macros stemming from globals *)
   let files, macros = Eurydice.Cleanup2.build_macros files in
 
