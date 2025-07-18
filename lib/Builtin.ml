@@ -425,7 +425,7 @@ let vec_alloc =
     typ = Krml.Helpers.fold_arrow [ TInt SizeT ] (mk_vec (TBound 0));
     n_type_args = 1;
     cg_args = [];
-    arg_names = [ "len" ]
+    arg_names = [ "len" ];
   }
 
 (* Will allocating len elements of type T overflow SIZE_MAX? *)
@@ -435,7 +435,7 @@ let vec_overflows =
     typ = Krml.Helpers.fold_arrow [ TInt SizeT ] TBool;
     n_type_args = 1;
     cg_args = [];
-    arg_names = [ "len" ]
+    arg_names = [ "len" ];
   }
 
 (* Since Eurydice_vec is opaque from the point of view of krml, we expose a helper (implemented with
@@ -446,10 +446,10 @@ let vec_failed =
     typ = Krml.Helpers.fold_arrow [ mk_vec (TBound 0) ] TBool;
     n_type_args = 1;
     cg_args = [];
-    arg_names = [ "v" ]
+    arg_names = [ "v" ];
   }
 
-let layout_t = K.TQualified (["core"; "alloc"; "layout"],"Layout")
+let layout_t = K.TQualified ([ "core"; "alloc"; "layout" ], "Layout")
 
 (* Compute a layout from a type *)
 let layout =
@@ -458,7 +458,7 @@ let layout =
     typ = Krml.Helpers.fold_arrow [ TUnit ] layout_t;
     n_type_args = 1;
     cg_args = [];
-    arg_names = []
+    arg_names = [];
   }
 
 (* Not fully general *)
@@ -518,11 +518,13 @@ let slice_swap =
   let open Krml in
   let open Ast in
   let t = TBound 0 in
-  let binders = [
-    Helpers.fresh_binder ~mut:true "s" (mk_slice t);
-    Helpers.fresh_binder "i" (TInt SizeT);
-    Helpers.fresh_binder "j" (TInt SizeT)
-  ] in
+  let binders =
+    [
+      Helpers.fresh_binder ~mut:true "s" (mk_slice t);
+      Helpers.fresh_binder "i" (TInt SizeT);
+      Helpers.fresh_binder "j" (TInt SizeT);
+    ]
+  in
   (* with slice type *)
   let ws = with_type (mk_slice t) in
   (* with usize type *)
@@ -535,15 +537,31 @@ let slice_swap =
     with_type t (EBufRead (with_type (TBuf (t, false)) (EAddrOf (index s i)), Helpers.zero_usize))
   in
   fun lid ->
-    DFunction (None, [ Private ], 0, 1, TUnit, lid, binders,
-      (* let tmp = s[i]; *)
-      with_type TUnit (ELet (Helpers.fresh_binder "tmp" t, index (ws (EBound 2)) (wu (EBound 1)),
-        with_type TUnit (ESequence [
-          (* s[i] = s[j] *)
-          with_type TUnit (EAssign (lhs (ws (EBound 3)) (wu (EBound 2)), index (ws (EBound 3)) (wu (EBound 1))));
-          (* s[j] = tmp *)
-          with_type TUnit (EAssign (lhs (ws (EBound 3)) (wu (EBound 1)), with_type t (EBound 0)))
-        ]))))
+    DFunction
+      ( None,
+        [ Private ],
+        0,
+        1,
+        TUnit,
+        lid,
+        binders,
+        (* let tmp = s[i]; *)
+        with_type TUnit
+          (ELet
+             ( Helpers.fresh_binder "tmp" t,
+               index (ws (EBound 2)) (wu (EBound 1)),
+               with_type TUnit
+                 (ESequence
+                    [
+                      (* s[i] = s[j] *)
+                      with_type TUnit
+                        (EAssign
+                           ( lhs (ws (EBound 3)) (wu (EBound 2)),
+                             index (ws (EBound 3)) (wu (EBound 1)) ));
+                      (* s[j] = tmp *)
+                      with_type TUnit
+                        (EAssign (lhs (ws (EBound 3)) (wu (EBound 1)), with_type t (EBound 0)));
+                    ]) )) )
 
 (* Formerly a macro, using GCC expression-statements:
 
@@ -572,50 +590,68 @@ let try_with_capacity =
   let open Krml in
   let open Ast in
   let t = TBound 0 in
-  let t_try_reserve_error = TQualified (["alloc"; "collections"], "TryReserveError") in
+  let t_try_reserve_error = TQualified ([ "alloc"; "collections" ], "TryReserveError") in
   (* Result<Vec<T>, TryReserveError> *)
-  let t_ret =
-    TApp ((["core"; "result"], "Result"), [ mk_vec t; t_try_reserve_error])
-  in
+  let t_ret = TApp (([ "core"; "result" ], "Result"), [ mk_vec t; t_try_reserve_error ]) in
   (* TryReserveError { kind = TryReserveErrorKind::Cons args } *)
   let mk_try_reserve_error cons args =
-    with_type t_try_reserve_error (EFlat [
-      Some "kind", with_type (TQualified (["alloc"; "collections"], "TryReserveErrorKind")) (ECons (cons, args))
-    ])
+    with_type t_try_reserve_error
+      (EFlat
+         [
+           ( Some "kind",
+             with_type
+               (TQualified ([ "alloc"; "collections" ], "TryReserveErrorKind"))
+               (ECons (cons, args)) );
+         ])
   in
-  let mk_res_error err =
-    with_type t_ret (ECons ("Err", [ err ]))
-  in
-  let mk_res_ok ok =
-    with_type t_ret (ECons ("Ok", [ ok ]))
-  in
+  let mk_res_error err = with_type t_ret (ECons ("Err", [ err ])) in
+  let mk_res_ok ok = with_type t_ret (ECons ("Ok", [ ok ])) in
   let binders = [ Helpers.fresh_binder "len" (TInt SizeT) ] in
   (* with size *)
   let ws = with_type (TInt SizeT) in
   fun lid ->
-    DFunction (None, [ Private ], 0, 1, t_ret, lid, binders,
-      with_type t_ret (EIfThenElse (
-        (* if vec_overflows<t_elt>(len) then *)
-        with_type TBool (EApp (expr_of_builtin_t vec_overflows [ t ], [ ws (EBound 0) ])),
-          (* Result::Error(TryReserveError { kind = TryReserveErrorKind::CapacityOverflow }) *)
-          mk_res_error (mk_try_reserve_error "CapacityOverflow" []),
-          (* else let v: vec<t_elt> = vec_alloc len in *)
-          with_type t_ret (ELet (Helpers.fresh_binder "v" (mk_vec t),
-            with_type (mk_vec t) (EApp (expr_of_builtin_t vec_alloc [ t ], [ ws (EBound 0) ])),
-            (* if vec_failed v then *)
-            with_type t_ret (EIfThenElse (
-              with_type TBool (EApp (expr_of_builtin_t vec_failed [ t ], [ with_type (mk_vec t) (EBound 0) ] )),
-              (* Result::Error(
+    DFunction
+      ( None,
+        [ Private ],
+        0,
+        1,
+        t_ret,
+        lid,
+        binders,
+        with_type t_ret
+          (EIfThenElse
+             ( (* if vec_overflows<t_elt>(len) then *)
+               with_type TBool (EApp (expr_of_builtin_t vec_overflows [ t ], [ ws (EBound 0) ])),
+               (* Result::Error(TryReserveError { kind = TryReserveErrorKind::CapacityOverflow }) *)
+               mk_res_error (mk_try_reserve_error "CapacityOverflow" []),
+               (* else let v: vec<t_elt> = vec_alloc len in *)
+               with_type t_ret
+                 (ELet
+                    ( Helpers.fresh_binder "v" (mk_vec t),
+                      with_type (mk_vec t)
+                        (EApp (expr_of_builtin_t vec_alloc [ t ], [ ws (EBound 0) ])),
+                      (* if vec_failed v then *)
+                      with_type t_ret
+                        (EIfThenElse
+                           ( with_type TBool
+                               (EApp
+                                  ( expr_of_builtin_t vec_failed [ t ],
+                                    [ with_type (mk_vec t) (EBound 0) ] )),
+                             (* Result::Error(
                   TryReserveError { kind = TryReserveErrorKind::AllocError { layout: layout<T>(), non_exhaustive: () }}
                  )
               *)
-              mk_res_error (mk_try_reserve_error "AllocError" [
-                (* "layout", *) with_type layout_t (EApp (expr_of_builtin_t layout [ t ], [ Helpers.eunit ]));
-                (* "non_exhaustive", *) Helpers.eunit
-              ]),
-              (* Result::Ok(v) *)
-              mk_res_ok (with_type (mk_vec t) (EBound 0)))))))))
-
+                             mk_res_error
+                               (mk_try_reserve_error "AllocError"
+                                  [
+                                    (* "layout", *)
+                                    with_type layout_t
+                                      (EApp (expr_of_builtin_t layout [ t ], [ Helpers.eunit ]));
+                                    (* "non_exhaustive", *)
+                                    Helpers.eunit;
+                                  ]),
+                             (* Result::Ok(v) *)
+                             mk_res_ok (with_type (mk_vec t) (EBound 0)) )) )) )) )
 
 let nonzero_def = K.DType (nonzero, [], 0, 1, Abbrev (TBound 0))
 
