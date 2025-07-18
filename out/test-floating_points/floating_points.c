@@ -30,55 +30,39 @@ _size_t__x2;
 
 void floating_points_main(void)
 {
-  float32_t f = 1;
+  float32_t f = (float32_t)1;
   float32_t arr[100U];
   for (size_t i = (size_t)0U; i < (size_t)100U; i++)
   {
     arr[i] = f;
   }
-  float64_t d = 1;
+  float64_t d = (float64_t)1;
   float64_t arr2[100U];
   for (size_t i = (size_t)0U; i < (size_t)100U; i++)
   {
     arr2[i] = d;
   }
-  _float32_t__x2 uu____0;
-  uu____0.fst = arr;
   /* original Rust expression is not an lvalue in C */
-  float32_t lvalue0 = 1;
-  uu____0.snd = &lvalue0;
-  float32_t *left_val = uu____0.fst;
-  float32_t *right_val0 = uu____0.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val0[0U], "panic!");
-  _float64_t__x2 uu____1;
-  uu____1.fst = arr2;
+  float32_t lvalue0 = (float32_t)1;
+  _float32_t__x2 uu____0 = { .fst = arr, .snd = &lvalue0 };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  float64_t lvalue1 = 1;
-  uu____1.snd = &lvalue1;
-  float64_t *left_val0 = uu____1.fst;
-  float64_t *right_val1 = uu____1.snd;
-  EURYDICE_ASSERT(left_val0[0U] == right_val1[0U], "panic!");
-  _size_t__x2 uu____2;
+  float64_t lvalue1 = (float64_t)1;
+  _float64_t__x2 uu____1 = { .fst = arr2, .snd = &lvalue1 };
+  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
   size_t
   lvalue2 = Eurydice_slice_len(Eurydice_array_to_slice((size_t)100U, arr, float32_t), float32_t);
-  uu____2.fst = &lvalue2;
   /* original Rust expression is not an lvalue in C */
   size_t lvalue3 = (size_t)100U;
-  uu____2.snd = &lvalue3;
-  size_t *left_val1 = uu____2.fst;
-  size_t *right_val2 = uu____2.snd;
-  EURYDICE_ASSERT(left_val1[0U] == right_val2[0U], "panic!");
-  _size_t__x2 uu____3;
+  _size_t__x2 uu____2 = { .fst = &lvalue2, .snd = &lvalue3 };
+  EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
   size_t
-  lvalue = Eurydice_slice_len(Eurydice_array_to_slice((size_t)100U, arr2, float64_t), float64_t);
-  uu____3.fst = &lvalue;
+  lvalue4 = Eurydice_slice_len(Eurydice_array_to_slice((size_t)100U, arr2, float64_t), float64_t);
   /* original Rust expression is not an lvalue in C */
-  size_t lvalue4 = (size_t)100U;
-  uu____3.snd = &lvalue4;
-  size_t *left_val2 = uu____3.fst;
-  size_t *right_val = uu____3.snd;
-  EURYDICE_ASSERT(left_val2[0U] == right_val[0U], "panic!");
+  size_t lvalue = (size_t)100U;
+  _size_t__x2 uu____3 = { .fst = &lvalue4, .snd = &lvalue };
+  EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
 }
 

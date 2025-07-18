@@ -16,9 +16,6 @@
 
 // C++ HELPERS
 
-typedef float float32_t;
-typedef double float64_t;
-
 #if defined(__cplusplus)
 
 #ifndef KRML_HOST_EPRINTF
