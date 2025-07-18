@@ -387,9 +387,8 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TLiteral t -> typ_of_literal_ty env t
   | TNever -> failwith "Impossible: Never"
   | TDynTrait _ -> failwith "TODO: dyn Trait"
-  | TAdt { id; generics = { types = [ t ]; _ } as generics }
-    when RustNames.is_vec env id generics ->
-      Builtin.mk_vec (typ_of_ty env t)
+  | TAdt { id; generics = { types = [ t ]; _ } as generics } when RustNames.is_vec env id generics
+    -> Builtin.mk_vec (typ_of_ty env t)
   | TAdt
       {
         id = TBuiltin TBox;
@@ -579,7 +578,11 @@ let uu =
 
 let binder_of_var (env : env) (l : C.local) : K.binder =
   let name = Option.value ~default:(uu ()) l.name in
-  let meta = match name with "left_val" | "right_val" -> [ K.AttemptInline ] | _ -> [] in
+  let meta =
+    match name with
+    | "left_val" | "right_val" -> [ K.AttemptInline ]
+    | _ -> []
+  in
   let binder = Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env l.var_ty) in
   { binder with node = { binder.node with meta = meta @ binder.node.meta } }
 
@@ -1060,7 +1063,11 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
       let substitute_visitor = Charon.Substitute.st_substitute_visitor in
 
       let name = string_of_name env trait_decl.item_meta.name in
-      let clause_ref: C.trait_instance_id = Option.value ~default:(C.Clause (Free clause_id)) clause_ref in
+      let clause_ref : C.trait_ref =
+        Option.value
+          ~default:C.{ trait_id = C.Clause (Free clause_id); trait_decl_ref = tc.trait }
+          clause_ref
+      in
 
       if List.mem name blocklisted_trait_decls then
         []
@@ -1085,7 +1092,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
             let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
             let t = substitute_visitor#visit_ty subst typ in
             let t = typ_of_ty env t in
-            TraitClauseConstant { item_name; pretty_name; clause_id = clause_ref }, t)
+            TraitClauseConstant { item_name; pretty_name; clause_id = clause_ref.trait_id }, t)
           trait_decl.C.consts
         (* 2. Trait methods *)
         @ List.map
@@ -1099,7 +1106,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
               in
               (* First we substitute the trait generics. *)
               let bound_method_sig : C.fun_sig C.binder =
-                Charon.Substitute.apply_args_to_item_binder clause_ref trait_generics
+                Charon.Substitute.apply_args_to_item_binder clause_ref.trait_id trait_generics
                   (substitute_visitor#visit_binder substitute_visitor#visit_fun_sig)
                   bound_method_sig
               in
@@ -1165,18 +1172,22 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
                 (Charon.PrintGAst.fun_sig_to_string env.format_env "" " " method_sig);
               let ts, t = typ_of_signature env method_sig in
               let t = maybe_ts ts t in
-              TraitClauseMethod { item_name; pretty_name; clause_id = clause_ref; ts }, t)
+              TraitClauseMethod { item_name; pretty_name; clause_id = clause_ref.trait_id; ts }, t)
             trait_decl.C.methods
         (* 1 + 2, recursively, for parent traits *)
         @ List.concat_map
-           (fun (parent_clause : C.trait_clause) ->
-             (* Make the clause valid outside the scope of the trait decl. *)
-             let parent_clause = substitute_visitor#visit_trait_clause subst parent_clause in
-             (* Mapping of the methods of the parent clause *)
-             let clause_ref: C.trait_instance_id = ParentClause (clause_ref, trait_decl_id, parent_clause.clause_id) in
-             mk_clause_binders_and_args env ~depth:(depth ^ "--") ~clause_ref [ parent_clause ]
-            )
-           trait_decl.C.parent_clauses
+            (fun (parent_clause : C.trait_clause) ->
+              (* Make the clause valid outside the scope of the trait decl. *)
+              let parent_clause = substitute_visitor#visit_trait_clause subst parent_clause in
+              (* Mapping of the methods of the parent clause *)
+              let clause_ref : C.trait_ref =
+                {
+                  trait_id = ParentClause (clause_ref, parent_clause.clause_id);
+                  trait_decl_ref = parent_clause.trait;
+                }
+              in
+              mk_clause_binders_and_args env ~depth:(depth ^ "--") ~clause_ref [ parent_clause ])
+            trait_decl.C.parent_clauses
       end)
     trait_clauses
 
@@ -1450,7 +1461,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                    the clause arguments at call-site. We must pass whatever is relevant for this
                    clause, *transitively* (this means all the reachable parents). *)
                 let rec relevant = function
-                  | C.ParentClause (clause_id', _, _) -> relevant clause_id'
+                  | C.ParentClause (tref', _) -> relevant tref'.trait_id
                   | clause_id' -> clause_id = clause_id'
                 in
                 List.rev
@@ -1462,7 +1473,8 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                          when relevant clause_id' -> Some K.(with_type t (EBound i))
                        | _ -> None)
                      env.binders)
-            | ParentClause (_instance_id, decl_id, clause_id) ->
+            | ParentClause (tref, clause_id) ->
+                let decl_id = tref.trait_decl_ref.binder_value.id in
                 let trait_decl = env.get_nth_trait_decl decl_id in
                 let name = string_of_name env trait_decl.item_meta.name in
                 let clause_id = C.TraitClauseId.to_int clause_id in
