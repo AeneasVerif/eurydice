@@ -318,11 +318,17 @@ let cg_of_const_generic env cg =
       failwith
         ("cg_of_const_generic: " ^ Charon.PrintTypes.const_generic_to_string env.format_env cg)
 
+let float_width float_ty : K.width =
+  match float_ty with
+  | C.F32 -> Float32
+  | C.F64 -> Float64
+  | C.F16 | C.F128 -> failwith "TODO: f16 & f128 are not supported."
+        
 let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
   match ty with
   | TBool -> K.TBool
   | TChar -> Builtin.char_t
-  | TFloat _ -> failwith "TODO: Float"
+  | TFloat f -> K.TInt (float_width f)
   | TInteger C.I128 -> Builtin.int128_t
   | TInteger C.U128 -> Builtin.uint128_t
   | TInteger k -> K.TInt (width_of_integer_type k)
@@ -667,7 +673,9 @@ let expression_of_literal (_env : env) (l : C.literal) : K.expr =
   | VByteStr lst ->
       let str = List.map (Printf.sprintf "%#x") lst |> String.concat "" in
       K.(with_type Krml.Checker.c_string (EString str))
-  | VFloat _ -> failwith "TODO: float value still not supported!"
+  | VFloat { C.float_ty; float_value } ->
+      let w = float_width float_ty in
+      K.(with_type (TInt w) (EConstant (w, float_value)))
 
 let expression_of_const_generic env cg =
   match cg with
