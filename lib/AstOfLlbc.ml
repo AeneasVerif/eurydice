@@ -600,7 +600,9 @@ let uu =
 
 let binder_of_var (env : env) (l : C.local) : K.binder =
   let name = Option.value ~default:(uu ()) l.name in
-  Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env l.var_ty)
+  let meta = match name with "left_val" | "right_val" -> [ K.AttemptInline ] | _ -> [] in
+  let binder = Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env l.var_ty) in
+  { binder with node = { binder.node with meta = meta @ binder.node.meta } }
 
 let find_nth_variant (env : env) (typ : C.type_decl_id) (var : C.variant_id) =
   match env.get_nth_type typ with
@@ -1056,7 +1058,7 @@ let maybe_ts ts t =
    required for trait methods (passed as function pointers). Assumes type
    variables have been suitably bound in the environment.
 *)
-let rec mk_clause_binders_and_args env ?depth (trait_clauses : C.trait_clause list) :
+let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.trait_clause list) :
     (var_id * K.typ) list =
   let depth = Option.value ~default:"" depth in
   List.concat_map
@@ -1078,7 +1080,7 @@ let rec mk_clause_binders_and_args env ?depth (trait_clauses : C.trait_clause li
       let substitute_visitor = Charon.Substitute.st_substitute_visitor in
 
       let name = string_of_name env trait_decl.item_meta.name in
-      let clause_ref = C.Clause (Free clause_id) in
+      let clause_ref: C.trait_instance_id = Option.value ~default:(C.Clause (Free clause_id)) clause_ref in
 
       if List.mem name blocklisted_trait_decls then
         []
@@ -1186,39 +1188,15 @@ let rec mk_clause_binders_and_args env ?depth (trait_clauses : C.trait_clause li
               TraitClauseMethod { item_name; pretty_name; clause_id = clause_ref; ts }, t)
             trait_decl.C.methods
         (* 1 + 2, recursively, for parent traits *)
-        @ List.flatten
-            (List.mapi
-               (fun _i (parent_clause : C.trait_clause) ->
-                 (* Make the clause valid outside the scope of the trait decl. *)
-                 let parent_clause = substitute_visitor#visit_trait_clause subst parent_clause in
-                 (* Mapping of the methods of the parent clause *)
-                 let mapping =
-                   mk_clause_binders_and_args env ~depth:(depth ^ "--") [ parent_clause ]
-                 in
-                 let map_clause (clause_id' : C.trait_instance_id) : C.trait_instance_id =
-                   (* This is the parent clause `clause_id'` of `clause_id` -- see comments in charon/types.rs  *)
-                   let clause_id' =
-                     match clause_id' with
-                     | Clause (Free clause_id') -> clause_id'
-                     | _ -> fail "not a clause??"
-                   in
-                   ParentClause (clause_ref, trait_decl_id, clause_id')
-                 in
-                 List.map
-                   (fun (entry, t) ->
-                     let entry =
-                       match entry with
-                       | TraitClauseMethod { pretty_name; clause_id; item_name; ts } ->
-                           TraitClauseMethod
-                             { pretty_name; clause_id = map_clause clause_id; item_name; ts }
-                       | TraitClauseConstant { pretty_name; clause_id; item_name } ->
-                           TraitClauseConstant
-                             { pretty_name; clause_id = map_clause clause_id; item_name }
-                       | entry -> entry
-                     in
-                     entry, t)
-                   mapping)
-               trait_decl.C.parent_clauses)
+        @ List.concat_map
+           (fun (parent_clause : C.trait_clause) ->
+             (* Make the clause valid outside the scope of the trait decl. *)
+             let parent_clause = substitute_visitor#visit_trait_clause subst parent_clause in
+             (* Mapping of the methods of the parent clause *)
+             let clause_ref: C.trait_instance_id = ParentClause (clause_ref, trait_decl_id, parent_clause.clause_id) in
+             mk_clause_binders_and_args env ~depth:(depth ^ "--") ~clause_ref [ parent_clause ]
+            )
+           trait_decl.C.parent_clauses
       end)
     trait_clauses
 
@@ -1230,7 +1208,7 @@ and lookup_signature env depth signature : lookup_result =
   L.log "Calls" "%s# Lookup Signature\n%s--> args: %s, ret: %s\n" depth depth
     (String.concat " ++ " (List.map (Charon.PrintTypes.ty_to_string env.format_env) inputs))
     (Charon.PrintTypes.ty_to_string env.format_env output);
-  L.log "Calls" "Type parameters for this signature: %s\n"
+  L.log "Calls" "%sType parameters for this signature: %s\n" depth
     (String.concat " ++ " (List.map Charon.PrintTypes.type_var_to_string type_params));
   let env = push_cg_binders env const_generics in
   let env = push_type_binders env type_params in
@@ -2315,8 +2293,6 @@ let check_if_dst (env : env) (id : C.any_decl_id) : env =
         List.filter
           (fun (tc : C.trait_clause) ->
             let trait_decl = env.get_nth_trait_decl tc.trait.binder_value.id in
-            L.log "AstOfLlbc" "%s"
-              (string_of_pattern (pattern_of_name env trait_decl.item_meta.name));
             matches trait_decl.item_meta.name)
           decl.generics.trait_clauses
       in
@@ -2664,6 +2640,7 @@ let replacements =
      three currently) *)
       ( "core::num::{u32}::BITS",
         fun lid -> Krml.Ast.DGlobal ([], lid, 0, Krml.Helpers.uint32, Krml.Helpers.mk_uint32 32) );
+      "alloc::vec::{alloc::vec::Vec<@T>}::try_with_capacity", Builtin.try_with_capacity;
     ]
 
 (* Catch-all error handler (last resort) *)
@@ -2679,7 +2656,10 @@ let decl_of_id env decl =
         | exception _ -> None)
       replacements
   with
-  | Some d -> Some (d (lid_of_name env (name_of_id env decl)))
+  | Some d ->
+      let lid = lid_of_name env (name_of_id env decl) in
+      L.log "AstOfLlbc" "Found replacement for %a" plid lid;
+      Some (d lid)
   | None -> (
       try decl_of_id env decl
       with e ->
