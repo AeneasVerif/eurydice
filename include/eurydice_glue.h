@@ -152,8 +152,10 @@ typedef struct {
   memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 
 // Slice comparison
-#define core_cmp_impls__core__cmp__PartialEq__0_mut__B___for__1_mut__A___eq(src1, src2, _0, _1, T) \
-  ((src1)->len == (src2)->len && !memcmp((src1)->ptr, (src2)->ptr, (src1)->len*sizeof(T)))
+#define core_cmp_impls__core__cmp__PartialEq__0_mut__B___for__1_mut__A___eq(   \
+    src1, src2, _0, _1, T)                                                     \
+  ((src1)->len == (src2)->len &&                                               \
+   !memcmp((src1)->ptr, (src2)->ptr, (src1)->len * sizeof(T)))
 
 #define core_array___Array_T__N___as_slice(len_, ptr_, t, _ret_t)              \
   KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
@@ -516,9 +518,16 @@ typedef void *core_fmt_rt_Argument;
 
 // BOXES
 
-// Crimes.
+#ifndef EURYDICE_MALLOC
+#define EURYDICE_MALLOC malloc
+#endif
+
+#ifndef EURYDICE_REALLOC
+#define EURYDICE_REALLOC realloc
+#endif
+
 static inline char *malloc_and_init(size_t sz, char *init) {
-  char *ptr = (char *)malloc(sz);
+  char *ptr = (char *)EURYDICE_MALLOC(sz);
   if (ptr != NULL)
     memcpy(ptr, init, sz);
   return ptr;
@@ -552,42 +561,48 @@ static inline char *malloc_and_init(size_t sz, char *init) {
 // as an external -- see, for instance, Eurydice_vec_failed, below.
 typedef struct {
   char *ptr;
-  size_t len;       /* current length, in elements */
-  size_t capacity;  /* the size of the allocation, in number of elements */
+  size_t len;      /* current length, in elements */
+  size_t capacity; /* the size of the allocation, in number of elements */
 } Eurydice_vec, alloc_vec_Vec;
 
-// This is a helper that Eurydice has special knowledge about. Essentially, allocation functions
-// return a result type that has been monomorphized, say, Result_XY; this means we need to do
-// something like:
+// This is a helper that Eurydice has special knowledge about. Essentially,
+// allocation functions return a result type that has been monomorphized, say,
+// Result_XY; this means we need to do something like:
 //   Eurydice_vec v = try_with_capacity(len, sz);
-//   Result_XY r = v.ptr == NULL ? (Result_XY) { .tag = core_result_Ok, .case_Ok = v }
+//   Result_XY r = v.ptr == NULL ? (Result_XY) { .tag = core_result_Ok, .case_Ok
+//   = v }
 //     : (Result_XY) { .tag = core_result_Error, .case_Error = ... };
 // but with a macro (since we don't have templates).
-// However, unless we allow statement-expressions (GCC extension), we cannot do the above with
-// an expression, since we need to name the result of try_with_capacity to avoid evaluating it
-// twice.
+// However, unless we allow statement-expressions (GCC extension), we cannot do
+// the above with an expression, since we need to name the result of
+// try_with_capacity to avoid evaluating it twice.
 static inline Eurydice_vec Eurydice_vec_alloc2(size_t len, size_t element_sz) {
-  return ((Eurydice_vec){ .ptr = (char*)malloc(len*element_sz), .len = len, .capacity = len });
+  return ((Eurydice_vec){.ptr = (char *)EURYDICE_MALLOC(len * element_sz),
+                         .len = len,
+                         .capacity = len});
 }
 
 #define Eurydice_vec_alloc(len, t, _) (Eurydice_vec_alloc2((len), sizeof(t)))
-#define Eurydice_vec_overflows(len, t, _) (!((len) <= SIZE_MAX/(sizeof(t))))
+#define Eurydice_vec_overflows(len, t, _) (!((len) <= SIZE_MAX / (sizeof(t))))
 #define Eurydice_vec_failed(v, _, _1) ((v).ptr == NULL)
-#define Eurydice_layout(t, _) ((core_alloc_layout_Layout){ .size = sizeof(t), .align = _Alignof(t) })
+#define Eurydice_layout(t, _)                                                  \
+  ((core_alloc_layout_Layout){.size = sizeof(t), .align = _Alignof(t)})
 
-#define alloc_vec__alloc__vec__Vec_T___resize(/* Eurydice_vec * */ v, /* size_t */ new_len, /* T */ elt, T, _0, _1) \
-  do { \
-    if (new_len <= (v)->capacity) \
-      (v)->len = new_len; \
-    else { \
-      (v)->ptr = realloc((v)->ptr, new_len*sizeof(T)); \
-      /* TODO: check success? Rust function is infallible */ \
-      for (size_t i = (v)->len; i < new_len; i++) \
-        ((T*)(v)->ptr)[i] = elt; \
-      (v)->len = new_len; \
-      (v)->capacity = new_len; \
-    } \
-  } while(0)
+#define alloc_vec__alloc__vec__Vec_T___resize(                                 \
+    /* Eurydice_vec * */ v, /* size_t */ new_len, /* T */ elt, T, _0, _1)      \
+  do {                                                                         \
+    if (new_len <= (v)->capacity)                                              \
+      (v)->len = new_len;                                                      \
+    else {                                                                     \
+      (v)->ptr = EURYDICE_REALLOC((v)->ptr, new_len * sizeof(T));              \
+      /* TODO: check success? Rust function is infallible */                   \
+      for (size_t i = (v)->len; i < new_len; i++)                              \
+        ((T *)(v)->ptr)[i] = elt;                                              \
+      (v)->len = new_len;                                                      \
+      (v)->capacity = new_len;                                                 \
+    }                                                                          \
+  } while (0)
 
-#define alloc_vec__alloc__vec__Vec_T___into_boxed_slice(/* Eurydice_vec */ v, T, _0, _1) \
-  ((Eurydice_slice){ .ptr = (v).ptr, .len = (v).len })
+#define alloc_vec__alloc__vec__Vec_T___into_boxed_slice(/* Eurydice_vec */ v,  \
+                                                        T, _0, _1)             \
+  ((Eurydice_slice){.ptr = (v).ptr, .len = (v).len})
