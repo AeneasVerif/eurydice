@@ -323,7 +323,7 @@ let float_width float_ty : K.width =
   | C.F32 -> Float32
   | C.F64 -> Float64
   | C.F16 | C.F128 -> failwith "TODO: f16 & f128 are not supported."
-        
+
 let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
   match ty with
   | TBool -> K.TBool
@@ -1628,7 +1628,7 @@ let is_box_place (p : C.place) =
   | C.TAdt { id = TBuiltin TBox; _ } -> true
   | _ -> false
 
-let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty: K.expr =
+let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   match p with
   | Use op -> expression_of_operand env op
   (* Generally, MIR / current LLBC is guaranteed to apply [Deref] only to places that are
@@ -1802,13 +1802,12 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty: K.expr =
   | UnaryOp (op, o1) -> mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
-
   | Discriminant sub_p ->
       let e = expression_of_place env sub_p in
       let expected_t = typ_of_ty env expected_ty in
-      K.(with_type expected_t (
-        EApp (Builtin.(expr_of_builtin_t discriminant) [ e.typ; expected_t ], [ e ])))
-
+      K.(
+        with_type expected_t
+          (EApp (Builtin.(expr_of_builtin_t discriminant) [ e.typ; expected_t ], [ e ])))
   | Aggregate (AggregatedAdt ({ id = TTuple; _ }, _, None), ops) -> begin
       match ops with
       | [] -> K.with_type TUnit K.EUnit
