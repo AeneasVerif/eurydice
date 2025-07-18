@@ -1469,7 +1469,9 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                   []
                 else
                   failwith "Don't know how to resolve trait_ref above (1)"
-            | _ -> failwith "Don't know how to resolve trait_ref above (2)")
+            (* | BuiltinOrAuto (_, trait_refs, _) -> *)
+            (*     build_trait_ref_mapping (depth ^ "  ") trait_refs *)
+            | _ -> fail "Don't know how to resolve trait_ref above (2) %s" (C.show_trait_ref trait_ref))
           trait_refs
       in
       build_trait_ref_mapping depth trait_refs
