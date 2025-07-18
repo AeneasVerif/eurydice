@@ -381,9 +381,8 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TLiteral t -> typ_of_literal_ty env t
   | TNever -> failwith "Impossible: Never"
   | TDynTrait _ -> failwith "TODO: dyn Trait"
-  | TAdt { id; generics = { types = [ t ]; _ } as generics }
-    when RustNames.is_vec env id generics ->
-      Builtin.mk_vec (typ_of_ty env t)
+  | TAdt { id; generics = { types = [ t ]; _ } as generics } when RustNames.is_vec env id generics
+    -> Builtin.mk_vec (typ_of_ty env t)
   | TAdt
       {
         id = TBuiltin TBox;
@@ -573,7 +572,11 @@ let uu =
 
 let binder_of_var (env : env) (l : C.local) : K.binder =
   let name = Option.value ~default:(uu ()) l.name in
-  let meta = match name with "left_val" | "right_val" -> [ K.AttemptInline ] | _ -> [] in
+  let meta =
+    match name with
+    | "left_val" | "right_val" -> [ K.AttemptInline ]
+    | _ -> []
+  in
   let binder = Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env l.var_ty) in
   { binder with node = { binder.node with meta = meta @ binder.node.meta } }
 
@@ -1052,7 +1055,9 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
       let substitute_visitor = Charon.Substitute.st_substitute_visitor in
 
       let name = string_of_name env trait_decl.item_meta.name in
-      let clause_ref: C.trait_instance_id = Option.value ~default:(C.Clause (Free clause_id)) clause_ref in
+      let clause_ref : C.trait_instance_id =
+        Option.value ~default:(C.Clause (Free clause_id)) clause_ref
+      in
 
       if List.mem name blocklisted_trait_decls then
         []
@@ -1161,14 +1166,15 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
             trait_decl.C.methods
         (* 1 + 2, recursively, for parent traits *)
         @ List.concat_map
-           (fun (parent_clause : C.trait_clause) ->
-             (* Make the clause valid outside the scope of the trait decl. *)
-             let parent_clause = substitute_visitor#visit_trait_clause subst parent_clause in
-             (* Mapping of the methods of the parent clause *)
-             let clause_ref: C.trait_instance_id = ParentClause (clause_ref, trait_decl_id, parent_clause.clause_id) in
-             mk_clause_binders_and_args env ~depth:(depth ^ "--") ~clause_ref [ parent_clause ]
-            )
-           trait_decl.C.parent_clauses
+            (fun (parent_clause : C.trait_clause) ->
+              (* Make the clause valid outside the scope of the trait decl. *)
+              let parent_clause = substitute_visitor#visit_trait_clause subst parent_clause in
+              (* Mapping of the methods of the parent clause *)
+              let clause_ref : C.trait_instance_id =
+                ParentClause (clause_ref, trait_decl_id, parent_clause.clause_id)
+              in
+              mk_clause_binders_and_args env ~depth:(depth ^ "--") ~clause_ref [ parent_clause ])
+            trait_decl.C.parent_clauses
       end)
     trait_clauses
 
