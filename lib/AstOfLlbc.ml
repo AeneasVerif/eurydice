@@ -1628,7 +1628,7 @@ let is_box_place (p : C.place) =
   | C.TAdt { id = TBuiltin TBox; _ } -> true
   | _ -> false
 
-let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
+let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty: K.expr =
   match p with
   | Use op -> expression_of_operand env op
   (* Generally, MIR / current LLBC is guaranteed to apply [Deref] only to places that are
@@ -1802,7 +1802,13 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | UnaryOp (op, o1) -> mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
-  | Discriminant _ -> failwith "expression_of_rvalue Discriminant"
+
+  | Discriminant sub_p ->
+      let e = expression_of_place env sub_p in
+      let expected_t = typ_of_ty env expected_ty in
+      K.(with_type expected_t (
+        EApp (Builtin.(expr_of_builtin_t discriminant) [ e.typ; expected_t ], [ e ])))
+
   | Aggregate (AggregatedAdt ({ id = TTuple; _ }, _, None), ops) -> begin
       match ops with
       | [] -> K.with_type TUnit K.EUnit
@@ -1939,8 +1945,9 @@ let rec expression_of_switch_128bits env ret_var scrutinee branches default : K.
 and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_statement) : K.expr =
   match s with
   | Assign (p, rv) ->
+      let expected_ty = p.ty in
       let p = expression_of_place env p in
-      let rv = expression_of_rvalue env rv in
+      let rv = expression_of_rvalue env rv expected_ty in
       K.(with_type TUnit (EAssign (p, rv)))
   | SetDiscriminant (_, _) -> failwith "C.SetDiscriminant"
   | StorageLive _ -> Krml.Helpers.eunit
