@@ -168,6 +168,8 @@ let array_to_subslice_from =
     arg_names = [ "a"; "r" ];
   }
 
+(* These two are placeholders that are inserted by AstOfLlbc with the intent that they should be
+   desugared later on, once monomorphization and data type compilation, respectively, have happened. *)
 let array_repeat =
   {
     name = [ "Eurydice" ], "array_repeat";
@@ -175,6 +177,20 @@ let array_repeat =
     n_type_args = 1;
     cg_args = [ TInt SizeT ];
     arg_names = [ "init" ];
+  }
+
+(* Eurydice_discriminant<T,U>(x: T) -> U
+   T = type of the argument (an ADT)
+   U = expected type of the discriminant (usize, u8, etc.)
+   There is an unverified invariant that the algorithm in CStarToC11 to automatically pick suitable
+   sizes for the `tag` field is compatible with the expected type U here. *)
+let discriminant =
+  {
+    name = [ "Eurydice" ], "discriminant";
+    typ = Krml.Helpers.fold_arrow [ TBound 1 ] (TBound 0);
+    n_type_args = 2;
+    cg_args = [ ];
+    arg_names = [ "adt" ];
   }
 
 let iterator : K.lident = [ "core"; "iter"; "traits"; "iterator" ], "Iterator"
@@ -675,6 +691,7 @@ let builtin_funcs =
     slice_to_array;
     slice_to_ref_array;
     slice_to_array2;
+    discriminant;
     range_iterator_step_by;
     range_step_by_iterator_next;
     box_new;

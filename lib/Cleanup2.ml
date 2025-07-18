@@ -1338,3 +1338,30 @@ let float_comments files =
   end)
     #visit_files
     () files
+
+(* Now that we have the allocation scheme of data types, we can eliminate the Eurydice_discriminant
+   placeholder *)
+let remove_discriminant_reads (map: Krml.DataTypes.map) files =
+  let lookup_tag_lid lid =
+    let open Krml.DataTypes in
+    match Hashtbl.find (fst3 map) lid with
+    | exception Not_found -> `Direct (* was compiled straight to an enum via AstOfLlbc *)
+    | ToEnum -> `Direct
+    | ToTaggedUnion branches
+    | ToFlatTaggedUnion branches ->
+        let tags = List.map (fun (cons, _) -> cons, None) branches in
+        `TagField (Hashtbl.find (snd3 map) tags)
+    | _ ->
+        failwith "TODO: compile discriminant read for something that no longer has a discriminant"
+  in
+  object(_self)
+    inherit [_] map as super
+    method! visit_expr ((), _ as env) e =
+      match e with
+      | [%cremepat {| Eurydice::discriminant<?, ?u>(?e) |} ] ->
+          match lookup_tag_lid (H.assert_tlid e.typ) with
+          | `Direct -> with_type u (ECast (e, u))
+          | `TagField tag_lid -> with_type u (ECast (with_type (TQualified tag_lid) (EField (e, "tag")), u))
+          ; ;
+      | _ -> super#visit_expr env e
+  end#visit_files () files
