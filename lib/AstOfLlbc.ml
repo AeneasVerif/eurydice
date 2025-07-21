@@ -1761,8 +1761,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       begin
         (* TODO: this whole piece of code should handle TCgArray too *)
         match t_from, is_dst env t_to, ty_from, ty_to with
-        | TBuf (TApp (lid1, [ TArray (u1, n) ]), _), Some (lid2, TApp (slice_hd, [ u2 ]), t_u), _, _
-          when lid1 = lid2 && u1 = u2 && slice_hd = Builtin.derefed_slice ->
+        | TBuf (TApp (lid1, [ K.TCgApp (K.TApp (lid_arr, [ u1 ]), CgConst n) ]) , _), Some (lid2, TApp (slice_hd, [ u2 ]), t_u), _, _
+          when lid1 = lid2 && u1 = u2 && slice_hd = Builtin.derefed_slice && lid_arr = Builtin.arr ->
             let len = Krml.Helpers.mk_sizet (int_of_string (snd n)) in
             (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
              `Eurydice_derefed_slice data` (a.k.a. `char data[]`) *)
@@ -1792,30 +1792,23 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
                 generics =
                   { types = [ TAdt { id = TBuiltin TSlice; generics = { types = [ t2 ]; _ } } ]; _ };
               } ) ->
-            (* Cast from Box<[T; N]> to Box<[T]> which we represent as Eurydice_slice.
-               This is basically the same as above, but because we translate Box straight to *, in
-               order to account for array decay and the like, we have to match on original Rust
-               types. Note that we cannot really compile Box<T> to a struct, as it would defeat the
-               pointer semantics of Box and turn passing by reference into passing by value (array
-               within struct).
-            *)
             assert (t1 = t2);
-            let t_from = maybe_cg_array env t1 cg in
-            let t, n =
-              match t_from with
-              | TArray (t, n) -> t, n
-              | _ -> failwith "impossible"
+            let t = typ_of_ty env t1 in
+            let n = match cg with
+            | CgValue _ -> constant_of_scalar_value (assert_cg_scalar cg)
+            | _ -> failwith "impossible"
             in
             let len = Krml.Helpers.mk_sizet (int_of_string (snd n)) in
-            (* slice_of_boxed_array: 0* -> size_t -> Eurydice_slice 0 *)
-            let slice_of_boxed_array = Builtin.(expr_of_builtin slice_of_boxed_array) in
-            (* slice_of_boxed_array: 0* -> size_t -> Eurydice_slice 0 *)
-            let slice_of_boxed_array =
+            (* array_to_slice: size_t -> arr -> Eurydice_slice 0 *)
+            let array_to_slice = Builtin.(expr_of_builtin array_to_slice) in
+            let diff = List.length env.binders - List.length env.cg_binders in
+            (* slice_of_boxed_array: arr -> Eurydice_slice 0 *)
+            let array_to_slice =
               K.with_type
-                (Krml.DeBruijn.subst_t t 0 slice_of_boxed_array.typ)
-                (K.ETApp (slice_of_boxed_array, [], [], [ t ]))
+                (Krml.DeBruijn.(subst_t t 0 (subst_ct diff len 0 (Builtin.array_to_slice.typ))))
+                (K.ETApp (array_to_slice, [ len ], [], [ t ]))
             in
-            K.(with_type (Builtin.mk_slice t) (EApp (slice_of_boxed_array, [ e; len ])))
+            K.(with_type (Builtin.mk_slice t) (EApp (array_to_slice, [ e ])))
         | _ ->
             Krml.Warn.fatal_error "unknown unsize cast: `%s`\nt_to=%a\nt_from=%a"
               (Charon.PrintExpressions.cast_kind_to_string env.format_env ck)
@@ -2167,7 +2160,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
         in
         match fn_ptr.func, fn_ptr.generics.types @ extra_types with
         | ( FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })),
-            [ TAdt { id = TBuiltin (TArray | TSlice); _ } ] ) -> (** Array handling: this part is useless? *)
+            [ TAdt { id = TBuiltin (TSlice); _ } ] ) -> 
             (* Will decay. See comment above maybe_addrof *)
             rhs
         | ( FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })),

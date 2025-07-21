@@ -327,6 +327,7 @@ let box_new =
     arg_names = [ "v" ];
   }
 
+(*
 let box_new_array =
   {
     name = [ "Eurydice" ], "box_new_array";
@@ -335,6 +336,7 @@ let box_new_array =
     cg_args = [ TInt SizeT ];
     arg_names = [ "v" ];
   }
+*)
 
 let replace =
   {
@@ -393,7 +395,7 @@ let slice_of_dst =
     arg_names = [ "ptr"; "len" ];
   }
 
-(* Gotta use a helper because the definition of Eurydice_slice is opaque (historical mistake?). *)
+(* Gotta use a helper because the definition of Eurydice_slice is opaque (historical mistake?).
 let slice_of_boxed_array =
   {
     name = [ "Eurydice" ], "slice_of_boxed_array";
@@ -402,6 +404,7 @@ let slice_of_boxed_array =
     cg_args = [];
     arg_names = [ "ptr"; "len" ];
   }
+*)
 
 (* Take the type of the ptr field *)
 let dst_new ~ptr ~len t =
@@ -697,10 +700,10 @@ let builtin_funcs =
     range_iterator_step_by;
     range_step_by_iterator_next;
     box_new;
-    box_new_array;
+    (* box_new_array; *)
     replace;
     slice_of_dst;
-    slice_of_boxed_array;
+    (* slice_of_boxed_array; *)
     bitand_pv_u8;
     shr_pv_u8;
     min_u32;
