@@ -9,15 +9,7 @@
 
 int32_t issue_123_fun(issue_123_E e)
 {
-  ptrdiff_t uu____0;
-  if (e == issue_123_E_One)
-  {
-    uu____0 = (ptrdiff_t)1;
-  }
-  else
-  {
-    uu____0 = (ptrdiff_t)5;
-  }
+  ptrdiff_t uu____0 = (ptrdiff_t)e;
   uint8_t uu____1 = (uint8_t)uu____0;
   EURYDICE_ASSERT(!!(uu____1 >= 1U && uu____1 <= 5U), "assert failure");
   return (int32_t)uu____0;
@@ -58,24 +50,8 @@ This function found in impl {core::cmp::PartialEq<issue_123::E2> for issue_123::
 */
 inline bool issue_123_eq_e3(issue_123_E2 *self, issue_123_E2 *other)
 {
-  ptrdiff_t __self_discr;
-  if (self[0U] == issue_123_E2_C1)
-  {
-    __self_discr = (ptrdiff_t)255;
-  }
-  else
-  {
-    __self_discr = (ptrdiff_t)-1;
-  }
-  ptrdiff_t __arg1_discr;
-  if (other[0U] == issue_123_E2_C1)
-  {
-    __arg1_discr = (ptrdiff_t)255;
-  }
-  else
-  {
-    __arg1_discr = (ptrdiff_t)-1;
-  }
+  ptrdiff_t __self_discr = (ptrdiff_t)self[0U];
+  ptrdiff_t __arg1_discr = (ptrdiff_t)other[0U];
   return __self_discr == __arg1_discr;
 }
 

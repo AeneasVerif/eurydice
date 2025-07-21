@@ -39,8 +39,7 @@ let rec is_suitable_array_initializer =
               (* Anything else (e.g. variable) is not copy-assignment in C *)
               false
         end
-    | EFlat es, _ ->
-        List.for_all subarrays_only_literals (List.map snd es)
+    | EFlat es, _ -> List.for_all subarrays_only_literals (List.map snd es)
     | _ ->
         (* If this is not a nested array, then anything goes *)
         true
@@ -208,16 +207,16 @@ let remove_array_repeats =
           (* Same logic as below: if we can do something smart (like, only zeroes), then we expand,
              let the subsequent `hoist` phase lift this into a let-binding, and code-gen will optimize this into
              { 0 }. If we can't do something smart, we let-bind, and fall back onto the general case. *)
-          begin try
-            (self#expand_repeat false (with_type (snd env) (EApp (e, es)))).node
-          with Not_found ->
-            (self#visit_expr env
-               (with_type (snd env)
-                  (ELet
-                     ( H.fresh_binder "repeat_expression" (snd env),
-                       with_type (snd env) (EApp (e, es)),
-                       with_type (snd env) (EBound 0) ))))
-              .node
+          begin
+            try (self#expand_repeat false (with_type (snd env) (EApp (e, es)))).node
+            with Not_found ->
+              (self#visit_expr env
+                 (with_type (snd env)
+                    (ELet
+                       ( H.fresh_binder "repeat_expression" (snd env),
+                         with_type (snd env) (EApp (e, es)),
+                         with_type (snd env) (EBound 0) ))))
+                .node
           end
       | _ -> super#visit_EApp env e es
 
@@ -1317,58 +1316,88 @@ let float_comments files =
     List.map (fun x -> CommentBefore x) r
   in
   let filter_meta meta =
-    meta |>
-    List.filter (function
-      | CommentBefore c -> prepend c; false
-      | _ -> true
-    ) |>
-    List.filter (function
-      | CommentAfter c -> prepend c; false
-      | _ -> true
-    )
+    meta
+    |> List.filter (function
+         | CommentBefore c ->
+             prepend c;
+             false
+         | _ -> true)
+    |> List.filter (function
+         | CommentAfter c ->
+             prepend c;
+             false
+         | _ -> true)
   in
-  object(self)
+  (object (self)
+     inherit [_] map as super
+
+     method! visit_expr env e =
+       let e = super#visit_expr env e in
+       { e with meta = filter_meta e.meta }
+
+     method private process_block e =
+       let float_one e =
+         let e = self#visit_expr_w () e in
+         { e with meta = flush () }
+       in
+       match e.node with
+       | ELet (b, e1, e2) ->
+           let e1 = self#visit_expr_w () e1 in
+           let e1 = { e1 with meta = filter_meta e1.meta } in
+           let b = { b with meta = filter_meta b.meta } in
+           let meta = flush () in
+           { e with node = ELet (b, e1, self#process_block e2); meta }
+       | ESequence es ->
+           let es = List.map float_one es in
+           { e with node = ESequence es; meta = filter_meta e.meta }
+       | _ -> float_one e
+
+     method! visit_EFor env b e1 e2 e3 e4 =
+       let e4 = self#process_block e4 in
+       EFor (b, self#visit_expr env e1, self#visit_expr env e2, self#visit_expr env e3, e4)
+
+     method! visit_EWhile env e1 e2 =
+       let e2 = self#process_block e2 in
+       EWhile (self#visit_expr env e1, e2)
+
+     method! visit_EIfThenElse env e1 e2 e3 =
+       let e2 = self#process_block e2 in
+       let e3 = self#process_block e3 in
+       EIfThenElse (self#visit_expr env e1, e2, e3)
+
+     method! visit_ESwitch env e bs =
+       let bs = List.map (fun (c, e) -> c, self#process_block e) bs in
+       ESwitch (self#visit_expr env e, bs)
+
+     method! visit_DFunction _ cc flags n_cgs n t name bs e =
+       DFunction (cc, flags, n_cgs, n, t, name, bs, self#process_block e)
+  end)
+    #visit_files
+    () files
+
+(* Now that we have the allocation scheme of data types, we can eliminate the Eurydice_discriminant
+   placeholder *)
+let remove_discriminant_reads (map: Krml.DataTypes.map) files =
+  let lookup_tag_lid lid =
+    let open Krml.DataTypes in
+    match Hashtbl.find (fst3 map) lid with
+    | exception Not_found -> `Direct (* was compiled straight to an enum via AstOfLlbc *)
+    | ToEnum -> `Direct
+    | ToTaggedUnion branches
+    | ToFlatTaggedUnion branches ->
+        let tags = List.map (fun (cons, _) -> cons, None) branches in
+        `TagField (Hashtbl.find (snd3 map) tags)
+    | _ ->
+        failwith "TODO: compile discriminant read for something that no longer has a discriminant"
+  in
+  object(_self)
     inherit [_] map as super
-    method! visit_expr env e =
-      let e = super#visit_expr env e in
-      { e with meta = filter_meta e.meta }
-
-    method private process_block e =
-      let float_one e =
-        let e = self#visit_expr_w () e in
-        { e with meta = flush () }
-      in
-      match e.node with
-      | ELet (b, e1, e2) ->
-          let e1 = self#visit_expr_w () e1 in
-          let e1 = { e1 with meta = filter_meta e1.meta } in
-          let b = { b with meta = filter_meta b.meta } in
-          let meta = flush () in
-          { e with node = ELet (b, e1, self#process_block e2); meta }
-      | ESequence es ->
-          let es = List.map float_one es in
-          { e with node = ESequence es; meta = filter_meta e.meta }
-      | _ ->
-          float_one e
-
-    method! visit_EFor env b e1 e2 e3 e4 =
-      let e4 = self#process_block e4 in
-      EFor (b, self#visit_expr env e1, self#visit_expr env e2, self#visit_expr env e3, e4)
-
-    method! visit_EWhile env e1 e2 =
-      let e2 = self#process_block e2 in
-      EWhile (self#visit_expr env e1, e2)
-
-    method! visit_EIfThenElse env e1 e2 e3 =
-      let e2 = self#process_block e2 in
-      let e3 = self#process_block e3 in
-      EIfThenElse (self#visit_expr env e1, e2, e3)
-
-    method! visit_ESwitch env e bs =
-      let bs = List.map (fun (c, e) -> c, self#process_block e) bs in
-      ESwitch (self#visit_expr env e, bs)
-
-    method! visit_DFunction _ cc flags n_cgs n t name bs e =
-      DFunction (cc, flags, n_cgs, n, t, name, bs, self#process_block e)
-
+    method! visit_expr ((), _ as env) e =
+      match e with
+      | [%cremepat {| Eurydice::discriminant<?, ?u>(?e) |} ] ->
+          match lookup_tag_lid (H.assert_tlid e.typ) with
+          | `Direct -> with_type u (ECast (e, u))
+          | `TagField tag_lid -> with_type u (ECast (with_type (TQualified tag_lid) (EField (e, "tag")), u))
+          ; ;
+      | _ -> super#visit_expr env e
   end#visit_files () files
