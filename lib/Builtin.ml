@@ -139,7 +139,7 @@ let array_to_subslice =
     name = [ "Eurydice" ], "array_to_subslice";
     typ =
       Krml.Helpers.fold_arrow
-        [ TBuf (TBound 2, false); mk_range (TInt SizeT) ]
+        [ TBuf (mk_arr (TBound 2) (CgVar 0), false); mk_range (TInt SizeT) ]
         (mk_slice (TBound 2));
     n_type_args = 3;
     cg_args = [ TInt SizeT ];
