@@ -16,6 +16,7 @@ fn f2() {
     let actual = x[0][0];
     let expected = 0;
     assert_eq!(actual, expected);
+    assert_eq!(z[0],1);
 }
 
 fn main() {
