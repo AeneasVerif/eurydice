@@ -1709,7 +1709,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
-  | UnaryOp (Cast (CastTransmute ((TRawPtr _) as _from, (TLiteral (TInteger Usize) as to_))), e) ->
+  | UnaryOp (Cast (CastTransmute ((TRawPtr _) as _from, (TLiteral (TUInt Usize) as to_))), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
   | UnaryOp (Cast (CastFnPtr (TFnDef _from, TFnPtr _to)), e) ->
