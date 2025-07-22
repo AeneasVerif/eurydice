@@ -285,26 +285,28 @@ let lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
 
 let width_of_integer_type (t : Charon.Types.integer_type) : K.width =
   match t with
-  | Isize -> PtrdiffT
-  | I8 -> Int8
-  | I16 -> Int16
-  | I32 -> Int32
-  | I64 -> Int64
-  | I128 -> failwith "Internal error: `i128` should not be handled in `width_of_integer_type`."
-  | Usize -> SizeT
-  | U8 -> UInt8
-  | U16 -> UInt16
-  | U32 -> UInt32
-  | U64 -> UInt64
-  | U128 -> failwith "Internal error: `u128` should not be handled in `width_of_integer_type`."
+  | Signed Isize -> PtrdiffT
+  | Signed I8 -> Int8
+  | Signed I16 -> Int16
+  | Signed I32 -> Int32
+  | Signed I64 -> Int64
+  | Signed I128 ->
+      failwith "Internal error: `i128` should not be handled in `width_of_integer_type`."
+  | Unsigned Usize -> SizeT
+  | Unsigned U8 -> UInt8
+  | Unsigned U16 -> UInt16
+  | Unsigned U32 -> UInt32
+  | Unsigned U64 -> UInt64
+  | Unsigned U128 ->
+      failwith "Internal error: `u128` should not be handled in `width_of_integer_type`."
 
 let lid_of_type_decl_id (env : env) (id : C.type_decl_id) =
   let { C.item_meta; _ } = env.get_nth_type id in
   lid_of_name env item_meta.name
 
-let constant_of_scalar_value { C.value; int_ty } =
-  let w = width_of_integer_type int_ty in
-  w, Z.to_string value
+let constant_of_scalar_value sv =
+  let w = width_of_integer_type (Charon.Scalars.get_ty sv) in
+  w, Z.to_string (Charon.Scalars.get_val sv)
 
 let assert_cg_scalar = function
   | C.CgValue (VScalar n) -> n
@@ -329,9 +331,9 @@ let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
   | TBool -> K.TBool
   | TChar -> Builtin.char_t
   | TFloat f -> K.TInt (float_width f)
-  | TInteger C.I128 -> Builtin.int128_t
-  | TInteger C.U128 -> Builtin.uint128_t
-  | TInteger k -> K.TInt (width_of_integer_type k)
+  | TInt C.I128 -> Builtin.int128_t
+  | TUInt C.U128 -> Builtin.uint128_t
+  | _ -> K.TInt (width_of_integer_type (Charon.TypesUtils.literal_as_integer ty))
 
 (* Is TApp (lid, [ t ]) meant to compile to a DST? *)
 let to_dst env lid (t : K.typ) =
@@ -647,10 +649,12 @@ let expression_of_uint128_t (value : Z.t) =
   K.(
     with_type Builtin.uint128_t (EApp (Builtin.(get_128_op ("u", "from_bits")), [ high64; low64 ])))
 
-let expression_of_scalar_value ({ C.int_ty; _ } as sv) : K.expr =
+let expression_of_scalar_value sv : K.expr =
+  let int_ty = Charon.Scalars.get_ty sv in
+  let value = Charon.Scalars.get_val sv in
   match int_ty with
-  | C.I128 -> expression_of_int128_t sv.value
-  | C.U128 -> expression_of_uint128_t sv.value
+  | C.Signed C.I128 -> expression_of_int128_t value
+  | C.Unsigned C.U128 -> expression_of_uint128_t value
   | _ ->
       let w = width_of_integer_type int_ty in
       K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
@@ -2142,7 +2146,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
       let t = lesser e1.typ e2.typ in
       K.(with_type t (EIfThenElse (expression_of_operand env op, e1, e2)))
   | Switch (SwitchInt (scrutinee, int_ty, branches, default)) ->
-      if int_ty = I128 || int_ty = U128 then
+      if int_ty = Signed I128 || int_ty = Unsigned U128 then
         expression_of_switch_128bits env ret_var scrutinee branches default
       else
         let scrutinee = expression_of_operand env scrutinee in
@@ -2333,7 +2337,8 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
           let has_custom_constants =
             let rec has_custom_constants i = function
               | { C.discriminant; _ } :: bs ->
-                  discriminant.value <> Z.of_int i || has_custom_constants (i + 1) bs
+                  Charon.Scalars.get_val discriminant <> Z.of_int i
+                  || has_custom_constants (i + 1) bs
               | _ -> false
             in
             has_custom_constants 0 branches
@@ -2344,7 +2349,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               (fun ({ C.variant_name; discriminant; _ } : C.variant) ->
                 let v =
                   if has_custom_constants then
-                    Some discriminant.value
+                    Some (Charon.Scalars.get_val discriminant)
                   else
                     None
                 in
