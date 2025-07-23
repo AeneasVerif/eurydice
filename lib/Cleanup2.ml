@@ -521,7 +521,7 @@ let remove_trivial_ite =
       | EBool false -> (self#visit_expr env e3).node
       | _ -> super#visit_EIfThenElse env e1 e2 e3
 
-    method! visit_ESwitch env scrut branches =
+    method! visit_ESwitch env c scrut branches =
       let const_eq (w1, s1) (w2, s2) = w1 = w2 && int_of_string s1 = int_of_string s2 in
       let fits s (w' : K.width) =
         let s = Z.of_string s in
@@ -554,7 +554,7 @@ let remove_trivial_ite =
                   EUnit
             end
         end
-      | _ -> super#visit_ESwitch env scrut branches
+      | _ -> super#visit_ESwitch env c scrut branches
   end
 
 let contains_array t =
@@ -1329,9 +1329,9 @@ let float_comments files =
        let e3 = self#process_block e3 in
        EIfThenElse (self#visit_expr env e1, e2, e3)
 
-     method! visit_ESwitch env e bs =
+     method! visit_ESwitch env c e bs =
        let bs = List.map (fun (c, e) -> c, self#process_block e) bs in
-       ESwitch (self#visit_expr env e, bs)
+       ESwitch (c, self#visit_expr env e, bs)
 
      method! visit_DFunction _ cc flags n_cgs n t name bs e =
        DFunction (cc, flags, n_cgs, n, t, name, bs, self#process_block e)

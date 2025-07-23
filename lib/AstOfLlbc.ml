@@ -2157,7 +2157,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
           @ [ K.SWild, expression_of_block env ret_var default ]
         in
         let t = Krml.KList.reduce lesser (List.map (fun (_, e) -> e.K.typ) branches) in
-        K.(with_type t (ESwitch (scrutinee, branches)))
+        K.(with_type t (ESwitch (Unchecked, scrutinee, branches)))
   | Switch (Match (p, branches, default)) ->
       let scrutinee = expression_of_place env p in
       let typ_id, typ_lid, variant_name_of_variant_id =

@@ -144,7 +144,7 @@ let remove_assignments =
             mk t e0.meta
             @@ close_now_over not_yet_closed (count e) (fun not_yet_closed ->
                    EWhile (self#visit_expr_w not_yet_closed e, recurse_or_close not_yet_closed e'))
-        | ESwitch (e, branches) ->
+        | ESwitch (c, e, branches) ->
             mk t e0.meta
             @@ close_now_over not_yet_closed
                  ((* We must now bind: *)
@@ -155,7 +155,7 @@ let remove_assignments =
                  (* see above *)
                  (fun not_yet_closed ->
                    ESwitch
-                     ( self#visit_expr_w not_yet_closed e,
+                     (c, self#visit_expr_w not_yet_closed e,
                        List.map (fun (p, e) -> p, recurse_or_close not_yet_closed e) branches ))
         | EMatch (c, e, branches) ->
             mk t e0.meta
@@ -236,7 +236,7 @@ let remove_assignments =
                   mk e1.typ e1.meta
                     (EWhile (self#visit_expr_w not_yet_closed e, recurse_or_close not_yet_closed e')),
                   recurse_or_close not_yet_closed e2 ))
-      | ESwitch (e, branches) ->
+      | ESwitch (c, e, branches) ->
           assert (is_sequence b.node.meta);
           close_now_over not_yet_closed
             ((* We must now bind: *)
@@ -257,7 +257,7 @@ let remove_assignments =
                 ( b,
                   mk e1.typ e1.meta
                     (ESwitch
-                       ( self#visit_expr_w not_yet_closed e,
+                       ( c, self#visit_expr_w not_yet_closed e,
                          List.map (fun (p, e) -> p, recurse_or_close not_yet_closed e) branches )),
                   recurse_or_close not_yet_closed e2 ))
       | EMatch (c, e, branches) ->
