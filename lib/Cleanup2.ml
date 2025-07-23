@@ -246,6 +246,8 @@ let remove_array_repeats =
     *)
     method private expand_repeat under_bufcreate under_global e =
       match e.node with
+      | EBufCreateL (l, es) ->
+         with_type e.typ @@ EBufCreateL (l, List.map (self#expand_repeat true under_global) es)
       | EApp
           ( { node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ },
             [ ({ node = EConstant (_, "0"); _ } as init) ] )
