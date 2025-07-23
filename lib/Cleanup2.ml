@@ -262,7 +262,7 @@ let remove_array_repeats =
          let e1 = self#expand_repeat under_bufcreate under_global e1 in
          with_type e.typ (EFlat [lido, e1])
       | _ ->
-          if under_bufcreate then
+          if under_bufcreate || under_global then
             e
           else
             raise Not_found
