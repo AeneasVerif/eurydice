@@ -507,6 +507,10 @@ typedef const char *Prims_string;
 
 #define core_slice___Slice_T___as_mut_ptr(x, t, _) (x.ptr)
 #define core_mem_size_of(t, _) (sizeof(t))
+#define core_slice_raw_from_raw_parts_mut(ptr, len, _0, _1) \
+  (KRML_CLITERAL(Eurydice_slice){(void *)(ptr), len})
+#define core_slice_raw_from_raw_parts(ptr, len, _0, _1) \
+  (KRML_CLITERAL(Eurydice_slice){(void *)(ptr), len})
 
 // MISC (UNTESTED)
 
@@ -606,3 +610,6 @@ static inline Eurydice_vec Eurydice_vec_alloc2(size_t len, size_t element_sz) {
 #define alloc_vec__alloc__vec__Vec_T___into_boxed_slice(/* Eurydice_vec */ v,  \
                                                         T, _0, _1)             \
   ((Eurydice_slice){.ptr = (v).ptr, .len = (v).len})
+
+#define alloc_boxed__alloc__boxed__Box_T___from_raw(x, _0, _1) (x)
+#define alloc_boxed__alloc__boxed__Box_T___into_raw(x, _0, _1) (x)
