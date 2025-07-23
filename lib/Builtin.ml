@@ -191,7 +191,7 @@ let discriminant =
     name = [ "Eurydice" ], "discriminant";
     typ = Krml.Helpers.fold_arrow [ TBound 1 ] (TBound 0);
     n_type_args = 2;
-    cg_args = [ ];
+    cg_args = [];
     arg_names = [ "adt" ];
   }
 
