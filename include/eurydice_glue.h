@@ -511,7 +511,7 @@ typedef const char *Prims_string;
 // MISC (UNTESTED)
 
 typedef void *core_fmt_Formatter;
-typedef void *core_fmt_Arguments;
+typedef void *core_fmt_Arguments, *core_fmt_Arguments_____;
 typedef void *core_fmt_rt_Argument;
 #define core_fmt_rt__core__fmt__rt__Argument__a___new_display(x1, x2, x3, x4)  \
   NULL

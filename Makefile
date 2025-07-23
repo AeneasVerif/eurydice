@@ -46,7 +46,7 @@ clean-and-test:
 .PRECIOUS: %.llbc
 %.llbc: %.rs
 	# --mir elaborated --add-drop-bounds 
-	$(CHARON) rustc --preset=eurydice --dest-file "$@" -- $<
+	$(CHARON) rustc --monomorphize --translate-all-methods --preset=eurydice --dest-file "$@" -- $<
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
