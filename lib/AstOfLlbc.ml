@@ -979,8 +979,6 @@ let maybe_addrof (_env : env) (ty : C.ty) (e : K.expr) =
    function is a known builtin implementation. *)
 let blocklisted_trait_decls =
   [
-    (* Handled primitively. *)
-    "core::cmp::PartialEq";
     (* These don't have methods *)
     "core::marker::Sized";
     "core::marker::MetaSized";
@@ -988,19 +986,14 @@ let blocklisted_trait_decls =
     "core::marker::Send";
     "core::marker::Sync";
     "core::marker::Tuple";
+    "core::marker::Copy";
     (* The traits below *should* be handled properly ASAP. But for now, we have specific *instances*
        of those trait methods in the builtin lookup table, which we then implement by hand with
        macros. *)
     "core::iter::traits::iterator::Iterator";
     "core::iter::range::Step";
-    (* TODO: for now, we leave into as-is in the AST, do a later pass that eliminates all identity
-       calls to into (post-monomorphization), and error our if there are any left that do not operate
-       on primitive types. We should probably remove the special-case in this file and treat it
-       generically with a dedicated pass over the krml ast. *)
-    "core::convert::From";
     (* TODO: figure out what to do with those *)
     "core::clone::Clone";
-    "core::marker::Copy";
     "core::fmt::Debug";
     "core::ptr::metadata::Thin";
   ]
@@ -2605,8 +2598,6 @@ let known_failures =
       "issue_123::{core::cmp::PartialEq<issue_123::E2, issue_123::E2>}::eq";
       (* Failure("Can't handle arbitrary closures") *)
       "mismatch::{mismatch::MlKemKeyPairUnpacked<@Vector, @K>}::default";
-      (* Failure("TODO: TraitTypes Self::Error") *)
-      "core::convert::{core::convert::TryInto<@T, @U>}::try_into";
     ]
 
 let replacements =

@@ -46,11 +46,18 @@ clean-and-test:
 .PRECIOUS: %.llbc
 %.llbc: %.rs
 	# --mir elaborated --add-drop-bounds 
-	$(CHARON) rustc --preset=eurydice --dest-file "$@" -- $<
+	$(CHARON) rustc --preset=eurydice --dest-file "$@" $(CHARON_EXTRA) -- $<
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
 	sed 's/__NAME__/$*/g' $< > $@
+
+test/issue_105.llbc: CHARON_EXTRA = \
+  --include=core::result::*::branch \
+  --include=core::result::*::from_residual \
+  --include=core::result::*::eq \
+  --include=core::cmp::* \
+  --include=core::convert::*
 
 test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c
 test-nested_arrays: EXTRA = -funroll-loops 0
