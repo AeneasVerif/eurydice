@@ -255,7 +255,7 @@ Supported options:|}
   let files = Krml.Inlining.drop_unused files in
   let files = Eurydice.Cleanup2.remove_array_temporaries#visit_files () files in
   Eurydice.Logging.log "Phase2.25" "%a" pfiles files;
-  let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
+  let files = Eurydice.Cleanup2.remove_array_repeats#visit_files false files in
   Eurydice.Logging.log "Phase2.26" "%a" pfiles files;
   let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
   let ((map, _, _) as map3), files = Krml.DataTypes.everything files in

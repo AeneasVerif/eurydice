@@ -208,7 +208,7 @@ let remove_array_repeats =
              let the subsequent `hoist` phase lift this into a let-binding, and code-gen will optimize this into
              { 0 }. If we can't do something smart, we let-bind, and fall back onto the general case. *)
           begin
-            try (self#expand_repeat false (with_type (snd env) (EApp (e, es)))).node
+            try (self#expand_repeat false (fst env) (with_type (snd env) (EApp (e, es)))).node
             with Not_found ->
               (self#visit_expr env
                  (with_type (snd env)
@@ -225,6 +225,11 @@ let remove_array_repeats =
       | EConstant (_, s) -> int_of_string s
       | _ -> failwith "impossible"
 
+    method private is_arr_typ t =
+      match t with
+      | TQualified ( [ s1 ], s2) -> s1 = "Eurydice" && String.sub s2 0 3 = "arr"
+      | _ -> false
+
     (* This function recursively expands nested repeat expressions as initializer lists
        (EBufCreateL) as long as the innermost initial value is a zero, otherwise, it throws
        Not_found. For instance:
@@ -235,8 +240,11 @@ let remove_array_repeats =
        We override this behavior when we're already underneath an EBufCreateL -- here, we've already
        committed to an initializer list (and Charon will suitably "fold" repeat expressions
        automatically for us), so we might as well expand.
+
+       We add another case under_global to use initlializer list, maybe it can be unified with under_
+       bufcreate
     *)
-    method private expand_repeat under_bufcreate e =
+    method private expand_repeat under_bufcreate under_global e =
       match e.node with
       | EApp
           ( { node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ },
@@ -247,8 +255,12 @@ let remove_array_repeats =
       | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
         when lid = Builtin.array_repeat.name ->
           (* [e; n] -> ok if e ok -- n is a constant here Rust has no VLAs *)
-          let init = self#expand_repeat under_bufcreate init in
+          let init = self#expand_repeat under_bufcreate under_global init in
           with_type e.typ @@ EBufCreateL (Stack, List.init (self#assert_length len) (fun _ -> init))
+      | EFlat [ (lido, e1) ] when lido = Some "data" && self#is_arr_typ e.typ ->
+         (* { data: [e;n] }: arr<T;C> -> recursively expand the array field *)
+         let e1 = self#expand_repeat under_bufcreate under_global e1 in
+         with_type e.typ (EFlat [lido, e1])
       | _ ->
           if under_bufcreate then
             e
@@ -263,12 +275,12 @@ let remove_array_repeats =
               name,
               n,
               t,
-              with_type e1.typ (EBufCreateL (l, List.map (self#expand_repeat true) es)) )
+              with_type e1.typ (EBufCreateL (l, List.map (self#expand_repeat true true) es)) )
       | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
         when lid = Builtin.array_repeat.name -> begin
           try
-            (* Case 1. *)
-            DGlobal (flags, name, n, t, (self#expand_repeat false) e1)
+            (* Case 1. try the all-0 case first *)
+            DGlobal (flags, name, n, t, (self#expand_repeat false false) e1)
           with Not_found -> (
             match init.node with
             | EConstant _ ->
@@ -280,11 +292,14 @@ let remove_array_repeats =
                     t,
                     with_type e1.typ
                       (EBufCreate (Stack, init, Krml.Helpers.mk_sizet (self#assert_length len))) )
-            | _ -> super#visit_DGlobal env flags name n t e1)
+            | _ -> DGlobal (flags, name, n, t, (self#expand_repeat false true) e1))
+              (* use the total expansion to EBufCreateL for global defs *)
         end
+      | EFlat [ (lido, _) ] when lido = Some "data" && self#is_arr_typ e1.typ ->
+          DGlobal (flags, name, n, t, (self#expand_repeat false true) e1)   
       | _ -> super#visit_DGlobal env flags name n t e1
 
-    method! visit_ELet (((), _) as env) b e1 e2 =
+    method! visit_ELet ((under_global, _) as env) b e1 e2 =
       match e1.node with
       (* Nothing special here for EBufCreateL otherwise it breaks the invariant expected by
          remove_implicit_array_copies *)
@@ -292,7 +307,7 @@ let remove_array_repeats =
         when lid = Builtin.array_repeat.name -> begin
           try
             (* Case 1 (only zeroes). *)
-            let r = ELet (b, (self#expand_repeat false) e1, self#visit_expr env e2) in
+            let r = ELet (b, (self#expand_repeat false under_global) e1, self#visit_expr env e2) in
             r
           with Not_found -> (
             match init.node with
