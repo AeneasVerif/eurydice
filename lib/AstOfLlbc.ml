@@ -1002,6 +1002,7 @@ let blocklisted_trait_decls =
     "core::clone::Clone";
     "core::marker::Copy";
     "core::fmt::Debug";
+    "core::ptr::metadata::Thin";
   ]
 
 (* Interpret a Rust function type, with trait bounds, into the krml Ast, providing:
@@ -2624,6 +2625,7 @@ let replacements =
       ( "core::num::{u32}::BITS",
         fun lid -> Krml.Ast.DGlobal ([], lid, 0, Krml.Helpers.uint32, Krml.Helpers.mk_uint32 32) );
       "alloc::vec::{alloc::vec::Vec<@T>}::try_with_capacity", Builtin.try_with_capacity;
+      "core::ptr::null_mut", Builtin.null_mut;
     ]
 
 (* Catch-all error handler (last resort) *)
