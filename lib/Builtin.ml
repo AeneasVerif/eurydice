@@ -674,6 +674,12 @@ let try_with_capacity =
                              (* Result::Ok(v) *)
                              mk_res_ok (with_type (mk_vec t) (EBound 0)) )) )) )) )
 
+let null_mut =
+  let open Krml.Ast in
+  let t = TBound 0 in
+  fun lid ->
+    DFunction (None, [ Private ], 0, 1, TBuf (t, false), lid, [ Krml.Helpers.fresh_binder "_" TUnit ], with_type (TBuf (t, false)) EBufNull)
+
 let nonzero_def = K.DType (nonzero, [], 0, 1, Abbrev (TBound 0))
 
 (* -------------------------------------------------------------------------- *)
