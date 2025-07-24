@@ -695,6 +695,9 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
   | PlaceLocal var_id ->
       let i, t = lookup env var_id in
       K.(with_type t (EBound i))
+  | PlaceGlobal { id; _ } ->
+      let global = env.get_nth_global id in
+      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
   | PlaceProjection (sub_place, pe) -> begin
       (* Can't evaluate this here because of the special case for DSTs. *)
       let sub_e = lazy (expression_of_place env sub_place) in
@@ -1703,7 +1706,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
-  | UnaryOp (Cast (CastTransmute ((TRawPtr _) as _from, (TLiteral (TUInt Usize) as to_))), e) ->
+  | UnaryOp (Cast (CastTransmute ((TRawPtr _ as _from), (TLiteral (TUInt Usize) as to_))), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
   | UnaryOp (Cast (CastFnPtr (TFnDef _from, TFnPtr _to)), e) ->
@@ -1785,7 +1788,6 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
               (Charon.PrintExpressions.cast_kind_to_string env.format_env ck)
               ptyp t_to ptyp t_from
       end
-
   | UnaryOp (Cast ck, e) ->
       (* Add a simpler case: identity cast is allowed *)
       let is_ident =
@@ -1862,15 +1864,6 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       K.with_type
         (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
         (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
-  | Global { id; _ } ->
-      let global = env.get_nth_global id in
-      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
-  | GlobalRef ({ id; _ }, _) ->
-      let global = env.get_nth_global id in
-      let e =
-        K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
-      in
-      K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
   | rvalue ->
       failwith
         ("unsupported rvalue: `"
