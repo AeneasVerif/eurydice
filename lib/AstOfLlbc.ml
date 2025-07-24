@@ -2052,7 +2052,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
       let e2 = expression_of_operand env e2 in
       let t = typ_of_ty env ty in
       let t_array = maybe_cg_array env ty cg in
-      let e1 = Krml.Helpers.(mk_deref Krml.Helpers.assert_tbuf_or_tarray e1.K.typ) e1.K.node) in
+      let e1 = Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e1.K.typ) e1.K.node) in
       let e1 = K.with_type t_array (K.EField (e1,"data")) in
       let dest = expression_of_place env dest in
       Krml.Helpers.with_unit
