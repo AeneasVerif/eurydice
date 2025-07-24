@@ -392,23 +392,13 @@ let lookup_field env typ_id field_id =
     struct <const C:usize, T> { data : [T;C]; } *)
 
 let decl_of_Arr =
-  K.DType (Builtin.arr , [], 1, 0, Flat [(Some "data", (K.TCgArray (TBound 0,0), true))])
+  K.DType (Builtin.arr , [], 1, 1, Flat [(Some "data", (K.TCgArray (TBound 0,0), true))])
   (* []  : no flags
      1  : we have one const generic C
-     0  : we have one type argument T (counted from 0)
+     0  : we have one type argument T
   *)
 
 let expression_of_struct_Arr (expr_array : K.expr) = K.EFlat [(Some "data", expr_array)]
-
-(* only used for array now *)
-let cg_of_cg (env : env) (cg: C.const_generic) : K.cg =
-  match cg with
-  | CgValue _ -> K.CgConst (constant_of_scalar_value (assert_cg_scalar cg))
-  | CgVar var ->
-     let id, cg_t = lookup_cg_in_types env (C.expect_free_var var) in
-     assert (cg_t = K.TInt SizeT);
-     K.CgVar id
-  | _ -> failwith "TODO: CgGlobal"
 
 let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   match ty with
@@ -445,9 +435,6 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
         | _ -> TTuple (List.map (typ_of_ty env) args)
       end
   | TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } } ->
-     L.log "AstOfLlbc" "Trying to add DeclObli for Charon array %s with generics %s"
-     (Charon.PrintTypes.ty_to_string env.format_env ty)
-     (Charon.PrintTypes.const_generic_to_string env.format_env cg);
      typ_of_struct_arr env t cg
   | TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
       (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
@@ -503,7 +490,7 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
 
 and typ_of_struct_arr (env: env) (t: C.ty) (cg: C.const_generic) : K.typ =
   let typ_t = typ_of_ty env t in
-  let cg = cg_of_cg env cg in
+  let cg = cg_of_const_generic env cg in
   Builtin.mk_arr typ_t cg
   
 let maybe_cg_array (env : env) (t : C.ty) (cg : C.const_generic) =
@@ -2047,7 +2034,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
           FnOpRegular
             {
               func = FunId (FBuiltin (Index { is_array = true; mutability = _; is_range = false }));
-              generics = { types = [ ty ]; const_generics = [cg]; _ };
+              generics = { types = [ ty ]; const_generics = [ cg ]; _ };
               _;
             };
         args = [ e1; e2 ];
@@ -2065,8 +2052,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
       let e2 = expression_of_operand env e2 in
       let t = typ_of_ty env ty in
       let t_array = maybe_cg_array env ty cg in
-      let t_struct = typ_of_struct_arr env ty cg in
-      let e1 = Krml.Helpers.(mk_deref t_struct e1.K.node) in
+      let e1 = Krml.Helpers.(mk_deref Krml.Helpers.assert_tbuf_or_tarray e1.K.typ) e1.K.node) in
       let e1 = K.with_type t_array (K.EField (e1,"data")) in
       let dest = expression_of_place env dest in
       Krml.Helpers.with_unit
