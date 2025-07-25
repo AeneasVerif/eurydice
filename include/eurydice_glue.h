@@ -151,11 +151,11 @@ typedef struct {
 #define Eurydice_slice_copy(dst, src, t)                                       \
   memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
 
-// Slice comparison
-#define core_cmp_impls__core__cmp__PartialEq__0_mut__B___for__1_mut__A___eq(   \
-    src1, src2, _0, _1, T)                                                     \
+// Distinguished support for some PartialEq trait implementations
+//
+#define Eurydice_slice_eq(src1, src2, t, _)                                    \
   ((src1)->len == (src2)->len &&                                               \
-   !memcmp((src1)->ptr, (src2)->ptr, (src1)->len * sizeof(T)))
+   !memcmp((src1)->ptr, (src2)->ptr, (src1)->len * sizeof(t)))
 
 #define core_array___Array_T__N___as_slice(len_, ptr_, t, _ret_t)              \
   KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
@@ -166,8 +166,12 @@ typedef struct {
 #define TryFromSliceError uint8_t
 #define core_array_TryFromSliceError uint8_t
 
+// Distinguished support for some PartialEq trait implementations
+//
+// core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>
 #define Eurydice_array_eq(sz, a1, a2, t)                                       \
   (memcmp(a1, a2, sz * sizeof(t)) == 0)
+// core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>
 #define Eurydice_array_eq_slice(sz, a1, s2, t, _)                              \
   (memcmp(a1, (s2)->ptr, sz * sizeof(t)) == 0)
 
@@ -178,6 +182,10 @@ typedef struct {
 #define core_array_equality__core__cmp__PartialEq__0___Slice_U____for__Array_T__N___eq( \
     sz, a1, a2, t, _, _ret_t)                                                           \
   Eurydice_array_eq(sz, a1, ((a2)->ptr), t)
+#define core_cmp_impls__core__cmp__PartialEq__0_mut__B___for__1_mut__A___eq(   \
+    _m0, _m1, \
+    src1, src2, _0, _1, T)                                                     \
+  Eurydice_slice_eq(src1, src2, _, _, T, _)
 
 #define Eurydice_slice_split_at(slice, mid, element_type, ret_t)               \
   KRML_CLITERAL(ret_t) {                                                       \

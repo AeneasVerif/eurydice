@@ -235,6 +235,15 @@ let array_eq_slice =
     arg_names = [ "arr"; "slice" ];
   }
 
+let slice_eq =
+  {
+    name = [ "Eurydice" ], "slice_eq";
+    typ = Krml.Helpers.fold_arrow [ TBuf (mk_slice (TBound 0), false); TBuf (mk_slice (TBound 0), false) ] TBool;
+    n_type_args = 1;
+    cg_args = [ ];
+    arg_names = [ "s1"; "s2" ];
+  }
+
 let step_by : K.lident = [ "core"; "iter"; "adapters"; "step_by" ], "StepBy"
 let mk_step_by t = K.TApp (step_by, [ t ])
 let mk_range_step_by_iterator t = mk_iterator (mk_step_by t)
@@ -721,6 +730,7 @@ let builtin_funcs =
     array_into_iter;
     array_eq;
     array_eq_slice;
+    slice_eq;
     slice_index;
     slice_index_outparam;
     slice_subslice;
