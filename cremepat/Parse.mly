@@ -4,8 +4,8 @@
 
 %token<int>     INT
 %token<string>  UIDENT LIDENT UVAR UVARLIST
-%token          EOF COMMA EQUALS LBRACK RBRACK LANGLE RANGLE LCURLY RCURLY
-%token          COLON COLONCOLON AMP LPAREN RPAREN SEMI
+%token          EOF COMMA EQUALS LBRACK RBRACK LBRACKHASH LANGLE RANGLE LCURLY RCURLY
+%token          COLON COLONCOLON AMP LPAREN RPAREN LPARENHASH SEMI
 %token          MATCH TRUE FALSE LET WHILE BREAK ARROW
 
 %type <expr> expr
@@ -126,8 +126,17 @@ app_expr:
   { e }
 
 pre_app_expr:
-| e = app_expr ts = ioption(delimited(LANGLE, separated_list(COMMA, typ), RANGLE)) es = delimited(LPAREN, separated_list(COMMA, expr), RPAREN)
-  { App (e, Option.value ~default:[] ts, es) }
+| head = app_expr
+  cgs = ioption(delimited(LBRACKHASH, separated_list(COMMA, expr), RBRACK))
+  methods = ioption(delimited(LPARENHASH, separated_list(COMMA, expr), RPAREN))
+  ts = ioption(delimited(LANGLE, separated_list(COMMA, typ), RANGLE))
+  args = delimited(LPAREN, separated_list(COMMA, expr), RPAREN)
+  {
+    let cgs = Option.value ~default:[] cgs in
+    let methods = Option.value ~default:[] methods in
+    let ts = Option.value ~default:[] ts in
+    App { head; cgs; methods; ts; args }
+  }
 | AMP e = index_expr
   { Addr e }
 

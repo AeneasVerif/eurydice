@@ -44,12 +44,14 @@ let rec token lexbuf =
   | "->" -> locate lexbuf ARROW
   | "," -> locate lexbuf COMMA
   | "=" -> locate lexbuf EQUALS
+  | "[#" -> locate lexbuf LBRACKHASH
   | "[" -> locate lexbuf LBRACK
   | "]" -> locate lexbuf RBRACK
   | "<" -> locate lexbuf LANGLE
   | ">" -> locate lexbuf RANGLE
   | "{" -> locate lexbuf LCURLY
   | "}" -> locate lexbuf RCURLY
+  | "(#" -> locate lexbuf LPARENHASH
   | "(" -> locate lexbuf LPAREN
   | ")" -> locate lexbuf RPAREN
   (* | "_" -> locate lexbuf UNDERSCORE *)

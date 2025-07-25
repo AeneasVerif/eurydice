@@ -166,14 +166,14 @@ typedef struct {
 #define TryFromSliceError uint8_t
 #define core_array_TryFromSliceError uint8_t
 
-#define Eurydice_array_eq(sz, a1, a2, t, _)                                    \
+#define Eurydice_array_eq(sz, a1, a2, t)                                       \
   (memcmp(a1, a2, sz * sizeof(t)) == 0)
 #define core_array_equality__core__cmp__PartialEq__Array_U__N___for__Array_T__N___eq( \
     sz, a1, a2, t, _, _ret_t)                                                         \
-  Eurydice_array_eq(sz, a1, a2, t, _)
+  Eurydice_array_eq(sz, a1, a2, t)
 #define core_array_equality__core__cmp__PartialEq__0___Slice_U____for__Array_T__N___eq( \
     sz, a1, a2, t, _, _ret_t)                                                           \
-  Eurydice_array_eq(sz, a1, ((a2)->ptr), t, _)
+  Eurydice_array_eq(sz, a1, ((a2)->ptr), t)
 
 #define Eurydice_slice_split_at(slice, mid, element_type, ret_t)               \
   KRML_CLITERAL(ret_t) {                                                       \

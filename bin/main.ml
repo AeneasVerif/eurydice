@@ -180,6 +180,7 @@ Supported options:|}
   in
 
   Printf.printf "1️⃣ LLBC ➡️  AST\n";
+  Eurydice.Logging.log "Phase0" "%a" pfiles files;
   let files = Eurydice.PreCleanup.precleanup files in
 
   Eurydice.Logging.log "Phase1" "%a" pfiles files;

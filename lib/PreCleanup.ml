@@ -28,8 +28,34 @@ let expand_array_copies files =
     #visit_files
     () files
 
+let remove_array_eq = object
+  inherit Krml.DeBruijn.map_counting_cg as super
+
+  method! visit_expr ((n_cgs, n_binders) as env, _) e =
+    match e with
+    | [%cremepat {| core::array::equality::?::eq[#?n](#?_eq,?_ne)<?t,?u>(?a1, ?a2) |}] ->
+        let rec is_flat = function
+          | TArray (t, _) -> is_flat t
+          | TInt _ | TBool | TUnit -> true
+          | _ -> false
+        in
+        assert (t = u);
+        if is_flat t then
+          let diff = n_cgs - n_binders in
+          with_type TBool (EApp (
+            Builtin.(expr_of_builtin_t ~cgs:(diff, [n]) array_eq [ t ]),
+            [ a1; a2 ]))
+        else
+          failwith "TODO: non-byteeq array comparison"
+    | _ -> super#visit_expr (env, e.typ) e
+
+   method! visit_DFunction _ cc flags n_cgs n t lid bs e =
+     super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t lid bs e
+end
+
 let precleanup files =
   let files = expand_array_copies files in
+  let files = remove_array_eq#visit_files (0, 0) files in
   files
 
 let merge files =
