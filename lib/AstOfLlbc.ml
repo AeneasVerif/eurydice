@@ -708,7 +708,6 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
   match p.kind with
   | PlaceLocal var_id ->
       let i, t = lookup env var_id in
-      L.log "AstOfLlbc" "PlaceLocal of type :%a" ptyp t;
       K.(with_type t (EBound i))
   | PlaceProjection (sub_place, pe) -> begin
       (* Can't evaluate this here because of the special case for DSTs. *)
@@ -1757,7 +1756,6 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       let t_from = typ_of_ty env ty_from and t_to = typ_of_ty env ty_to in
       let e = expression_of_operand env e in
       begin
-        (* TODO: this whole piece of code should handle TCgArray too *)
         match t_from, is_dst env t_to with
         | TBuf (TApp (lid1, [ K.TCgApp (K.TApp (lid_arr, [ u1 ]), cg) ]) , _), Some (lid2, TApp (slice_hd, [ u2 ]), t_u)
           when lid1 = lid2 && u1 = u2 && slice_hd = Builtin.derefed_slice && lid_arr = Builtin.arr ->
@@ -1957,7 +1955,6 @@ let rec expression_of_switch_128bits env ret_var scrutinee branches default : K.
   List.fold_right folder branches else_branch
 
 and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_statement) : K.expr =
-  L.log "AstOfLlbc" "Translating statement: %s:" (Charon.PrintLlbcAst.Ast.raw_statement_to_string env.format_env "" "" s);
   match s with
   | Assign (p, rv) ->
       let expected_ty = p.ty in
