@@ -41,7 +41,7 @@ path_item:
 | i = ident
   { Name i }
 | p = UVAR
-  { assert (p = ""); Wild }
+  { if p = "" then Wild else Var p }
 | _p = UVARLIST
   { failwith "TODO" }
 

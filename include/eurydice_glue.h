@@ -168,6 +168,10 @@ typedef struct {
 
 #define Eurydice_array_eq(sz, a1, a2, t)                                       \
   (memcmp(a1, a2, sz * sizeof(t)) == 0)
+#define Eurydice_array_eq_slice(sz, a1, s2, t, _)                              \
+  (memcmp(a1, (s2)->ptr, sz * sizeof(t)) == 0)
+
+// DEPRECATED -- should no longer be generated
 #define core_array_equality__core__cmp__PartialEq__Array_U__N___for__Array_T__N___eq( \
     sz, a1, a2, t, _, _ret_t)                                                         \
   Eurydice_array_eq(sz, a1, a2, t)

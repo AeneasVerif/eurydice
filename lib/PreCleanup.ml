@@ -33,7 +33,7 @@ let remove_array_eq = object
 
   method! visit_expr ((n_cgs, n_binders) as env, _) e =
     match e with
-    | [%cremepat {| core::array::equality::?::eq[#?n](#?_eq,?_ne)<?t,?u>(?a1, ?a2) |}] ->
+    | [%cremepat {| core::array::equality::?impl::eq[#?n](#?..)<?t,?u>(?a1, ?a2) |}] ->
         let rec is_flat = function
           | TArray (t, _) -> is_flat t
           | TInt _ | TBool | TUnit -> true
@@ -42,9 +42,17 @@ let remove_array_eq = object
         assert (t = u);
         if is_flat t then
           let diff = n_cgs - n_binders in
-          with_type TBool (EApp (
-            Builtin.(expr_of_builtin_t ~cgs:(diff, [n]) array_eq [ t ]),
-            [ a1; a2 ]))
+          match impl with
+          | "{core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>}" ->
+              with_type TBool (EApp (
+                Builtin.(expr_of_builtin_t ~cgs:(diff, [n]) array_eq [ t ]),
+                [ a1; a2 ]))
+          | "{core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>}" ->
+              with_type TBool (EApp (
+                Builtin.(expr_of_builtin_t ~cgs:(diff, [n]) array_eq_slice [ t ]),
+                [ a1; a2 ]))
+          | _ ->
+              failwith ("unknown array eq impl: " ^ impl)
         else
           failwith "TODO: non-byteeq array comparison"
     | _ -> super#visit_expr (env, e.typ) e

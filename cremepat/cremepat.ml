@@ -223,6 +223,7 @@ let compile_parse_tree (env : env) loc
     match pt with
     | Wild -> ppat_any ~loc
     | Name s -> ppat_string ~loc s
+    | Var txt -> ppat_var ~loc { txt; loc }
   (* Types *)
   and _compile_typ env pt = compile_with_var env pt compile_pre_typ
   and compile_typ_list_pattern env (es : ParseTree.typ list) =
