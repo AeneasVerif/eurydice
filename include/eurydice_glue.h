@@ -553,6 +553,10 @@ static inline char *malloc_and_init(size_t sz, char *init) {
 #define Eurydice_box_new(init, t, t_dst)                                       \
   ((t_dst)(malloc_and_init(sizeof(t), (char *)(&init))))
 
+// Initilize the struct Eurydice_arr with an empty array as its field
+#define Eurydice_empty_arrow(dummy, t, t_dst)                                  \
+  ((t_dst) { { } })
+
 #define Eurydice_box_new_array(len, ptr, t, t_dst)                             \
   ((t_dst)(malloc_and_init(len * sizeof(t), (char *)(ptr))))
 

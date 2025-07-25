@@ -1879,11 +1879,24 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   | Aggregate (AggregatedAdt ({ id = TBuiltin _; _ }, _, _), _) ->
       failwith "unsupported: AggregatedAdt / TAssume"
   | Aggregate (AggregatedArray (t, cg), ops) ->
-      let array_expr = K.with_type
-        (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
-        (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops)) in
-      let typ_arr = typ_of_struct_arr env t cg in
-      K.with_type typ_arr (expression_of_struct_Arr array_expr)
+     let ty = typ_of_ty env t in
+     let typ_arr = typ_of_struct_arr env t cg in
+     begin
+       match ops with
+       | [] ->
+          let empty_array =
+            K.with_type
+              (Krml.DeBruijn.(subst_t ty 0 (Builtin.empty_array.typ)))
+              (K.ETApp (Builtin.(expr_of_builtin empty_array), [], [], [ ty ]))
+          in
+          K.with_type typ_arr (K.EApp (empty_array, [ K.with_type ty K.EAny ]))
+          (* a dummy arg is needed to pass the checker *)
+       | _ ->
+           let array_expr = K.with_type
+             (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
+             (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops)) in
+           K.with_type typ_arr (expression_of_struct_Arr array_expr)
+     end 
   | Global { id; _ } ->
       let global = env.get_nth_global id in
       K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))

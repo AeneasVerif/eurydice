@@ -327,6 +327,14 @@ let box_new =
     arg_names = [ "v" ];
   }
 
+let empty_array =
+  {
+    name = [ "Eurydice" ], "empty_array";
+    typ = Krml.Helpers.fold_arrow [ TBound 0 ] (mk_arr (TBound 0) (CgConst (SizeT, "0")));
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [ "x" ];
+  }
 (*
 let box_new_array =
   {
@@ -706,6 +714,7 @@ let builtin_funcs =
     range_iterator_step_by;
     range_step_by_iterator_next;
     box_new;
+    empty_array;
     (* box_new_array; *)
     replace;
     slice_of_dst;
