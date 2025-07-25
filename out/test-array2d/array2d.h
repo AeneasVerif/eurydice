@@ -15,6 +15,10 @@
 extern "C" {
 #endif
 
+extern bool core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(uint32_t *x0, uint32_t *x1);
+
+extern bool core_cmp_impls__core__cmp__PartialEq_u32__for_u32__ne(uint32_t *x0, uint32_t *x1);
+
 bool array2d_f(uint32_t x[4U][2U]);
 
 #define core_panicking_AssertKind_Eq 0
@@ -24,8 +28,6 @@ bool array2d_f(uint32_t x[4U][2U]);
 typedef uint8_t core_panicking_AssertKind;
 
 void array2d_main(void);
-
-extern bool core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(uint32_t *x0, uint32_t *x1);
 
 #if defined(__cplusplus)
 }

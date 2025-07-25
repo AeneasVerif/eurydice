@@ -12,13 +12,7 @@ bool array2d_f(uint32_t x[4U][2U])
   x[0U][0U] = 1U;
   x[0U][1U] = 2U;
   uint32_t y[4U][2U] = { { 1U, 2U }, { 3U, 4U }, { 1U, 2U }, { 3U, 4U } };
-  return
-    core_array_equality__core__cmp__PartialEq__Array_U__N___for__Array_T__N___eq((size_t)4U,
-      x,
-      y,
-      uint32_t [2U],
-      uint32_t [2U],
-      bool);
+  return Eurydice_array_eq((size_t)4U, x, y, uint32_t [2U]);
 }
 
 typedef struct _bool__x2_s
