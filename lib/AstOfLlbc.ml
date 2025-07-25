@@ -1653,6 +1653,13 @@ let is_box_place (p : C.place) =
   | C.TAdt { id = TBuiltin TBox; _ } -> true
   | _ -> false
 
+let expression_of_cg (env : env) (cg : K.cg) =
+  match cg with
+  |CgConst n -> Krml.Helpers.mk_sizet (int_of_string (snd n))
+  |CgVar var ->
+    let diff = List.length env.binders - List.length env.cg_binders in
+    K.with_type (K.TInt SizeT) (K.EBound (var + diff))
+
 let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   match p with
   | Use op -> expression_of_operand env op
@@ -1751,49 +1758,20 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       let e = expression_of_operand env e in
       begin
         (* TODO: this whole piece of code should handle TCgArray too *)
-        match t_from, is_dst env t_to, ty_from, ty_to with
-        | TBuf (TApp (lid1, [ K.TCgApp (K.TApp (lid_arr, [ u1 ]), CgConst n) ]) , _), Some (lid2, TApp (slice_hd, [ u2 ]), t_u), _, _
+        match t_from, is_dst env t_to with
+        | TBuf (TApp (lid1, [ K.TCgApp (K.TApp (lid_arr, [ u1 ]), cg) ]) , _), Some (lid2, TApp (slice_hd, [ u2 ]), t_u)
           when lid1 = lid2 && u1 = u2 && slice_hd = Builtin.derefed_slice && lid_arr = Builtin.arr ->
-            let len = Krml.Helpers.mk_sizet (int_of_string (snd n)) in
+            let len = expression_of_cg env cg in
             (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
              `Eurydice_derefed_slice data` (a.k.a. `char data[]`) *)
             let ptr = K.with_type (TBuf (t_u, false)) (K.ECast (e, TBuf (t_u, false))) in
             Builtin.dst_new ~len ~ptr t_u
-        | ( _,
-            _,
-            TAdt
-              {
-                id = TBuiltin TBox;
-                generics =
-                  {
-                    types =
-                      [
-                        TAdt
-                          {
-                            id = TBuiltin TArray;
-                            generics = { types = [ t1 ]; const_generics = [ cg ]; _ };
-                          };
-                      ];
-                    _;
-                  };
-              },
-            TAdt
-              {
-                id = TBuiltin TBox;
-                generics =
-                  { types = [ TAdt { id = TBuiltin TSlice; generics = { types = [ t2 ]; _ } } ]; _ };
-              } ) ->
-            assert (t1 = t2);
-            let t = typ_of_ty env t1 in
-            let n = match cg with
-            | CgValue _ -> constant_of_scalar_value (assert_cg_scalar cg)
-            | _ -> failwith "impossible"
-            in
-            let len = Krml.Helpers.mk_sizet (int_of_string (snd n)) in
+        | TBuf ( K.TCgApp (K.TApp (lid_arr, [ t ]), cg), _), _
+          when lid_arr = Builtin.arr ->
+            let len = expression_of_cg env cg in
             (* array_to_slice: size_t -> arr -> Eurydice_slice 0 *)
             let array_to_slice = Builtin.(expr_of_builtin array_to_slice) in
             let diff = List.length env.binders - List.length env.cg_binders in
-            (* slice_of_boxed_array: arr -> Eurydice_slice 0 *)
             let array_to_slice =
               K.with_type
                 (Krml.DeBruijn.(subst_t t 0 (subst_ct diff len 0 (Builtin.array_to_slice.typ))))
