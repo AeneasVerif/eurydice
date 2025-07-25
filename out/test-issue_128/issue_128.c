@@ -20,15 +20,29 @@ void issue_128_fun_b(Eurydice_slice _x)
 void issue_128_use_enum(issue_128_E e, Eurydice_slice x)
 {
   void *uu____0 = (void *)0U;
-  if (!(e == issue_128_E_A))
+  switch (e)
   {
-    return;
+    case issue_128_E_A:
+      {
+        break;
+      }
+    case issue_128_E_B:
+      {
+        return;
+      }
+    default:
+      {
+        KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__, __LINE__);
+        KRML_HOST_EXIT(253U);
+      }
   }
 }
 
 void issue_128_main(void)
 {
-  uint8_t buf[0U] = {  };
-  issue_128_use_enum(issue_128_E_A, Eurydice_array_to_slice((size_t)0U, buf, uint8_t));
+  issue_128_E uu____0 = issue_128_E_A;
+  /* original Rust expression is not an lvalue in C */
+  Eurydice_arr_51 lvalue = Eurydice_empty_array((void *)0U, uint8_t, Eurydice_arr_51);
+  issue_128_use_enum(uu____0, Eurydice_array_to_slice((size_t)0U, &lvalue, uint8_t));
 }
 

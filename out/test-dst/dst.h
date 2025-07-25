@@ -28,6 +28,14 @@ typedef struct dst_T_s
 }
 dst_T;
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint32_t
+with const generics
+- $3size_t
+*/
+typedef struct Eurydice_arr_6f_s { uint32_t data[3U]; } Eurydice_arr_6f;
+
 typedef struct dst_T3_s
 {
   uint32_t foo;
@@ -48,44 +56,60 @@ typedef struct Eurydice_dst_31_s
 Eurydice_dst_31;
 
 /**
+A monomorphic instance of Eurydice.arr
+with types uint32_t
+with const generics
+- $4size_t
+*/
+typedef struct Eurydice_arr_0d_s { uint32_t data[4U]; } Eurydice_arr_0d;
+
+/**
 A monomorphic instance of dst.S
-with types uint32_t[4size_t]
+with types Eurydice_arr uint32_t[[$4size_t]]
 
 */
-typedef struct dst_S_dd_s
+typedef struct dst_S_64_s
 {
   uint32_t foo;
-  uint32_t my_data[4U];
+  Eurydice_arr_0d my_data;
 }
-dst_S_dd;
+dst_S_64;
 
 Eurydice_dst_31 dst_alloc(void);
 
 /**
 A monomorphic instance of Eurydice.dst
-with types dst_S Eurydice_derefed_slice uint32_t[3size_t]
+with types dst_S Eurydice_derefed_slice Eurydice_arr uint32_t[[$3size_t]]
 
 */
-typedef struct Eurydice_dst_f1_s
+typedef struct Eurydice_dst_40_s
 {
   dst_T3 *ptr;
   size_t len;
 }
-Eurydice_dst_f1;
+Eurydice_dst_40;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr uint32_t[[$3size_t]]
+with const generics
+- $4size_t
+*/
+typedef struct Eurydice_arr_58_s { Eurydice_arr_6f data[4U]; } Eurydice_arr_58;
 
 /**
 A monomorphic instance of dst.S
-with types uint32_t[3size_t][4size_t]
+with types Eurydice_arr Eurydice_arr uint32_t[[$3size_t]][[$4size_t]]
 
 */
-typedef struct dst_S_a4_s
+typedef struct dst_S_9c_s
 {
   uint32_t foo;
-  uint32_t my_data[4U][3U];
+  Eurydice_arr_58 my_data;
 }
-dst_S_a4;
+dst_S_9c;
 
-Eurydice_dst_f1 dst_alloc3(void);
+Eurydice_dst_40 dst_alloc3(void);
 
 void dst_check_regular_field(Eurydice_dst_31 x);
 
@@ -95,7 +119,7 @@ void dst_check_var_field(Eurydice_dst_31 x);
 
 void dst_check_var_field_ref(Eurydice_dst_31 x);
 
-void dst_check_var_field_ref3(Eurydice_dst_f1 x);
+void dst_check_var_field_ref3(Eurydice_dst_40 x);
 
 void dst_main3(void);
 
@@ -125,15 +149,15 @@ Eurydice_dst_7a;
 
 /**
 A monomorphic instance of dst.T2
-with types uint32_t[4size_t]
+with types Eurydice_arr uint32_t[[$4size_t]]
 
 */
-typedef struct dst_T2_dd_s
+typedef struct dst_T2_64_s
 {
   size_t header;
-  uint32_t my_data[4U];
+  Eurydice_arr_0d my_data;
 }
-dst_T2_dd;
+dst_T2_64;
 
 Eurydice_dst_7a dst_mk(void);
 
