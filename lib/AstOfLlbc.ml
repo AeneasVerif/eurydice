@@ -699,7 +699,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           (* All types represented as a pointer at run-time, compiled to a C pointer *)
           begin
             match !*sub_e.K.typ with
-            | TArray (t_pointee, _) -> assert false
+            | TArray (_, _) -> assert false
             | TBuf (t_pointee, _) -> 
                 Krml.Helpers.(mk_deref t_pointee !*sub_e.K.node)
             | t ->
