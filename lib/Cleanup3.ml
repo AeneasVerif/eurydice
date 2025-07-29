@@ -61,10 +61,10 @@ let decay_cg_externals =
 
           (* We're good. Find the allocated C name for our declaration, and allocate a new C name for
              the extra declaration *)
-          let c_name = Option.get (GlobalNames.lookup (fst scope_env) name) in
+          let c_name = Option.get (GlobalNames.lookup (fst scope_env) (name, Other)) in
           let new_name = fst name, snd name ^ "_" in
           self#record scope_env ~is_type:false ~is_external:true flags new_name;
-          let new_c_name = Option.get (GlobalNames.lookup (fst scope_env) new_name) in
+          let new_c_name = Option.get (GlobalNames.lookup (fst scope_env) (new_name, Other)) in
 
           (* We build: #define <<c_name>>(x0, ..., xn, _ret_t) \
              <<new_c_name>>(x0, ..., xn) *)
@@ -165,9 +165,9 @@ let also_skip_prefix_for_external_types (scope_env, _) =
     inherit [_] iter as _super
 
     method! visit_TQualified () lid =
-      if GlobalNames.lookup scope_env lid = None && GlobalNames.skip_prefix lid then
+      if GlobalNames.lookup scope_env (lid, Type) = None && GlobalNames.skip_prefix lid then
         let target = GlobalNames.target_c_name ~attempt_shortening:true ~kind:Type lid in
-        let actual = GlobalNames.extend scope_env scope_env false lid target in
+        let actual = GlobalNames.extend scope_env scope_env false (lid, Type) target in
         if actual <> fst target then
           KPrint.bprintf "Warning! The skip_prefix options generate name conflicts\n"
   end

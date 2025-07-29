@@ -114,8 +114,8 @@ void more_primitive_types_use_more_primitive_types(void)
       .uint128 = Eurydice_Int128_u128_from_bits(0xffffffffffffULL, 0xffffffffffffffffULL),
       .c = 97U
     };
-  LowStar_Ignore_ignore(more_primitive_types_match_u128(&p), int32_t, void *);
-  LowStar_Ignore_ignore(more_primitive_types_match_i128(&p), int32_t, void *);
+  more_primitive_types_match_u128(&p);
+  more_primitive_types_match_i128(&p);
   EURYDICE_ASSERT(p.c == (uint32_t)s[0U], "panic!");
 }
 

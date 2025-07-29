@@ -17,7 +17,6 @@ let mk_range_from (t : K.typ) : K.typ = K.TApp (range_from, [ t ])
 let option : K.lident = [ "core"; "option" ], "Option"
 let mk_option (t : K.typ) : K.typ = K.TApp (option, [ t ])
 let array_copy = [ "Eurydice" ], "array_copy"
-let macros = Krml.Idents.LidSet.of_list []
 
 (* Things that could otherwise be emitted as an extern prototype, but for some
    reason ought to be skipped. *)
