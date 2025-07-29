@@ -1712,13 +1712,14 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
         match t_from, is_dst env t_to with
         | TBuf (TApp (lid1, [ K.TCgApp (K.TApp (lid_arr, [ u1 ]), cg) ]) , _), Some (lid2, TApp (slice_hd, [ u2 ]), t_u)
           when lid1 = lid2 && u1 = u2 && slice_hd = Builtin.derefed_slice && lid_arr = Builtin.arr ->
-            let len = expression_of_cg env cg in
             (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
              `Eurydice_derefed_slice data` (a.k.a. `char data[]`) *)
+            let len = expression_of_cg env cg in
             let ptr = K.with_type (TBuf (t_u, false)) (K.ECast (e, TBuf (t_u, false))) in
             Builtin.dst_new ~len ~ptr t_u
         | TBuf ( K.TCgApp (K.TApp (lid_arr, [ t ]), cg), _), _
           when lid_arr = Builtin.arr ->
+            (* Cast from Box<[T;N]> to Box<[T]> which we represent as Eurydice_slice *)
             let len = expression_of_cg env cg in
             (* array_to_slice: size_t -> arr -> Eurydice_slice 0 *)
             let array_to_slice = Builtin.(expr_of_builtin array_to_slice) in

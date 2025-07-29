@@ -241,8 +241,8 @@ let remove_array_repeats =
        committed to an initializer list (and Charon will suitably "fold" repeat expressions
        automatically for us), so we might as well expand.
 
-       We add another case under_global to use initlializer list, maybe it can be unified with under_
-       bufcreate
+       Another boolean flag [under_global] is used to indicate we're translating a DGlobal -- where
+       we should also use an initlializer list. Maybe it should be unified with [under_bufcreate].
     *)
     method private expand_repeat under_bufcreate under_global e =
       match e.node with
