@@ -20,13 +20,7 @@ bool array2d_f(Eurydice_arr_c0 x)
         (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 3U, 4U } })
       }
     };
-  return
-    core_array_equality__core__cmp__PartialEq__Array_U__N___for__Array_T__N___eq((size_t)4U,
-      &x,
-      &y,
-      Eurydice_arr_b2,
-      Eurydice_arr_b2,
-      bool);
+  return Eurydice_array_eq((size_t)4U, &x, &y, Eurydice_arr_b2);
 }
 
 typedef struct _bool__x2_s

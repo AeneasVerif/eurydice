@@ -28,8 +28,42 @@ let expand_array_copies files =
     #visit_files
     () files
 
+let remove_array_eq = object
+  inherit Krml.DeBruijn.map_counting_cg as super
+
+  method! visit_expr ((n_cgs, n_binders) as env, _) e =
+    match e with
+    | [%cremepat {| core::array::equality::?impl::eq[#?n](#?..)<?t,?u>(?a1, ?a2) |}] ->
+        let rec is_flat = function
+          | TCgApp (TApp (lid, [ t ]), _) -> lid = Builtin.arr && is_flat t
+          | TInt _ | TBool | TUnit -> true
+          | _ -> false
+        in
+        assert (t = u);
+        if is_flat t then
+          let diff = n_cgs - n_binders in
+          match impl with
+          | "{core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>}" ->
+              with_type TBool (EApp (
+                Builtin.(expr_of_builtin_t ~cgs:(diff, [n]) array_eq [ t ]),
+                [ a1; a2 ]))
+          | "{core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>}" ->
+              with_type TBool (EApp (
+                Builtin.(expr_of_builtin_t ~cgs:(diff, [n]) array_eq_slice [ t ]),
+                [ a1; a2 ]))
+          | _ ->
+              failwith ("unknown array eq impl: " ^ impl)
+        else
+          failwith "TODO: non-byteeq array comparison"
+    | _ -> super#visit_expr (env, e.typ) e
+
+   method! visit_DFunction _ cc flags n_cgs n t lid bs e =
+     super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t lid bs e
+end
+
 let precleanup files =
   let files = expand_array_copies files in
+  let files = remove_array_eq#visit_files (0, 0) files in
   files
 
 let merge files =

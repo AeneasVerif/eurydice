@@ -180,6 +180,7 @@ Supported options:|}
   in
 
   Printf.printf "1️⃣ LLBC ➡️  AST\n";
+  Eurydice.Logging.log "Phase0" "%a" pfiles files;
   let files = Eurydice.PreCleanup.precleanup files in
 
   Eurydice.Logging.log "Phase1" "%a" pfiles files;
@@ -388,6 +389,13 @@ Supported options:|}
       files
   in
   let files = AstToCStar.mk_files files c_name_map Idents.LidSet.empty macros in
+
+  (* Uncomment to debug C* AST *)
+  (* List.iter (fun (f, p) -> *)
+  (*   print_endline f; *)
+  (*   print_endline (CStar.show_program p ); *)
+  (*   print_endline "" *)
+  (* ) files; *)
 
   let headers = CStarToC11.mk_headers c_name_map files in
   let deps = CStarToC11.drop_empty_headers deps headers in

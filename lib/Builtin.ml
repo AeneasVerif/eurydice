@@ -49,9 +49,19 @@ let expr_of_builtin { name; typ; cg_args; _ } =
   let typ = List.fold_right (fun t acc -> K.TArrow (t, acc)) cg_args typ in
   K.(with_type typ (EQualified name))
 
-let expr_of_builtin_t builtin ts =
+let chop_cg_args n t =
+  let t, ts = Krml.Helpers.flatten_arrow t in
+  let _, ts = Krml.KList.split n ts in
+  let t = Krml.Helpers.fold_arrow ts t in
+  t
+
+let expr_of_builtin_t builtin ?(cgs=(0, [])) ts =
+  let open Krml.DeBruijn in
   let builtin = expr_of_builtin builtin in
-  K.(with_type (Krml.DeBruijn.subst_tn ts builtin.typ) (ETApp (builtin, [], [], ts)))
+  let diff, cg_exprs = cgs in
+  let cgs = List.map (cg_of_expr diff) cg_exprs in
+  let t = chop_cg_args (List.length cgs) (subst_tn ts (subst_ctn' cgs builtin.typ)) in
+  K.(with_type t (ETApp (builtin, cg_exprs, [], ts)))
 
 module Op128Map = Map.Make (struct
   type t = string * string
@@ -205,6 +215,33 @@ let array_into_iter =
     n_type_args = 1;
     cg_args = [ TInt SizeT ];
     arg_names = [ "arr" ];
+  }
+
+let array_eq =
+  {
+    name = [ "Eurydice" ], "array_eq";
+    typ = Krml.Helpers.fold_arrow [ TBuf (mk_arr (TBound 0) (CgVar 0), false); TBuf (mk_arr (TBound 0) (CgVar 0), false) ] TBool;
+    n_type_args = 1;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "arr"; "arr2" ];
+  }
+
+let array_eq_slice =
+  {
+    name = [ "Eurydice" ], "array_eq_slice";
+    typ = Krml.Helpers.fold_arrow [ TBuf (mk_arr (TBound 0) (CgVar 0), false); TBuf (mk_slice (TBound 0), false) ] TBool;
+    n_type_args = 1;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "arr"; "slice" ];
+  }
+
+let slice_eq =
+  {
+    name = [ "Eurydice" ], "slice_eq";
+    typ = Krml.Helpers.fold_arrow [ TBuf (mk_slice (TBound 0), false); TBuf (mk_slice (TBound 0), false) ] TBool;
+    n_type_args = 1;
+    cg_args = [ ];
+    arg_names = [ "s1"; "s2" ];
   }
 
 let step_by : K.lident = [ "core"; "iter"; "adapters"; "step_by" ], "StepBy"
@@ -702,6 +739,9 @@ let builtin_funcs =
     array_to_subslice_from;
     array_repeat;
     array_into_iter;
+    array_eq;
+    array_eq_slice;
+    slice_eq;
     slice_index;
     slice_index_outparam;
     slice_subslice;

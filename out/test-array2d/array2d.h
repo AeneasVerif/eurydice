@@ -15,6 +15,8 @@
 extern "C" {
 #endif
 
+extern bool core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(uint32_t *x0, uint32_t *x1);
+
 /**
 A monomorphic instance of Eurydice.arr
 with types uint32_t
@@ -40,8 +42,6 @@ bool array2d_f(Eurydice_arr_c0 x);
 typedef uint8_t core_panicking_AssertKind;
 
 void array2d_main(void);
-
-extern bool core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(uint32_t *x0, uint32_t *x1);
 
 #if defined(__cplusplus)
 }

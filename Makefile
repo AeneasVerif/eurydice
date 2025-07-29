@@ -3,7 +3,7 @@ KRML_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../karamel
 EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
 CHARON		?= $(CHARON_HOME)/bin/charon
 
-BROKEN_TESTS		= where_clauses println closure chunks mutable_slice_range issue_37 issue_105 issue_99 issue_14
+BROKEN_TESTS		= where_clauses println closure chunks mutable_slice_range issue_37 issue_99 issue_14
 TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.rs))))
 
 # Warn on old versions of bash
@@ -46,11 +46,20 @@ clean-and-test:
 .PRECIOUS: %.llbc
 %.llbc: %.rs
 	# --mir elaborated --add-drop-bounds 
-	$(CHARON) rustc --preset=eurydice --dest-file "$@" -- $<
+	$(CHARON) rustc --preset=eurydice --dest-file "$@" $(CHARON_EXTRA) -- $<
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
 	sed 's/__NAME__/$*/g' $< > $@
+
+test/issue_105.llbc: CHARON_EXTRA = \
+  --include=core::result::*::branch \
+  --include=core::result::*::from_residual \
+  --include=core::result::*::eq \
+  --include=core::cmp::* \
+  --include=core::convert::*
+
+test/array2d.llbc: CHARON_EXTRA = --include=core::array::equality::*
 
 test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c
 test-nested_arrays: EXTRA = -funroll-loops 0

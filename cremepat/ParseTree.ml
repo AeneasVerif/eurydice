@@ -3,7 +3,13 @@ type pre_expr =
   (* Binding most loosely *)
   | Let of string * expr * expr
   | Sequence of expr list
-  | App of expr * typ list * expr list
+  | App of {
+    head: expr;
+    cgs: expr list;
+    methods: expr list;
+    ts: typ list;
+    args: expr list;
+  }
   | Addr of expr
   | Index of expr * expr
   (* Atomic -- we terminate matches and loops using braces, we are not barbarians. *)
@@ -19,7 +25,7 @@ type pre_expr =
 and expr = pre_expr with_vars
 and 'a with_vars = PatternVar of string | ListPatternVar of string | Fixed of 'a
 and path = path_item list
-and path_item = Name of string | Wild
+and path_item = Name of string | Wild | Var of string
 and branch = pat * expr
 and pre_pat = Cons of string * pat list
 and pat = pre_pat with_vars
