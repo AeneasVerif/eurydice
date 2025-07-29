@@ -62,7 +62,9 @@ test/issue_105.llbc: CHARON_EXTRA = \
 test/array2d.llbc: CHARON_EXTRA = --include=core::array::equality::*
 
 test/println.llbc: CHARON_EXTRA = \
-  --include=core::fmt::Arguments --include=core::fmt::rt::*::new_const \
+  --include=core::fmt::Arguments  \
+  --include=core::fmt::rt::*::new_const \
+  --include=core::fmt::rt::*::new_display \
   --include=core::fmt::rt::Argument
 
 test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c

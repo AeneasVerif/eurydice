@@ -1846,7 +1846,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
               | Struct fields -> fields
               | Enum _ -> failwith "TODO: Enum"
               | Union _ -> failwith "TODO: Union"
-              | Opaque -> failwith "TODO: Opaque"
+              | Opaque -> failwith ("TODO: Opaque " ^ string_of_name env name)
               | Alias _ -> failwith "TODO: Alias"
               | TDeclError _ -> failwith "TODO: TDeclError"
             in

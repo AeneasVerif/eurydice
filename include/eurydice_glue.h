@@ -524,14 +524,6 @@ typedef const char *Prims_string;
 #define core_slice_raw_from_raw_parts(ptr, len, _0, _1) \
   (KRML_CLITERAL(Eurydice_slice){(void *)(ptr), len})
 
-// MISC (UNTESTED)
-
-typedef void *core_fmt_Formatter;
-typedef void *core_fmt_Arguments;
-typedef void *core_fmt_rt_Argument;
-#define core_fmt_rt__core__fmt__rt__Argument__a___new_display(x1, x2, x3, x4)  \
-  NULL
-
 // BOXES
 
 #ifndef EURYDICE_MALLOC
