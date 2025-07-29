@@ -16,8 +16,20 @@ let range_from : K.lident = [ "core"; "ops"; "range" ], "RangeFrom"
 let mk_range_from (t : K.typ) : K.typ = K.TApp (range_from, [ t ])
 let option : K.lident = [ "core"; "option" ], "Option"
 let mk_option (t : K.typ) : K.typ = K.TApp (option, [ t ])
+
+(** special treatment for the array type: translating [T;C] as rust generic type
+    struct <const C:usize, T> { data : [T;C]; } *)
+
 let arr : K.lident = [ "Eurydice" ], "arr"
 let mk_arr (t : K.typ) (cg: K.cg) : K.typ = K.TCgApp (K.TApp (arr, [ t ]), cg)
+
+let decl_of_arr =
+  K.DType (arr , [], 1, 1, Flat [(Some "data", (K.TCgArray (TBound 0,0), true))])
+  (* []  : no flags
+     1  : we have one const generic C
+     1  : we have one type argument T *)
+
+
 let array_copy = [ "Eurydice" ], "array_copy"
 let macros = Krml.Idents.LidSet.of_list []
 

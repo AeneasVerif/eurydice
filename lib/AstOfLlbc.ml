@@ -55,10 +55,6 @@ type var_id =
   | ConstGenericVar of C.const_generic_var_id
   | Var of C.local_id * C.ety (* the ety aids code-generation, sometimes *)
 
-(* The type of obligation for extra declarations needed during the translation
-   The minimal necessary information should be stored in the env and extended to
-   complete declaration at the end*)
-
 type env = {
   (* Lookup functions to resolve various id's into actual declarations. *)
   get_nth_function : C.FunDeclId.id -> C.fun_decl;
@@ -387,17 +383,6 @@ let lookup_field env typ_id field_id =
   let field = List.nth fields i in
   ensure_named i field.field_name
 
-
-(** special treatment for the array type: translating [T;C] as rust generic type
-    struct <const C:usize, T> { data : [T;C]; } *)
-
-let decl_of_Arr =
-  K.DType (Builtin.arr , [], 1, 1, Flat [(Some "data", (K.TCgArray (TBound 0,0), true))])
-  (* []  : no flags
-     1  : we have one const generic C
-     0  : we have one type argument T
-  *)
-
 let expression_of_struct_Arr (expr_array : K.expr) = K.EFlat [(Some "data", expr_array)]
 
 let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
@@ -501,16 +486,6 @@ let maybe_cg_array (env : env) (t : C.ty) (cg : C.const_generic) =
       assert (cg_t = K.TInt SizeT);
       K.TCgArray (typ_of_ty env t, id)
   | _ -> failwith "TODO: CgGlobal"
-
-(* Helpers: expressions *)
-
-(* To be desugared later into variable hoisting, allocating suitable storage space, followed by a
-   memcpy -- this is just a placeholder and isn't even type-checked. *)
-
-(*let mk_deep_copy (e : K.expr) (l : K.expr) =
-  let builtin_copy_operator = K.EQualified Builtin.array_copy in
-  let builtin_copy_operator_t = K.TArrow (TAny, TAny) in
-  K.(with_type TAny (EApp (with_type builtin_copy_operator_t builtin_copy_operator, [ e; l ]))) *)
 
 (* Environment: expressions *)
 
@@ -716,10 +691,6 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       (* L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr sub_e (C.show_ty sub_place.ty) *)
       (*   (C.show_projection_elem pe); *)
       match pe, sub_place, sub_place.ty with
-      (*| C.Deref, _, TRef (_, TAdt { id = TBuiltin TArray; generics = { types = [ t ]; _ } }, _)
-      | C.Deref, _, TRawPtr (TAdt { id = TBuiltin TArray; generics = { types = [ t ]; _ } }, _) ->
-          (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
-          K.with_type (TBuf (typ_of_ty env t, false)) !*sub_e.K.node *)
       | C.Deref, _, TRef (_, TAdt { id = TBuiltin TSlice; _ }, _)
       | C.Deref, _, TRawPtr (TAdt { id = TBuiltin TSlice; _ }, _) -> !*sub_e
       | ( C.Deref,
@@ -728,7 +699,8 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           (* All types represented as a pointer at run-time, compiled to a C pointer *)
           begin
             match !*sub_e.K.typ with
-            | TBuf (t_pointee, _) | TArray (t_pointee, _) -> (**??*)
+            | TArray (t_pointee, _) -> assert false
+            | TBuf (t_pointee, _) -> 
                 Krml.Helpers.(mk_deref t_pointee !*sub_e.K.node)
             | t ->
                 L.log "AstOfLlbc" "UNHANDLED DEREFERENCE\ne=%a\nt=%a\nty=%s\npe=%s\n" pexpr !*sub_e
@@ -1590,18 +1562,6 @@ let expression_of_fn_ptr env (fn_ptr : C.fn_ptr) = expression_of_fn_ptr env "" f
 let expression_of_operand (env : env) (op : C.operand) : K.expr =
   match op with
   | Copy p -> expression_of_place env p
-     (** is this necessary? if all the types of array are already translated into struct in [typ_of_ty],
-         then [expr_of_place] should not produce any array type places anymore*)
-     (* let e = expression_of_place env p in
-      begin
-        match p.ty with
-        | C.TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } } ->
-           let lid = lid_of_array env t cg in
-           env.decl_oblis (ObliArray (t,cg));
-           L.log "AstOfLlbc" "Added Obligation in operand";
-           K.with_type (K.TQualified lid) (K.EFlat [(Some "data",e)])
-        | _ -> e
-      end *)
   | Move p -> expression_of_place env p
   | Constant { value = CLiteral l; _ } -> expression_of_literal env l
   | Constant { value = CVar var; _ } -> expression_of_cg_var_id env (C.expect_free_var var)
@@ -2741,5 +2701,5 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   let env = List.fold_left check_if_dst env declarations in
   let trans_decls = decls_of_declarations env declarations in
   L.log "AstofLlbc" "Translated decls";
-  let extra_decls = [decl_of_Arr] in
+  let extra_decls = [Builtin.decl_of_arr] in
   name,  trans_decls @ extra_decls
