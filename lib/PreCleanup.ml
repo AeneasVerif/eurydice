@@ -1,5 +1,7 @@
 open Krml.Ast
 
+module H = Krml.Helpers
+
 (* All the transformations that need to happen in order for the program to type-check as valid Low*
    *)
 
@@ -14,15 +16,21 @@ let expand_array_copies files =
         match rhs.node with
         | EApp ({ node = EQualified lid; _ }, [ src; len ]) when lid = Builtin.array_copy ->
             (* Krml.Helpers.mk_copy_assignment (t, n) lhs.node rhs *)
-            let zero = Krml.(Helpers.zero Constant.SizeT) in
+            let zero = H.zero_usize in
             EBufBlit (src, zero, lhs, zero, len)
         | _ -> super#visit_EAssign env lhs rhs
 
       method! visit_EApp env hd args =
-        if hd.node = EQualified Builtin.array_copy then
-          Krml.Warn.fatal_error "Uncaught array copy"
-        else
-          super#visit_EApp env hd args
+        match hd, args with
+        | { node = EQualified lid; _ }, [ src; len ] when lid = Builtin.array_copy ->
+            ELet (H.fresh_binder "array_copy" src.typ,
+              H.any,
+              with_type src.typ (ESequence [
+                with_type TUnit (
+                  EBufBlit (Krml.DeBruijn.lift 1 src, H.zero_usize, with_type src.typ (EBound 0), H.zero_usize, Krml.DeBruijn.lift 1 len));
+                with_type src.typ (EBound 0)]))
+        | _ ->
+            super#visit_EApp env hd args
     end
   end
     #visit_files
