@@ -1578,8 +1578,16 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
 
 let expression_of_fn_ptr env (fn_ptr : C.fn_ptr) = expression_of_fn_ptr env "" fn_ptr
 
+let global_is_const env id = 
+  match (env.get_nth_global id).global_kind with
+  | NamedConst | AnonConst -> true
+  | Static -> false
+
 let expression_of_operand (env : env) (op : C.operand) : K.expr =
   match op with
+  | Copy ({ kind = PlaceGlobal { id; _ }; _ } as p) when global_is_const env id ->
+      (* No need to copy a const since by definition it cannot be modified *)
+      expression_of_place env p
   | Copy p ->
       let e = expression_of_place env p in
       begin

@@ -280,15 +280,11 @@ repeat_REJECTION_SAMPLE_SHUFFLE_TABLE[256U][16U] =
 
 void repeat_main(void)
 {
-  uint32_t uu____0[1U];
-  memcpy(uu____0, repeat_C1, (size_t)1U * sizeof (uint32_t));
-  uint32_t uu____1 = uu____0[0U];
-  uint32_t uu____2[1U][1U];
-  memcpy(uu____2, repeat_C2, (size_t)1U * sizeof (uint32_t [1U]));
-  uint32_t uu____3 = uu____1 + uu____2[0U][0U];
-  uint8_t uu____4[256U][16U];
-  memcpy(uu____4, repeat_REJECTION_SAMPLE_SHUFFLE_TABLE, (size_t)256U * sizeof (uint8_t [16U]));
-  if (!(uu____3 + (uint32_t)uu____4[255U][0U] != 0U))
+  if
+  (
+    !(repeat_C1[0U] + repeat_C2[0U][0U] + (uint32_t)repeat_REJECTION_SAMPLE_SHUFFLE_TABLE[255U][0U]
+    != 0U)
+  )
   {
     return;
   }

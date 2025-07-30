@@ -24,9 +24,7 @@ void nested_arrays_main(void)
     uint32_t repeat_expression[3U][8U];
     for (size_t i = (size_t)0U; i < (size_t)3U; i++)
     {
-      uint32_t array_copy[8U];
-      memcpy(array_copy, nested_arrays_ZERO, (size_t)8U * sizeof (uint32_t));
-      memcpy(repeat_expression[i], array_copy, (size_t)8U * sizeof (uint32_t));
+      memcpy(repeat_expression[i], nested_arrays_ZERO, (size_t)8U * sizeof (uint32_t));
     }
     memcpy(keys[i0], repeat_expression, (size_t)3U * sizeof (uint32_t [8U]));
   }
