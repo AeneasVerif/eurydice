@@ -31,7 +31,6 @@ let decl_of_arr =
 
 
 let array_copy = [ "Eurydice" ], "array_copy"
-let macros = Krml.Idents.LidSet.of_list []
 
 (* Things that could otherwise be emitted as an extern prototype, but for some
    reason ought to be skipped. *)
