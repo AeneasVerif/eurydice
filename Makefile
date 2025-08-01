@@ -24,6 +24,10 @@ else
   SED=sed
 endif
 
+ifneq ($(shell $(CHARON) version), $(shell cat .charon_version || true))
+  _ := $(shell $(CHARON) version > .charon_version)
+endif
+
 .PHONY: all
 all: format-check
 	@ocamlfind list | grep -q charon || test -L lib/charon || echo "⚠️⚠️⚠️ Charon not found; we suggest cd lib && ln -s path/to/charon charon"
@@ -44,7 +48,7 @@ clean-and-test:
 	$(MAKE) test
 
 .PRECIOUS: %.llbc
-%.llbc: %.rs
+%.llbc: %.rs .charon_version
 	# --mir elaborated --add-drop-bounds 
 	$(CHARON) rustc --preset=eurydice --dest-file "$@" $(CHARON_EXTRA) -- $<
 

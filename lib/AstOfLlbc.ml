@@ -695,6 +695,11 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
   | PlaceLocal var_id ->
       let i, t = lookup env var_id in
       K.(with_type t (EBound i))
+
+  | PlaceGlobal { id; _ } ->
+      let global = env.get_nth_global id in
+      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name)) 
+
   | PlaceProjection (sub_place, pe) -> begin
       (* Can't evaluate this here because of the special case for DSTs. *)
       let sub_e = lazy (expression_of_place env sub_place) in
@@ -1573,8 +1578,16 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
 
 let expression_of_fn_ptr env (fn_ptr : C.fn_ptr) = expression_of_fn_ptr env "" fn_ptr
 
+let global_is_const env id = 
+  match (env.get_nth_global id).global_kind with
+  | NamedConst | AnonConst -> true
+  | Static -> false
+
 let expression_of_operand (env : env) (op : C.operand) : K.expr =
   match op with
+  | Copy ({ kind = PlaceGlobal { id; _ }; _ } as p) when global_is_const env id ->
+      (* No need to copy a const since by definition it cannot be modified *)
+      expression_of_place env p
   | Copy p ->
       let e = expression_of_place env p in
       begin
@@ -1862,15 +1875,6 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       K.with_type
         (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
         (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
-  | Global { id; _ } ->
-      let global = env.get_nth_global id in
-      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
-  | GlobalRef ({ id; _ }, _) ->
-      let global = env.get_nth_global id in
-      let e =
-        K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
-      in
-      K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
   | rvalue ->
       failwith
         ("unsupported rvalue: `"
