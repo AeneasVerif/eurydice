@@ -569,7 +569,7 @@ static inline char *malloc_and_init(size_t sz, char *init) {
 
 // Initializer for array of size zero
 #define Eurydice_empty_array(dummy, t, t_dst)                                  \
-  ((t_dst) { { } })
+  ((t_dst) { .data = { } })
 
 #define Eurydice_box_new_array(len, ptr, t, t_dst)                             \
   ((t_dst)(malloc_and_init(len * sizeof(t), (char *)(ptr))))
