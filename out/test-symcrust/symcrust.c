@@ -12,7 +12,7 @@
 
 void
 symcrust_SymCrustMlKemPolyElementCompressAndEncode(
-  uint16_t *coeffs,
+  Eurydice_arr_bc *coeffs,
   uint32_t nBitsPerCoefficient,
   Eurydice_slice dst
 )
@@ -31,7 +31,7 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
   {
     size_t i0 = i;
     uint32_t nBitsInCoefficient = nBitsPerCoefficient;
-    uint32_t coefficient = (uint32_t)coeffs[i0];
+    uint32_t coefficient = (uint32_t)coeffs->data[i0];
     if (nBitsPerCoefficient < 12U)
     {
       uint64_t multiplication = (uint64_t)coefficient * SYMCRYPT_MLKEM_COMPRESS_MULCONSTANT;
@@ -54,9 +54,11 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
       {
         Eurydice_slice
         uu____0 = Eurydice_slice_subslice3(dst, cbDstWritten, cbDstWritten + (size_t)4U, uint8_t *);
-        uint8_t ret[4U];
-        core_num__u32__to_le_bytes(accumulator, ret);
-        Eurydice_slice_copy(uu____0, Eurydice_array_to_slice((size_t)4U, ret, uint8_t), uint8_t);
+        /* original Rust expression is not an lvalue in C */
+        Eurydice_arr_e9 lvalue = core_num__u32__to_le_bytes(accumulator);
+        Eurydice_slice_copy(uu____0,
+          Eurydice_array_to_slice((size_t)4U, &lvalue, uint8_t),
+          uint8_t);
         cbDstWritten = cbDstWritten + (size_t)4U;
         accumulator = 0U;
         nBitsInAccumulator = 0U;
