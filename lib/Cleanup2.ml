@@ -247,8 +247,6 @@ let remove_array_repeats =
     *)
     method private expand_repeat under_bufcreate under_global e =
       match e.node with
-      | EBufCreateL (l, es) ->
-         with_type e.typ @@ EBufCreateL (l, List.map (self#expand_repeat true under_global) es)
       | EApp
           ( { node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ },
             [ ({ node = EConstant (_, "0"); _ } as init) ] )
@@ -264,6 +262,8 @@ let remove_array_repeats =
          (* { data: [e;n] }: arr<T;C> -> recursively expand the array field *)
          let e1 = self#expand_repeat under_bufcreate under_global e1 in
          with_type e.typ (EFlat [lido, e1])
+      | EBufCreateL (l, es) when under_global ->
+         with_type e.typ @@ EBufCreateL (l, List.map (self#expand_repeat true under_global) es)
       | _ ->
           if under_bufcreate || under_global then
             e
