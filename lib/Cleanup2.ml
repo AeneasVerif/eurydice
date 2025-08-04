@@ -95,10 +95,11 @@ let remove_implicit_array_copies =
                         (self#remove_assign n (lift lifting_index lhs_i) (lift lifting_index e)
                            (nest lifting_index (array_index + 1) es))
                   | _ ->
-                      with_type e2.typ (self#visit_ELet ((),TUnit)
-                             (H.sequence_binding ())
-                             (H.with_unit (EAssign (lift lifting_index lhs_i, lift lifting_index e)))
-                             (nest (lifting_index + 1) (array_index + 1) es )))
+                      with_type e2.typ
+                        (ELet
+                           ( H.sequence_binding (),
+                             H.with_unit (EAssign (lift lifting_index lhs_i, lift lifting_index e)),
+                             nest (lifting_index + 1) (array_index + 1) es )))
             in
             (nest 0 0 es).node
           end
@@ -378,29 +379,11 @@ let remove_array_from_fn files =
               [ len ],
               [ call_mut; _call_once ],
               [ t_elements; _t_captured_state ] ) ->
-            (* Same as below, but catching the case where the type of elements is an
-               array and has undergone outparam optimization (i.e. the closure,
-               instead of having type size_t -> t_element, has type size_t -> t_element ->
-               unit *)
             L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements;
-            (* By translating array into struct, it is simply as return value of [from_fn]
-               instead of the 2nd arg as its reference. *)
-            let state =
-              match es with
-              | [ x ] -> x 
-              | _ -> assert false
-            in
-            (* Constructing types, maybe there are some better helpers for this idk *)
-            let t_struct =
-              match e.typ with
-              | TArrow (_, _to) -> _to
-              | _ -> assert false
-            in
-            let t_element =
-              match call_mut.typ with
-              | TArrow (_, (TArrow (_, _to))) -> _to
-              | _ -> assert false
-            in
+            (* By translating array into struct, we return a struct of array for [from_fn] here *)
+            let state = Krml.KList.one es in
+            let t_struct, _ = Krml.Helpers.flatten_arrow e.typ in
+            let t_element, _ = Krml.Helpers.flatten_arrow call_mut.typ in
             let t_array =
               match len.node with
               | EConstant c -> TArray (t_element, c)
@@ -467,11 +450,7 @@ let remove_array_from_fn files =
             let lift1 = Krml.DeBruijn.lift 1 in
             let e_state = with_type (TBuf (e_state.typ, false)) (EAddrOf (lift1 e_state)) in
             let e_src = with_type (TArray (t_src, len_c)) (EField (e_src, "data")) in
-            let t_dst_str =
-              match e.typ with
-              | TArrow (_, TArrow (_, _to)) -> _to
-              | _ -> assert false
-            in
+            let t_dst_str, _ = Krml.Helpers.flatten_arrow e.typ in
             let t_dst_arr = TArray (t_dst, len_c) in
             let x, dst_struct = H.mk_binding ~mut:true "arr_mapped_str" t_dst_str in
             let e_dst = with_type (t_dst_arr) (EField (dst_struct, "data")) in
