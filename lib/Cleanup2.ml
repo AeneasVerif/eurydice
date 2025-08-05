@@ -402,17 +402,7 @@ let remove_array_from_fn files =
                   H.mk_incr_usize (* i++ *),
                   let i = with_type H.usize (EBound 0) in
                   Krml.Helpers.with_unit
-                    (if H.is_array t_dst then
-                     (* note: this nested array case needs to be changed? not sure. *)
-                      (EApp
-                        ( call_mut,
-                         [
-                           with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
-                           with_type (TInt SizeT) (EBound 0);
-                           with_type t_dst (EBufRead (lift1 dst, i));
-                ] ))
-                   else
-                     EBufWrite
+                     (EBufWrite
                        ( lift1 dst,
                          i,
                          with_type t_dst
