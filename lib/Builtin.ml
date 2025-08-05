@@ -383,16 +383,6 @@ let empty_array =
     cg_args = [];
     arg_names = [ "x" ];
   }
-(*
-let box_new_array =
-  {
-    name = [ "Eurydice" ], "box_new_array";
-    typ = Krml.Helpers.fold_arrow [ TCgArray (TBound 0, 0) ] (TBuf (TBound 0, false));
-    n_type_args = 1;
-    cg_args = [ TInt SizeT ];
-    arg_names = [ "v" ];
-  }
-*)
 
 let replace =
   {
@@ -450,17 +440,6 @@ let slice_of_dst =
     cg_args = [];
     arg_names = [ "ptr"; "len" ];
   }
-
-(* Gotta use a helper because the definition of Eurydice_slice is opaque (historical mistake?).
-let slice_of_boxed_array =
-  {
-    name = [ "Eurydice" ], "slice_of_boxed_array";
-    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, false); TInt SizeT ] (mk_slice (TBound 0));
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [ "ptr"; "len" ];
-  }
-*)
 
 (* Take the type of the ptr field *)
 let dst_new ~ptr ~len t =
@@ -766,10 +745,8 @@ let builtin_funcs =
     range_step_by_iterator_next;
     box_new;
     empty_array;
-    (* box_new_array; *)
     replace;
     slice_of_dst;
-    (* slice_of_boxed_array; *)
     bitand_pv_u8;
     shr_pv_u8;
     min_u32;
