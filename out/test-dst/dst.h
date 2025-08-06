@@ -24,7 +24,7 @@ typedef uint8_t core_panicking_AssertKind;
 typedef struct dst_T_s
 {
   uint32_t foo;
-  Eurydice_derefed_slice my_data;
+  uint32_t my_data[];
 }
 dst_T;
 
@@ -39,7 +39,7 @@ typedef struct Eurydice_arr_6f_s { uint32_t data[3U]; } Eurydice_arr_6f;
 typedef struct dst_T3_s
 {
   uint32_t foo;
-  Eurydice_derefed_slice my_data;
+  Eurydice_arr_6f my_data[];
 }
 dst_T3;
 
@@ -131,7 +131,7 @@ with types Eurydice_derefed_slice uint32_t
 typedef struct dst_T2_be_s
 {
   size_t header;
-  Eurydice_derefed_slice my_data;
+  uint32_t my_data[];
 }
 dst_T2_be;
 

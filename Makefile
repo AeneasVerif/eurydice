@@ -8,9 +8,9 @@ TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.
 
 # Warn on old versions of bash
 _ := $(shell bash -c '(( $${BASH_VERSION%%.*} >= 4 ))')
-ifneq ($(.SHELLSTATUS),0)
-_: $(error "bash version is too old; hint: brew install bash")
-endif
+#ifneq ($(.SHELLSTATUS),0)
+#_: $(error "bash version is too old; hint: brew install bash")
+#endif
 
 # Enable `foo/**` glob syntax
 SHELL := bash -O globstar 
@@ -22,6 +22,10 @@ ifeq ($(shell uname -s),Darwin)
   SED=gsed
 else
   SED=sed
+endif
+
+ifneq ($(shell $(CHARON) version), $(shell cat .charon_version || true))
+  _ := $(shell $(CHARON) version > .charon_version)
 endif
 
 .PHONY: all
@@ -44,7 +48,7 @@ clean-and-test:
 	$(MAKE) test
 
 .PRECIOUS: %.llbc
-%.llbc: %.rs
+%.llbc: %.rs .charon_version
 	# --mir elaborated --add-drop-bounds 
 	$(CHARON) rustc --preset=eurydice --dest-file "$@" $(CHARON_EXTRA) -- $<
 

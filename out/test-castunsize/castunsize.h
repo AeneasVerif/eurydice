@@ -18,7 +18,7 @@ extern "C" {
 typedef struct castunsize_T_s
 {
   uint32_t foo;
-  Eurydice_derefed_slice my_data;
+  uint32_t my_data[];
 }
 castunsize_T;
 

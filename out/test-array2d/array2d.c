@@ -32,16 +32,14 @@ _bool__x2;
 
 void array2d_main(void)
 {
-  Eurydice_arr_c0
-  y =
-    {
-      .data = {
-        (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 1U, 2U } }),
-        (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 1U, 2U } }),
-        (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 1U, 2U } }),
-        (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 1U, 2U } })
-      }
-    };
+  Eurydice_arr_c0 y;
+  Eurydice_arr_b2 repeat_expression[4U];
+  KRML_MAYBE_FOR4(i,
+    (size_t)0U,
+    (size_t)4U,
+    (size_t)1U,
+    repeat_expression[i] = (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 1U, 2U } }););
+  memcpy(y.data, repeat_expression, (size_t)4U * sizeof (Eurydice_arr_b2));
   y.data[1U] = (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 3U, 4U } });
   y.data[3U] = (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 3U, 4U } });
   bool actual = array2d_f(y);

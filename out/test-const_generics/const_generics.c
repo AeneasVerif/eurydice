@@ -24,7 +24,7 @@ Eurydice_arr_c4 const_generics_serialize_3b(Eurydice_slice re)
       (size_t)4U,
       uint8_t,
       size_t,
-      Eurydice_derefed_slice);
+      uint8_t []);
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_e9
   lvalue0 =
@@ -37,7 +37,7 @@ Eurydice_arr_c4 const_generics_serialize_3b(Eurydice_slice re)
       (size_t)4U,
       uint8_t,
       size_t,
-      Eurydice_derefed_slice);
+      uint8_t []);
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_e9
   lvalue = core_num__u32__to_be_bytes(Eurydice_slice_index(re, (size_t)1U, uint32_t, uint32_t *));
