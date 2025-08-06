@@ -209,7 +209,7 @@ let remove_array_repeats =
              let the subsequent `hoist` phase lift this into a let-binding, and code-gen will optimize this into
              { 0 }. If we can't do something smart, we let-bind, and fall back onto the general case. *)
           begin
-            try (self#expand_repeat false (fst env) (with_type (snd env) (EApp (e, es)))).node
+            try (self#expand_repeat (fst env) (with_type (snd env) (EApp (e, es)))).node
             with Not_found ->
               (self#visit_expr env
                  (with_type (snd env)
@@ -238,14 +238,12 @@ let remove_array_repeats =
        - [[1; 2]; 2] --> error -- better code quality with a BufCreate expression which will give
          rise to a for-loop initializer
 
-       We override this behavior when we're already underneath an EBufCreateL -- here, we've already
+       We override this behavior when we're already underneath an visit_DGlobal -- here, we've already
        committed to an initializer list (and Charon will suitably "fold" repeat expressions
        automatically for us), so we might as well expand.
-
-       Another boolean flag [under_global] is used to indicate we're translating a DGlobal -- where
-       we should also use an initlializer list. Maybe it should be unified with [under_bufcreate].
+       
     *)
-    method private expand_repeat under_bufcreate under_global e =
+    method private expand_repeat under_global e =
       match e.node with
       | EApp
           ( { node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ },
@@ -253,54 +251,35 @@ let remove_array_repeats =
         when lid = Builtin.array_repeat.name ->
           (* [0; n] -> ok *)
           with_type e.typ @@ EBufCreateL (Stack, List.init (self#assert_length len) (fun _ -> init))
+      | EApp
+          ( { node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ },
+            [ ({ node = EConstant _; _ } as init) ] )
+        when lid = Builtin.array_repeat.name && under_global ->
+          (* [c; n] -> get translated when we are under DGlobal *)
+          with_type e.typ @@ EBufCreate (Stack, init, Krml.Helpers.mk_sizet (self#assert_length len))
       | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
         when lid = Builtin.array_repeat.name ->
           (* [e; n] -> ok if e ok -- n is a constant here Rust has no VLAs *)
-          let init = self#expand_repeat under_bufcreate under_global init in
+          let init = self#expand_repeat under_global init in
           with_type e.typ @@ EBufCreateL (Stack, List.init (self#assert_length len) (fun _ -> init))
       | EFlat [ (lido, e1) ] when lido = Some "data" && self#is_arr_typ e.typ ->
-         (* { data: [e;n] }: arr<T;C> -> recursively expand the array field *)
-         let e1 = self#expand_repeat under_bufcreate under_global e1 in
+         (* { .data = e } -> ok if e ok *)
+         let e1 = self#expand_repeat under_global e1 in
          with_type e.typ (EFlat [lido, e1])
       | EBufCreateL (l, es) when under_global ->
-         with_type e.typ @@ EBufCreateL (l, List.map (self#expand_repeat true under_global) es)
+         (* { e1, e2, ... en } -> get recursively expanded when are under DGlobal *)
+         with_type e.typ @@ EBufCreateL (l, List.map (self#expand_repeat true) es)
       | _ ->
-          if under_bufcreate || under_global then
+          if under_global then
             e
           else
             raise Not_found
 
-    method! visit_DGlobal env flags name n t e1 =
+    method! visit_DGlobal _env flags name n t e1 =
       match e1.node with
-      | EBufCreateL (l, es) ->
-          DGlobal
-            ( flags,
-              name,
-              n,
-              t,
-              with_type e1.typ (EBufCreateL (l, List.map (self#expand_repeat true true) es)) )
-      | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
-        when lid = Builtin.array_repeat.name -> begin
-          try
-            (* Case 1. try the all-0 case first *)
-            DGlobal (flags, name, n, t, (self#expand_repeat false false) e1)
-          with Not_found -> (
-            match init.node with
-            | EConstant _ ->
-                (* Case 2. *)
-                DGlobal
-                  ( flags,
-                    name,
-                    n,
-                    t,
-                    with_type e1.typ
-                      (EBufCreate (Stack, init, Krml.Helpers.mk_sizet (self#assert_length len))) )
-            | _ -> DGlobal (flags, name, n, t, (self#expand_repeat false true) e1))
-              (* use the total expansion to EBufCreateL for global defs *)
-        end
       | EFlat [ (lido, _) ] when lido = Some "data" && self#is_arr_typ e1.typ ->
-          DGlobal (flags, name, n, t, (self#expand_repeat false true) e1)   
-      | _ -> super#visit_DGlobal env flags name n t e1
+          DGlobal (flags, name, n, t, (self#expand_repeat true) e1)   
+      | _ -> super#visit_DGlobal true flags name n t e1
 
     method! visit_ELet ((under_global, _) as env) b e1 e2 =
       match e1.node with
@@ -310,7 +289,7 @@ let remove_array_repeats =
         when lid = Builtin.array_repeat.name -> begin
           try
             (* Case 1 (only zeroes). *)
-            let r = ELet (b, (self#expand_repeat false under_global) e1, self#visit_expr env e2) in
+            let r = ELet (b, (self#expand_repeat under_global) e1, self#visit_expr env e2) in
             r
           with Not_found -> (
             match init.node with
