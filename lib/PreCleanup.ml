@@ -49,7 +49,7 @@ let remove_array_eq = object
         in
         assert (t = u);
         if is_flat t then
-          let diff = n_cgs - n_binders in
+          let diff = n_binders - n_cgs in
           match impl with
           | "{core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>}" ->
               with_type TBool (EApp (
