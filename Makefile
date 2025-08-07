@@ -8,9 +8,9 @@ TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.
 
 # Warn on old versions of bash
 _ := $(shell bash -c '(( $${BASH_VERSION%%.*} >= 4 ))')
-#ifneq ($(.SHELLSTATUS),0)
-#_: $(error "bash version is too old; hint: brew install bash")
-#endif
+ifneq ($(.SHELLSTATUS),0)
+_: $(error "bash version is too old; hint: brew install bash")
+endif
 
 # Enable `foo/**` glob syntax
 SHELL := bash -O globstar 

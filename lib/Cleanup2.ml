@@ -238,7 +238,7 @@ let remove_array_repeats =
        - [[1; 2]; 2] --> error -- better code quality with a BufCreate expression which will give
          rise to a for-loop initializer
 
-       We override this behavior when we're already underneath an visit_DGlobal -- here, we've already
+       We override this behavior when we're already underneath a visit_DGlobal -- here, we've already
        committed to an initializer list (and Charon will suitably "fold" repeat expressions
        automatically for us), so we might as well expand.
        
@@ -275,11 +275,7 @@ let remove_array_repeats =
           else
             raise Not_found
 
-    method! visit_DGlobal _env flags name n t e1 =
-      match e1.node with
-      | EFlat [ (lido, _) ] when lido = Some "data" && self#is_arr_typ e1.typ ->
-          DGlobal (flags, name, n, t, (self#expand_repeat true) e1)   
-      | _ -> super#visit_DGlobal true flags name n t e1
+    method! visit_DGlobal _env flags name n t e1 = super#visit_DGlobal true flags name n t e1
 
     method! visit_ELet ((under_global, _) as env) b e1 e2 =
       match e1.node with
