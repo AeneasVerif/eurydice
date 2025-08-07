@@ -256,6 +256,16 @@ Eurydice_arr_11 array_nested_from_fn_ac(void)
   return arr_struct;
 }
 
+/**
+A monomorphic instance of array.const_eq
+with const generics
+- K= 2
+*/
+bool array_const_eq_fd(Eurydice_arr_b2 x, Eurydice_arr_b2 y)
+{
+  return Eurydice_array_eq((size_t)2U, &x, &y, uint32_t);
+}
+
 typedef struct _uint32_t__x2_s
 {
   uint32_t *fst;
@@ -276,6 +286,13 @@ typedef struct _size_t__x2_s
   size_t *snd;
 }
 _size_t__x2;
+
+typedef struct _bool__x2_s
+{
+  bool *fst;
+  bool *snd;
+}
+_bool__x2;
 
 void array_main(void)
 {
@@ -308,8 +325,24 @@ void array_main(void)
   /* XXX5 */
   Eurydice_arr_11 a2 = array_nested_from_fn_ac();
   /* original Rust expression is not an lvalue in C */
-  size_t lvalue = (size_t)6U;
-  _size_t__x2 uu____5 = { .fst = &a2.data[3U].data[3U], .snd = &lvalue };
+  size_t lvalue2 = (size_t)6U;
+  _size_t__x2 uu____5 = { .fst = &a2.data[3U].data[3U], .snd = &lvalue2 };
   EURYDICE_ASSERT(uu____5.fst[0U] == uu____5.snd[0U], "panic!");
+  /* XXX6 */
+  Eurydice_arr_b2 x0;
+  uint32_t repeat_expression0[2U];
+  for (uint32_t _i = 0U; _i < (size_t)2U; ++_i)
+    repeat_expression0[_i] = 2U;
+  memcpy(x0.data, repeat_expression0, (size_t)2U * sizeof (uint32_t));
+  Eurydice_arr_b2 y0;
+  uint32_t repeat_expression[2U];
+  for (uint32_t _i = 0U; _i < (size_t)2U; ++_i)
+    repeat_expression[_i] = 2U;
+  memcpy(y0.data, repeat_expression, (size_t)2U * sizeof (uint32_t));
+  bool b = array_const_eq_fd(x0, y0);
+  /* original Rust expression is not an lvalue in C */
+  bool lvalue = true;
+  _bool__x2 uu____6 = { .fst = &b, .snd = &lvalue };
+  EURYDICE_ASSERT(uu____6.fst[0U] == uu____6.snd[0U], "panic!");
 }
 
