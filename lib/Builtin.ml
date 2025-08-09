@@ -393,6 +393,21 @@ let str_t = K.TQualified str_t_name
     defined as [char []] to have 0-length. *)
 let deref_str_t = K.TQualified ([ "Eurydice" ], "deref_str")
 
+let dst_ref_name = [ "Eurydice" ], "dst_ref"
+let dst_ref_def =
+  K.DType
+    ( dst_ref_name,
+      [],
+      0,
+      2,
+      Flat
+        [
+          Some "ptr", (TBuf (TBound 0, false), false);
+          Some "meta", (TBound 1, false);
+        ] )
+let dst_ref_t pointee_ty metadata_ty : K.typ =
+  K.TApp (dst_ref_name, [ pointee_ty; metadata_ty ])
+
 let dst_def =
   K.DType
     ( dst,

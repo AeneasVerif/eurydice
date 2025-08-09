@@ -465,6 +465,7 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       | None -> failwith "Missing function declaration"
       | Some fn_sig -> pre_typ_of_ty env (TFnPtr fn_sig)
     end
+  | TPtrMetadata _ -> failwith "The type-level computation `PtrMetadata(t)` should be handled by Charon, consider using monomorphised LLBC."
   | TError _ -> failwith "Found type error in charon's output"
 
 and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
@@ -1639,6 +1640,15 @@ let is_box_place (p : C.place) =
   | C.TAdt { id = TBuiltin TBox; _ } -> true
   | _ -> false
 
+let mk_reference (_env : env) (e : K.expr) (metadata : K.expr) : K.expr =
+  let addrof_e = K.(with_type (TBuf (e.typ, false)) (EAddrOf e)) in
+  match metadata.typ with
+  (* When it is unit, it means there is no metadata, simply take the address *)
+  | K.TUnit -> addrof_e
+  | _ ->
+    K.(with_type (Builtin.dst_ref_t e.typ metadata.typ)
+      (EFlat [ (Some "ptr", addrof_e); (Some "metadata", metadata) ]))
+
 let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   match p with
   | Use op -> expression_of_operand env op
@@ -1656,11 +1666,14 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
      In the future however, we might want to handle [Box] types differently, so this is a note
      to ourselves to be careful with this.
      *)
-  | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _)
-  | RawPtr ({ kind = PlaceProjection (p, Deref); _ }, _) ->
+  | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _, _)
+  | RawPtr ({ kind = PlaceProjection (p, Deref); _ }, _, _) ->
       (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and [p] might be a reference to DST (fat pointer). *)
+      (* This also works for when the case has metadata, simply ignore it *)
       expression_of_place env p
-  | RvRef
+  (* This works for when: ( *s ).place but this is not general enough. *)
+  (* We now have the exact metadata at hand, so we can simply do the way of incorporating the metadata. *)
+  (* | RvRef
       ( ({
            kind =
              PlaceProjection
@@ -1668,7 +1681,9 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
                  Field (ProjAdt (typ_id, None), field_id) );
            _;
          } as p),
-        _ ) ->
+        _,
+        metadata ) ->
+      let metadata = expression_of_operand env metadata in
       let field_name = lookup_field env typ_id field_id in
       begin
         match is_dst env (typ_of_ty env sub_place.ty) with
@@ -1704,12 +1719,11 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
             (* Default case, same as below *)
             let e = expression_of_place env p in
             maybe_addrof env p.ty e
-      end
-  | RvRef (p, _) | RawPtr (p, _) ->
+      end *)
+  | RvRef (p, _, metadata) | RawPtr (p, _, metadata) ->
+      let metadata = expression_of_operand env metadata in
       let e = expression_of_place env p in
-      (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
-         pass one for the other *)
-      maybe_addrof env p.ty e
+      mk_reference env e metadata
   | UnaryOp (Cast (CastScalar (_, dst)), e) ->
       let dst = typ_of_literal_ty env dst in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
