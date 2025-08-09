@@ -1828,6 +1828,14 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       else
         failwith
           ("unknown cast: `" ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck ^ "`")
+  | UnaryOp (PtrMetadata, e) ->
+    let e = expression_of_operand env e in begin
+    match e.typ with
+    | TApp (lid, [ _; meta_ty ]) when lid = Builtin.dst_ref_name ->
+      K.(with_type meta_ty (EField (e, "meta")))
+    (* fetching ptr-metadata from a non-DST simply results in `()` *)
+    | _ -> K.with_type TUnit K.EUnit
+    end
   | UnaryOp (op, o1) -> mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
