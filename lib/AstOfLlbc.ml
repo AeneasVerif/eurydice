@@ -1649,6 +1649,14 @@ let mk_reference (_env : env) (e : K.expr) (metadata : K.expr) : K.expr =
     K.(with_type (Builtin.dst_ref_t e.typ metadata.typ)
       (EFlat [ (Some "ptr", addrof_e); (Some "metadata", metadata) ]))
 
+let has_unresolved_generic (ty : K.typ) : bool =
+  object
+    inherit [_] Krml.Ast.reduce as super
+    method zero = false
+    method plus = ( || )
+    method! visit_TBound _ _ = true
+  end#visit_typ false ty
+
 let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   match p with
   | Use op -> expression_of_operand env op
@@ -1833,7 +1841,13 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
     match e.typ with
     | TApp (lid, [ _; meta_ty ]) when lid = Builtin.dst_ref_name ->
       K.(with_type meta_ty (EField (e, "meta")))
-    (* fetching ptr-metadata from a non-DST simply results in `()` *)
+    (* In cases like `PtrMetadata(T)` when `T` is a type variable or some types with unresolved type variable,
+       We cannot tell the correct metadata type from it until fully monomorphized.
+       But we can surely rely on monomorphized LLBC, and we ignore handling such cases in Eurydice. *)
+    | ty when has_unresolved_generic ty ->
+      failwith "Eurydice do not handle ptr-metadata for generic types. Consider using monomorphized LLBC."
+    (* Otherwise, fetching ptr-metadata from a non-DST simply results in `()`
+       When a type is fully resolved and it is not `Eurydice::DstRef`, we can be confident that it is not a DST. *)
     | _ -> K.with_type TUnit K.EUnit
     end
   | UnaryOp (op, o1) -> mk_op_app (op_of_unop op) (expression_of_operand env o1) []
