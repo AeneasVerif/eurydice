@@ -209,7 +209,7 @@ let remove_array_repeats =
              let the subsequent `hoist` phase lift this into a let-binding, and code-gen will optimize this into
              { 0 }. If we can't do something smart, we let-bind, and fall back onto the general case. *)
           begin
-            try (self#expand_repeat false (with_type (snd env) (EApp (e, es)))).node
+            try (self#expand_repeat (fst env) (with_type (snd env) (EApp (e, es)))).node
             with Not_found ->
               (self#visit_expr env
                  (with_type (snd env)
@@ -226,6 +226,11 @@ let remove_array_repeats =
       | EConstant (_, s) -> int_of_string s
       | _ -> failwith "impossible"
 
+    method private is_arr_typ t =
+      match t with
+      | TQualified ( [ s1 ], s2) -> s1 = "Eurydice" && String.sub s2 0 3 = "arr"
+      | _ -> false
+
     (* This function recursively expands nested repeat expressions as initializer lists
        (EBufCreateL) as long as the innermost initial value is a zero, otherwise, it throws
        Not_found. For instance:
@@ -233,11 +238,12 @@ let remove_array_repeats =
        - [[1; 2]; 2] --> error -- better code quality with a BufCreate expression which will give
          rise to a for-loop initializer
 
-       We override this behavior when we're already underneath an EBufCreateL -- here, we've already
+       We override this behavior when we're already underneath a visit_DGlobal -- here, we've already
        committed to an initializer list (and Charon will suitably "fold" repeat expressions
        automatically for us), so we might as well expand.
+       
     *)
-    method private expand_repeat under_bufcreate e =
+    method private expand_repeat under_global e =
       match e.node with
       | EApp
           ( { node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ },
@@ -245,47 +251,33 @@ let remove_array_repeats =
         when lid = Builtin.array_repeat.name ->
           (* [0; n] -> ok *)
           with_type e.typ @@ EBufCreateL (Stack, List.init (self#assert_length len) (fun _ -> init))
+      | EApp
+          ( { node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ },
+            [ ({ node = EConstant _; _ } as init) ] )
+        when lid = Builtin.array_repeat.name && under_global ->
+          (* [c; n] -> get translated when we are under DGlobal *)
+          with_type e.typ @@ EBufCreate (Stack, init, Krml.Helpers.mk_sizet (self#assert_length len))
       | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
         when lid = Builtin.array_repeat.name ->
           (* [e; n] -> ok if e ok -- n is a constant here Rust has no VLAs *)
-          let init = self#expand_repeat under_bufcreate init in
+          let init = self#expand_repeat under_global init in
           with_type e.typ @@ EBufCreateL (Stack, List.init (self#assert_length len) (fun _ -> init))
+      | EFlat [ (lido, e1) ] when lido = Some "data" && self#is_arr_typ e.typ ->
+         (* { .data = e } -> ok if e ok *)
+         let e1 = self#expand_repeat under_global e1 in
+         with_type e.typ (EFlat [lido, e1])
+      | EBufCreateL (l, es) when under_global ->
+         (* { e1, e2, ... en } -> get recursively expanded when are under DGlobal *)
+         with_type e.typ @@ EBufCreateL (l, List.map (self#expand_repeat true) es)
       | _ ->
-          if under_bufcreate then
+          if under_global then
             e
           else
             raise Not_found
 
-    method! visit_DGlobal env flags name n t e1 =
-      match e1.node with
-      | EBufCreateL (l, es) ->
-          DGlobal
-            ( flags,
-              name,
-              n,
-              t,
-              with_type e1.typ (EBufCreateL (l, List.map (self#expand_repeat true) es)) )
-      | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
-        when lid = Builtin.array_repeat.name -> begin
-          try
-            (* Case 1. *)
-            DGlobal (flags, name, n, t, (self#expand_repeat false) e1)
-          with Not_found -> (
-            match init.node with
-            | EConstant _ ->
-                (* Case 2. *)
-                DGlobal
-                  ( flags,
-                    name,
-                    n,
-                    t,
-                    with_type e1.typ
-                      (EBufCreate (Stack, init, Krml.Helpers.mk_sizet (self#assert_length len))) )
-            | _ -> super#visit_DGlobal env flags name n t e1)
-        end
-      | _ -> super#visit_DGlobal env flags name n t e1
+    method! visit_DGlobal _env flags name n t e1 = super#visit_DGlobal true flags name n t e1
 
-    method! visit_ELet (((), _) as env) b e1 e2 =
+    method! visit_ELet ((under_global, _) as env) b e1 e2 =
       match e1.node with
       (* Nothing special here for EBufCreateL otherwise it breaks the invariant expected by
          remove_implicit_array_copies *)
@@ -293,7 +285,7 @@ let remove_array_repeats =
         when lid = Builtin.array_repeat.name -> begin
           try
             (* Case 1 (only zeroes). *)
-            let r = ELet (b, (self#expand_repeat false) e1, self#visit_expr env e2) in
+            let r = ELet (b, (self#expand_repeat under_global) e1, self#visit_expr env e2) in
             r
           with Not_found -> (
             match init.node with
@@ -362,40 +354,31 @@ let remove_array_from_fn files =
               [ len ],
               [ call_mut; _call_once ],
               [ t_elements; _t_captured_state ] ) ->
-            (* Same as below, but catching the case where the type of elements is an
-               array and has undergone outparam optimization (i.e. the closure,
-               instead of having type size_t -> t_element, has type size_t -> t_element ->
-               unit *)
             L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements;
-            (* First argument = closure, second argument = destination. Note that
-               the closure may itself be an application of the closure to the state
-               (but not always... is this unit argument elimination kicking in? not
-               sure). *)
-            let state, dst =
-              match es with
-              | [ x; y ] -> x, y
+            (* By translating array into struct, we return a struct of array for [from_fn] here *)
+            let state = Krml.KList.one es in
+            let t_struct, _ = Krml.Helpers.flatten_arrow e.typ in
+            let t_element, _ = Krml.Helpers.flatten_arrow call_mut.typ in
+            let t_array =
+              match len.node with
+              | EConstant c -> TArray (t_element, c)
               | _ -> assert false
             in
-            let lift1 = Krml.DeBruijn.lift 1 in
-            let t_dst = H.assert_tbuf_or_tarray dst.typ in
-            EFor
-              ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
-                H.zero_usize (* i: size_t = 0 *),
-                H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
-                H.mk_incr_usize (* i++ *),
-                let i = with_type H.usize (EBound 0) in
-                Krml.Helpers.with_unit
-                  (if H.is_array t_dst then
-                     EApp
-                       ( call_mut,
-                         [
-                           with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
-                           with_type (TInt SizeT) (EBound 0);
-                           with_type t_dst (EBufRead (lift1 dst, i));
-                         ] )
-                   else
-                     EBufWrite
-                       ( Krml.DeBruijn.lift 1 dst,
+            let x, dst_struct = H.mk_binding ~mut:true "arr_struct" t_struct in
+            let dst = with_type (t_array) (EField (dst_struct, "data")) in
+            let bindx = (x, with_type t_struct EAny) in
+            let t_dst = H.assert_tbuf_or_tarray t_array in
+            let for_assign = 
+              let lift1 = Krml.DeBruijn.lift 1 in
+              with_type TUnit (EFor
+                ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
+                  H.zero_usize (* i: size_t = 0 *),
+                  H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
+                  H.mk_incr_usize (* i++ *),
+                  let i = with_type H.usize (EBound 0) in
+                  Krml.Helpers.with_unit
+                     (EBufWrite
+                       ( lift1 dst,
                          i,
                          with_type t_dst
                            (EApp
@@ -403,7 +386,8 @@ let remove_array_from_fn files =
                                 [
                                   with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
                                   with_type (TInt SizeT) (EBound 0);
-                                ] )) )) )
+                ] )) )) ))
+             in (H.nest [bindx] t_struct (with_type t_struct (ESequence [for_assign; dst_struct]))).node
         | ETApp
             ( { node = EQualified ("core" :: "array" :: _, "map"); _ },
               [ len ],
@@ -418,14 +402,26 @@ let remove_array_from_fn files =
               | _ ->
                   failwith "TODO: unknown map closure shape; is it an array outparam? (see above)"
             in
-            let e_src, e_state, e_dst =
+            let e_src, e_state =
               match es with
-              | [ e_src; e_state; e_dst ] -> e_src, e_state, e_dst
+              | [ e_src; e_state ] -> e_src, e_state
               | _ -> failwith "unknown shape of arguments to array map"
+            in
+            let len_c =
+              match len.node with
+              | EConstant c -> c
+              | _ -> failwith "unable to get the const length for array map"
             in
             let lift1 = Krml.DeBruijn.lift 1 in
             let e_state = with_type (TBuf (e_state.typ, false)) (EAddrOf (lift1 e_state)) in
-            EFor
+            let e_src = with_type (TArray (t_src, len_c)) (EField (e_src, "data")) in
+            let t_dst_str, _ = Krml.Helpers.flatten_arrow e.typ in
+            let t_dst_arr = TArray (t_dst, len_c) in
+            let x, dst_struct = H.mk_binding ~mut:true "arr_mapped_str" t_dst_str in
+            let e_dst = with_type (t_dst_arr) (EField (dst_struct, "data")) in
+            let bindx = (x, with_type t_dst_str EAny) in
+            let for_assign = 
+              with_type TUnit (EFor
               ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
                 H.zero_usize (* i = 0 *),
                 H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
@@ -435,7 +431,8 @@ let remove_array_from_fn files =
                 Krml.Helpers.with_unit
                   (EBufWrite
                      (lift1 e_dst, i, with_type t_dst (EApp (call_mut, [ lift1 e_state; e_src_i ]))))
-              )
+              ))
+            in (H.nest [bindx] t_dst_str (with_type t_dst_str (ESequence [for_assign; dst_struct]))).node 
         | _ -> super#visit_EApp env e es
     end
   end

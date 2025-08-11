@@ -11,6 +11,7 @@ fn mut_foo(mut f: Foo) {
     f.x[0] = 1u32;
     let mut copy: [u32; 2] = f.y;
     copy[0] = 0u32;
+    assert!(copy[0]!=1u32);
 }
 
 fn mk_foo() -> Foo {
@@ -40,6 +41,10 @@ fn plus_one<const K: usize>(x: [u32; K]) -> [u16; K] {
     x.map(|x| (x + 1) as u16)
 }
 
+fn const_eq<const K:usize>(x: [u32; K], y: [u32; K]) -> bool {
+   x == y
+}
+
 fn main() {
     // XXX1
     let Foo { x, y } = mk_foo2();
@@ -64,4 +69,10 @@ fn main() {
     // XXX5
     let a = nested_from_fn::<4>();
     assert_eq!(a[3][3], 6);
+
+    // XXX6
+    let x = [2u32; 2];
+    let y = [2u32; 2];
+    let b = const_eq(x,y);
+    assert_eq!(b, true);
 }

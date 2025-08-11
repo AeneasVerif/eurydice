@@ -16,9 +16,9 @@ with const generics
 - K= 8
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_16_7b(uint8_t x[8U][4U], uint8_t _[4U][8U])
+uint64_t where_clauses_fncg_bar_16_7b(Eurydice_arr_cb x, Eurydice_arr_1c _)
 {
-  return (uint64_t)x[0U][0U];
+  return (uint64_t)x.data->data[0U];
 }
 
 /**
@@ -31,9 +31,31 @@ with const generics
 */
 uint64_t where_clauses_fncg_f_43(void)
 {
-  uint8_t buf0[8U][4U] = { { 0U } };
-  uint8_t buf[4U][8U] = { { 0U } };
-  return where_clauses_fncg_bar_16_7b(buf0, buf);
+  return
+    where_clauses_fncg_bar_16_7b((
+        KRML_CLITERAL(Eurydice_arr_cb){
+          .data = {
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } })
+          }
+        }
+      ),
+      (
+        KRML_CLITERAL(Eurydice_arr_1c){
+          .data = {
+            (KRML_CLITERAL(Eurydice_arr_c4){ .data = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_c4){ .data = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_c4){ .data = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_c4){ .data = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U } })
+          }
+        }
+      ));
 }
 
 /**
@@ -45,9 +67,9 @@ with const generics
 - K= 12
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_16_fa(uint8_t x[12U][4U], uint8_t _[4U][12U])
+uint64_t where_clauses_fncg_bar_16_fa(Eurydice_arr_91 x, Eurydice_arr_b1 _)
 {
-  return (uint64_t)x[0U][0U];
+  return (uint64_t)x.data->data[0U];
 }
 
 /**
@@ -61,9 +83,51 @@ with const generics
 */
 uint64_t where_clauses_fncg_method_foo_db_7c(void)
 {
-  uint8_t buf0[12U][4U] = { { 0U } };
-  uint8_t buf[4U][12U] = { { 0U } };
-  return where_clauses_fncg_bar_16_fa(buf0, buf);
+  return
+    where_clauses_fncg_bar_16_fa((
+        KRML_CLITERAL(Eurydice_arr_91){
+          .data = {
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } })
+          }
+        }
+      ),
+      (
+        KRML_CLITERAL(Eurydice_arr_b1){
+          .data = {
+            (
+              KRML_CLITERAL(Eurydice_arr_48){
+                .data = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U }
+              }
+            ),
+            (
+              KRML_CLITERAL(Eurydice_arr_48){
+                .data = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U }
+              }
+            ),
+            (
+              KRML_CLITERAL(Eurydice_arr_48){
+                .data = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U }
+              }
+            ),
+            (
+              KRML_CLITERAL(Eurydice_arr_48){
+                .data = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U }
+              }
+            )
+          }
+        }
+      ));
 }
 
 /**
