@@ -119,7 +119,6 @@ mod intrinsics {
 
 // STEP 3: client implements their library of optimized implementations for both targets
 
-// TODO: extract into separate file (compiled with -msse2)
 #[cfg(any(target_arch = "x86", target_arch = "x86_64", eurydice))]
 mod vectorized_intel {
     use super::intrinsics::*;
@@ -136,7 +135,6 @@ mod vectorized_intel {
     }
 }
 
-// TODO: extract into separate file (arm64)
 #[cfg(any(target_arch = "aarch64", eurydice))]
 mod vectorized_arm {
     use super::intrinsics::*;
@@ -192,7 +190,6 @@ use vectorized_stubs::*;
 
 fn default_impl() { println!("ok") }
 
-// TODO: extract into separate file (arm64 or sse2)
 mod vectorized {
     use super::*;
     pub fn vector_impl() {
@@ -206,6 +203,8 @@ mod vectorized {
 
 use vectorized::*;
 
+// TODO: intrinsics.c unconditionally includes vectorized.h -- this should only happen when
+// vectorized implementations are available
 fn main() {
     arch_match!{
         | "x86" | "x86_64" => { vector_impl() }

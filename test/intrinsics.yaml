@@ -27,14 +27,14 @@ files:
       - [ intrinsics, vectorized_intel, "*" ]
 
   - name: vectorized_arm
-    include_in_h:
-      - "eurydice_intrinsics.h"
+    include_in_internal_h:
+      - "\"eurydice_intrinsics.h\""
     private:
       - [ intrinsics, vectorized_arm, "*" ]
 
   - name: vectorized
-    include_in_h:
-      - "eurydice_intrinsics.h"
+    include_in_internal_h:
+      - "\"eurydice_intrinsics.h\""
     private:
       - [ intrinsics, vectorized, "*" ]
       - [ intrinsics, vectorized_stubs, "*" ]

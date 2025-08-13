@@ -82,6 +82,14 @@ test-more_primitive_types: EXTRA = --config test/more_primitive_types.yaml
 test-global_ref: EXTRA_C = ../../test/core_cmp_lib.c
 test-intrinsics: EXTRA = --config test/intrinsics.yaml
 
+ifeq ($(shell uname -m),arm64)
+test-intrinsics: EXTRA_C = -I../../test vectorized.c vectorized_arm.c
+endif
+
+ifeq ($(shell uname -m),x86_64)
+test-intrinsics: EXTRA_C = -I../../test vectorized.c vectorized_intel.c
+endif
+
 
 test-%: test/%.llbc out/test-%/main.c | all
 	$(EURYDICE) $(EXTRA) --output out/test-$* $<
