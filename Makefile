@@ -80,14 +80,16 @@ test-symcrust: CFLAGS += -Wno-unused-function
 test-more_str: EXTRA_C = ../../test/core_str_lib.c
 test-more_primitive_types: EXTRA = --config test/more_primitive_types.yaml
 test-global_ref: EXTRA_C = ../../test/core_cmp_lib.c
+
 test-intrinsics: EXTRA = --config test/intrinsics.yaml
+test-intrinsics: EXTRA_C = -I../../test
 
 ifeq ($(shell uname -m),arm64)
-test-intrinsics: EXTRA_C = -I../../test vectorized.c vectorized_arm.c
+test-intrinsics: EXTRA_C = vectorized.c vectorized_arm.c
 endif
 
 ifeq ($(shell uname -m),x86_64)
-test-intrinsics: EXTRA_C = -I../../test vectorized.c vectorized_intel.c
+test-intrinsics: EXTRA_C = vectorized.c vectorized_intel.c
 endif
 
 
@@ -145,3 +147,6 @@ format-apply:
 .PHONY: clean-llbc
 clean-llbc:
 	rm test/*.llbc || true
+
+%.pp.rs: %.rs
+	rustup run $(shell basename $$($(CHARON) toolchain-path)) rustc -Zunpretty=expanded --cfg eurydice $<
