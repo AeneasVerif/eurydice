@@ -160,7 +160,7 @@ let with_any = K.(with_type TAny)
 
 let assert_slice (t : K.typ) =
   match t with
-  | TApp (lid, [ t ]) when lid = Builtin.slice -> t
+  | TApp (lid, [ t; _ ]) when lid = Builtin.slice -> t
   | _ -> fail "Not a slice: %a" ptyp t
 
 let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
@@ -383,36 +383,101 @@ let lookup_field env typ_id field_id =
   let field = List.nth fields i in
   ensure_named i field.field_name
 
-let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
+let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
+  match pred.binder.binder_params.trait_clauses with
+  | [] -> failwith "DynTrait has empty clause! Please report this to Charon."
+  | self_impl::_ -> begin
+    let decl = env.get_nth_trait_decl self_impl.trait.binder_value.id in
+    match decl.vtable with
+    | None -> failwith "Fetching vtable from a trait without vtable! Please report this to Charon."
+    | Some ty_ref -> typ_of_ty env (C.TAdt ty_ref)
+  end
+
+and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
+  match ty with
+  | C.TAdt ty_decl_ref -> begin
+    match ty_decl_ref.id with
+    | C.TAdtId decl_id -> begin
+      let decl = env.get_nth_type decl_id in
+      match decl.ptr_metadata with
+      | C.NoMetadata -> None
+      | C.Length -> Some Krml.Helpers.usize
+      | C.VTable ty_ref -> Some (typ_of_ty env (C.TAdt ty_ref))
+      | C.InheritFrom _ ->
+         failwith "Eurydice does not handle PtrMetadata inheritance, please consider using monomorphized LLBC"
+    end    
+    | C.TTuple -> begin
+      match List.rev @@ ty_decl_ref.generics.types with
+      (* This is `()`, which has metadata `()` *)   
+      | [] -> None
+      (* For tuple, the type of metadata is the last element *)
+      | last::_ -> metadata_typ_of_ty env last
+    end
+    | C.TBuiltin (C.TBox)
+    | C.TBuiltin (C.TArray) -> None
+    | C.TBuiltin (C.TSlice)
+    | C.TBuiltin (C.TStr) -> Some Krml.Helpers.usize
+  end
+  | C.TVar _ ->
+    let _var_is_sized (clause : C.trait_clause) =
+      let trait = clause.trait.binder_value in
+      match trait.generics.types with
+      | [] -> failwith "Unexpected empty `Self` from trait clause."
+      (* The variable here in C.TVar should be free variable, hence no need to adjust the DB id. *)
+      | self :: _ -> self = ty &&
+        let decl = env.get_nth_trait_decl trait.id in
+        (* It has the Sized marker, which is of lang_item "sized" *)               
+        decl.item_meta.lang_item = Some "sized"
+    in
+    let var_is_sized = true (*List.exists var_is_sized env.generic_params.trait_clauses*) in
+    if var_is_sized then None
+    else failwith "Eurydice does not handle taking metadata from non-Sized type vars, please consider using monomorphized LLBC."
+  | C.TTraitType (_,_) ->
+     failwith "Eurydice does not handle taking metadata from assoc types, please consider using monomorphized LLBC."
+  | C.TDynTrait pred -> Some (vtable_typ_of_dyn_pred env pred)
+  | C.TLiteral _
+  | C.TRef (_, _, _)
+  | C.TRawPtr (_, _)
+  | C.TFnPtr _
+  | C.TFnDef _ -> None
+  (* The metadata must not have ptr metadata as they must be Sized. *)
+  | C.TPtrMetadata _ -> None
+  | C.TNever
+  | C.TError _  -> failwith "Error types to fetch metadata"
+
+(* Get the pointer type of the original Charon type. *)
+and ptr_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
+  (* Handle special cases first *)
+  match ty with
+  (* Special case to handle slice : &[T] *)
+  | TAdt {id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
+    Builtin.mk_slice (typ_of_ty env t)
+  (* Special case to handle array : &[T;C] *)
+  | TAdt {id = TBuiltin TArray; generics = { types = [ t ]; _ } } ->
+    K.TBuf (typ_of_ty env t, false)
+  (* Special case to handle &str *)
+  | TAdt {id = TBuiltin TStr; _ } -> Builtin.mk_dst_ref Builtin.char_dst Krml.Helpers.usize
+  (* Special case to handle DynTrait *)
+  | TDynTrait pred -> Builtin.mk_dst_ref Builtin.void_dst (vtable_typ_of_dyn_pred env pred)
+  (* General case, all &T is turned to either thin T* or fat Eurydice::DstRef<T,Meta> *)
+  | _ ->
+    let typ = typ_of_ty env ty in
+    match metadata_typ_of_ty env ty with
+    | None -> K.TBuf (typ, false)
+    | Some meta -> Builtin.mk_dst_ref typ meta
+
+and pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   match ty with
   | TVar var -> K.TBound (lookup_typ env (C.expect_free_var var))
   | TLiteral t -> typ_of_literal_ty env t
   | TNever -> failwith "Impossible: Never"
   | TDynTrait _ -> failwith "TODO: dyn Trait"
-  | TAdt { id; generics = { types = [ t ]; _ } as generics } when RustNames.is_vec env id generics
+  | TAdt { id = TBuiltin TBox; generics = { types = [ t ] ; _ } }
+  | TRef (_, t, _) 
+  | TRawPtr (t, _) ->
+     ptr_typ_of_ty env t
+  | TAdt { id; generics = { types = [ t ]; _} as generics } when RustNames.is_vec env id generics
     -> Builtin.mk_vec (typ_of_ty env t)
-  | TAdt
-      {
-        id = TBuiltin TBox;
-        generics = { types = [ TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ]; _ };
-      }
-  | TRef (_, TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } }, _) ->
-      (* We compile slices to fat pointers, which hold the pointer underneath -- no need for an
-         extra reference here. *)
-      Builtin.mk_slice (typ_of_ty env t)
-  | TAdt
-      {
-        id = TBuiltin TBox;
-        generics = { types = [ TAdt { id = TBuiltin TArray; generics = { types = [ t ]; _ } } ]; _ };
-      }
-  | TRef (_, TAdt { id = TBuiltin TArray; generics = { types = [ t ]; _ } }, _) ->
-      (* We collapse Ref(Array) into a pointer type, leveraging C's implicit decay between array
-         types and pointer types. *)
-      K.TBuf (typ_of_ty env t, false)
-  | TRef (_, TAdt { id = TBuiltin TStr; generics = { types = []; _ } }, _) -> Builtin.str_t
-  | TRef (_, t, _) ->
-      (* Normal reference *)
-      K.TBuf (typ_of_ty env t, false)
   | TAdt { id = TAdtId id; generics = { types = args; const_generics = generic_args; _ } } ->
       let ts = List.map (typ_of_ty env) args in
       let cgs = List.map (cg_of_const_generic env) generic_args in
@@ -431,18 +496,11 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
       (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
       TApp (Builtin.derefed_slice, [ typ_of_ty env t ])
-  | TAdt { id = TBuiltin TBox; generics = { types = [ t ]; _ } } ->
-      K.TBuf (typ_of_ty env t, false)
-      (* Boxes are immediately translated to a pointer type -- we do not maintain a Box<T>
-         definition in the krml internal AST. *)
   | TAdt { id = TBuiltin TStr; generics = { types = []; _ } } -> Builtin.deref_str_t
   | TAdt { id = TBuiltin f; generics = { types = args; const_generics; _ } } ->
       List.iter (fun x -> print_endline (C.show_const_generic x)) const_generics;
       fail "TODO: Adt/Builtin %s (%d) %d " (C.show_builtin_ty f) (List.length args)
         (List.length const_generics)
-  | TRawPtr (t, _) ->
-      (* Appears in some trait methods, so let's try to handle that. *)
-      K.TBuf (typ_of_ty env t, false)
   | TTraitType _ -> failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
   | TFnPtr fn_sig ->
       let ts, t = fn_sig.binder_value in
