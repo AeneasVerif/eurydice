@@ -1640,18 +1640,18 @@ let is_box_place (p : C.place) =
   | C.TAdt { id = TBuiltin TBox; _ } -> true
   | _ -> false
 
-let mk_reference (_env : env) (e : K.expr) (metadata : K.expr) : K.expr =
-  let addrof_e = K.(with_type (TBuf (e.typ, false)) (EAddrOf e)) in
+let mk_reference (env : env) (ty: C.ty) (e : K.expr) (metadata : K.expr) : K.expr =
+  let addrof_e = maybe_addrof env ty e in
   match metadata.typ with
   (* When it is unit, it means there is no metadata, simply take the address *)
   | K.TUnit -> addrof_e
   | _ ->
-    K.(with_type (Builtin.dst_ref_t e.typ metadata.typ)
+    K.(with_type (Builtin.mk_dst_ref e.typ metadata.typ)
       (EFlat [ (Some "ptr", addrof_e); (Some "metadata", metadata) ]))
 
 let has_unresolved_generic (ty : K.typ) : bool =
   object
-    inherit [_] Krml.Ast.reduce as super
+    inherit [_] Krml.Ast.reduce
     method zero = false
     method plus = ( || )
     method! visit_TBound _ _ = true
@@ -1731,7 +1731,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   | RvRef (p, _, metadata) | RawPtr (p, _, metadata) ->
       let metadata = expression_of_operand env metadata in
       let e = expression_of_place env p in
-      mk_reference env e metadata
+      mk_reference env p.ty e metadata
   | UnaryOp (Cast (CastScalar (_, dst)), e) ->
       let dst = typ_of_literal_ty env dst in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
@@ -1839,7 +1839,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   | UnaryOp (PtrMetadata, e) ->
     let e = expression_of_operand env e in begin
     match e.typ with
-    | TApp (lid, [ _; meta_ty ]) when lid = Builtin.dst_ref_name ->
+    | TApp (lid, [ _; meta_ty ]) when lid = Builtin.dst_ref ->
       K.(with_type meta_ty (EField (e, "meta")))
     (* In cases like `PtrMetadata(T)` when `T` is a type variable or some types with unresolved type variable,
        We cannot tell the correct metadata type from it until fully monomorphized.
@@ -2750,4 +2750,6 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
     }
   in
   let env = List.fold_left check_if_dst env declarations in
-  name, decls_of_declarations env declarations
+  let trans_decls = decls_of_declarations env declarations in
+  let extra_decls = [ Builtin.dst_ref_decl ] in
+  name, trans_decls @ extra_decls

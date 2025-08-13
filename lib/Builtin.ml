@@ -6,8 +6,10 @@ end
 
 let vec : K.lident = [ "Eurydice" ], "vec"
 let mk_vec (t : K.typ) : K.typ = K.TApp (vec, [ t ])
-let slice : K.lident = [ "Eurydice" ], "slice"
-let mk_slice (t : K.typ) : K.typ = K.TApp (slice, [ t ])
+let dst_ref = [ "Eurydice" ], "dst_ref"
+let mk_dst_ref (t: K.typ) (meta: K.typ) : K.typ = K.TApp (dst_ref, [ t; meta ])
+let slice : K.lident = dst_ref
+let mk_slice (t : K.typ) : K.typ = K.TApp (slice, [ t; TInt SizeT ])
 let range : K.lident = [ "core"; "ops"; "range" ], "Range"
 let mk_range (t : K.typ) : K.typ = K.TApp (range, [ t ])
 let range_to : K.lident = [ "core"; "ops"; "range" ], "RangeTo"
@@ -28,8 +30,24 @@ let mk_nonzero t = K.TApp (nonzero, [ t ])
 
 (* Internal types *)
 let char_t = K.(TInt UInt32)
+let void_dst = K.TQualified ([ "Eurydice" ], "void_dst")
+let char_dst = K.TQualified ([ "Eurydice" ], "char_dst")
 let int128_t = K.TQualified ([ "Eurydice"; "Int128" ], "int128_t")
 let uint128_t = K.TQualified ([ "Eurydice"; "Int128" ], "uint128_t")
+
+(* Internal decls *)
+let dst_ref_decl =
+  K.DType
+    ( dst_ref,
+      [],
+      0,
+      2,
+      Flat
+        [
+          Some "ptr", (TBuf (TBound 1, false), false);
+          Some "meta", (TBound 0, false);
+        ] )
+
 
 (** A record to hold a builtin *function* with all relevant information for both krml and the
     transpilation phase in AstOfLlbc *)
@@ -392,21 +410,6 @@ let str_t = K.TQualified str_t_name
     serves as a placeholder to get referenced again; (2) when in customised DST definition, it is
     defined as [char []] to have 0-length. *)
 let deref_str_t = K.TQualified ([ "Eurydice" ], "deref_str")
-
-let dst_ref_name = [ "Eurydice" ], "dst_ref"
-let dst_ref_def =
-  K.DType
-    ( dst_ref_name,
-      [],
-      0,
-      2,
-      Flat
-        [
-          Some "ptr", (TBuf (TBound 0, false), false);
-          Some "meta", (TBound 1, false);
-        ] )
-let dst_ref_t pointee_ty metadata_ty : K.typ =
-  K.TApp (dst_ref_name, [ pointee_ty; metadata_ty ])
 
 let dst_def =
   K.DType
