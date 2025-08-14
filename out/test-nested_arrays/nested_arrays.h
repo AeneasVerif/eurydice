@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __nested_arrays_H
-#define __nested_arrays_H
+#ifndef nested_arrays_H
+#define nested_arrays_H
 
 #include "eurydice_glue.h"
 
@@ -96,5 +96,5 @@ void nested_arrays_test(uint8_t ret[4U][200U]);
 }
 #endif
 
-#define __nested_arrays_H_DEFINED
-#endif
+#define nested_arrays_H_DEFINED
+#endif /* nested_arrays_H */

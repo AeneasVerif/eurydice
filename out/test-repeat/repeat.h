@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __repeat_H
-#define __repeat_H
+#ifndef repeat_H
+#define repeat_H
 
 #include "eurydice_glue.h"
 
@@ -27,5 +27,5 @@ void repeat_main(void);
 }
 #endif
 
-#define __repeat_H_DEFINED
-#endif
+#define repeat_H_DEFINED
+#endif /* repeat_H */

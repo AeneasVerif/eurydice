@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __array_H
-#define __array_H
+#ifndef array_H
+#define array_H
 
 #include "eurydice_glue.h"
 
@@ -184,5 +184,5 @@ void array_main(void);
 }
 #endif
 
-#define __array_H_DEFINED
-#endif
+#define array_H_DEFINED
+#endif /* array_H */
