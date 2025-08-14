@@ -28,7 +28,7 @@ with const generics
 */
 void trait_generics_from_fn_3c(void)
 {
-  LowStar_Ignore_ignore(trait_generics_call_once_a3_95(), uint32_t, void *);
+  trait_generics_call_once_a3_95();
 }
 
 void trait_generics_main(void)

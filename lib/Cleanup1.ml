@@ -44,7 +44,9 @@ let remove_assignments =
           (* Krml.(KPrint.bprintf "peeling %s\n" b.node.name); *)
           let b, e2 = open_binder b e2 in
           (* Krml.KPrint.bprintf "peel: let-binding meta %a\n" pmeta b; *)
-          let to_close = AtomMap.add b.node.atom (b.node.name, b.typ, b.meta, b.node.meta) to_close in
+          let to_close =
+            AtomMap.add b.node.atom (b.node.name, b.typ, b.meta, b.node.meta) to_close
+          in
           self#peel_lets to_close e2
       | _ ->
           let e = Krml.Simplify.sequence_to_let#visit_expr_w () e in
@@ -54,7 +56,18 @@ let remove_assignments =
     method! visit_DFunction (to_close : remove_env) cc flags n_cgs n t name bs e =
       (* Krml.(KPrint.bprintf "visiting %a\n" PrintAst.Ops.plid name); *)
       assert (AtomMap.is_empty to_close);
-      DFunction (cc, flags, n_cgs, n, t, name, bs, if already_clean name then e else self#peel_lets to_close e)
+      DFunction
+        ( cc,
+          flags,
+          n_cgs,
+          n,
+          t,
+          name,
+          bs,
+          if already_clean name then
+            e
+          else
+            self#peel_lets to_close e )
 
     method! visit_DGlobal (to_close : remove_env) flags n t name e =
       assert (AtomMap.is_empty to_close);
@@ -180,7 +193,8 @@ let remove_assignments =
               let name, typ, meta, binder_meta = AtomMap.find atom not_yet_closed in
               let b =
                 {
-                  node = { atom; name; mut = true; mark = ref Krml.Mark.default; meta = binder_meta };
+                  node =
+                    { atom; name; mut = true; mark = ref Krml.Mark.default; meta = binder_meta };
                   typ;
                   meta = meta @ e1.meta;
                 }
@@ -298,7 +312,18 @@ let remove_terminal_returns =
     inherit [_] map
 
     method! visit_DFunction env cc flags n_cgs n t name bs e =
-      DFunction (cc, flags, n_cgs, n, t, name, bs, if already_clean name then e else self#visit_expr_w env e)
+      DFunction
+        ( cc,
+          flags,
+          n_cgs,
+          n,
+          t,
+          name,
+          bs,
+          if already_clean name then
+            e
+          else
+            self#visit_expr_w env e )
 
     method! visit_ELet (terminal, _) b e1 e2 =
       ELet (b, self#visit_expr_w false e1, self#visit_expr_w terminal e2)
@@ -337,7 +362,18 @@ let remove_terminal_continues =
     inherit [_] map
 
     method! visit_DFunction env cc flags n_cgs n t name bs e =
-      DFunction (cc, flags, n_cgs, n, t, name, bs, if already_clean name then e else self#visit_expr_w env e)
+      DFunction
+        ( cc,
+          flags,
+          n_cgs,
+          n,
+          t,
+          name,
+          bs,
+          if already_clean name then
+            e
+          else
+            self#visit_expr_w env e )
 
     method! visit_ELet (terminal, _) b e1 e2 =
       ELet (b, self#visit_expr_w false e1, self#visit_expr_w terminal e2)
@@ -398,6 +434,37 @@ let unsigned_overflow_is_ok_in_c =
 
 (* PPrint.(Krml.Print.(print (Krml.PrintAst.print_files files ^^ hardline))); *)
 
+let remove_slice_eq = object
+  inherit [_] map as super
+
+  method! visit_expr _ e =
+    match e with
+    | [%cremepat {| core::cmp::impls::?impl::eq(#?eq..)<?t,?u>(?s1, ?s2) |}] ->
+        begin match impl with
+        | "{core::cmp::PartialEq<&0 mut (B)> for &1 mut (A)}"
+        | "{core::cmp::PartialEq<&0 (B)> for &1 (A)}" ->
+            assert (t = u);
+            begin match flatten_tapp t with
+            | lid, [ t ], [] when lid = Builtin.derefed_slice ->
+                let rec is_flat = function
+                  | TArray (t, _) -> is_flat t
+                  | TInt _ | TBool | TUnit -> true
+                  | _ -> false
+                in
+                if not (is_flat t) then
+                  failwith "TODO: slice eq at non-flat types";
+                with_type TBool (EApp (
+                  Builtin.(expr_of_builtin_t slice_eq [ t ]),
+                  [ s1; s2 ]))
+            | _ ->
+                let deref e = with_type (H.assert_tbuf e.typ) (EBufRead (e, H.zero_usize)) in
+                with_type TBool (EApp (List.hd eq, [ deref s1; deref s2]))
+            end
+        | _ -> failwith "unknown eq impl in core::cmp::impls"
+        end
+    | _ -> super#visit_expr ((), e.typ) e
+end
+
 let cleanup files =
   let files = remove_units#visit_files () files in
   let files = remove_assignments#visit_files AtomMap.empty files in
@@ -406,4 +473,5 @@ let cleanup files =
   let files = remove_terminal_returns#visit_files true files in
   let files = remove_terminal_continues#visit_files false files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
+  let files = remove_slice_eq#visit_files () files in
   files

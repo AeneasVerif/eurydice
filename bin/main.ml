@@ -147,6 +147,7 @@ Supported options:|}
            | [ "Eurydice" ], "slice_subslice2"
            | [ "Eurydice" ], "slice_subslice3"
            | [ "Eurydice" ], "slice_subslice_from"
+           | [ "Eurydice" ], "slice_of_dst"
            | [ "Eurydice" ], "array_to_slice"
            | [ "Eurydice" ], "array_to_subslice"
            | [ "Eurydice" ], "array_to_subslice2"
@@ -179,6 +180,7 @@ Supported options:|}
   in
 
   Printf.printf "1️⃣ LLBC ➡️  AST\n";
+  Eurydice.Logging.log "Phase0" "%a" pfiles files;
   let files = Eurydice.PreCleanup.precleanup files in
 
   Eurydice.Logging.log "Phase1" "%a" pfiles files;
@@ -257,8 +259,9 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
   Eurydice.Logging.log "Phase2.26" "%a" pfiles files;
   let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
-  let (map, _, _), files = Krml.DataTypes.everything files in
+  let ((map, _, _) as map3), files = Krml.DataTypes.everything files in
   Eurydice.Cleanup2.fixup_monomorphization_map map;
+  let files = Eurydice.Cleanup2.remove_discriminant_reads map3 files in
   Eurydice.Logging.log "Phase2.3" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_ite#visit_files () files in
   Eurydice.Logging.log "Phase2.4" "%a" pfiles files;
@@ -298,7 +301,7 @@ Supported options:|}
   let files = Eurydice.Cleanup2.float_comments files in
   Eurydice.Logging.log "Phase2.95" "%a" pfiles files;
   let files = Eurydice.Cleanup2.bonus_cleanups#visit_files [] files in
-  (* Macros stemming from globals *)
+  (* Macros stemming from globals -- FIXME why is this not Krml.AstToCStar.mk_macros_set? *)
   let files, macros = Eurydice.Cleanup2.build_macros files in
 
   Eurydice.Logging.log "Phase3" "%a" pfiles files;
@@ -311,10 +314,6 @@ Supported options:|}
   let files = Eurydice.Cleanup3.decay_cg_externals#visit_files (scope_env, false) files in
   let files = Eurydice.Cleanup3.add_extra_type_to_slice_index#visit_files () files in
   Eurydice.Logging.log "Phase3.1" "%a" pfiles files;
-  let macros =
-    let cg_macros = Eurydice.Cleanup3.build_cg_macros#visit_files () files in
-    Krml.Idents.LidSet.(union (union macros cg_macros) Eurydice.Builtin.macros)
-  in
   let c_name_map = Krml.GlobalNames.mapping (fst scope_env) in
 
   let open Krml in
@@ -385,6 +384,13 @@ Supported options:|}
       files
   in
   let files = AstToCStar.mk_files files c_name_map Idents.LidSet.empty macros in
+
+  (* Uncomment to debug C* AST *)
+  (* List.iter (fun (f, p) -> *)
+  (*   print_endline f; *)
+  (*   print_endline (CStar.show_program p ); *)
+  (*   print_endline "" *)
+  (* ) files; *)
 
   let headers = CStarToC11.mk_headers c_name_map files in
   let deps = CStarToC11.drop_empty_headers deps headers in

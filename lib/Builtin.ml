@@ -17,7 +17,6 @@ let mk_range_from (t : K.typ) : K.typ = K.TApp (range_from, [ t ])
 let option : K.lident = [ "core"; "option" ], "Option"
 let mk_option (t : K.typ) : K.typ = K.TApp (option, [ t ])
 let array_copy = [ "Eurydice" ], "array_copy"
-let macros = Krml.Idents.LidSet.of_list []
 
 (* Things that could otherwise be emitted as an extern prototype, but for some
    reason ought to be skipped. *)
@@ -47,9 +46,19 @@ let expr_of_builtin { name; typ; cg_args; _ } =
   let typ = List.fold_right (fun t acc -> K.TArrow (t, acc)) cg_args typ in
   K.(with_type typ (EQualified name))
 
-let expr_of_builtin_t builtin ts =
+let chop_cg_args n t =
+  let t, ts = Krml.Helpers.flatten_arrow t in
+  let _, ts = Krml.KList.split n ts in
+  let t = Krml.Helpers.fold_arrow ts t in
+  t
+
+let expr_of_builtin_t builtin ?(cgs=(0, [])) ts =
+  let open Krml.DeBruijn in
   let builtin = expr_of_builtin builtin in
-  K.(with_type (Krml.DeBruijn.subst_tn ts builtin.typ) (ETApp (builtin, [], [], ts)))
+  let diff, cg_exprs = cgs in
+  let cgs = List.map (cg_of_expr diff) cg_exprs in
+  let t = chop_cg_args (List.length cgs) (subst_tn ts (subst_ctn' cgs builtin.typ)) in
+  K.(with_type t (ETApp (builtin, cg_exprs, [], ts)))
 
 module Op128Map = Map.Make (struct
   type t = string * string
@@ -168,6 +177,8 @@ let array_to_subslice_from =
     arg_names = [ "a"; "r" ];
   }
 
+(* These two are placeholders that are inserted by AstOfLlbc with the intent that they should be
+   desugared later on, once monomorphization and data type compilation, respectively, have happened. *)
 let array_repeat =
   {
     name = [ "Eurydice" ], "array_repeat";
@@ -175,6 +186,20 @@ let array_repeat =
     n_type_args = 1;
     cg_args = [ TInt SizeT ];
     arg_names = [ "init" ];
+  }
+
+(* Eurydice_discriminant<T,U>(x: T) -> U
+   T = type of the argument (an ADT)
+   U = expected type of the discriminant (usize, u8, etc.)
+   There is an unverified invariant that the algorithm in CStarToC11 to automatically pick suitable
+   sizes for the `tag` field is compatible with the expected type U here. *)
+let discriminant =
+  {
+    name = [ "Eurydice" ], "discriminant";
+    typ = Krml.Helpers.fold_arrow [ TBound 1 ] (TBound 0);
+    n_type_args = 2;
+    cg_args = [];
+    arg_names = [ "adt" ];
   }
 
 let iterator : K.lident = [ "core"; "iter"; "traits"; "iterator" ], "Iterator"
@@ -187,6 +212,35 @@ let array_into_iter =
     n_type_args = 1;
     cg_args = [ TInt SizeT ];
     arg_names = [ "arr" ];
+  }
+
+let array_eq =
+  {
+    name = [ "Eurydice" ], "array_eq";
+    (* This is NOT `Krml.Helpers.fold_arrow [ TCgArray (TBound 0, 0); TCgArray (TBound 0, 0) ]
+       TBool` because we get array pointers that decay. *)
+    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, false); TBuf (TBound 0, false) ] TBool;
+    n_type_args = 1;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "arr"; "arr2" ];
+  }
+
+let array_eq_slice =
+  {
+    name = [ "Eurydice" ], "array_eq_slice";
+    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, false); TBuf (mk_slice (TBound 0), false) ] TBool;
+    n_type_args = 1;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "arr"; "slice" ];
+  }
+
+let slice_eq =
+  {
+    name = [ "Eurydice" ], "slice_eq";
+    typ = Krml.Helpers.fold_arrow [ TBuf (mk_slice (TBound 0), false); TBuf (mk_slice (TBound 0), false) ] TBool;
+    n_type_args = 1;
+    cg_args = [ ];
+    arg_names = [ "s1"; "s2" ];
   }
 
 let step_by : K.lident = [ "core"; "iter"; "adapters"; "step_by" ], "StepBy"
@@ -425,7 +479,7 @@ let vec_alloc =
     typ = Krml.Helpers.fold_arrow [ TInt SizeT ] (mk_vec (TBound 0));
     n_type_args = 1;
     cg_args = [];
-    arg_names = [ "len" ]
+    arg_names = [ "len" ];
   }
 
 (* Will allocating len elements of type T overflow SIZE_MAX? *)
@@ -435,7 +489,7 @@ let vec_overflows =
     typ = Krml.Helpers.fold_arrow [ TInt SizeT ] TBool;
     n_type_args = 1;
     cg_args = [];
-    arg_names = [ "len" ]
+    arg_names = [ "len" ];
   }
 
 (* Since Eurydice_vec is opaque from the point of view of krml, we expose a helper (implemented with
@@ -446,10 +500,10 @@ let vec_failed =
     typ = Krml.Helpers.fold_arrow [ mk_vec (TBound 0) ] TBool;
     n_type_args = 1;
     cg_args = [];
-    arg_names = [ "v" ]
+    arg_names = [ "v" ];
   }
 
-let layout_t = K.TQualified (["core"; "alloc"; "layout"],"Layout")
+let layout_t = K.TQualified ([ "core"; "alloc"; "layout" ], "Layout")
 
 (* Compute a layout from a type *)
 let layout =
@@ -458,7 +512,7 @@ let layout =
     typ = Krml.Helpers.fold_arrow [ TUnit ] layout_t;
     n_type_args = 1;
     cg_args = [];
-    arg_names = []
+    arg_names = [];
   }
 
 (* Not fully general *)
@@ -518,11 +572,13 @@ let slice_swap =
   let open Krml in
   let open Ast in
   let t = TBound 0 in
-  let binders = [
-    Helpers.fresh_binder ~mut:true "s" (mk_slice t);
-    Helpers.fresh_binder "i" (TInt SizeT);
-    Helpers.fresh_binder "j" (TInt SizeT)
-  ] in
+  let binders =
+    [
+      Helpers.fresh_binder ~mut:true "s" (mk_slice t);
+      Helpers.fresh_binder "i" (TInt SizeT);
+      Helpers.fresh_binder "j" (TInt SizeT);
+    ]
+  in
   (* with slice type *)
   let ws = with_type (mk_slice t) in
   (* with usize type *)
@@ -535,15 +591,31 @@ let slice_swap =
     with_type t (EBufRead (with_type (TBuf (t, false)) (EAddrOf (index s i)), Helpers.zero_usize))
   in
   fun lid ->
-    DFunction (None, [ Private ], 0, 1, TUnit, lid, binders,
-      (* let tmp = s[i]; *)
-      with_type TUnit (ELet (Helpers.fresh_binder "tmp" t, index (ws (EBound 2)) (wu (EBound 1)),
-        with_type TUnit (ESequence [
-          (* s[i] = s[j] *)
-          with_type TUnit (EAssign (lhs (ws (EBound 3)) (wu (EBound 2)), index (ws (EBound 3)) (wu (EBound 1))));
-          (* s[j] = tmp *)
-          with_type TUnit (EAssign (lhs (ws (EBound 3)) (wu (EBound 1)), with_type t (EBound 0)))
-        ]))))
+    DFunction
+      ( None,
+        [ Private ],
+        0,
+        1,
+        TUnit,
+        lid,
+        binders,
+        (* let tmp = s[i]; *)
+        with_type TUnit
+          (ELet
+             ( Helpers.fresh_binder "tmp" t,
+               index (ws (EBound 2)) (wu (EBound 1)),
+               with_type TUnit
+                 (ESequence
+                    [
+                      (* s[i] = s[j] *)
+                      with_type TUnit
+                        (EAssign
+                           ( lhs (ws (EBound 3)) (wu (EBound 2)),
+                             index (ws (EBound 3)) (wu (EBound 1)) ));
+                      (* s[j] = tmp *)
+                      with_type TUnit
+                        (EAssign (lhs (ws (EBound 3)) (wu (EBound 1)), with_type t (EBound 0)));
+                    ]) )) )
 
 (* Formerly a macro, using GCC expression-statements:
 
@@ -572,50 +644,74 @@ let try_with_capacity =
   let open Krml in
   let open Ast in
   let t = TBound 0 in
-  let t_try_reserve_error = TQualified (["alloc"; "collections"], "TryReserveError") in
+  let t_try_reserve_error = TQualified ([ "alloc"; "collections" ], "TryReserveError") in
   (* Result<Vec<T>, TryReserveError> *)
-  let t_ret =
-    TApp ((["core"; "result"], "Result"), [ mk_vec t; t_try_reserve_error])
-  in
+  let t_ret = TApp (([ "core"; "result" ], "Result"), [ mk_vec t; t_try_reserve_error ]) in
   (* TryReserveError { kind = TryReserveErrorKind::Cons args } *)
   let mk_try_reserve_error cons args =
-    with_type t_try_reserve_error (EFlat [
-      Some "kind", with_type (TQualified (["alloc"; "collections"], "TryReserveErrorKind")) (ECons (cons, args))
-    ])
+    with_type t_try_reserve_error
+      (EFlat
+         [
+           ( Some "kind",
+             with_type
+               (TQualified ([ "alloc"; "collections" ], "TryReserveErrorKind"))
+               (ECons (cons, args)) );
+         ])
   in
-  let mk_res_error err =
-    with_type t_ret (ECons ("Err", [ err ]))
-  in
-  let mk_res_ok ok =
-    with_type t_ret (ECons ("Ok", [ ok ]))
-  in
+  let mk_res_error err = with_type t_ret (ECons ("Err", [ err ])) in
+  let mk_res_ok ok = with_type t_ret (ECons ("Ok", [ ok ])) in
   let binders = [ Helpers.fresh_binder "len" (TInt SizeT) ] in
   (* with size *)
   let ws = with_type (TInt SizeT) in
   fun lid ->
-    DFunction (None, [ Private ], 0, 1, t_ret, lid, binders,
-      with_type t_ret (EIfThenElse (
-        (* if vec_overflows<t_elt>(len) then *)
-        with_type TBool (EApp (expr_of_builtin_t vec_overflows [ t ], [ ws (EBound 0) ])),
-          (* Result::Error(TryReserveError { kind = TryReserveErrorKind::CapacityOverflow }) *)
-          mk_res_error (mk_try_reserve_error "CapacityOverflow" []),
-          (* else let v: vec<t_elt> = vec_alloc len in *)
-          with_type t_ret (ELet (Helpers.fresh_binder "v" (mk_vec t),
-            with_type (mk_vec t) (EApp (expr_of_builtin_t vec_alloc [ t ], [ ws (EBound 0) ])),
-            (* if vec_failed v then *)
-            with_type t_ret (EIfThenElse (
-              with_type TBool (EApp (expr_of_builtin_t vec_failed [ t ], [ with_type (mk_vec t) (EBound 0) ] )),
-              (* Result::Error(
+    DFunction
+      ( None,
+        [ Private ],
+        0,
+        1,
+        t_ret,
+        lid,
+        binders,
+        with_type t_ret
+          (EIfThenElse
+             ( (* if vec_overflows<t_elt>(len) then *)
+               with_type TBool (EApp (expr_of_builtin_t vec_overflows [ t ], [ ws (EBound 0) ])),
+               (* Result::Error(TryReserveError { kind = TryReserveErrorKind::CapacityOverflow }) *)
+               mk_res_error (mk_try_reserve_error "CapacityOverflow" []),
+               (* else let v: vec<t_elt> = vec_alloc len in *)
+               with_type t_ret
+                 (ELet
+                    ( Helpers.fresh_binder "v" (mk_vec t),
+                      with_type (mk_vec t)
+                        (EApp (expr_of_builtin_t vec_alloc [ t ], [ ws (EBound 0) ])),
+                      (* if vec_failed v then *)
+                      with_type t_ret
+                        (EIfThenElse
+                           ( with_type TBool
+                               (EApp
+                                  ( expr_of_builtin_t vec_failed [ t ],
+                                    [ with_type (mk_vec t) (EBound 0) ] )),
+                             (* Result::Error(
                   TryReserveError { kind = TryReserveErrorKind::AllocError { layout: layout<T>(), non_exhaustive: () }}
                  )
               *)
-              mk_res_error (mk_try_reserve_error "AllocError" [
-                (* "layout", *) with_type layout_t (EApp (expr_of_builtin_t layout [ t ], [ Helpers.eunit ]));
-                (* "non_exhaustive", *) Helpers.eunit
-              ]),
-              (* Result::Ok(v) *)
-              mk_res_ok (with_type (mk_vec t) (EBound 0)))))))))
+                             mk_res_error
+                               (mk_try_reserve_error "AllocError"
+                                  [
+                                    (* "layout", *)
+                                    with_type layout_t
+                                      (EApp (expr_of_builtin_t layout [ t ], [ Helpers.eunit ]));
+                                    (* "non_exhaustive", *)
+                                    Helpers.eunit;
+                                  ]),
+                             (* Result::Ok(v) *)
+                             mk_res_ok (with_type (mk_vec t) (EBound 0)) )) )) )) )
 
+let null_mut =
+  let open Krml.Ast in
+  let t = TBound 0 in
+  fun lid ->
+    DFunction (None, [ Private ], 0, 1, TBuf (t, false), lid, [ Krml.Helpers.fresh_binder "_" TUnit ], with_type (TBuf (t, false)) EBufNull)
 
 let nonzero_def = K.DType (nonzero, [], 0, 1, Abbrev (TBound 0))
 
@@ -631,6 +727,9 @@ let builtin_funcs =
     array_to_subslice_from;
     array_repeat;
     array_into_iter;
+    array_eq;
+    array_eq_slice;
+    slice_eq;
     slice_index;
     slice_index_outparam;
     slice_subslice;
@@ -639,6 +738,7 @@ let builtin_funcs =
     slice_to_array;
     slice_to_ref_array;
     slice_to_array2;
+    discriminant;
     range_iterator_step_by;
     range_step_by_iterator_next;
     box_new;

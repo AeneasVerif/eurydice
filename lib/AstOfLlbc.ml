@@ -285,26 +285,28 @@ let lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
 
 let width_of_integer_type (t : Charon.Types.integer_type) : K.width =
   match t with
-  | Isize -> PtrdiffT
-  | I8 -> Int8
-  | I16 -> Int16
-  | I32 -> Int32
-  | I64 -> Int64
-  | I128 -> failwith "Internal error: `i128` should not be handled in `width_of_integer_type`."
-  | Usize -> SizeT
-  | U8 -> UInt8
-  | U16 -> UInt16
-  | U32 -> UInt32
-  | U64 -> UInt64
-  | U128 -> failwith "Internal error: `u128` should not be handled in `width_of_integer_type`."
+  | Signed Isize -> PtrdiffT
+  | Signed I8 -> Int8
+  | Signed I16 -> Int16
+  | Signed I32 -> Int32
+  | Signed I64 -> Int64
+  | Signed I128 ->
+      failwith "Internal error: `i128` should not be handled in `width_of_integer_type`."
+  | Unsigned Usize -> SizeT
+  | Unsigned U8 -> UInt8
+  | Unsigned U16 -> UInt16
+  | Unsigned U32 -> UInt32
+  | Unsigned U64 -> UInt64
+  | Unsigned U128 ->
+      failwith "Internal error: `u128` should not be handled in `width_of_integer_type`."
 
 let lid_of_type_decl_id (env : env) (id : C.type_decl_id) =
   let { C.item_meta; _ } = env.get_nth_type id in
   lid_of_name env item_meta.name
 
-let constant_of_scalar_value { C.value; int_ty } =
-  let w = width_of_integer_type int_ty in
-  w, Z.to_string value
+let constant_of_scalar_value sv =
+  let w = width_of_integer_type (Charon.Scalars.get_ty sv) in
+  w, Z.to_string (Charon.Scalars.get_val sv)
 
 let assert_cg_scalar = function
   | C.CgValue (VScalar n) -> n
@@ -318,14 +320,20 @@ let cg_of_const_generic env cg =
       failwith
         ("cg_of_const_generic: " ^ Charon.PrintTypes.const_generic_to_string env.format_env cg)
 
+let float_width float_ty : K.width =
+  match float_ty with
+  | C.F32 -> Float32
+  | C.F64 -> Float64
+  | C.F16 | C.F128 -> failwith "TODO: f16 & f128 are not supported."
+
 let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
   match ty with
   | TBool -> K.TBool
   | TChar -> Builtin.char_t
-  | TFloat _ -> failwith "TODO: Float"
-  | TInteger C.I128 -> Builtin.int128_t
-  | TInteger C.U128 -> Builtin.uint128_t
-  | TInteger k -> K.TInt (width_of_integer_type k)
+  | TFloat f -> K.TInt (float_width f)
+  | TInt C.I128 -> Builtin.int128_t
+  | TUInt C.U128 -> Builtin.uint128_t
+  | _ -> K.TInt (width_of_integer_type (Charon.TypesUtils.literal_as_integer ty))
 
 (* Is TApp (lid, [ t ]) meant to compile to a DST? *)
 let to_dst env lid (t : K.typ) =
@@ -381,9 +389,8 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TLiteral t -> typ_of_literal_ty env t
   | TNever -> failwith "Impossible: Never"
   | TDynTrait _ -> failwith "TODO: dyn Trait"
-  | TAdt { id; generics = { types = [ t ]; _ } as generics }
-    when RustNames.is_vec env id generics ->
-      Builtin.mk_vec (typ_of_ty env t)
+  | TAdt { id; generics = { types = [ t ]; _ } as generics } when RustNames.is_vec env id generics
+    -> Builtin.mk_vec (typ_of_ty env t)
   | TAdt
       {
         id = TBuiltin TBox;
@@ -573,7 +580,11 @@ let uu =
 
 let binder_of_var (env : env) (l : C.local) : K.binder =
   let name = Option.value ~default:(uu ()) l.name in
-  let meta = match name with "left_val" | "right_val" -> [ K.AttemptInline ] | _ -> [] in
+  let meta =
+    match name with
+    | "left_val" | "right_val" -> [ K.AttemptInline ]
+    | _ -> []
+  in
   let binder = Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env l.var_ty) in
   { binder with node = { binder.node with meta = meta @ binder.node.meta } }
 
@@ -638,10 +649,12 @@ let expression_of_uint128_t (value : Z.t) =
   K.(
     with_type Builtin.uint128_t (EApp (Builtin.(get_128_op ("u", "from_bits")), [ high64; low64 ])))
 
-let expression_of_scalar_value ({ C.int_ty; _ } as sv) : K.expr =
+let expression_of_scalar_value sv : K.expr =
+  let int_ty = Charon.Scalars.get_ty sv in
+  let value = Charon.Scalars.get_val sv in
   match int_ty with
-  | C.I128 -> expression_of_int128_t sv.value
-  | C.U128 -> expression_of_uint128_t sv.value
+  | C.Signed C.I128 -> expression_of_int128_t value
+  | C.Unsigned C.U128 -> expression_of_uint128_t value
   | _ ->
       let w = width_of_integer_type int_ty in
       K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
@@ -664,7 +677,9 @@ let expression_of_literal (_env : env) (l : C.literal) : K.expr =
   | VByteStr lst ->
       let str = List.map (Printf.sprintf "%#x") lst |> String.concat "" in
       K.(with_type Krml.Checker.c_string (EString str))
-  | VFloat _ -> failwith "TODO: float value still not supported!"
+  | VFloat { C.float_ty; float_value } ->
+      let w = float_width float_ty in
+      K.(with_type (TInt w) (EConstant (w, float_value)))
 
 let expression_of_const_generic env cg =
   match cg with
@@ -680,6 +695,11 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
   | PlaceLocal var_id ->
       let i, t = lookup env var_id in
       K.(with_type t (EBound i))
+
+  | PlaceGlobal { id; _ } ->
+      let global = env.get_nth_global id in
+      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name)) 
+
   | PlaceProjection (sub_place, pe) -> begin
       (* Can't evaluate this here because of the special case for DSTs. *)
       let sub_e = lazy (expression_of_place env sub_place) in
@@ -964,8 +984,6 @@ let maybe_addrof (_env : env) (ty : C.ty) (e : K.expr) =
    function is a known builtin implementation. *)
 let blocklisted_trait_decls =
   [
-    (* Handled primitively. *)
-    "core::cmp::PartialEq";
     (* These don't have methods *)
     "core::marker::Sized";
     "core::marker::MetaSized";
@@ -973,20 +991,16 @@ let blocklisted_trait_decls =
     "core::marker::Send";
     "core::marker::Sync";
     "core::marker::Tuple";
+    "core::marker::Copy";
     (* The traits below *should* be handled properly ASAP. But for now, we have specific *instances*
        of those trait methods in the builtin lookup table, which we then implement by hand with
        macros. *)
     "core::iter::traits::iterator::Iterator";
     "core::iter::range::Step";
-    (* TODO: for now, we leave into as-is in the AST, do a later pass that eliminates all identity
-       calls to into (post-monomorphization), and error our if there are any left that do not operate
-       on primitive types. We should probably remove the special-case in this file and treat it
-       generically with a dedicated pass over the krml ast. *)
-    "core::convert::From";
     (* TODO: figure out what to do with those *)
     "core::clone::Clone";
-    "core::marker::Copy";
     "core::fmt::Debug";
+    "core::ptr::metadata::Thin";
   ]
 
 (* Interpret a Rust function type, with trait bounds, into the krml Ast, providing:
@@ -1052,7 +1066,11 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
       let substitute_visitor = Charon.Substitute.st_substitute_visitor in
 
       let name = string_of_name env trait_decl.item_meta.name in
-      let clause_ref: C.trait_instance_id = Option.value ~default:(C.Clause (Free clause_id)) clause_ref in
+      let clause_ref : C.trait_ref =
+        Option.value
+          ~default:C.{ trait_id = C.Clause (Free clause_id); trait_decl_ref = tc.trait }
+          clause_ref
+      in
 
       if List.mem name blocklisted_trait_decls then
         []
@@ -1077,7 +1095,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
             let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
             let t = substitute_visitor#visit_ty subst typ in
             let t = typ_of_ty env t in
-            TraitClauseConstant { item_name; pretty_name; clause_id = clause_ref }, t)
+            TraitClauseConstant { item_name; pretty_name; clause_id = clause_ref.trait_id }, t)
           trait_decl.C.consts
         (* 2. Trait methods *)
         @ List.map
@@ -1091,7 +1109,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
               in
               (* First we substitute the trait generics. *)
               let bound_method_sig : C.fun_sig C.binder =
-                Charon.Substitute.apply_args_to_item_binder clause_ref trait_generics
+                Charon.Substitute.apply_args_to_item_binder clause_ref.trait_id trait_generics
                   (substitute_visitor#visit_binder substitute_visitor#visit_fun_sig)
                   bound_method_sig
               in
@@ -1157,18 +1175,22 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
                 (Charon.PrintGAst.fun_sig_to_string env.format_env "" " " method_sig);
               let ts, t = typ_of_signature env method_sig in
               let t = maybe_ts ts t in
-              TraitClauseMethod { item_name; pretty_name; clause_id = clause_ref; ts }, t)
+              TraitClauseMethod { item_name; pretty_name; clause_id = clause_ref.trait_id; ts }, t)
             trait_decl.C.methods
         (* 1 + 2, recursively, for parent traits *)
         @ List.concat_map
-           (fun (parent_clause : C.trait_clause) ->
-             (* Make the clause valid outside the scope of the trait decl. *)
-             let parent_clause = substitute_visitor#visit_trait_clause subst parent_clause in
-             (* Mapping of the methods of the parent clause *)
-             let clause_ref: C.trait_instance_id = ParentClause (clause_ref, trait_decl_id, parent_clause.clause_id) in
-             mk_clause_binders_and_args env ~depth:(depth ^ "--") ~clause_ref [ parent_clause ]
-            )
-           trait_decl.C.parent_clauses
+            (fun (parent_clause : C.trait_clause) ->
+              (* Make the clause valid outside the scope of the trait decl. *)
+              let parent_clause = substitute_visitor#visit_trait_clause subst parent_clause in
+              (* Mapping of the methods of the parent clause *)
+              let clause_ref : C.trait_ref =
+                {
+                  trait_id = ParentClause (clause_ref, parent_clause.clause_id);
+                  trait_decl_ref = parent_clause.trait;
+                }
+              in
+              mk_clause_binders_and_args env ~depth:(depth ^ "--") ~clause_ref [ parent_clause ])
+            trait_decl.C.parent_clauses
       end)
     trait_clauses
 
@@ -1442,7 +1464,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                    the clause arguments at call-site. We must pass whatever is relevant for this
                    clause, *transitively* (this means all the reachable parents). *)
                 let rec relevant = function
-                  | C.ParentClause (clause_id', _, _) -> relevant clause_id'
+                  | C.ParentClause (tref', _) -> relevant tref'.trait_id
                   | clause_id' -> clause_id = clause_id'
                 in
                 List.rev
@@ -1454,7 +1476,8 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                          when relevant clause_id' -> Some K.(with_type t (EBound i))
                        | _ -> None)
                      env.binders)
-            | ParentClause (_instance_id, decl_id, clause_id) ->
+            | ParentClause (tref, clause_id) ->
+                let decl_id = tref.trait_decl_ref.binder_value.id in
                 let trait_decl = env.get_nth_trait_decl decl_id in
                 let name = string_of_name env trait_decl.item_meta.name in
                 let clause_id = C.TraitClauseId.to_int clause_id in
@@ -1557,8 +1580,16 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
 
 let expression_of_fn_ptr env (fn_ptr : C.fn_ptr) = expression_of_fn_ptr env "" fn_ptr
 
+let global_is_const env id = 
+  match (env.get_nth_global id).global_kind with
+  | NamedConst | AnonConst -> true
+  | Static -> false
+
 let expression_of_operand (env : env) (op : C.operand) : K.expr =
   match op with
+  | Copy ({ kind = PlaceGlobal { id; _ }; _ } as p) when global_is_const env id ->
+      (* No need to copy a const since by definition it cannot be modified *)
+      expression_of_place env p
   | Copy p ->
       let e = expression_of_place env p in
       begin
@@ -1610,7 +1641,7 @@ let is_box_place (p : C.place) =
   | C.TAdt { id = TBuiltin TBox; _ } -> true
   | _ -> false
 
-let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
+let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   match p with
   | Use op -> expression_of_operand env op
   (* Generally, MIR / current LLBC is guaranteed to apply [Deref] only to places that are
@@ -1685,6 +1716,9 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
       let dst = typ_of_literal_ty env dst in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
   | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
+      let dst = typ_of_ty env to_ in
+      K.with_type dst (K.ECast (expression_of_operand env e, dst))
+  | UnaryOp (Cast (CastTransmute ((TRawPtr _) as _from, (TLiteral (TUInt Usize) as to_))), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
   | UnaryOp (Cast (CastFnPtr (TFnDef _from, TFnPtr _to)), e) ->
@@ -1766,6 +1800,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
               (Charon.PrintExpressions.cast_kind_to_string env.format_env ck)
               ptyp t_to ptyp t_from
       end
+
   | UnaryOp (Cast ck, e) ->
       (* Add a simpler case: identity cast is allowed *)
       let is_ident =
@@ -1784,7 +1819,12 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
   | UnaryOp (op, o1) -> mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
-  | Discriminant _ -> failwith "expression_of_rvalue Discriminant"
+  | Discriminant sub_p ->
+      let e = expression_of_place env sub_p in
+      let expected_t = typ_of_ty env expected_ty in
+      K.(
+        with_type expected_t
+          (EApp (Builtin.(expr_of_builtin_t discriminant) [ e.typ; expected_t ], [ e ])))
   | Aggregate (AggregatedAdt ({ id = TTuple; _ }, _, None), ops) -> begin
       match ops with
       | [] -> K.with_type TUnit K.EUnit
@@ -1837,15 +1877,6 @@ let expression_of_rvalue (env : env) (p : C.rvalue) : K.expr =
       K.with_type
         (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
         (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
-  | Global { id; _ } ->
-      let global = env.get_nth_global id in
-      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
-  | GlobalRef ({ id; _ }, _) ->
-      let global = env.get_nth_global id in
-      let e =
-        K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
-      in
-      K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
   | rvalue ->
       failwith
         ("unsupported rvalue: `"
@@ -1921,8 +1952,9 @@ let rec expression_of_switch_128bits env ret_var scrutinee branches default : K.
 and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_statement) : K.expr =
   match s with
   | Assign (p, rv) ->
+      let expected_ty = p.ty in
       let p = expression_of_place env p in
-      let rv = expression_of_rvalue env rv in
+      let rv = expression_of_rvalue env rv expected_ty in
       K.(with_type TUnit (EAssign (p, rv)))
   | SetDiscriminant (_, _) -> failwith "C.SetDiscriminant"
   | StorageLive _ -> Krml.Helpers.eunit
@@ -2114,7 +2146,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
       let t = lesser e1.typ e2.typ in
       K.(with_type t (EIfThenElse (expression_of_operand env op, e1, e2)))
   | Switch (SwitchInt (scrutinee, int_ty, branches, default)) ->
-      if int_ty = I128 || int_ty = U128 then
+      if int_ty = Signed I128 || int_ty = Unsigned U128 then
         expression_of_switch_128bits env ret_var scrutinee branches default
       else
         let scrutinee = expression_of_operand env scrutinee in
@@ -2305,7 +2337,8 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
           let has_custom_constants =
             let rec has_custom_constants i = function
               | { C.discriminant; _ } :: bs ->
-                  discriminant.value <> Z.of_int i || has_custom_constants (i + 1) bs
+                  Charon.Scalars.get_val discriminant <> Z.of_int i
+                  || has_custom_constants (i + 1) bs
               | _ -> false
             in
             has_custom_constants 0 branches
@@ -2316,7 +2349,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               (fun ({ C.variant_name; discriminant; _ } : C.variant) ->
                 let v =
                   if has_custom_constants then
-                    Some discriminant.value
+                    Some (Charon.Scalars.get_val discriminant)
                   else
                     None
                 in
@@ -2575,8 +2608,6 @@ let known_failures =
       "issue_123::{core::cmp::PartialEq<issue_123::E2, issue_123::E2>}::eq";
       (* Failure("Can't handle arbitrary closures") *)
       "mismatch::{mismatch::MlKemKeyPairUnpacked<@Vector, @K>}::default";
-      (* Failure("TODO: TraitTypes Self::Error") *)
-      "core::convert::{core::convert::TryInto<@T, @U>}::try_into";
     ]
 
 let replacements =
@@ -2591,6 +2622,7 @@ let replacements =
       ( "core::num::{u32}::BITS",
         fun lid -> Krml.Ast.DGlobal ([], lid, 0, Krml.Helpers.uint32, Krml.Helpers.mk_uint32 32) );
       "alloc::vec::{alloc::vec::Vec<@T>}::try_with_capacity", Builtin.try_with_capacity;
+      "core::ptr::null_mut", Builtin.null_mut;
     ]
 
 (* Catch-all error handler (last resort) *)
