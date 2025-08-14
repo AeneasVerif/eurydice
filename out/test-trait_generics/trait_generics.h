@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __trait_generics_H
-#define __trait_generics_H
+#ifndef trait_generics_H
+#define trait_generics_H
 
 #include "eurydice_glue.h"
 
@@ -39,5 +39,5 @@ void trait_generics_main(void);
 }
 #endif
 
-#define __trait_generics_H_DEFINED
-#endif
+#define trait_generics_H_DEFINED
+#endif /* trait_generics_H */

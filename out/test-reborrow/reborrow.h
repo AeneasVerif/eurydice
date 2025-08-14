@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __reborrow_H
-#define __reborrow_H
+#ifndef reborrow_H
+#define reborrow_H
 
 #include "eurydice_glue.h"
 
@@ -27,5 +27,5 @@ void reborrow_main(void);
 }
 #endif
 
-#define __reborrow_H_DEFINED
-#endif
+#define reborrow_H_DEFINED
+#endif /* reborrow_H */

@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __partial_eq_H
-#define __partial_eq_H
+#ifndef partial_eq_H
+#define partial_eq_H
 
 #include "eurydice_glue.h"
 
@@ -51,5 +51,5 @@ core_result_Result_10 partial_eq_fmt_29(partial_eq_Enum *self, core_fmt_Formatte
 }
 #endif
 
-#define __partial_eq_H_DEFINED
-#endif
+#define partial_eq_H_DEFINED
+#endif /* partial_eq_H */

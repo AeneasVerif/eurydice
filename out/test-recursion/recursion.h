@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __recursion_H
-#define __recursion_H
+#ifndef recursion_H
+#define recursion_H
 
 #include "eurydice_glue.h"
 
@@ -23,5 +23,5 @@ void recursion_main(void);
 }
 #endif
 
-#define __recursion_H_DEFINED
-#endif
+#define recursion_H_DEFINED
+#endif /* recursion_H */

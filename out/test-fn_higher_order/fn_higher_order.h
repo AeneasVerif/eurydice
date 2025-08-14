@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __fn_higher_order_H
-#define __fn_higher_order_H
+#ifndef fn_higher_order_H
+#define fn_higher_order_H
 
 #include "eurydice_glue.h"
 
@@ -147,5 +147,5 @@ void fn_higher_order_unit_empty_ptr(void (*f)(void));
 }
 #endif
 
-#define __fn_higher_order_H_DEFINED
-#endif
+#define fn_higher_order_H_DEFINED
+#endif /* fn_higher_order_H */

@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __parentparent_H
-#define __parentparent_H
+#ifndef parentparent_H
+#define parentparent_H
 
 #include "eurydice_glue.h"
 
@@ -21,5 +21,5 @@ void parentparent_main(void);
 }
 #endif
 
-#define __parentparent_H_DEFINED
-#endif
+#define parentparent_H_DEFINED
+#endif /* parentparent_H */

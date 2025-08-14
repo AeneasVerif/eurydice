@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __dst_H
-#define __dst_H
+#ifndef dst_H
+#define dst_H
 
 #include "eurydice_glue.h"
 
@@ -24,14 +24,14 @@ typedef uint8_t core_panicking_AssertKind;
 typedef struct dst_T_s
 {
   uint32_t foo;
-  Eurydice_derefed_slice my_data;
+  uint32_t my_data[];
 }
 dst_T;
 
 typedef struct dst_T3_s
 {
   uint32_t foo;
-  Eurydice_derefed_slice my_data;
+  uint32_t my_data[][3U];
 }
 dst_T3;
 
@@ -107,7 +107,7 @@ with types Eurydice_derefed_slice uint32_t
 typedef struct dst_T2_be_s
 {
   size_t header;
-  Eurydice_derefed_slice my_data;
+  uint32_t my_data[];
 }
 dst_T2_be;
 
@@ -145,5 +145,5 @@ void dst_main(void);
 }
 #endif
 
-#define __dst_H_DEFINED
-#endif
+#define dst_H_DEFINED
+#endif /* dst_H */

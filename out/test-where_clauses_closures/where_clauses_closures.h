@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __where_clauses_closures_H
-#define __where_clauses_closures_H
+#ifndef where_clauses_closures_H
+#define where_clauses_closures_H
 
 #include "eurydice_glue.h"
 
@@ -24,14 +24,14 @@ extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(size_t *x0);
 typedef uint8_t core_panicking_AssertKind;
 
 /**
-This function found in impl {where_clauses_closures::Ops<1: usize> for usize}
+This function found in impl {where_clauses_closures::Ops<1usize> for usize}
 */
-size_t where_clauses_closures_zero_af(void);
+size_t where_clauses_closures_zero_38(void);
 
 /**
-This function found in impl {where_clauses_closures::Ops<1: usize> for usize}
+This function found in impl {where_clauses_closures::Ops<1usize> for usize}
 */
-size_t where_clauses_closures_of_usize_af(size_t x);
+size_t where_clauses_closures_of_usize_38(size_t x);
 
 /**
 This function found in impl {core::ops::function::FnMut<(usize), T> for where_clauses_closures::test::closure<T, K>[TraitClause@0, TraitClause@1, TraitClause@2]}
@@ -76,5 +76,5 @@ void where_clauses_closures_main(void);
 }
 #endif
 
-#define __where_clauses_closures_H_DEFINED
-#endif
+#define where_clauses_closures_H_DEFINED
+#endif /* where_clauses_closures_H */
