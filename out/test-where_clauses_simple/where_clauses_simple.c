@@ -62,17 +62,17 @@ void where_clauses_simple_k_calls_k(void)
 }
 
 /**
-This function found in impl {where_clauses_simple::Ops<1usize> for u64}
+This function found in impl {where_clauses_simple::Ops<1: usize> for u64}
 */
-uint64_t where_clauses_simple_add_19(uint16_t x[1U], uint64_t y)
+uint64_t where_clauses_simple_add_8e(uint16_t x[1U], uint64_t y)
 {
   return (uint64_t)x[0U] + y;
 }
 
 /**
-This function found in impl {where_clauses_simple::Ops<1usize> for u64}
+This function found in impl {where_clauses_simple::Ops<1: usize> for u64}
 */
-uint64_t where_clauses_simple_of_u16_19(uint16_t x)
+uint64_t where_clauses_simple_of_u16_8e(uint16_t x)
 {
   return (uint64_t)x;
 }
@@ -85,9 +85,9 @@ with const generics
 */
 uint64_t where_clauses_simple_fn_k_3a(void)
 {
-  uint64_t x = where_clauses_simple_of_u16_19(0U);
+  uint64_t x = where_clauses_simple_of_u16_8e(0U);
   uint16_t buf[1U] = { 0U };
-  return where_clauses_simple_add_19(buf, x);
+  return where_clauses_simple_add_8e(buf, x);
 }
 
 typedef struct _uint64_t__x2_s
@@ -158,16 +158,16 @@ with types uint64_t
 with const generics
 
 */
-uint64_t where_clauses_simple_fn_1_d7(void)
+uint64_t where_clauses_simple_fn_1_54(void)
 {
-  uint64_t x = where_clauses_simple_of_u16_19(0U);
+  uint64_t x = where_clauses_simple_of_u16_8e(0U);
   uint16_t buf[1U] = { 0U };
-  return where_clauses_simple_add_19(buf, x);
+  return where_clauses_simple_add_8e(buf, x);
 }
 
 void where_clauses_simple_one_calls_one(void)
 {
-  uint64_t r = where_clauses_simple_fn_1_d7();
+  uint64_t r = where_clauses_simple_fn_1_54();
   uint64_t r_expected = 0ULL;
   _uint64_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
@@ -179,10 +179,10 @@ with types uint64_t, size_t
 with const generics
 
 */
-tuple_65 where_clauses_simple_double_ed(uint64_t x, size_t y)
+tuple_65 where_clauses_simple_double_21(uint64_t x, size_t y)
 {
   uint16_t buf0[1U] = { 0U };
-  uint64_t uu____0 = where_clauses_simple_add_19(buf0, x);
+  uint64_t uu____0 = where_clauses_simple_add_8e(buf0, x);
   uint16_t buf[1U] = { 0U };
   return
     (KRML_CLITERAL(tuple_65){ .fst = uu____0, .snd = where_clauses_simple_add_81_74(buf, y) });
@@ -199,7 +199,7 @@ tuple_b6 where_clauses_simple_double_k_7b(size_t x, uint64_t y)
   uint16_t buf0[3U] = { 0U };
   size_t uu____0 = where_clauses_simple_add_81_e0(buf0, x);
   uint16_t buf[1U] = { 0U };
-  return (KRML_CLITERAL(tuple_b6){ .fst = uu____0, .snd = where_clauses_simple_add_19(buf, y) });
+  return (KRML_CLITERAL(tuple_b6){ .fst = uu____0, .snd = where_clauses_simple_add_8e(buf, y) });
 }
 
 void where_clauses_simple_main(void)
@@ -208,7 +208,7 @@ void where_clauses_simple_main(void)
   where_clauses_simple_k_calls_one();
   where_clauses_simple_one_calls_k();
   where_clauses_simple_one_calls_one();
-  tuple_65 x = where_clauses_simple_double_ed(1ULL, (size_t)1U);
+  tuple_65 x = where_clauses_simple_double_21(1ULL, (size_t)1U);
   tuple_b6 y = where_clauses_simple_double_k_7b((size_t)1U, 1ULL);
   uint64_t x_0 = 1ULL;
   size_t x_1 = (size_t)2U;
