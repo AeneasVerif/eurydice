@@ -44,8 +44,8 @@ let mk_nonzero t = K.TApp (nonzero, [ t ])
 
 (* Internal types *)
 let char_t = K.(TInt UInt32)
-let void_dst = K.TQualified ([ "Eurydice" ], "void_dst")
-let char_dst = K.TQualified ([ "Eurydice" ], "char_dst")
+let c_void_t = K.TQualified ([ "Eurydice" ], "c_void_t")
+let c_char_t = K.TQualified ([ "Eurydice" ], "c_char_t")
 let int128_t = K.TQualified ([ "Eurydice"; "Int128" ], "int128_t")
 let uint128_t = K.TQualified ([ "Eurydice"; "Int128" ], "uint128_t")
 

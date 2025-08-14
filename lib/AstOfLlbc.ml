@@ -455,9 +455,9 @@ and ptr_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TAdt {id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
     Builtin.mk_slice (typ_of_ty env t)
   (* Special case to handle &str *)
-  | TAdt {id = TBuiltin TStr; _ } -> Builtin.mk_dst_ref Builtin.char_dst Krml.Helpers.usize
+  | TAdt {id = TBuiltin TStr; _ } -> Builtin.mk_dst_ref Builtin.c_char_t Krml.Helpers.usize
   (* Special case to handle DynTrait *)
-  | TDynTrait pred -> Builtin.mk_dst_ref Builtin.void_dst (vtable_typ_of_dyn_pred env pred)
+  | TDynTrait pred -> Builtin.mk_dst_ref Builtin.c_void_t (vtable_typ_of_dyn_pred env pred)
   (* General case, all &T is turned to either thin T* or fat Eurydice::DstRef<T,Meta> *)
   | _ ->
     let typ = typ_of_ty env ty in
