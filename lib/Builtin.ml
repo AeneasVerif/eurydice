@@ -6,8 +6,10 @@ end
 
 let vec : K.lident = [ "Eurydice" ], "vec"
 let mk_vec (t : K.typ) : K.typ = K.TApp (vec, [ t ])
-let slice : K.lident = [ "Eurydice" ], "slice"
-let mk_slice (t : K.typ) : K.typ = K.TApp (slice, [ t ])
+let dst_ref = [ "Eurydice" ], "dst_ref"
+let mk_dst_ref (t: K.typ) (meta: K.typ) : K.typ = K.TApp (dst_ref, [ t; meta ])
+let slice : K.lident = dst_ref
+let mk_slice (t : K.typ) : K.typ = K.TApp (slice, [ t; TInt SizeT ])
 let range : K.lident = [ "core"; "ops"; "range" ], "Range"
 let mk_range (t : K.typ) : K.typ = K.TApp (range, [ t ])
 let range_to : K.lident = [ "core"; "ops"; "range" ], "RangeTo"
@@ -16,6 +18,20 @@ let range_from : K.lident = [ "core"; "ops"; "range" ], "RangeFrom"
 let mk_range_from (t : K.typ) : K.typ = K.TApp (range_from, [ t ])
 let option : K.lident = [ "core"; "option" ], "Option"
 let mk_option (t : K.typ) : K.typ = K.TApp (option, [ t ])
+
+(** special treatment for the array type: translating [T;C] as rust generic type
+    struct <const C:usize, T> { data : [T;C]; } *)
+
+let arr : K.lident = [ "Eurydice" ], "arr"
+let mk_arr (t : K.typ) (cg: K.cg) : K.typ = K.TCgApp (K.TApp (arr, [ t ]), cg)
+
+let decl_of_arr =
+  K.DType (arr , [], 1, 1, Flat [(Some "data", (K.TCgArray (TBound 0,0), true))])
+  (* []  : no flags
+     1  : we have one const generic C
+     1  : we have one type argument T *)
+
+
 let array_copy = [ "Eurydice" ], "array_copy"
 
 (* Things that could otherwise be emitted as an extern prototype, but for some
@@ -28,8 +44,24 @@ let mk_nonzero t = K.TApp (nonzero, [ t ])
 
 (* Internal types *)
 let char_t = K.(TInt UInt32)
+let c_void_t = K.TQualified ([ "Eurydice" ], "c_void_t")
+let c_char_t = K.TQualified ([ "Eurydice" ], "c_char_t")
 let int128_t = K.TQualified ([ "Eurydice"; "Int128" ], "int128_t")
 let uint128_t = K.TQualified ([ "Eurydice"; "Int128" ], "uint128_t")
+
+(* Internal decls *)
+let dst_ref_decl =
+  K.DType
+    ( dst_ref,
+      [],
+      0,
+      2,
+      Flat
+        [
+          Some "ptr", (TBuf (TBound 1, false), false);
+          Some "meta", (TBound 0, false);
+        ] )
+
 
 (** A record to hold a builtin *function* with all relevant information for both krml and the
     transpilation phase in AstOfLlbc *)
@@ -135,7 +167,7 @@ let get_128_op (kind, op) : K.expr = expr_of_builtin @@ Op128Map.find (kind, op)
 let array_to_slice =
   {
     name = [ "Eurydice" ], "array_to_slice";
-    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, false) ] (mk_slice (TBound 0));
+    typ = Krml.Helpers.fold_arrow [ TBuf (mk_arr (TBound 0) (CgVar 0), false) ] (mk_slice (TBound 0));
     n_type_args = 1;
     cg_args = [ TInt SizeT ];
     arg_names = [ "a" ];
@@ -146,7 +178,7 @@ let array_to_subslice =
     name = [ "Eurydice" ], "array_to_subslice";
     typ =
       Krml.Helpers.fold_arrow
-        [ TBuf (TBound 2, false); mk_range (TInt SizeT) ]
+        [ TBuf (mk_arr (TBound 2) (CgVar 0), false); mk_range (TInt SizeT) ]
         (mk_slice (TBound 2));
     n_type_args = 3;
     cg_args = [ TInt SizeT ];
@@ -158,19 +190,46 @@ let array_to_subslice_to =
     name = [ "Eurydice" ], "array_to_subslice_to";
     typ =
       Krml.Helpers.fold_arrow
-        [ TBuf (TBound 2, false); mk_range_to (TInt SizeT) ]
+        [ TBuf (mk_arr (TBound 2) (CgVar 0), false); mk_range_to (TInt SizeT) ]
         (mk_slice (TBound 2));
     n_type_args = 3;
     cg_args = [ TInt SizeT ];
     arg_names = [ "a"; "r" ];
   }
 
+let array_to_subslice_to_func =
+  let open Krml in
+  let open Ast in
+  let element_t = TBound 2 in
+  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), false) in
+  let ret_t = mk_slice element_t in
+  let lid = [ "Eurydice" ], "array_to_subslice_to" in
+  let binders =
+  [
+    Helpers.fresh_binder "N" (TInt SizeT);
+    Helpers.fresh_binder "a" arrref_t;
+    Helpers.fresh_binder "r" (mk_range_to (TInt SizeT));
+  ]
+  in
+  let expr =
+    (* args *)
+    let arrref = with_type arrref_t (EBound 1) in
+    let range = with_type (mk_range_to (TInt SizeT)) (EBound 0) in
+    (* { .ptr = a-> data, .meta = r.end }*)
+    let arr = Helpers.(mk_deref (Helpers.assert_tbuf_or_tarray arrref.typ) arrref.node) in
+    let data = with_type (TCgArray (element_t, 0)) (EField (arr, "data")) in
+    let ptr = with_type (TBuf (element_t, false)) (ECast (data, (TBuf (element_t, false)))) in
+    let meta = with_type (TInt SizeT) (EField (range, "end")) in
+    with_type ret_t (EFlat [ (Some "ptr", ptr); (Some "meta", meta) ])
+  in
+  DFunction (None, [ Private ], 1, 3, ret_t, lid, binders, expr)
+
 let array_to_subslice_from =
   {
     name = [ "Eurydice" ], "array_to_subslice_from";
     typ =
       Krml.Helpers.fold_arrow
-        [ TBuf (TBound 2, false); mk_range_from (TInt SizeT) ]
+        [ TBuf (mk_arr (TBound 2) (CgVar 0), false); mk_range_from (TInt SizeT) ]
         (mk_slice (TBound 2));
     n_type_args = 3;
     cg_args = [ TInt SizeT ];
@@ -217,9 +276,7 @@ let array_into_iter =
 let array_eq =
   {
     name = [ "Eurydice" ], "array_eq";
-    (* This is NOT `Krml.Helpers.fold_arrow [ TCgArray (TBound 0, 0); TCgArray (TBound 0, 0) ]
-       TBool` because we get array pointers that decay. *)
-    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, false); TBuf (TBound 0, false) ] TBool;
+    typ = Krml.Helpers.fold_arrow [ TBuf (mk_arr (TBound 0) (CgVar 0), false); TBuf (mk_arr (TBound 0) (CgVar 0), false) ] TBool;
     n_type_args = 1;
     cg_args = [ TInt SizeT ];
     arg_names = [ "arr"; "arr2" ];
@@ -228,7 +285,7 @@ let array_eq =
 let array_eq_slice =
   {
     name = [ "Eurydice" ], "array_eq_slice";
-    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, false); TBuf (mk_slice (TBound 0), false) ] TBool;
+    typ = Krml.Helpers.fold_arrow [ TBuf (mk_arr (TBound 0) (CgVar 0), false); TBuf (mk_slice (TBound 0), false) ] TBool;
     n_type_args = 1;
     cg_args = [ TInt SizeT ];
     arg_names = [ "arr"; "slice" ];
@@ -363,13 +420,13 @@ let box_new =
     arg_names = [ "v" ];
   }
 
-let box_new_array =
+let empty_array =
   {
-    name = [ "Eurydice" ], "box_new_array";
-    typ = Krml.Helpers.fold_arrow [ TCgArray (TBound 0, 0) ] (TBuf (TBound 0, false));
+    name = [ "Eurydice" ], "empty_array";
+    typ = Krml.Helpers.fold_arrow [ TBound 0 ] (mk_arr (TBound 0) (CgConst (SizeT, "0")));
     n_type_args = 1;
-    cg_args = [ TInt SizeT ];
-    arg_names = [ "v" ];
+    cg_args = [];
+    arg_names = [ "x" ];
   }
 
 let replace =
@@ -424,16 +481,6 @@ let slice_of_dst =
       Krml.Helpers.fold_arrow
         [ TBuf (TApp (derefed_slice, [ TBound 0 ]), false); TInt SizeT ]
         (mk_slice (TBound 0));
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [ "ptr"; "len" ];
-  }
-
-(* Gotta use a helper because the definition of Eurydice_slice is opaque (historical mistake?). *)
-let slice_of_boxed_array =
-  {
-    name = [ "Eurydice" ], "slice_of_boxed_array";
-    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, false); TInt SizeT ] (mk_slice (TBound 0));
     n_type_args = 1;
     cg_args = [];
     arg_names = [ "ptr"; "len" ];
@@ -742,10 +789,9 @@ let builtin_funcs =
     range_iterator_step_by;
     range_step_by_iterator_next;
     box_new;
-    box_new_array;
+    empty_array;
     replace;
     slice_of_dst;
-    slice_of_boxed_array;
     bitand_pv_u8;
     shr_pv_u8;
     min_u32;
