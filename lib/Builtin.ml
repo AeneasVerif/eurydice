@@ -197,6 +197,33 @@ let array_to_subslice_to =
     arg_names = [ "a"; "r" ];
   }
 
+let array_to_subslice_to_func =
+  let open Krml in
+  let open Ast in
+  let element_t = TBound 2 in
+  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), false) in
+  let ret_t = mk_slice element_t in
+  let lid = [ "Eurydice" ], "array_to_subslice_to" in
+  let binders =
+  [
+    Helpers.fresh_binder "N" (TInt SizeT);
+    Helpers.fresh_binder "a" arrref_t;
+    Helpers.fresh_binder "r" (mk_range_to (TInt SizeT));
+  ]
+  in
+  let expr =
+    (* args *)
+    let arrref = with_type arrref_t (EBound 1) in
+    let range = with_type (mk_range_to (TInt SizeT)) (EBound 0) in
+    (* { .ptr = a-> data, .meta = r.end }*)
+    let arr = Helpers.(mk_deref (Helpers.assert_tbuf_or_tarray arrref.typ) arrref.node) in
+    let data = with_type (TCgArray (element_t, 0)) (EField (arr, "data")) in
+    let ptr = with_type (TBuf (element_t, false)) (ECast (data, (TBuf (element_t, false)))) in
+    let meta = with_type (TInt SizeT) (EField (range, "end")) in
+    with_type ret_t (EFlat [ (Some "ptr", ptr); (Some "meta", meta) ])
+  in
+  DFunction (None, [ Private ], 1, 3, ret_t, lid, binders, expr)
+
 let array_to_subslice_from =
   {
     name = [ "Eurydice" ], "array_to_subslice_from";
