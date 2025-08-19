@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __inline_attributes_H
-#define __inline_attributes_H
+#ifndef inline_attributes_H
+#define inline_attributes_H
 
 #include "eurydice_glue.h"
 
@@ -27,5 +27,5 @@ void inline_attributes_main(void);
 }
 #endif
 
-#define __inline_attributes_H_DEFINED
-#endif
+#define inline_attributes_H_DEFINED
+#endif /* inline_attributes_H */

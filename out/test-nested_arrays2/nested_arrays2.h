@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __nested_arrays2_H
-#define __nested_arrays2_H
+#ifndef nested_arrays2_H
+#define nested_arrays2_H
 
 #include "eurydice_glue.h"
 
@@ -39,5 +39,5 @@ void nested_arrays2_main(void);
 }
 #endif
 
-#define __nested_arrays2_H_DEFINED
-#endif
+#define nested_arrays2_H_DEFINED
+#endif /* nested_arrays2_H */

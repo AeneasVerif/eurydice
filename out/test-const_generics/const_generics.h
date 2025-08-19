@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __const_generics_H
-#define __const_generics_H
+#ifndef const_generics_H
+#define const_generics_H
 
 #include "eurydice_glue.h"
 
@@ -169,5 +169,5 @@ extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(uint8_t *x0);
 }
 #endif
 
-#define __const_generics_H_DEFINED
-#endif
+#define const_generics_H_DEFINED
+#endif /* const_generics_H */

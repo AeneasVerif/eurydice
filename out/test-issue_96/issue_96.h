@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __issue_96_H
-#define __issue_96_H
+#ifndef issue_96_H
+#define issue_96_H
 
 #include "eurydice_glue.h"
 
@@ -42,5 +42,5 @@ void issue_96_main(void);
 }
 #endif
 
-#define __issue_96_H_DEFINED
-#endif
+#define issue_96_H_DEFINED
+#endif /* issue_96_H */
