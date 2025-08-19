@@ -24,8 +24,8 @@ KRML_MUSTINLINE uint32_t inline_attributes_h(void)
 
 void inline_attributes_main(void)
 {
-  LowStar_Ignore_ignore(inline_attributes_f(), uint32_t, void *);
-  LowStar_Ignore_ignore(inline_attributes_g(), uint32_t, void *);
-  LowStar_Ignore_ignore(inline_attributes_h(), uint32_t, void *);
+  inline_attributes_f();
+  inline_attributes_g();
+  inline_attributes_h();
 }
 

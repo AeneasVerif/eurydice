@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __array2d_H
-#define __array2d_H
+#ifndef array2d_H
+#define array2d_H
 
 #include "eurydice_glue.h"
 
@@ -14,6 +14,12 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+extern bool
+core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(const uint32_t *x0, const uint32_t *x1);
+
+extern bool
+core_cmp_impls__core__cmp__PartialEq_u32__for_u32__ne(const uint32_t *x0, const uint32_t *x1);
 
 bool array2d_f(uint32_t x[4U][2U]);
 
@@ -25,15 +31,9 @@ typedef uint8_t core_panicking_AssertKind;
 
 void array2d_main(void);
 
-extern bool
-core_cmp_impls___core__cmp__PartialEq_u32__for_u32__24__eq(
-  const uint32_t *x0,
-  const uint32_t *x1
-);
-
 #if defined(__cplusplus)
 }
 #endif
 
-#define __array2d_H_DEFINED
-#endif
+#define array2d_H_DEFINED
+#endif /* array2d_H */

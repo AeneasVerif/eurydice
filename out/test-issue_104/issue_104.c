@@ -15,7 +15,7 @@ with const generics
 */
 uint8_t issue_104_sth_50(void)
 {
-  return ISSUE_104___ISSUE_104__FUN_FOR_ISSUE_104__S___VAL;
+  return ISSUE_104__ISSUE_104__FUN_FOR_ISSUE_104__S__VAL;
 }
 
 uint8_t issue_104_call(void)
@@ -36,9 +36,7 @@ void issue_104_main(void)
   uint8_t lvalue0 = issue_104_call();
   /* original Rust expression is not an lvalue in C */
   uint8_t lvalue = 5U;
-  const_uint8_t__x2 uu____0 = { CFIELD(.fst, &lvalue0), CFIELD(.snd, &lvalue) };
-  const uint8_t *left_val = uu____0.fst;
-  const uint8_t *right_val = uu____0.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  const_uint8_t__x2 uu____0 = { .fst = &lvalue0, .snd = &lvalue };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 

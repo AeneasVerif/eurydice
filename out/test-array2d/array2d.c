@@ -12,13 +12,7 @@ bool array2d_f(uint32_t x[4U][2U])
   x[0U][0U] = 1U;
   x[0U][1U] = 2U;
   uint32_t y[4U][2U] = { { 1U, 2U }, { 3U, 4U }, { 1U, 2U }, { 3U, 4U } };
-  return
-    core_array_equality___core__cmp__PartialEq__Array_U__N___for__Array_T__N____eq((size_t)4U,
-      x,
-      y,
-      uint32_t [2U],
-      uint32_t [2U],
-      bool);
+  return Eurydice_array_eq((size_t)4U, x, y, uint32_t [2U]);
 }
 
 typedef struct const_bool__x2_s
@@ -46,9 +40,7 @@ void array2d_main(void)
   memcpy(copy_of_y, y, (size_t)4U * sizeof (uint32_t [2U]));
   bool actual = array2d_f(copy_of_y);
   bool expected = true;
-  const_bool__x2 uu____1 = { CFIELD(.fst, &actual), CFIELD(.snd, &expected) };
-  const bool *left_val = uu____1.fst;
-  const bool *right_val = uu____1.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  const_bool__x2 uu____1 = { .fst = &actual, .snd = &expected };
+  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 

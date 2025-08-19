@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __nested_arrays_H
-#define __nested_arrays_H
+#ifndef nested_arrays_H
+#define nested_arrays_H
 
 #include "eurydice_glue.h"
 
@@ -14,67 +14,6 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-extern size_t core_clone_impls___core__clone__Clone_for_usize__5__clone(const size_t *x0);
-
-#define core_cmp_Ordering_Less -1
-#define core_cmp_Ordering_Equal 0
-#define core_cmp_Ordering_Greater 1
-
-typedef int8_t core_cmp_Ordering;
-
-extern bool
-core_cmp_impls___core__cmp__PartialEq_usize__for_usize__21__eq(
-  const size_t *x0,
-  const size_t *x1
-);
-
-#define core_option_None 0
-#define core_option_Some 1
-
-typedef uint8_t core_option_Option_77_tags;
-
-/**
-A monomorphic instance of core.option.Option
-with types core_cmp_Ordering
-
-*/
-typedef struct core_option_Option_77_s
-{
-  core_option_Option_77_tags tag;
-  core_cmp_Ordering f0;
-}
-core_option_Option_77;
-
-extern core_option_Option_77
-core_cmp_impls___core__cmp__PartialOrd_usize__for_usize__58__partial_cmp(
-  const size_t *x0,
-  const size_t *x1
-);
-
-/**
-A monomorphic instance of core.option.Option
-with types size_t
-
-*/
-typedef struct core_option_Option_08_s
-{
-  core_option_Option_77_tags tag;
-  size_t f0;
-}
-core_option_Option_08;
-
-extern core_option_Option_08
-core_iter_range___core__iter__range__Step_for_usize__43__backward_checked(size_t x0, size_t x1);
-
-extern core_option_Option_08
-core_iter_range___core__iter__range__Step_for_usize__43__forward_checked(size_t x0, size_t x1);
-
-extern core_option_Option_08
-core_iter_range___core__iter__range__Step_for_usize__43__steps_between(
-  const size_t *x0,
-  const size_t *x1
-);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -86,7 +25,7 @@ typedef uint32_t nested_arrays_Key[8U];
 
 extern const uint32_t nested_arrays_ZERO[8U];
 
-void nested_arrays_main(void);
+extern void nested_arrays_main(void);
 
 void nested_arrays_test(uint8_t ret[4U][200U]);
 
@@ -94,5 +33,5 @@ void nested_arrays_test(uint8_t ret[4U][200U]);
 }
 #endif
 
-#define __nested_arrays_H_DEFINED
-#endif
+#define nested_arrays_H_DEFINED
+#endif /* nested_arrays_H */

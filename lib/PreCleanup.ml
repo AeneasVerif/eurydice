@@ -1,29 +1,11 @@
 open Krml.Ast
 
+module H = Krml.Helpers
+
 (* All the transformations that need to happen in order for the program to type-check as valid Low*
    *)
 
 let expr_of_constant (w, n) = with_type (TInt w) (EConstant (w, n))
-
-let flatten_sequences files =
-  begin
-    object
-      inherit [_] map as super
-
-      method! visit_ESequence env es =
-        let rec flatten acc e =
-          match e.node with
-          | ESequence [ { node = EUnit; _ }; e2 ] -> flatten acc e2
-          | ESequence [ e1; e2 ] -> flatten (e1 :: acc) e2
-          | ESequence _ ->
-              failwith "impossible: charon generates right-nested two-element sequences"
-          | _ -> ESequence (List.rev_append acc [ super#visit_expr env e ])
-        in
-        flatten [] (with_type (snd env) (ESequence es))
-    end
-  end
-    #visit_files
-    () files
 
 let expand_array_copies files =
   begin
@@ -34,49 +16,62 @@ let expand_array_copies files =
         match rhs.node with
         | EApp ({ node = EQualified lid; _ }, [ src; len ]) when lid = Builtin.array_copy ->
             (* Krml.Helpers.mk_copy_assignment (t, n) lhs.node rhs *)
-            let zero = Krml.(Helpers.zero Constant.SizeT) in
+            let zero = H.zero_usize in
             EBufBlit (src, zero, lhs, zero, len)
         | _ -> super#visit_EAssign env lhs rhs
 
       method! visit_EApp env hd args =
-        if hd.node = EQualified Builtin.array_copy then
-          Krml.Warn.fatal_error "Uncaught array copy"
+        match hd, args with
+        | { node = EQualified lid; _ }, [ src; len ] when lid = Builtin.array_copy ->
+            ELet (H.fresh_binder "array_copy" src.typ,
+              H.any,
+              with_type src.typ (ESequence [
+                with_type TUnit (
+                  EBufBlit (Krml.DeBruijn.lift 1 src, H.zero_usize, with_type src.typ (EBound 0), H.zero_usize, Krml.DeBruijn.lift 1 len));
+                with_type src.typ (EBound 0)]))
+        | _ ->
+            super#visit_EApp env hd args
+    end
+  end
+    #visit_files
+    () files
+
+let remove_array_eq = object
+  inherit Krml.DeBruijn.map_counting_cg as super
+
+  method! visit_expr ((n_cgs, n_binders) as env, _) e =
+    match e with
+    | [%cremepat {| core::array::equality::?impl::eq[#?n](#?..)<?t,?u>(?a1, ?a2) |}] ->
+        let rec is_flat = function
+          | TArray (t, _) -> is_flat t
+          | TInt _ | TBool | TUnit -> true
+          | _ -> false
+        in
+        assert (t = u);
+        if is_flat t then
+          let diff = n_binders - n_cgs in
+          match impl with
+          | "{core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>}" ->
+              with_type TBool (EApp (
+                Builtin.(expr_of_builtin_t ~cgs:(diff, [n]) array_eq [ t ]),
+                [ a1; a2 ]))
+          | "{core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>}" ->
+              with_type TBool (EApp (
+                Builtin.(expr_of_builtin_t ~cgs:(diff, [n]) array_eq_slice [ t ]),
+                [ a1; a2 ]))
+          | _ ->
+              failwith ("unknown array eq impl: " ^ impl)
         else
-          super#visit_EApp env hd args
-    end
-  end
-    #visit_files
-    () files
+          failwith "TODO: non-byteeq array comparison"
+    | _ -> super#visit_expr (env, e.typ) e
 
-(* Rust is super lenient regarding the type of shift operators, we impose u32 -- see
-   https://doc.rust-lang.org/std/ops/trait.Shl.html *)
-let adjust_shifts files =
-  begin
-    object
-      inherit [_] map as super
-
-      method! visit_EApp env e es =
-        let open Krml in
-        match e.node, es with
-        | EOp ((BShiftL | BShiftR), _), [ e1; e2 ] -> begin
-            match e2.node with
-            | EConstant (_, s) ->
-                let i = int_of_string s in
-                assert (i >= 0);
-                EApp (e, [ e1; Krml.Helpers.mk_uint32 i ])
-            | _ ->
-                EApp (e, [ e1; with_type (TInt Constant.UInt32) (ECast (e2, TInt Constant.UInt32)) ])
-          end
-        | _ -> super#visit_EApp env e es
-    end
-  end
-    #visit_files
-    () files
+   method! visit_DFunction _ cc flags n_cgs n t lid bs e =
+     super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t lid bs e
+end
 
 let precleanup files =
   let files = expand_array_copies files in
-  let files = flatten_sequences files in
-  let files = adjust_shifts files in
+  let files = remove_array_eq#visit_files (0, 0) files in
   files
 
 let merge files =

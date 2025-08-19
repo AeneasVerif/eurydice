@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __issue_123_H
-#define __issue_123_H
+#ifndef issue_123_H
+#define issue_123_H
 
 #include "eurydice_glue.h"
 
@@ -55,9 +55,14 @@ int32_t issue_123_fun(issue_123_E e);
 
 void issue_123_main(void);
 
+/**
+This function found in impl {core::cmp::PartialEq<issue_123::E2> for issue_123::E2}
+*/
+bool issue_123_eq_e3(const issue_123_E2 *self, const issue_123_E2 *other);
+
 #if defined(__cplusplus)
 }
 #endif
 
-#define __issue_123_H_DEFINED
-#endif
+#define issue_123_H_DEFINED
+#endif /* issue_123_H */

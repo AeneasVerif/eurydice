@@ -8,5 +8,5 @@ fn call_it() -> Result<(), u8> {
 }
 
 fn main() {
-    assert_eq!(call_it(), Ok(()))
+    assert_eq!(call_it(), Err(1))
 }

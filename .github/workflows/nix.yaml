@@ -5,6 +5,7 @@ on:
     branches:
       - main
   pull_request:
+  workflow_dispatch:
 
 # Cancel previous versions of this job that are still running.
 concurrency:
@@ -45,12 +46,9 @@ jobs:
           # any newly pinned dependencies, we must override all of them.
           EURYDICE_REV="${{ github.sha }}"
           CHARON_REV="$(nix develop '.#ci' --command jq -r .nodes.charon.locked.rev flake.lock)"
-          KRML_REV="$(nix develop '.#ci' --command jq -r .nodes.karamel.locked.rev flake.lock)"
-          FSTAR_REV="$(nix develop '.#ci' --command jq -r .nodes.fstar.locked.rev flake.lock)"
           git clone https://github.com/Inria-Prosecco/circus-green
           cd circus-green
-          nix flake lock --override-input charon github:aeneasverif/charon/$CHARON_REV
-          nix flake lock --override-input eurydice github:aeneasverif/eurydice/$EURYDICE_REV
-          nix flake lock --override-input eurydice/karamel github:FStarLang/karamel/$KRML_REV
-          nix flake lock --override-input eurydice/karamel/fstar github:FStarLang/fstar/$FSTAR_REV
+          nix flake update charon --override-input charon github:aeneasverif/charon/$CHARON_REV
+          nix flake update eurydice --override-input eurydice github:aeneasverif/eurydice/$EURYDICE_REV
           ./check.sh ml-kem-small
+          # ./check.sh ml-dsa-small

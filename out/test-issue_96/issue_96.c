@@ -9,22 +9,19 @@
 
 void issue_96_use_it(const issue_96_MyStruct *x)
 {
-
+  EURYDICE_ASSERT(!!((size_t)0U < (size_t)5U), "assert failure");
 }
 
 void issue_96_use_it2(const issue_96_MyStruct2 *x)
 {
-
+  EURYDICE_ASSERT(!!((size_t)0U < (size_t)5U), "assert failure");
 }
 
 void issue_96_main(void)
 {
-  issue_96_MyStruct x;
-  uint8_t repeat_expression0[5U] = { 0U };
-  memcpy(x.fst, repeat_expression0, (size_t)5U * sizeof (uint8_t));
-  issue_96_MyStruct2 x0;
-  uint8_t repeat_expression[5U] = { 0U };
-  memcpy(x0.fst, repeat_expression, (size_t)5U * sizeof (uint8_t));
-  x0.snd = 2U;
+  issue_96_MyStruct x = { .fst = { 0U } };
+  issue_96_use_it(&x);
+  issue_96_MyStruct2 x0 = { .fst = { 0U }, .snd = 2U };
+  issue_96_use_it2(&x0);
 }
 

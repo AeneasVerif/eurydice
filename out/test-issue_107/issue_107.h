@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __issue_107_H
-#define __issue_107_H
+#ifndef issue_107_H
+#define issue_107_H
 
 #include "eurydice_glue.h"
 
@@ -18,13 +18,13 @@ extern "C" {
 void issue_107_main(void);
 
 /**
-This function found in impl {(issue_107::Fun for issue_107::MyStruct)}
+This function found in impl {issue_107::Fun for issue_107::MyStruct}
 */
-uint8_t issue_107_f_18(void);
+uint8_t issue_107_f_90(void);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define __issue_107_H_DEFINED
-#endif
+#define issue_107_H_DEFINED
+#endif /* issue_107_H */

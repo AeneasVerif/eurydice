@@ -1,35 +1,32 @@
 {
   inputs = {
-    karamel.url = "github:FStarLang/karamel";
+    nixpkgs.follows = "charon/nixpkgs";
     flake-utils.follows = "karamel/flake-utils";
-    # Need to use same-ish nixpkgs version as karamel to get a compatible ocaml
-    # toolchain
-    nixpkgs.follows = "karamel/nixpkgs";
-    # Need a recent nixpkgs to get ocamlformat 0.27
-    recent_nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    karamel.url = "github:FStarLang/karamel";
+    karamel.inputs.nixpkgs.follows = "nixpkgs";
 
     charon.url = "github:AeneasVerif/charon";
-    charon.inputs.nixpkgs.follows = "recent_nixpkgs";
-    charon.inputs.nixpkgs-ocaml.follows = "nixpkgs";
   };
   outputs =
     { self
     , flake-utils
     , nixpkgs
-    , recent_nixpkgs
     , ...
     } @ inputs:
     flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = import nixpkgs { inherit system; };
-      recent_pkgs = import recent_nixpkgs { inherit system; };
 
-      karamel = inputs.karamel.packages.${system}.default;
+      karamel = inputs.karamel.packages.${system}.default.override {
+        ocamlPackages = pkgs.ocamlPackages;
+      };
       fstar = inputs.karamel.inputs.fstar.packages.${system}.default;
       krml = karamel.passthru.lib;
 
       charon-packages = inputs.charon.packages.${system};
-      charon-ml = charon-packages.charon-ml;
+      charon-ml = charon-packages.charon-ml.override {
+        ocamlPackages = pkgs.ocamlPackages;
+      };
       charon = charon-packages.default;
 
       package =
@@ -53,9 +50,9 @@
 
             src = ./.;
 
-            nativeBuildInputs = [ gnugrep ];
+            nativeBuildInputs = [ gnugrep ] ++ (with ocamlPackages; [ menhir ]);
 
-            propagatedBuildInputs = [ krml charon-ml ocamlPackages.terminal ocamlPackages.yaml ];
+            propagatedBuildInputs = [ krml charon-ml ocamlPackages.terminal ocamlPackages.yaml ] ++ (with ocamlPackages; [ menhirLib ]);
 
             passthru = {
               tests = clangStdenv.mkDerivation {
@@ -100,18 +97,21 @@
         eurydice;
     in
     rec {
-      packages.default = pkgs.callPackage package {
-        inherit charon-ml krml;
-        version = self.rev or "dirty";
+      packages = {
+        default = pkgs.callPackage package {
+          inherit charon-ml krml;
+          version = self.rev or "dirty";
+        };
+        inherit charon karamel;
       };
       checks.default = packages.default.tests;
       devShells.ci = pkgs.mkShell { packages = [ pkgs.jq ]; };
       devShells.default = (pkgs.mkShell.override { stdenv = pkgs.clangStdenv; }) {
         OCAMLRUNPARAM = "b"; # Get backtrace on exception
         packages = [
-          pkgs.clang-tools # For clang-format
+          pkgs.clang-tools_18 # For clang-format
           pkgs.ocamlPackages.ocaml
-          recent_pkgs.ocamlPackages.ocamlformat_0_27_0
+          pkgs.ocamlPackages.ocamlformat_0_27_0
           pkgs.ocamlPackages.menhir
           # ocaml-lsp's version must match the ocaml version used. Pinning
           # this here to save me a headache.

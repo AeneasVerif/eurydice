@@ -26,10 +26,8 @@ void slice_array_f1(void)
   Eurydice_slice_index(y0, (size_t)0U, uint8_t [4U], uint8_t (*)[4U])[0U] = 1U;
   uint8_t actual = x[0U][0U];
   uint8_t expected = 1U;
-  const_uint8_t__x2 uu____0 = { CFIELD(.fst, &actual), CFIELD(.snd, &expected) };
-  const uint8_t *left_val = uu____0.fst;
-  const uint8_t *right_val = uu____0.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
 void slice_array_f2(void)
@@ -48,10 +46,8 @@ void slice_array_f2(void)
   z[0U] = 1U;
   uint8_t actual = x[0U][0U];
   uint8_t expected = 0U;
-  const_uint8_t__x2 uu____0 = { CFIELD(.fst, &actual), CFIELD(.snd, &expected) };
-  const uint8_t *left_val = uu____0.fst;
-  const uint8_t *right_val = uu____0.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
 void slice_array_main(void)

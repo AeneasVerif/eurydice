@@ -6,6 +6,50 @@ open Krml.PrintAst.Ops
 
 (* Target cleanups invoked from bin/main.ml *)
 
+(* A note on the various cleanup phases for arrays to preserve the semantics of Rust. Assume
+   `struct S { y: [u32; 4] }`.
+   ... pass by ref
+   1. remove_array_repeats: [e; N] becomes bufcreate e N, or bufcreateL, depending on some
+      heuristics -- see comments in this phase 
+   2. remove_literals: let x = S { y: foo } --> let x; x.y := foo; x
+      where the assignment has an array type -- this is either because foo would decay in C and as
+      such cannot appear in the initializer; or because of foo if of a syntactic form that does not
+      suit itself to becoming an initializer (e.g. is an if-then-else).
+   3. remove_implicit_array_copies: handles x := e1 at array types, including nested array cases
+   ... hoist
+
+   Phase 2. performs a limited form of hoisting, There is an invariant that hoist cannot be more
+   aggressive than 2., otherwise, there will be array copy-assignments that won't be compiled.
+*)
+
+(* In the initial value of a variable, is this a suitable expression to initialize something that
+   has an array type (or a struct that may contain arrays)? *)
+let rec is_suitable_array_initializer =
+  let rec subarrays_only_literals e =
+    (* Underneath an initializer list *)
+    match e.node, e.typ with
+    | _, TArray _ ->
+        (* In the case of nested arrays *)
+        begin
+          match e.node with
+          | EBufCreateL (_, es) ->
+              (* We only allow sub-initializer lists *)
+              List.for_all subarrays_only_literals es
+          | _ ->
+              (* Anything else (e.g. variable) is not copy-assignment in C *)
+              false
+        end
+    | EFlat es, _ -> List.for_all subarrays_only_literals (List.map snd es)
+    | _ ->
+        (* If this is not a nested array, then anything goes *)
+        true
+  in
+  function
+  | EAny | EBufCreate _ -> true
+  | EBufCreateL (_, es) -> List.for_all subarrays_only_literals es
+  | EFlat es -> List.for_all subarrays_only_literals (List.map snd es)
+  | _ -> false
+
 (* A general phase that removes assignments at array types. Note that all array repeat expressions
    are desugared before this. We try to reduce all cases to the assignment case (e1 := e2). *)
 let remove_implicit_array_copies =
@@ -70,32 +114,9 @@ let remove_implicit_array_copies =
               lift 1 (self#visit_expr_w () e2) )
 
     method! visit_ELet (((), _) as env) b e1 e2 =
-      let rec subarrays_only_literals e =
-        (* Underneath an initializer list *)
-        match e.typ with
-        | TArray _ ->
-            (* In the case of nested arrays *)
-            begin
-              match e.node with
-              | EBufCreateL (_, es) ->
-                  (* We only allow sub-initializer lists *)
-                  List.for_all subarrays_only_literals es
-              | _ ->
-                  (* Anything else (e.g. variable) is not copy-assignment in C *)
-                  false
-            end
-        | _ ->
-            (* If this is not a nested array, then anything goes *)
-            true
-      in
-      let is_suitable_initializer = function
-        | EAny | EBufCreate _ -> true
-        | EBufCreateL (_, es) -> List.for_all subarrays_only_literals es
-        | _ -> false
-      in
       match b.typ, e1.node with
       (* INVALID INITIALIZATION: let b = e1 in e2 -- explode into assignments, recursively *)
-      | TArray (_, n), _ when not (is_suitable_initializer e1.node) ->
+      | TArray (_, n), _ when not (is_suitable_array_initializer e1.node) ->
           (* let b = <uninitialized> in *)
           ELet
             ( b,
@@ -171,7 +192,9 @@ let remove_array_temporaries =
    - If the array repeat is of a /simple form/ (i.e., e is a scalar value), then
      we use the BufCreate node, to be emitted later on (also in CStarToC) as a
      zero-initializer, a memset, or a for-loop.
-   - Barring that, we use a for-loop and recurse. *)
+   - Barring that, we use a for-loop and recurse.
+
+   This happens BEFORE remove_implicit_array_copies above. *)
 let remove_array_repeats =
   object (self)
     inherit [_] map as super
@@ -182,13 +205,20 @@ let remove_array_repeats =
       match e.node, es with
       | ETApp ({ node = EQualified lid; _ }, [ _ ], _, [ _ ]), [ _ ]
         when lid = Builtin.array_repeat.name ->
-          (self#visit_expr env
-             (with_type (snd env)
-                (ELet
-                   ( H.fresh_binder "repeat_expression" (snd env),
-                     with_type (snd env) (EApp (e, es)),
-                     with_type (snd env) (EBound 0) ))))
-            .node
+          (* Same logic as below: if we can do something smart (like, only zeroes), then we expand,
+             let the subsequent `hoist` phase lift this into a let-binding, and code-gen will optimize this into
+             { 0 }. If we can't do something smart, we let-bind, and fall back onto the general case. *)
+          begin
+            try (self#expand_repeat false (with_type (snd env) (EApp (e, es)))).node
+            with Not_found ->
+              (self#visit_expr env
+                 (with_type (snd env)
+                    (ELet
+                       ( H.fresh_binder "repeat_expression" (snd env),
+                         with_type (snd env) (EApp (e, es)),
+                         with_type (snd env) (EBound 0) ))))
+                .node
+          end
       | _ -> super#visit_EApp env e es
 
     method private assert_length len =
@@ -196,7 +226,18 @@ let remove_array_repeats =
       | EConstant (_, s) -> int_of_string s
       | _ -> failwith "impossible"
 
-    method private try_expand_zero e =
+    (* This function recursively expands nested repeat expressions as initializer lists
+       (EBufCreateL) as long as the innermost initial value is a zero, otherwise, it throws
+       Not_found. For instance:
+       - [[0; 2]; 2] --> { {0, 0}, {0, 0} }.
+       - [[1; 2]; 2] --> error -- better code quality with a BufCreate expression which will give
+         rise to a for-loop initializer
+
+       We override this behavior when we're already underneath an EBufCreateL -- here, we've already
+       committed to an initializer list (and Charon will suitably "fold" repeat expressions
+       automatically for us), so we might as well expand.
+    *)
+    method private expand_repeat under_bufcreate e =
       match e.node with
       | EApp
           ( { node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ },
@@ -206,18 +247,53 @@ let remove_array_repeats =
           with_type e.typ @@ EBufCreateL (Stack, List.init (self#assert_length len) (fun _ -> init))
       | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
         when lid = Builtin.array_repeat.name ->
-          (* [e; n] -> ok if e ok *)
-          let init = self#try_expand_zero init in
+          (* [e; n] -> ok if e ok -- n is a constant here Rust has no VLAs *)
+          let init = self#expand_repeat under_bufcreate init in
           with_type e.typ @@ EBufCreateL (Stack, List.init (self#assert_length len) (fun _ -> init))
-      | _ -> raise Not_found
+      | _ ->
+          if under_bufcreate then
+            e
+          else
+            raise Not_found
 
-    method! visit_ELet (((), _) as env) b e1 e2 =
+    method! visit_DGlobal env flags name n t e1 =
       match e1.node with
+      | EBufCreateL (l, es) ->
+          DGlobal
+            ( flags,
+              name,
+              n,
+              t,
+              with_type e1.typ (EBufCreateL (l, List.map (self#expand_repeat true) es)) )
       | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
         when lid = Builtin.array_repeat.name -> begin
           try
             (* Case 1. *)
-            let r = ELet (b, self#try_expand_zero e1, self#visit_expr env e2) in
+            DGlobal (flags, name, n, t, (self#expand_repeat false) e1)
+          with Not_found -> (
+            match init.node with
+            | EConstant _ ->
+                (* Case 2. *)
+                DGlobal
+                  ( flags,
+                    name,
+                    n,
+                    t,
+                    with_type e1.typ
+                      (EBufCreate (Stack, init, Krml.Helpers.mk_sizet (self#assert_length len))) )
+            | _ -> super#visit_DGlobal env flags name n t e1)
+        end
+      | _ -> super#visit_DGlobal env flags name n t e1
+
+    method! visit_ELet (((), _) as env) b e1 e2 =
+      match e1.node with
+      (* Nothing special here for EBufCreateL otherwise it breaks the invariant expected by
+         remove_implicit_array_copies *)
+      | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
+        when lid = Builtin.array_repeat.name -> begin
+          try
+            (* Case 1 (only zeroes). *)
+            let r = ELet (b, (self#expand_repeat false) e1, self#visit_expr env e2) in
             r
           with Not_found -> (
             match init.node with
@@ -284,100 +360,71 @@ let remove_array_from_fn files =
         | ETApp
             ( { node = EQualified ([ "core"; "array" ], "from_fn"); _ },
               [ len ],
-              _,
-              [ t_elements; TArrow (t_index, TArrow (t_elements', TUnit)) ] ) ->
+              [ call_mut; _call_once ],
+              [ t_elements; _t_captured_state ] ) ->
             (* Same as below, but catching the case where the type of elements is an
                array and has undergone outparam optimization (i.e. the closure,
                instead of having type size_t -> t_element, has type size_t -> t_element ->
                unit *)
-            L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements';
-            assert (t_elements' = t_elements);
-            assert (t_index = TInt SizeT);
-            assert (List.length es = 2);
-            let closure_lid, state =
-              match (List.hd es).node with
-              | EQualified _ -> List.hd es, []
-              | EApp (({ node = EQualified lid; _ } as hd), [ e_state ]) ->
-                  L.log "Cleanup2" "closure=%a" pexpr
-                    (Krml.DeBruijn.subst e_state 0 (Hashtbl.find defs lid));
-                  hd, [ e_state ]
-              | _ ->
-                  L.log "Cleanup2" "closure=%a" pexpr (List.hd es);
-                  failwith "unexpected closure shape"
-            in
+            L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements;
             (* First argument = closure, second argument = destination. Note that
                the closure may itself be an application of the closure to the state
                (but not always... is this unit argument elimination kicking in? not
                sure). *)
-            let dst = List.nth es 1 in
+            let state, dst =
+              match es with
+              | [ x; y ] -> x, y
+              | _ -> assert false
+            in
             let lift1 = Krml.DeBruijn.lift 1 in
+            let t_dst = H.assert_tbuf_or_tarray dst.typ in
             EFor
               ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
-                H.zero_usize (* i = 0 *),
+                H.zero_usize (* i: size_t = 0 *),
                 H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
                 H.mk_incr_usize (* i++ *),
                 let i = with_type H.usize (EBound 0) in
                 Krml.Helpers.with_unit
-                  (EApp
-                     ( closure_lid,
-                       List.map lift1 state @ [ i; with_type t_elements (EBufRead (lift1 dst, i)) ]
-                     )) )
+                  (if H.is_array t_dst then
+                     EApp
+                       ( call_mut,
+                         [
+                           with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
+                           with_type (TInt SizeT) (EBound 0);
+                           with_type t_dst (EBufRead (lift1 dst, i));
+                         ] )
+                   else
+                     EBufWrite
+                       ( Krml.DeBruijn.lift 1 dst,
+                         i,
+                         with_type t_dst
+                           (EApp
+                              ( call_mut,
+                                [
+                                  with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
+                                  with_type (TInt SizeT) (EBound 0);
+                                ] )) )) )
         | ETApp
-            ( { node = EQualified ([ "core"; "array" ], "from_fn"); _ },
+            ( { node = EQualified ("core" :: "array" :: _, "map"); _ },
               [ len ],
-              _,
-              [ t_elements; TArrow (t_index, t_elements') ] ) ->
-            (* Not sure why this one inlines the body, but not above. *)
-            L.log "Cleanup2" "%a %a" ptyp t_elements ptyp t_elements';
-            assert (t_elements' = t_elements);
-            assert (t_index = TInt SizeT);
-            assert (List.length es = 2);
-            let closure =
-              match (List.hd es).node with
-              | EQualified lid -> Hashtbl.find defs lid
-              | EApp ({ node = EQualified lid; _ }, [ e_state ]) ->
-                  L.log "Cleanup2" "closure=%a" pexpr
-                    (Krml.DeBruijn.subst e_state 0 (Hashtbl.find defs lid));
-                  Krml.DeBruijn.subst e_state 1 (Hashtbl.find defs lid)
-              | _ ->
-                  L.log "Cleanup2" "closure=%a" pexpr (List.hd es);
-                  failwith "unexpected closure shape"
-            in
-            let dst = List.nth es 1 in
-            EFor
-              ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
-                H.zero_usize (* i = 0 *),
-                H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
-                H.mk_incr_usize (* i++ *),
-                let i = with_type H.usize (EBound 0) in
-                Krml.Helpers.with_unit (EBufWrite (Krml.DeBruijn.lift 1 dst, i, closure)) )
-        | ETApp ({ node = EQualified ("core" :: "array" :: _, "map"); _ }, [ len ], _, ts) ->
+              [ call_mut; _call_once ],
+              ts ) ->
             let t_src, t_dst =
               match ts with
-              | [ t_src; t_closure; t_dst ] ->
-                  assert (t_closure = TArrow (t_src, t_dst));
+              | [ t_src; t_state; t_dst ] ->
+                  assert (t_state = TUnit);
                   L.log "Cleanup2" "found array map from %a to %a" ptyp t_src ptyp t_dst;
                   t_src, t_dst
               | _ ->
                   failwith "TODO: unknown map closure shape; is it an array outparam? (see above)"
             in
-            let e_src, e_closure, e_dst =
+            let e_src, e_state, e_dst =
               match es with
-              | [ e_src; e_closure; e_dst ] -> e_src, e_closure, e_dst
+              | [ e_src; e_state; e_dst ] -> e_src, e_state, e_dst
               | _ -> failwith "unknown shape of arguments to array map"
             in
-            let closure_lid, state =
-              match e_closure.node with
-              | EQualified _ -> e_closure, []
-              | EApp (({ node = EQualified lid; _ } as hd), [ e_state ]) ->
-                  L.log "Cleanup2" "map closure=%a" pexpr
-                    (Krml.DeBruijn.subst e_state 0 (Hashtbl.find defs lid));
-                  hd, [ e_state ]
-              | _ ->
-                  L.log "Cleanup2" "map closure=%a" pexpr (List.hd es);
-                  failwith "unexpected map closure shape"
-            in
             let lift1 = Krml.DeBruijn.lift 1 in
+            let e_state = with_type (TBuf (e_state.typ, false)) (EAddrOf (lift1 e_state)) in
             EFor
               ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
                 H.zero_usize (* i = 0 *),
@@ -387,9 +434,7 @@ let remove_array_from_fn files =
                 let e_src_i = with_type t_src (EBufRead (lift1 e_src, i)) in
                 Krml.Helpers.with_unit
                   (EBufWrite
-                     ( lift1 e_dst,
-                       i,
-                       with_type t_dst (EApp (closure_lid, List.map lift1 state @ [ e_src_i ])) ))
+                     (lift1 e_dst, i, with_type t_dst (EApp (call_mut, [ lift1 e_state; e_src_i ]))))
               )
         | _ -> super#visit_EApp env e es
     end
@@ -526,37 +571,43 @@ let contains_array t =
     #visit_expr_w
     () t
 
-let remove_literals =
+let must_explode e =
+  (* Note that this visits the whole type (including the type of fields) *)
+  contains_array e && not (is_suitable_array_initializer e.node)
+
+let remove_literals tbl =
   object (_self)
     inherit [_] map as super_map
-    inherit! Krml.Structs.remove_literals as super_krml
+    inherit! Krml.Structs.remove_literals tbl as super_krml
 
     method! visit_ELet env b e1 e2 =
-      (* To be desugared into memcpy's later. *)
-      if contains_array e1 then
+      if must_explode e1 then
         super_krml#visit_ELet env b e1 e2
       else
         super_map#visit_ELet env b e1 e2
 
-    method! visit_EFlat ((_, t) as env) fields =
-      (* To be desugared into memcpy's later. *)
-      if contains_array (with_type t (EFlat fields)) then
+    method! visit_EFlat (((), t) as env) fields =
+      if must_explode (with_type t (EFlat fields)) then
         super_krml#visit_EFlat env fields
       else
         super_map#visit_EFlat env fields
+
+    method! visit_DGlobal _env flags name n t body =
+      (* No point: can't have let-bindings in globals *)
+      DGlobal (flags, name, n, t, body)
   end
+
+let remove_literals files =
+  (remove_literals (Krml.Structs.build_remove_literals_map files))#visit_files () files
 
 let build_macros (macros : Krml.Idents.LidSet.t ref) =
   object (_self)
     inherit [_] map as super
 
     method! visit_DGlobal env flags name n t body =
-      if Krml.Helpers.is_bufcreate body then
-        super#visit_DGlobal env flags name n t body
-      else begin
-        (macros := Krml.Idents.LidSet.(union !macros (singleton name)));
-        DGlobal (flags @ [ Macro ], name, n, t, body)
-      end
+      (if List.mem Krml.Common.Macro flags then
+         macros := Krml.Idents.LidSet.(union !macros (singleton name)));
+      super#visit_DGlobal env flags name n t body
   end
 
 let build_macros files =
@@ -568,236 +619,210 @@ let resugar_loops =
   object(self)
   inherit [_] map as super
 
-  method! visit_ELet ((), _ as env) b e1 e2 =
-    (* XXX note: these patterns are fragile and will break if the loop index ends up being unused
-       because the let ... = next goes away. *)
-    match e1.node, e2.node with
+  method! visit_expr ((), _ as env) e =
     (* Non-terminal position (step-by for-loop) *)
-    |
-    (* let iter = core::iter::traits::collect::_<t>({ start = e_start; end = e_end }) in *)
-    EApp ({ node = ETApp (
-      { node = EQualified (["core"; "iter"; "traits"; "collect"; _], "into_iter"); _ },
-      [],
-      _,
-      TApp ((["core"; "iter"; "adapters"; "step_by"], "StepBy"), [ TApp ((["core"; "ops"; "range"], "Range"), _t') ]) :: _
-    ); _ }, [
-      { node = EApp ( { node =
-        ETApp (
-          { node = EQualified (["core"; "iter"; "range"; _], "step_by"); _ },
-          _,
-          _,
-          _); _
-      }, [
-        { node = EFlat [ Some "start", e_start; Some "end", e_end ]; _ };
-        ({ node = EConstant _; _ } as e_increment)
-      ]
-      ); _ }
-    ]),
-    (* while (true) *)
-    ESequence ( { node = EWhile ({ node = EBool true; _ },
-       { node = ELet (_, {
-        node = EApp ({
-            node = ETApp ({
-              node = EQualified (["core";"iter"; "adapters"; "step_by";_], "next"); _
-            }, [], [], [ _; t'] );
-            _
-        }, [{
-          node = EAddrOf({
-            node = EBufRead ({
-              node = EAddrOf ({
-                node = EBound 0;
-                _
-              }); _
-            }, {
-              node = EConstant (_, "0"); _
-            }); _
-          }
-        ); _ }]); _ }, 
-
-    {
-        (* match core::iter::adapters::step_by::...::next<t>(&(&iter[0])) with None -> break | Some _ -> e_body *)
-          node = EMatch (Unchecked, { node = EBound 0; _ }, [
-            [], { node = PCons ("None", _); _ }, { node = EBreak; _ };
-            [], { node = PCons ("Some", _); _ }, e_body;
-          ]); _
-       }); _ }); _ } :: rest)
-
-    ->
+    match e with
+    | [%cremepat {|
+      let iter =
+        core::iter::traits::collect::?::into_iter<
+          core::iter::adapters::step_by::StepBy<core::ops::range::Range<?..>>,
+          ?..
+        >(core::iter::range::?::step_by<?..>(
+          { start: ?e_start, end: ?e_end },
+          ?e_increment
+        ));
+      while true {
+        let x = core::iter::adapters::step_by::?::next<?, ?t1>(&iter);
+        match x {
+          None -> break,
+          Some ? -> ?e_body
+        }
+      };
+      ?rest..
+    |}] ->
       let open Krml.Helpers in
-      let w = match t' with TInt w -> w | _ -> assert false in
-      let e_some_i = with_type (Builtin.mk_option t') (ECons ("Some", [with_type t' (EBound 0)])) in
-      ESequence (with_type TUnit (EFor (fresh_binder ~mut:true "i" t',
+      let w = match t1 with TInt w -> w | _ -> assert false in
+      let e_some_i = with_type (Builtin.mk_option t1) (ECons ("Some", [with_type t1 (EBound 0)])) in
+      with_type e.typ @@ ESequence (with_type TUnit (EFor (fresh_binder ~mut:true "i" t1,
         e_start,
         mk_lt w (Krml.DeBruijn.lift 1 e_end),
         (* XXX seems like the increment is always size_t here ?! *)
-        mk_incr_e w (with_type t' (ECast (e_increment, t'))),
+        mk_incr_e w (with_type t1 (ECast (e_increment, t1))),
         self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body))) ::
         List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest)
 
-    (* Terminal position (step-by for-loop) *)
-    |
-    (* let iter = core::iter::traits::collect::_<t>({ start = e_start; end = e_end }) in *)
-    EApp ({ node = ETApp (
-      { node = EQualified (["core"; "iter"; "traits"; "collect"; _], "into_iter"); _ },
-      [],
-      _,
-      TApp ((["core"; "iter"; "adapters"; "step_by"], "StepBy"), [ TApp ((["core"; "ops"; "range"], "Range"), _t') ]) :: _
-    ); _ }, [
-      { node = EApp ( { node =
-        ETApp (
-          { node = EQualified (["core"; "iter"; "range"; _], "step_by"); _ },
-          _,
-          _,
-          _); _
-      }, [
-        { node = EFlat [ Some "start", e_start; Some "end", e_end ]; _ };
-        ({ node = EConstant _; _ } as e_increment)
-      ]
-      ); _ }
-    ]),
-    (* while (true) *)
-    EWhile ({ node = EBool true; _ }, 
-      { node = ELet (_,
-        { node = EApp ({
-            node = ETApp ({
-              node = EQualified (["core";"iter"; "adapters"; "step_by";_], "next"); _
-            }, [], [], [ _; t'] );
-            _
-        }, [{
-          node = EAddrOf({
-            node = EBufRead ({
-              node = EAddrOf ({
-                node = EBound 0;
-                _
-              }); _
-            }, {
-              node = EConstant (_, "0"); _
-            }); _
-          }
-          ); _ }]); _ }
-,
-    {
-        (* match core::iter::adapters::step_by::...::next<t>(&(&iter[0])) with None -> break | Some _ -> e_body *)
-      node = EMatch (Unchecked, { node = EBound 0; _ }, [
-            [], { node = PCons ("None", _); _ }, { node = EBreak; _ };
-            [], { node = PCons ("Some", _); _ }, e_body;
-          ]); _
-      }); _ })
-
-    ->
+    | [%cremepat {|
+      let iter =
+        core::iter::traits::collect::?::into_iter<
+          core::iter::adapters::step_by::StepBy<core::ops::range::Range<?..>>,
+          ?..
+        >(core::iter::range::?::step_by<?..>(
+          { start: ?e_start, end: ?e_end },
+          ?e_increment
+        ));
+      while true {
+        match (core::iter::adapters::step_by::?::next<?, ?t1>(&iter)) {
+          None -> break,
+          Some ? -> ?e_body
+        }
+      };
+      ?rest..
+    |}] ->
       let open Krml.Helpers in
-      let w = match t' with TInt w -> w | _ -> assert false in
-      let e_some_i = with_type (Builtin.mk_option t') (ECons ("Some", [with_type t' (EBound 0)])) in
-      EFor (fresh_binder ~mut:true "i" t',
+      let w = match t1 with TInt w -> w | _ -> assert false in
+      with_type e.typ @@ ESequence (with_type TUnit (EFor (fresh_binder ~mut:true "i" t1,
         e_start,
         mk_lt w (Krml.DeBruijn.lift 1 e_end),
         (* XXX seems like the increment is always size_t here ?! *)
-        mk_incr_e w (with_type t' (ECast (e_increment, t'))),
+        mk_incr_e w (with_type t1 (ECast (e_increment, t1))),
+        self#visit_expr env e_body)) ::
+        List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest)
+
+    (* Terminal position (step-by for-loop) *)
+    | [%cremepat {|
+      let iter =
+        core::iter::traits::collect::?::into_iter<
+          core::iter::adapters::step_by::StepBy<core::ops::range::Range<?..>>,
+          ?..
+        >(core::iter::range::?::step_by<?..>(
+          { start: ?e_start, end: ?e_end },
+          ?e_increment
+        ));
+      while true {
+        let x = core::iter::adapters::step_by::?::next<?, ?t1>(&iter);
+        match x {
+          None -> break,
+          Some ? -> ?e_body
+        }
+      }
+    |}] ->
+      let open Krml.Helpers in
+      let w = match t1 with TInt w -> w | _ -> assert false in
+      let e_some_i = with_type (Builtin.mk_option t1) (ECons ("Some", [with_type t1 (EBound 0)])) in
+      with_type e.typ @@ EFor (fresh_binder ~mut:true "i" t1,
+        e_start,
+        mk_lt w (Krml.DeBruijn.lift 1 e_end),
+        (* XXX seems like the increment is always size_t here ?! *)
+        mk_incr_e w (with_type t1 (ECast (e_increment, t1))),
         self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body))
 
-    (* Terminal position (regular range for-loop) *)
-    |
-    (* let iter = core::iter::traits::collect<t>({ start = e_start; end = e_end }) in *)
-    EApp ({ node = ETApp (
-      { node = EQualified (["core"; "iter"; "traits"; "collect"; _], "into_iter"); _ },
-      [],
-      _,
-      TApp ((["core"; "ops"; "range"], "Range"), _t') :: _
-    ); _ }, [
-      { node = EFlat [ Some "start", e_start; Some "end", e_end ]; _ }
-    ]),
-    (* while (true) *)
-    EWhile ({ node = EBool true; _ }, {
-      (* let next = core::iter::range::next<t>(&(&iter[0])) in *)
-      node = ELet (_, {
-        node = EApp ({
-          node = ETApp ({
-            node = EQualified (["core";"iter";"range";_], "next"); _
-          }, [], [], [ t' ]);
-          _
-        }, [{
-          node = EAddrOf({
-            node = EBufRead ({
-              node = EAddrOf ({
-                node = EBound 0;
-                _
-              }); _
-            }, {
-              node = EConstant (_, "0"); _
-            }); _
-          }
-          ); _ }]); _ },
-        (* match next with None -> break | Some _ -> e_body *)
-        {
-          node = EMatch (Unchecked, { node = EBound 0; _ }, [
-            [], { node = PCons ("None", _); _ }, { node = EBreak; _ };
-            [], { node = PCons ("Some", _); _ }, e_body;
-          ]); _
+    | [%cremepat {|
+      let iter =
+        core::iter::traits::collect::?::into_iter<
+          core::iter::adapters::step_by::StepBy<core::ops::range::Range<?..>>,
+          ?..
+        >(core::iter::range::?::step_by<?..>(
+          { start: ?e_start, end: ?e_end },
+          ?e_increment
+        ));
+      while true {
+        match (core::iter::adapters::step_by::?::next<?, ?t1>(&iter)) {
+          None -> break,
+          Some ? -> ?e_body
         }
-
-    ); _ }) ->
+      }
+    |}] ->
       let open Krml.Helpers in
-      let w = match t' with TInt w -> w | _ -> assert false in
-      let e_some_i = with_type (Builtin.mk_option t') (ECons ("Some", [with_type t' (EBound 0)])) in
-      EFor (fresh_binder ~mut:true "i" t',
+      let w = match t1 with TInt w -> w | _ -> assert false in
+      with_type e.typ @@ EFor (fresh_binder ~mut:true "i" t1,
+        e_start,
+        mk_lt w (Krml.DeBruijn.lift 1 e_end),
+        (* XXX seems like the increment is always size_t here ?! *)
+        mk_incr_e w (with_type t1 (ECast (e_increment, t1))),
+        self#visit_expr env e_body)
+
+    (* Terminal position (regular range for-loop) *)
+    | [%cremepat {|
+      let iter =
+        core::iter::traits::collect::?::into_iter
+          <core::ops::range::Range<?..>, ?..>
+          ({ start: ?e_start, end: ?e_end });
+      while true {
+        let x = core::iter::range::?::next<?t1>(&iter);
+        match x {
+          None -> break,
+          Some ? -> ?e_body
+        }
+      }
+    |}] ->
+      let open Krml.Helpers in
+      let w = match t1 with TInt w -> w | _ -> assert false in
+      let e_some_i = with_type (Builtin.mk_option t1) (ECons ("Some", [with_type t1 (EBound 0)])) in
+      with_type e.typ @@ EFor (fresh_binder ~mut:true "i" t1,
         e_start,
         mk_lt w (Krml.DeBruijn.lift 1 e_end),
         mk_incr w,
         self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body))
 
-    (* Non-terminal position (regular range for-loop) *)
-    |
-    (* let iter = core::iter::traits::collect<t>({ start = e_start; end = e_end }) in *)
-    EApp ({ node = ETApp (
-      { node = EQualified (["core"; "iter"; "traits"; "collect"; _], "into_iter"); _ },
-      [],
-      _,
-      TApp ((["core"; "ops"; "range"], "Range"), _t') :: _
-    ); _ }, [
-      { node = EFlat [ Some "start", e_start; Some "end", e_end ]; _ }
-    ]),
-    (* while (true) *)
-    ESequence ({ node = EWhile ({ node = EBool true; _ }, {
-      (* let next = core::iter::range::next<t>(&(&iter[0])) in *)
-      node = ELet (_, {
-        node = EApp ({
-          node = ETApp ({
-            node = EQualified (["core";"iter";"range";_], "next"); _
-          }, [], [], [ t' ]);
-          _
-        }, [{
-          node = EAddrOf({
-            node = EBufRead ({
-              node = EAddrOf ({
-                node = EBound 0;
-                _
-              }); _
-            }, {
-              node = EConstant (_, "0"); _
-            }); _
-          }
-          ); _ }]); _ },
-        (* match next with None -> break | Some _ -> e_body *)
-        {
-          node = EMatch (Unchecked, { node = EBound 0; _ }, [
-            [], { node = PCons ("None", _); _ }, { node = EBreak; _ };
-            [], { node = PCons ("Some", _); _ }, e_body;
-          ]); _
+    | [%cremepat {|
+      let iter =
+        core::iter::traits::collect::?::into_iter
+          <core::ops::range::Range<?..>, ?..>
+          ({ start: ?e_start, end: ?e_end });
+      while true {
+        match (core::iter::range::?::next<?t1>(&iter)) {
+          None -> break,
+          Some ? -> ?e_body
         }
-
-    ); _ }); _ }::rest)
-    (*; ... *) ->
+      }
+    |}] ->
       let open Krml.Helpers in
-      let w = match t' with TInt w -> w | _ -> assert false in
-      let e_some_i = with_type (Builtin.mk_option t') (ECons ("Some", [with_type t' (EBound 0)])) in
-      ESequence (with_type TUnit (EFor (fresh_binder ~mut:true "i" t',
+      let w = match t1 with TInt w -> w | _ -> assert false in
+      with_type e.typ @@ EFor (fresh_binder ~mut:true "i" t1,
+        e_start,
+        mk_lt w (Krml.DeBruijn.lift 1 e_end),
+        mk_incr w,
+        self#visit_expr env e_body)
+
+    (* Non-terminal position (regular range for-loop) *)
+    | [%cremepat {|
+      let iter =
+        core::iter::traits::collect::?::into_iter
+          <core::ops::range::Range<?>, ?..>
+          ({ start: ?e_start, end: ?e_end });
+      while true {
+        let x = core::iter::range::?::next<?t1>(&iter);
+        match x {
+          None -> break,
+          Some ? -> ?e_body
+        }
+      };
+      ?rest..
+    |}] ->
+      let open Krml.Helpers in
+      let w = match t1 with TInt w -> w | _ -> assert false in
+      let e_some_i = with_type (Builtin.mk_option t1) (ECons ("Some", [with_type t1 (EBound 0)])) in
+      with_type e.typ @@ ESequence (with_type TUnit (EFor (fresh_binder ~mut:true "i" t1,
         e_start,
         mk_lt w (Krml.DeBruijn.lift 1 e_end),
         mk_incr w,
         self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body))
       ) :: List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest)
+
+    | [%cremepat {|
+      let iter =
+        core::iter::traits::collect::?::into_iter
+          <core::ops::range::Range<?>, ?..>
+          ({ start: ?e_start, end: ?e_end });
+      while true {
+        match (core::iter::range::?::next<?t1>(&iter)) {
+          None -> break,
+          Some ? -> ?e_body
+        }
+      };
+      ?rest..
+    |}] ->
+      let open Krml.Helpers in
+      let w = match t1 with TInt w -> w | _ -> assert false in
+      with_type e.typ @@ ESequence (with_type TUnit (EFor (fresh_binder ~mut:true "i" t1,
+        e_start,
+        mk_lt w (Krml.DeBruijn.lift 1 e_end),
+        mk_incr w,
+        self#visit_expr env e_body)
+      ) :: List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest)
+
     | _ ->
-      super#visit_ELet env b e1 e2
+      super#visit_expr env e
 
 
 end
@@ -1110,6 +1135,8 @@ let check_addrof =
                 Krml.Ast.meta = [ CommentBefore "original Rust expression is not an lvalue in C" ];
               }
             in
+            (* Recursively do for the internal expression *)
+            let e = self#visit_expr_w () e in
             ELet (b, e, with_type t (EAddrOf (with_type e.typ (EBound 0))))
   end
 
@@ -1146,3 +1173,197 @@ let inline_loops =
       else
         DFunction (cc, flags, n_cgs, n, t, name, binders, body)
   end
+
+(** A better version of hoist (than [Krml.Simplify.hoist]), also work for [DGlobal]. *)
+let hoist =
+  object
+    inherit Krml.Simplify.hoist
+
+    method! visit_DGlobal loc flags name n ret expr =
+      let loc = Krml.Loc.(InTop name :: loc) in
+      let lhs, expr = Krml.Simplify.maybe_hoist_initializer field_types loc ret expr in
+      let expr = H.nest lhs ret expr in
+      DGlobal (flags, name, n, ret, expr)
+  end
+
+(** Also fix for [DGlobal] as [hoist] above *)
+let fixup_hoist =
+  object
+    inherit [_] map
+
+    method! visit_DFunction _ cc flags n_cgs n ret name binders expr =
+      DFunction (cc, flags, n_cgs, n, ret, name, binders, Krml.Simplify.fixup_return_pos expr)
+
+    method! visit_DGlobal () flags name n ret expr =
+      DGlobal (flags, name, n, ret, Krml.Simplify.fixup_return_pos expr)
+  end
+
+(** For any [DGlobal], if the expression has any locals remaining We should let them also be
+    globals, so to make the overall expr valid.
+
+    I.e., we make: [T VAL = let v1 : T1 = e1 in let v2 : T2 = e2 in ... let vN : TN = eN in e;]
+    become:
+    [T1 VAL_local_1 = e1; T2 VAL_local_2 = e2[v1/VAL_local_1]; ... TN VAL_local_N =
+     eN[v1/VAL_local_1; v2/VAL_local_2; ...; vN-1/VAL_local_(N-1)]; T VAL = e;]
+
+    Notably, the locals should be renamed to avoid potential naming conflicts. *)
+let globalize_global_locals files =
+  let mapper = function
+    | DGlobal (flags, name, n_cgs, ty, expr) ->
+        let rec decompose_expr id info_acc expr =
+          match expr.node with
+          | ELet (_, e1, e2) ->
+              let name =
+                let lst, name = name in
+                lst, name ^ "$local$" ^ string_of_int id
+              in
+              (* Replace the variable with the new globalised name. *)
+              let e2 = subst Krml.Ast.(with_type e1.typ (EQualified name)) 0 e2 in
+              decompose_expr (id + 1) ((name, e1) :: info_acc) e2
+          | _ -> List.rev info_acc, expr
+        in
+        let info, expr = decompose_expr 0 [] expr in
+        (* Make the new globals private if possible -- with exception that
+       if it is a non-private macro, then the involved new globals should not be private *)
+        let module NameSet = Krml.Idents.LidSet in
+        let no_priv_names =
+          if List.mem Krml.Common.Macro flags && not (List.mem Krml.Common.Private flags) then
+            (object
+               inherit [_] reduce
+               method private zero = NameSet.empty
+               method private plus = NameSet.union
+               method! visit_EQualified _ name = NameSet.singleton name
+            end)
+              #visit_expr_w
+              () expr
+          else
+            NameSet.empty
+        in
+        let make_decl (name, expr) =
+          let flags =
+            if NameSet.mem name no_priv_names then
+              []
+            else
+              [ Krml.Common.Private ]
+          in
+          DGlobal (flags, name, n_cgs, expr.typ, expr)
+        in
+        List.map make_decl info @ [ DGlobal (flags, name, n_cgs, ty, expr) ]
+    | decl -> [ decl ]
+  in
+  List.map (fun (name, decls) -> name, List.concat_map mapper decls) files
+
+let fixup_monomorphization_map map =
+  let replace =
+    object (self)
+      inherit [_] Krml.Ast.map
+
+      method! visit_TQualified () lid =
+        match Hashtbl.find_opt map lid with
+        | Some (Krml.DataTypes.Eliminate t) -> self#visit_typ () t
+        | _ -> TQualified lid
+    end
+  in
+  Seq.iter
+    (fun ((lid, ts, cgs), v) ->
+      let ts = List.map (replace#visit_typ ()) ts in
+      Hashtbl.add Krml.MonomorphizationState.state (lid, ts, cgs) v)
+    (Hashtbl.to_seq Krml.MonomorphizationState.state)
+
+(* Hoist comments to be attached to the nearest statement *)
+let float_comments files =
+  let comments = ref [] in
+  let prepend c = comments := c :: !comments in
+  let flush () =
+    let r = List.rev !comments in
+    comments := [];
+    List.map (fun x -> CommentBefore x) r
+  in
+  let filter_meta meta =
+    meta
+    |> List.filter (function
+         | CommentBefore c ->
+             prepend c;
+             false
+         | _ -> true)
+    |> List.filter (function
+         | CommentAfter c ->
+             prepend c;
+             false
+         | _ -> true)
+  in
+  (object (self)
+     inherit [_] map as super
+
+     method! visit_expr env e =
+       let e = super#visit_expr env e in
+       { e with meta = filter_meta e.meta }
+
+     method private process_block e =
+       let float_one e =
+         let e = self#visit_expr_w () e in
+         { e with meta = flush () }
+       in
+       match e.node with
+       | ELet (b, e1, e2) ->
+           let e1 = self#visit_expr_w () e1 in
+           let e1 = { e1 with meta = filter_meta e1.meta } in
+           let b = { b with meta = filter_meta b.meta } in
+           let meta = flush () in
+           { e with node = ELet (b, e1, self#process_block e2); meta }
+       | ESequence es ->
+           let es = List.map float_one es in
+           { e with node = ESequence es; meta = filter_meta e.meta }
+       | _ -> float_one e
+
+     method! visit_EFor env b e1 e2 e3 e4 =
+       let e4 = self#process_block e4 in
+       EFor (b, self#visit_expr env e1, self#visit_expr env e2, self#visit_expr env e3, e4)
+
+     method! visit_EWhile env e1 e2 =
+       let e2 = self#process_block e2 in
+       EWhile (self#visit_expr env e1, e2)
+
+     method! visit_EIfThenElse env e1 e2 e3 =
+       let e2 = self#process_block e2 in
+       let e3 = self#process_block e3 in
+       EIfThenElse (self#visit_expr env e1, e2, e3)
+
+     method! visit_ESwitch env e bs =
+       let bs = List.map (fun (c, e) -> c, self#process_block e) bs in
+       ESwitch (self#visit_expr env e, bs)
+
+     method! visit_DFunction _ cc flags n_cgs n t name bs e =
+       DFunction (cc, flags, n_cgs, n, t, name, bs, self#process_block e)
+  end)
+    #visit_files
+    () files
+
+(* Now that we have the allocation scheme of data types, we can eliminate the Eurydice_discriminant
+   placeholder *)
+let remove_discriminant_reads (map : Krml.DataTypes.map) files =
+  let lookup_tag_lid lid =
+    let open Krml.DataTypes in
+    match Hashtbl.find (fst3 map) lid with
+    | exception Not_found -> `Direct (* was compiled straight to an enum via AstOfLlbc *)
+    | ToEnum -> `Direct
+    | ToTaggedUnion branches | ToFlatTaggedUnion branches ->
+        let tags = List.map (fun (cons, _) -> cons, None) branches in
+        `TagField (Hashtbl.find (snd3 map) tags)
+    | _ ->
+        failwith "TODO: compile discriminant read for something that no longer has a discriminant"
+  in
+  (object (_self)
+     inherit [_] map as super
+
+     method! visit_expr (((), _) as env) e =
+       match e with
+       | [%cremepat {| Eurydice::discriminant<?, ?u>(?e) |}] -> (
+           match lookup_tag_lid (H.assert_tlid e.typ) with
+           | `Direct -> with_type u (ECast (e, u))
+           | `TagField tag_lid ->
+               with_type u (ECast (with_type (TQualified tag_lid) (EField (e, "tag")), u)))
+       | _ -> super#visit_expr env e
+  end)
+    #visit_files
+    () files

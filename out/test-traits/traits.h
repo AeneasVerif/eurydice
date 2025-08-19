@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __traits_H
-#define __traits_H
+#ifndef traits_H
+#define traits_H
 
 #include "eurydice_glue.h"
 
@@ -23,14 +23,14 @@ extern "C" {
 typedef uint8_t traits_Foo;
 
 /**
-This function found in impl {(traits::ToInt for traits::Foo)}
+This function found in impl {traits::ToInt for traits::Foo}
 */
-uint32_t traits_to_int_7d(traits_Foo *self);
+uint32_t traits_to_int_ac(traits_Foo *self);
 
 /**
-This function found in impl {(traits::ToInt for &0 (@Slice<traits::Foo>))#1}
+This function found in impl {traits::ToInt for &0 (@Slice<traits::Foo>)}
 */
-uint32_t traits_to_int_dd(Eurydice_slice *self);
+uint32_t traits_to_int_88(Eurydice_slice *self);
 
 void traits_main(void);
 
@@ -38,5 +38,5 @@ void traits_main(void);
 }
 #endif
 
-#define __traits_H_DEFINED
-#endif
+#define traits_H_DEFINED
+#endif /* traits_H */

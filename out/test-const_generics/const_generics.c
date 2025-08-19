@@ -24,9 +24,9 @@ void const_generics_serialize_3b(Eurydice_slice re, uint8_t ret[8U])
       (size_t)4U,
       uint8_t,
       size_t,
-      __builtin_slice_t);
+      uint8_t []);
   uint8_t ret0[4U];
-  core_num__u32_8__to_be_bytes(Eurydice_slice_index(re, (size_t)0U, uint32_t, uint32_t *), ret0);
+  core_num__u32__to_be_bytes(Eurydice_slice_index(re, (size_t)0U, uint32_t, uint32_t *), ret0);
   Eurydice_slice_copy(uu____0,
     Eurydice_array_to_slice_shared((size_t)4U, ret0, uint8_t),
     uint8_t);
@@ -37,9 +37,9 @@ void const_generics_serialize_3b(Eurydice_slice re, uint8_t ret[8U])
       (size_t)4U,
       uint8_t,
       size_t,
-      __builtin_slice_t);
+      uint8_t []);
   uint8_t ret1[4U];
-  core_num__u32_8__to_be_bytes(Eurydice_slice_index(re, (size_t)1U, uint32_t, uint32_t *), ret1);
+  core_num__u32__to_be_bytes(Eurydice_slice_index(re, (size_t)1U, uint32_t, uint32_t *), ret1);
   Eurydice_slice_copy(uu____1,
     Eurydice_array_to_slice_shared((size_t)4U, ret1, uint8_t),
     uint8_t);
@@ -111,30 +111,14 @@ void const_generics_main1(void)
   uint32_t right[2U];
   memcpy(right, uu____0.right, (size_t)2U * sizeof (uint32_t));
   uint32_t expected = 0U;
-  const_uint32_t__x2 uu____1;
-  uu____1.fst = left;
-  uu____1.snd = &expected;
-  const uint32_t *left_val0 = uu____1.fst;
-  const uint32_t *right_val0 = uu____1.snd;
-  EURYDICE_ASSERT(left_val0[0U] == right_val0[0U], "panic!");
-  const_uint32_t__x2 uu____2;
-  uu____2.fst = &left[1U];
-  uu____2.snd = &expected;
-  const uint32_t *left_val1 = uu____2.fst;
-  const uint32_t *right_val1 = uu____2.snd;
-  EURYDICE_ASSERT(left_val1[0U] == right_val1[0U], "panic!");
-  const_uint32_t__x2 uu____3;
-  uu____3.fst = right;
-  uu____3.snd = &expected;
-  const uint32_t *left_val2 = uu____3.fst;
-  const uint32_t *right_val2 = uu____3.snd;
-  EURYDICE_ASSERT(left_val2[0U] == right_val2[0U], "panic!");
-  const_uint32_t__x2 uu____4;
-  uu____4.fst = &right[1U];
-  uu____4.snd = &expected;
-  const uint32_t *left_val = uu____4.fst;
-  const uint32_t *right_val = uu____4.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  const_uint32_t__x2 uu____1 = { .fst = left, .snd = &expected };
+  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+  const_uint32_t__x2 uu____2 = { .fst = &left[1U], .snd = &expected };
+  EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
+  const_uint32_t__x2 uu____3 = { .fst = right, .snd = &expected };
+  EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
+  const_uint32_t__x2 uu____4 = { .fst = &right[1U], .snd = &expected };
+  EURYDICE_ASSERT(uu____4.fst[0U] == uu____4.snd[0U], "panic!");
 }
 
 /**
@@ -235,9 +219,7 @@ void const_generics_main3(void)
     x = false;
   }
   bool expected = false;
-  const_bool__x2 uu____0 = { CFIELD(.fst, &x), CFIELD(.snd, &expected) };
-  const bool *left_val = uu____0.fst;
-  const bool *right_val = uu____0.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  const_bool__x2 uu____0 = { .fst = &x, .snd = &expected };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 

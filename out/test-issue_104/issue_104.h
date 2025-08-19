@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __issue_104_H
-#define __issue_104_H
+#ifndef issue_104_H
+#define issue_104_H
 
 #include "eurydice_glue.h"
 
@@ -21,7 +21,7 @@ extern "C" {
 
 typedef uint8_t core_panicking_AssertKind;
 
-#define ISSUE_104___ISSUE_104__FUN_FOR_ISSUE_104__S___VAL (5U)
+#define ISSUE_104__ISSUE_104__FUN_FOR_ISSUE_104__S__VAL (5U)
 
 /**
 A monomorphic instance of issue_104.sth
@@ -39,5 +39,5 @@ void issue_104_main(void);
 }
 #endif
 
-#define __issue_104_H_DEFINED
-#endif
+#define issue_104_H_DEFINED
+#endif /* issue_104_H */

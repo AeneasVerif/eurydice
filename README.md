@@ -65,7 +65,7 @@ git clone https://github.com/AeneasVerif/eurydice
 # Step 4: misc. setup steps
 (cd charon && make)
 (cd karamel && make lib/AutoConfig.ml)
-(cd eurydice/lib && ln -s ../../karamel/lib krml)
+(cd eurydice/lib && ln -s ../../karamel/lib krml && ln -s ../../charon)
 
 # Step 5: ready!
 cd eurydice

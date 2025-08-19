@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __where_clauses_fncg_H
-#define __where_clauses_fncg_H
+#ifndef where_clauses_fncg_H
+#define where_clauses_fncg_H
 
 #include "eurydice_glue.h"
 
@@ -15,8 +15,7 @@
 extern "C" {
 #endif
 
-static inline uint64_t
-core_convert_num___core__convert__From_u8__for_u64__66__from(uint8_t x0);
+static inline uint64_t core_convert_num__core__convert__From_u8__for_u64__from(uint8_t x0);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -25,15 +24,15 @@ core_convert_num___core__convert__From_u8__for_u64__66__from(uint8_t x0);
 typedef uint8_t core_panicking_AssertKind;
 
 /**
-This function found in impl {(where_clauses_fncg::Foo<K> for u64)}
+This function found in impl {where_clauses_fncg::Foo<K> for u64}
 */
 /**
-A monomorphic instance of where_clauses_fncg.bar_ea
+A monomorphic instance of where_clauses_fncg.bar_16
 with const generics
 - K= 8
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_ea_7b(uint8_t x[8U][4U], uint8_t _[4U][8U]);
+uint64_t where_clauses_fncg_bar_16_7b(uint8_t x[8U][4U], uint8_t _[4U][8U]);
 
 /**
 A monomorphic instance of where_clauses_fncg.f
@@ -45,11 +44,41 @@ with const generics
 */
 uint64_t where_clauses_fncg_f_43(void);
 
+/**
+This function found in impl {where_clauses_fncg::Foo<K> for u64}
+*/
+/**
+A monomorphic instance of where_clauses_fncg.bar_16
+with const generics
+- K= 12
+- L= 4
+*/
+uint64_t where_clauses_fncg_bar_16_fa(uint8_t x[12U][4U], uint8_t _[4U][12U]);
+
+/**
+This function found in impl {where_clauses_fncg::UseFoo for ()}
+*/
+/**
+A monomorphic instance of where_clauses_fncg.method_foo_db
+with types uint64_t
+with const generics
+- K= 12
+*/
+uint64_t where_clauses_fncg_method_foo_db_7c(void);
+
+/**
+A monomorphic instance of where_clauses_fncg.g
+with types ()
+with const generics
+
+*/
+uint64_t where_clauses_fncg_g_ec(void);
+
 void where_clauses_fncg_main(void);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define __where_clauses_fncg_H_DEFINED
-#endif
+#define where_clauses_fncg_H_DEFINED
+#endif /* where_clauses_fncg_H */

@@ -1,0 +1,7 @@
+files:
+  - name: more_primitive_types
+    include_in_h: [ "\"eurydice/int128.h\"" ]
+    api:
+      - [ more_primitive_types ]
+    private:
+      - [ "*" ]

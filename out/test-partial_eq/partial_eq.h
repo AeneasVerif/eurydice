@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __partial_eq_H
-#define __partial_eq_H
+#ifndef partial_eq_H
+#define partial_eq_H
 
 #include "eurydice_glue.h"
 
@@ -15,25 +15,15 @@
 extern "C" {
 #endif
 
+#include "Eurydice.h"
+
 #define core_result_Ok 0
 #define core_result_Err 1
 
-typedef uint8_t core_result_Result_a9_tags;
+typedef uint8_t core_result_Result_10;
 
-/**
-A monomorphic instance of core.result.Result
-with types (), core_fmt_Error
-
-*/
-typedef struct core_result_Result_a9_s
-{
-  core_result_Result_a9_tags tag;
-  void *f0;
-}
-core_result_Result_a9;
-
-extern core_result_Result_a9
-core_fmt__core__fmt__Formatter__a__9__write_str(core_fmt_Formatter *x0, Prims_string x1);
+extern core_result_Result_10
+core_fmt__core__fmt__Formatter__a___write_str(core_fmt_Formatter *x0, Eurydice_str x1);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -46,20 +36,20 @@ typedef uint8_t core_panicking_AssertKind;
 typedef uint8_t partial_eq_Enum;
 
 /**
-This function found in impl {(core::cmp::PartialEq<partial_eq::Enum> for partial_eq::Enum)#1}
+This function found in impl {core::cmp::PartialEq<partial_eq::Enum> for partial_eq::Enum}
 */
-bool partial_eq_eq_dd(partial_eq_Enum *self, partial_eq_Enum *other);
+bool partial_eq_eq_31(const partial_eq_Enum *self, const partial_eq_Enum *other);
 
 void partial_eq_main(void);
 
 /**
-This function found in impl {(core::fmt::Debug for partial_eq::Enum)#2}
+This function found in impl {core::fmt::Debug for partial_eq::Enum}
 */
-core_result_Result_a9 partial_eq_fmt_19(partial_eq_Enum *self, core_fmt_Formatter *f);
+core_result_Result_10 partial_eq_fmt_29(const partial_eq_Enum *self, core_fmt_Formatter *f);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define __partial_eq_H_DEFINED
-#endif
+#define partial_eq_H_DEFINED
+#endif /* partial_eq_H */

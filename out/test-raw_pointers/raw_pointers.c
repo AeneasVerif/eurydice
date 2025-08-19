@@ -20,9 +20,7 @@ void raw_pointers_main(void)
   uint8_t *px = (uint8_t *)&x;
   /* original Rust expression is not an lvalue in C */
   uint8_t lvalue = 0U;
-  const_uint8_t__x2 uu____0 = { CFIELD(.fst, &lvalue), CFIELD(.snd, px) };
-  const uint8_t *left_val = uu____0.fst;
-  const uint8_t *right_val = uu____0.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  const_uint8_t__x2 uu____0 = { .fst = &lvalue, .snd = px };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 

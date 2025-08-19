@@ -20,9 +20,21 @@ void issue_128_fun_b(Eurydice_slice _x)
 void issue_128_use_enum(issue_128_E e, Eurydice_slice x)
 {
   void *uu____0 = (void *)0U;
-  if (!(e == issue_128_E_A))
+  switch (e)
   {
-    return;
+    case issue_128_E_A:
+      {
+        break;
+      }
+    case issue_128_E_B:
+      {
+        return;
+      }
+    default:
+      {
+        KRML_HOST_EPRINTF("KaRaMeL incomplete match at %s:%d\n", __FILE__, __LINE__);
+        KRML_HOST_EXIT(253U);
+      }
   }
 }
 
