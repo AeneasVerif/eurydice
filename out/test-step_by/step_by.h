@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __step_by_H
-#define __step_by_H
+#ifndef step_by_H
+#define step_by_H
 
 #include "eurydice_glue.h"
 
@@ -108,5 +108,5 @@ void step_by_main(void);
 }
 #endif
 
-#define __step_by_H_DEFINED
-#endif
+#define step_by_H_DEFINED
+#endif /* step_by_H */

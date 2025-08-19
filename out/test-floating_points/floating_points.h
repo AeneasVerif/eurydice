@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __floating_points_H
-#define __floating_points_H
+#ifndef floating_points_H
+#define floating_points_H
 
 #include "eurydice_glue.h"
 
@@ -43,5 +43,5 @@ void floating_points_main(void);
 }
 #endif
 
-#define __floating_points_H_DEFINED
-#endif
+#define floating_points_H_DEFINED
+#endif /* floating_points_H */

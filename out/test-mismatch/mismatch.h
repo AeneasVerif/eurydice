@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __mismatch_H
-#define __mismatch_H
+#ifndef mismatch_H
+#define mismatch_H
 
 #include "eurydice_glue.h"
 
@@ -21,5 +21,5 @@ void mismatch_main(void);
 }
 #endif
 
-#define __mismatch_H_DEFINED
-#endif
+#define mismatch_H_DEFINED
+#endif /* mismatch_H */
