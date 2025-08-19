@@ -9,6 +9,43 @@
 
 const uint32_t nested_arrays_ZERO[8U] = { 0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U };
 
+typedef struct const_uint32_t__x2_s
+{
+  const uint32_t *fst;
+  const uint32_t *snd;
+}
+const_uint32_t__x2;
+
+void nested_arrays_main(void)
+{
+  uint32_t keys[3U][3U][8U];
+  for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++)
+  {
+    uint32_t repeat_expression[3U][8U];
+    for (size_t i = (size_t)0U; i < (size_t)3U; i++)
+    {
+      memcpy(repeat_expression[i], nested_arrays_ZERO, (size_t)8U * sizeof (uint32_t));
+    }
+    memcpy(keys[i0], repeat_expression, (size_t)3U * sizeof (uint32_t [8U]));
+  }
+  for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++)
+  {
+    size_t i1 = i0;
+    for (size_t i2 = (size_t)0U; i2 < (size_t)3U; i2++)
+    {
+      size_t j = i2;
+      for (size_t i = (size_t)0U; i < (size_t)8U; i++)
+      {
+        size_t k = i;
+        uint32_t actual = keys[i1][j][k];
+        uint32_t expected = (uint32_t)k;
+        const_uint32_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
+        EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+      }
+    }
+  }
+}
+
 void nested_arrays_test(uint8_t ret[4U][200U])
 {
   uint8_t out0[200U] = { 0U };

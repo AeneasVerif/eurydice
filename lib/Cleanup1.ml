@@ -468,6 +468,7 @@ end
 let cleanup files =
   let files = remove_units#visit_files () files in
   let files = remove_assignments#visit_files AtomMap.empty files in
+  (* Krml.(PPrint.(Print.(print (PrintAst.print_files files ^^ hardline)))); *)
   let files = unsigned_overflow_is_ok_in_c#visit_files () files in
   let files = Krml.Simplify.optimize_lets files in
   let files = remove_terminal_returns#visit_files true files in

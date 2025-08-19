@@ -19,7 +19,7 @@ void const_generics_serialize_3b(Eurydice_slice re, uint8_t ret[8U])
   uint8_t out[8U] = { 0U };
   Eurydice_slice
   uu____0 =
-    Eurydice_array_to_subslice_to((size_t)8U,
+    Eurydice_array_to_subslice_to_mut((size_t)8U,
       out,
       (size_t)4U,
       uint8_t,
@@ -32,7 +32,7 @@ void const_generics_serialize_3b(Eurydice_slice re, uint8_t ret[8U])
     uint8_t);
   Eurydice_slice
   uu____1 =
-    Eurydice_array_to_subslice_from((size_t)8U,
+    Eurydice_array_to_subslice_from_mut((size_t)8U,
       out,
       (size_t)4U,
       uint8_t,

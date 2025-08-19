@@ -19,6 +19,74 @@ extern int32_t core_clone_impls__core__clone__Clone_for_i32__clone(const int32_t
 
 extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t *x0);
 
+#define core_cmp_Ordering_Less -1
+#define core_cmp_Ordering_Equal 0
+#define core_cmp_Ordering_Greater 1
+
+typedef int8_t core_cmp_Ordering;
+
+extern bool
+core_cmp_impls__core__cmp__PartialEq_usize__for_usize__eq(const size_t *x0, const size_t *x1);
+
+#define core_option_None 0
+#define core_option_Some 1
+
+typedef uint8_t core_option_Option_77_tags;
+
+/**
+A monomorphic instance of core.option.Option
+with types core_cmp_Ordering
+
+*/
+typedef struct core_option_Option_77_s
+{
+  core_option_Option_77_tags tag;
+  core_cmp_Ordering f0;
+}
+core_option_Option_77;
+
+extern core_option_Option_77
+core_cmp_impls__core__cmp__PartialOrd_usize__for_usize__partial_cmp(
+  const size_t *x0,
+  const size_t *x1
+);
+
+/**
+A monomorphic instance of core.option.Option
+with types size_t
+
+*/
+typedef struct core_option_Option_08_s
+{
+  core_option_Option_77_tags tag;
+  size_t f0;
+}
+core_option_Option_08;
+
+extern core_option_Option_08
+core_iter_range__core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
+
+extern core_option_Option_08
+core_iter_range__core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
+
+/**
+A monomorphic instance of K.
+with types size_t, core_option_Option size_t
+
+*/
+typedef struct tuple_04_s
+{
+  size_t fst;
+  core_option_Option_08 snd;
+}
+tuple_04;
+
+extern tuple_04
+core_iter_range__core__iter__range__Step_for_usize__steps_between(
+  const size_t *x0,
+  const size_t *x1
+);
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2
@@ -27,9 +95,7 @@ typedef uint8_t core_panicking_AssertKind;
 
 int32_t fn_higher_order_empty_ptr(int32_t (*f)(void));
 
-extern size_t fn_higher_order_sum_lst(size_t x0, const size_t *x1);
-
-extern int32_t fn_higher_order_more_sum_lst(const int32_t *x0);
+int32_t fn_higher_order_more_sum_lst(const int32_t *l);
 
 /**
 A monomorphic instance of fn_higher_order.compose_cg_apply
@@ -43,6 +109,13 @@ fn_higher_order_compose_cg_apply_fd(
   size_t (*g)(size_t x0),
   const size_t *arg
 );
+
+/**
+A monomorphic instance of fn_higher_order.sum_lst
+with const generics
+- N= 5
+*/
+size_t fn_higher_order_sum_lst_c9(const size_t *lst);
 
 /**
 A monomorphic instance of fn_higher_order.id

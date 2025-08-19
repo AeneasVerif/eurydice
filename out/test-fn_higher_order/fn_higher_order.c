@@ -12,6 +12,18 @@ int32_t fn_higher_order_empty_ptr(int32_t (*f)(void))
   return f();
 }
 
+int32_t fn_higher_order_more_sum_lst(const int32_t *l)
+{
+  int32_t sum = (int32_t)0;
+  KRML_MAYBE_FOR3(i,
+    (size_t)0U,
+    (size_t)3U,
+    (size_t)1U,
+    size_t i0 = i;
+    sum = sum + l[i0];);
+  return sum;
+}
+
 /**
 A monomorphic instance of fn_higher_order.compose_cg_apply
 with types size_t, size_t, size_t
@@ -27,6 +39,23 @@ fn_higher_order_compose_cg_apply_fd(
 {
   size_t (*uu____0)(size_t x0) = g;
   return uu____0(f(arg));
+}
+
+/**
+A monomorphic instance of fn_higher_order.sum_lst
+with const generics
+- N= 5
+*/
+size_t fn_higher_order_sum_lst_c9(const size_t *lst)
+{
+  size_t sum = (size_t)0U;
+  KRML_MAYBE_FOR5(i,
+    (size_t)0U,
+    (size_t)5U,
+    (size_t)1U,
+    size_t i0 = i;
+    sum = sum + lst[i0];);
+  return sum + (size_t)5U;
 }
 
 /**
@@ -85,8 +114,7 @@ void fn_higher_order_use_compose_cg(void)
   size_t buf0[5U] = { (size_t)1U, (size_t)2U, (size_t)3U, (size_t)4U, (size_t)5U };
   size_t
   x =
-    fn_higher_order_compose_cg_apply_fd(fn_higher_order_sum_lst((size_t)5U,
-        size_t (*)(const size_t *x0)),
+    fn_higher_order_compose_cg_apply_fd(fn_higher_order_sum_lst_c9,
       fn_higher_order_id_37,
       buf0);
   int32_t buf[3U] = { (int32_t)10, (int32_t)11, (int32_t)12 };

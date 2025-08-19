@@ -103,13 +103,13 @@ core_iter_range__core__iter__range__Step_for_i32__steps_between(
 
 typedef uint8_t core_panicking_AssertKind;
 
-extern void step_by_bar(void);
+void step_by_bar(void);
 
-extern void step_by_main(void);
+void step_by_main1(void);
 
-extern void step_by_main1(void);
+void step_by_main2(void);
 
-extern void step_by_main2(void);
+void step_by_main(void);
 
 #if defined(__cplusplus)
 }

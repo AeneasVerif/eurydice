@@ -133,8 +133,10 @@ typedef struct {
 #define Eurydice_array_to_slice_mut(end, x, t)                                 \
   Eurydice_array_to_slice_shared(end, x, t)
 
-#define Eurydice_array_to_subslice(_arraylen, x, r, t, _0, _1)                 \
+#define Eurydice_array_to_subslice_shared(_arraylen, x, r, t, _0, _1)          \
   EURYDICE_SLICE((t *)x, r.start, r.end)
+#define Eurydice_array_to_subslice_mut(_arraylen, x, r, t, _0, _1)             \
+  Eurydice_array_to_subslice_shared(_arraylen, x, r, t, _0, _1)
 
 // Same as above, variant for when start and end are statically known
 #define Eurydice_array_to_subslice3(x, start, end, t_ptr)                      \
@@ -145,10 +147,14 @@ typedef struct {
 
 // The following functions convert an array into a slice.
 
-#define Eurydice_array_to_subslice_to(_size, x, r, t, _range_t, _0)            \
+#define Eurydice_array_to_subslice_to_shared(_size, x, r, t, _range_t, _0)     \
   EURYDICE_SLICE((t *)x, 0, r)
-#define Eurydice_array_to_subslice_from(size, x, r, t, _range_t, _0)           \
+#define Eurydice_array_to_subslice_to_mut(_size, x, r, t, _range_t, _0)     \
+  Eurydice_array_to_subslice_to_shared(_size, x, r, t, _range_t, _0)
+#define Eurydice_array_to_subslice_from_shared(size, x, r, t, _range_t, _0)    \
   EURYDICE_SLICE((t *)x, r, size)
+#define Eurydice_array_to_subslice_from_mut(size, x, r, t, _range_t, _0)    \
+  Eurydice_array_to_subslice_from_shared(size, x, r, t, _range_t, _0)
 
 // Copy a slice with memcopy
 #define Eurydice_slice_copy(dst, src, t)                                       \

@@ -132,59 +132,64 @@ let op_128_cfgs =
 
 let get_128_op (kind, op) : K.expr = expr_of_builtin @@ Op128Map.find (kind, op) op_128_cfgs
 
-let array_to_slice_shared =
+let suffix_of_const const = if const then "_shared" else "_mut"
+
+let array_to_slice const =
   {
-    name = [ "Eurydice" ], "array_to_slice_shared";
-    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, true) ] (mk_slice (TBound 0));
+    name = [ "Eurydice" ], "array_to_slice" ^ suffix_of_const const;
+    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, const) ] (mk_slice (TBound 0));
     n_type_args = 1;
     cg_args = [ TInt SizeT ];
     arg_names = [ "a" ];
   }
 
-let array_to_slice_mut =
-  {
-    name = [ "Eurydice" ], "array_to_slice_mut";
-    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, false) ] (mk_slice (TBound 0));
-    n_type_args = 1;
-    cg_args = [ TInt SizeT ];
-    arg_names = [ "a" ];
-  }
+let array_to_slice_mut = array_to_slice false
+let array_to_slice_shared = array_to_slice true
 
-let array_to_subslice =
+let array_to_subslice const =
   {
-    name = [ "Eurydice" ], "array_to_subslice";
+    name = [ "Eurydice" ], "array_to_subslice" ^ suffix_of_const const;
     typ =
       Krml.Helpers.fold_arrow
-        [ TBuf (TBound 2, false); mk_range (TInt SizeT) ]
+        [ TBuf (TBound 2, const); mk_range (TInt SizeT) ]
         (mk_slice (TBound 2));
     n_type_args = 3;
     cg_args = [ TInt SizeT ];
     arg_names = [ "a"; "r" ];
   }
 
-let array_to_subslice_to =
+let array_to_subslice_mut = array_to_subslice false
+let array_to_subslice_shared = array_to_subslice true
+
+let array_to_subslice_to const =
   {
-    name = [ "Eurydice" ], "array_to_subslice_to";
+    name = [ "Eurydice" ], "array_to_subslice_to" ^ suffix_of_const const;
     typ =
       Krml.Helpers.fold_arrow
-        [ TBuf (TBound 2, false); mk_range_to (TInt SizeT) ]
+        [ TBuf (TBound 2, const); mk_range_to (TInt SizeT) ]
         (mk_slice (TBound 2));
     n_type_args = 3;
     cg_args = [ TInt SizeT ];
     arg_names = [ "a"; "r" ];
   }
 
-let array_to_subslice_from =
+let array_to_subslice_to_mut = array_to_subslice_to false
+let array_to_subslice_to_shared = array_to_subslice_to true
+
+let array_to_subslice_from const =
   {
-    name = [ "Eurydice" ], "array_to_subslice_from";
+    name = [ "Eurydice" ], "array_to_subslice_from" ^ suffix_of_const const;
     typ =
       Krml.Helpers.fold_arrow
-        [ TBuf (TBound 2, false); mk_range_from (TInt SizeT) ]
+        [ TBuf (TBound 2, const); mk_range_from (TInt SizeT) ]
         (mk_slice (TBound 2));
     n_type_args = 3;
     cg_args = [ TInt SizeT ];
     arg_names = [ "a"; "r" ];
   }
+
+let array_to_subslice_from_mut = array_to_subslice_from false
+let array_to_subslice_from_shared = array_to_subslice_from true
 
 (* These two are placeholders that are inserted by AstOfLlbc with the intent that they should be
    desugared later on, once monomorphization and data type compilation, respectively, have happened. *)
@@ -732,9 +737,12 @@ let builtin_funcs =
   [
     array_to_slice_shared;
     array_to_slice_mut;
-    array_to_subslice;
-    array_to_subslice_to;
-    array_to_subslice_from;
+    array_to_subslice_shared;
+    array_to_subslice_mut;
+    array_to_subslice_to_shared;
+    array_to_subslice_to_mut;
+    array_to_subslice_from_shared;
+    array_to_subslice_from_mut;
     array_repeat;
     array_into_iter;
     array_eq;

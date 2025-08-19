@@ -12,7 +12,7 @@
 /**
 This function found in impl {traits::ToInt for traits::Foo}
 */
-uint32_t traits_to_int_ac(traits_Foo *self)
+uint32_t traits_to_int_ac(const traits_Foo *self)
 {
   switch (self[0U])
   {
@@ -36,7 +36,7 @@ uint32_t traits_to_int_ac(traits_Foo *self)
 /**
 This function found in impl {traits::ToInt for &0 (@Slice<traits::Foo>)}
 */
-uint32_t traits_to_int_88(Eurydice_slice *self)
+uint32_t traits_to_int_88(const Eurydice_slice *self)
 {
   uint32_t
   uu____0 =

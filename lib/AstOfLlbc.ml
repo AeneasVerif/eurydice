@@ -204,19 +204,19 @@ module RustNames = struct
     parse_pattern "SliceIndexMut<'_, @T>", Builtin.slice_index;
 
     parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
-    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
     parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@]>", Builtin.slice_subslice_to;
-    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@]>", Builtin.slice_subslice_to;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@]>", Builtin.slice_subslice_to;
     parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@]>", Builtin.slice_subslice_from;
-    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@]>", Builtin.slice_subslice_from;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@]>", Builtin.slice_subslice_from;
 
     (* arrays *)
-    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::Range<usize>, [@], @>", Builtin.array_to_subslice;
-    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@], @>", Builtin.array_to_subslice;
-    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@], @>", Builtin.array_to_subslice_to;
-    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@], @>", Builtin.array_to_subslice_to;
-    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", Builtin.array_to_subslice_from;
-    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", Builtin.array_to_subslice_from;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::Range<usize>, [@], @>", Builtin.array_to_subslice_shared;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@], @>", Builtin.array_to_subslice_mut;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@], @>", Builtin.array_to_subslice_to_shared;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@], @>", Builtin.array_to_subslice_to_mut;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", Builtin.array_to_subslice_from_shared;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", Builtin.array_to_subslice_from_mut;
 
     (* slices <-> arrays *)
     parse_pattern "ArrayToSliceShared<'_, @T, @N>", Builtin.array_to_slice_shared;
@@ -753,6 +753,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           let field_name = lookup_field env typ_id field_id in
           let sub_e = expression_of_place env sub_place in
           let place_typ = typ_of_ty env p.ty in
+          let const = match sub_place.ty with TRef (_, _, k) -> const_of_ref_kind k | _ -> false in
           begin
             match is_dst env sub_e.K.typ with
             | Some (lid, _u, t_pointee) when not (is_dst_field env lid field_name) ->
@@ -762,7 +763,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
                 K.with_type place_typ
                   (K.EField
                      ( Krml.Helpers.(
-                         mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node),
+                         mk_deref ~const (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node),
                        field_name ))
           end
       | Field (ProjAdt (typ_id, variant_id), field_id), _, C.TAdt _ -> begin

@@ -138,7 +138,7 @@ let add_extra_type_to_slice_index =
                      [ TBuf (t_elements, false) ] )),
               [ e_slice; e_start; e_end ] )
       | ( ETApp
-            ({ node = EQualified ([ "Eurydice" ], "array_to_subslice"); _ }, _, [], t_elements :: _),
+            ({ node = EQualified ([ "Eurydice" ], ("array_to_subslice_shared" | "array_to_subslice_mut")); _ }, _, [], t_elements :: _),
           [
             e_slice;
             {

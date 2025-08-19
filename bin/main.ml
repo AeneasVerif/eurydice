@@ -104,10 +104,13 @@ Supported options:|}
         [ "Eurydice" ], "slice_subslice_from";
         [ "Eurydice" ], "array_to_slice_shared";
         [ "Eurydice" ], "array_to_slice_mut";
-        [ "Eurydice" ], "array_to_subslice";
+        [ "Eurydice" ], "array_to_subslice_shared";
+        [ "Eurydice" ], "array_to_subslice_mut";
         [ "Eurydice" ], "array_to_subslice3";
-        [ "Eurydice" ], "array_to_subslice_to";
-        [ "Eurydice" ], "array_to_subslice_from";
+        [ "Eurydice" ], "array_to_subslice_to_shared";
+        [ "Eurydice" ], "array_to_subslice_to_mut";
+        [ "Eurydice" ], "array_to_subslice_from_shared";
+        [ "Eurydice" ], "array_to_subslice_from_mut";
         [ "Eurydice" ], "array_repeat";
         [ "Eurydice" ], "slice_len";
         [ "Eurydice" ], "slice_copy";
