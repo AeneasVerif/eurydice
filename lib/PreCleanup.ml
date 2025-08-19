@@ -69,9 +69,64 @@ let remove_array_eq = object
      super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t lid bs e
 end
 
+
+(** Comes from [drop_unused] in Inlining.ml, we use it to remove the builtin function defined
+    using abstract syntax when they are not used. Otherwise they may use some undefined types and
+    fail the check *)
+
+let builtin_func_lids =
+  [
+    ([ "Eurydice" ], "array_to_subslice_to");
+  ]
+
+let drop_unused_builtin files =
+  let open Krml in
+  let open Krml.Common in
+  let seen = Hashtbl.create 41 in
+
+  let body_of_lid = Helpers.build_map files (fun map d -> Hashtbl.add map (lid_of_decl d) d) in
+
+  let visitor = object (self)
+    inherit [_] iter as super
+    method! visit_EQualified (before, _) lid =
+      self#discover before lid
+    method! visit_TQualified before lid =
+      self#discover before lid
+    method! visit_TApp before lid ts =
+      self#discover before lid;
+      List.iter (self#visit_typ before) ts
+    method private discover before lid =
+      if not (Hashtbl.mem seen lid) then begin
+        Hashtbl.add seen lid ();
+        if Hashtbl.mem body_of_lid lid then
+          ignore (super#visit_decl (lid :: before) (Hashtbl.find body_of_lid lid));
+      end
+    method! visit_decl _ d =
+      let flags = flags_of_decl d in
+      let lid = lid_of_decl d in
+      if not (List.exists ((=) Private) flags) && not (Drop.lid lid) then begin
+        Hashtbl.add seen lid ();
+        super#visit_decl [lid] d
+      end
+   end in
+  visitor#visit_files [] files;
+  Hashtbl.add seen (["LowStar"; "Ignore"], "ignore") ();
+  filter_decls (fun d ->
+    let flags = flags_of_decl d in
+    let lid = lid_of_decl d in
+    if (List.exists ((=) Private) flags || Drop.lid lid) && not (Hashtbl.mem seen lid)
+       && List.mem lid builtin_func_lids then
+      None
+    else
+      Some d
+  ) files
+
+
+
 let precleanup files =
   let files = expand_array_copies files in
   let files = remove_array_eq#visit_files (0, 0) files in
+  let files = drop_unused_builtin files in
   files
 
 let merge files =

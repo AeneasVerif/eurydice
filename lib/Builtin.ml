@@ -770,7 +770,7 @@ let builtin_funcs =
   [
     array_to_slice;
     array_to_subslice;
-    array_to_subslice_to;
+    (* array_to_subslice_to; *)
     array_to_subslice_from;
     array_repeat;
     array_into_iter;
@@ -805,6 +805,11 @@ let builtin_funcs =
       Op128Map.to_seq op_128_cfgs |> List.of_seq |> List.map snd
     end
 
+let builtin_defined_funcs =
+  [
+    array_to_subslice_to_func;
+  ]
+
 let files =
   [
     Krml.Builtin.lowstar_ignore;
@@ -823,6 +828,7 @@ let files =
            in
            K.DExternal (None, flags, List.length cg_args, n_type_args, name, typ, arg_names))
          builtin_funcs
+       @ builtin_defined_funcs
        @ [ nonzero_def; static_assert; dst_def; str_t_def ]
      in
      "Eurydice", externals);
