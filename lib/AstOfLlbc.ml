@@ -405,6 +405,9 @@ and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
       | C.NoMetadata -> None
       | C.Length -> Some Krml.Helpers.usize
       | C.VTable ty_ref -> Some (typ_of_ty env (C.TAdt ty_ref))
+      | C.InheritFrom (C.TVar (C.Free var)) ->
+        let ty = List.nth ty_decl_ref.generics.types (C.TypeVarId.to_int var) in
+        metadata_typ_of_ty env ty
       | C.InheritFrom _ ->
          failwith "Eurydice does not handle PtrMetadata inheritance, please consider using monomorphized LLBC"
     end    
