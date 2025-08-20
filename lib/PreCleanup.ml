@@ -76,7 +76,9 @@ end
 
 let builtin_func_lids =
   [
-    ([ "Eurydice" ], "array_to_subslice_to");
+    [ "Eurydice" ], "array_to_subslice_to";
+    [ "Eurydice" ], "array_to_subslice_from";
+    [ "Eurydice" ], "array_to_slice";
   ]
 
 let drop_unused_builtin files =
