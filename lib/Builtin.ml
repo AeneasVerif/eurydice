@@ -423,6 +423,7 @@ let str_t = K.TQualified str_t_name
     defined as [char []] to have 0-length. *)
 let deref_str_t = K.TQualified ([ "Eurydice" ], "deref_str")
 
+(*
 let dst_def =
   K.DType
     ( dst,
@@ -435,6 +436,7 @@ let dst_def =
           Some "len", (TInt SizeT, false);
           (* a number of elements, just like slices *)
         ] )
+ *)
 
 let str_t_def =
   K.DType
@@ -462,7 +464,7 @@ let slice_of_dst =
 (* Take the type of the ptr field *)
 let dst_new ~ptr ~len t =
   let open K in
-  with_type (mk_dst t) (EFlat [ Some "ptr", ptr; Some "len", len ])
+  with_type (mk_slice t) (EFlat [ Some "ptr", ptr; Some "meta", len ])
 
 (* pointer, value *)
 let bitand_pv_u8 =
@@ -1009,7 +1011,7 @@ let files =
            K.DExternal (None, flags, List.length cg_args, n_type_args, name, typ, arg_names))
          builtin_funcs
        @ builtin_defined_funcs
-       @ [ nonzero_def; static_assert; dst_def; str_t_def ]
+       @ [ nonzero_def; static_assert; str_t_def ]
      in
      "Eurydice", externals);
   ]

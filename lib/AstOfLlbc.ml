@@ -346,7 +346,7 @@ let to_dst env lid (t : K.typ) =
 (* Matches an instance of Eurydice_dst<T<U>> -- returns Some (T, U, T<U>) or None *)
 let is_dst env t =
   match t with
-  | K.TApp (dst_hd, [ (TApp (lid, [ u ]) as t_u) ]) when dst_hd = Builtin.dst ->
+  | K.TApp (dst_hd, [ (TApp (lid, [ u ]) as t_u); _ ]) when dst_hd = Builtin.dst_ref ->
       assert (LidMap.mem lid env.dsts);
       Some (lid, u, t_u)
   | _ -> None
@@ -1734,7 +1734,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       expression_of_place env p
   (* This works for when: ( *s ).place but this is not general enough. *)
   (* We now have the exact metadata at hand, so we can simply do the way of incorporating the metadata. *)
-  (* | RvRef
+  | RvRef
       ( ({
            kind =
              PlaceProjection
@@ -1748,6 +1748,20 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       let field_name = lookup_field env typ_id field_id in
       begin
         match is_dst env (typ_of_ty env sub_place.ty) with
+        | Some (lid, _ , t)
+          when not (is_dst_field env lid field_name) ->
+            (* Support for DSTs (see above). This is the first case. Building by hand... we are
+             compiling &( *x).f where x: Eurydice_dst<T> and x = sub_place, T = lid. This case
+             f is not the variable field. *) 
+            let sub_place = expression_of_place env sub_place in
+            (* e: T *)
+            let e = mk_dst_deref env t sub_place in
+            (* e_f_addr = &e.f *)
+            let t_field = typ_of_ty env p.ty in
+              K.(
+                with_type
+                  (TBuf (t_field, false))
+                  (EAddrOf (with_type t_field (EField (e, field_name)))))
         | Some (lid, TApp (slice_hd, [ u ]), t_u)
           when is_dst_field env lid field_name && slice_hd = Builtin.derefed_slice ->
             (* Support for DSTs (see above). This is the first case. Building by hand... we are
@@ -1775,12 +1789,12 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
             K.(
               with_type (Builtin.mk_slice u)
                 (EApp
-                   (slice_of_dst, [ e_f_addr; with_type (TInt SizeT) (EField (sub_place, "len")) ])))
+                   (slice_of_dst, [ e_f_addr; metadata ])))
         | _ ->
             (* Default case, same as below *)
             let e = expression_of_place env p in
-            maybe_addrof env p.ty e
-      end *)
+            mk_reference env p.ty e metadata
+      end 
   | RvRef (p, _, metadata) | RawPtr (p, _, metadata) ->
       let metadata = expression_of_operand env metadata in
       let e = expression_of_place env p in
