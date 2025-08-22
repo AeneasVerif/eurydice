@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __castunsize_H
-#define __castunsize_H
+#ifndef castunsize_H
+#define castunsize_H
 
 #include "eurydice_glue.h"
 
@@ -49,16 +49,28 @@ typedef struct castunsize_S_64_s
 castunsize_S_64;
 
 /**
-A monomorphic instance of Eurydice.dst
-with types castunsize_S Eurydice_derefed_slice uint32_t
+A monomorphic instance of Eurydice.dst_ref
+with types castunsize_S Eurydice_derefed_slice uint32_t, size_t
 
 */
-typedef struct Eurydice_dst_da_s
+typedef struct Eurydice_dst_ref_5e_s
 {
   castunsize_T *ptr;
-  size_t len;
+  size_t meta;
 }
-Eurydice_dst_da;
+Eurydice_dst_ref_5e;
+
+/**
+A monomorphic instance of Eurydice.dst_ref
+with types uint32_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_3c_s
+{
+  uint32_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_3c;
 
 void castunsize_main1(void);
 
@@ -104,5 +116,5 @@ void castunsize_main(void);
 }
 #endif
 
-#define __castunsize_H_DEFINED
-#endif
+#define castunsize_H_DEFINED
+#endif /* castunsize_H */

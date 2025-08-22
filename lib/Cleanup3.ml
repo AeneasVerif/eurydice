@@ -165,6 +165,7 @@ let is_builtin_lid lid = match lid with
   | ([ "Eurydice" ], "arr_c4") (* arr {data:[u8;8]}*)
   | ([ "Eurydice" ], "arr_e9") (* arr {data:[u8;4]}*)
   | ([ "Eurydice" ], "arr_8b") (* arr {data:[u8,2]}*)
+  | ([ "Prims" ], "string") (* used to pass the checker, directly defined in glue.h *)
      -> true
   | _ -> false
 

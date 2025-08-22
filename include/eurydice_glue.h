@@ -198,12 +198,12 @@ typedef struct {
 #define Eurydice_slice_split_at_mut(slice, mid, element_type, ret_t)           \
   KRML_CLITERAL(ret_t) {                                                       \
     EURYDICE_CFIELD(.fst =)                                                    \
-    KRML_CLITERAL(Eurydice_slice){EURYDICE_CFIELD(.ptr =)(slice.ptr),          \
-                                  EURYDICE_CFIELD(.len =) mid},                \
-        EURYDICE_CFIELD(.snd =) KRML_CLITERAL(Eurydice_slice) {                \
+        {EURYDICE_CFIELD(.ptr =)(slice.ptr),                                   \
+                        EURYDICE_CFIELD(.meta =) mid},                          \
+    EURYDICE_CFIELD(.snd =) {                                                  \
       EURYDICE_CFIELD(.ptr =)                                                  \
-      ((char *)slice.ptr + mid * sizeof(element_type)),                        \
-          EURYDICE_CFIELD(.len =)(slice.len - (mid))                           \
+      (slice.ptr + mid * sizeof(element_type)),                        \
+          EURYDICE_CFIELD(.meta =)(slice.meta - (mid))                           \
     }                                                                          \
   }
 
@@ -527,7 +527,7 @@ typedef struct {
 // STRINGS
 
 typedef char Eurydice_c_char_t;
-//typedef const char *Prims_string;
+typedef const Eurydice_c_char_t *Prims_string;
 
 // UNSAFE CODE
 

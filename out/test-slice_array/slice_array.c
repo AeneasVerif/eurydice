@@ -7,6 +7,20 @@
 
 #include "slice_array.h"
 
+/**
+A monomorphic instance of Eurydice.array_to_slice
+with types Eurydice_arr uint8_t[[$4size_t]]
+with const generics
+- N= 4
+*/
+static Eurydice_dst_ref_d0 array_to_slice_4f(Eurydice_arr_11 *a)
+{
+  Eurydice_dst_ref_d0 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)4U;
+  return lit;
+}
+
 typedef struct _uint8_t__x2_s
 {
   uint8_t *fst;
@@ -26,12 +40,12 @@ void slice_array_f1(void)
         (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } })
       }
     };
-  Eurydice_slice
+  Eurydice_dst_ref_d0
   y0 =
-    Eurydice_slice_split_at_mut(Eurydice_array_to_slice((size_t)4U, &x, Eurydice_arr_e9),
+    Eurydice_slice_split_at_mut(array_to_slice_4f(&x),
       (size_t)2U,
       Eurydice_arr_e9,
-      Eurydice_slice_Eurydice_arr_uint8_t___4size_t___x2).fst;
+      Eurydice_dst_ref_Eurydice_arr_uint8_t___4size_t___size_t_x2).fst;
   Eurydice_slice_index(y0, (size_t)0U, Eurydice_arr_e9, Eurydice_arr_e9 *).data[0U] = 1U;
   uint8_t actual = x.data->data[0U];
   uint8_t expected = 1U;
@@ -51,12 +65,12 @@ void slice_array_f2(void)
         (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } })
       }
     };
-  Eurydice_slice
+  Eurydice_dst_ref_d0
   y0 =
-    Eurydice_slice_split_at_mut(Eurydice_array_to_slice((size_t)4U, &x, Eurydice_arr_e9),
+    Eurydice_slice_split_at_mut(array_to_slice_4f(&x),
       (size_t)2U,
       Eurydice_arr_e9,
-      Eurydice_slice_Eurydice_arr_uint8_t___4size_t___x2).fst;
+      Eurydice_dst_ref_Eurydice_arr_uint8_t___4size_t___size_t_x2).fst;
   Eurydice_arr_e9 z = Eurydice_slice_index(y0, (size_t)0U, Eurydice_arr_e9, Eurydice_arr_e9 *);
   z.data[0U] = 1U;
   uint8_t actual = x.data->data[0U];
