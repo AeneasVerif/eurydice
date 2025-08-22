@@ -468,7 +468,7 @@ and ptr_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
     | None -> K.TBuf (typ, false)
     | Some meta -> Builtin.mk_dst_ref typ meta
 
-and pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
+and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   match ty with
   | TVar var -> K.TBound (lookup_typ env (C.expect_free_var var))
   | TLiteral t -> typ_of_literal_ty env t
@@ -523,11 +523,12 @@ and pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TFnDef bound_fn_ref -> begin
       match Charon.Substitute.lookup_fndef_sig env.crate bound_fn_ref with
       | None -> failwith "Missing function declaration"
-      | Some fn_sig -> pre_typ_of_ty env (TFnPtr fn_sig)
+      | Some fn_sig -> typ_of_ty env (TFnPtr fn_sig)
     end
   | TPtrMetadata _ -> failwith "The type-level computation `PtrMetadata(t)` should be handled by Charon, consider using monomorphised LLBC."
   | TError _ -> failwith "Found type error in charon's output"
 
+(*
 and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   let t = pre_typ_of_ty env ty in
   (* Handling of DSTs. We need to catch the cases where we have a type T* where T is unsized. For
@@ -540,6 +541,7 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* T<[U; N]>* is NOT a DST, and retains the usual representation. The unsize cast will move
          from this to the DST above. *)
       t
+*)
 
 and typ_of_struct_arr (env: env) (t: C.ty) (cg: C.const_generic) : K.typ =
   let typ_t = typ_of_ty env t in

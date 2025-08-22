@@ -411,7 +411,7 @@ let replace =
     arg_names = [ "v"; "x" ];
   }
 
-let dst = [ "Eurydice" ], "dst"
+(* let dst = [ "Eurydice" ], "dst" *)
 let derefed_slice = [ "Eurydice" ], "derefed_slice"
 let str_t_name = [ "Eurydice" ], "str"
 
@@ -446,7 +446,7 @@ let str_t_def =
       0,
       Flat [ Some "data", (Krml.Checker.c_string, false); Some "len", (TInt SizeT, false) ] )
 
-let mk_dst t : K.typ = TApp (dst, [ t ])
+(* let mk_dst t : K.typ = TApp (dst, [ t ]) *)
 
 (* Gotta use a helper because the definition of Eurydice_slice is opaque (historical mistake?). *)
 let slice_of_dst =
