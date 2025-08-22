@@ -729,8 +729,8 @@ let expression_of_literal (_env : env) (l : C.literal) : K.expr =
         with_type Builtin.str_t
           (EFlat
              [
-               Some "data", with_type Krml.Checker.c_string (EString ascii);
-               Some "len", with_type Krml.Helpers.usize (EConstant (SizeT, string_of_int len));
+               Some "ptr", with_type Krml.Checker.c_string (EString ascii);
+               Some "meta", with_type Krml.Helpers.usize (EConstant (SizeT, string_of_int len));
              ]))
   | VChar c -> K.(with_type Builtin.char_t (EConstant (UInt32, string_of_int @@ Uchar.to_int c)))
   | VByteStr lst ->

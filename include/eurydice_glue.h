@@ -526,7 +526,8 @@ typedef struct {
 
 // STRINGS
 
-typedef const char *Prims_string;
+typedef char Eurydice_c_char_t;
+//typedef const char *Prims_string;
 
 // UNSAFE CODE
 
