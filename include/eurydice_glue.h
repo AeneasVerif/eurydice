@@ -96,8 +96,8 @@ typedef struct {
   (KRML_CLITERAL(Eurydice_slice){(void *)(x + start), end - (start)})
 
 // Slice length
-#define EURYDICE_SLICE_LEN(s, _) (s).len
-#define Eurydice_slice_len(s, _) (s).len
+#define EURYDICE_SLICE_LEN(s, _) (s).meta
+#define Eurydice_slice_len(s, _) (s).meta
 
 // This macro is a pain because in case the dereferenced element type is an
 // array, you cannot simply write `t x` as it would yield `int[4] x` instead,
@@ -149,7 +149,7 @@ typedef struct {
 
 // Copy a slice with memcopy
 #define Eurydice_slice_copy(dst, src, t)                                       \
-  memcpy(dst.ptr, src.ptr, dst.len * sizeof(t))
+  memcpy(dst.ptr, src.ptr, dst.meta * sizeof(t))
 
 // Distinguished support for some PartialEq trait implementations
 //
@@ -170,10 +170,10 @@ typedef struct {
 //
 // core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>
 #define Eurydice_array_eq(sz, a1, a2, t)                                       \
-  (memcmp(a1, a2, sz * sizeof(t)) == 0)
+  (memcmp((a1)->data, (a2)->data, sz * sizeof(t)) == 0)
 // core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>
 #define Eurydice_array_eq_slice(sz, a1, s2, t, _)                              \
-  (memcmp(a1, (s2)->ptr, sz * sizeof(t)) == 0)
+  (memcmp((a1)->data, (s2)->ptr, sz * sizeof(t)) == 0)
 
 // DEPRECATED -- should no longer be generated
 #define core_array_equality__core__cmp__PartialEq__Array_U__N___for__Array_T__N___eq( \
@@ -198,12 +198,12 @@ typedef struct {
 #define Eurydice_slice_split_at_mut(slice, mid, element_type, ret_t)           \
   KRML_CLITERAL(ret_t) {                                                       \
     EURYDICE_CFIELD(.fst =)                                                    \
-    KRML_CLITERAL(Eurydice_slice){EURYDICE_CFIELD(.ptr =)(slice.ptr),          \
-                                  EURYDICE_CFIELD(.len =) mid},                \
-        EURYDICE_CFIELD(.snd =) KRML_CLITERAL(Eurydice_slice) {                \
+        {EURYDICE_CFIELD(.ptr =)(slice.ptr),                                   \
+                        EURYDICE_CFIELD(.meta =) mid},                          \
+    EURYDICE_CFIELD(.snd =) {                                                  \
       EURYDICE_CFIELD(.ptr =)                                                  \
-      ((char *)slice.ptr + mid * sizeof(element_type)),                        \
-          EURYDICE_CFIELD(.len =)(slice.len - (mid))                           \
+      (slice.ptr + mid * sizeof(element_type)),                        \
+          EURYDICE_CFIELD(.meta =)(slice.meta - (mid))                           \
     }                                                                          \
   }
 
@@ -266,30 +266,43 @@ typedef char Eurydice_derefed_slice[];
 extern "C" {
 #endif
 
-static inline uint16_t core_num__u16__from_le_bytes(uint8_t buf[2]) {
-  return load16_le(buf);
+
+typedef struct Eurydice_arr_8b_s { uint8_t data[2]; } Eurydice_arr_8b;
+typedef struct Eurydice_arr_e9_s { uint8_t data[4]; } Eurydice_arr_e9;
+typedef struct Eurydice_arr_c4_s { uint8_t data[8]; } Eurydice_arr_c4;
+  
+
+  
+static inline uint16_t core_num__u16__from_le_bytes(Eurydice_arr_8b buf) {
+  return load16_le(buf.data);
 }
 
-static inline void core_num__u32__to_be_bytes(uint32_t src, uint8_t dst[4]) {
+static inline Eurydice_arr_e9 core_num__u32__to_be_bytes(uint32_t src) {
   // TODO: why not store32_be?
+  Eurydice_arr_e9 a;
   uint32_t x = htobe32(src);
-  memcpy(dst, &x, 4);
+  memcpy(a.data, &x, 4);
+  return a;
 }
 
-static inline void core_num__u32__to_le_bytes(uint32_t src, uint8_t dst[4]) {
-  store32_le(dst, src);
+static inline Eurydice_arr_e9 core_num__u32__to_le_bytes(uint32_t src) {
+  Eurydice_arr_e9 a;
+  store32_le(a.data,src);
+  return a;
 }
 
-static inline uint32_t core_num__u32__from_le_bytes(uint8_t buf[4]) {
-  return load32_le(buf);
+static inline uint32_t core_num__u32__from_le_bytes(Eurydice_arr_e9 buf) {
+  return load32_le(buf.data);
 }
 
-static inline void core_num__u64__to_le_bytes(uint64_t v, uint8_t buf[8]) {
-  store64_le(buf, v);
+static inline Eurydice_arr_c4 core_num__u64__to_le_bytes(uint64_t v) {
+  Eurydice_arr_c4 a;
+  store64_le(a.data, v);
+  return a;
 }
 
-static inline uint64_t core_num__u64__from_le_bytes(uint8_t buf[8]) {
-  return load64_le(buf);
+static inline uint64_t core_num__u64__from_le_bytes(Eurydice_arr_c4 buf) {
+  return load64_le(buf.data);
 }
 
 static inline int64_t
@@ -513,7 +526,8 @@ typedef struct {
 
 // STRINGS
 
-typedef const char *Prims_string;
+typedef char Eurydice_c_char_t;
+typedef const Eurydice_c_char_t *Prims_string;
 
 // UNSAFE CODE
 
@@ -554,6 +568,10 @@ static inline char *malloc_and_init(size_t sz, char *init) {
 
 #define Eurydice_box_new(init, t, t_dst)                                       \
   ((t_dst)(malloc_and_init(sizeof(t), (char *)(&init))))
+
+// Initializer for array of size zero
+#define Eurydice_empty_array(dummy, t, t_dst)                                  \
+  ((t_dst) { .data = { } })
 
 #define Eurydice_box_new_array(len, ptr, t, t_dst)                             \
   ((t_dst)(malloc_and_init(len * sizeof(t), (char *)(ptr))))

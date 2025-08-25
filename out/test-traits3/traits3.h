@@ -23,9 +23,9 @@ typedef struct uint64_t_x2_s
 uint64_t_x2;
 
 /**
-This function found in impl {traits3::internal::KeccakItem<2usize> for (u64, u64)}
+This function found in impl {traits3::internal::KeccakItem<2: usize> for (u64, u64)}
 */
-uint64_t_x2 traits3_zero_c8(void);
+uint64_t_x2 traits3_zero_76(void);
 
 /**
 A monomorphic instance of traits3.keccak
