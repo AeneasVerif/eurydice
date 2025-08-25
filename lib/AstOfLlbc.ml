@@ -805,7 +805,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           let place_typ = typ_of_ty env p.ty in
           begin
             match is_dst env sub_e.K.typ with
-            | Some (lid, _u, t_pointee) when not (is_dst_field env lid field_name) ->
+            | Some (_lid, _u, t_pointee) ->
                 K.with_type place_typ (K.EField (mk_dst_deref env t_pointee sub_e, field_name))
             | _ ->
                 (* Same as below *)
@@ -1750,7 +1750,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       let field_name = lookup_field env typ_id field_id in
       begin
         match is_dst env (typ_of_ty env sub_place.ty) with
-        | Some (lid, _ , t)
+        (* | Some (lid, _ , t)
           when not (is_dst_field env lid field_name) ->
             (* Support for DSTs (see above). This is the first case. Building by hand... we are
              compiling &( *x).f where x: Eurydice_dst<T> and x = sub_place, T = lid. This case
@@ -1763,7 +1763,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
               K.(
                 with_type
                   (TBuf (t_field, false))
-                  (EAddrOf (with_type t_field (EField (e, field_name)))))
+                  (EAddrOf (with_type t_field (EField (e, field_name))))) *)
         | Some (lid, TApp (slice_hd, [ u ]), t_u)
           when is_dst_field env lid field_name && slice_hd = Builtin.derefed_slice ->
             (* Support for DSTs (see above). This is the first case. Building by hand... we are
