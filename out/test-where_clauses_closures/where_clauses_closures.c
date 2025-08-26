@@ -8,17 +8,17 @@
 #include "where_clauses_closures.h"
 
 /**
-This function found in impl {where_clauses_closures::Ops<1: usize> for usize}
+This function found in impl {where_clauses_closures::Ops<1usize> for usize}
 */
-size_t where_clauses_closures_zero_af(void)
+size_t where_clauses_closures_zero_38(void)
 {
   return (size_t)0U;
 }
 
 /**
-This function found in impl {where_clauses_closures::Ops<1: usize> for usize}
+This function found in impl {where_clauses_closures::Ops<1usize> for usize}
 */
-size_t where_clauses_closures_of_usize_af(size_t x)
+size_t where_clauses_closures_of_usize_38(size_t x)
 {
   return x;
 }
@@ -35,7 +35,7 @@ with const generics
 size_t where_clauses_closures_test_call_mut_1a_e3(void **_, size_t tupled_args)
 {
   size_t i = tupled_args;
-  return where_clauses_closures_of_usize_af(i);
+  return where_clauses_closures_of_usize_38(i);
 }
 
 /**
@@ -69,7 +69,7 @@ size_t_x2 where_clauses_closures_test_e3(void)
     arr_struct.data[0U] = where_clauses_closures_test_call_mut_1a_e3(&lvalue, (size_t)0U);
   }
   Eurydice_arr_e4 x = arr_struct;
-  size_t y = where_clauses_closures_zero_af();
+  size_t y = where_clauses_closures_zero_38();
   return (KRML_CLITERAL(size_t_x2){ .fst = x.data[0U], .snd = y });
 }
 

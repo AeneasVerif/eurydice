@@ -8,3 +8,4 @@ out/*/a.out
 *.llbc
 eurydice
 /.vscode
+.charon_version

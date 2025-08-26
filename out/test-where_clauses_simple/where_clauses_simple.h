@@ -76,14 +76,14 @@ with const generics
 typedef struct Eurydice_arr_2e_s { uint16_t data[1U]; } Eurydice_arr_2e;
 
 /**
-This function found in impl {where_clauses_simple::Ops<1: usize> for u64}
+This function found in impl {where_clauses_simple::Ops<1usize> for u64}
 */
-uint64_t where_clauses_simple_add_8e(Eurydice_arr_2e x, uint64_t y);
+uint64_t where_clauses_simple_add_19(Eurydice_arr_2e x, uint64_t y);
 
 /**
-This function found in impl {where_clauses_simple::Ops<1: usize> for u64}
+This function found in impl {where_clauses_simple::Ops<1usize> for u64}
 */
-uint64_t where_clauses_simple_of_u16_8e(uint16_t x);
+uint64_t where_clauses_simple_of_u16_19(uint16_t x);
 
 /**
 A monomorphic instance of where_clauses_simple.fn_k
@@ -131,7 +131,7 @@ with types uint64_t
 with const generics
 
 */
-uint64_t where_clauses_simple_fn_1_2f(void);
+uint64_t where_clauses_simple_fn_1_e5(void);
 
 void where_clauses_simple_one_calls_one(void);
 
@@ -153,7 +153,7 @@ with types uint64_t, size_t
 with const generics
 
 */
-tuple_65 where_clauses_simple_double_33(uint64_t x, size_t y);
+tuple_65 where_clauses_simple_double_f1(uint64_t x, size_t y);
 
 /**
 A monomorphic instance of K.
