@@ -1695,7 +1695,7 @@ let mk_reference (env : env) (ty: C.ty) (e : K.expr) (metadata : K.expr) : K.exp
   | K.TUnit -> addrof_e
   | _ ->
     K.(with_type (Builtin.mk_dst_ref e.typ metadata.typ)
-      (EFlat [ (Some "ptr", addrof_e); (Some "metadata", metadata) ]))
+      (EFlat [ (Some "ptr", addrof_e); (Some "meta", metadata) ]))
 
 let has_unresolved_generic (ty : K.typ) : bool =
   object
@@ -1774,24 +1774,15 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
             let e = mk_dst_deref env t_u sub_place in
             (* e_f_addr = &e.f *)
             let t_field = typ_of_ty env p.ty in
+            let e_field = K.with_type t_field (K.EField (e, field_name)) in
             let e_f_addr =
               K.(
                 with_type
-                  (TBuf (t_field, false))
-                  (EAddrOf (with_type t_field (EField (e, field_name)))))
+                  (TBuf (u, false))
+                  (ECast (e_field, TBuf (u, false))))
             in
-            (* slice_of_dst: (derefed_slice 0)* -> size_t -> Eurydice_slice 0 *)
-            let slice_of_dst = Builtin.(expr_of_builtin slice_of_dst) in
-            (* slice_of_dst: (derefed_slice u)* -> size_t -> Eurydice_slice u *)
-            let slice_of_dst =
-              K.with_type
-                (Krml.DeBruijn.subst_t u 0 slice_of_dst.typ)
-                (K.ETApp (slice_of_dst, [], [], [ u ]))
-            in
-            K.(
-              with_type (Builtin.mk_slice u)
-                (EApp
-                   (slice_of_dst, [ e_f_addr; metadata ])))
+            K.(with_type (Builtin.mk_dst_ref u metadata.typ)
+                 (EFlat [ (Some "ptr", e_f_addr); (Some "meta", metadata) ]))
         | _ ->
             (* Default case, same as below *)
             let e = expression_of_place env p in
