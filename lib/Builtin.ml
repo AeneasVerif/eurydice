@@ -411,9 +411,7 @@ let replace =
     arg_names = [ "v"; "x" ];
   }
 
-(* let dst = [ "Eurydice" ], "dst" *)
 let derefed_slice = [ "Eurydice" ], "derefed_slice"
-(* let str_t_name = [ "Eurydice" ], "str" *)
 
 (** The C counterpart of `&str` *)
 let str_t = mk_dst_ref c_char_t (TInt SizeT)
@@ -421,34 +419,10 @@ let str_t = mk_dst_ref c_char_t (TInt SizeT)
 (** The C counterpart of `str` and serves twofold functionalities: (1) when in expressions, it
     serves as a placeholder to get referenced again; (2) when in customised DST definition, it is
     defined as [char []] to have 0-length. *)
-let deref_str_t = K.TQualified ([ "Eurydice" ], "deref_str")
+let deref_str_t = K.TApp (derefed_slice, [c_char_t])
 
-(*
-let dst_def =
-  K.DType
-    ( dst,
-      [],
-      0,
-      1,
-      Flat
-        [
-          Some "ptr", (TBuf (TBound 0, false), false);
-          Some "len", (TInt SizeT, false);
-          (* a number of elements, just like slices *)
-        ] )
-*)
-(*
-let str_t_def =
-  K.DType
-    ( str_t_name,
-      [ Private ],
-      0,
-      0,
-      Flat [ Some "data", (Krml.Checker.c_string, false); Some "len", (TInt SizeT, false) ] )
-*)
 let c_string_def = K.DType (([ "Prims" ], "string"), [ Private ], 0, 0, Abbrev (TBuf (c_char_t, false)))
 
-(* let mk_dst t : K.typ = TApp (dst, [ t ]) *)
 
 (* Gotta use a helper because the definition of Eurydice_slice is opaque (historical mistake?). *)
 let slice_of_dst =
