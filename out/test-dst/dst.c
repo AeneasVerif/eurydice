@@ -13,7 +13,7 @@ Eurydice_dst_ref_ed dst_alloc(void)
     (
       KRML_CLITERAL(Eurydice_dst_ref_ed){
         .ptr = (dst_T *)Eurydice_box_new((
-            KRML_CLITERAL(dst_S_64){ .foo = 0U, .my_data = { .data = { 0U, 0U, 0U, 0U } } }
+            KRML_CLITERAL(dst_S_64){ .foo = 0U, .my_data = { .data = { 0U } } }
           ),
           dst_S_64,
           dst_S_64 *),
@@ -32,10 +32,10 @@ Eurydice_dst_ref_fd dst_alloc3(void)
               .foo = 0U,
               .my_data = {
                 .data = {
-                  (KRML_CLITERAL(Eurydice_arr_6f){ .data = { 0U, 0U, 0U } }),
-                  (KRML_CLITERAL(Eurydice_arr_6f){ .data = { 0U, 0U, 0U } }),
-                  (KRML_CLITERAL(Eurydice_arr_6f){ .data = { 0U, 0U, 0U } }),
-                  (KRML_CLITERAL(Eurydice_arr_6f){ .data = { 0U, 0U, 0U } })
+                  { .data = { 0U } },
+                  { .data = { 0U } },
+                  { .data = { 0U } },
+                  { .data = { 0U } }
                 }
               }
             }
@@ -77,10 +77,9 @@ void dst_check_var_field(Eurydice_dst_ref_ed x)
   _uint32_t__x2
   uu____0 =
     {
-      .fst = &Eurydice_slice_index(Eurydice_slice_of_dst(&x.ptr->my_data,
-          x.meta,
-          uint32_t,
-          Eurydice_dst_ref_3c),
+      .fst = &Eurydice_slice_index((
+          KRML_CLITERAL(Eurydice_dst_ref_3c){ .ptr = (uint32_t *)x.ptr->my_data, .meta = x.meta }
+        ),
         (size_t)0U,
         uint32_t,
         uint32_t *),
@@ -96,10 +95,9 @@ void dst_check_var_field_ref(Eurydice_dst_ref_ed x)
   _uint32_t__x2
   uu____0 =
     {
-      .fst = &Eurydice_slice_index(Eurydice_slice_of_dst(&x.ptr->my_data,
-          x.meta,
-          uint32_t,
-          Eurydice_dst_ref_3c),
+      .fst = &Eurydice_slice_index((
+          KRML_CLITERAL(Eurydice_dst_ref_3c){ .ptr = (uint32_t *)x.ptr->my_data, .meta = x.meta }
+        ),
         (size_t)0U,
         uint32_t,
         uint32_t *),
@@ -115,10 +113,12 @@ void dst_check_var_field_ref3(Eurydice_dst_ref_fd x)
   _uint32_t__x2
   uu____0 =
     {
-      .fst = Eurydice_slice_index(Eurydice_slice_of_dst(&x.ptr->my_data,
-          x.meta,
-          Eurydice_arr_6f,
-          Eurydice_dst_ref_51),
+      .fst = Eurydice_slice_index((
+          KRML_CLITERAL(Eurydice_dst_ref_51){
+            .ptr = (Eurydice_arr_6f *)x.ptr->my_data,
+            .meta = x.meta
+          }
+        ),
         (size_t)0U,
         Eurydice_arr_6f,
         Eurydice_arr_6f *).data,
@@ -160,9 +160,7 @@ void dst_main4(void)
 {
   Eurydice_dst_ref_3c
   x =
-    array_to_slice_ad(Eurydice_box_new((
-          KRML_CLITERAL(Eurydice_arr_0d){ .data = { 0U, 0U, 0U, 0U } }
-        ),
+    array_to_slice_ad(Eurydice_box_new((KRML_CLITERAL(Eurydice_arr_0d){ .data = { 0U } }),
         Eurydice_arr_0d,
         Eurydice_arr_0d *));
   /* original Rust expression is not an lvalue in C */
@@ -187,10 +185,12 @@ void dst_main(void)
   _uint32_t__x2
   uu____1 =
     {
-      .fst = &Eurydice_slice_index(Eurydice_slice_of_dst(&uu____0.ptr->my_data,
-          uu____0.meta,
-          uint32_t,
-          Eurydice_dst_ref_3c),
+      .fst = &Eurydice_slice_index((
+          KRML_CLITERAL(Eurydice_dst_ref_3c){
+            .ptr = (uint32_t *)uu____0.ptr->my_data,
+            .meta = uu____0.meta
+          }
+        ),
         (size_t)0U,
         uint32_t,
         uint32_t *),
@@ -203,10 +203,12 @@ void dst_main(void)
   _uint32_t__x2
   uu____3 =
     {
-      .fst = &Eurydice_slice_index(Eurydice_slice_of_dst(&uu____2.ptr->my_data,
-          uu____2.meta,
-          uint32_t,
-          Eurydice_dst_ref_3c),
+      .fst = &Eurydice_slice_index((
+          KRML_CLITERAL(Eurydice_dst_ref_3c){
+            .ptr = (uint32_t *)uu____2.ptr->my_data,
+            .meta = uu____2.meta
+          }
+        ),
         (size_t)1U,
         uint32_t,
         uint32_t *),
