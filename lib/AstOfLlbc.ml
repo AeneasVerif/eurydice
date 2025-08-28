@@ -766,8 +766,11 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       (* L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr sub_e (C.show_ty sub_place.ty) *)
       (*   (C.show_projection_elem pe); *)
       match pe, sub_place, sub_place.ty with
+      (* &slice simply cannot be derefenced into a place as a dst.
+         In other word, it will be reborrowed again directly after the deref, which is handled in
+         expression_of_rvalue)
       | C.Deref, _, TRef (_, TAdt { id = TBuiltin TSlice; _ }, _)
-      | C.Deref, _, TRawPtr (TAdt { id = TBuiltin TSlice; _ }, _) -> !*sub_e
+      | C.Deref, _, TRawPtr (TAdt { id = TBuiltin TSlice; _ }, _) -> !*sub_e *)
       | ( C.Deref,
           _,
           (TRawPtr _ | TRef _ | TAdt { id = TBuiltin TBox; generics = { types = [ _ ]; _ } }) ) ->
@@ -1016,19 +1019,7 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
   in
   K.(with_type ret_t (EApp (op, first :: rest)))
 
-(* According to the rules (see my notebook), array and slice types do not need
-   the address-taking because they are already addresses. Therefore, the
-   compilation scheme skips the address-taking operation and represents a value
-   of type [T; N] as T[N] and a value of type &[T; N] as T*, relying on the fact
-   that the former converts automatically to the latter. This is a type-driven
-   translation that does not work with polymorphism, so perhaps there ought to
-   be a MAYBE_CAST operator that gets desugared post-krml monomorphization. TBD.
-*)
-let maybe_addrof (_env : env) (ty : C.ty) (e : K.expr) =
-  (* ty is the *original* Rust type *)
-  match ty with
-  | TAdt { id = TBuiltin (TSlice); _ } -> e
-  | _ -> K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
+let addrof (e : K.expr) = K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
 
 (** Handling trait clauses as dictionaries *)
 
@@ -1688,14 +1679,20 @@ let is_box_place (p : C.place) =
   | C.TAdt { id = TBuiltin TBox; _ } -> true
   | _ -> false
 
-let mk_reference (env : env) (ty: C.ty) (e : K.expr) (metadata : K.expr) : K.expr =
-  let addrof_e = maybe_addrof env ty e in
+let mk_reference (e : K.expr) (metadata : K.expr) : K.expr =
   match metadata.typ with
   (* When it is unit, it means there is no metadata, simply take the address *)
-  | K.TUnit -> addrof_e
+  | K.TUnit -> addrof e
   | _ ->
-    K.(with_type (Builtin.mk_dst_ref e.typ metadata.typ)
-      (EFlat [ (Some "ptr", addrof_e); (Some "meta", metadata) ]))
+    match e.typ with
+    | TApp (lid, [ t ]) when lid = Builtin.derefed_slice ->
+      (* Kind of "base case" of DSTs where we have to cast the type [derefed_slice<T>]
+         into [T*] for the .ptr field in slice<T>  *) 
+      let ptr = K.(with_type (TBuf (t, false)) (ECast (e, TBuf(t,false)))) in
+      K.(with_type (Builtin.mk_dst_ref t metadata.typ)
+        (EFlat [ (Some "ptr", ptr); (Some "meta", metadata) ]))
+    | _ -> K.(with_type (Builtin.mk_dst_ref e.typ metadata.typ)
+           (EFlat [ (Some "ptr", addrof e); (Some "meta", metadata) ]))
 
 let has_unresolved_generic (ty : K.typ) : bool =
   object
@@ -1734,64 +1731,10 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and [p] might be a reference to DST (fat pointer). *)
       (* This also works for when the case has metadata, simply ignore it *)
       expression_of_place env p
-  (* This works for when: ( *s ).place but this is not general enough. *)
-  (* We now have the exact metadata at hand, so we can simply do the way of incorporating the metadata. *)
-  | RvRef
-      ( ({
-           kind =
-             PlaceProjection
-               ( { kind = PlaceProjection (sub_place, C.Deref); _ },
-                 Field (ProjAdt (typ_id, None), field_id) );
-           _;
-         } as p),
-        _,
-        metadata ) ->
-      let metadata = expression_of_operand env metadata in
-      let field_name = lookup_field env typ_id field_id in
-      begin
-        match is_dst env (typ_of_ty env sub_place.ty) with
-        (* | Some (lid, _ , t)
-          when not (is_dst_field env lid field_name) ->
-            (* Support for DSTs (see above). This is the first case. Building by hand... we are
-             compiling &( *x).f where x: Eurydice_dst<T> and x = sub_place, T = lid. This case
-             f is not the variable field. *) 
-            let sub_place = expression_of_place env sub_place in
-            (* e: T *)
-            let e = mk_dst_deref env t sub_place in
-            (* e_f_addr = &e.f *)
-            let t_field = typ_of_ty env p.ty in
-              K.(
-                with_type
-                  (TBuf (t_field, false))
-                  (EAddrOf (with_type t_field (EField (e, field_name))))) *)
-        | Some (lid, TApp (slice_hd, [ u ]), t_u)
-          when is_dst_field env lid field_name && slice_hd = Builtin.derefed_slice ->
-            (* Support for DSTs (see above). This is the first case. Building by hand... we are
-             compiling &( *x).f where x: Eurydice_dst<T<[U]>> and x = sub_place, T = lid, U = u,
-             T<[U]> = t_u. The goal is to build an actual slice. *)
-            let sub_place = expression_of_place env sub_place in
-            (* e: T<[U]> *)
-            let e = mk_dst_deref env t_u sub_place in
-            (* e_f_addr = &e.f *)
-            let t_field = typ_of_ty env p.ty in
-            let e_field = K.with_type t_field (K.EField (e, field_name)) in
-            let e_f_addr =
-              K.(
-                with_type
-                  (TBuf (u, false))
-                  (ECast (e_field, TBuf (u, false))))
-            in
-            K.(with_type (Builtin.mk_dst_ref u metadata.typ)
-                 (EFlat [ (Some "ptr", e_f_addr); (Some "meta", metadata) ]))
-        | _ ->
-            (* Default case, same as below *)
-            let e = expression_of_place env p in
-            mk_reference env p.ty e metadata
-      end 
   | RvRef (p, _, metadata) | RawPtr (p, _, metadata) ->
       let metadata = expression_of_operand env metadata in
       let e = expression_of_place env p in
-      mk_reference env p.ty e metadata
+      mk_reference e metadata
   | UnaryOp (Cast (CastScalar (_, dst)), e) ->
       let dst = typ_of_literal_ty env dst in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
@@ -2097,8 +2040,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
         dest;
         _;
       } ->
-      (* Special treatment because of the usage of maybe_addrof *)
-      (* Special treatment for e1[e2] of array which are translated into struct
+      (* Special treatment for e1[e2] of array which are translated into struct.
          e1[e2] is translated as fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T
 
          Since [T;N] is transalted into arr$T$N, we need to first dereference
@@ -2112,7 +2054,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
       let e1 = K.with_type t_array (K.EField (e1,"data")) in
       let dest = expression_of_place env dest in
       Krml.Helpers.with_unit
-        K.(EAssign (dest, maybe_addrof env ty (with_type t (EBufRead (e1, e2)))))
+        K.(EAssign (dest, addrof (with_type t (EBufRead (e1, e2)))))
   | Call { func = FnOpRegular fn_ptr; args; dest; _ }
     when Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u16 fn_ptr
          || Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u32 fn_ptr
@@ -2165,32 +2107,6 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
         else
           args
       in
-
-      (* Another array-to-pointer, decay-related bit of reasoning. The box_new builtin, when applied
-         to an array type, looks like `x := box_new <[T; N]> e` where `e: [T; N]`; However, per the
-         conversion rules, Box<[T; N]> (the type) translates to `T*`, meaning that `x` expects a
-         `T*` but is assigned a `[T; N]*` (because the type application of box_new is not aware of
-         array decay when performing substitution).
-
-         This 100% does not work in case of a polymorphic function that is later monomorphized,
-         meaning we really should be doing this transformation post-monomorphization. *)
-
-      (** Array handling: commented special case for array *)
-      (*
-        let hd, output_t =
-        match hd.node with
-        | K.ETApp ({ node = EQualified lid; _ }, [], [], [ TArray (t, n) ])
-          when lid = Builtin.box_new.name ->
-            let len = K.with_type (TInt SizeT) (K.EConstant n) in
-            let output_t = K.TBuf (t, false) in
-            ( K.(
-                with_type
-                  (TArrow (TArray (t, n), output_t))
-                  (ETApp (Builtin.(expr_of_builtin box_new_array), [ len ], [], [ t ]))),
-              output_t )
-        | _ -> hd, output_t
-      in *)
-
       let rhs =
         if args = [] then
           hd
