@@ -747,27 +747,13 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       | ( Field (ProjAdt (typ_id, None), field_id),
           { kind = PlaceProjection (sub_place, C.Deref); _ },
           C.TAdt _ ) ->
-          (* Support for DSTs. Recall that values of a DST cannot exist unless behind a pointer
-             (&, Box, etc.). Therefore, a place expression that refers to a DST (and therefore
-             warrants special treatment) begins with `*x` where `x: T<U>` for `U: ?Sized` (we
-             describe the simplified case of a single parameter for T).
-
-             We cannot store or materialize such a value, therefore, after `*x`, we can either:
-             - take its U field (of type [U'], not representable), and in turn takes its address,
-               thus obtaining a value of type `&[U']` -- this is `&(( *x).data)`
-             - take one of the other fields -- this is `( *x).f_i`, no particular requirement on
-               address taking here
-             - reborrow, obtaining a pointer to a DST, also representable -- this is `&( *x)`
-
-             The first and third cases are handled in expression_of_rvalue. The second case, as it
-             involves no borrowing, is handled here.
-          *)
           let field_name = lookup_field env typ_id field_id in
           let sub_e = expression_of_place env sub_place in
           let place_typ = typ_of_ty env p.ty in
           begin
             match sub_e.K.typ with
             | K.TApp (dst_ref_hd, [ dst_t; _meta ]) when dst_ref_hd = Builtin.dst_ref ->
+                (* getting field from a fat pointer of DST  *)
                 K.with_type place_typ (K.EField (mk_dst_deref dst_t sub_e, field_name))
             | _ ->
                 (* Same as below *)
@@ -1659,19 +1645,21 @@ let has_unresolved_generic (ty : K.typ) : bool =
     method! visit_TBound _ _ = true
   end#visit_typ false ty
 
+(* Currently unused when metadata of CastUnsize is given
 let expression_of_cg (env : env) (cg : K.cg) =
   match cg with
   |CgConst n -> Krml.Helpers.mk_sizet (int_of_string (snd n))
   |CgVar var ->
     let diff = List.length env.binders - List.length env.cg_binders in
     K.with_type (K.TInt SizeT) (K.EBound (var + diff))
+*)
 
-(* Parse the fat pointer Eurydice_dst_ref<T<U>> into (T,U,T<U>),
+(* Parse the fat pointer Eurydice_dst_ref<T<U>> into (T,T<U>),
    used to handle the unsized cast from &T<V> to &T<U> *)
 let is_dst_ref t =
   match t with
-  | K.TApp (dst_ref_hd, [ (TApp (lid, [ u ]) as t_u); _ ]) when dst_ref_hd = Builtin.dst_ref ->
-     Some (lid, u, t_u)
+  | K.TApp (dst_ref_hd, [ (TApp (lid, _) as t_u); _ ]) when dst_ref_hd = Builtin.dst_ref ->
+     Some (lid, t_u)
   | _ -> None
 
 let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
@@ -1719,25 +1707,25 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   | UnaryOp (Cast (CastFnPtr (TFnPtr _, TFnPtr _)), e) ->
       (* possible safe fn to unsafe fn, same in C *)
       expression_of_operand env e
-  | UnaryOp (Cast (CastUnsize (ty_from, ty_to, _) as ck), e) ->
+  | UnaryOp (Cast (CastUnsize (ty_from, ty_to, meta) as ck), e) ->
       (* DSTs: we only support going from T<[U;N]> to T<[U]>. The former is sized, the latter is
          unsized and becomes a fat pointer. We build this coercion by hand, and slightly violate C's
          strict aliasing rules. *)
       let t_from = typ_of_ty env ty_from and t_to = typ_of_ty env ty_to in
       let e = expression_of_operand env e in
       begin
-        match t_from, is_dst_ref t_to with
-        | TBuf (TApp (lid1, [ K.TCgApp (K.TApp (lid_arr, [ u1 ]), cg) ]) , _), Some (lid2, TApp (slice_hd, [ u2 ]), t_u)
-          when lid1 = lid2 && u1 = u2 && slice_hd = Builtin.derefed_slice && lid_arr = Builtin.arr ->
+        match meta, t_from, is_dst_ref t_to with
+        | MetaLength cg, TBuf (TApp (lid1, _ ) , _), Some (lid2, t_u)
+          when lid1 = lid2 ->
             (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
              `Eurydice_derefed_slice data` (a.k.a. `char data[]`) *)
-            let len = expression_of_cg env cg in
+            let len = expression_of_const_generic env cg in
             let ptr = K.with_type (TBuf (t_u, false)) (K.ECast (e, TBuf (t_u, false))) in
             Builtin.dst_new ~len ~ptr t_u
-        | TBuf ( K.TCgApp (K.TApp (lid_arr, [ t ]), cg), _), _
+        | MetaLength cg, TBuf ( K.TCgApp (K.TApp (lid_arr, [ t ]), _), _), _
           when lid_arr = Builtin.arr ->
             (* Cast from Box<[T;N]> to Box<[T]> which we represent as Eurydice_slice *)
-            let len = expression_of_cg env cg in
+            let len = expression_of_const_generic env cg in
             (* array_to_slice: size_t -> arr -> Eurydice_slice 0 *)
             let array_to_slice = Builtin.(expr_of_builtin array_to_slice) in
             let diff = List.length env.binders - List.length env.cg_binders in
