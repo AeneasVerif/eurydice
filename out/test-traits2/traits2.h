@@ -15,8 +15,6 @@
 extern "C" {
 #endif
 
-#include "Eurydice.h"
-
 extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(size_t *x0);
 
 #define core_cmp_Ordering_Less -1
@@ -79,6 +77,18 @@ tuple_04;
 
 extern tuple_04
 core_iter_range__core__iter__range__Step_for_usize__steps_between(size_t *x0, size_t *x1);
+
+/**
+A monomorphic instance of core.ops.range.Range
+with types size_t
+
+*/
+typedef struct core_ops_range_Range_08_s
+{
+  size_t start;
+  size_t end;
+}
+core_ops_range_Range_08;
 
 void traits2_main(void);
 

@@ -15,7 +15,23 @@
 extern "C" {
 #endif
 
-extern const uint8_t nested_arrays2_TABLE[1U][1U];
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $1size_t
+*/
+typedef struct Eurydice_arr_f1_s { uint8_t data[1U]; } Eurydice_arr_f1;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr uint8_t[[$1size_t]]
+with const generics
+- $1size_t
+*/
+typedef struct Eurydice_arr_81_s { Eurydice_arr_f1 data[1U]; } Eurydice_arr_81;
+
+#define NESTED_ARRAYS2_TABLE ((KRML_CLITERAL(Eurydice_arr_81){ .data = { { .data = { 1U } } } }))
 
 void nested_arrays2_main(void);
 
