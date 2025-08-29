@@ -332,18 +332,8 @@ let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
   | TUInt C.U128 -> Builtin.uint128_t
   | _ -> K.TInt (width_of_integer_type (Charon.TypesUtils.literal_as_integer ty))
 
-
-(* Matches an instance of Eurydice_dst_ref<T<U>> -- returns Some (T, U, T<U>) or None
-   Here both U and T<U> are DST, T<U> is a user-defined DST*)
-let is_dst_ref t =
-  match t with
-  | K.TApp (dst_hd, [ (TApp (lid, [ u ]) as t_u); _ ]) when dst_hd = Builtin.dst_ref ->
-     Some (lid, u, t_u)
-  | _ -> None
-
-
-(* e: Eurydice_dst_ref<t>, it is also used for used-defined DST t *)
-let mk_dst_deref _env t e =
+(* e: Eurydice_dst_ref<t> *)
+let mk_dst_deref t e =
   (* ptr_field: t* *)
   let ptr_field = K.(with_type (TBuf (t, false)) (EField (e, "ptr"))) in
   K.(with_type t (EBufRead (ptr_field, Krml.Helpers.zero_usize)))
@@ -776,9 +766,9 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           let sub_e = expression_of_place env sub_place in
           let place_typ = typ_of_ty env p.ty in
           begin
-            match is_dst_ref sub_e.K.typ with
-            | Some (_lid, _u, t_pointee) ->
-                K.with_type place_typ (K.EField (mk_dst_deref env t_pointee sub_e, field_name))
+            match sub_e.K.typ with
+            | K.TApp (dst_ref_hd, [ dst_t; _meta ]) when dst_ref_hd = Builtin.dst_ref ->
+                K.with_type place_typ (K.EField (mk_dst_deref dst_t sub_e, field_name))
             | _ ->
                 (* Same as below *)
                 K.with_type place_typ
@@ -1675,6 +1665,14 @@ let expression_of_cg (env : env) (cg : K.cg) =
   |CgVar var ->
     let diff = List.length env.binders - List.length env.cg_binders in
     K.with_type (K.TInt SizeT) (K.EBound (var + diff))
+
+(* Parse the fat pointer Eurydice_dst_ref<T<U>> into (T,U,T<U>),
+   used to handle the unsized cast from &T<V> to &T<U> *)
+let is_dst_ref t =
+  match t with
+  | K.TApp (dst_ref_hd, [ (TApp (lid, [ u ]) as t_u); _ ]) when dst_ref_hd = Builtin.dst_ref ->
+     Some (lid, u, t_u)
+  | _ -> None
 
 let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   match p with
