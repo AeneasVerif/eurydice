@@ -7,12 +7,20 @@
 
 #include "array2d.h"
 
-bool array2d_f(uint32_t x[4U][2U])
+bool array2d_f(Eurydice_arr_c0 x)
 {
-  x[0U][0U] = 1U;
-  x[0U][1U] = 2U;
-  uint32_t y[4U][2U] = { { 1U, 2U }, { 3U, 4U }, { 1U, 2U }, { 3U, 4U } };
-  return Eurydice_array_eq((size_t)4U, x, y, uint32_t [2U]);
+  x.data[0U] = (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 1U, 2U } });
+  Eurydice_arr_c0
+  y =
+    {
+      .data = {
+        (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 1U, 2U } }),
+        (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 3U, 4U } }),
+        (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 1U, 2U } }),
+        (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 3U, 4U } })
+      }
+    };
+  return Eurydice_array_eq((size_t)4U, &x, &y, Eurydice_arr_b2);
 }
 
 typedef struct _bool__x2_s
@@ -24,23 +32,19 @@ _bool__x2;
 
 void array2d_main(void)
 {
-  uint32_t y[4U][2U];
+  Eurydice_arr_c0 y;
+  Eurydice_arr_b2 repeat_expression[4U];
   KRML_MAYBE_FOR4(i,
     (size_t)0U,
     (size_t)4U,
     (size_t)1U,
-    y[i][0U] = 1U;
-    y[i][1U] = 2U;);
-  y[1U][0U] = 3U;
-  y[1U][1U] = 4U;
-  y[3U][0U] = 3U;
-  y[3U][1U] = 4U;
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint32_t copy_of_y[4U][2U];
-  memcpy(copy_of_y, y, (size_t)4U * sizeof (uint32_t [2U]));
-  bool actual = array2d_f(copy_of_y);
+    repeat_expression[i] = (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 1U, 2U } }););
+  memcpy(y.data, repeat_expression, (size_t)4U * sizeof (Eurydice_arr_b2));
+  y.data[1U] = (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 3U, 4U } });
+  y.data[3U] = (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 3U, 4U } });
+  bool actual = array2d_f(y);
   bool expected = true;
-  _bool__x2 uu____1 = { .fst = &actual, .snd = &expected };
-  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+  _bool__x2 uu____0 = { .fst = &actual, .snd = &expected };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
