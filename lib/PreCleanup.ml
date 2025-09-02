@@ -69,7 +69,26 @@ let remove_array_eq = object
      super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t lid bs e
 end
 
+let expand_slice_to_array =
+  object (_self)
+    inherit [_] map as super
 
+    method! visit_expr (((), _) as env) e =
+      match e.node with
+      | EApp ({ node = ETApp ({ node = EQualified lid; _}, _, _, [_; (TCgApp (TApp (_, [ t ]), _)) as arr_t; err_t]); _}, es)
+        when lid = Builtin.slice_to_array.name ->
+         let slice_to_array2 = Builtin.(expr_of_builtin slice_to_array2) in
+         let ts = [t; arr_t; err_t] in
+         let slice_to_array2 =
+           with_type
+             (Krml.DeBruijn.subst_tn ts Builtin.slice_to_array2.typ)
+             (ETApp (slice_to_array2, [], [], ts))
+         in
+         with_type e.typ (EApp (slice_to_array2, es))
+      | _ -> super#visit_expr env e
+    end
+
+    
 (** Comes from [drop_unused] in Inlining.ml, we use it to remove the builtin function defined
     using abstract syntax when they are not used. Otherwise they may use some undefined types and
     fail the check *)
@@ -133,6 +152,7 @@ let precleanup files =
   let files = expand_array_copies files in
   let files = remove_array_eq#visit_files (0, 0) files in
   let files = drop_unused_builtin files in
+  let files = expand_slice_to_array#visit_files () files in
   files
 
 let merge files =

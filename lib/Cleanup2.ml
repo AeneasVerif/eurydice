@@ -445,12 +445,15 @@ let rewrite_slice_to_array =
 
     method! visit_expr (((), _) as env) e =
       match e.node with
-      | EApp ({ node = ETApp ({ node = EQualified lid; _ }, _, _, ts); _ }, es)
-        when lid = Builtin.slice_to_array.name ->
+      | EApp ({ node = ETApp ({ node = EQualified lid; _ }, _, _, [ele_t; arr_t; _]); _ }, es)
+        when lid = Builtin.slice_to_array2.name ->
           let src = Krml.KList.one es in
           (* src = slice ..., dst = array ... *)
           let result_t = e.typ in
-          let slice_to_array2 = Builtin.(expr_of_builtin slice_to_array2) in
+          let ptr = with_type (TBuf (ele_t, false)) (EField (src, "ptr")) in
+          let arr = with_type arr_t (EFlat [ (Some "data", ptr) ]) in
+          with_type result_t (ECons ("Ok", [ arr ]))
+          (* let slice_to_array2 = Builtin.(expr_of_builtin slice_to_array2) in
           let slice_to_array2 =
             with_type
               (Krml.MonomorphizationState.resolve (subst_tn ts Builtin.slice_to_array2.typ))
@@ -477,6 +480,7 @@ let rewrite_slice_to_array =
                                ] )),
                         (* dst *)
                         with_type result_t (EBound 1) )) ))
+           *)
       | _ -> super#visit_expr env e
   end
 
