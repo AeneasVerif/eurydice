@@ -104,22 +104,56 @@ static Eurydice_arr_e9 unwrap_26_84(core_result_Result_44 self)
   }
 }
 
+/**
+This function found in impl {core::result::Result<T, E>[TraitClause@0, TraitClause@1]}
+*/
+/**
+A monomorphic instance of core.result.unwrap_26
+with types  Eurydice_arr uint8_t[[$4size_t]]*, core_array_TryFromSliceError
+
+*/
+static Eurydice_arr_e9 *unwrap_26_64(core_result_Result_3c self)
+{
+  if (self.tag == core_result_Ok)
+  {
+    return self.val.case_Ok;
+  }
+  else
+  {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
 void slice_array_f3(void)
 {
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_e9 lvalue0 = { .data = { 0U } };
   Eurydice_dst_ref_87 x1 = array_to_slice_60(&lvalue0);
-  Eurydice_arr_e9 arr;
-  memcpy(arr.data, x1.ptr, x1.meta * sizeof (uint8_t));
+  Eurydice_arr_e9 arr0;
+  memcpy(arr0.data, x1.ptr, x1.meta * sizeof (uint8_t));
   Eurydice_arr_e9
   y1 =
     unwrap_26_84((
-        KRML_CLITERAL(core_result_Result_44){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
+        KRML_CLITERAL(core_result_Result_44){ .tag = core_result_Ok, .val = { .case_Ok = arr0 } }
       ));
   /* original Rust expression is not an lvalue in C */
-  uint8_t lvalue = 0U;
-  _uint8_t__x2 uu____0 = { .fst = y1.data, .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  Eurydice_arr_e9 lvalue = { .data = { 0U } };
+  Eurydice_dst_ref_87 x2 = array_to_slice_60(&lvalue);
+  Eurydice_dst_ref_87 uu____0 = x2;
+  Eurydice_arr_e9 arr;
+  memcpy(arr.data, uu____0.ptr, uu____0.meta * sizeof (uint8_t));
+  Eurydice_arr_e9
+  *y2 =
+    unwrap_26_64(Eurydice_slice_to_ref_array2((size_t)4U,
+        uu____0,
+        &arr,
+        Eurydice_dst_ref_87,
+        Eurydice_arr_e9 *,
+        core_array_TryFromSliceError,
+        core_result_Result_3c));
+  _uint8_t__x2 uu____1 = { .fst = y1.data, .snd = y2->data };
+  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 
 void slice_array_main(void)

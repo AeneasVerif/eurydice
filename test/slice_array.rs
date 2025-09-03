@@ -24,10 +24,10 @@ fn f3() {
     let x1 : &[u8] = &[0u8;4];
     let y1 : [u8;4] = x1.try_into().unwrap();
     
-    //let x2 : &[u8] = &[0u8;4];
-    //let y2 : &[u8;4] = x2.try_into().unwrap();
+    let x2 : &[u8] = &[0u8;4];
+    let y2 : &[u8;4] = x2.try_into().unwrap();
     
-    assert_eq!(y1[0],0);
+    assert_eq!(y1[0],y2[0]);
 }
 
 fn main() {

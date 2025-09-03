@@ -76,7 +76,8 @@ let expand_slice_to_array =
     method! visit_expr (((), _) as env) e =
       match e.node with
       | EApp ({ node = ETApp ({ node = EQualified lid; _}, _, _, [_; (TCgApp (TApp (_, [ t ]), _)) as arr_t; err_t]); _}, es)
-        when lid = Builtin.slice_to_array.name ->
+         when lid = Builtin.slice_to_array.name ->
+         (* pass the element_t as an extra type variable for rewriting it in Cleanup2 *)
          let slice_to_array2 = Builtin.(expr_of_builtin slice_to_array2) in
          let ts = [t; arr_t; err_t] in
          let slice_to_array2 =
@@ -85,6 +86,34 @@ let expand_slice_to_array =
              (ETApp (slice_to_array2, [], [], ts))
          in
          with_type e.typ (EApp (slice_to_array2, es))
+      | EApp ({ node = ETApp ({ node = EQualified lid; _}, cgs, _, [slice_t; TBuf( (TCgApp (TApp (_, [ t ]), _)) as arr_t, false) as arr_ref_t; err_t]); _}, [ slice ])
+         when lid = Builtin.slice_to_ref_array.name ->
+         (* allocate a Arr<T,C>, do memcpy and pass its ref as a new argument to the builtin func,
+            let C macro do the choose and define the error value *)
+         let slice_to_ref_array2 = Builtin.(expr_of_builtin slice_to_ref_array2) in
+         let ts = [slice_t; arr_ref_t; err_t] in
+         let slice_to_ref_array2 =
+           with_type
+             (Krml.DeBruijn.subst_tn ts Builtin.slice_to_ref_array2.typ)
+             (ETApp (slice_to_ref_array2, cgs, [], ts))
+         in
+         let arr = with_type arr_t (EBound 0) in
+         let arr_ref = with_type arr_ref_t (EAddrOf arr) in
+         let slice = (Krml.DeBruijn.lift 1) slice in
+         let lhs = with_type (TBuf (t, false)) (EField (arr, "data")) in
+         let rhs = with_type (TBuf (t, false)) (EField (slice, "ptr")) in
+         let n = with_type (TInt SizeT) (EField (slice, "meta")) in
+         let zero = H.zero SizeT in
+         let memcpy = H.with_unit (EBufBlit (rhs, zero, lhs, zero, n)) in
+         with_type e.typ (
+           ELet
+           (
+             H.fresh_binder "arr" arr_t,
+             H.any,
+             with_type e.typ (ESequence (
+                [memcpy; with_type e.typ (EApp (slice_to_ref_array2, [ slice; arr_ref ]))]))
+           )
+         )
       | _ -> super#visit_expr env e
     end
 

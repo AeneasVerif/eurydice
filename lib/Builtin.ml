@@ -384,6 +384,15 @@ let slice_to_ref_array =
     arg_names = [ "s" ];
   }
 
+let slice_to_ref_array2 =
+  {
+    name = [ "Eurydice" ], "slice_to_ref_array2";
+    typ = Krml.Helpers.fold_arrow [ TBound 2; TBound 1 ] (mk_result (TBound 1) (TBound 0));
+    n_type_args = 3;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "s" ];
+  }
+
 let box_new =
   {
     name = [ "Eurydice" ], "box_new";
@@ -937,6 +946,7 @@ let builtin_funcs =
     slice_to_array;
     slice_to_ref_array;
     slice_to_array2;
+    slice_to_ref_array2;
     discriminant;
     range_iterator_step_by;
     range_step_by_iterator_next;

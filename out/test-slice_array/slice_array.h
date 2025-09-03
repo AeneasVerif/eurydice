@@ -93,6 +93,22 @@ typedef struct core_result_Result_44_s
 }
 core_result_Result_44;
 
+/**
+A monomorphic instance of core.result.Result
+with types  Eurydice_arr uint8_t[[$4size_t]]*, core_array_TryFromSliceError
+
+*/
+typedef struct core_result_Result_3c_s
+{
+  core_result_Result_10 tag;
+  union {
+    Eurydice_arr_e9 *case_Ok;
+    core_array_TryFromSliceError case_Err;
+  }
+  val;
+}
+core_result_Result_3c;
+
 void slice_array_f3(void);
 
 void slice_array_main(void);

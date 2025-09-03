@@ -166,20 +166,11 @@ using std::type_identity_t;
 // Conversion of slice to an array, rewritten (by Eurydice) to name the
 // destination array, since arrays are not values in C.
 // N.B.: see note in karamel/lib/Inlining.ml if you change this.
-#define Eurydice_slice_to_array2(dst, src, _0, t_arr, _1)                      \
-  Eurydice_slice_to_array3(&(dst)->tag, (char *)&(dst)->val.case_Ok, src,      \
-                           sizeof(t_arr))
 
-#define Eurydice_slice_to_ref_array(len_, src, t_ptr, t_arr, t_err, t_res)     \
-  (src.len >= len_                                                             \
-       ? ((t_res){.tag = core_result_Ok, .val = {.case_Ok = src.ptr}})         \
+#define Eurydice_slice_to_ref_array2(len_, src, arr_ptr, t_ptr, t_arr, t_err, t_res) \
+  (src.meta >= len_                                                             \
+       ? ((t_res){.tag = core_result_Ok, .val = {.case_Ok = arr_ptr}})         \
        : ((t_res){.tag = core_result_Err, .val = {.case_Err = 0}}))
-
-// static inline void Eurydice_slice_to_array3(uint8_t *dst_tag, char *dst_ok,
-//                                            Eurydice_slice src, size_t sz) {
-//  *dst_tag = 0;
-//  memcpy(dst_ok, src.ptr, sz);
-// }
 
 // SUPPORT FOR DSTs (Dynamically-Sized Types)
 
