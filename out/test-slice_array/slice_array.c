@@ -69,9 +69,63 @@ void slice_array_f2(void)
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 
+/**
+A monomorphic instance of Eurydice.array_to_slice
+with types uint8_t
+with const generics
+- N= 4
+*/
+static Eurydice_dst_ref_87 array_to_slice_60(Eurydice_arr_e9 *a)
+{
+  Eurydice_dst_ref_87 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)4U;
+  return lit;
+}
+
+/**
+This function found in impl {core::result::Result<T, E>[TraitClause@0, TraitClause@1]}
+*/
+/**
+A monomorphic instance of core.result.unwrap_26
+with types Eurydice_arr uint8_t[[$4size_t]], core_array_TryFromSliceError
+
+*/
+static Eurydice_arr_e9 unwrap_26_84(core_result_Result_44 self)
+{
+  if (self.tag == core_result_Ok)
+  {
+    return self.val.case_Ok;
+  }
+  else
+  {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
+void slice_array_f3(void)
+{
+  /* original Rust expression is not an lvalue in C */
+  Eurydice_arr_e9 lvalue0 = { .data = { 0U } };
+  Eurydice_dst_ref_87 x1 = array_to_slice_60(&lvalue0);
+  Eurydice_arr_e9 arr;
+  memcpy(arr.data, x1.ptr, x1.meta * sizeof (uint8_t));
+  Eurydice_arr_e9
+  y1 =
+    unwrap_26_84((
+        KRML_CLITERAL(core_result_Result_44){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
+      ));
+  /* original Rust expression is not an lvalue in C */
+  uint8_t lvalue = 0U;
+  _uint8_t__x2 uu____0 = { .fst = y1.data, .snd = &lvalue };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+}
+
 void slice_array_main(void)
 {
   slice_array_f1();
   slice_array_f2();
+  slice_array_f3();
 }
 

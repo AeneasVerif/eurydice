@@ -448,39 +448,24 @@ let rewrite_slice_to_array =
       | EApp ({ node = ETApp ({ node = EQualified lid; _ }, _, _, [ele_t; arr_t; _]); _ }, es)
         when lid = Builtin.slice_to_array2.name ->
           let src = Krml.KList.one es in
-          (* src = slice ..., dst = array ... *)
           let result_t = e.typ in
-          let ptr = with_type (TBuf (ele_t, false)) (EField (src, "ptr")) in
-          let arr = with_type arr_t (EFlat [ (Some "data", ptr) ]) in
-          with_type result_t (ECons ("Ok", [ arr ]))
-          (* let slice_to_array2 = Builtin.(expr_of_builtin slice_to_array2) in
-          let slice_to_array2 =
-            with_type
-              (Krml.MonomorphizationState.resolve (subst_tn ts Builtin.slice_to_array2.typ))
-              (ETApp (slice_to_array2, [], [], ts))
-          in
-          (* let dst = *)
+          (*let arr = .. *)
+          let arr = with_type arr_t (EBound 0) in
+          let src = (Krml.DeBruijn.lift 1) src in
+          let lhs = with_type (TBuf (ele_t, false)) (EField (arr, "data")) in
+          let rhs = with_type (TBuf (ele_t, false)) (EField (src, "ptr")) in
+          let n = with_type (TInt SizeT) (EField (src, "meta")) in
+          let zero = H.zero SizeT in
+          let memcpy = H.with_unit (EBufBlit (rhs, zero, lhs, zero, n)) in
+          (* let arr = any in {memcpy (src, slice); OK (arr);} *)
           with_type result_t
             (ELet
-               ( H.fresh_binder "dst" result_t,
+               (
+                 H.fresh_binder "arr" arr_t,
                  H.any,
-                 (* let _ = *)
-                 with_type result_t
-                   (ELet
-                      ( H.sequence_binding (),
-                        (* slice_to_array (&dst, src) *)
-                        H.with_unit
-                          (EApp
-                             ( slice_to_array2,
-                               [
-                                 with_type
-                                   (TBuf (result_t, false))
-                                   (EAddrOf (with_type result_t (EBound 0)));
-                                 lift 1 src;
-                               ] )),
-                        (* dst *)
-                        with_type result_t (EBound 1) )) ))
-           *)
+                 with_type result_t (ESequence [ memcpy; with_type result_t (ECons ("Ok", [ arr ])) ])
+               )                  
+            )
       | _ -> super#visit_expr env e
   end
 
