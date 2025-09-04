@@ -355,7 +355,7 @@ let slice_subslice_from =
     arg_names = [ "s"; "r" ];
   }
 
-(* This one comes out naturally of MIR but can't be implemented in C for obvious reasons. *)
+(* This is replaced in PreCleanup because we need to allocate a Arr<T,C> *)
 let slice_to_array =
   {
     name = [ "Eurydice" ], "slice_to_array";
@@ -365,16 +365,7 @@ let slice_to_array =
     arg_names = [ "s" ];
   }
 
-(* This one can be implemented by hand. *)
-let slice_to_array2 =
-  {
-    name = [ "Eurydice" ], "slice_to_array2";
-    typ = Krml.Helpers.fold_arrow [ mk_slice (TBound 2) ] (mk_result (TBound 1) (TBound 0));
-    n_type_args = 3;
-    cg_args = [];
-    arg_names = [ "s" ];
-  }
-
+(* This is replaced by slice_to_ref_array2 by allocate a  Arr<T,C> and pass the ref as arg*)
 let slice_to_ref_array =
   {
     name = [ "Eurydice" ], "slice_to_ref_array";
@@ -929,10 +920,6 @@ type usage = Used | Unused
 
 let builtin_funcs =
   [
-    (* array_to_slice; *)
-    (* array_to_subslice; *)
-    (* array_to_subslice_to; *)
-    (* array_to_subslice_from; *)
     array_repeat;
     array_into_iter;
     array_eq;
@@ -940,12 +927,8 @@ let builtin_funcs =
     slice_eq;
     slice_index;
     slice_index_outparam;
-    (* slice_subslice; *)
-    (* slice_subslice_to; *)
-    (* slice_subslice_from; *)    
     slice_to_array;
     slice_to_ref_array;
-    slice_to_array2;
     slice_to_ref_array2;
     discriminant;
     range_iterator_step_by;
@@ -985,11 +968,7 @@ let files =
        List.map
          (fun { name; typ; cg_args; n_type_args; arg_names } ->
            let typ = Krml.Helpers.fold_arrow cg_args typ in
-           let flags =
-             (* if name = ([ "Eurydice" ], "slice_to_array2") then
-               []
-             else *)
-               [ Krml.Common.Private ]
+           let flags = [ Krml.Common.Private ]
            in
            K.DExternal (None, flags, List.length cg_args, n_type_args, name, typ, arg_names))
          builtin_funcs

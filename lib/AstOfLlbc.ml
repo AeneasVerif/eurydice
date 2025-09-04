@@ -332,7 +332,7 @@ let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
   | TUInt C.U128 -> Builtin.uint128_t
   | _ -> K.TInt (width_of_integer_type (Charon.TypesUtils.literal_as_integer ty))
 
-(* e: Eurydice_dst_ref<t> *)
+(* e: Eurydice_dst_ref<t,m> *)
 let mk_dst_deref t e =
   (* ptr_field: t* *)
   let ptr_field = K.(with_type (TBuf (t, false)) (EField (e, "ptr"))) in
