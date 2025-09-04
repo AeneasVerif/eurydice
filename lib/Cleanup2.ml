@@ -439,36 +439,6 @@ let remove_array_from_fn files =
     #visit_files
     () files
 
-let rewrite_slice_to_array =
-  object (_self)
-    inherit [_] map as super
-
-    method! visit_expr (((), _) as env) e =
-      match e.node with
-      | EApp ({ node = ETApp ({ node = EQualified lid; _ }, _, _, [ele_t; arr_t; _]); _ }, es)
-        when lid = Builtin.slice_to_array2.name ->
-          let src = Krml.KList.one es in
-          let result_t = e.typ in
-          (*let arr = .. *)
-          let arr = with_type arr_t (EBound 0) in
-          let src = (Krml.DeBruijn.lift 1) src in
-          let lhs = with_type (TBuf (ele_t, false)) (EField (arr, "data")) in
-          let rhs = with_type (TBuf (ele_t, false)) (EField (src, "ptr")) in
-          let n = with_type (TInt SizeT) (EField (src, "meta")) in
-          let zero = H.zero SizeT in
-          let memcpy = H.with_unit (EBufBlit (rhs, zero, lhs, zero, n)) in
-          (* let arr = any in {memcpy (src, slice); OK (arr);} *)
-          with_type result_t
-            (ELet
-               (
-                 H.fresh_binder "arr" arr_t,
-                 H.any,
-                 with_type result_t (ESequence [ memcpy; with_type result_t (ECons ("Ok", [ arr ])) ])
-               )                  
-            )
-      | _ -> super#visit_expr env e
-  end
-
 let remove_trivial_into =
   object (self)
     inherit [_] map as _super

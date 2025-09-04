@@ -131,7 +131,7 @@ void slice_array_f3(void)
   Eurydice_arr_e9 lvalue0 = { .data = { 0U } };
   Eurydice_dst_ref_87 x1 = array_to_slice_60(&lvalue0);
   Eurydice_arr_e9 arr0;
-  memcpy(arr0.data, x1.ptr, x1.meta * sizeof (uint8_t));
+  memcpy(arr0.data, x1.ptr, (size_t)4U * sizeof (uint8_t));
   Eurydice_arr_e9
   y1 =
     unwrap_26_84((
@@ -142,7 +142,7 @@ void slice_array_f3(void)
   Eurydice_dst_ref_87 x2 = array_to_slice_60(&lvalue);
   Eurydice_dst_ref_87 uu____0 = x2;
   Eurydice_arr_e9 arr;
-  memcpy(arr.data, uu____0.ptr, uu____0.meta * sizeof (uint8_t));
+  memcpy(arr.data, uu____0.ptr, (size_t)4U * sizeof (uint8_t));
   Eurydice_arr_e9
   *y2 =
     unwrap_26_64(Eurydice_slice_to_ref_array2((size_t)4U,
