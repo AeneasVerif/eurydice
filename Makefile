@@ -12,6 +12,12 @@ ifneq ($(.SHELLSTATUS),0)
 _: $(error "bash version is too old; hint: brew install bash")
 endif
 
+# Warn on old versions of make
+ifeq (3.81,$(MAKE_VERSION))
+  $(error You seem to be using the OSX antiquated Make version. Hint: brew \
+    install make, then invoke gmake instead of make)
+endif
+
 # Enable `foo/**` glob syntax
 SHELL := bash -O globstar 
 
@@ -24,7 +30,7 @@ else
   SED=sed
 endif
 
-ifneq ($(shell $(CHARON) version), $(shell cat .charon_version || true))
+ifneq ($(shell $(CHARON) version), $(shell cat .charon_version &>/dev/null || true))
   _ := $(shell $(CHARON) version > .charon_version)
 endif
 

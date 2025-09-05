@@ -12,9 +12,7 @@ Eurydice_dst_31 dst_alloc(void)
   return
     (
       KRML_CLITERAL(Eurydice_dst_31){
-        .ptr = (dst_T *)Eurydice_box_new((
-            KRML_CLITERAL(dst_S_dd){ .foo = 0U, .my_data = { 0U, 0U, 0U, 0U } }
-          ),
+        .ptr = (dst_T *)Eurydice_box_new((KRML_CLITERAL(dst_S_dd){ .foo = 0U, .my_data = { 0U } }),
           dst_S_dd,
           dst_S_dd *),
         .len = (size_t)4U
@@ -27,12 +25,7 @@ Eurydice_dst_f1 dst_alloc3(void)
   return
     (
       KRML_CLITERAL(Eurydice_dst_f1){
-        .ptr = (dst_T3 *)Eurydice_box_new((
-            KRML_CLITERAL(dst_S_a4){
-              .foo = 0U,
-              .my_data = { { 0U, 0U, 0U }, { 0U, 0U, 0U }, { 0U, 0U, 0U }, { 0U, 0U, 0U } }
-            }
-          ),
+        .ptr = (dst_T3 *)Eurydice_box_new((KRML_CLITERAL(dst_S_a4){ .foo = 0U, .my_data = { 0U } }),
           dst_S_a4,
           dst_S_a4 *),
         .len = (size_t)4U
