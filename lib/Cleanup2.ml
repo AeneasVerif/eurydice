@@ -1367,3 +1367,38 @@ let remove_discriminant_reads (map : Krml.DataTypes.map) files =
   end)
     #visit_files
     () files
+
+(* Remove the unused DType declarations *)
+let drop_unused_type files =
+  let open Krml in
+  let seen = Hashtbl.create 41 in
+
+  let body_of_lid = Helpers.build_map files (fun map d -> Hashtbl.add map (lid_of_decl d) d) in
+
+  let visitor = object (self)
+    inherit [_] iter as super
+    method! visit_EQualified (before, _) lid =
+      self#discover before lid
+    method! visit_TQualified before lid =
+      self#discover before lid
+    method! visit_TApp before lid ts =
+      self#discover before lid;
+      List.iter (self#visit_typ before) ts
+    method private discover before lid =
+      if not (Hashtbl.mem seen lid) then begin
+        Hashtbl.add seen lid ();
+        if Options.debug "reachability" then
+          KPrint.bprintf "REACHABILITY: %a is used (via: %s) \n" plid lid
+            (String.concat " <- " (List.map (fun lid -> KPrint.bsprintf "%a" plid lid) before));
+
+        if Hashtbl.mem body_of_lid lid then
+          ignore (super#visit_decl (lid :: before) (Hashtbl.find body_of_lid lid));
+      end
+   end in
+  visitor#visit_files [] files;
+  filter_decls (fun d ->
+    match d with
+    | DType (lid, _flags, _, _, _) ->
+       if (Hashtbl.mem seen lid) then Some d else None
+    | _ -> Some d
+  ) files

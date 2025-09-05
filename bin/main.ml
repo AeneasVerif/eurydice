@@ -235,6 +235,7 @@ Supported options:|}
      that they were empty structs to begin with, which would send Checker off the rails *)
   let files = Krml.DataTypes.remove_empty_structs files in
   let files = Krml.Monomorphization.datatypes files in
+  let files = Eurydice.Cleanup2.drop_unused_type files in
   (* Cannot use remove_unit_buffers as it is technically incorrect *)
   let files = Krml.DataTypes.remove_unit_fields#visit_files () files in
   Eurydice.Logging.log "Phase2.13" "%a" pfiles files;
