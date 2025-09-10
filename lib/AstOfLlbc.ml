@@ -279,9 +279,8 @@ let string_of_fn_ptr env fn_ptr = string_of_pattern (pattern_of_fn_ptr env fn_pt
 
 (** Translation of types *)
 
-let lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
-  let prefix, name = Krml.KList.split_at_last name in
-  List.map (string_of_path_elem env) prefix, string_of_path_elem env name
+(* let lid_full_generic = Hashtbl.create 41*)
+
 
 let width_of_integer_type (t : Charon.Types.integer_type) : K.width =
   match t with
@@ -299,10 +298,6 @@ let width_of_integer_type (t : Charon.Types.integer_type) : K.width =
   | Unsigned U64 -> UInt64
   | Unsigned U128 ->
       failwith "Internal error: `u128` should not be handled in `width_of_integer_type`."
-
-let lid_of_type_decl_id (env : env) (id : C.type_decl_id) =
-  let { C.item_meta; _ } = env.get_nth_type id in
-  lid_of_name env item_meta.name
 
 let constant_of_scalar_value sv =
   let w = width_of_integer_type (Charon.Scalars.get_ty sv) in
@@ -383,7 +378,39 @@ let lookup_field env typ_id field_id =
   let field = List.nth fields i in
   ensure_named i field.field_name
 
-let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
+
+(* name::<A, B, C, N> -> (name, [N], [A, B, C]) *)
+let lid_full_generic = Hashtbl.create 41
+
+let pure_lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
+  let prefix, name = Krml.KList.split_at_last name in
+  List.map (string_of_path_elem env) prefix, string_of_path_elem env name
+
+let rec insert_lid_full_generic (env : env) (full_name : K.lident) (name : Charon.Types.name) =
+  let (item_name, generic) =
+    let (pre, last) = Krml.KList.split_at_last name in
+    match last with
+    | PeMonomorphized args -> pure_lid_of_name env pre, (args : C.generic_args)
+    | _ -> full_name, { C.types = []; regions = []; const_generics = []; trait_refs = [] }
+  in
+  let (cgs, tys) =
+    ( List.map (cg_of_const_generic env) generic.const_generics,
+      List.map (typ_of_ty env) generic.types )
+  in
+  if not (Hashtbl.mem lid_full_generic full_name) then
+    L.log "AstOfLlbc" "mono name : %a\n repolyed name : %a with cgs %a and tys %a "
+    plid full_name plid item_name pcgs cgs ptyps tys;
+    Hashtbl.add lid_full_generic full_name (item_name, cgs, tys)
+
+and lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
+  let lid = pure_lid_of_name env name in
+  insert_lid_full_generic env lid name;
+  lid  
+
+and lid_of_type_decl_id (env : env) (id : C.type_decl_id) =
+  let { C.item_meta; _ } = env.get_nth_type id in
+  lid_of_name env item_meta.name
+and pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   match ty with
   | TVar var -> K.TBound (lookup_typ env (C.expect_free_var var))
   | TLiteral t -> typ_of_literal_ty env t
