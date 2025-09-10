@@ -40,7 +40,7 @@ let remove_array_eq = object
   inherit Krml.DeBruijn.map_counting_cg as super
 
   method! visit_expr ((n_cgs, n_binders) as env, _) e =
-    match e with
+    match AstOfLlbc.re_polymorphize e with
     | [%cremepat {| core::array::equality::?impl::eq[#?n](#?..)<?t,?u>(?a1, ?a2) |}] ->
         let rec is_flat = function
           | TArray (t, _) -> is_flat t
@@ -50,21 +50,28 @@ let remove_array_eq = object
         assert (t = u);
         if is_flat t then
           let diff = n_binders - n_cgs in
-          match impl with
-          | "{core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>}" ->
-              with_type TBool (EApp (
+          let pattern = Str.regexp {|{core::cmp::PartialEq<@Array<\([a-zA-Z_][a-zA-Z0-9_]*\), \([a-zA-Z_][a-zA-Z0-9_]*\)>> for @Array<\([a-zA-Z_][a-zA-Z0-9_]*\), \([a-zA-Z_][a-zA-Z0-9_]*\)>}|} in
+          let matches_eq_array s =
+            try
+              if Str.string_match pattern s 0 then true
+              else
+                false
+            with Not_found -> false in
+          let matches_eq_slice = Str.regexp {|{core::cmp::PartialEq<&.* \(@Slice<\([a-zA-Z_][a-zA-Z0-9_]*\)>\)> for @Array<\([a-zA-Z_][a-zA-Z0-9_]*\), \([a-zA-Z_][a-zA-Z0-9_]*\)>}|} in
+          let matches_eq_slice s = Str.string_match matches_eq_slice s 0 in
+          if matches_eq_array impl then with_type TBool (EApp (
                 Builtin.(expr_of_builtin_t ~cgs:(diff, [n]) array_eq [ t ]),
                 [ a1; a2 ]))
-          | "{core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>}" ->
-              with_type TBool (EApp (
+          else if matches_eq_slice impl then with_type TBool (EApp (
                 Builtin.(expr_of_builtin_t ~cgs:(diff, [n]) array_eq_slice [ t ]),
                 [ a1; a2 ]))
-          | _ ->
-              failwith ("unknown array eq impl: " ^ impl)
-        else
-          failwith "TODO: non-byteeq array comparison"
-    | _ -> super#visit_expr (env, e.typ) e
+          else failwith ("unknown array eq impl: " ^ impl)
+        else failwith "TODO: non-byteeq array comparison"             
+  
+  
+  
 
+    | _ -> super#visit_expr (env, e.typ) e
    method! visit_DFunction _ cc flags n_cgs n t lid bs e =
      super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t lid bs e
 end

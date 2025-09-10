@@ -377,11 +377,153 @@ let lookup_field env typ_id field_id =
   let i = C.FieldId.to_int field_id in
   let field = List.nth fields i in
   ensure_named i field.field_name
+let is_var v2 v1 =
+  match v2 with
+  | Var (v2, _) -> v2 = v1
+  | _ -> false
 
+let assert_var = function
+  | Var (v2, ty) -> v2, ty
+  | _ -> assert false
+
+let assert_trait_clause_method = function
+  | TraitClauseMethod { clause_id; item_name; ts; _ } -> clause_id, item_name, ts
+  | _ -> assert false
+
+(* Regular binders *)
+
+let lookup_with_original_type env v1 =
+  let i, (v, t) = findi (fun (v2, _) -> is_var v2 v1) env.binders in
+  let _, ty = assert_var v in
+  i, t, ty
+
+  let lookup env v1 =
+  let i, (_, t) = findi (fun (v2, _) -> is_var v2 v1) env.binders in
+  i, t
+
+  let lookup_cg_in_expressions (env : env) (v1 : C.const_generic_var_id) =
+  let i, (_, t) = findi (fun (v2, _) -> v2 = ConstGenericVar v1) env.binders in
+  i, t  
+  
+  let expression_of_cg_var_id env v =
+  let i, t = lookup_cg_in_expressions env v in
+  K.(with_type t (EBound i))
+
+let expression_of_var_id (env : env) (v : C.local_id) : K.expr =
+  let i, t = lookup env v in
+  K.(with_type t (EBound i))
+
+  (** Assume here the maximum length is 128-bit -- will throw away the larger if larger. This is a
+    helper function to split a 128-bit integer into two 64-bit integers and is not assumed to be
+    used in other contexts. Returns the **expr** pair (high64bits, low64bits) *)
+let split_128bit (value : Z.t) =
+  let mask128 = Z.sub (Z.shift_left Z.one 128) Z.one in
+  let mask64 = Z.sub (Z.shift_left Z.one 64) Z.one in
+  (* Always truncate to 128 bits using bitwise AND *)
+  let value = Z.logand value mask128 in
+  (* Extract low 64 bits *)
+  let low64 = Z.logand mask64 value in
+  (* Shift right without sign extension (use logical shift) *)
+  let high64 = Z.shift_right value 64 in
+  let to_expr_u64bits v =
+    let print_Z z = Z.format "%#x" z in
+    K.with_type (K.TInt UInt64) @@ K.EConstant (UInt64, print_Z v)
+  in
+  to_expr_u64bits high64, to_expr_u64bits low64
+
+let expression_of_int128_t (value : Z.t) =
+  let i128_max = Z.sub (Z.shift_left Z.one 127) Z.one in
+  if value > i128_max then
+    failwith "value is larger than the maximum value of i128";
+  let i128_min = Z.neg (Z.shift_left Z.one 127) in
+  if value < i128_min then
+    failwith "value is smaller than the minimum value of i128";
+  let high64, low64 = split_128bit value in
+  K.(with_type Builtin.int128_t (EApp (Builtin.(get_128_op ("i", "from_bits")), [ high64; low64 ])))
+
+let expression_of_uint128_t (value : Z.t) =
+  let u128_max = Z.sub (Z.shift_left Z.one 128) Z.one in
+  if value > u128_max then
+    failwith "value is larger than the maximum value of u128";
+  let high64, low64 = split_128bit value in
+  K.(
+    with_type Builtin.uint128_t (EApp (Builtin.(get_128_op ("u", "from_bits")), [ high64; low64 ])))
+
+
+let expression_of_scalar_value sv : K.expr =
+  let int_ty = Charon.Scalars.get_ty sv in
+  let value = Charon.Scalars.get_val sv in
+  match int_ty with
+  | C.Signed C.I128 -> expression_of_int128_t value
+  | C.Unsigned C.U128 -> expression_of_uint128_t value
+  | _ ->
+      let w = width_of_integer_type int_ty in
+      K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
+
+let expression_of_literal (_env : env) (l : C.literal) : K.expr =
+  match l with
+  | VScalar sv -> expression_of_scalar_value sv
+  | VBool b -> K.(with_type TBool (EBool b))
+  | VStr s ->
+      let ascii = Utf8.ascii_of_utf8_str s in
+      let len = String.length s in
+      K.(
+        with_type Builtin.str_t
+          (EFlat
+             [
+               Some "data", with_type Krml.Checker.c_string (EString ascii);
+               Some "len", with_type Krml.Helpers.usize (EConstant (SizeT, string_of_int len));
+             ]))
+  | VChar c -> K.(with_type Builtin.char_t (EConstant (UInt32, string_of_int @@ Uchar.to_int c)))
+  | VByteStr lst ->
+      let str = List.map (Printf.sprintf "%#x") lst |> String.concat "" in
+      K.(with_type Krml.Checker.c_string (EString str))
+  | VFloat { C.float_ty; float_value } ->
+      let w = float_width float_ty in
+      K.(with_type (TInt w) (EConstant (w, float_value)))
+
+  let expression_of_const_generic env cg =
+  match cg with
+  | C.CgGlobal _ -> failwith "TODO: CgGLobal"
+  | C.CgVar var -> expression_of_cg_var_id env (C.expect_free_var var)
+  | C.CgValue l -> expression_of_literal env l
 
 (* name::<A, B, C, N> -> (name, [N], [A, B, C]) *)
 let lid_full_generic = Hashtbl.create 41
 
+(* Given the result type, const generics, and type arguments, return the original type such that
+   After applying the const generics and type arguments, we get the result type.
+*)
+let ty_re_polymorphize res_ty cgs ty_args =
+  let n_cgs = List.length cgs in
+  let n = List.length ty_args in
+  if n = 0 && n_cgs = 0 then
+    res_ty
+  else
+    match res_ty with
+    | K.TPoly (ts, t) ->
+        (* If already polymorphic, conservatively widen the scheme by
+           prepending new binders. This is a best–effort reconstruction. *)
+        K.TPoly ({ K.n = ts.n + n; n_cgs = ts.n_cgs + n_cgs }, t)
+    | _ ->
+        K.TPoly ({ K.n = n; n_cgs = n_cgs }, res_ty)
+
+(* From monomorphized codes `name::<A, B, C>` to the original generic expression.
+   Work by turning the `EQualified` into `ETApp` with the appropriate type
+   Or, if no generics, leave as is.
+*)
+let re_polymorphize expr = object
+    inherit [_] Krml.Ast.map
+    method! visit_EQualified ((), ty) full_name =
+      try
+        let name, cgs, ts = Hashtbl.find lid_full_generic full_name in
+        if cgs = [] && ts = [] then
+          EQualified full_name
+        else
+          ETApp (K.with_type (ty_re_polymorphize ty cgs ts) (K.EQualified name), cgs, [], ts)
+      with Not_found -> EQualified full_name
+    end#visit_expr_w () expr
+    
 let pure_lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
   let prefix, name = Krml.KList.split_at_last name in
   List.map (string_of_path_elem env) prefix, string_of_path_elem env name
@@ -394,12 +536,12 @@ let rec insert_lid_full_generic (env : env) (full_name : K.lident) (name : Charo
     | _ -> full_name, { C.types = []; regions = []; const_generics = []; trait_refs = [] }
   in
   let (cgs, tys) =
-    ( List.map (cg_of_const_generic env) generic.const_generics,
+    ( List.map (expression_of_const_generic env) generic.const_generics,
       List.map (typ_of_ty env) generic.types )
   in
   if not (Hashtbl.mem lid_full_generic full_name) then
     L.log "AstOfLlbc" "mono name : %a\n repolyed name : %a with cgs %a and tys %a "
-    plid full_name plid item_name pcgs cgs ptyps tys;
+    plid full_name plid item_name pexprs cgs ptyps tys;
     Hashtbl.add lid_full_generic full_name (item_name, cgs, tys)
 
 and lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
@@ -527,30 +669,6 @@ let mk_deep_copy (e : K.expr) (l : K.expr) =
 
 (* Environment: expressions *)
 
-let is_var v2 v1 =
-  match v2 with
-  | Var (v2, _) -> v2 = v1
-  | _ -> false
-
-let assert_var = function
-  | Var (v2, ty) -> v2, ty
-  | _ -> assert false
-
-let assert_trait_clause_method = function
-  | TraitClauseMethod { clause_id; item_name; ts; _ } -> clause_id, item_name, ts
-  | _ -> assert false
-
-(* Regular binders *)
-
-let lookup env v1 =
-  let i, (_, t) = findi (fun (v2, _) -> is_var v2 v1) env.binders in
-  i, t
-
-let lookup_with_original_type env v1 =
-  let i, (v, t) = findi (fun (v2, _) -> is_var v2 v1) env.binders in
-  let _, ty = assert_var v in
-  i, t, ty
-
 (* Const generic binders *)
 
 let push_cg_binder env (t : C.const_generic_var) =
@@ -628,91 +746,13 @@ let rec with_locals (env : env) (t : K.typ) (locals : C.local list) (k : env -> 
       let b = binder_of_var env l in
       K.(with_type t (ELet (b, Krml.Helpers.any, with_locals env t locals k)))
 
-let lookup_cg_in_expressions (env : env) (v1 : C.const_generic_var_id) =
-  let i, (_, t) = findi (fun (v2, _) -> v2 = ConstGenericVar v1) env.binders in
-  i, t
 
-let expression_of_cg_var_id env v =
-  let i, t = lookup_cg_in_expressions env v in
-  K.(with_type t (EBound i))
 
-let expression_of_var_id (env : env) (v : C.local_id) : K.expr =
-  let i, t = lookup env v in
-  K.(with_type t (EBound i))
 
-(** Assume here the maximum length is 128-bit -- will throw away the larger if larger. This is a
-    helper function to split a 128-bit integer into two 64-bit integers and is not assumed to be
-    used in other contexts. Returns the **expr** pair (high64bits, low64bits) *)
-let split_128bit (value : Z.t) =
-  let mask128 = Z.sub (Z.shift_left Z.one 128) Z.one in
-  let mask64 = Z.sub (Z.shift_left Z.one 64) Z.one in
-  (* Always truncate to 128 bits using bitwise AND *)
-  let value = Z.logand value mask128 in
-  (* Extract low 64 bits *)
-  let low64 = Z.logand mask64 value in
-  (* Shift right without sign extension (use logical shift) *)
-  let high64 = Z.shift_right value 64 in
-  let to_expr_u64bits v =
-    let print_Z z = Z.format "%#x" z in
-    K.with_type (K.TInt UInt64) @@ K.EConstant (UInt64, print_Z v)
-  in
-  to_expr_u64bits high64, to_expr_u64bits low64
 
-let expression_of_int128_t (value : Z.t) =
-  let i128_max = Z.sub (Z.shift_left Z.one 127) Z.one in
-  if value > i128_max then
-    failwith "value is larger than the maximum value of i128";
-  let i128_min = Z.neg (Z.shift_left Z.one 127) in
-  if value < i128_min then
-    failwith "value is smaller than the minimum value of i128";
-  let high64, low64 = split_128bit value in
-  K.(with_type Builtin.int128_t (EApp (Builtin.(get_128_op ("i", "from_bits")), [ high64; low64 ])))
 
-let expression_of_uint128_t (value : Z.t) =
-  let u128_max = Z.sub (Z.shift_left Z.one 128) Z.one in
-  if value > u128_max then
-    failwith "value is larger than the maximum value of u128";
-  let high64, low64 = split_128bit value in
-  K.(
-    with_type Builtin.uint128_t (EApp (Builtin.(get_128_op ("u", "from_bits")), [ high64; low64 ])))
 
-let expression_of_scalar_value sv : K.expr =
-  let int_ty = Charon.Scalars.get_ty sv in
-  let value = Charon.Scalars.get_val sv in
-  match int_ty with
-  | C.Signed C.I128 -> expression_of_int128_t value
-  | C.Unsigned C.U128 -> expression_of_uint128_t value
-  | _ ->
-      let w = width_of_integer_type int_ty in
-      K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
 
-let expression_of_literal (_env : env) (l : C.literal) : K.expr =
-  match l with
-  | VScalar sv -> expression_of_scalar_value sv
-  | VBool b -> K.(with_type TBool (EBool b))
-  | VStr s ->
-      let ascii = Utf8.ascii_of_utf8_str s in
-      let len = String.length s in
-      K.(
-        with_type Builtin.str_t
-          (EFlat
-             [
-               Some "data", with_type Krml.Checker.c_string (EString ascii);
-               Some "len", with_type Krml.Helpers.usize (EConstant (SizeT, string_of_int len));
-             ]))
-  | VChar c -> K.(with_type Builtin.char_t (EConstant (UInt32, string_of_int @@ Uchar.to_int c)))
-  | VByteStr lst ->
-      let str = List.map (Printf.sprintf "%#x") lst |> String.concat "" in
-      K.(with_type Krml.Checker.c_string (EString str))
-  | VFloat { C.float_ty; float_value } ->
-      let w = float_width float_ty in
-      K.(with_type (TInt w) (EConstant (w, float_value)))
-
-let expression_of_const_generic env cg =
-  match cg with
-  | C.CgGlobal _ -> failwith "TODO: CgGLobal"
-  | C.CgVar var -> expression_of_cg_var_id env (C.expect_free_var var)
-  | C.CgValue l -> expression_of_literal env l
 
 let rec expression_of_place (env : env) (p : C.place) : K.expr =
   (* We construct a target expression. Callers may still use the original type to tell arrays
