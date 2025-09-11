@@ -1805,8 +1805,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       begin
         (* TODO: this whole piece of code should handle TCgArray too *)
         match t_from, is_dst env t_to, ty_from, ty_to with
-        | TBuf (TApp (lid1, [ TArray (u1, n) ]), _), Some (lid2, TApp (slice_hd, [ u2 ]), t_u), _, _
-          when lid1 = lid2 && u1 = u2 && slice_hd = Builtin.derefed_slice ->
+        | TBuf (TApp (_lid1, [ TArray (u1, n) ]), _), Some (_lid2, TApp (slice_hd, [ u2 ]), t_u), _, _
+          when u1 = u2 && slice_hd = Builtin.derefed_slice ->
             let len = Krml.Helpers.mk_sizet (int_of_string (snd n)) in
             (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
              `Eurydice_derefed_slice data` (a.k.a. `char data[]`) *)

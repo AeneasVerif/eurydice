@@ -356,7 +356,8 @@ let remove_array_from_fn files =
         super#visit_DFunction () cc flags n_cgs n t name bs e
 
       method! visit_EApp env e es =
-        match e.node with
+        (* let e = AstOfLlbc.re_polymorphize e in *)
+        match (e).node with
         | ETApp
             ( { node = EQualified ([ "core"; "array" ], "from_fn"); _ },
               [ len ],
@@ -1054,13 +1055,39 @@ let bonus_cleanups =
     inherit [_] map as super
     method! extend env b = b.node.name :: env
 
-    method! visit_lident _ lid =
-      match lid with
-      | [ "core"; "slice"; "{@Slice<T>}" ], "len" -> [ "Eurydice" ], "slice_len"
-      | [ "core"; "slice"; "{@Slice<T>}" ], "copy_from_slice" -> [ "Eurydice" ], "slice_copy"
-      | [ "core"; "slice"; "{@Slice<T>}" ], "split_at" -> [ "Eurydice" ], "slice_split_at"
-      | [ "core"; "slice"; "{@Slice<T>}" ], "split_at_mut" -> [ "Eurydice" ], "slice_split_at_mut"
-      | _ -> lid
+    method! visit_expr env e =
+      let match_lident lid =
+        let is_slice_t s =
+          let pattern = 
+              Str.regexp {|\{@Slice<.*>\}|} in
+          s = "{@Slice<T>}" || Str.string_match pattern s 0
+        in
+        match lid with
+        | [ "core"; "slice"; s ], "len" when is_slice_t s -> true, ([ "Eurydice" ], "slice_len")
+        (* | [ "core"; "slice"; _s ], "len" -> true, ([ "Eurydice" ], "slice_len") *)
+        | [ "core"; "slice"; s ], "copy_from_slice" when is_slice_t s  -> true, ([ "Eurydice" ], "slice_copy")
+        | [ "core"; "slice"; s ], "split_at" when is_slice_t s  -> true, ([ "Eurydice" ], "slice_split_at")
+        | [ "core"; "slice"; s ], "split_at_mut" when is_slice_t s -> true, ([ "Eurydice" ], "slice_split_at_mut")
+        | _ -> false, lid
+      in
+      let e' = AstOfLlbc.re_polymorphize e in
+      L.log "Cleanup2" "[Bonus] Visiting e': %a\n" pexpr e';
+      match e'.node with
+      | ETApp (expr, cgs, [], ts) -> begin
+        match expr.node with
+        | EQualified lid ->
+          L.log "Cleanup2" "[Bonus] Visiting lid: %a\n" plid lid;
+          let matched, lid = match_lident lid in
+          if matched then 
+            begin
+            L.log "Cleanup2" "[Bonus] lid: %a matched!\n" plid lid;
+            with_type e.typ (ETApp ({ expr with node = EQualified lid }, cgs, [], ts)) 
+            end
+          else super#visit_expr env e
+        
+        | _ -> super#visit_expr env e
+      end
+      | _ -> super#visit_expr env e
 
     method! visit_ELet ((bs, _) as env) b e1 e2 =
       match e1.node, e1.typ, e2.node with
