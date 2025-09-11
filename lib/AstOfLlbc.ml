@@ -1947,7 +1947,7 @@ let rec expression_of_switch_128bits env ret_var scrutinee branches default : K.
   in
   List.fold_right folder branches else_branch
 
-and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_statement) : K.expr =
+and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.statement_kind) : K.expr =
   match s with
   | Assign (p, rv) ->
       let expected_ty = p.ty in
@@ -2211,11 +2211,11 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
   | _ ->
       failwith
         ("Unsupported statement: "
-        ^ Charon.PrintLlbcAst.Ast.raw_statement_to_string env.format_env "" "" s)
+        ^ Charon.PrintLlbcAst.Ast.statement_kind_to_string env.format_env "" "" s)
 
 and expression_of_statement (env : env) (ret_var : C.local_id) (s : C.statement) : K.expr =
   {
-    (expression_of_raw_statement env ret_var s.content) with
+    (expression_of_statement_kind env ret_var s.content) with
     meta =
       (if !Options.comments then
          List.map (fun x -> K.CommentBefore x) s.comments_before
