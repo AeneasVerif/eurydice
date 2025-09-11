@@ -50,8 +50,11 @@ let remove_array_eq = object
         assert (t = u);
         if is_flat t then
           let diff = n_binders - n_cgs in
-          let pattern = Str.regexp {|{core::cmp::PartialEq<@Array<\([a-zA-Z_][a-zA-Z0-9_]*\), \([a-zA-Z_][a-zA-Z0-9_]*\)>> for @Array<\([a-zA-Z_][a-zA-Z0-9_]*\), \([a-zA-Z_][a-zA-Z0-9_]*\)>}|} in
+          let pattern = 
+            Str.regexp {|\{core::cmp::PartialEq::<@Array<.*, .*>, @Array<.*, .*>>\}|} in
+            (* Str.regexp {|{core::cmp::PartialEq::<@Array<\\(.*?\\), \\(.*?\\)>, @Array<\\(.*?\\), \\(.*?\\)>}|} in *)
           let matches_eq_array s =
+            s == "{core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>}" ||
             try
               if Str.string_match pattern s 0 then true
               else

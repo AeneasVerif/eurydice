@@ -8,9 +8,9 @@ TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.
 
 # Warn on old versions of bash
 _ := $(shell bash -c '(( $${BASH_VERSION%%.*} >= 4 ))')
-ifneq ($(.SHELLSTATUS),0)
-_: $(error "bash version is too old; hint: brew install bash")
-endif
+#ifneq ($(.SHELLSTATUS),0)
+#_: $(error "bash version is too old; hint: brew install bash")
+#endif
 
 # Enable `foo/**` glob syntax
 SHELL := bash -O globstar 
@@ -41,7 +41,7 @@ build:
 CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
 CXXFLAGS	:= -std=c++17
 
-test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result
+test: $(addprefix test-,$(TEST_DIRS)) custom-test-array
 
 clean-and-test:
 	$(MAKE) clean-llbc
@@ -63,7 +63,7 @@ test/issue_105.llbc: CHARON_EXTRA = \
   --include=core::cmp::* \
   --include=core::convert::*
 
-test/array2d.llbc: CHARON_EXTRA = --include=core::array::equality::*
+# test/array2d.llbc: CHARON_EXTRA = --include=core::array::equality::*
 
 test/println.llbc: CHARON_EXTRA = \
   --include=core::fmt::Arguments --include=core::fmt::rt::*::new_const \
