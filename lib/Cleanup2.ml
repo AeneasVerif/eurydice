@@ -1050,7 +1050,6 @@ let remove_assign_return =
   end
 
 let bonus_cleanups =
-  let open Krml in
   object (self)
     inherit [_] map as super
     method! extend env b = b.node.name :: env
@@ -1063,25 +1062,23 @@ let bonus_cleanups =
           s = "{@Slice<T>}" || Str.string_match pattern s 0
         in
         match lid with
-        | [ "core"; "slice"; s ], "len" when is_slice_t s -> true, ([ "Eurydice" ], "slice_len")
-        (* | [ "core"; "slice"; _s ], "len" -> true, ([ "Eurydice" ], "slice_len") *)
-        | [ "core"; "slice"; s ], "copy_from_slice" when is_slice_t s  -> true, ([ "Eurydice" ], "slice_copy")
-        | [ "core"; "slice"; s ], "split_at" when is_slice_t s  -> true, ([ "Eurydice" ], "slice_split_at")
-        | [ "core"; "slice"; s ], "split_at_mut" when is_slice_t s -> true, ([ "Eurydice" ], "slice_split_at_mut")
-        | _ -> false, lid
+        | [ "core"; "slice"; s ], "len" when is_slice_t s -> true, ([ "Eurydice" ], "slice_len"), Builtin.slice_len.typ
+        | [ "core"; "slice"; s ], "copy_from_slice" when is_slice_t s  -> true, ([ "Eurydice" ], "slice_copy"), Builtin.slice_copy.typ
+        | [ "core"; "slice"; s ], "split_at" when is_slice_t s  -> true, ([ "Eurydice" ], "slice_split_at"), TAny (*todo*)
+        | [ "core"; "slice"; s ], "split_at_mut" when is_slice_t s -> true, ([ "Eurydice" ], "slice_split_at_mut"), TAny
+        | _ -> false, lid, TAny
       in
       let e' = AstOfLlbc.re_polymorphize e in
-      L.log "Cleanup2" "[Bonus] Visiting e': %a\n" pexpr e';
       match e'.node with
       | ETApp (expr, cgs, [], ts) -> begin
         match expr.node with
         | EQualified lid ->
           L.log "Cleanup2" "[Bonus] Visiting lid: %a\n" plid lid;
-          let matched, lid = match_lident lid in
+          let matched, lid, t = match_lident lid in
           if matched then 
             begin
             L.log "Cleanup2" "[Bonus] lid: %a matched!\n" plid lid;
-            with_type e.typ (ETApp ({ expr with node = EQualified lid }, cgs, [], ts)) 
+            with_type e.typ (ETApp ({ expr with node = EQualified lid; typ = t }, cgs, [], ts)) 
             end
           else super#visit_expr env e
         
@@ -1095,7 +1092,7 @@ let bonus_cleanups =
       | ( EAny,
           _,
           ESequence [ { node = EAssign ({ node = EBound 0; _ }, e3); _ }; { node = EBound 0; _ } ] )
-        -> (DeBruijn.subst Helpers.eunit 0 e3).node
+        -> Krml.(DeBruijn.subst Helpers.eunit 0 e3).node
       (* let uu; memcpy(uu, ..., src, ...); e2  -->  let copy_of_src; ... *)
       | ( EAny,
           TArray (_, (_, n)),
@@ -1125,11 +1122,11 @@ let bonus_cleanups =
       | ( EApp ({ node = EQualified _; _ }, es),
           _,
           ESequence [ { node = EAssign (e2, { node = EBound 0; _ }); _ }; e3 ] )
-        when Helpers.is_uu b.node.name && List.for_all Helpers.is_readonly_c_expression es ->
+        when Krml.Helpers.is_uu b.node.name && List.for_all Krml.Helpers.is_readonly_c_expression es ->
           ESequence
             [
-              with_type TUnit (EAssign (DeBruijn.subst Helpers.eunit 0 e2, e1));
-              self#visit_expr env (DeBruijn.subst Helpers.eunit 0 e3);
+              with_type TUnit (EAssign (Krml.DeBruijn.subst Krml.Helpers.eunit 0 e2, e1));
+              self#visit_expr env (Krml.DeBruijn.subst Krml.Helpers.eunit 0 e3);
             ]
       | _ -> super#visit_ELet env b e1 e2
   end

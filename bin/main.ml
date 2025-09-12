@@ -254,7 +254,7 @@ Supported options:|}
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
     fail __FILE__ __LINE__;
-  let files = Krml.Inlining.drop_unused files in
+  (*let files = Krml.Inlining.drop_unused files in*)
   let files = Eurydice.Cleanup2.remove_array_temporaries#visit_files () files in
   Eurydice.Logging.log "Phase2.25" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
@@ -279,7 +279,7 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_array_from_fn files in
   Eurydice.Logging.log "Phase2.6" "%a" pfiles files;
   (* remove_array_from_fn, above, creates further opportunities for removing unused functions. *)
-  let files = Krml.Inlining.drop_unused files in
+  (* let files = Krml.Inlining.drop_unused files in *)
   let files = Eurydice.Cleanup2.remove_implicit_array_copies#visit_files () files in
   (* Creates opportunities for removing unused variables *)
   let files = Eurydice.Cleanup2.remove_assign_return#visit_files () files in
@@ -302,6 +302,7 @@ Supported options:|}
   let files = Eurydice.Cleanup2.float_comments files in
   Eurydice.Logging.log "Phase2.95" "%a" pfiles files;
   let files = Eurydice.Cleanup2.bonus_cleanups#visit_files [] files in
+  let files = Krml.Inlining.drop_unused files in
   (* Macros stemming from globals -- FIXME why is this not Krml.AstToCStar.mk_macros_set? *)
   let files, macros = Eurydice.Cleanup2.build_macros files in
 

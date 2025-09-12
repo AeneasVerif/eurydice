@@ -50,22 +50,24 @@ let remove_array_eq = object
         assert (t = u);
         if is_flat t then
           let diff = n_binders - n_cgs in
-          let pattern = 
+          let pattern_array_eq = 
             Str.regexp {|\{core::cmp::PartialEq::<@Array<.*, .*>, @Array<.*, .*>>\}|} in
-            (* Str.regexp {|{core::cmp::PartialEq::<@Array<\\(.*?\\), \\(.*?\\)>, @Array<\\(.*?\\), \\(.*?\\)>}|} in *)
-          let matches_eq_array s =
-            s == "{core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>}" ||
-            try
-              if Str.string_match pattern s 0 then true
-              else
-                false
-            with Not_found -> false in
-          let matches_eq_slice = Str.regexp {|{core::cmp::PartialEq<&.* \(@Slice<\([a-zA-Z_][a-zA-Z0-9_]*\)>\)> for @Array<\([a-zA-Z_][a-zA-Z0-9_]*\), \([a-zA-Z_][a-zA-Z0-9_]*\)>}|} in
-          let matches_eq_slice s = Str.string_match matches_eq_slice s 0 in
-          if matches_eq_array impl then with_type TBool (EApp (
+          let matches_array_eq_slice =
+            Str.regexp {|\{core::cmp::PartialEq::<&.* @Slice<,*>, @Array<.*, .*)>>\}|} in
+            (*todo: this pattern is not tested yet*)
+          let matches_array_eq s =
+            match s with
+            | "{core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>}" -> true
+              (* non-monomorphized LLBC *)
+            | _ -> try Str.string_match pattern_array_eq s 0 with Not_found -> false in
+          let matches_array_eq_slice s =
+            match s with
+            | "" -> true
+            | _ -> try Str.string_match matches_array_eq_slice s 0 with Not_found -> false in
+          if matches_array_eq impl then with_type TBool (EApp (
                 Builtin.(expr_of_builtin_t ~cgs:(diff, [n]) array_eq [ t ]),
                 [ a1; a2 ]))
-          else if matches_eq_slice impl then with_type TBool (EApp (
+          else if matches_array_eq_slice impl then with_type TBool (EApp (
                 Builtin.(expr_of_builtin_t ~cgs:(diff, [n]) array_eq_slice [ t ]),
                 [ a1; a2 ]))
           else failwith ("unknown array eq impl: " ^ impl)

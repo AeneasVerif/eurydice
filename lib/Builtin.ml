@@ -282,6 +282,24 @@ let slice_index =
     arg_names = [ "s"; "i" ];
   }
 
+let slice_len =
+  {
+    name = [ "Eurydice" ], "slice_len";
+    typ = Krml.Helpers.fold_arrow [ mk_slice (TBound 0)] (TInt SizeT);
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [ "s" ];
+  }
+
+let slice_copy =
+  {
+    name = [ "Eurydice" ], "slice_copy";
+    typ = Krml.Helpers.fold_arrow [ mk_slice (TBound 0)] (mk_slice (TBound 0));
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [ "s" ];
+  }
+
 let slice_index_outparam =
   {
     name = [ "Eurydice" ], "slice_index_outparam";
@@ -730,6 +748,8 @@ let builtin_funcs =
     array_eq;
     array_eq_slice;
     slice_eq;
+    slice_len;
+    slice_copy;
     slice_index;
     slice_index_outparam;
     slice_subslice;
