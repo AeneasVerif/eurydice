@@ -279,9 +279,6 @@ let string_of_fn_ptr env fn_ptr = string_of_pattern (pattern_of_fn_ptr env fn_pt
 
 (** Translation of types *)
 
-(* let lid_full_generic = Hashtbl.create 41*)
-
-
 let width_of_integer_type (t : Charon.Types.integer_type) : K.width =
   match t with
   | Signed Isize -> PtrdiffT
@@ -516,17 +513,25 @@ let re_polymorphize expr = object
     inherit [_] Krml.Ast.map
     method! visit_EQualified ((), ty) full_name =
       try
-        let name, cgs, ts = Hashtbl.find lid_full_generic full_name in
+        let name, cgs, ts, fn_ptrs = Hashtbl.find lid_full_generic full_name in
         if cgs = [] && ts = [] then
           EQualified full_name
         else
-          ETApp (K.with_type (ty_re_polymorphize ty cgs ts) (K.EQualified name), cgs, [], ts)
+          ETApp (K.with_type (ty_re_polymorphize ty cgs ts) (K.EQualified name), cgs, fn_ptrs, ts)
       with Not_found -> EQualified full_name
     end#visit_expr_w () expr
     
 let pure_lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
   let prefix, name = Krml.KList.split_at_last name in
   List.map (string_of_path_elem env) prefix, string_of_path_elem env name
+
+let update_lid_full_generic_fnptrs (full_name : K.lident) (fn_ptrs : K.expr list) =
+  L.log "AstOfLlbc" "[re-poly] trying to update the fn_ptrs of %a to %a" plid full_name pexprs fn_ptrs;
+  try
+    let name, cgs, ts, _ = Hashtbl.find lid_full_generic full_name in
+    L.log "AstOfLlbc" "[re-poly] updated the fn_ptrs of %a to %a" plid full_name pexprs fn_ptrs;
+    Hashtbl.replace lid_full_generic full_name (name, cgs, ts, fn_ptrs)
+  with Not_found -> ()
 
 let rec insert_lid_full_generic (env : env) (full_name : K.lident) (name : Charon.Types.name) =
   let (item_name, generic) =
@@ -542,7 +547,7 @@ let rec insert_lid_full_generic (env : env) (full_name : K.lident) (name : Charo
   if not (Hashtbl.mem lid_full_generic full_name) then
     L.log "AstOfLlbc" "mono name : %a\n repolyed name : %a with cgs %a and tys %a "
     plid full_name plid item_name pexprs cgs ptyps tys;
-    Hashtbl.add lid_full_generic full_name (item_name, cgs, tys)
+    Hashtbl.add lid_full_generic full_name (item_name, cgs, tys, [])
 
 and lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
   let lid = pure_lid_of_name env name in
@@ -1636,6 +1641,12 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
     else
       hd
   in
+  begin
+    match hd.node with
+    | EQualified full_name -> update_lid_full_generic_fnptrs full_name fn_ptrs
+    (* wip: actually when fn_ptrs can be found, the name of hd is the short name instread of monoed full name*)
+    | _ -> ()
+  end;
   L.log "Calls" "%s--> hd: %a" depth pexpr hd;
   ( hd,
     is_known_builtin,
