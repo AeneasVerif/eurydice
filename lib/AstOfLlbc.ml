@@ -1248,12 +1248,12 @@ and debug_trait_clause_mapping env (mapping : (var_id * K.typ) list) =
       | TraitClauseMethod { clause_id; item_name; ts; _ } ->
           L.log "TraitClauses" "@@@ method name: %s" item_name;
           L.log "TraitClauses" "%s::%s: %a has trait-level %d const generics, %d type vars\n"
-            (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
+            (Charon.PrintTypes.trait_instance_id_to_string env.format_env None clause_id)
             item_name ptyp t ts.K.n_cgs ts.n
       | TraitClauseConstant { clause_id; item_name; _ } ->
           L.log "TraitClauses" "@@@ method name: %s" item_name;
           L.log "TraitClauses" "%s::%s: associated constant %a\n"
-            (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
+            (Charon.PrintTypes.trait_instance_id_to_string env.format_env None clause_id)
             item_name ptyp t
       | _ -> ())
     mapping
