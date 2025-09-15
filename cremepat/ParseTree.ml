@@ -3,13 +3,7 @@ type pre_expr =
   (* Binding most loosely *)
   | Let of string * expr * expr
   | Sequence of expr list
-  | App of {
-    head: expr;
-    cgs: expr list;
-    methods: expr list;
-    ts: typ list;
-    args: expr list;
-  }
+  | App of { head : expr; cgs : expr list; methods : expr list; ts : typ list; args : expr list }
   | Addr of expr
   | Index of expr * expr
   (* Atomic -- we terminate matches and loops using braces, we are not barbarians. *)
