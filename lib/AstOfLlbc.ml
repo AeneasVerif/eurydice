@@ -1088,16 +1088,19 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
 
         (* 1. Associated constants *)
         List.map
-          (fun (item_name, typ) ->
+          (fun (const : C.trait_assoc_const) ->
             let trait_name = trait_decl.C.item_meta.name in
-            let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
-            let t = substitute_visitor#visit_ty subst typ in
+            let pretty_name = string_of_name env trait_name ^ "_" ^ const.C.name in
+            let t = substitute_visitor#visit_ty subst const.C.ty in
             let t = typ_of_ty env t in
-            TraitClauseConstant { item_name; pretty_name; clause_id = clause_ref.trait_id }, t)
+            ( TraitClauseConstant
+                { item_name = const.C.name; pretty_name; clause_id = clause_ref.trait_id },
+              t ))
           trait_decl.C.consts
         (* 2. Trait methods *)
         @ List.map
-            (fun (item_name, _) ->
+            (fun (mthd : C.trait_method C.binder) ->
+              let item_name = mthd.C.binder_value.C.name in
               let trait_name = trait_decl.C.item_meta.name in
               let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
 
