@@ -520,7 +520,21 @@ let re_polymorphize expr = object
           ETApp (K.with_type (ty_re_polymorphize ty cgs ts) (K.EQualified name), cgs, fn_ptrs, ts)
       with Not_found -> EQualified full_name
     end#visit_expr_w () expr
-    
+
+(* get the charon name without the last PeMonomorphized, used for match blocklist *)
+let pure_c_name (name : C.name) =
+  let (pre, last) = Krml.KList.split_at_last name in
+    match last with
+    | PeMonomorphized _args -> pre
+    | _ -> name
+
+(* get the trait_refs from mono. charon name, used in lookup_fun *)
+let trait_refs_c_name (name: C.name) : C.trait_ref list =
+  let (_pre, last) = Krml.KList.split_at_last name in
+    match last with
+    | PeMonomorphized args -> args.trait_refs
+    | _ -> []
+
 let pure_lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
   let prefix, name = Krml.KList.split_at_last name in
   List.map (string_of_path_elem env) prefix, string_of_path_elem env name
@@ -531,7 +545,7 @@ let update_lid_full_generic_fnptrs (full_name : K.lident) (fn_ptrs : K.expr list
     let name, cgs, ts, _ = Hashtbl.find lid_full_generic full_name in
     L.log "AstOfLlbc" "[re-poly] updated the fn_ptrs of %a to %a" plid full_name pexprs fn_ptrs;
     Hashtbl.replace lid_full_generic full_name (name, cgs, ts, fn_ptrs)
-  with Not_found -> ()
+  with Not_found -> (failwith "update_lid_full_generic_fnptrs: not found")
 
 let rec insert_lid_full_generic (env : env) (full_name : K.lident) (name : Charon.Types.name) =
   let (item_name, generic) =
@@ -1338,7 +1352,7 @@ and debug_trait_clause_mapping env (mapping : (var_id * K.typ) list) =
    type information required to build a proper instantiation. The function reference is an expression
    that is either a reference to a variable in scope (trait methods), or to a top-level qualified
    name, which encompasses both externally-defined function (builtins), or regular functions. *)
-let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
+let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result * C.trait_ref list =
   let open RustNames in
   let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p f in
   let builtin b =
@@ -1348,13 +1362,14 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
     K.EQualified name, { ts; arg_types; ret_type; cg_types = cg_args; is_known_builtin = true }
   in
   match List.find_opt (fun (p, _) -> matches p) known_builtins with
-  | Some (_, b) -> builtin b
+  | Some (_, b) -> let hd, res = builtin b in hd, res, []
   | None -> (
       let lookup_result_of_fun_id fun_id =
         let { C.item_meta; signature; _ } = env.get_nth_function fun_id in
         let lid = lid_of_name env item_meta.name in
         L.log "Calls" "%s--> name: %a" depth plid lid;
-        K.EQualified lid, lookup_signature env depth signature
+        let trait_refs = trait_refs_c_name item_meta.name in
+        K.EQualified lid, lookup_signature env depth signature, trait_refs
       in
 
       match f.func with
@@ -1382,7 +1397,8 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
               in
               let ret_type, arg_types = Krml.Helpers.flatten_arrow t in
               let cg_types, arg_types = Krml.KList.split sig_info.n_cgs arg_types in
-              EBound f, { ts = sig_info; cg_types; arg_types; ret_type; is_known_builtin = false }
+              EBound f, { ts = sig_info; cg_types; arg_types; ret_type; is_known_builtin = false }, []
+              (* todo: check whether trait_refs is needed here *)
           | _ ->
               fail "Error looking trait ref: %s %s%!"
                 (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref)
@@ -1442,11 +1458,16 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
     (String.concat ", " (List.map (Charon.PrintTypes.ty_to_string env.format_env) type_args));
 
   (* The function itself, along with information about its *signature*. *)
-  let f, { ts; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_known_builtin } =
+  let f, { ts; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_known_builtin }, trait_refs_mono =
     lookup_fun env depth fn_ptr
   in
   L.log "Calls" "%s--> %d inputs: %a" depth (List.length inputs) ptyps inputs;
   L.log "Calls" "%s--> is_known_builtin?: %b" depth is_known_builtin;
+  L.log "Calls" "%s--> [MONO] trait from mono name: %s\n" depth
+    (String.concat " ++ "
+       (List.map (Charon.PrintTypes.trait_ref_to_string env.format_env) trait_refs));
+  L.log "Calls" "%s--> [MONO] end of trait refs" depth;
+  
 
   (* Translate effective type and cg arguments. *)
   let const_generic_args =
@@ -1472,6 +1493,93 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   (* Handling trait implementations for generic trait bounds in the callee. We
      synthesize krml expressions that correspond to each one of the trait methods
      that the callee expects. Order matters here. *)
+
+
+  (* MUST have the same structure as mk_clause_binders_and_args *)
+  let rec build_trait_ref_mapping depth (trait_refs : C.trait_ref list) =
+    List.concat_map
+      (fun (trait_ref : C.trait_ref) ->
+        let cname = pure_c_name (env.get_nth_trait_decl trait_ref.trait_decl_ref.binder_value.id).item_meta.name in
+        let name = string_of_name env cname in
+        L.log "Calls" "%s--> trait_ref %s: %s\n" depth name (C.show_trait_ref trait_ref);
+        
+        match trait_ref.trait_id with
+        | _ when List.mem name blocklisted_trait_decls ->
+           (* Trait not supported -- don't synthesize arguments *)
+           []
+        | TraitImpl { id = impl_id; generics = _generics } ->
+           (* Call-site has resolved trait clauses into a concrete trait implementation. *)
+           let trait_impl : C.trait_impl = env.get_nth_trait_impl impl_id in
+           
+           (* This must be in agreement, and in the same order as mk_clause_binders_and_args *)
+           List.map
+             (fun ((_item_name, { C.id; generics }) : _ * C.global_decl_ref) ->
+               if
+                 not
+                   (generics.types = [] && generics.const_generics = []
+                    && generics.trait_refs = [])
+               then
+                 failwith "TODO: polymorphic globals";
+               let global = env.get_nth_global id in
+               K.with_type (typ_of_ty env global.ty)
+                 (K.EQualified (lid_of_name env global.item_meta.name)))
+             trait_impl.consts
+           @ List.map
+               (fun ((item_name, bound_fn) : _ * C.fun_decl_ref C.binder) ->
+                 let fun_decl_id = bound_fn.C.binder_value.C.id in
+                 let fn_ptr : C.fn_ptr =
+                   {
+                     func = TraitMethod (trait_ref, item_name, fun_decl_id);
+                     generics = Charon.TypesUtils.empty_generic_args;
+                   }
+                 in
+                 let fn_ptr = fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr) in
+                 fn_ptr)
+               trait_impl.methods
+           @ build_trait_ref_mapping ("  " ^ depth)
+               (let subst =
+                  Charon.Substitute.make_subst_from_generics trait_impl.generics _generics
+                in
+                (*_generics.trait_refs*)
+                List.map
+                  (Charon.Substitute.st_substitute_visitor#visit_trait_ref subst)
+                  trait_impl.parent_trait_refs)
+        | Clause _ as clause_id ->
+           (* Caller it itself polymorphic and refers to one of its own clauses to synthesize
+              the clause arguments at call-site. We must pass whatever is relevant for this
+              clause, *transitively* (this means all the reachable parents). *)
+           let rec relevant = function
+             | C.ParentClause (tref', _) -> relevant tref'.trait_id
+             | clause_id' -> clause_id = clause_id'
+           in
+           List.rev
+             (Krml.KList.filter_mapi
+                (fun i (var, t) ->
+                  match var with
+                  | TraitClauseMethod { clause_id = clause_id'; _ }
+                  | TraitClauseConstant { clause_id = clause_id'; _ }
+                     when relevant clause_id' -> Some K.(with_type t (EBound i))
+                  | _ -> None)
+                env.binders)
+        | ParentClause (tref, clause_id) ->
+           let decl_id = tref.trait_decl_ref.binder_value.id in
+           let trait_decl = env.get_nth_trait_decl decl_id in
+           let name = string_of_name env trait_decl.item_meta.name in
+           let clause_id = C.TraitClauseId.to_int clause_id in
+           let parent_clause = List.nth trait_decl.parent_clauses clause_id in
+           let parent_clause_decl =
+             env.get_nth_trait_decl parent_clause.trait.binder_value.id
+           in
+           let parent_name = string_of_name env parent_clause_decl.item_meta.name in
+           Krml.KPrint.bprintf "looking up parent clause #%d of decl=%s = %s\n" clause_id name
+             parent_name;
+           if List.mem parent_name blocklisted_trait_decls then
+             []
+           else
+             failwith "Don't know how to resolve trait_ref above (1)"
+        | _ -> failwith "Don't know how to resolve trait_ref above (2)")
+      trait_refs
+  in
   let fn_ptrs : K.expr list =
     if is_known_builtin then
       (* If this is a known builtin implementation, we do not materialize trait methods, on the
@@ -1480,97 +1588,27 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
          anyhow. *)
       []
     else
-      (* MUST have the same structure as mk_clause_binders_and_args *)
-      let rec build_trait_ref_mapping depth (trait_refs : C.trait_ref list) =
-        List.concat_map
-          (fun (trait_ref : C.trait_ref) ->
-            let name =
-              string_of_name env
-                (env.get_nth_trait_decl trait_ref.trait_decl_ref.binder_value.id).item_meta.name
-            in
-            L.log "Calls" "%s--> trait_ref %s: %s\n" depth name (C.show_trait_ref trait_ref);
-
-            match trait_ref.trait_id with
-            | _ when List.mem name blocklisted_trait_decls ->
-                (* Trait not supported -- don't synthesize arguments *)
-                []
-            | TraitImpl { id = impl_id; generics = _generics } ->
-                (* Call-site has resolved trait clauses into a concrete trait implementation. *)
-                let trait_impl : C.trait_impl = env.get_nth_trait_impl impl_id in
-
-                (* This must be in agreement, and in the same order as mk_clause_binders_and_args *)
-                List.map
-                  (fun ((_item_name, { C.id; generics }) : _ * C.global_decl_ref) ->
-                    if
-                      not
-                        (generics.types = [] && generics.const_generics = []
-                       && generics.trait_refs = [])
-                    then
-                      failwith "TODO: polymorphic globals";
-                    let global = env.get_nth_global id in
-                    K.with_type (typ_of_ty env global.ty)
-                      (K.EQualified (lid_of_name env global.item_meta.name)))
-                  trait_impl.consts
-                @ List.map
-                    (fun ((item_name, bound_fn) : _ * C.fun_decl_ref C.binder) ->
-                      let fun_decl_id = bound_fn.C.binder_value.C.id in
-                      let fn_ptr : C.fn_ptr =
-                        {
-                          func = TraitMethod (trait_ref, item_name, fun_decl_id);
-                          generics = Charon.TypesUtils.empty_generic_args;
-                        }
-                      in
-                      let fn_ptr = fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr) in
-                      fn_ptr)
-                    trait_impl.methods
-                @ build_trait_ref_mapping ("  " ^ depth)
-                    (let subst =
-                       Charon.Substitute.make_subst_from_generics trait_impl.generics _generics
-                     in
-                     (*_generics.trait_refs*)
-                     List.map
-                       (Charon.Substitute.st_substitute_visitor#visit_trait_ref subst)
-                       trait_impl.parent_trait_refs)
-            | Clause _ as clause_id ->
-                (* Caller it itself polymorphic and refers to one of its own clauses to synthesize
-                   the clause arguments at call-site. We must pass whatever is relevant for this
-                   clause, *transitively* (this means all the reachable parents). *)
-                let rec relevant = function
-                  | C.ParentClause (tref', _) -> relevant tref'.trait_id
-                  | clause_id' -> clause_id = clause_id'
-                in
-                List.rev
-                  (Krml.KList.filter_mapi
-                     (fun i (var, t) ->
-                       match var with
-                       | TraitClauseMethod { clause_id = clause_id'; _ }
-                       | TraitClauseConstant { clause_id = clause_id'; _ }
-                         when relevant clause_id' -> Some K.(with_type t (EBound i))
-                       | _ -> None)
-                     env.binders)
-            | ParentClause (tref, clause_id) ->
-                let decl_id = tref.trait_decl_ref.binder_value.id in
-                let trait_decl = env.get_nth_trait_decl decl_id in
-                let name = string_of_name env trait_decl.item_meta.name in
-                let clause_id = C.TraitClauseId.to_int clause_id in
-                let parent_clause = List.nth trait_decl.parent_clauses clause_id in
-                let parent_clause_decl =
-                  env.get_nth_trait_decl parent_clause.trait.binder_value.id
-                in
-                let parent_name = string_of_name env parent_clause_decl.item_meta.name in
-                Krml.KPrint.bprintf "looking up parent clause #%d of decl=%s = %s\n" clause_id name
-                  parent_name;
-                if List.mem parent_name blocklisted_trait_decls then
-                  []
-                else
-                  failwith "Don't know how to resolve trait_ref above (1)"
-            | _ -> failwith "Don't know how to resolve trait_ref above (2)")
-          trait_refs
-      in
       build_trait_ref_mapping depth trait_refs
   in
   L.log "Calls" "%s--> trait method impls: %d" depth (List.length fn_ptrs);
-
+  let fn_ptrs_mono : K.expr list =
+    if is_known_builtin then
+      (* If this is a known builtin implementation, we do not materialize trait methods, on the
+         basis that this is likely something from the standard library that exercises more features
+         that we can support, and that since we hand-write it, we don't need this level of precision
+         anyhow. *)
+      []
+    else
+      build_trait_ref_mapping depth trait_refs_mono
+  in
+  (* update the fn_ptrs_mono in the table *)
+  begin
+    if fn_ptrs_mono <> [] then
+      match f with
+      | EQualified full_name -> update_lid_full_generic_fnptrs full_name fn_ptrs_mono
+      | _ -> ()
+  end;
+  
   (* This needs to match what is done in the FunGroup case (i.e. when we extract
      a definition). There are two behaviors depending on whether the function is
      builtin or not. *)
@@ -1641,12 +1679,6 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
     else
       hd
   in
-  begin
-    match hd.node with
-    | EQualified full_name -> update_lid_full_generic_fnptrs full_name fn_ptrs
-    (* wip: actually when fn_ptrs can be found, the name of hd is the short name instread of monoed full name*)
-    | _ -> ()
-  end;
   L.log "Calls" "%s--> hd: %a" depth pexpr hd;
   ( hd,
     is_known_builtin,

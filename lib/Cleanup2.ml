@@ -356,8 +356,8 @@ let remove_array_from_fn files =
         super#visit_DFunction () cc flags n_cgs n t name bs e
 
       method! visit_EApp env e es =
-        (* let e = AstOfLlbc.re_polymorphize e in *)
-        match (e).node with
+        let e' = AstOfLlbc.re_polymorphize e in
+        match e'.node with
         | ETApp
             ( { node = EQualified ([ "core"; "array" ], "from_fn"); _ },
               [ len ],
