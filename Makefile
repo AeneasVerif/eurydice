@@ -8,9 +8,9 @@ TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.
 
 # Warn on old versions of bash
 _ := $(shell bash -c '(( $${BASH_VERSION%%.*} >= 4 ))')
-#ifneq ($(.SHELLSTATUS),0)
-#_: $(error "bash version is too old; hint: brew install bash")
-#endif
+ifneq ($(.SHELLSTATUS),0)
+_: $(error "bash version is too old; hint: brew install bash")
+endif
 
 # Enable `foo/**` glob syntax
 SHELL := bash -O globstar 
@@ -41,7 +41,7 @@ build:
 CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
 CXXFLAGS	:= -std=c++17
 
-test: $(addprefix test-,$(TEST_DIRS)) custom-test-array
+test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result
 
 clean-and-test:
 	$(MAKE) clean-llbc

@@ -294,7 +294,7 @@ let slice_len =
 let slice_copy =
   {
     name = [ "Eurydice" ], "slice_copy";
-    typ = Krml.Helpers.fold_arrow [ mk_slice (TBound 0)] (mk_slice (TBound 0));
+    typ = Krml.Helpers.fold_arrow [ mk_slice (TBound 0); mk_slice (TBound 0) ] TUnit;
     n_type_args = 1;
     cg_args = [];
     arg_names = [ "s" ];
