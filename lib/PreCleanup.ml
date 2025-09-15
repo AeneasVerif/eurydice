@@ -1,5 +1,4 @@
 open Krml.Ast
-
 module H = Krml.Helpers
 
 (* All the transformations that need to happen in order for the program to type-check as valid Low*
@@ -23,51 +22,59 @@ let expand_array_copies files =
       method! visit_EApp env hd args =
         match hd, args with
         | { node = EQualified lid; _ }, [ src; len ] when lid = Builtin.array_copy ->
-            ELet (H.fresh_binder "array_copy" src.typ,
-              H.any,
-              with_type src.typ (ESequence [
-                with_type TUnit (
-                  EBufBlit (Krml.DeBruijn.lift 1 src, H.zero_usize, with_type src.typ (EBound 0), H.zero_usize, Krml.DeBruijn.lift 1 len));
-                with_type src.typ (EBound 0)]))
-        | _ ->
-            super#visit_EApp env hd args
+            ELet
+              ( H.fresh_binder "array_copy" src.typ,
+                H.any,
+                with_type src.typ
+                  (ESequence
+                     [
+                       with_type TUnit
+                         (EBufBlit
+                            ( Krml.DeBruijn.lift 1 src,
+                              H.zero_usize,
+                              with_type src.typ (EBound 0),
+                              H.zero_usize,
+                              Krml.DeBruijn.lift 1 len ));
+                       with_type src.typ (EBound 0);
+                     ]) )
+        | _ -> super#visit_EApp env hd args
     end
   end
     #visit_files
     () files
 
-let remove_array_eq = object
-  inherit Krml.DeBruijn.map_counting_cg as super
+let remove_array_eq =
+  object
+    inherit Krml.DeBruijn.map_counting_cg as super
 
-  method! visit_expr ((n_cgs, n_binders) as env, _) e =
-    match e with
-    | [%cremepat {| core::array::equality::?impl::eq[#?n](#?..)<?t,?u>(?a1, ?a2) |}] ->
-        let rec is_flat = function
-          | TArray (t, _) -> is_flat t
-          | TInt _ | TBool | TUnit -> true
-          | _ -> false
-        in
-        assert (t = u);
-        if is_flat t then
-          let diff = n_binders - n_cgs in
-          match impl with
-          | "{core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>}" ->
-              with_type TBool (EApp (
-                Builtin.(expr_of_builtin_t ~cgs:(diff, [n]) array_eq [ t ]),
-                [ a1; a2 ]))
-          | "{core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>}" ->
-              with_type TBool (EApp (
-                Builtin.(expr_of_builtin_t ~cgs:(diff, [n]) array_eq_slice [ t ]),
-                [ a1; a2 ]))
-          | _ ->
-              failwith ("unknown array eq impl: " ^ impl)
-        else
-          failwith "TODO: non-byteeq array comparison"
-    | _ -> super#visit_expr (env, e.typ) e
+    method! visit_expr (((n_cgs, n_binders) as env), _) e =
+      match e with
+      | [%cremepat {| core::array::equality::?impl::eq[#?n](#?..)<?t,?u>(?a1, ?a2) |}] ->
+          let rec is_flat = function
+            | TArray (t, _) -> is_flat t
+            | TInt _ | TBool | TUnit -> true
+            | _ -> false
+          in
+          assert (t = u);
+          if is_flat t then
+            let diff = n_binders - n_cgs in
+            match impl with
+            | "{core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>}" ->
+                with_type TBool
+                  (EApp (Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) array_eq [ t ]), [ a1; a2 ]))
+            | "{core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>}" ->
+                with_type TBool
+                  (EApp
+                     ( Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) array_eq_slice [ t ]),
+                       [ a1; a2 ] ))
+            | _ -> failwith ("unknown array eq impl: " ^ impl)
+          else
+            failwith "TODO: non-byteeq array comparison"
+      | _ -> super#visit_expr (env, e.typ) e
 
-   method! visit_DFunction _ cc flags n_cgs n t lid bs e =
-     super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t lid bs e
-end
+    method! visit_DFunction _ cc flags n_cgs n t lid bs e =
+      super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t lid bs e
+  end
 
 let precleanup files =
   let files = expand_array_copies files in
