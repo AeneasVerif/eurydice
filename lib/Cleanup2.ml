@@ -862,6 +862,18 @@ let improve_names files =
             Krml.Bundle.Lid (fst (Hashtbl.find renamed lid))
         | x -> x)
       !Krml.Options.static_header;
+  let update_expr e =
+    match e.node with
+    | EQualified lid when Hashtbl.mem renamed lid ->
+       { e with node = EQualified (fst (Hashtbl.find renamed lid))}
+    | _ -> e
+  in
+  let update_value _key value =
+    match value with name, cgs, ts, fn_ptrs ->
+      let fn_ptrs = List.map update_expr fn_ptrs in
+    Some (name, cgs, ts, fn_ptrs)
+  in
+  Hashtbl.filter_map_inplace update_value AstOfLlbc.lid_full_generic;
   (object (self)
      inherit [_] map
 
