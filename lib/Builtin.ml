@@ -52,7 +52,7 @@ let chop_cg_args n t =
   let t = Krml.Helpers.fold_arrow ts t in
   t
 
-let expr_of_builtin_t builtin ?(cgs=(0, [])) ts =
+let expr_of_builtin_t builtin ?(cgs = 0, []) ts =
   let open Krml.DeBruijn in
   let builtin = expr_of_builtin builtin in
   let diff, cg_exprs = cgs in
@@ -228,7 +228,8 @@ let array_eq =
 let array_eq_slice =
   {
     name = [ "Eurydice" ], "array_eq_slice";
-    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, false); TBuf (mk_slice (TBound 0), false) ] TBool;
+    typ =
+      Krml.Helpers.fold_arrow [ TBuf (TBound 0, false); TBuf (mk_slice (TBound 0), false) ] TBool;
     n_type_args = 1;
     cg_args = [ TInt SizeT ];
     arg_names = [ "arr"; "slice" ];
@@ -237,9 +238,12 @@ let array_eq_slice =
 let slice_eq =
   {
     name = [ "Eurydice" ], "slice_eq";
-    typ = Krml.Helpers.fold_arrow [ TBuf (mk_slice (TBound 0), false); TBuf (mk_slice (TBound 0), false) ] TBool;
+    typ =
+      Krml.Helpers.fold_arrow
+        [ TBuf (mk_slice (TBound 0), false); TBuf (mk_slice (TBound 0), false) ]
+        TBool;
     n_type_args = 1;
-    cg_args = [ ];
+    cg_args = [];
     arg_names = [ "s1"; "s2" ];
   }
 
@@ -729,7 +733,15 @@ let null_mut =
   let open Krml.Ast in
   let t = TBound 0 in
   fun lid ->
-    DFunction (None, [ Private ], 0, 1, TBuf (t, false), lid, [ Krml.Helpers.fresh_binder "_" TUnit ], with_type (TBuf (t, false)) EBufNull)
+    DFunction
+      ( None,
+        [ Private ],
+        0,
+        1,
+        TBuf (t, false),
+        lid,
+        [ Krml.Helpers.fresh_binder "_" TUnit ],
+        with_type (TBuf (t, false)) EBufNull )
 
 let nonzero_def = K.DType (nonzero, [], 0, 1, Abbrev (TBound 0))
 

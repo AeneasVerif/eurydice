@@ -169,8 +169,7 @@ typedef struct {
 // Distinguished support for some PartialEq trait implementations
 //
 // core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>
-#define Eurydice_array_eq(sz, a1, a2, t)                                       \
-  (memcmp(a1, a2, sz * sizeof(t)) == 0)
+#define Eurydice_array_eq(sz, a1, a2, t) (memcmp(a1, a2, sz * sizeof(t)) == 0)
 // core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>
 #define Eurydice_array_eq_slice(sz, a1, s2, t, _)                              \
   (memcmp(a1, (s2)->ptr, sz * sizeof(t)) == 0)
@@ -183,8 +182,7 @@ typedef struct {
     sz, a1, a2, t, _, _ret_t)                                                           \
   Eurydice_array_eq(sz, a1, ((a2)->ptr), t)
 #define core_cmp_impls__core__cmp__PartialEq__0_mut__B___for__1_mut__A___eq(   \
-    _m0, _m1, \
-    src1, src2, _0, _1, T)                                                     \
+    _m0, _m1, src1, src2, _0, _1, T)                                           \
   Eurydice_slice_eq(src1, src2, _, _, T, _)
 
 #define Eurydice_slice_split_at(slice, mid, element_type, ret_t)               \
@@ -519,15 +517,15 @@ typedef const char *Prims_string;
 
 #define core_slice___Slice_T___as_mut_ptr(x, t, _) (x.ptr)
 #define core_mem_size_of(t, _) (sizeof(t))
-#define core_slice_raw_from_raw_parts_mut(ptr, len, _0, _1) \
+#define core_slice_raw_from_raw_parts_mut(ptr, len, _0, _1)                    \
   (KRML_CLITERAL(Eurydice_slice){(void *)(ptr), len})
-#define core_slice_raw_from_raw_parts(ptr, len, _0, _1) \
+#define core_slice_raw_from_raw_parts(ptr, len, _0, _1)                        \
   (KRML_CLITERAL(Eurydice_slice){(void *)(ptr), len})
 
 // FIXME: add dedicated extraction to extract NonNull<T> as T*
 #define core_ptr_non_null_NonNull void *
 
-// PRINTING 
+// PRINTING
 //
 // This is temporary. Ultimately we want to be able to extract all of this.
 
