@@ -379,6 +379,13 @@ let remove_array_from_fn files =
             in
             let lift1 = Krml.DeBruijn.lift 1 in
             let t_dst = H.assert_tbuf_or_tarray dst.typ in
+            (* erase the type of the empty closure struct. This is redundant with [Krml.remove_empty_struct] for non-monoed LLBC,
+               but needed for monoed LLBC because these fn_ptrs come from the table [lid_full_generic] which is not visited by
+               the Krml file rewriter *)
+            let call_mut = match call_mut.typ with
+              | TArrow (_closure_ref, e) -> { call_mut with typ = TArrow (TBuf (TUnit, false), e)}
+              | _ -> failwith "unexpected type of the call_mut closure function"
+            in
             EFor
               ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
                 H.zero_usize (* i: size_t = 0 *),
@@ -412,8 +419,9 @@ let remove_array_from_fn files =
               ts ) ->
             let t_src, t_dst =
               match ts with
-              | [ t_src; t_state; t_dst ] ->
-                  assert (t_state = TUnit);
+              | [ t_src; _t_state; t_dst ] ->
+                  (* assert (t_state = TUnit); *)
+                  (* This t_state is not visited by [remove_empty_struct] for monoed-LLBC, see the comment for call_mut above *)
                   L.log "Cleanup2" "found array map from %a to %a" ptyp t_src ptyp t_dst;
                   t_src, t_dst
               | _ ->
@@ -426,6 +434,10 @@ let remove_array_from_fn files =
             in
             let lift1 = Krml.DeBruijn.lift 1 in
             let e_state = with_type (TBuf (e_state.typ, false)) (EAddrOf (lift1 e_state)) in
+            let call_mut = match call_mut.typ with
+              | TArrow (_closure_ref, e) -> { call_mut with typ = TArrow (TBuf (TUnit, false), e)}
+              | _ -> failwith "unexpected type of the call_mut closure function"
+            in
             EFor
               ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
                 H.zero_usize (* i = 0 *),
