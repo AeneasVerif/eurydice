@@ -233,7 +233,7 @@ Supported options:|}
   (* Must happen now, before Monomorphization.datatypes, because otherwise
      MonomorphizationState.state gets filled with lids that later on get eliminated on the basis
      that they were empty structs to begin with, which would send Checker off the rails *)
-  let files = Krml.DataTypes.remove_empty_structs files in
+  let files = Eurydice.Cleanup2.remove_empty_structs files in
   let files = Krml.Monomorphization.datatypes files in
   let files = Eurydice.Cleanup2.drop_unused_type files in
   (* Cannot use remove_unit_buffers as it is technically incorrect *)

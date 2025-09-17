@@ -379,13 +379,6 @@ let remove_array_from_fn files =
             in
             let lift1 = Krml.DeBruijn.lift 1 in
             let t_dst = H.assert_tbuf_or_tarray dst.typ in
-            (* erase the type of the empty closure struct. This is redundant with [Krml.remove_empty_struct] for non-monoed LLBC,
-               but needed for monoed LLBC because these fn_ptrs come from the table [lid_full_generic] which is not visited by
-               the Krml file rewriter *)
-            let call_mut = match call_mut.typ with
-              | TArrow (_closure_ref, e) -> { call_mut with typ = TArrow (TBuf (TUnit, false), e)}
-              | _ -> failwith "unexpected type of the call_mut closure function"
-            in
             EFor
               ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
                 H.zero_usize (* i: size_t = 0 *),
@@ -419,9 +412,8 @@ let remove_array_from_fn files =
               ts ) ->
             let t_src, t_dst =
               match ts with
-              | [ t_src; _t_state; t_dst ] ->
-                  (* assert (t_state = TUnit); *)
-                  (* This t_state is not visited by [remove_empty_struct] for monoed-LLBC, see the comment for call_mut above *)
+              | [ t_src; t_state; t_dst ] ->
+                  assert (t_state = TUnit);
                   L.log "Cleanup2" "found array map from %a to %a" ptyp t_src ptyp t_dst;
                   t_src, t_dst
               | _ ->
@@ -434,10 +426,6 @@ let remove_array_from_fn files =
             in
             let lift1 = Krml.DeBruijn.lift 1 in
             let e_state = with_type (TBuf (e_state.typ, false)) (EAddrOf (lift1 e_state)) in
-            let call_mut = match call_mut.typ with
-              | TArrow (_closure_ref, e) -> { call_mut with typ = TArrow (TBuf (TUnit, false), e)}
-              | _ -> failwith "unexpected type of the call_mut closure function"
-            in
             EFor
               ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
                 H.zero_usize (* i = 0 *),
@@ -1450,3 +1438,65 @@ let drop_unused_type files =
        if (Hashtbl.mem seen lid) then Some d else None
     | _ -> Some d
   ) files
+
+
+let remove_empty_structs files =
+  let open Krml.Idents in
+  let empty_structs = (object
+
+    inherit [_] reduce
+
+    method zero = LidSet.empty
+    method plus = LidSet.union
+
+    method! visit_DType _ lid _ _ _ def =
+      if def = Flat [] then
+        LidSet.singleton lid
+      else
+        LidSet.empty
+  end)#visit_files () files in
+
+  let files = List.map (fun (f, decls) ->
+    f, List.filter (fun d -> not (LidSet.mem (lid_of_decl d) empty_structs)) decls
+  ) files in
+
+  let erase_obj =
+    (object
+
+    inherit [_] map as super
+
+    method! visit_TApp _ lid ts =
+      if LidSet.mem lid empty_structs then
+        TUnit
+      else
+        super#visit_TApp () lid ts
+
+    method! visit_TCgApp _ t cg =
+      let lid, _, _ = flatten_tapp (TCgApp (t, cg)) in
+      if LidSet.mem lid empty_structs then
+        TUnit
+      else
+        super#visit_TCgApp () t cg
+
+    method! visit_TQualified _ lid =
+      if LidSet.mem lid empty_structs then
+        TUnit
+      else
+        TQualified lid
+
+    method! visit_EFlat env fields =
+      if fields = [] then begin
+        EUnit
+      end else
+        super#visit_EFlat env fields
+     end)
+  in
+  let update_value _key value =
+    match value with name, cgs, ts, fn_ptrs ->
+      let cgs = List.map (erase_obj#visit_expr_w ()) cgs in
+      let ts = List.map (erase_obj#visit_typ ()) ts in
+      let fn_ptrs = List.map (erase_obj#visit_expr_w ()) fn_ptrs in
+      Some (name, cgs, ts, fn_ptrs)
+  in
+  Hashtbl.filter_map_inplace update_value AstOfLlbc.lid_full_generic;
+  erase_obj#visit_files () files
