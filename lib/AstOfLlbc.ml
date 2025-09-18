@@ -713,11 +713,9 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
   | PlaceLocal var_id ->
       let i, t = lookup env var_id in
       K.(with_type t (EBound i))
-
   | PlaceGlobal { id; _ } ->
       let global = env.get_nth_global id in
-      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name)) 
-
+      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
   | PlaceProjection (sub_place, pe) -> begin
       (* Can't evaluate this here because of the special case for DSTs. *)
       let sub_e = lazy (expression_of_place env sub_place) in
@@ -1082,16 +1080,19 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
 
         (* 1. Associated constants *)
         List.map
-          (fun (item_name, typ) ->
+          (fun (const : C.trait_assoc_const) ->
             let trait_name = trait_decl.C.item_meta.name in
-            let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
-            let t = substitute_visitor#visit_ty subst typ in
+            let pretty_name = string_of_name env trait_name ^ "_" ^ const.C.name in
+            let t = substitute_visitor#visit_ty subst const.C.ty in
             let t = typ_of_ty env t in
-            TraitClauseConstant { item_name; pretty_name; clause_id = clause_ref.trait_id }, t)
+            ( TraitClauseConstant
+                { item_name = const.C.name; pretty_name; clause_id = clause_ref.trait_id },
+              t ))
           trait_decl.C.consts
         (* 2. Trait methods *)
         @ List.map
-            (fun (item_name, _) ->
+            (fun (mthd : C.trait_method C.binder) ->
+              let item_name = mthd.C.binder_value.C.name in
               let trait_name = trait_decl.C.item_meta.name in
               let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
 
@@ -1242,12 +1243,12 @@ and debug_trait_clause_mapping env (mapping : (var_id * K.typ) list) =
       | TraitClauseMethod { clause_id; item_name; ts; _ } ->
           L.log "TraitClauses" "@@@ method name: %s" item_name;
           L.log "TraitClauses" "%s::%s: %a has trait-level %d const generics, %d type vars\n"
-            (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
+            (Charon.PrintTypes.trait_instance_id_to_string env.format_env None clause_id)
             item_name ptyp t ts.K.n_cgs ts.n
       | TraitClauseConstant { clause_id; item_name; _ } ->
           L.log "TraitClauses" "@@@ method name: %s" item_name;
           L.log "TraitClauses" "%s::%s: associated constant %a\n"
-            (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
+            (Charon.PrintTypes.trait_instance_id_to_string env.format_env None clause_id)
             item_name ptyp t
       | _ -> ())
     mapping
@@ -1570,7 +1571,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
 
 let expression_of_fn_ptr env (fn_ptr : C.fn_ptr) = expression_of_fn_ptr env "" fn_ptr
 
-let global_is_const env id = 
+let global_is_const env id =
   match (env.get_nth_global id).global_kind with
   | NamedConst | AnonConst -> true
   | Static -> false
@@ -1694,7 +1695,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
-  | UnaryOp (Cast (CastTransmute ((TRawPtr _) as _from, (TLiteral (TUInt Usize) as to_))), e) ->
+  | UnaryOp (Cast (CastTransmute ((TRawPtr _ as _from), (TLiteral (TUInt Usize) as to_))), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
   | UnaryOp (Cast (CastFnPtr (TFnDef _from, TFnPtr _to)), e) ->
@@ -1740,7 +1741,6 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
               (Charon.PrintExpressions.cast_kind_to_string env.format_env ck)
               ptyp t_to ptyp t_from
       end
-
   | UnaryOp (Cast ck, e) ->
       (* Add a simpler case: identity cast is allowed *)
       let is_ident =
@@ -1918,7 +1918,8 @@ let rec expression_of_switch_128bits env ret_var scrutinee branches default : K.
   in
   List.fold_right folder branches else_branch
 
-and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_statement) : K.expr =
+and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.statement_kind) : K.expr
+    =
   match s with
   | Assign (p, rv) ->
       let expected_ty = p.ty in
@@ -2170,11 +2171,11 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
   | _ ->
       failwith
         ("Unsupported statement: "
-        ^ Charon.PrintLlbcAst.Ast.raw_statement_to_string env.format_env "" "" s)
+        ^ Charon.PrintLlbcAst.Ast.statement_kind_to_string env.format_env "" "" s)
 
 and expression_of_statement (env : env) (ret_var : C.local_id) (s : C.statement) : K.expr =
   {
-    (expression_of_raw_statement env ret_var s.content) with
+    (expression_of_statement_kind env ret_var s.content) with
     meta =
       (if !Options.comments then
          List.map (fun x -> K.CommentBefore x) s.comments_before
