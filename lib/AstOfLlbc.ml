@@ -2145,7 +2145,12 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       let t = lesser e1.typ e2.typ in
       K.(with_type t (EIfThenElse (expression_of_operand env op, e1, e2)))
   | Switch (SwitchInt (scrutinee, int_ty, branches, default)) ->
-      if int_ty = Signed I128 || int_ty = Unsigned U128 then
+      let branches =
+        List.map
+          (fun (litl, block) -> List.map Charon.ValuesUtils.literal_as_scalar litl, block)
+          branches
+      in
+      if int_ty = TInt I128 || int_ty = TUInt U128 then
         expression_of_switch_128bits env ret_var scrutinee branches default
       else
         let scrutinee = expression_of_operand env scrutinee in
@@ -2336,7 +2341,8 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
           let has_custom_constants =
             let rec has_custom_constants i = function
               | { C.discriminant; _ } :: bs ->
-                  Charon.Scalars.get_val discriminant <> Z.of_int i
+                  Charon.Scalars.get_val (Charon.ValuesUtils.literal_as_scalar discriminant)
+                  <> Z.of_int i
                   || has_custom_constants (i + 1) bs
               | _ -> false
             in
@@ -2348,7 +2354,8 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               (fun ({ C.variant_name; discriminant; _ } : C.variant) ->
                 let v =
                   if has_custom_constants then
-                    Some (Charon.Scalars.get_val discriminant)
+                    Some
+                      (Charon.Scalars.get_val (Charon.ValuesUtils.literal_as_scalar discriminant))
                   else
                     None
                 in
