@@ -1598,12 +1598,12 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
         | _ -> e
       end
   | Move p -> expression_of_place env p
-  | Constant { value = CLiteral l; _ } -> expression_of_literal env l
-  | Constant { value = CVar var; _ } -> expression_of_cg_var_id env (C.expect_free_var var)
-  | Constant { value = CFnPtr fn_ptr; _ } ->
+  | Constant { kind = CLiteral l; _ } -> expression_of_literal env l
+  | Constant { kind = CVar var; _ } -> expression_of_cg_var_id env (C.expect_free_var var)
+  | Constant { kind = CFnPtr fn_ptr; _ } ->
       let e, _, _ = expression_of_fn_ptr env fn_ptr in
       e
-  | Constant { value = CTraitConst (({ C.trait_id; _ } as trait_ref), name); _ } -> begin
+  | Constant { kind = CTraitConst (({ C.trait_id; _ } as trait_ref), name); _ } -> begin
       (* Logic similar to lookup_fun *)
       match trait_id with
       | Clause _ | ParentClause _ ->
@@ -2216,7 +2216,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
 
 and expression_of_statement (env : env) (ret_var : C.local_id) (s : C.statement) : K.expr =
   {
-    (expression_of_statement_kind env ret_var s.content) with
+    (expression_of_statement_kind env ret_var s.kind) with
     meta =
       (if !Options.comments then
          List.map (fun x -> K.CommentBefore x) s.comments_before
