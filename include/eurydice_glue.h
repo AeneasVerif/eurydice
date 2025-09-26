@@ -132,6 +132,9 @@ typedef struct {
                  end) /* x is already at an array type, no need for cast */
 #define Eurydice_array_to_subslice(_arraylen, x, r, t, _0, _1)                 \
   EURYDICE_SLICE((t *)x, r.start, r.end)
+// The mono version is exactly the same, just with a different name
+#define Eurydice_array_to_subslice_mono(_arraylen, x, r, t, _0, _1)                 \
+  EURYDICE_SLICE((t *)x, r.start, r.end)
 
 // Same as above, variant for when start and end are statically known
 #define Eurydice_array_to_subslice3(x, start, end, t_ptr)                      \
@@ -145,6 +148,11 @@ typedef struct {
 #define Eurydice_array_to_subslice_to(_size, x, r, t, _range_t, _0)            \
   EURYDICE_SLICE((t *)x, 0, r)
 #define Eurydice_array_to_subslice_from(size, x, r, t, _range_t, _0)           \
+  EURYDICE_SLICE((t *)x, r, size)
+// The mono versions are exactly the same, just different names
+#define Eurydice_array_to_subslice_to_mono(_size, x, r, t, _range_t, _0)            \
+  EURYDICE_SLICE((t *)x, 0, r)
+#define Eurydice_array_to_subslice_from_mono(size, x, r, t, _range_t, _0)           \
   EURYDICE_SLICE((t *)x, r, size)
 
 // Copy a slice with memcopy

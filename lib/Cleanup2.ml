@@ -1076,8 +1076,8 @@ let bonus_cleanups =
         match lid with
         | [ "core"; "slice"; s ], "len" when is_slice_t s -> true, ([ "Eurydice" ], "slice_len"), Builtin.slice_len.typ
         | [ "core"; "slice"; s ], "copy_from_slice" when is_slice_t s  -> true, ([ "Eurydice" ], "slice_copy"), Builtin.slice_copy.typ
-        | [ "core"; "slice"; s ], "split_at" when is_slice_t s  -> true, ([ "Eurydice" ], "slice_split_at"), TAny (*todo*)
-        | [ "core"; "slice"; s ], "split_at_mut" when is_slice_t s -> true, ([ "Eurydice" ], "slice_split_at_mut"), TAny
+        | [ "core"; "slice"; s ], "split_at" when is_slice_t s  -> true, ([ "Eurydice" ], "slice_split_at"), Builtin.slice_split_at.typ
+        | [ "core"; "slice"; s ], "split_at_mut" when is_slice_t s -> true, ([ "Eurydice" ], "slice_split_at_mut"), Builtin.slice_split_at_mut.typ
         | _ -> false, lid, TAny
       in
       let e' = AstOfLlbc.re_polymorphize e in

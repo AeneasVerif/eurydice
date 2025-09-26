@@ -191,6 +191,7 @@ module RustNames = struct
       map_vars_to_vars = false;
       match_with_trait_decl_refs = true;
       (* use_trait_decl_refs = true; *)
+      match_mono = true;
     }
 
   let vec = parse_pattern "alloc::vec::Vec<@>"
@@ -203,14 +204,23 @@ module RustNames = struct
     parse_pattern "SliceIndexShared<'_, @T>", Builtin.slice_index;
     parse_pattern "SliceIndexMut<'_, @T>", Builtin.slice_index;
 
+    (* slices: generics *)
     parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
     parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
     parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@]>", Builtin.slice_subslice_to;
     parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@]>", Builtin.slice_subslice_to;
     parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@]>", Builtin.slice_subslice_from;
     parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@]>", Builtin.slice_subslice_from;
+    
+    (* slices: mono *)
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I>}::index<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I>}::index_mut<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I>}::index<'_, @, core::ops::range::RangeTo<usize>, [@]>", Builtin.slice_subslice_to;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@]>", Builtin.slice_subslice_to;
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@]>", Builtin.slice_subslice_from;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@]>", Builtin.slice_subslice_from;
 
-    (* arrays *)
+    (* arrays: generics *)
     parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::Range<usize>, [@], @>", Builtin.array_to_subslice;
     parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@], @>", Builtin.array_to_subslice;
     parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@], @>", Builtin.array_to_subslice_to;
@@ -218,12 +228,27 @@ module RustNames = struct
     parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", Builtin.array_to_subslice_from;
     parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", Builtin.array_to_subslice_from;
 
+    (* arrays: mono *)
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I>}::index<'_, @, core::ops::range::Range<usize>, @>", Builtin.array_to_subslice_mono;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut<'_, @, core::ops::range::Range<usize>, @>", Builtin.array_to_subslice_mono;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I>}::index<'_, @, core::ops::range::RangeTo<usize>, @>", Builtin.array_to_subslice_to_mono;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, @>", Builtin.array_to_subslice_to_mono;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I>}::index<'_, @, core::ops::range::RangeFrom<usize>, @>", Builtin.array_to_subslice_from_mono;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, @>", Builtin.array_to_subslice_from_mono;
+
     (* slices <-> arrays *)
     parse_pattern "ArrayToSliceShared<'_, @T, @N>", Builtin.array_to_slice;
     parse_pattern "ArrayToSliceMut<'_, @T, @N>", Builtin.array_to_slice;
+
+    (* slices <-> arrays: generics *)
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], &'_ [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ mut [@T], &'_ mut [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
+
+    (* slices <-> arrays: mono *)
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U>}::try_into<&'_ [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U>}::try_into<&'_ [@T], &'_ [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U>}::try_into<&'_ mut [@T], &'_ mut [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
 
     (* iterators XXX are any of these used? *)
     parse_pattern "core::iter::traits::collect::IntoIterator<[@; @]>::into_iter", Builtin.array_into_iter;
@@ -1349,13 +1374,40 @@ and debug_trait_clause_mapping env (mapping : (var_id * K.typ) list) =
 
 (** Compiling function instantiations into krml application nodes. *)
 
+(* Helper for getting monomorphized generic arguments from a name *)
+let try_get_mono_from_name (name : C.name) =
+  match List.rev name with
+  | PeMonomorphized generics :: _ -> Some generics
+  | _ -> None
+
+(* Only get monomorphized generics for known *Eurydice* builtins *)
+let try_get_mono_generics is_known_builtin (env : env) (f : C.fn_ptr) =
+  if not is_known_builtin then None else
+  let get_from_fid fid = 
+    let fun_decl = env.get_nth_function fid in
+    try_get_mono_from_name fun_decl.item_meta.name
+  in
+  match f.func with
+  | FunId (FRegular fid) -> get_from_fid fid
+  (* Builtins are always generic *)
+  | FunId (FBuiltin _) -> None
+  | TraitMethod (_, _, fid) -> get_from_fid fid
+
 (* First step: produce an expression for the un-instantiated function reference, along with all the
    type information required to build a proper instantiation. The function reference is an expression
    that is either a reference to a variable in scope (trait methods), or to a top-level qualified
    name, which encompasses both externally-defined function (builtins), or regular functions. *)
 let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result * C.trait_ref list =
   let open RustNames in
-  let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p f in
+  let pat = pattern_of_fn_ptr env f in
+  L.log "Calls" "%sLooking up function: %s" depth (Charon.PrintTypes.fn_ptr_to_string env.format_env f);
+  L.log "Calls" "%sfn-ptr-pattern: %s" depth (string_of_pattern pat);
+  let matches (p : Charon.NameMatcher.pattern) =
+    L.log "Calls" "%smatching against pattern: %s" depth (Charon.NameMatcher.pattern_to_string { Charon.NameMatcher.tgt = TkPattern } p);
+    let ret = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p f in
+    L.log "Calls" "%smatch result: %b" depth ret;
+    ret
+  in
   let builtin b =
     let { Builtin.name; typ; n_type_args; cg_args; _ } = b in
     let ret_type, arg_types = Krml.Helpers.flatten_arrow typ in
@@ -1415,12 +1467,25 @@ let fn_ptr_is_opaque env (fn_ptr : C.fn_ptr) =
    implement the dictionary-passing style. *)
 let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   let {
-    C.generics = { types = type_args; const_generics = const_generic_args; trait_refs; _ };
+    C.generics;
     func;
     _;
   } =
     fn_ptr
   in
+
+  (* The function itself, along with information about its *signature*. *)
+  let f, { ts; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_known_builtin }, trait_refs_mono =
+    lookup_fun env depth fn_ptr
+  in
+
+  let generics = match try_get_mono_generics is_known_builtin env fn_ptr with
+  | None -> generics
+  (* Essentially, there might still be (late-bound) region arguments in the original generics
+     But we don't care about them (the regions), so just ignore them. *)
+  | Some generics -> generics
+  in
+  let { C.types = type_args; const_generics = const_generic_args; trait_refs; _ } = generics in
 
   (* We handle any kind of fn_ptr, whether it's a concrete function call, a
      concrete trait implementation method call, or an abstract trait method call
@@ -1439,9 +1504,14 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   let type_args, const_generic_args, trait_refs =
     let generics =
       match func with
-      | TraitMethod ({ trait_id = TraitImpl { generics; _ }; _ }, _, _) ->
+      | TraitMethod ({ trait_id = TraitImpl { generics; id }; _ }, _, _) -> begin
           L.log "Calls" "%s--> this is a trait method" depth;
-          generics
+          let trait_impl = env.get_nth_trait_impl id in
+          match try_get_mono_from_name trait_impl.item_meta.name with
+          (* The same applies here: ignoring potential region arguments *)
+          | Some generics when is_known_builtin -> generics
+          | _ -> generics
+      end
       | _ -> C.empty_generic_args
     in
     ( generics.types @ type_args,
@@ -1458,10 +1528,6 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   L.log "Calls" "%s--> type_args: %s" depth
     (String.concat ", " (List.map (Charon.PrintTypes.ty_to_string env.format_env) type_args));
 
-  (* The function itself, along with information about its *signature*. *)
-  let f, { ts; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_known_builtin }, trait_refs_mono =
-    lookup_fun env depth fn_ptr
-  in
   L.log "Calls" "%s--> %d inputs: %a" depth (List.length inputs) ptyps inputs;
   L.log "Calls" "%s--> is_known_builtin?: %b" depth is_known_builtin;
   L.log "Calls" "%s--> [MONO] trait from mono name: %s\n" depth

@@ -17,105 +17,190 @@ extern "C" {
 
 static inline void core_num__u32__to_be_bytes(uint32_t x0, uint8_t x1[4U]);
 
-/**
-A monomorphic instance of const_generics.serialize
-with const generics
-- OUT_LEN= 8
-*/
-void const_generics_serialize_3b(Eurydice_slice re, uint8_t ret[8U]);
+extern void core_slice___Slice_u8___copy_from_slice__u8_(Eurydice_slice x0, Eurydice_slice x1);
+
+void const_generics_serialize__8usize_(Eurydice_slice re, uint8_t ret[8U]);
 
 void const_generics_main(void);
 
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
-
-/**
-A monomorphic instance of const_generics.Pair
-with types uint32_t, uint32_t
-with const generics
-- $2size_t
-- $2size_t
-*/
-typedef struct const_generics_Pair_4e_s
+typedef struct const_generics_Pair__u32__u32__2usize__2usize__s
 {
   uint32_t left[2U];
   uint32_t right[2U];
 }
-const_generics_Pair_4e;
+const_generics_Pair__u32__u32__2usize__2usize_;
 
-/**
-A monomorphic instance of const_generics.Pair
-with types uint32_t, uint64_t
-with const generics
-- $2size_t
-- $4size_t
-*/
-typedef struct const_generics_Pair_a5_s
+typedef struct const_generics_Pair__u32__u64__2usize__4usize__s
 {
   uint32_t left[2U];
   uint64_t right[4U];
 }
-const_generics_Pair_a5;
+const_generics_Pair__u32__u64__2usize__4usize_;
 
-/**
-A monomorphic instance of const_generics.Pair
-with types uint64_t, uint32_t
-with const generics
-- $4size_t
-- $2size_t
-*/
-typedef struct const_generics_Pair_87_s
+typedef struct const_generics_Pair__u64__u32__4usize__2usize__s
 {
   uint64_t left[4U];
   uint32_t right[2U];
 }
-const_generics_Pair_87;
+const_generics_Pair__u64__u32__4usize__2usize_;
 
-/**
-A monomorphic instance of const_generics.mk_pairs
-with types uint32_t, uint64_t
-with const generics
-- N= 2
-- M= 4
-*/
-const_generics_Pair_4e const_generics_mk_pairs_e0(uint32_t x, uint64_t y);
+const_generics_Pair__u32__u32__2usize__2usize_
+const_generics_mk_pairs__u32__u64__2usize__4usize_(uint32_t x, uint64_t y);
 
 void const_generics_main1(void);
 
-/**
-A monomorphic instance of const_generics.f
-with const generics
-- FOO= 1
-- BAR= 2
-*/
-bool const_generics_f_e5(uint32_t x, size_t y);
+bool const_generics_f__1usize__2u32_(uint32_t x, size_t y);
 
-/**
-A monomorphic instance of const_generics.f
-with const generics
-- FOO= 3
-- BAR= 4
-*/
-bool const_generics_f_70(uint32_t x, size_t y);
+bool const_generics_f__3usize__4u32_(uint32_t x, size_t y);
 
-/**
-A monomorphic instance of const_generics.g
-with const generics
-- BAR= 3
-- FOO= 4
-*/
-bool const_generics_g_70(uint32_t x, size_t y);
+bool const_generics_g__3usize__4u32_(uint32_t x, size_t y);
 
 void const_generics_main3(void);
 
-extern uint32_t core_clone_impls__core__clone__Clone_for_u32__clone(uint32_t *x0);
+extern Eurydice_slice
+core_array__core__ops__index__Index____Array_u8__8usize___core__ops__range__RangeFrom___usize____index__u8__core__ops__range__RangeFrom___usize___8usize_(
+  uint8_t *x0,
+  size_t x1
+);
 
-extern uint64_t core_clone_impls__core__clone__Clone_for_u64__clone(uint64_t *x0);
+extern Eurydice_slice
+core_array__core__ops__index__Index____Array_u8__8usize___core__ops__range__RangeTo___usize____index__u8__core__ops__range__RangeTo___usize___8usize_(
+  uint8_t *x0,
+  size_t x1
+);
 
-extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(uint8_t *x0);
+extern Eurydice_slice
+core_array__core__ops__index__IndexMut____Array_u8__8usize___core__ops__range__RangeFrom___usize____index_mut__u8__core__ops__range__RangeFrom___usize___8usize_(
+  uint8_t *x0,
+  size_t x1
+);
+
+extern Eurydice_slice
+core_array__core__ops__index__IndexMut____Array_u8__8usize___core__ops__range__RangeTo___usize____index_mut__u8__core__ops__range__RangeTo___usize___8usize_(
+  uint8_t *x0,
+  size_t x1
+);
+
+extern uint32_t core_clone_impls__core__clone__Clone___u32___clone(uint32_t *x0);
+
+extern uint64_t core_clone_impls__core__clone__Clone___u64___clone(uint64_t *x0);
+
+extern uint8_t core_clone_impls__core__clone__Clone___u8___clone(uint8_t *x0);
+
+#define core_option_Option_None 0
+#define core_option_Option_Some 1
+
+typedef uint8_t core_option_Option________Slice_u8____tags;
+
+typedef struct core_option_Option________Slice_u8____s
+{
+  core_option_Option________Slice_u8____tags tag;
+  Eurydice_slice f0;
+}
+core_option_Option________Slice_u8___;
+
+typedef struct core_option_Option______mut___Slice_u8____s
+{
+  core_option_Option________Slice_u8____tags tag;
+  Eurydice_slice f0;
+}
+core_option_Option______mut___Slice_u8___;
+
+extern Eurydice_slice
+core_slice_index__core__ops__index__Index____Slice_u8___core__ops__range__RangeFrom___usize____index__u8__core__ops__range__RangeFrom___usize__(
+  Eurydice_slice x0,
+  size_t x1
+);
+
+extern Eurydice_slice
+core_slice_index__core__ops__index__Index____Slice_u8___core__ops__range__RangeTo___usize____index__u8__core__ops__range__RangeTo___usize__(
+  Eurydice_slice x0,
+  size_t x1
+);
+
+extern Eurydice_slice
+core_slice_index__core__ops__index__IndexMut____Slice_u8___core__ops__range__RangeFrom___usize____index_mut__u8__core__ops__range__RangeFrom___usize__(
+  Eurydice_slice x0,
+  size_t x1
+);
+
+extern Eurydice_slice
+core_slice_index__core__ops__index__IndexMut____Slice_u8___core__ops__range__RangeTo___usize____index_mut__u8__core__ops__range__RangeTo___usize__(
+  Eurydice_slice x0,
+  size_t x1
+);
+
+extern core_option_Option________Slice_u8___
+core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeFrom___usize____Slice_u8____get__u8_(
+  size_t x0,
+  Eurydice_slice x1
+);
+
+extern core_option_Option______mut___Slice_u8___
+core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeFrom___usize____Slice_u8____get_mut__u8_(
+  size_t x0,
+  Eurydice_slice x1
+);
+
+extern uint8_t
+(*core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeFrom___usize____Slice_u8____get_unchecked__u8_(
+  size_t x0,
+  uint8_t (*x1)[]
+))[];
+
+extern uint8_t
+(*core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeFrom___usize____Slice_u8____get_unchecked_mut__u8_(
+  size_t x0,
+  uint8_t (*x1)[]
+))[];
+
+extern Eurydice_slice
+core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeFrom___usize____Slice_u8____index__u8_(
+  size_t x0,
+  Eurydice_slice x1
+);
+
+extern Eurydice_slice
+core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeFrom___usize____Slice_u8____index_mut__u8_(
+  size_t x0,
+  Eurydice_slice x1
+);
+
+extern core_option_Option________Slice_u8___
+core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeTo___usize____Slice_u8____get__u8_(
+  size_t x0,
+  Eurydice_slice x1
+);
+
+extern core_option_Option______mut___Slice_u8___
+core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeTo___usize____Slice_u8____get_mut__u8_(
+  size_t x0,
+  Eurydice_slice x1
+);
+
+extern uint8_t
+(*core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeTo___usize____Slice_u8____get_unchecked__u8_(
+  size_t x0,
+  uint8_t (*x1)[]
+))[];
+
+extern uint8_t
+(*core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeTo___usize____Slice_u8____get_unchecked_mut__u8_(
+  size_t x0,
+  uint8_t (*x1)[]
+))[];
+
+extern Eurydice_slice
+core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeTo___usize____Slice_u8____index__u8_(
+  size_t x0,
+  Eurydice_slice x1
+);
+
+extern Eurydice_slice
+core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeTo___usize____Slice_u8____index_mut__u8_(
+  size_t x0,
+  Eurydice_slice x1
+);
 
 #if defined(__cplusplus)
 }
