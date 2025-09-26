@@ -69,6 +69,8 @@ test/println.llbc: CHARON_EXTRA = \
   --include=core::fmt::Arguments --include=core::fmt::rt::*::new_const \
   --include=core::fmt::rt::Argument
 
+# test-where_clauses_closures: CHARON_EXTRA = \
+# 	--include=core::convert::*
 test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c
 test-nested_arrays: EXTRA = -funroll-loops 0
 test-array: EXTRA = -fcomments

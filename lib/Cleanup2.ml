@@ -491,7 +491,7 @@ let remove_trivial_into =
     method! visit_EApp env e es =
       let e = self#visit_expr_w () e in
       let es = List.map (self#visit_expr env) es in
-      match e.node, es with
+      match (AstOfLlbc.re_polymorphize e).node, es with
       | ( ETApp ({ node = EQualified ([ "core"; "convert"; _ ], "into"); _ }, [], _, [ t1; t2 ]),
           [ e1 ] )
         when t1 = t2 -> e1.node

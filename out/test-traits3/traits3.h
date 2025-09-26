@@ -15,31 +15,23 @@
 extern "C" {
 #endif
 
-typedef struct uint64_t_x2_s
-{
-  uint64_t fst;
-  uint64_t snd;
-}
-uint64_t_x2;
-
-/**
-This function found in impl {traits3::internal::KeccakItem<2usize> for (u64, u64)}
-*/
-uint64_t_x2 traits3_zero_c8(void);
-
-/**
-A monomorphic instance of traits3.keccak
-with types (uint64_t * uint64_t)
-with const generics
-- N= 2
-*/
-void traits3_keccak_cc(void);
+void traits3_keccak___u64__u64___2usize_(void);
 
 void traits3_keccakx2(void);
 
 void traits3_main(void);
 
-typedef uint64_t_x2 traits3_uint64x2_t;
+typedef struct traits3_uint64x2_t_s
+{
+  uint64_t fst;
+  uint64_t snd;
+}
+traits3_uint64x2_t;
+
+/**
+This function found in impl {traits3::internal::KeccakItem::<(u64, u64), 2usize>}
+*/
+traits3_uint64x2_t traits3_zero_ec(void);
 
 #if defined(__cplusplus)
 }

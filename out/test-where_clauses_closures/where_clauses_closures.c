@@ -8,67 +8,22 @@
 #include "where_clauses_closures.h"
 
 /**
-This function found in impl {where_clauses_closures::Ops<1usize> for usize}
+This function found in impl {where_clauses_closures::Ops::<usize, 1usize>}
 */
-size_t where_clauses_closures_zero_38(void)
+size_t where_clauses_closures_zero_77(void)
 {
   return (size_t)0U;
 }
 
-/**
-This function found in impl {where_clauses_closures::Ops<1usize> for usize}
-*/
-size_t where_clauses_closures_of_usize_38(size_t x)
-{
-  return x;
-}
-
-/**
-This function found in impl {core::ops::function::FnMut<(usize), T> for where_clauses_closures::test::closure<T, K>[TraitClause@0, TraitClause@1, TraitClause@2]}
-*/
-/**
-A monomorphic instance of where_clauses_closures.test.call_mut_1a
-with types size_t
-with const generics
-- K= 1
-*/
-size_t where_clauses_closures_test_call_mut_1a_e3(void **_, size_t tupled_args)
-{
-  size_t i = tupled_args;
-  return where_clauses_closures_of_usize_38(i);
-}
-
-/**
-This function found in impl {core::ops::function::FnOnce<(usize), T> for where_clauses_closures::test::closure<T, K>[TraitClause@0, TraitClause@1, TraitClause@2]}
-*/
-/**
-A monomorphic instance of where_clauses_closures.test.call_once_79
-with types size_t
-with const generics
-- K= 1
-*/
-size_t where_clauses_closures_test_call_once_79_e3(size_t _)
-{
-  /* original Rust expression is not an lvalue in C */
-  void *lvalue = (void *)0U;
-  return where_clauses_closures_test_call_mut_1a_e3(&lvalue, _);
-}
-
-/**
-A monomorphic instance of where_clauses_closures.test
-with types size_t
-with const generics
-- K= 1
-*/
-size_t_x2 where_clauses_closures_test_e3(void)
+size_t_x2 where_clauses_closures_test__usize__1usize_(void)
 {
   size_t x[1U];
   {
     /* original Rust expression is not an lvalue in C */
     void *lvalue = (void *)0U;
-    x[0U] = where_clauses_closures_test_call_mut_1a_e3(&lvalue, (size_t)0U);
+    x[0U] = where_clauses_closures_test_call_mut__usize__1usize__8a(&lvalue, (size_t)0U);
   }
-  size_t y = where_clauses_closures_zero_38();
+  size_t y = where_clauses_closures_zero_77();
   return (KRML_CLITERAL(size_t_x2){ .fst = x[0U], .snd = y });
 }
 
@@ -81,10 +36,37 @@ _size_t__x2;
 
 void where_clauses_closures_main(void)
 {
-  size_t_x2 uu____0 = where_clauses_closures_test_e3();
+  size_t_x2 uu____0 = where_clauses_closures_test__usize__1usize_();
   size_t x = uu____0.fst;
   size_t y = uu____0.snd;
   _size_t__x2 uu____1 = { .fst = &x, .snd = &y };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+}
+
+/**
+This function found in impl {where_clauses_closures::Ops::<usize, 1usize>}
+*/
+size_t where_clauses_closures_of_usize_77(size_t x)
+{
+  return x;
+}
+
+/**
+This function found in impl {core::ops::function::FnMut::<where_clauses_closures::test::closure::<usize, 1usize>, (usize)>}
+*/
+size_t where_clauses_closures_test_call_mut__usize__1usize__8a(void **_, size_t tupled_args)
+{
+  size_t i = tupled_args;
+  return where_clauses_closures_of_usize_77(i);
+}
+
+/**
+This function found in impl {core::ops::function::FnOnce::<where_clauses_closures::test::closure::<usize, 1usize>, (usize)>}
+*/
+size_t where_clauses_closures_test_call_once__usize__1usize__c9(size_t _)
+{
+  /* original Rust expression is not an lvalue in C */
+  void *lvalue = (void *)0U;
+  return where_clauses_closures_test_call_mut__usize__1usize__8a(&lvalue, _);
 }
 
