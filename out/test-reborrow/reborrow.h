@@ -15,11 +15,10 @@
 extern "C" {
 #endif
 
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
+extern void
+alloc_boxed__core__ops__drop__Drop___alloc__boxed__Box_u8__core__marker__MetaSized___u8___core__marker__Sized___alloc__alloc__Global_____drop__u8__alloc__alloc__Global_(
+  uint8_t **x0
+);
 
 void reborrow_main(void);
 

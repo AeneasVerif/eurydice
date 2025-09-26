@@ -15,18 +15,18 @@
 extern "C" {
 #endif
 
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
-
 typedef struct Eurydice_slice_uint8_t_4size_t__x2_s
 {
   Eurydice_slice fst;
   Eurydice_slice snd;
 }
 Eurydice_slice_uint8_t_4size_t__x2;
+
+extern Eurydice_slice_uint8_t_4size_t__x2
+core_slice___Slice__Array_u8__4usize____split_at_mut___Array_u8__4usize__(
+  Eurydice_slice x0,
+  size_t x1
+);
 
 void slice_array_f1(void);
 

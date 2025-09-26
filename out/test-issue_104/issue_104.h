@@ -15,21 +15,9 @@
 extern "C" {
 #endif
 
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
+#define ISSUE_104__ISSUE_104__FUN___ISSUE_104__S___VAL (5U)
 
-typedef uint8_t core_panicking_AssertKind;
-
-#define ISSUE_104__ISSUE_104__FUN_FOR_ISSUE_104__S__VAL (5U)
-
-/**
-A monomorphic instance of issue_104.sth
-with types issue_104_S
-with const generics
-
-*/
-uint8_t issue_104_sth_50(void);
+uint8_t issue_104_sth__issue_104__S_(void);
 
 uint8_t issue_104_call(void);
 
