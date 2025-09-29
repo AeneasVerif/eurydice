@@ -1206,7 +1206,7 @@ and lookup_signature env depth signature : lookup_result =
     (String.concat " ++ " (List.map (Charon.PrintTypes.ty_to_string env.format_env) inputs))
     (Charon.PrintTypes.ty_to_string env.format_env output);
   L.log "Calls" "%sType parameters for this signature: %s\n" depth
-    (String.concat " ++ " (List.map Charon.PrintTypes.type_var_to_string type_params));
+    (String.concat " ++ " (List.map Charon.PrintTypes.type_param_to_string type_params));
   let env = push_cg_binders env const_generics in
   let env = push_type_binders env type_params in
 
