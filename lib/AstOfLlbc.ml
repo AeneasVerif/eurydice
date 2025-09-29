@@ -1286,7 +1286,7 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
         K.EQualified lid, lookup_signature env depth signature
       in
 
-      match f.func with
+      match f.kind with
       | FunId (FRegular f) -> lookup_result_of_fun_id f
       | FunId (FBuiltin f) -> fail "unknown builtin function: %s" (C.show_builtin_fun_id f)
       | TraitMethod (trait_ref, method_name, _trait_opaque_signature) -> (
@@ -1318,7 +1318,7 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
                 method_name))
 
 let fn_ptr_is_opaque env (fn_ptr : C.fn_ptr) =
-  match fn_ptr.func with
+  match fn_ptr.kind with
   | FunId (FRegular id) -> ( try (env.get_nth_function id).body = None with Not_found -> false)
   | _ -> false
 
@@ -1328,9 +1328,9 @@ let fn_ptr_is_opaque env (fn_ptr : C.fn_ptr) =
 let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   let {
     C.generics = { types = type_args; const_generics = const_generic_args; trait_refs; _ };
-    func;
+    kind;
     _;
-  } =
+  } : C.fn_ptr =
     fn_ptr
   in
 
@@ -1350,7 +1350,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
      do behave accordingly and provide arguments for both T and U. *)
   let type_args, const_generic_args, trait_refs =
     let generics =
-      match func with
+      match kind with
       | TraitMethod ({ trait_id = TraitImpl { generics; _ }; _ }, _, _) ->
           L.log "Calls" "%s--> this is a trait method" depth;
           generics
@@ -1445,7 +1445,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                       let fun_decl_id = bound_fn.C.binder_value.C.id in
                       let fn_ptr : C.fn_ptr =
                         {
-                          func = TraitMethod (trait_ref, item_name, fun_decl_id);
+                          kind = TraitMethod (trait_ref, item_name, fun_decl_id);
                           generics = Charon.TypesUtils.empty_generic_args;
                         }
                       in
@@ -1980,7 +1980,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
         func =
           FnOpRegular
             {
-              func = FunId (FBuiltin ArrayRepeat);
+              kind = FunId (FBuiltin ArrayRepeat);
               generics = { types = [ ty ]; const_generics = [ c ]; _ };
               _;
             };
@@ -2012,7 +2012,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
         func =
           FnOpRegular
             {
-              func = FunId (FBuiltin (Index { is_array = true; mutability = _; is_range = false }));
+              kind = FunId (FBuiltin (Index { is_array = true; mutability = _; is_range = false }));
               generics = { types = [ ty ]; _ };
               _;
             };
@@ -2112,11 +2112,11 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       let rhs =
         (* TODO: determine whether extra_types is necessary *)
         let extra_types =
-          match fn_ptr.func with
+          match fn_ptr.kind with
           | TraitMethod ({ trait_id = TraitImpl { id = _; generics }; _ }, _, _) -> generics.types
           | _ -> []
         in
-        match fn_ptr.func, fn_ptr.generics.types @ extra_types with
+        match fn_ptr.kind, fn_ptr.generics.types @ extra_types with
         | ( FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })),
             [ TAdt { id = TBuiltin (TArray | TSlice); _ } ] ) ->
             (* Will decay. See comment above maybe_addrof *)
