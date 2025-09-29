@@ -1044,7 +1044,7 @@ let maybe_ts ts t =
    required for trait methods (passed as function pointers). Assumes type
    variables have been suitably bound in the environment.
 *)
-let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.trait_clause list) :
+let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.trait_param list) :
     (var_id * K.typ) list =
   let depth = Option.value ~default:"" depth in
   List.concat_map
@@ -1182,9 +1182,9 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
             trait_decl.C.methods
         (* 1 + 2, recursively, for parent traits *)
         @ List.concat_map
-            (fun (parent_clause : C.trait_clause) ->
+            (fun (parent_clause : C.trait_param) ->
               (* Make the clause valid outside the scope of the trait decl. *)
-              let parent_clause = substitute_visitor#visit_trait_clause subst parent_clause in
+              let parent_clause = substitute_visitor#visit_trait_param subst parent_clause in
               (* Mapping of the methods of the parent clause *)
               let clause_ref : C.trait_ref =
                 {
