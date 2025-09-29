@@ -116,6 +116,7 @@
           # ocaml-lsp's version must match the ocaml version used. Pinning
           # this here to save me a headache.
           pkgs.ocamlPackages.ocaml-lsp
+	  pkgs.rustup
         ];
         buildInputs = [ charon.buildInputs ];
         nativeBuildInputs = [ charon.nativeBuildInputs fstar pkgs.clang ];
