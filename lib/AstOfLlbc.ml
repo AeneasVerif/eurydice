@@ -151,8 +151,10 @@ let lookup_typ env (v1 : C.type_var_id) =
   let i, _ = findi (( = ) v1) env.type_binders in
   i
 
-let push_type_binder env (t : C.type_var) = { env with type_binders = t.index :: env.type_binders }
-let push_type_binders env (ts : C.type_var list) = List.fold_left push_type_binder env ts
+let push_type_binder env (t : C.type_param) =
+  { env with type_binders = t.index :: env.type_binders }
+
+let push_type_binders env (ts : C.type_param list) = List.fold_left push_type_binder env ts
 
 (** Helpers: types *)
 
@@ -1160,7 +1162,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
                       method_params with
                       types =
                         List.map
-                          (fun (var : C.type_var) ->
+                          (fun (var : C.type_param) ->
                             { var with C.index = shift_ty_var var.C.index })
                           method_params.types;
                       const_generics =
