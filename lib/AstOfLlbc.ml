@@ -528,14 +528,14 @@ let lookup_with_original_type env v1 =
 
 (* Const generic binders *)
 
-let push_cg_binder env (t : C.const_generic_var) =
+let push_cg_binder env (t : C.const_generic_param) =
   {
     env with
     cg_binders = (t.index, typ_of_literal_ty env t.ty) :: env.cg_binders;
     binders = (ConstGenericVar t.index, typ_of_literal_ty env t.ty) :: env.binders;
   }
 
-let push_cg_binders env (ts : C.const_generic_var list) = List.fold_left push_cg_binder env ts
+let push_cg_binders env (ts : C.const_generic_param list) = List.fold_left push_cg_binder env ts
 
 let push_binder env (t : C.local) =
   { env with binders = (Var (t.index, t.var_ty), typ_of_ty env t.var_ty) :: env.binders }
@@ -1167,7 +1167,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
                           method_params.types;
                       const_generics =
                         List.map
-                          (fun (var : C.const_generic_var) ->
+                          (fun (var : C.const_generic_param) ->
                             { var with C.index = shift_cg_var var.C.index })
                           method_params.const_generics;
                     }
@@ -1216,7 +1216,8 @@ and lookup_signature env depth signature : lookup_result =
 
   {
     ts = { n = List.length type_params; n_cgs = List.length const_generics };
-    cg_types = List.map (fun (v : C.const_generic_var) -> typ_of_literal_ty env v.ty) const_generics;
+    cg_types =
+      List.map (fun (v : C.const_generic_param) -> typ_of_literal_ty env v.ty) const_generics;
     arg_types =
       (clause_ts
       @ List.map (typ_of_ty env) inputs
@@ -2476,7 +2477,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
 
                 let arg_binders =
                   List.map
-                    (fun (arg : C.const_generic_var) ->
+                    (fun (arg : C.const_generic_param) ->
                       Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty))
                     signature.C.generics.const_generics
                   @ List.map
