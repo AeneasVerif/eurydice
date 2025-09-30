@@ -1983,7 +1983,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
         func =
           FnOpRegular
             {
-              func = FunId (FBuiltin (Index { is_array = true; mutability = _; is_range = false }));
+              kind = FunId (FBuiltin (Index { is_array = true; mutability = _; is_range = false }));
               generics = { types = [ ty ]; const_generics = [ cg ]; _ };
               _;
             };
