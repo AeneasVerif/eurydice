@@ -15,18 +15,7 @@
 extern "C" {
 #endif
 
-extern void
-core_array_from_fn__usize__where_clauses_closures__test__closure___usize__1usize___1usize_(
-  size_t x0[1U]
-);
-
 extern size_t core_clone_impls__core__clone__Clone___usize___clone(size_t *x0);
-
-static inline size_t
-core_convert__core__convert__From___usize__usize___from__usize_(size_t x0);
-
-static inline size_t
-core_convert__core__convert__Into___usize__usize___into__usize__usize_(size_t x0);
 
 /**
 This function found in impl {where_clauses_closures::Ops::<usize, 1usize>}
@@ -53,11 +42,6 @@ size_t where_clauses_closures_of_usize_77(size_t x);
 This function found in impl {core::ops::function::FnMut::<where_clauses_closures::test::closure::<usize, 1usize>, (usize)>}
 */
 size_t where_clauses_closures_test_call_mut__usize__1usize__8a(void **_, size_t tupled_args);
-
-/**
-This function found in impl {core::ops::function::FnOnce::<where_clauses_closures::test::closure::<usize, 1usize>, (usize)>}
-*/
-size_t where_clauses_closures_test_call_once__usize__1usize__c9(size_t _);
 
 #if defined(__cplusplus)
 }

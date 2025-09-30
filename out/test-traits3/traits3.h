@@ -28,11 +28,6 @@ typedef struct traits3_uint64x2_t_s
 }
 traits3_uint64x2_t;
 
-/**
-This function found in impl {traits3::internal::KeccakItem::<(u64, u64), 2usize>}
-*/
-traits3_uint64x2_t traits3_zero_ec(void);
-
 #if defined(__cplusplus)
 }
 #endif

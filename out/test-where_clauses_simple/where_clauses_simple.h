@@ -23,12 +23,6 @@ static inline uint64_t core_convert_num__core__convert__From___u64__u16___from(u
 
 static inline size_t core_convert_num__core__convert__From___usize__u16___from(uint16_t x0);
 
-static inline uint64_t
-core_convert__core__convert__Into___u16__u64___into__u16__u64_(uint16_t x0);
-
-static inline size_t
-core_convert__core__convert__Into___u16__usize___into__u16__usize_(uint16_t x0);
-
 /**
 This function found in impl {where_clauses_simple::Ops::<usize, 3usize>}
 */

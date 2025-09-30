@@ -15,18 +15,10 @@
 extern "C" {
 #endif
 
-#include "Eurydice.h"
-
 #define traits_Foo_Foo1 0
 #define traits_Foo_Foo2 1
 
 typedef uint8_t traits_Foo;
-
-extern Eurydice_slice
-core_array__core__ops__index__Index____Array_traits__Foo__2usize___core__ops__range__Range___usize____index__traits__Foo__core__ops__range__Range___usize___2usize_(
-  traits_Foo *x0,
-  core_ops_range_Range__usize_ x1
-);
 
 #define core_option_Option_None 0
 #define core_option_Option_Some 1
@@ -46,48 +38,6 @@ typedef struct core_option_Option______mut___Slice_traits__Foo____s
   Eurydice_slice f0;
 }
 core_option_Option______mut___Slice_traits__Foo___;
-
-extern Eurydice_slice
-core_slice_index__core__ops__index__Index____Slice_traits__Foo___core__ops__range__Range___usize____index__traits__Foo__core__ops__range__Range___usize__(
-  Eurydice_slice x0,
-  core_ops_range_Range__usize_ x1
-);
-
-extern core_option_Option________Slice_traits__Foo___
-core_slice_index__core__slice__index__SliceIndex___core__ops__range__Range___usize____Slice_traits__Foo____get__traits__Foo_(
-  core_ops_range_Range__usize_ x0,
-  Eurydice_slice x1
-);
-
-extern core_option_Option______mut___Slice_traits__Foo___
-core_slice_index__core__slice__index__SliceIndex___core__ops__range__Range___usize____Slice_traits__Foo____get_mut__traits__Foo_(
-  core_ops_range_Range__usize_ x0,
-  Eurydice_slice x1
-);
-
-extern traits_Foo
-(*core_slice_index__core__slice__index__SliceIndex___core__ops__range__Range___usize____Slice_traits__Foo____get_unchecked__traits__Foo_(
-  core_ops_range_Range__usize_ x0,
-  traits_Foo (*x1)[]
-))[];
-
-extern traits_Foo
-(*core_slice_index__core__slice__index__SliceIndex___core__ops__range__Range___usize____Slice_traits__Foo____get_unchecked_mut__traits__Foo_(
-  core_ops_range_Range__usize_ x0,
-  traits_Foo (*x1)[]
-))[];
-
-extern Eurydice_slice
-core_slice_index__core__slice__index__SliceIndex___core__ops__range__Range___usize____Slice_traits__Foo____index__traits__Foo_(
-  core_ops_range_Range__usize_ x0,
-  Eurydice_slice x1
-);
-
-extern Eurydice_slice
-core_slice_index__core__slice__index__SliceIndex___core__ops__range__Range___usize____Slice_traits__Foo____index_mut__traits__Foo_(
-  core_ops_range_Range__usize_ x0,
-  Eurydice_slice x1
-);
 
 /**
 This function found in impl {traits::ToInt::<traits::Foo>}

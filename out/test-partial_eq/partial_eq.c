@@ -46,14 +46,3 @@ void partial_eq_main(void)
     "panic!");
 }
 
-/**
-This function found in impl {core::fmt::Debug::<partial_eq::Enum>}
-*/
-inline core_result_Result______core__fmt__Error_
-partial_eq_fmt_af(partial_eq_Enum *self, core_fmt_Formatter_____ *f)
-{
-  return
-    core_fmt__core__fmt__Formatter________write_str_____(f,
-      (KRML_CLITERAL(Eurydice_str){ .data = "A", .len = (size_t)1U }));
-}
-

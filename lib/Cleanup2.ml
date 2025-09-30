@@ -1439,6 +1439,68 @@ let drop_unused_type files =
     | _ -> Some d
   ) files
 
+  let drop_unused_monoed_func files =
+  let open Krml in
+  let seen = Hashtbl.create 41 in
+
+  let body_of_lid = Helpers.build_map files (fun map d -> Hashtbl.add map (lid_of_decl d) d) in
+
+  let visitor = object (self)
+    inherit [_] iter as super
+    method! visit_EQualified (before, _) lid =
+      self#discover before lid
+    method! visit_TQualified before lid =
+      self#discover before lid
+    method! visit_TApp before lid ts =
+      self#discover before lid;
+      List.iter (self#visit_typ before) ts
+    method private discover before lid =
+      if not (Hashtbl.mem seen lid) then begin
+        Hashtbl.add seen lid ();
+        if Options.debug "reachability" then
+          KPrint.bprintf "REACHABILITY: %a is used (via: %s) \n" plid lid
+            (String.concat " <- " (List.map (fun lid -> KPrint.bsprintf "%a" plid lid) before));
+
+        if Hashtbl.mem body_of_lid lid then
+          ignore (super#visit_decl (lid :: before) (Hashtbl.find body_of_lid lid));
+      end
+   end in
+  visitor#visit_files [] files;
+  filter_decls (fun d ->
+    match d with
+    | DFunction (_, _, _, _, _, lid, _, _) ->
+      L.log "Cleanup2" "[Drop] visiting function %a \n" plid lid ;
+       if (Hashtbl.mem seen lid) then Some d else
+        begin
+          try let _name, cgs, ts, fn_ptrs = Hashtbl.find AstOfLlbc.lid_full_generic lid in
+          if cgs = [] && ts = [] && fn_ptrs = [] then
+            Some d
+          else
+            begin L.log "Cleanup2" "[Drop] function %a droped as unused monoed func \n" plid lid;
+            None end
+          with Not_found ->  begin L.log "Cleanup2" "[Drop] function %a droped as unmapped func \n" plid lid; None end
+        end
+    | DExternal (_, _, _, _, lid, _, _) ->
+      L.log "Cleanup2" "[Drop] visiting function %a \n" plid lid ;
+       if (Hashtbl.mem seen lid) then Some d else
+        begin
+          try let _name, cgs, ts, fn_ptrs = Hashtbl.find AstOfLlbc.lid_full_generic lid in
+          if cgs = [] && ts = [] && fn_ptrs = [] then
+            Some d
+          else
+            begin 
+              L.log "Cleanup2" "[Drop] function %a droped as unused monoed func \n" plid lid;
+              None  
+            end
+          with Not_found ->  
+            begin 
+              L.log "Cleanup2" "[Drop] function %a droped as unmapped func \n" plid lid; 
+              None 
+            end
+        end
+    | _ -> Some d
+  ) files
+
 
 let remove_empty_structs files =
   let open Krml.Idents in

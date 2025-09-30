@@ -318,6 +318,19 @@ core_convert_num__core__convert__From_u16__for_usize__from(uint16_t x) {
   return x;
 }
 
+// for monoed where-clauses_simple
+static inline uint64_t
+core_convert_num__core__convert__From___u64__u16___from(uint16_t x) {
+  return x;
+}
+
+static inline size_t
+core_convert_num__core__convert__From___usize__u16___from(uint16_t x) {
+  return x;
+}
+
+
+
 static inline uint32_t core_num__u8__count_ones(uint8_t x0) {
 #ifdef _MSC_VER
   return __popcnt(x0);

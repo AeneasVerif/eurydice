@@ -15,10 +15,6 @@
 extern "C" {
 #endif
 
-extern size_t core_slice___Slice_f32___len__f32_(Eurydice_slice x0);
-
-extern size_t core_slice___Slice_f64___len__f64_(Eurydice_slice x0);
-
 void floating_points_main(void);
 
 #if defined(__cplusplus)

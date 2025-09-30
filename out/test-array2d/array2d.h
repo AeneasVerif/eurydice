@@ -15,21 +15,9 @@
 extern "C" {
 #endif
 
-extern bool
-core_array_equality__core__cmp__PartialEq____Array__Array_u32__2usize___4usize____Array__Array_u32__2usize___4usize____eq___Array_u32__2usize____Array_u32__2usize___4usize_(
-  uint32_t (*x0)[2U],
-  uint32_t (*x1)[2U]
-);
-
 bool array2d_f(uint32_t x[4U][2U]);
 
 void array2d_main(void);
-
-extern bool
-core_array_equality__core__cmp__PartialEq____Array_u32__2usize____Array_u32__2usize____eq__u32__u32__2usize_(
-  uint32_t *x0,
-  uint32_t *x1
-);
 
 extern bool core_cmp_impls__core__cmp__PartialEq___u32__u32___eq(uint32_t *x0, uint32_t *x1);
 

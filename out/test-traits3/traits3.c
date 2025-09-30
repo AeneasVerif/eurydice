@@ -22,11 +22,3 @@ void traits3_main(void)
 
 }
 
-/**
-This function found in impl {traits3::internal::KeccakItem::<(u64, u64), 2usize>}
-*/
-traits3_uint64x2_t traits3_zero_ec(void)
-{
-  return (KRML_CLITERAL(traits3_uint64x2_t){ .fst = 0ULL, .snd = 0ULL });
-}
-

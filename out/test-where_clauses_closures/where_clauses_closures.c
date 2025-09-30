@@ -60,13 +60,3 @@ size_t where_clauses_closures_test_call_mut__usize__1usize__8a(void **_, size_t 
   return where_clauses_closures_of_usize_77(i);
 }
 
-/**
-This function found in impl {core::ops::function::FnOnce::<where_clauses_closures::test::closure::<usize, 1usize>, (usize)>}
-*/
-size_t where_clauses_closures_test_call_once__usize__1usize__c9(size_t _)
-{
-  /* original Rust expression is not an lvalue in C */
-  void *lvalue = (void *)0U;
-  return where_clauses_closures_test_call_mut__usize__1usize__8a(&lvalue, _);
-}
-

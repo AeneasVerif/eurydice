@@ -45,12 +45,6 @@ bool partial_eq_eq_aa(partial_eq_Enum *self, partial_eq_Enum *other);
 
 void partial_eq_main(void);
 
-/**
-This function found in impl {core::fmt::Debug::<partial_eq::Enum>}
-*/
-core_result_Result______core__fmt__Error_
-partial_eq_fmt_af(partial_eq_Enum *self, core_fmt_Formatter_____ *f);
-
 #if defined(__cplusplus)
 }
 #endif

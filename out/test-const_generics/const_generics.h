@@ -17,8 +17,6 @@ extern "C" {
 
 static inline void core_num__u32__to_be_bytes(uint32_t x0, uint8_t x1[4U]);
 
-extern void core_slice___Slice_u8___copy_from_slice__u8_(Eurydice_slice x0, Eurydice_slice x1);
-
 void const_generics_serialize__8usize_(Eurydice_slice re, uint8_t ret[8U]);
 
 void const_generics_main(void);
@@ -57,30 +55,6 @@ bool const_generics_g__3usize__4u32_(uint32_t x, size_t y);
 
 void const_generics_main3(void);
 
-extern Eurydice_slice
-core_array__core__ops__index__Index____Array_u8__8usize___core__ops__range__RangeFrom___usize____index__u8__core__ops__range__RangeFrom___usize___8usize_(
-  uint8_t *x0,
-  size_t x1
-);
-
-extern Eurydice_slice
-core_array__core__ops__index__Index____Array_u8__8usize___core__ops__range__RangeTo___usize____index__u8__core__ops__range__RangeTo___usize___8usize_(
-  uint8_t *x0,
-  size_t x1
-);
-
-extern Eurydice_slice
-core_array__core__ops__index__IndexMut____Array_u8__8usize___core__ops__range__RangeFrom___usize____index_mut__u8__core__ops__range__RangeFrom___usize___8usize_(
-  uint8_t *x0,
-  size_t x1
-);
-
-extern Eurydice_slice
-core_array__core__ops__index__IndexMut____Array_u8__8usize___core__ops__range__RangeTo___usize____index_mut__u8__core__ops__range__RangeTo___usize___8usize_(
-  uint8_t *x0,
-  size_t x1
-);
-
 extern uint32_t core_clone_impls__core__clone__Clone___u32___clone(uint32_t *x0);
 
 extern uint64_t core_clone_impls__core__clone__Clone___u64___clone(uint64_t *x0);
@@ -105,102 +79,6 @@ typedef struct core_option_Option______mut___Slice_u8____s
   Eurydice_slice f0;
 }
 core_option_Option______mut___Slice_u8___;
-
-extern Eurydice_slice
-core_slice_index__core__ops__index__Index____Slice_u8___core__ops__range__RangeFrom___usize____index__u8__core__ops__range__RangeFrom___usize__(
-  Eurydice_slice x0,
-  size_t x1
-);
-
-extern Eurydice_slice
-core_slice_index__core__ops__index__Index____Slice_u8___core__ops__range__RangeTo___usize____index__u8__core__ops__range__RangeTo___usize__(
-  Eurydice_slice x0,
-  size_t x1
-);
-
-extern Eurydice_slice
-core_slice_index__core__ops__index__IndexMut____Slice_u8___core__ops__range__RangeFrom___usize____index_mut__u8__core__ops__range__RangeFrom___usize__(
-  Eurydice_slice x0,
-  size_t x1
-);
-
-extern Eurydice_slice
-core_slice_index__core__ops__index__IndexMut____Slice_u8___core__ops__range__RangeTo___usize____index_mut__u8__core__ops__range__RangeTo___usize__(
-  Eurydice_slice x0,
-  size_t x1
-);
-
-extern core_option_Option________Slice_u8___
-core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeFrom___usize____Slice_u8____get__u8_(
-  size_t x0,
-  Eurydice_slice x1
-);
-
-extern core_option_Option______mut___Slice_u8___
-core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeFrom___usize____Slice_u8____get_mut__u8_(
-  size_t x0,
-  Eurydice_slice x1
-);
-
-extern uint8_t
-(*core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeFrom___usize____Slice_u8____get_unchecked__u8_(
-  size_t x0,
-  uint8_t (*x1)[]
-))[];
-
-extern uint8_t
-(*core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeFrom___usize____Slice_u8____get_unchecked_mut__u8_(
-  size_t x0,
-  uint8_t (*x1)[]
-))[];
-
-extern Eurydice_slice
-core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeFrom___usize____Slice_u8____index__u8_(
-  size_t x0,
-  Eurydice_slice x1
-);
-
-extern Eurydice_slice
-core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeFrom___usize____Slice_u8____index_mut__u8_(
-  size_t x0,
-  Eurydice_slice x1
-);
-
-extern core_option_Option________Slice_u8___
-core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeTo___usize____Slice_u8____get__u8_(
-  size_t x0,
-  Eurydice_slice x1
-);
-
-extern core_option_Option______mut___Slice_u8___
-core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeTo___usize____Slice_u8____get_mut__u8_(
-  size_t x0,
-  Eurydice_slice x1
-);
-
-extern uint8_t
-(*core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeTo___usize____Slice_u8____get_unchecked__u8_(
-  size_t x0,
-  uint8_t (*x1)[]
-))[];
-
-extern uint8_t
-(*core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeTo___usize____Slice_u8____get_unchecked_mut__u8_(
-  size_t x0,
-  uint8_t (*x1)[]
-))[];
-
-extern Eurydice_slice
-core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeTo___usize____Slice_u8____index__u8_(
-  size_t x0,
-  Eurydice_slice x1
-);
-
-extern Eurydice_slice
-core_slice_index__core__slice__index__SliceIndex___core__ops__range__RangeTo___usize____Slice_u8____index_mut__u8_(
-  size_t x0,
-  Eurydice_slice x1
-);
 
 #if defined(__cplusplus)
 }

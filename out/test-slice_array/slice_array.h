@@ -22,12 +22,6 @@ typedef struct Eurydice_slice_uint8_t_4size_t__x2_s
 }
 Eurydice_slice_uint8_t_4size_t__x2;
 
-extern Eurydice_slice_uint8_t_4size_t__x2
-core_slice___Slice__Array_u8__4usize____split_at_mut___Array_u8__4usize__(
-  Eurydice_slice x0,
-  size_t x1
-);
-
 void slice_array_f1(void);
 
 void slice_array_f2(void);

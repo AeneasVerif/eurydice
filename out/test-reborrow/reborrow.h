@@ -15,11 +15,6 @@
 extern "C" {
 #endif
 
-extern void
-alloc_boxed__core__ops__drop__Drop___alloc__boxed__Box_u8__core__marker__MetaSized___u8___core__marker__Sized___alloc__alloc__Global_____drop__u8__alloc__alloc__Global_(
-  uint8_t **x0
-);
-
 void reborrow_main(void);
 
 #if defined(__cplusplus)

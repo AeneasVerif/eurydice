@@ -303,6 +303,7 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.95" "%a" pfiles files;
   let files = Eurydice.Cleanup2.bonus_cleanups#visit_files [] files in
   let files = Krml.Inlining.drop_unused files in
+  let files = Eurydice.Cleanup2.drop_unused_monoed_func files in
   (* Macros stemming from globals -- FIXME why is this not Krml.AstToCStar.mk_macros_set? *)
   let files, macros = Eurydice.Cleanup2.build_macros files in
 

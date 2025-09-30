@@ -24,11 +24,6 @@ void trait_generics_from_fn__trait_generics__Foo___10usize__(void);
 
 void trait_generics_main(void);
 
-/**
-This function found in impl {core::ops::drop::Drop::<trait_generics::Foo::<10usize>>}
-*/
-void trait_generics_Foo_drop__10usize__5e(void **_);
-
 #if defined(__cplusplus)
 }
 #endif
