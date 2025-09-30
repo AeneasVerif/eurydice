@@ -151,8 +151,10 @@ let lookup_typ env (v1 : C.type_var_id) =
   let i, _ = findi (( = ) v1) env.type_binders in
   i
 
-let push_type_binder env (t : C.type_var) = { env with type_binders = t.index :: env.type_binders }
-let push_type_binders env (ts : C.type_var list) = List.fold_left push_type_binder env ts
+let push_type_binder env (t : C.type_param) =
+  { env with type_binders = t.index :: env.type_binders }
+
+let push_type_binders env (ts : C.type_param list) = List.fold_left push_type_binder env ts
 
 (** Helpers: types *)
 
@@ -515,14 +517,14 @@ let lookup_with_original_type env v1 =
 
 (* Const generic binders *)
 
-let push_cg_binder env (t : C.const_generic_var) =
+let push_cg_binder env (t : C.const_generic_param) =
   {
     env with
     cg_binders = (t.index, typ_of_literal_ty env t.ty) :: env.cg_binders;
     binders = (ConstGenericVar t.index, typ_of_literal_ty env t.ty) :: env.binders;
   }
 
-let push_cg_binders env (ts : C.const_generic_var list) = List.fold_left push_cg_binder env ts
+let push_cg_binders env (ts : C.const_generic_param list) = List.fold_left push_cg_binder env ts
 
 let push_binder env (t : C.local) =
   { env with binders = (Var (t.index, t.var_ty), typ_of_ty env t.var_ty) :: env.binders }
@@ -1028,7 +1030,7 @@ let maybe_ts ts t =
    required for trait methods (passed as function pointers). Assumes type
    variables have been suitably bound in the environment.
 *)
-let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.trait_clause list) :
+let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.trait_param list) :
     (var_id * K.typ) list =
   let depth = Option.value ~default:"" depth in
   List.concat_map
@@ -1146,12 +1148,12 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
                       method_params with
                       types =
                         List.map
-                          (fun (var : C.type_var) ->
+                          (fun (var : C.type_param) ->
                             { var with C.index = shift_ty_var var.C.index })
                           method_params.types;
                       const_generics =
                         List.map
-                          (fun (var : C.const_generic_var) ->
+                          (fun (var : C.const_generic_param) ->
                             { var with C.index = shift_cg_var var.C.index })
                           method_params.const_generics;
                     }
@@ -1166,9 +1168,9 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
             trait_decl.C.methods
         (* 1 + 2, recursively, for parent traits *)
         @ List.concat_map
-            (fun (parent_clause : C.trait_clause) ->
+            (fun (parent_clause : C.trait_param) ->
               (* Make the clause valid outside the scope of the trait decl. *)
-              let parent_clause = substitute_visitor#visit_trait_clause subst parent_clause in
+              let parent_clause = substitute_visitor#visit_trait_param subst parent_clause in
               (* Mapping of the methods of the parent clause *)
               let clause_ref : C.trait_ref =
                 {
@@ -1190,7 +1192,7 @@ and lookup_signature env depth signature : lookup_result =
     (String.concat " ++ " (List.map (Charon.PrintTypes.ty_to_string env.format_env) inputs))
     (Charon.PrintTypes.ty_to_string env.format_env output);
   L.log "Calls" "%sType parameters for this signature: %s\n" depth
-    (String.concat " ++ " (List.map Charon.PrintTypes.type_var_to_string type_params));
+    (String.concat " ++ " (List.map Charon.PrintTypes.type_param_to_string type_params));
   let env = push_cg_binders env const_generics in
   let env = push_type_binders env type_params in
 
@@ -1200,7 +1202,8 @@ and lookup_signature env depth signature : lookup_result =
 
   {
     ts = { n = List.length type_params; n_cgs = List.length const_generics };
-    cg_types = List.map (fun (v : C.const_generic_var) -> typ_of_literal_ty env v.ty) const_generics;
+    cg_types =
+      List.map (fun (v : C.const_generic_param) -> typ_of_literal_ty env v.ty) const_generics;
     arg_types =
       (clause_ts
       @ List.map (typ_of_ty env) inputs
@@ -1272,7 +1275,7 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
         K.EQualified lid, lookup_signature env depth signature
       in
 
-      match f.func with
+      match f.kind with
       | FunId (FRegular f) -> lookup_result_of_fun_id f
       | FunId (FBuiltin f) -> fail "unknown builtin function: %s" (C.show_builtin_fun_id f)
       | TraitMethod (trait_ref, method_name, _trait_opaque_signature) -> (
@@ -1304,7 +1307,7 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
                 method_name))
 
 let fn_ptr_is_opaque env (fn_ptr : C.fn_ptr) =
-  match fn_ptr.func with
+  match fn_ptr.kind with
   | FunId (FRegular id) -> ( try (env.get_nth_function id).body = None with Not_found -> false)
   | _ -> false
 
@@ -1314,9 +1317,9 @@ let fn_ptr_is_opaque env (fn_ptr : C.fn_ptr) =
 let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   let {
     C.generics = { types = type_args; const_generics = const_generic_args; trait_refs; _ };
-    func;
+    kind;
     _;
-  } =
+  } : C.fn_ptr =
     fn_ptr
   in
 
@@ -1336,7 +1339,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
      do behave accordingly and provide arguments for both T and U. *)
   let type_args, const_generic_args, trait_refs =
     let generics =
-      match func with
+      match kind with
       | TraitMethod ({ trait_id = TraitImpl { generics; _ }; _ }, _, _) ->
           L.log "Calls" "%s--> this is a trait method" depth;
           generics
@@ -1431,7 +1434,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                       let fun_decl_id = bound_fn.C.binder_value.C.id in
                       let fn_ptr : C.fn_ptr =
                         {
-                          func = TraitMethod (trait_ref, item_name, fun_decl_id);
+                          kind = TraitMethod (trait_ref, item_name, fun_decl_id);
                           generics = Charon.TypesUtils.empty_generic_args;
                         }
                       in
@@ -1577,12 +1580,12 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
       expression_of_place env p
   | Copy p -> expression_of_place env p
   | Move p -> expression_of_place env p
-  | Constant { value = CLiteral l; _ } -> expression_of_literal env l
-  | Constant { value = CVar var; _ } -> expression_of_cg_var_id env (C.expect_free_var var)
-  | Constant { value = CFnPtr fn_ptr; _ } ->
+  | Constant { kind = CLiteral l; _ } -> expression_of_literal env l
+  | Constant { kind = CVar var; _ } -> expression_of_cg_var_id env (C.expect_free_var var)
+  | Constant { kind = CFnPtr fn_ptr; _ } ->
       let e, _, _ = expression_of_fn_ptr env fn_ptr in
       e
-  | Constant { value = CTraitConst (({ C.trait_id; _ } as trait_ref), name); _ } -> begin
+  | Constant { kind = CTraitConst (({ C.trait_id; _ } as trait_ref), name); _ } -> begin
       (* Logic similar to lookup_fun *)
       match trait_id with
       | Clause _ | ParentClause _ ->
@@ -1945,7 +1948,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
         func =
           FnOpRegular
             {
-              func = FunId (FBuiltin ArrayRepeat);
+              kind = FunId (FBuiltin ArrayRepeat);
               generics = { types = [ ty ]; const_generics = [ c ]; _ };
               _;
             };
@@ -2092,11 +2095,11 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       let rhs =
         (* TODO: determine whether extra_types is necessary *)
         let extra_types =
-          match fn_ptr.func with
+          match fn_ptr.kind with
           | TraitMethod ({ trait_id = TraitImpl { id = _; generics }; _ }, _, _) -> generics.types
           | _ -> []
         in
-        match fn_ptr.func, fn_ptr.generics.types @ extra_types with
+        match fn_ptr.kind, fn_ptr.generics.types @ extra_types with
         | ( FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })),
             [ TAdt { id = TBuiltin (TSlice); _ } ] ) -> 
             (* Will decay. See comment above maybe_addrof *)
@@ -2125,7 +2128,12 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       let t = lesser e1.typ e2.typ in
       K.(with_type t (EIfThenElse (expression_of_operand env op, e1, e2)))
   | Switch (SwitchInt (scrutinee, int_ty, branches, default)) ->
-      if int_ty = Signed I128 || int_ty = Unsigned U128 then
+      let branches =
+        List.map
+          (fun (litl, block) -> List.map Charon.ValuesUtils.literal_as_scalar litl, block)
+          branches
+      in
+      if int_ty = TInt I128 || int_ty = TUInt U128 then
         expression_of_switch_128bits env ret_var scrutinee branches default
       else
         let scrutinee = expression_of_operand env scrutinee in
@@ -2196,7 +2204,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
 
 and expression_of_statement (env : env) (ret_var : C.local_id) (s : C.statement) : K.expr =
   {
-    (expression_of_statement_kind env ret_var s.content) with
+    (expression_of_statement_kind env ret_var s.kind) with
     meta =
       (if !Options.comments then
          List.map (fun x -> K.CommentBefore x) s.comments_before
@@ -2252,7 +2260,7 @@ let check_if_dst (env : env) (id : C.any_decl_id) : env =
         let sized_pattern = Charon.NameMatcher.parse_pattern "core::marker::Sized" in
         let matches = Charon.NameMatcher.match_name env.name_ctx RustNames.config sized_pattern in
         List.filter
-          (fun (tc : C.trait_clause) ->
+          (fun (tc : C.trait_param) ->
             let trait_decl = env.get_nth_trait_decl tc.trait.binder_value.id in
             matches trait_decl.item_meta.name)
           decl.generics.trait_clauses
@@ -2316,7 +2324,8 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
           let has_custom_constants =
             let rec has_custom_constants i = function
               | { C.discriminant; _ } :: bs ->
-                  Charon.Scalars.get_val discriminant <> Z.of_int i
+                  Charon.Scalars.get_val (Charon.ValuesUtils.literal_as_scalar discriminant)
+                  <> Z.of_int i
                   || has_custom_constants (i + 1) bs
               | _ -> false
             in
@@ -2328,7 +2337,8 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               (fun ({ C.variant_name; discriminant; _ } : C.variant) ->
                 let v =
                   if has_custom_constants then
-                    Some (Charon.Scalars.get_val discriminant)
+                    Some
+                      (Charon.Scalars.get_val (Charon.ValuesUtils.literal_as_scalar discriminant))
                   else
                     None
                 in
@@ -2454,7 +2464,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
 
                 let arg_binders =
                   List.map
-                    (fun (arg : C.const_generic_var) ->
+                    (fun (arg : C.const_generic_param) ->
                       Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty))
                     signature.C.generics.const_generics
                   @ List.map
