@@ -2280,7 +2280,7 @@ let check_if_dst (env : env) (id : C.any_decl_id) : env =
         let sized_pattern = Charon.NameMatcher.parse_pattern "core::marker::Sized" in
         let matches = Charon.NameMatcher.match_name env.name_ctx RustNames.config sized_pattern in
         List.filter
-          (fun (tc : C.trait_clause) ->
+          (fun (tc : C.trait_param) ->
             let trait_decl = env.get_nth_trait_decl tc.trait.binder_value.id in
             matches trait_decl.item_meta.name)
           decl.generics.trait_clauses
