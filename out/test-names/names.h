@@ -15,34 +15,6 @@
 extern "C" {
 #endif
 
-#define names_Foo 0
-#define names_Bar 1
-
-typedef uint8_t names_Baz_tags;
-
-typedef struct names_Baz_s
-{
-  names_Baz_tags tag;
-  union {
-    struct
-    {
-      uint32_t f0;
-      uint32_t f1;
-    }
-    case_Foo;
-    uint32_t case_Bar;
-  }
-  val;
-}
-names_Baz;
-
-typedef struct names_Foo0_s
-{
-  uint32_t x;
-  uint32_t y;
-}
-names_Foo0;
-
 void names_main(void);
 
 #if defined(__cplusplus)

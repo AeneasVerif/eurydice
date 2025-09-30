@@ -15,7 +15,9 @@
 extern "C" {
 #endif
 
-extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(size_t *x0);
+#include "Eurydice.h"
+
+extern size_t core_clone_impls__core__clone__Clone___usize___clone(size_t *x0);
 
 #define core_cmp_Ordering_Less -1
 #define core_cmp_Ordering_Equal 0
@@ -23,68 +25,60 @@ extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(size_t *x0);
 
 typedef int8_t core_cmp_Ordering;
 
-extern bool core_cmp_impls__core__cmp__PartialEq_usize__for_usize__eq(size_t *x0, size_t *x1);
+extern bool core_cmp_impls__core__cmp__PartialEq___usize__usize___eq(size_t *x0, size_t *x1);
 
-#define core_option_None 0
-#define core_option_Some 1
+#define core_option_Option_None 0
+#define core_option_Option_Some 1
 
-typedef uint8_t core_option_Option_77_tags;
+typedef uint8_t core_option_Option__core__cmp__Ordering__tags;
 
-/**
-A monomorphic instance of core.option.Option
-with types core_cmp_Ordering
-
-*/
-typedef struct core_option_Option_77_s
+typedef struct core_option_Option__core__cmp__Ordering__s
 {
-  core_option_Option_77_tags tag;
+  core_option_Option__core__cmp__Ordering__tags tag;
   core_cmp_Ordering f0;
 }
-core_option_Option_77;
+core_option_Option__core__cmp__Ordering_;
 
-extern core_option_Option_77
-core_cmp_impls__core__cmp__PartialOrd_usize__for_usize__partial_cmp(size_t *x0, size_t *x1);
+extern core_option_Option__core__cmp__Ordering_
+core_cmp_impls__core__cmp__PartialOrd___usize__usize___partial_cmp(size_t *x0, size_t *x1);
 
-/**
-A monomorphic instance of core.option.Option
-with types size_t
-
-*/
-typedef struct core_option_Option_08_s
+typedef struct core_option_Option__usize__s
 {
-  core_option_Option_77_tags tag;
+  core_option_Option__core__cmp__Ordering__tags tag;
   size_t f0;
 }
-core_option_Option_08;
+core_option_Option__usize_;
 
-extern core_option_Option_08
-core_iter_range__core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
+extern core_option_Option__usize_
+core_iter_range__core__iter__range__Step___usize___backward_checked(size_t x0, size_t x1);
 
-extern core_option_Option_08
-core_iter_range__core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
+extern core_option_Option__usize_
+core_iter_range__core__iter__range__Step___usize___forward_checked(size_t x0, size_t x1);
 
 /**
 A monomorphic instance of K.
-with types size_t, core_option_Option size_t
+with types size_t, core_option_Option_<usize>
 
 */
-typedef struct tuple_04_s
+typedef struct tuple_f6_s
 {
   size_t fst;
-  core_option_Option_08 snd;
+  core_option_Option__usize_ snd;
 }
-tuple_04;
+tuple_f6;
 
-extern tuple_04
-core_iter_range__core__iter__range__Step_for_usize__steps_between(size_t *x0, size_t *x1);
+extern tuple_f6
+core_iter_range__core__iter__range__Step___usize___steps_between(size_t *x0, size_t *x1);
 
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
+extern core_option_Option__usize_
+core_iter_range__core__iter__traits__iterator__Iterator___core__ops__range__Range___usize____next__usize_(
+  core_ops_range_Range__usize_ *x0
+);
 
-typedef uint8_t core_panicking_AssertKind;
-
-typedef uint32_t nested_arrays_Key[8U];
+extern core_ops_range_Range__usize_
+core_iter_traits_collect__core__iter__traits__collect__IntoIterator___core__ops__range__Range___usize____into_iter__core__ops__range__Range___usize__(
+  core_ops_range_Range__usize_ x0
+);
 
 extern const uint32_t nested_arrays_ZERO[8U];
 

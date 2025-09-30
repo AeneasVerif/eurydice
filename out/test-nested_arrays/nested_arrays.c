@@ -7,6 +7,8 @@
 
 #include "nested_arrays.h"
 
+#include "Eurydice.h"
+
 const uint32_t nested_arrays_ZERO[8U] = { 0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U };
 
 typedef struct _uint32_t__x2_s
@@ -28,19 +30,67 @@ void nested_arrays_main(void)
     }
     memcpy(keys[i0], repeat_expression, (size_t)3U * sizeof (uint32_t [8U]));
   }
-  for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++)
+  core_ops_range_Range__usize_
+  iter0 =
+    core_iter_traits_collect__core__iter__traits__collect__IntoIterator___core__ops__range__Range___usize____into_iter__core__ops__range__Range___usize__((
+        KRML_CLITERAL(core_ops_range_Range__usize_){ .start = (size_t)0U, .end = (size_t)3U }
+      ));
+  while (true)
   {
-    size_t i1 = i0;
-    for (size_t i2 = (size_t)0U; i2 < (size_t)3U; i2++)
+    core_option_Option__usize_
+    uu____0 =
+      core_iter_range__core__iter__traits__iterator__Iterator___core__ops__range__Range___usize____next__usize_(&iter0);
+    if (uu____0.tag == core_option_Option_None)
     {
-      size_t j = i2;
-      for (size_t i = (size_t)0U; i < (size_t)8U; i++)
+      break;
+    }
+    else
+    {
+      size_t i = uu____0.f0;
+      core_ops_range_Range__usize_
+      iter1 =
+        core_iter_traits_collect__core__iter__traits__collect__IntoIterator___core__ops__range__Range___usize____into_iter__core__ops__range__Range___usize__((
+            KRML_CLITERAL(core_ops_range_Range__usize_){ .start = (size_t)0U, .end = (size_t)3U }
+          ));
+      while (true)
       {
-        size_t k = i;
-        uint32_t actual = keys[i1][j][k];
-        uint32_t expected = (uint32_t)k;
-        _uint32_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
-        EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+        core_option_Option__usize_
+        uu____1 =
+          core_iter_range__core__iter__traits__iterator__Iterator___core__ops__range__Range___usize____next__usize_(&iter1);
+        if (uu____1.tag == core_option_Option_None)
+        {
+          break;
+        }
+        else
+        {
+          size_t j = uu____1.f0;
+          core_ops_range_Range__usize_
+          iter =
+            core_iter_traits_collect__core__iter__traits__collect__IntoIterator___core__ops__range__Range___usize____into_iter__core__ops__range__Range___usize__((
+                KRML_CLITERAL(core_ops_range_Range__usize_){
+                  .start = (size_t)0U,
+                  .end = (size_t)8U
+                }
+              ));
+          while (true)
+          {
+            core_option_Option__usize_
+            uu____2 =
+              core_iter_range__core__iter__traits__iterator__Iterator___core__ops__range__Range___usize____next__usize_(&iter);
+            if (uu____2.tag == core_option_Option_None)
+            {
+              break;
+            }
+            else
+            {
+              size_t k = uu____2.f0;
+              uint32_t actual = keys[i][j][k];
+              uint32_t expected = (uint32_t)k;
+              _uint32_t__x2 uu____3 = { .fst = &actual, .snd = &expected };
+              EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
+            }
+          }
+        }
       }
     }
   }

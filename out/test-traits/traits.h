@@ -15,22 +15,39 @@
 extern "C" {
 #endif
 
-#include "Eurydice.h"
-
 #define traits_Foo_Foo1 0
 #define traits_Foo_Foo2 1
 
 typedef uint8_t traits_Foo;
 
-/**
-This function found in impl {traits::ToInt for traits::Foo}
-*/
-uint32_t traits_to_int_ac(traits_Foo *self);
+#define core_option_Option_None 0
+#define core_option_Option_Some 1
+
+typedef uint8_t core_option_Option________Slice_traits__Foo____tags;
+
+typedef struct core_option_Option________Slice_traits__Foo____s
+{
+  core_option_Option________Slice_traits__Foo____tags tag;
+  Eurydice_slice f0;
+}
+core_option_Option________Slice_traits__Foo___;
+
+typedef struct core_option_Option______mut___Slice_traits__Foo____s
+{
+  core_option_Option________Slice_traits__Foo____tags tag;
+  Eurydice_slice f0;
+}
+core_option_Option______mut___Slice_traits__Foo___;
 
 /**
-This function found in impl {traits::ToInt for &0 (@Slice<traits::Foo>)}
+This function found in impl {traits::ToInt::<traits::Foo>}
 */
-uint32_t traits_to_int_88(Eurydice_slice *self);
+uint32_t traits_to_int_32(traits_Foo *self);
+
+/**
+This function found in impl {traits::ToInt::<&'_ (@Slice<traits::Foo>)>}
+*/
+uint32_t traits_to_int______95(Eurydice_slice *self);
 
 void traits_main(void);
 

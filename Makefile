@@ -50,7 +50,7 @@ clean-and-test:
 .PRECIOUS: %.llbc
 %.llbc: %.rs .charon_version
 	# --mir elaborated --add-drop-bounds 
-	$(CHARON) rustc --preset=eurydice --dest-file "$@" $(CHARON_EXTRA) -- $<
+	$(CHARON) rustc --monomorphize --preset=eurydice --dest-file "$@" $(CHARON_EXTRA) -- $<
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
@@ -63,12 +63,14 @@ test/issue_105.llbc: CHARON_EXTRA = \
   --include=core::cmp::* \
   --include=core::convert::*
 
-test/array2d.llbc: CHARON_EXTRA = --include=core::array::equality::*
+# test/array2d.llbc: CHARON_EXTRA = --include=core::array::equality::*
 
 test/println.llbc: CHARON_EXTRA = \
   --include=core::fmt::Arguments --include=core::fmt::rt::*::new_const \
   --include=core::fmt::rt::Argument
 
+# test-where_clauses_closures: CHARON_EXTRA = \
+# 	--include=core::convert::*
 test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c
 test-nested_arrays: EXTRA = -funroll-loops 0
 test-array: EXTRA = -fcomments

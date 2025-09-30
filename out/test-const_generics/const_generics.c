@@ -9,33 +9,28 @@
 
 #include "Eurydice.h"
 
-/**
-A monomorphic instance of const_generics.serialize
-with const generics
-- OUT_LEN= 8
-*/
-void const_generics_serialize_3b(Eurydice_slice re, uint8_t ret[8U])
+void const_generics_serialize__8usize_(Eurydice_slice re, uint8_t ret[8U])
 {
   uint8_t out[8U] = { 0U };
   Eurydice_slice
   uu____0 =
-    Eurydice_array_to_subslice_to((size_t)8U,
+    Eurydice_array_to_subslice_to_mono((size_t)8U,
       out,
       (size_t)4U,
       uint8_t,
       size_t,
-      uint8_t []);
+      Eurydice_slice);
   uint8_t ret0[4U];
   core_num__u32__to_be_bytes(Eurydice_slice_index(re, (size_t)0U, uint32_t, uint32_t *), ret0);
   Eurydice_slice_copy(uu____0, Eurydice_array_to_slice((size_t)4U, ret0, uint8_t), uint8_t);
   Eurydice_slice
   uu____1 =
-    Eurydice_array_to_subslice_from((size_t)8U,
+    Eurydice_array_to_subslice_from_mono((size_t)8U,
       out,
       (size_t)4U,
       uint8_t,
       size_t,
-      uint8_t []);
+      Eurydice_slice);
   uint8_t ret1[4U];
   core_num__u32__to_be_bytes(Eurydice_slice_index(re, (size_t)1U, uint32_t, uint32_t *), ret1);
   Eurydice_slice_copy(uu____1, Eurydice_array_to_slice((size_t)4U, ret1, uint8_t), uint8_t);
@@ -46,19 +41,13 @@ void const_generics_main(void)
 {
   uint8_t s[8U];
   uint32_t buf[2U] = { 1U, 2U };
-  const_generics_serialize_3b(Eurydice_array_to_slice((size_t)2U, buf, uint32_t), s);
+  const_generics_serialize__8usize_(Eurydice_array_to_slice((size_t)2U, buf, uint32_t), s);
   EURYDICE_ASSERT(s[3U] == 1U, "panic!");
   EURYDICE_ASSERT(s[7U] == 2U, "panic!");
 }
 
-/**
-A monomorphic instance of const_generics.mk_pairs
-with types uint32_t, uint64_t
-with const generics
-- N= 2
-- M= 4
-*/
-const_generics_Pair_4e const_generics_mk_pairs_e0(uint32_t x, uint64_t y)
+const_generics_Pair__u32__u32__2usize__2usize_
+const_generics_mk_pairs__u32__u64__2usize__4usize_(uint32_t x, uint64_t y)
 {
   uint32_t a1[2U];
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, a1[i] = x;);
@@ -70,7 +59,7 @@ const_generics_Pair_4e const_generics_mk_pairs_e0(uint32_t x, uint64_t y)
   /* Passing arrays by value in Rust generates a copy in C */
   uint64_t copy_of_a20[4U];
   memcpy(copy_of_a20, a2, (size_t)4U * sizeof (uint64_t));
-  const_generics_Pair_a5 p1;
+  const_generics_Pair__u32__u64__2usize__4usize_ p1;
   memcpy(p1.left, copy_of_a10, (size_t)2U * sizeof (uint32_t));
   memcpy(p1.right, copy_of_a20, (size_t)4U * sizeof (uint64_t));
   /* Passing arrays by value in Rust generates a copy in C */
@@ -79,14 +68,14 @@ const_generics_Pair_4e const_generics_mk_pairs_e0(uint32_t x, uint64_t y)
   /* Passing arrays by value in Rust generates a copy in C */
   uint32_t copy_of_a1[2U];
   memcpy(copy_of_a1, a1, (size_t)2U * sizeof (uint32_t));
-  const_generics_Pair_87 p2;
+  const_generics_Pair__u64__u32__4usize__2usize_ p2;
   memcpy(p2.left, copy_of_a2, (size_t)4U * sizeof (uint64_t));
   memcpy(p2.right, copy_of_a1, (size_t)2U * sizeof (uint32_t));
   uint32_t uu____4[2U];
   memcpy(uu____4, p1.left, (size_t)2U * sizeof (uint32_t));
   uint32_t uu____5[2U];
   memcpy(uu____5, p2.right, (size_t)2U * sizeof (uint32_t));
-  const_generics_Pair_4e lit;
+  const_generics_Pair__u32__u32__2usize__2usize_ lit;
   memcpy(lit.left, uu____4, (size_t)2U * sizeof (uint32_t));
   memcpy(lit.right, uu____5, (size_t)2U * sizeof (uint32_t));
   return lit;
@@ -101,7 +90,8 @@ _uint32_t__x2;
 
 void const_generics_main1(void)
 {
-  const_generics_Pair_4e uu____0 = const_generics_mk_pairs_e0(0U, 0ULL);
+  const_generics_Pair__u32__u32__2usize__2usize_
+  uu____0 = const_generics_mk_pairs__u32__u64__2usize__4usize_(0U, 0ULL);
   uint32_t left[2U];
   memcpy(left, uu____0.left, (size_t)2U * sizeof (uint32_t));
   uint32_t right[2U];
@@ -117,13 +107,7 @@ void const_generics_main1(void)
   EURYDICE_ASSERT(uu____4.fst[0U] == uu____4.snd[0U], "panic!");
 }
 
-/**
-A monomorphic instance of const_generics.f
-with const generics
-- FOO= 1
-- BAR= 2
-*/
-bool const_generics_f_e5(uint32_t x, size_t y)
+bool const_generics_f__1usize__2u32_(uint32_t x, size_t y)
 {
   uint32_t arr1[1U];
   {
@@ -145,13 +129,7 @@ bool const_generics_f_e5(uint32_t x, size_t y)
   return uu____0;
 }
 
-/**
-A monomorphic instance of const_generics.f
-with const generics
-- FOO= 3
-- BAR= 4
-*/
-bool const_generics_f_70(uint32_t x, size_t y)
+bool const_generics_f__3usize__4u32_(uint32_t x, size_t y)
 {
   uint32_t arr1[3U];
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, arr1[i] = x;);
@@ -169,16 +147,10 @@ bool const_generics_f_70(uint32_t x, size_t y)
   return uu____0;
 }
 
-/**
-A monomorphic instance of const_generics.g
-with const generics
-- BAR= 3
-- FOO= 4
-*/
-bool const_generics_g_70(uint32_t x, size_t y)
+bool const_generics_g__3usize__4u32_(uint32_t x, size_t y)
 {
   bool uu____0;
-  if (const_generics_f_70(x, y))
+  if (const_generics_f__3usize__4u32_(x, y))
   {
     if (x == 4U)
     {
@@ -206,9 +178,9 @@ _bool__x2;
 void const_generics_main3(void)
 {
   bool x;
-  if (const_generics_f_e5(0U, (size_t)0U))
+  if (const_generics_f__1usize__2u32_(0U, (size_t)0U))
   {
-    x = const_generics_g_70(0U, (size_t)0U);
+    x = const_generics_g__3usize__4u32_(0U, (size_t)0U);
   }
   else
   {

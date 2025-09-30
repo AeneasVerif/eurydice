@@ -15,45 +15,12 @@
 extern "C" {
 #endif
 
-extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(size_t *x0);
-
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
+extern size_t core_clone_impls__core__clone__Clone___usize___clone(size_t *x0);
 
 /**
-This function found in impl {where_clauses_closures::Ops<1usize> for usize}
+This function found in impl {where_clauses_closures::Ops::<usize, 1usize>}
 */
-size_t where_clauses_closures_zero_38(void);
-
-/**
-This function found in impl {where_clauses_closures::Ops<1usize> for usize}
-*/
-size_t where_clauses_closures_of_usize_38(size_t x);
-
-/**
-This function found in impl {core::ops::function::FnMut<(usize), T> for where_clauses_closures::test::closure<T, K>[TraitClause@0, TraitClause@1, TraitClause@2]}
-*/
-/**
-A monomorphic instance of where_clauses_closures.test.call_mut_1a
-with types size_t
-with const generics
-- K= 1
-*/
-size_t where_clauses_closures_test_call_mut_1a_e3(void **_, size_t tupled_args);
-
-/**
-This function found in impl {core::ops::function::FnOnce<(usize), T> for where_clauses_closures::test::closure<T, K>[TraitClause@0, TraitClause@1, TraitClause@2]}
-*/
-/**
-A monomorphic instance of where_clauses_closures.test.call_once_79
-with types size_t
-with const generics
-- K= 1
-*/
-size_t where_clauses_closures_test_call_once_79_e3(size_t _);
+size_t where_clauses_closures_zero_77(void);
 
 typedef struct size_t_x2_s
 {
@@ -62,15 +29,19 @@ typedef struct size_t_x2_s
 }
 size_t_x2;
 
-/**
-A monomorphic instance of where_clauses_closures.test
-with types size_t
-with const generics
-- K= 1
-*/
-size_t_x2 where_clauses_closures_test_e3(void);
+size_t_x2 where_clauses_closures_test__usize__1usize_(void);
 
 void where_clauses_closures_main(void);
+
+/**
+This function found in impl {where_clauses_closures::Ops::<usize, 1usize>}
+*/
+size_t where_clauses_closures_of_usize_77(size_t x);
+
+/**
+This function found in impl {core::ops::function::FnMut::<where_clauses_closures::test::closure::<usize, 1usize>, (usize)>}
+*/
+size_t where_clauses_closures_test_call_mut__usize__1usize__8a(void **_, size_t tupled_args);
 
 #if defined(__cplusplus)
 }
