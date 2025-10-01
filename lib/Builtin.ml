@@ -21,14 +21,11 @@ let mk_option (t : K.typ) : K.typ = K.TApp (option, [ t ])
     struct <const C:usize, T> { data : [T;C]; } *)
 
 let arr : K.lident = [ "Eurydice" ], "arr"
-let mk_arr (t : K.typ) (cg: K.cg) : K.typ = K.TCgApp (K.TApp (arr, [ t ]), cg)
-
-let decl_of_arr =
-  K.DType (arr , [], 1, 1, Flat [(Some "data", (K.TCgArray (TBound 0,0), true))])
-  (* []  : no flags
+let mk_arr (t : K.typ) (cg : K.cg) : K.typ = K.TCgApp (K.TApp (arr, [ t ]), cg)
+let decl_of_arr = K.DType (arr, [], 1, 1, Flat [ Some "data", (K.TCgArray (TBound 0, 0), true) ])
+(* []  : no flags
      1  : we have one const generic C
      1  : we have one type argument T *)
-
 
 let array_copy = [ "Eurydice" ], "array_copy"
 
@@ -149,7 +146,8 @@ let get_128_op (kind, op) : K.expr = expr_of_builtin @@ Op128Map.find (kind, op)
 let array_to_slice =
   {
     name = [ "Eurydice" ], "array_to_slice";
-    typ = Krml.Helpers.fold_arrow [ TBuf (mk_arr (TBound 0) (CgVar 0), false) ] (mk_slice (TBound 0));
+    typ =
+      Krml.Helpers.fold_arrow [ TBuf (mk_arr (TBound 0) (CgVar 0), false) ] (mk_slice (TBound 0));
     n_type_args = 1;
     cg_args = [ TInt SizeT ];
     arg_names = [ "a" ];
@@ -231,7 +229,10 @@ let array_into_iter =
 let array_eq =
   {
     name = [ "Eurydice" ], "array_eq";
-    typ = Krml.Helpers.fold_arrow [ TBuf (mk_arr (TBound 0) (CgVar 0), false); TBuf (mk_arr (TBound 0) (CgVar 0), false) ] TBool;
+    typ =
+      Krml.Helpers.fold_arrow
+        [ TBuf (mk_arr (TBound 0) (CgVar 0), false); TBuf (mk_arr (TBound 0) (CgVar 0), false) ]
+        TBool;
     n_type_args = 1;
     cg_args = [ TInt SizeT ];
     arg_names = [ "arr"; "arr2" ];
@@ -240,7 +241,10 @@ let array_eq =
 let array_eq_slice =
   {
     name = [ "Eurydice" ], "array_eq_slice";
-    typ = Krml.Helpers.fold_arrow [ TBuf (mk_arr (TBound 0) (CgVar 0), false); TBuf (mk_slice (TBound 0), false) ] TBool;
+    typ =
+      Krml.Helpers.fold_arrow
+        [ TBuf (mk_arr (TBound 0) (CgVar 0), false); TBuf (mk_slice (TBound 0), false) ]
+        TBool;
     n_type_args = 1;
     cg_args = [ TInt SizeT ];
     arg_names = [ "arr"; "slice" ];

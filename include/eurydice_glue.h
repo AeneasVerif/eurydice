@@ -161,7 +161,7 @@ typedef struct {
   KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
 
 #define core_array__core__clone__Clone_for__Array_T__N___clone(                \
-    len, src, elem_type, _ret_t)                                          \
+    len, src, elem_type, _ret_t)                                               \
   (*(src))
 #define TryFromSliceError uint8_t
 #define core_array_TryFromSliceError uint8_t
@@ -265,13 +265,16 @@ typedef char Eurydice_derefed_slice[];
 extern "C" {
 #endif
 
+typedef struct Eurydice_arr_8b_s {
+  uint8_t data[2];
+} Eurydice_arr_8b;
+typedef struct Eurydice_arr_e9_s {
+  uint8_t data[4];
+} Eurydice_arr_e9;
+typedef struct Eurydice_arr_c4_s {
+  uint8_t data[8];
+} Eurydice_arr_c4;
 
-typedef struct Eurydice_arr_8b_s { uint8_t data[2]; } Eurydice_arr_8b;
-typedef struct Eurydice_arr_e9_s { uint8_t data[4]; } Eurydice_arr_e9;
-typedef struct Eurydice_arr_c4_s { uint8_t data[8]; } Eurydice_arr_c4;
-  
-
-  
 static inline uint16_t core_num__u16__from_le_bytes(Eurydice_arr_8b buf) {
   return load16_le(buf.data);
 }
@@ -286,7 +289,7 @@ static inline Eurydice_arr_e9 core_num__u32__to_be_bytes(uint32_t src) {
 
 static inline Eurydice_arr_e9 core_num__u32__to_le_bytes(uint32_t src) {
   Eurydice_arr_e9 a;
-  store32_le(a.data,src);
+  store32_le(a.data, src);
   return a;
 }
 
@@ -568,8 +571,7 @@ static inline char *malloc_and_init(size_t sz, char *init) {
   ((t_dst)(malloc_and_init(sizeof(t), (char *)(&init))))
 
 // Initializer for array of size zero
-#define Eurydice_empty_array(dummy, t, t_dst)                                  \
-  ((t_dst) { .data = { } })
+#define Eurydice_empty_array(dummy, t, t_dst) ((t_dst){.data = {}})
 
 #define Eurydice_box_new_array(len, ptr, t, t_dst)                             \
   ((t_dst)(malloc_and_init(len * sizeof(t), (char *)(ptr))))
