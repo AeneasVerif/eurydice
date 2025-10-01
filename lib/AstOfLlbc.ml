@@ -467,6 +467,10 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       | None -> failwith "Missing function declaration"
       | Some fn_sig -> pre_typ_of_ty env (TFnPtr fn_sig)
     end
+  | TPtrMetadata ty ->
+      failwith
+        ("Couldn't compute metadata type for type "
+        ^ Charon.PrintTypes.ty_to_string env.format_env ty)
   | TError _ -> failwith "Found type error in charon's output"
 
 and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
@@ -1660,8 +1664,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
      In the future however, we might want to handle [Box] types differently, so this is a note
      to ourselves to be careful with this.
      *)
-  | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _)
-  | RawPtr ({ kind = PlaceProjection (p, Deref); _ }, _) ->
+  | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _, _)
+  | RawPtr ({ kind = PlaceProjection (p, Deref); _ }, _, _) ->
       (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and [p] might be a reference to DST (fat pointer). *)
       expression_of_place env p
   | RvRef
@@ -1672,6 +1676,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
                  Field (ProjAdt (typ_id, None), field_id) );
            _;
          } as p),
+        _,
         _ ) ->
       let field_name = lookup_field env typ_id field_id in
       begin
@@ -1709,7 +1714,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
             let e = expression_of_place env p in
             maybe_addrof env p.ty e
       end
-  | RvRef (p, _) | RawPtr (p, _) ->
+  | RvRef (p, _, _) | RawPtr (p, _, _) ->
       let e = expression_of_place env p in
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
          pass one for the other *)
