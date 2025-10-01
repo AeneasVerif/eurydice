@@ -2399,7 +2399,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       match decl with
       | None -> None
       | Some decl -> (
-          let { C.def_id; signature; body; item_meta; kind; _ } = decl in
+          let { C.def_id; signature; body; item_meta; src; _ } = decl in
           let env = { env with generic_params = signature.generics } in
           L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
             (if body = None then
@@ -2411,7 +2411,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
 
           assert (def_id = id);
           let name = lid_of_name env item_meta.name in
-          match body, kind with
+          match body, src with
           | _, TraitDeclItem (_, _, false) ->
               (* We skip those on the basis that they generate useless external prototypes, which we
                  do not really need. *)
