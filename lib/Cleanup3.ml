@@ -107,13 +107,13 @@ let build_cg_macros =
   end
 
 let add_extra_type_to_slice_index =
-  object (_self)
+  object (self)
     inherit [_] map as super
 
     method! visit_ETApp (((), _) as env) e cgs cgs' ts =
       match e.node, cgs, cgs', ts with
       | EQualified ([ "Eurydice" ], "slice_index"), [], [], [ t_elements ] ->
-          ETApp (e, cgs, cgs', ts @ [ TBuf (t_elements, false) ])
+          ETApp (self#visit_expr env e, cgs, cgs', ts @ [ TBuf (t_elements, false) ])
       | _ -> super#visit_ETApp env e cgs cgs' ts
 
     method! visit_EApp env e es =
@@ -155,7 +155,9 @@ let add_extra_type_to_slice_index =
                      [],
                      [],
                      [ TBuf (t_elements, false) ] )),
-              [ e_slice; e_start; e_end ] )
+              [
+                self#visit_expr env e_slice; self#visit_expr env e_start; self#visit_expr env e_end;
+              ] )
       | _ -> super#visit_EApp env e es
   end
 

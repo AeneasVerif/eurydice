@@ -40,6 +40,14 @@ fn plus_one<const K: usize>(x: [u32; K]) -> [u16; K] {
     x.map(|x| (x + 1) as u16)
 }
 
+fn const_eq<const K:usize>(x: [u32; K], y: [u32; K]) -> bool {
+   x == y
+}
+
+pub fn fun(x: &[[u8; 32]]) -> u8 {
+    x[0][0..1][0]
+}
+
 fn main() {
     // XXX1
     let Foo { x, y } = mk_foo2();
@@ -65,3 +73,4 @@ fn main() {
     let a = nested_from_fn::<4>();
     assert_eq!(a[3][3], 6);
 }
+

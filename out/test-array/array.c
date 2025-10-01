@@ -7,6 +7,22 @@
 
 #include "array.h"
 
+#include "Eurydice.h"
+
+uint8_t array_fun(Eurydice_slice x)
+{
+  return
+    Eurydice_slice_index(Eurydice_array_to_subslice3(&Eurydice_slice_index(x,
+          (size_t)0U,
+          Eurydice_arr_60),
+        (size_t)0U,
+        (size_t)1U,
+        uint8_t *),
+      (size_t)0U,
+      uint8_t,
+      uint8_t *);
+}
+
 array_Foo array_mk_foo(void)
 {
   uint32_t x[2U] = { 0U };
