@@ -1466,7 +1466,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                      (*_generics.trait_refs*)
                      List.map
                        (Charon.Substitute.st_substitute_visitor#visit_trait_ref subst)
-                       trait_impl.parent_trait_refs)
+                       trait_impl.implied_trait_refs)
             | Clause _ as clause_id ->
                 (* Caller it itself polymorphic and refers to one of its own clauses to synthesize
                    the clause arguments at call-site. We must pass whatever is relevant for this
