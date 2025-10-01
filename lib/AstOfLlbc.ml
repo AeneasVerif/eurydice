@@ -1197,7 +1197,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
                 }
               in
               mk_clause_binders_and_args env ~depth:(depth ^ "--") ~clause_ref [ parent_clause ])
-            trait_decl.C.parent_clauses
+            trait_decl.C.implied_clauses
       end)
     trait_clauses
 
@@ -1489,7 +1489,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                 let trait_decl = env.get_nth_trait_decl decl_id in
                 let name = string_of_name env trait_decl.item_meta.name in
                 let clause_id = C.TraitClauseId.to_int clause_id in
-                let parent_clause = List.nth trait_decl.parent_clauses clause_id in
+                let parent_clause = List.nth trait_decl.implied_clauses clause_id in
                 let parent_clause_decl =
                   env.get_nth_trait_decl parent_clause.trait.binder_value.id
                 in
