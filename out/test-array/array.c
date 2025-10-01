@@ -12,9 +12,10 @@
 uint8_t array_fun(Eurydice_slice x)
 {
   return
-    Eurydice_slice_index(Eurydice_array_to_subslice3(&Eurydice_slice_index(x,
+    Eurydice_slice_index(Eurydice_array_to_subslice3(Eurydice_slice_index(x,
           (size_t)0U,
-          Eurydice_arr_60),
+          uint8_t [32U],
+          uint8_t (*)[32U]),
         (size_t)0U,
         (size_t)1U,
         uint8_t *),
@@ -305,7 +306,8 @@ void array_main(void)
   array_Foo uu____0 = array_mk_foo2();
   uint32_t x[2U];
   memcpy(x, uu____0.x, (size_t)2U * sizeof (uint32_t));
-  /* XXX2 */
+  /* XXX2
+    XXX3 */
   uint32_t y[2U];
   memcpy(y, uu____0.y, (size_t)2U * sizeof (uint32_t));
   uint32_t unsigned0 = 0U;
