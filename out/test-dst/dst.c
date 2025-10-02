@@ -41,7 +41,8 @@ Eurydice_dst_40 dst_alloc3(void)
             }
           ),
           dst_S_9c,
-          dst_S_9c *),        .len = (size_t)4U
+          dst_S_9c *),
+        .len = (size_t)4U
       }
     );
 }
