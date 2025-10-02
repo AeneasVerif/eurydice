@@ -13,7 +13,7 @@ Eurydice_dst_31 dst_alloc(void)
     (
       KRML_CLITERAL(Eurydice_dst_31){
         .ptr = (dst_T *)Eurydice_box_new((
-            KRML_CLITERAL(dst_S_64){ .foo = 0U, .my_data = { .data = { 0U, 0U, 0U, 0U } } }
+            KRML_CLITERAL(dst_S_64){ .foo = 0U, .my_data = { .data = { 0U } } }
           ),
           dst_S_64,
           dst_S_64 *),
@@ -32,10 +32,10 @@ Eurydice_dst_40 dst_alloc3(void)
               .foo = 0U,
               .my_data = {
                 .data = {
-                  (KRML_CLITERAL(Eurydice_arr_6f){ .data = { 0U, 0U, 0U } }),
-                  (KRML_CLITERAL(Eurydice_arr_6f){ .data = { 0U, 0U, 0U } }),
-                  (KRML_CLITERAL(Eurydice_arr_6f){ .data = { 0U, 0U, 0U } }),
-                  (KRML_CLITERAL(Eurydice_arr_6f){ .data = { 0U, 0U, 0U } })
+                  { .data = { 0U } },
+                  { .data = { 0U } },
+                  { .data = { 0U } },
+                  { .data = { 0U } }
                 }
               }
             }
@@ -146,7 +146,7 @@ void dst_main4(void)
   Eurydice_slice
   x =
     Eurydice_array_to_slice((size_t)4U,
-      Eurydice_box_new((KRML_CLITERAL(Eurydice_arr_0d){ .data = { 0U, 0U, 0U, 0U } }),
+      Eurydice_box_new((KRML_CLITERAL(Eurydice_arr_0d){ .data = { 0U } }),
         Eurydice_arr_0d,
         Eurydice_arr_0d *),
       uint32_t);
