@@ -88,7 +88,23 @@ typedef uint8_t core_panicking_AssertKind;
 
 int32_t fn_higher_order_empty_ptr(int32_t (*f)(void));
 
-int32_t fn_higher_order_more_sum_lst(int32_t *l);
+/**
+A monomorphic instance of Eurydice.arr
+with types int32_t
+with const generics
+- $3size_t
+*/
+typedef struct Eurydice_arr_8d_s { int32_t data[3U]; } Eurydice_arr_8d;
+
+int32_t fn_higher_order_more_sum_lst(Eurydice_arr_8d *l);
+
+/**
+A monomorphic instance of Eurydice.arr
+with types size_t
+with const generics
+- $5size_t
+*/
+typedef struct Eurydice_arr_99_s { size_t data[5U]; } Eurydice_arr_99;
 
 /**
 A monomorphic instance of fn_higher_order.compose_cg_apply
@@ -98,9 +114,9 @@ with const generics
 */
 size_t
 fn_higher_order_compose_cg_apply_fd(
-  size_t (*f)(size_t *x0),
+  size_t (*f)(Eurydice_arr_99 *x0),
   size_t (*g)(size_t x0),
-  size_t *arg
+  Eurydice_arr_99 *arg
 );
 
 /**
@@ -108,7 +124,7 @@ A monomorphic instance of fn_higher_order.sum_lst
 with const generics
 - N= 5
 */
-size_t fn_higher_order_sum_lst_c9(size_t *lst);
+size_t fn_higher_order_sum_lst_c9(Eurydice_arr_99 *lst);
 
 /**
 A monomorphic instance of fn_higher_order.id
@@ -125,9 +141,9 @@ with const generics
 */
 int32_t
 fn_higher_order_compose_cg_apply_82(
-  int32_t (*f)(int32_t *x0),
+  int32_t (*f)(Eurydice_arr_8d *x0),
   int32_t (*g)(int32_t x0),
-  int32_t *arg
+  Eurydice_arr_8d *arg
 );
 
 /**

@@ -96,11 +96,19 @@ tuple_04;
 extern tuple_04
 core_iter_range__core__iter__range__Step_for_usize__steps_between(size_t *x0, size_t *x1);
 
-static inline void core_num__u32__to_le_bytes(uint32_t x0, uint8_t x1[4U]);
+static inline Eurydice_arr_e9 core_num__u32__to_le_bytes(uint32_t x0);
+
+/**
+A monomorphic instance of Eurydice.arr
+with types uint16_t
+with const generics
+- $256size_t
+*/
+typedef struct Eurydice_arr_bc_s { uint16_t data[256U]; } Eurydice_arr_bc;
 
 void
 symcrust_SymCrustMlKemPolyElementCompressAndEncode(
-  uint16_t *coeffs,
+  Eurydice_arr_bc *coeffs,
   uint32_t nBitsPerCoefficient,
   Eurydice_slice dst
 );
