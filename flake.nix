@@ -50,7 +50,7 @@
 
             src = ./.;
 
-            nativeBuildInputs = [ clang_18 ] ++ [ gnugrep ] ++ (with ocamlPackages; [ menhir ]);
+            nativeBuildInputs = [ gnugrep ] ++ (with ocamlPackages; [ menhir ]);
 
             propagatedBuildInputs = [ krml charon-ml ocamlPackages.terminal ocamlPackages.yaml ] ++ (with ocamlPackages; [ menhirLib ]);
 
