@@ -11,6 +11,7 @@ fn mut_foo(mut f: Foo) {
     f.x[0] = 1u32;
     let mut copy: [u32; 2] = f.y;
     copy[0] = 0u32;
+    assert!(copy[0]!=1u32);
 }
 
 fn mk_foo() -> Foo {
@@ -72,5 +73,11 @@ fn main() {
     // XXX5
     let a = nested_from_fn::<4>();
     assert_eq!(a[3][3], 6);
+
+    // XXX6
+    let x = [2u32; 2];
+    let y = [2u32; 2];
+    let b = const_eq(x,y);
+    assert_eq!(b, true);
 }
 
