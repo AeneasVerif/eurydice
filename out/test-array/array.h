@@ -44,6 +44,8 @@ typedef struct Eurydice_arr_60_s { uint8_t data[32U]; } Eurydice_arr_60;
 
 uint8_t array_fun(Eurydice_slice x);
 
+Eurydice_arr_60 array_init(void);
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2
@@ -248,6 +250,8 @@ with const generics
 bool array_const_eq_fd(Eurydice_arr_b2 x, Eurydice_arr_b2 y);
 
 void array_main(void);
+
+void array_references(void);
 
 #if defined(__cplusplus)
 }

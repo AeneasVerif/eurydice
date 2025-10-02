@@ -40,7 +40,7 @@ void castunsize_main3(void)
   Eurydice_slice
   x =
     Eurydice_array_to_slice((size_t)4U,
-      Eurydice_box_new((KRML_CLITERAL(Eurydice_arr_0d){ .data = { 0U, 0U, 0U, 0U } }),
+      Eurydice_box_new((KRML_CLITERAL(Eurydice_arr_0d){ .data = { 0U } }),
         Eurydice_arr_0d,
         Eurydice_arr_0d *),
       uint32_t);
@@ -87,7 +87,7 @@ void castunsize_main4_c9(void)
   Eurydice_slice
   x =
     Eurydice_array_to_slice((size_t)5U,
-      Eurydice_box_new((KRML_CLITERAL(Eurydice_arr_88){ .data = { 0U, 0U, 0U, 0U, 0U } }),
+      Eurydice_box_new((KRML_CLITERAL(Eurydice_arr_88){ .data = { 0U } }),
         Eurydice_arr_88,
         Eurydice_arr_88 *),
       uint32_t);
