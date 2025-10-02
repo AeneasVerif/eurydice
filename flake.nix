@@ -50,7 +50,7 @@
 
             src = ./.;
 
-            nativeBuildInputs = [ gnugrep ] ++ (with ocamlPackages; [ menhir ]);
+            nativeBuildInputs = [ clang_18 ] ++ [ gnugrep ] ++ (with ocamlPackages; [ menhir ]);
 
             propagatedBuildInputs = [ krml charon-ml ocamlPackages.terminal ocamlPackages.yaml ] ++ (with ocamlPackages; [ menhirLib ]);
 
@@ -113,7 +113,6 @@
               pkgs.bash
               pkgs.gnumake
               pkgs.clang-tools_18 # For clang-format
-              pkgs.clang_18
               pkgs.ocamlPackages.ocaml
               pkgs.ocamlPackages.ocamlformat_0_27_0
               pkgs.ocamlPackages.dune_3
