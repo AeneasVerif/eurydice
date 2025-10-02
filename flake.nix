@@ -113,6 +113,7 @@
               pkgs.bash
               pkgs.gnumake
               pkgs.clang-tools_18 # For clang-format
+              pkgs.clang_18
               pkgs.ocamlPackages.ocaml
               pkgs.ocamlPackages.ocamlformat_0_27_0
               pkgs.ocamlPackages.dune_3

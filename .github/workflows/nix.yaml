@@ -52,5 +52,5 @@ jobs:
           nix flake update eurydice --override-input eurydice github:aeneasverif/eurydice/$EURYDICE_REV
           nix flake update libcrux --override-input libcrux github:cryspen/libcrux/2ea4f60a8eccaf2cefbc75f6e70264d5019e22ac
           nix develop '..#ci' --command ./update-cargo-lock.sh libcrux
-          ./check.sh ml-kem-small
+          env CC=clang-18 CXX=clang++-18 ./check.sh ml-kem-small
           # ./check.sh ml-dsa-small
