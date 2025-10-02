@@ -31,7 +31,7 @@ let array_copy = [ "Eurydice" ], "array_copy"
 
 (* Things that could otherwise be emitted as an extern prototype, but for some
    reason ought to be skipped. *)
-let skip = Krml.Idents.LidSet.of_list [ [ "Eurydice" ], "assert" ]
+let skip = Krml.Idents.LidSet.of_list [ [ "Eurydice" ], "assert"; [], "UNIT_METADATA" ]
 let result = [ "core"; "result" ], "Result"
 let mk_result t1 t2 = K.TApp (result, [ t1; t2 ])
 let nonzero = [ "core"; "num"; "nonzero" ], "NonZero"

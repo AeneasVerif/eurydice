@@ -460,6 +460,10 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       | None -> failwith "Missing function declaration"
       | Some fn_sig -> pre_typ_of_ty env (TFnPtr fn_sig)
     end
+  | TPtrMetadata ty ->
+      failwith
+        ("Couldn't compute metadata type for type "
+        ^ Charon.PrintTypes.ty_to_string env.format_env ty)
   | TError _ -> failwith "Found type error in charon's output"
 
 and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
@@ -1178,7 +1182,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
                 }
               in
               mk_clause_binders_and_args env ~depth:(depth ^ "--") ~clause_ref [ parent_clause ])
-            trait_decl.C.parent_clauses
+            trait_decl.C.implied_clauses
       end)
     trait_clauses
 
@@ -1447,7 +1451,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                      (*_generics.trait_refs*)
                      List.map
                        (Charon.Substitute.st_substitute_visitor#visit_trait_ref subst)
-                       trait_impl.parent_trait_refs)
+                       trait_impl.implied_trait_refs)
             | Clause _ as clause_id ->
                 (* Caller it itself polymorphic and refers to one of its own clauses to synthesize
                    the clause arguments at call-site. We must pass whatever is relevant for this
@@ -1470,7 +1474,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                 let trait_decl = env.get_nth_trait_decl decl_id in
                 let name = string_of_name env trait_decl.item_meta.name in
                 let clause_id = C.TraitClauseId.to_int clause_id in
-                let parent_clause = List.nth trait_decl.parent_clauses clause_id in
+                let parent_clause = List.nth trait_decl.implied_clauses clause_id in
                 let parent_clause_decl =
                   env.get_nth_trait_decl parent_clause.trait.binder_value.id
                 in
@@ -1645,8 +1649,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
      In the future however, we might want to handle [Box] types differently, so this is a note
      to ourselves to be careful with this.
      *)
-  | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _)
-  | RawPtr ({ kind = PlaceProjection (p, Deref); _ }, _) ->
+  | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _, _)
+  | RawPtr ({ kind = PlaceProjection (p, Deref); _ }, _, _) ->
       (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and [p] might be a reference to DST (fat pointer). *)
       expression_of_place env p
   | RvRef
@@ -1657,6 +1661,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
                  Field (ProjAdt (typ_id, None), field_id) );
            _;
          } as p),
+        _,
         _ ) ->
       let field_name = lookup_field env typ_id field_id in
       begin
@@ -1694,7 +1699,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
             let e = expression_of_place env p in
             maybe_addrof env p.ty e
       end
-  | RvRef (p, _) | RawPtr (p, _) ->
+  | RvRef (p, _, _) | RawPtr (p, _, _) ->
       let e = expression_of_place env p in
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
          pass one for the other *)
@@ -2378,7 +2383,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       match decl with
       | None -> None
       | Some decl -> (
-          let { C.def_id; signature; body; item_meta; kind; _ } = decl in
+          let { C.def_id; signature; body; item_meta; src; _ } = decl in
           let env = { env with generic_params = signature.generics } in
           L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
             (if body = None then
@@ -2390,7 +2395,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
 
           assert (def_id = id);
           let name = lid_of_name env item_meta.name in
-          match body, kind with
+          match body, src with
           | _, TraitDeclItem (_, _, false) ->
               (* We skip those on the basis that they generate useless external prototypes, which we
                  do not really need. *)

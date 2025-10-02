@@ -86,6 +86,7 @@ let merge files =
   let open Krml.PrintAst.Ops in
   let merge_decl lid d1 d2 =
     match d1, d2 with
+    | _ when Krml.Idents.LidSet.mem lid Builtin.skip -> None
     | Some d1, None | None, Some d1 -> Some d1
     | None, None -> assert false
     | Some d1, Some d2 -> (
