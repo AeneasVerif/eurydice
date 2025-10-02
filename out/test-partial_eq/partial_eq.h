@@ -5,8 +5,8 @@
 
  */
 
-#ifndef partial_eq_H
-#define partial_eq_H
+#ifndef __partial_eq_H
+#define __partial_eq_H
 
 #include "eurydice_glue.h"
 
@@ -15,7 +15,17 @@
 extern "C" {
 #endif
 
-#include "Eurydice.h"
+/**
+A monomorphic instance of Eurydice.dst_ref
+with types Eurydice_c_char_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_65_s
+{
+  Eurydice_c_char_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_65;
 
 #define core_result_Ok 0
 #define core_result_Err 1
@@ -23,7 +33,7 @@ extern "C" {
 typedef uint8_t core_result_Result_10;
 
 extern core_result_Result_10
-core_fmt__core__fmt__Formatter__a___write_str(core_fmt_Formatter *x0, Eurydice_str x1);
+core_fmt__core__fmt__Formatter__a___write_str(core_fmt_Formatter *x0, Eurydice_dst_ref_65 x1);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -51,5 +61,5 @@ core_result_Result_10 partial_eq_fmt_29(partial_eq_Enum *self, core_fmt_Formatte
 }
 #endif
 
-#define partial_eq_H_DEFINED
-#endif /* partial_eq_H */
+#define __partial_eq_H_DEFINED
+#endif

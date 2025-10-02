@@ -5,8 +5,8 @@
 
  */
 
-#ifndef issue_106_H
-#define issue_106_H
+#ifndef __issue_106_H
+#define __issue_106_H
 
 #include "eurydice_glue.h"
 
@@ -29,5 +29,5 @@ uint8_t issue_106_use_ref(void);
 }
 #endif
 
-#define issue_106_H_DEFINED
-#endif /* issue_106_H */
+#define __issue_106_H_DEFINED
+#endif

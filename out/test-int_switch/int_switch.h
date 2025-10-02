@@ -5,8 +5,8 @@
 
  */
 
-#ifndef int_switch_H
-#define int_switch_H
+#ifndef __int_switch_H
+#define __int_switch_H
 
 #include "eurydice_glue.h"
 
@@ -23,5 +23,5 @@ void int_switch_main(void);
 }
 #endif
 
-#define int_switch_H_DEFINED
-#endif /* int_switch_H */
+#define __int_switch_H_DEFINED
+#endif

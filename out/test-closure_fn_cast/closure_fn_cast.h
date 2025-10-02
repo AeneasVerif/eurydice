@@ -5,8 +5,8 @@
 
  */
 
-#ifndef closure_fn_cast_H
-#define closure_fn_cast_H
+#ifndef __closure_fn_cast_H
+#define __closure_fn_cast_H
 
 #include "eurydice_glue.h"
 
@@ -38,5 +38,5 @@ void closure_fn_cast_main(void);
 }
 #endif
 
-#define closure_fn_cast_H_DEFINED
-#endif /* closure_fn_cast_H */
+#define __closure_fn_cast_H_DEFINED
+#endif

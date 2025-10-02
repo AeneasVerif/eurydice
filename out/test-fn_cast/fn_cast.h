@@ -5,8 +5,8 @@
 
  */
 
-#ifndef fn_cast_H
-#define fn_cast_H
+#ifndef __fn_cast_H
+#define __fn_cast_H
 
 #include "eurydice_glue.h"
 
@@ -41,5 +41,5 @@ void fn_cast_main(void);
 }
 #endif
 
-#define fn_cast_H_DEFINED
-#endif /* fn_cast_H */
+#define __fn_cast_H_DEFINED
+#endif

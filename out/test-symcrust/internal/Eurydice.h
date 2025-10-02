@@ -5,8 +5,8 @@
 
  */
 
-#ifndef internal_Eurydice_H
-#define internal_Eurydice_H
+#ifndef __internal_Eurydice_H
+#define __internal_Eurydice_H
 
 #include "eurydice_glue.h"
 
@@ -15,13 +15,11 @@
 extern "C" {
 #endif
 
-#include "../Eurydice.h"
-
 extern uint32_t Eurydice_min_u32(uint32_t x, uint32_t y);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define internal_Eurydice_H_DEFINED
-#endif /* internal_Eurydice_H */
+#define __internal_Eurydice_H_DEFINED
+#endif

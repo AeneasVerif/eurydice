@@ -5,8 +5,8 @@
 
  */
 
-#ifndef raw_pointers_H
-#define raw_pointers_H
+#ifndef __raw_pointers_H
+#define __raw_pointers_H
 
 #include "eurydice_glue.h"
 
@@ -27,5 +27,5 @@ void raw_pointers_main(void);
 }
 #endif
 
-#define raw_pointers_H_DEFINED
-#endif /* raw_pointers_H */
+#define __raw_pointers_H_DEFINED
+#endif

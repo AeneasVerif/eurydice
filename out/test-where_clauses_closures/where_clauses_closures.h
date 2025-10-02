@@ -5,8 +5,8 @@
 
  */
 
-#ifndef where_clauses_closures_H
-#define where_clauses_closures_H
+#ifndef __where_clauses_closures_H
+#define __where_clauses_closures_H
 
 #include "eurydice_glue.h"
 
@@ -63,6 +63,14 @@ typedef struct size_t_x2_s
 size_t_x2;
 
 /**
+A monomorphic instance of Eurydice.arr
+with types size_t
+with const generics
+- $1size_t
+*/
+typedef struct Eurydice_arr_e4_s { size_t data[1U]; } Eurydice_arr_e4;
+
+/**
 A monomorphic instance of where_clauses_closures.test
 with types size_t
 with const generics
@@ -76,5 +84,5 @@ void where_clauses_closures_main(void);
 }
 #endif
 
-#define where_clauses_closures_H_DEFINED
-#endif /* where_clauses_closures_H */
+#define __where_clauses_closures_H_DEFINED
+#endif

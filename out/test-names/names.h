@@ -5,8 +5,8 @@
 
  */
 
-#ifndef names_H
-#define names_H
+#ifndef __names_H
+#define __names_H
 
 #include "eurydice_glue.h"
 
@@ -49,5 +49,5 @@ void names_main(void);
 }
 #endif
 
-#define names_H_DEFINED
-#endif /* names_H */
+#define __names_H_DEFINED
+#endif

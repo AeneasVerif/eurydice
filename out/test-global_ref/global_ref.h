@@ -5,8 +5,8 @@
 
  */
 
-#ifndef global_ref_H
-#define global_ref_H
+#ifndef __global_ref_H
+#define __global_ref_H
 
 #include "eurydice_glue.h"
 
@@ -35,5 +35,5 @@ void global_ref_main(void);
 }
 #endif
 
-#define global_ref_H_DEFINED
-#endif /* global_ref_H */
+#define __global_ref_H_DEFINED
+#endif
