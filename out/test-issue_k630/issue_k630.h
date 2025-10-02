@@ -5,8 +5,8 @@
 
  */
 
-#ifndef issue_k630_H
-#define issue_k630_H
+#ifndef __issue_k630_H
+#define __issue_k630_H
 
 #include "eurydice_glue.h"
 
@@ -43,5 +43,5 @@ void issue_k630_main(void);
 }
 #endif
 
-#define issue_k630_H_DEFINED
-#endif /* issue_k630_H */
+#define __issue_k630_H_DEFINED
+#endif

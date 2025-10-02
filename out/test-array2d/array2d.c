@@ -14,10 +14,10 @@ bool array2d_f(Eurydice_arr_c0 x)
   y =
     {
       .data = {
-        { .data = { 1U, 2U } },
-        { .data = { 3U, 4U } },
-        { .data = { 1U, 2U } },
-        { .data = { 3U, 4U } }
+        (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 1U, 2U } }),
+        (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 3U, 4U } }),
+        (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 1U, 2U } }),
+        (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 3U, 4U } })
       }
     };
   return Eurydice_array_eq((size_t)4U, &x, &y, Eurydice_arr_b2);

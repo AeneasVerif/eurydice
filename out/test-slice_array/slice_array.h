@@ -5,8 +5,8 @@
 
  */
 
-#ifndef slice_array_H
-#define slice_array_H
+#ifndef __slice_array_H
+#define __slice_array_H
 
 #include "eurydice_glue.h"
 
@@ -117,5 +117,5 @@ void slice_array_main(void);
 }
 #endif
 
-#define slice_array_H_DEFINED
-#endif /* slice_array_H */
+#define __slice_array_H_DEFINED
+#endif

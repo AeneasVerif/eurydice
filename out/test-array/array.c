@@ -7,6 +7,31 @@
 
 #include "array.h"
 
+/**
+A monomorphic instance of Eurydice.array_to_subslice
+with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
+with const generics
+- N= 32
+*/
+static Eurydice_dst_ref_87 array_to_subslice_36(Eurydice_arr_60 *a, core_ops_range_Range_08 r)
+{
+  return
+    (KRML_CLITERAL(Eurydice_dst_ref_87){ .ptr = a->data + r.start, .meta = r.end - r.start });
+}
+
+uint8_t array_fun(Eurydice_dst_ref_fc x)
+{
+  return
+    Eurydice_slice_index(array_to_subslice_36(&Eurydice_slice_index(x,
+          (size_t)0U,
+          Eurydice_arr_60,
+          Eurydice_arr_60 *),
+        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)1U })),
+      (size_t)0U,
+      uint8_t,
+      uint8_t *);
+}
+
 array_Foo array_mk_foo(void)
 {
   Eurydice_arr_b2 x = { .data = { 0U } };

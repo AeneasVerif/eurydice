@@ -32,7 +32,14 @@ void slice_array_f1(void)
 {
   Eurydice_arr_11
   x =
-    { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
+    {
+      .data = {
+        (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+        (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+        (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+        (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } })
+      }
+    };
   Eurydice_dst_ref_d0
   y0 =
     Eurydice_slice_split_at_mut(array_to_slice_4f(&x),
@@ -50,7 +57,14 @@ void slice_array_f2(void)
 {
   Eurydice_arr_11
   x =
-    { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
+    {
+      .data = {
+        (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+        (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+        (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+        (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } })
+      }
+    };
   Eurydice_dst_ref_d0
   y0 =
     Eurydice_slice_split_at_mut(array_to_slice_4f(&x),

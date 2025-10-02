@@ -5,8 +5,8 @@
 
  */
 
-#ifndef array2d_H
-#define array2d_H
+#ifndef __array2d_H
+#define __array2d_H
 
 #include "eurydice_glue.h"
 
@@ -49,5 +49,5 @@ void array2d_main(void);
 }
 #endif
 
-#define array2d_H_DEFINED
-#endif /* array2d_H */
+#define __array2d_H_DEFINED
+#endif

@@ -42,7 +42,9 @@ with const generics
 size_t where_clauses_simple_fn_k_71(void)
 {
   size_t x = where_clauses_simple_of_u16_81_e0(0U);
-  return where_clauses_simple_add_81_e0((KRML_CLITERAL(Eurydice_arr_7f){ .data = { 0U } }), x);
+  return
+    where_clauses_simple_add_81_e0((KRML_CLITERAL(Eurydice_arr_7f){ .data = { 0U, 0U, 0U } }),
+      x);
 }
 
 typedef struct _size_t__x2_s
@@ -197,7 +199,9 @@ with const generics
 tuple_b6 where_clauses_simple_double_k_7b(size_t x, uint64_t y)
 {
   size_t
-  uu____0 = where_clauses_simple_add_81_e0((KRML_CLITERAL(Eurydice_arr_7f){ .data = { 0U } }), x);
+  uu____0 =
+    where_clauses_simple_add_81_e0((KRML_CLITERAL(Eurydice_arr_7f){ .data = { 0U, 0U, 0U } }),
+      x);
   return
     (
       KRML_CLITERAL(tuple_b6){

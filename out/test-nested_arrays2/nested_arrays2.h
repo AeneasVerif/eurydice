@@ -5,8 +5,8 @@
 
  */
 
-#ifndef nested_arrays2_H
-#define nested_arrays2_H
+#ifndef __nested_arrays2_H
+#define __nested_arrays2_H
 
 #include "eurydice_glue.h"
 
@@ -31,7 +31,7 @@ with const generics
 */
 typedef struct Eurydice_arr_81_s { Eurydice_arr_f1 data[1U]; } Eurydice_arr_81;
 
-#define NESTED_ARRAYS2_TABLE ((KRML_CLITERAL(Eurydice_arr_81){ .data = { { .data = { 1U } } } }))
+#define NESTED_ARRAYS2_TABLE ((KRML_CLITERAL(Eurydice_arr_81){ .data = { (KRML_CLITERAL(Eurydice_arr_f1){ .data = { 1U } }) } }))
 
 void nested_arrays2_main(void);
 
@@ -39,5 +39,5 @@ void nested_arrays2_main(void);
 }
 #endif
 
-#define nested_arrays2_H_DEFINED
-#endif /* nested_arrays2_H */
+#define __nested_arrays2_H_DEFINED
+#endif

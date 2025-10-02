@@ -5,8 +5,8 @@
 
  */
 
-#ifndef more_primitive_types_H
-#define more_primitive_types_H
+#ifndef __more_primitive_types_H
+#define __more_primitive_types_H
 
 #include "eurydice_glue.h"
 
@@ -41,5 +41,5 @@ int32_t more_primitive_types_more_operations(more_primitive_types_MorePrimitiveT
 }
 #endif
 
-#define more_primitive_types_H_DEFINED
-#endif /* more_primitive_types_H */
+#define __more_primitive_types_H_DEFINED
+#endif

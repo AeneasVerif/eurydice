@@ -5,8 +5,8 @@
 
  */
 
-#ifndef castunsize_H
-#define castunsize_H
+#ifndef __castunsize_H
+#define __castunsize_H
 
 #include "eurydice_glue.h"
 
@@ -116,5 +116,5 @@ void castunsize_main(void);
 }
 #endif
 
-#define castunsize_H_DEFINED
-#endif /* castunsize_H */
+#define __castunsize_H_DEFINED
+#endif

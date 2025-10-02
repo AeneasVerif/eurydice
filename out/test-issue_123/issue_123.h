@@ -5,8 +5,8 @@
 
  */
 
-#ifndef issue_123_H
-#define issue_123_H
+#ifndef __issue_123_H
+#define __issue_123_H
 
 #include "eurydice_glue.h"
 
@@ -64,5 +64,5 @@ bool issue_123_eq_e3(issue_123_E2 *self, issue_123_E2 *other);
 }
 #endif
 
-#define issue_123_H_DEFINED
-#endif /* issue_123_H */
+#define __issue_123_H_DEFINED
+#endif

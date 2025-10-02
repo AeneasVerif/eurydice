@@ -228,7 +228,7 @@ let remove_array_repeats =
 
     method private is_arr_typ t =
       match t with
-      | TQualified ( [ s1 ], s2) -> s1 = "Eurydice" && String.sub s2 0 3 = "arr"
+      | TQualified ([ s1 ], s2) -> s1 = "Eurydice" && String.sub s2 0 3 = "arr"
       | _ -> false
 
     (* This function recursively expands nested repeat expressions as initializer lists
@@ -263,12 +263,12 @@ let remove_array_repeats =
           let init = self#expand_repeat under_global init in
           with_type e.typ @@ EBufCreateL (Stack, List.init (self#assert_length len) (fun _ -> init))
       | EFlat [ (lido, e1) ] when lido = Some "data" && self#is_arr_typ e.typ ->
-         (* { .data = e } -> ok if e ok *)
-         let e1 = self#expand_repeat under_global e1 in
-         with_type e.typ (EFlat [lido, e1])
+          (* { .data = e } -> ok if e ok *)
+          let e1 = self#expand_repeat under_global e1 in
+          with_type e.typ (EFlat [ lido, e1 ])
       | EBufCreateL (l, es) when under_global ->
-         (* { e1, e2, ... en } -> get recursively expanded when are under DGlobal *)
-         with_type e.typ @@ EBufCreateL (l, List.map (self#expand_repeat true) es)
+          (* { e1, e2, ... en } -> get recursively expanded when are under DGlobal *)
+          with_type e.typ @@ EBufCreateL (l, List.map (self#expand_repeat true) es)
       | _ ->
           if under_global then
             e
@@ -365,29 +365,32 @@ let remove_array_from_fn files =
               | _ -> assert false
             in
             let x, dst_struct = H.mk_binding ~mut:true "arr_struct" t_struct in
-            let dst = with_type (t_array) (EField (dst_struct, "data")) in
-            let bindx = (x, with_type t_struct EAny) in
+            let dst = with_type t_array (EField (dst_struct, "data")) in
+            let bindx = x, with_type t_struct EAny in
             let t_dst = H.assert_tbuf_or_tarray t_array in
-            let for_assign = 
+            let for_assign =
               let lift1 = Krml.DeBruijn.lift 1 in
-              with_type TUnit (EFor
-                ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
-                  H.zero_usize (* i: size_t = 0 *),
-                  H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
-                  H.mk_incr_usize (* i++ *),
-                  let i = with_type H.usize (EBound 0) in
-                  Krml.Helpers.with_unit
-                     (EBufWrite
-                       ( lift1 dst,
-                         i,
-                         with_type t_dst
-                           (EApp
-                              ( call_mut,
-                                [
-                                  with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
-                                  with_type (TInt SizeT) (EBound 0);
-                ] )) )) ))
-             in (H.nest [bindx] t_struct (with_type t_struct (ESequence [for_assign; dst_struct]))).node
+              with_type TUnit
+                (EFor
+                   ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
+                     H.zero_usize (* i: size_t = 0 *),
+                     H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
+                     H.mk_incr_usize (* i++ *),
+                     let i = with_type H.usize (EBound 0) in
+                     Krml.Helpers.with_unit
+                       (EBufWrite
+                          ( lift1 dst,
+                            i,
+                            with_type t_dst
+                              (EApp
+                                 ( call_mut,
+                                   [
+                                     with_type (TBuf (state.typ, false)) (EAddrOf (lift1 state));
+                                     with_type (TInt SizeT) (EBound 0);
+                                   ] )) )) ))
+            in
+            (H.nest [ bindx ] t_struct (with_type t_struct (ESequence [ for_assign; dst_struct ])))
+              .node
         | ETApp
             ( { node = EQualified ("core" :: "array" :: _, "map"); _ },
               [ len ],
@@ -418,21 +421,26 @@ let remove_array_from_fn files =
             let t_dst_str, _ = Krml.Helpers.flatten_arrow e.typ in
             let t_dst_arr = TArray (t_dst, len_c) in
             let x, dst_struct = H.mk_binding ~mut:true "arr_mapped_str" t_dst_str in
-            let e_dst = with_type (t_dst_arr) (EField (dst_struct, "data")) in
-            let bindx = (x, with_type t_dst_str EAny) in
-            let for_assign = 
-              with_type TUnit (EFor
-              ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
-                H.zero_usize (* i = 0 *),
-                H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
-                H.mk_incr_usize (* i++ *),
-                let i = with_type H.usize (EBound 0) in
-                let e_src_i = with_type t_src (EBufRead (lift1 e_src, i)) in
-                Krml.Helpers.with_unit
-                  (EBufWrite
-                     (lift1 e_dst, i, with_type t_dst (EApp (call_mut, [ lift1 e_state; e_src_i ]))))
-              ))
-            in (H.nest [bindx] t_dst_str (with_type t_dst_str (ESequence [for_assign; dst_struct]))).node 
+            let e_dst = with_type t_dst_arr (EField (dst_struct, "data")) in
+            let bindx = x, with_type t_dst_str EAny in
+            let for_assign =
+              with_type TUnit
+                (EFor
+                   ( Krml.Helpers.fresh_binder ~mut:true "i" H.usize,
+                     H.zero_usize (* i = 0 *),
+                     H.mk_lt_usize (Krml.DeBruijn.lift 1 len) (* i < len *),
+                     H.mk_incr_usize (* i++ *),
+                     let i = with_type H.usize (EBound 0) in
+                     let e_src_i = with_type t_src (EBufRead (lift1 e_src, i)) in
+                     Krml.Helpers.with_unit
+                       (EBufWrite
+                          ( lift1 e_dst,
+                            i,
+                            with_type t_dst (EApp (call_mut, [ lift1 e_state; e_src_i ])) )) ))
+            in
+            (H.nest [ bindx ] t_dst_str
+               (with_type t_dst_str (ESequence [ for_assign; dst_struct ])))
+              .node
         | _ -> super#visit_EApp env e es
     end
   end

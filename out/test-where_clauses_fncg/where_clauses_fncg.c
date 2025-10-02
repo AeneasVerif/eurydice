@@ -35,14 +35,25 @@ uint64_t where_clauses_fncg_f_43(void)
     where_clauses_fncg_bar_16_7b((
         KRML_CLITERAL(Eurydice_arr_cb){
           .data = {
-            { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } },
-            { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } })
           }
         }
       ),
       (
         KRML_CLITERAL(Eurydice_arr_1c){
-          .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } }
+          .data = {
+            (KRML_CLITERAL(Eurydice_arr_c4){ .data = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_c4){ .data = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_c4){ .data = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_c4){ .data = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U } })
+          }
         }
       ));
 }
@@ -76,15 +87,45 @@ uint64_t where_clauses_fncg_method_foo_db_7c(void)
     where_clauses_fncg_bar_16_fa((
         KRML_CLITERAL(Eurydice_arr_91){
           .data = {
-            { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } },
-            { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } },
-            { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } }),
+            (KRML_CLITERAL(Eurydice_arr_e9){ .data = { 0U, 0U, 0U, 0U } })
           }
         }
       ),
       (
         KRML_CLITERAL(Eurydice_arr_b1){
-          .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } }
+          .data = {
+            (
+              KRML_CLITERAL(Eurydice_arr_48){
+                .data = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U }
+              }
+            ),
+            (
+              KRML_CLITERAL(Eurydice_arr_48){
+                .data = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U }
+              }
+            ),
+            (
+              KRML_CLITERAL(Eurydice_arr_48){
+                .data = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U }
+              }
+            ),
+            (
+              KRML_CLITERAL(Eurydice_arr_48){
+                .data = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U }
+              }
+            )
+          }
         }
       ));
 }

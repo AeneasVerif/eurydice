@@ -5,8 +5,8 @@
 
  */
 
-#ifndef where_clauses_closures_H
-#define where_clauses_closures_H
+#ifndef __where_clauses_closures_H
+#define __where_clauses_closures_H
 
 #include "eurydice_glue.h"
 
@@ -84,5 +84,5 @@ void where_clauses_closures_main(void);
 }
 #endif
 
-#define where_clauses_closures_H_DEFINED
-#endif /* where_clauses_closures_H */
+#define __where_clauses_closures_H_DEFINED
+#endif

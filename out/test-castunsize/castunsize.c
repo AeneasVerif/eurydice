@@ -52,7 +52,9 @@ void castunsize_main3(void)
 {
   Eurydice_dst_ref_3c
   x =
-    array_to_slice_ad(Eurydice_box_new((KRML_CLITERAL(Eurydice_arr_0d){ .data = { 0U } }),
+    array_to_slice_ad(Eurydice_box_new((
+          KRML_CLITERAL(Eurydice_arr_0d){ .data = { 0U, 0U, 0U, 0U } }
+        ),
         Eurydice_arr_0d,
         Eurydice_arr_0d *));
   /* original Rust expression is not an lvalue in C */
@@ -110,7 +112,9 @@ void castunsize_main4_c9(void)
 {
   Eurydice_dst_ref_3c
   x =
-    array_to_slice_ff(Eurydice_box_new((KRML_CLITERAL(Eurydice_arr_88){ .data = { 0U } }),
+    array_to_slice_ff(Eurydice_box_new((
+          KRML_CLITERAL(Eurydice_arr_88){ .data = { 0U, 0U, 0U, 0U, 0U } }
+        ),
         Eurydice_arr_88,
         Eurydice_arr_88 *));
   /* original Rust expression is not an lvalue in C */

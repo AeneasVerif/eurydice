@@ -5,8 +5,8 @@
 
  */
 
-#ifndef symcrust_H
-#define symcrust_H
+#ifndef __symcrust_H
+#define __symcrust_H
 
 #include "eurydice_glue.h"
 
@@ -141,5 +141,5 @@ void symcrust_main(void);
 }
 #endif
 
-#define symcrust_H_DEFINED
-#endif /* symcrust_H */
+#define __symcrust_H_DEFINED
+#endif

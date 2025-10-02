@@ -5,8 +5,8 @@
 
  */
 
-#ifndef where_clauses_fncg_H
-#define where_clauses_fncg_H
+#ifndef __where_clauses_fncg_H
+#define __where_clauses_fncg_H
 
 #include "eurydice_glue.h"
 
@@ -120,5 +120,5 @@ void where_clauses_fncg_main(void);
 }
 #endif
 
-#define where_clauses_fncg_H_DEFINED
-#endif /* where_clauses_fncg_H */
+#define __where_clauses_fncg_H_DEFINED
+#endif

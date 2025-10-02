@@ -5,8 +5,8 @@
 
  */
 
-#ifndef result_H
-#define result_H
+#ifndef __result_H
+#define __result_H
 
 #include "eurydice_glue.h"
 
@@ -46,5 +46,5 @@ result_S result_mk1(uint32_t x, uint32_t y);
 void result_main(void);
 
 
-#define result_H_DEFINED
-#endif /* result_H */
+#define __result_H_DEFINED
+#endif
