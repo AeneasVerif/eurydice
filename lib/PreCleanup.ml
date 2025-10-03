@@ -51,7 +51,7 @@ let remove_array_eq =
       match e with
       | [%cremepat {| core::array::equality::?impl::eq[#?n](#?..)<?t,?u>(?a1, ?a2) |}] ->
           let rec is_flat = function
-            | TArray (t, _) -> is_flat t
+            | TCgApp (TApp (lid, [ t ]), _) -> lid = Builtin.arr && is_flat t
             | TInt _ | TBool | TUnit -> true
             | _ -> false
           in
