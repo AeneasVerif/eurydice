@@ -42,13 +42,13 @@ let fail fmt =
    definition. *)
 type var_id =
   | TraitClauseMethod of {
-      clause_id : C.trait_instance_id;
+      clause_id : C.trait_ref_kind;
       item_name : string;
       pretty_name : string;
       ts : K.type_scheme;
     }
   | TraitClauseConstant of {
-      clause_id : C.trait_instance_id;
+      clause_id : C.trait_ref_kind;
       item_name : string;
       pretty_name : string;
     }
@@ -542,7 +542,7 @@ let push_cg_binder env (t : C.const_generic_param) =
 let push_cg_binders env (ts : C.const_generic_param list) = List.fold_left push_cg_binder env ts
 
 let push_binder env (t : C.local) =
-  { env with binders = (Var (t.index, t.var_ty), typ_of_ty env t.var_ty) :: env.binders }
+  { env with binders = (Var (t.index, t.local_ty), typ_of_ty env t.local_ty) :: env.binders }
 
 let push_binders env (ts : C.local list) = List.fold_left push_binder env ts
 
@@ -562,7 +562,7 @@ let lookup_clause_binder env clause_id item_name =
           | _ -> false)
         env.binders
     with Not_found ->
-      Krml.KPrint.bprintf "Error looking up %s.%s\n" (C.show_trait_instance_id clause_id) item_name;
+      Krml.KPrint.bprintf "Error looking up %s.%s\n" (C.show_trait_ref_kind clause_id) item_name;
       raise Not_found
   in
   i, t, v
@@ -591,7 +591,7 @@ let binder_of_var (env : env) (l : C.local) : K.binder =
     | "left_val" | "right_val" -> [ K.AttemptInline ]
     | _ -> []
   in
-  let binder = Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env l.var_ty) in
+  let binder = Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env l.local_ty) in
   { binder with node = { binder.node with meta = meta @ binder.node.meta } }
 
 let find_nth_variant (env : env) (typ : C.type_decl_id) (var : C.variant_id) =
@@ -1072,7 +1072,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
       let name = string_of_name env trait_decl.item_meta.name in
       let clause_ref : C.trait_ref =
         Option.value
-          ~default:C.{ trait_id = C.Clause (Free clause_id); trait_decl_ref = tc.trait }
+          ~default:C.{ kind = C.Clause (Free clause_id); trait_decl_ref = tc.trait }
           clause_ref
       in
 
@@ -1100,7 +1100,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
             let t = substitute_visitor#visit_ty subst const.C.ty in
             let t = typ_of_ty env t in
             ( TraitClauseConstant
-                { item_name = const.C.name; pretty_name; clause_id = clause_ref.trait_id },
+                { item_name = const.C.name; pretty_name; clause_id = clause_ref.kind },
               t ))
           trait_decl.C.consts
         (* 2. Trait methods *)
@@ -1116,7 +1116,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
               in
               (* First we substitute the trait generics. *)
               let bound_method_sig : C.fun_sig C.binder =
-                Charon.Substitute.apply_args_to_item_binder clause_ref.trait_id trait_generics
+                Charon.Substitute.apply_args_to_item_binder clause_ref.kind trait_generics
                   (substitute_visitor#visit_binder substitute_visitor#visit_fun_sig)
                   bound_method_sig
               in
@@ -1182,7 +1182,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
                 (Charon.PrintGAst.fun_sig_to_string env.format_env "" " " method_sig);
               let ts, t = typ_of_signature env method_sig in
               let t = maybe_ts ts t in
-              TraitClauseMethod { item_name; pretty_name; clause_id = clause_ref.trait_id; ts }, t)
+              TraitClauseMethod { item_name; pretty_name; clause_id = clause_ref.kind; ts }, t)
             trait_decl.C.methods
         (* 1 + 2, recursively, for parent traits *)
         @ List.concat_map
@@ -1192,7 +1192,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
               (* Mapping of the methods of the parent clause *)
               let clause_ref : C.trait_ref =
                 {
-                  trait_id = ParentClause (clause_ref, parent_clause.clause_id);
+                  kind = ParentClause (clause_ref, parent_clause.clause_id);
                   trait_decl_ref = parent_clause.trait;
                 }
               in
@@ -1258,12 +1258,12 @@ and debug_trait_clause_mapping env (mapping : (var_id * K.typ) list) =
       | TraitClauseMethod { clause_id; item_name; ts; _ } ->
           L.log "TraitClauses" "@@@ method name: %s" item_name;
           L.log "TraitClauses" "%s::%s: %a has trait-level %d const generics, %d type vars\n"
-            (Charon.PrintTypes.trait_instance_id_to_string env.format_env None clause_id)
+            (Charon.PrintTypes.trait_ref_kind_to_string env.format_env None clause_id)
             item_name ptyp t ts.K.n_cgs ts.n
       | TraitClauseConstant { clause_id; item_name; _ } ->
           L.log "TraitClauses" "@@@ method name: %s" item_name;
           L.log "TraitClauses" "%s::%s: associated constant %a\n"
-            (Charon.PrintTypes.trait_instance_id_to_string env.format_env None clause_id)
+            (Charon.PrintTypes.trait_ref_kind_to_string env.format_env None clause_id)
             item_name ptyp t
       | _ -> ())
     mapping
@@ -1297,7 +1297,7 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
       | FunId (FRegular f) -> lookup_result_of_fun_id f
       | FunId (FBuiltin f) -> fail "unknown builtin function: %s" (C.show_builtin_fun_id f)
       | TraitMethod (trait_ref, method_name, _trait_opaque_signature) -> (
-          match trait_ref.trait_id with
+          match trait_ref.kind with
           | TraitImpl { id; _ } ->
               let trait = env.get_nth_trait_impl id in
               let f =
@@ -1358,7 +1358,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   let type_args, const_generic_args, trait_refs =
     let generics =
       match kind with
-      | TraitMethod ({ trait_id = TraitImpl { generics; _ }; _ }, _, _) ->
+      | TraitMethod ({ kind = TraitImpl { generics; _ }; _ }, _, _) ->
           L.log "Calls" "%s--> this is a trait method" depth;
           generics
       | _ -> C.empty_generic_args
@@ -1426,7 +1426,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
             in
             L.log "Calls" "%s--> trait_ref %s: %s\n" depth name (C.show_trait_ref trait_ref);
 
-            match trait_ref.trait_id with
+            match trait_ref.kind with
             | _ when List.mem name blocklisted_trait_decls ->
                 (* Trait not supported -- don't synthesize arguments *)
                 []
@@ -1472,7 +1472,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                    the clause arguments at call-site. We must pass whatever is relevant for this
                    clause, *transitively* (this means all the reachable parents). *)
                 let rec relevant = function
-                  | C.ParentClause (tref', _) -> relevant tref'.trait_id
+                  | C.ParentClause (tref', _) -> relevant tref'.kind
                   | clause_id' -> clause_id = clause_id'
                 in
                 List.rev
@@ -1610,11 +1610,11 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
   | Constant { kind = CFnPtr fn_ptr; _ } ->
       let e, _, _ = expression_of_fn_ptr env fn_ptr in
       e
-  | Constant { kind = CTraitConst (({ C.trait_id; _ } as trait_ref), name); _ } -> begin
+  | Constant { kind = CTraitConst (({ C.kind; _ } as trait_ref), name); _ } -> begin
       (* Logic similar to lookup_fun *)
-      match trait_id with
+      match kind with
       | Clause _ | ParentClause _ ->
-          let i, t = lookup_clause_constant env trait_id name in
+          let i, t = lookup_clause_constant env kind name in
           K.(with_type t (EBound i))
       | TraitImpl { id; _ } ->
           let trait = env.get_nth_trait_impl id in
@@ -2121,7 +2121,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
         (* TODO: determine whether extra_types is necessary *)
         let extra_types =
           match fn_ptr.kind with
-          | TraitMethod ({ trait_id = TraitImpl { id = _; generics }; _ }, _, _) -> generics.types
+          | TraitMethod ({ kind = TraitImpl { id = _; generics }; _ }, _, _) -> generics.types
           | _ -> []
         in
         match fn_ptr.kind, fn_ptr.generics.types @ extra_types with
@@ -2256,7 +2256,7 @@ let seen = ref 0
 let total = ref 0
 
 (** List all the ids in this declaration group. *)
-let declaration_group_to_list (g : C.declaration_group) : C.any_decl_id list =
+let declaration_group_to_list (g : C.declaration_group) : C.item_id list =
   match g with
   | FunGroup g -> List.map (fun id -> C.IdFun id) (C.g_declaration_group_to_list g)
   | TypeGroup g -> List.map (fun id -> C.IdType id) (C.g_declaration_group_to_list g)
@@ -2276,7 +2276,7 @@ let flags_of_meta (meta : C.item_meta) : K.flags =
             meta.attr_info.attributes));
   ]
 
-let check_if_dst (env : env) (id : C.any_decl_id) : env =
+let check_if_dst (env : env) (id : C.item_id) : env =
   match id with
   | C.IdType id ->
       let decl = env.get_nth_type id in
@@ -2318,7 +2318,7 @@ let check_if_dst (env : env) (id : C.any_decl_id) : env =
         env
   | _ -> env
 
-let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
+let decl_of_id (env : env) (id : C.item_id) : K.decl option =
   match id with
   | IdType id -> begin
       let decl = env.get_nth_type id in
@@ -2431,7 +2431,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                   (String.concat " ++ "
                      (List.map
                         (fun (local : C.local) ->
-                          Charon.PrintTypes.ty_to_string env.format_env local.var_ty)
+                          Charon.PrintTypes.ty_to_string env.format_env local.local_ty)
                         locals.locals));
                 L.log "AstOfLlbc" "ty of inputs: %s"
                   (String.concat " ++ "
@@ -2445,7 +2445,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                 let return_var = List.hd args in
                 let args = List.tl args in
 
-                let return_type = typ_of_ty env return_var.var_ty in
+                let return_type = typ_of_ty env return_var.local_ty in
 
                 (* Note: Rust allows zero-argument functions but the krml internal
                    representation wants a unit there. This is aligned with typ_of_signature. *)
@@ -2463,7 +2463,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                     {
                       C.index = Charon.Expressions.LocalId.of_int max_int;
                       name = None;
-                      var_ty = t_unit;
+                      local_ty = t_unit;
                     }
                   in
                   if args = [] then
@@ -2502,7 +2502,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                   @ List.map
                       (fun (arg : C.local) ->
                         let name = Option.value ~default:"_" arg.name in
-                        Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty))
+                        Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.local_ty))
                       args
                 in
 
@@ -2564,7 +2564,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
             (* This one needs to have an address, so definitely not emitting it as a macro. *)
             []
       in
-      let body = env.get_nth_function def.body in
+      let body = env.get_nth_function def.init in
       L.log "AstOfLlbc" "Corresponding body:%s"
         (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " body);
       begin
@@ -2580,7 +2580,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       end
   | IdTraitDecl _ | IdTraitImpl _ -> None
 
-let name_of_id env (id : C.any_decl_id) =
+let name_of_id env (id : C.item_id) =
   match id with
   | IdType id -> (env.get_nth_type id).item_meta.name
   | IdFun id -> (env.get_nth_function id).item_meta.name
@@ -2674,10 +2674,10 @@ let decl_of_id env decl =
         else
           None)
 
-let flatten_declarations (d : C.declaration_group list) : C.any_decl_id list =
+let flatten_declarations (d : C.declaration_group list) : C.item_id list =
   List.flatten (List.map declaration_group_to_list d)
 
-let decls_of_declarations (env : env) (d : C.any_decl_id list) : K.decl list =
+let decls_of_declarations (env : env) (d : C.item_id list) : K.decl list =
   incr seen;
   L.log "Progress" "%s: %d/%d" env.crate_name !seen !total;
   Krml.KList.filter_some @@ List.map (decl_of_id env) d
