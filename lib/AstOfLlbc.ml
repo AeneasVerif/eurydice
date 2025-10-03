@@ -1766,6 +1766,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
         (* The following are `type`s *)
         | C.CastFnPtr (f, t) | C.CastRawPtr (f, t) | C.CastUnsize (f, t, _) | C.CastTransmute (f, t)
           -> f = t
+        | C.CastConcretize _ -> false
       in
       if is_ident then
         expression_of_operand env e
