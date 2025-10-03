@@ -1,0 +1,50 @@
+files:
+  # This one does not generate an extracted file, intentionally.
+  - name: stubs
+    private:
+      - [ intrinsics, intrinsics, "*" ]
+    inline_static: true
+    library: true
+
+  - name: core
+    private:
+      monomorphizations_of:
+        - [ core, "*"]
+      monomorphizations_using:
+        - [ Eurydice, "*" ]
+      patterns:
+        - [ core, "*"]
+      exact:
+        - [ intrinsics, runtime_support]
+        - [ intrinsics, eurylib, target_arch]
+    api:
+      - [Eurydice, "*"]
+
+  - name: vectorized_intel
+    include_in_h:
+      - "eurydice_intrinsics.h"
+    private:
+      - [ intrinsics, vectorized_intel, "*" ]
+
+  - name: vectorized_arm
+    include_in_internal_h:
+      - "\"eurydice_intrinsics.h\""
+    private:
+      - [ intrinsics, vectorized_arm, "*" ]
+
+  - name: vectorized
+    include_in_internal_h:
+      - "\"eurydice_intrinsics.h\""
+    private:
+      - [ intrinsics, vectorized, "*" ]
+      - [ intrinsics, vectorized_stubs, "*" ]
+
+  - name: intrinsics
+    api:
+      - [ "*" ]
+
+
+naming:
+  skip_prefix:
+    - [ intrinsics, intrinsics ]
+    - [ intrinsics, intrinsics, private ]

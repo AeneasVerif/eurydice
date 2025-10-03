@@ -56,7 +56,7 @@ clean-and-test:
 .PRECIOUS: %.llbc
 %.llbc: %.rs .charon_version
 	# --mir elaborated --add-drop-bounds 
-	$(CHARON) rustc --preset=eurydice --dest-file "$@" $(CHARON_EXTRA) -- $<
+	$(CHARON) rustc --preset=eurydice --dest-file "$@" $(CHARON_EXTRA) -- --cfg eurydice $<
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
@@ -75,6 +75,10 @@ test/println.llbc: CHARON_EXTRA = \
   --include=core::fmt::Arguments --include=core::fmt::rt::*::new_const \
   --include=core::fmt::rt::Argument
 
+test/intrinsics.llbc: CHARON_EXTRA = \
+  --include=core::fmt::Arguments --include=core::fmt::rt::*::new_const \
+  --include=core::fmt::rt::Argument
+
 test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c
 test-nested_arrays: EXTRA = -funroll-loops 0
 test-array: EXTRA = -fcomments
@@ -82,6 +86,17 @@ test-symcrust: CFLAGS += -Wno-unused-function
 test-more_str: EXTRA_C = ../../test/core_str_lib.c
 test-more_primitive_types: EXTRA = --config test/more_primitive_types.yaml
 test-global_ref: EXTRA_C = ../../test/core_cmp_lib.c
+
+test-intrinsics: EXTRA = --config test/intrinsics.yaml
+test-intrinsics: EXTRA_C = -I../../test
+
+ifeq ($(shell uname -m),arm64)
+test-intrinsics: EXTRA_C = vectorized.c vectorized_arm.c
+endif
+
+ifeq ($(shell uname -m),x86_64)
+test-intrinsics: EXTRA_C = vectorized.c vectorized_intel.c
+endif
 
 
 test-%: test/%.llbc out/test-%/main.c | all
@@ -134,3 +149,6 @@ format-apply:
 .PHONY: clean-llbc
 clean-llbc:
 	rm test/*.llbc || true
+
+%.pp.rs: %.rs
+	rustup run $(shell basename $$($(CHARON) toolchain-path)) rustc -Zunpretty=expanded --cfg eurydice $<

@@ -465,6 +465,23 @@ let remove_slice_eq =
       | _ -> super#visit_expr ((), e.typ) e
   end
 
+let match_target_ifdefs = object
+  inherit [_] map as super
+  method! visit_EApp (((), _) as env) e es =
+    match e.node, es with
+    | EQualified ([_; "eurylib"], "target_arch"), [ arg ] ->
+        begin match arg with
+        | { node = EFlat [Some "data", {node=EString str; _}; _ ]; _ } ->
+            begin match str with
+            | "x86" | "x86_64" | "aarch64" -> EQualified (["Eurydice"], "target_is_" ^ str)
+            | _ -> failwith ("Unknown target arch: " ^ str)
+            end
+        | _ -> failwith ("Argument to `target_arch` is not a constant string")
+        end
+    | _ ->
+        super#visit_EApp env e es
+end
+
 let cleanup files =
   let files = remove_units#visit_files () files in
   let files = remove_assignments#visit_files AtomMap.empty files in
@@ -474,4 +491,5 @@ let cleanup files =
   let files = remove_terminal_continues#visit_files false files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
   let files = remove_slice_eq#visit_files () files in
+  let files = match_target_ifdefs#visit_files () files in
   files

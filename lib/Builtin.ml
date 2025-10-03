@@ -531,6 +531,16 @@ let static_assert, static_assert_ref =
   ( K.DExternal (None, [ Krml.Common.Private; Macro ], 0, 0, name, typ, [ "test"; "msg" ]),
     K.(with_type typ (EQualified name)) )
 
+let targets =
+  let mk name =
+    K.DExternal (None, [ Krml.Common.Private; IfDef ], 0, 0, (["Eurydice"], "target_is_" ^ name), K.TBool, [])
+  in
+  [
+    mk "aarch64";
+    mk "x86";
+    mk "x86_64";
+  ]
+
 (* Replacements, now applied on-the-fly in AstOfLlbc.
 
  IMPORTANT: such replacements are written in abstract syntax that *already* has cleanups applied,
@@ -793,7 +803,7 @@ let files =
            in
            K.DExternal (None, flags, List.length cg_args, n_type_args, name, typ, arg_names))
          builtin_funcs
-       @ [ nonzero_def; static_assert; dst_def; str_t_def ]
+       @ [ nonzero_def; static_assert; dst_def; str_t_def ] @ targets
      in
      "Eurydice", externals);
   ]
