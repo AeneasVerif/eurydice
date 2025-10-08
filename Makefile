@@ -12,6 +12,12 @@ ifneq ($(.SHELLSTATUS),0)
 _: $(error "bash version is too old; hint: brew install bash")
 endif
 
+# Warn on old versions of make
+ifeq (3.81,$(MAKE_VERSION))
+  $(error You seem to be using the OSX antiquated Make version. Hint: brew \
+    install make, then invoke gmake instead of make)
+endif
+
 # Enable `foo/**` glob syntax
 SHELL := bash -O globstar 
 
@@ -24,7 +30,7 @@ else
   SED=sed
 endif
 
-ifneq ($(shell $(CHARON) version), $(shell cat .charon_version || true))
+ifneq ($(shell $(CHARON) version), $(shell cat .charon_version &>/dev/null || true))
   _ := $(shell $(CHARON) version > .charon_version)
 endif
 
@@ -119,15 +125,11 @@ FORMAT_FILE=include/eurydice_glue.h
 
 .PHONY: format-check
 format-check:
-	@if ! dune build @fmt >/dev/null 2>&1; then \echo "\033[0;31m⚠️⚠️⚠️ SUGGESTED: $(MAKE) format-apply\033[0;m"; fi
-	@F=$$(mktemp); clang-format $(FORMAT_FILE) > $$F; \
-	  if ! diff -q $(FORMAT_FILE) $$F >/dev/null; then \echo "\033[0;31m⚠️⚠️⚠️ SUGGESTED: $(MAKE) format-apply\033[0;m"; fi; \
-	  rm -rf $$F
+	FORMAT_FILE=$(FORMAT_FILE) ./scripts/format.sh check
 
-.PHONY: format-check
+.PHONY: format-apply
 format-apply:
-	dune fmt >/dev/null || true
-	clang-format -i $(FORMAT_FILE)
+	FORMAT_FILE=$(FORMAT_FILE) ./scripts/format.sh apply
 
 .PHONY: clean-llbc
 clean-llbc:

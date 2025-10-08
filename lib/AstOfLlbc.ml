@@ -42,13 +42,13 @@ let fail fmt =
    definition. *)
 type var_id =
   | TraitClauseMethod of {
-      clause_id : C.trait_instance_id;
+      clause_id : C.trait_ref_kind;
       item_name : string;
       pretty_name : string;
       ts : K.type_scheme;
     }
   | TraitClauseConstant of {
-      clause_id : C.trait_instance_id;
+      clause_id : C.trait_ref_kind;
       item_name : string;
       pretty_name : string;
     }
@@ -151,8 +151,10 @@ let lookup_typ env (v1 : C.type_var_id) =
   let i, _ = findi (( = ) v1) env.type_binders in
   i
 
-let push_type_binder env (t : C.type_var) = { env with type_binders = t.index :: env.type_binders }
-let push_type_binders env (ts : C.type_var list) = List.fold_left push_type_binder env ts
+let push_type_binder env (t : C.type_param) =
+  { env with type_binders = t.index :: env.type_binders }
+
+let push_type_binders env (ts : C.type_param list) = List.fold_left push_type_binder env ts
 
 (** Helpers: types *)
 
@@ -383,6 +385,8 @@ let lookup_field env typ_id field_id =
   let field = List.nth fields i in
   ensure_named i field.field_name
 
+let expression_of_struct_Arr (expr_array : K.expr) = K.EFlat [ Some "data", expr_array ]
+
 let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   match ty with
   | TVar var -> K.TBound (lookup_typ env (C.expect_free_var var))
@@ -400,15 +404,6 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       (* We compile slices to fat pointers, which hold the pointer underneath -- no need for an
          extra reference here. *)
       Builtin.mk_slice (typ_of_ty env t)
-  | TAdt
-      {
-        id = TBuiltin TBox;
-        generics = { types = [ TAdt { id = TBuiltin TArray; generics = { types = [ t ]; _ } } ]; _ };
-      }
-  | TRef (_, TAdt { id = TBuiltin TArray; generics = { types = [ t ]; _ } }, _) ->
-      (* We collapse Ref(Array) into a pointer type, leveraging C's implicit decay between array
-         types and pointer types. *)
-      K.TBuf (typ_of_ty env t, false)
   | TRef (_, TAdt { id = TBuiltin TStr; generics = { types = []; _ } }, _) -> Builtin.str_t
   | TRef (_, t, _) ->
       (* Normal reference *)
@@ -427,7 +422,7 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
         | _ -> TTuple (List.map (typ_of_ty env) args)
       end
   | TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } } ->
-      maybe_cg_array env t cg
+      typ_of_struct_arr env t cg
   | TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
       (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
       TApp (Builtin.derefed_slice, [ typ_of_ty env t ])
@@ -465,6 +460,10 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       | None -> failwith "Missing function declaration"
       | Some fn_sig -> pre_typ_of_ty env (TFnPtr fn_sig)
     end
+  | TPtrMetadata ty ->
+      failwith
+        ("Couldn't compute metadata type for type "
+        ^ Charon.PrintTypes.ty_to_string env.format_env ty)
   | TError _ -> failwith "Found type error in charon's output"
 
 and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
@@ -480,7 +479,12 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
          from this to the DST above. *)
       t
 
-and maybe_cg_array env t cg =
+and typ_of_struct_arr (env : env) (t : C.ty) (cg : C.const_generic) : K.typ =
+  let typ_t = typ_of_ty env t in
+  let cg = cg_of_const_generic env cg in
+  Builtin.mk_arr typ_t cg
+
+let maybe_cg_array (env : env) (t : C.ty) (cg : C.const_generic) =
   match cg with
   | CgValue _ -> K.TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))
   | CgVar var ->
@@ -488,15 +492,6 @@ and maybe_cg_array env t cg =
       assert (cg_t = K.TInt SizeT);
       K.TCgArray (typ_of_ty env t, id)
   | _ -> failwith "TODO: CgGlobal"
-
-(* Helpers: expressions *)
-
-(* To be desugared later into variable hoisting, allocating suitable storage space, followed by a
-   memcpy -- this is just a placeholder and isn't even type-checked. *)
-let mk_deep_copy (e : K.expr) (l : K.expr) =
-  let builtin_copy_operator = K.EQualified Builtin.array_copy in
-  let builtin_copy_operator_t = K.TArrow (TAny, TAny) in
-  K.(with_type TAny (EApp (with_type builtin_copy_operator_t builtin_copy_operator, [ e; l ])))
 
 (* Environment: expressions *)
 
@@ -526,17 +521,17 @@ let lookup_with_original_type env v1 =
 
 (* Const generic binders *)
 
-let push_cg_binder env (t : C.const_generic_var) =
+let push_cg_binder env (t : C.const_generic_param) =
   {
     env with
     cg_binders = (t.index, typ_of_literal_ty env t.ty) :: env.cg_binders;
     binders = (ConstGenericVar t.index, typ_of_literal_ty env t.ty) :: env.binders;
   }
 
-let push_cg_binders env (ts : C.const_generic_var list) = List.fold_left push_cg_binder env ts
+let push_cg_binders env (ts : C.const_generic_param list) = List.fold_left push_cg_binder env ts
 
 let push_binder env (t : C.local) =
-  { env with binders = (Var (t.index, t.var_ty), typ_of_ty env t.var_ty) :: env.binders }
+  { env with binders = (Var (t.index, t.local_ty), typ_of_ty env t.local_ty) :: env.binders }
 
 let push_binders env (ts : C.local list) = List.fold_left push_binder env ts
 
@@ -556,7 +551,7 @@ let lookup_clause_binder env clause_id item_name =
           | _ -> false)
         env.binders
     with Not_found ->
-      Krml.KPrint.bprintf "Error looking up %s.%s\n" (C.show_trait_instance_id clause_id) item_name;
+      Krml.KPrint.bprintf "Error looking up %s.%s\n" (C.show_trait_ref_kind clause_id) item_name;
       raise Not_found
   in
   i, t, v
@@ -585,7 +580,7 @@ let binder_of_var (env : env) (l : C.local) : K.binder =
     | "left_val" | "right_val" -> [ K.AttemptInline ]
     | _ -> []
   in
-  let binder = Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env l.var_ty) in
+  let binder = Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env l.local_ty) in
   { binder with node = { binder.node with meta = meta @ binder.node.meta } }
 
 let find_nth_variant (env : env) (typ : C.type_decl_id) (var : C.variant_id) =
@@ -695,11 +690,9 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
   | PlaceLocal var_id ->
       let i, t = lookup env var_id in
       K.(with_type t (EBound i))
-
   | PlaceGlobal { id; _ } ->
       let global = env.get_nth_global id in
-      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name)) 
-
+      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
   | PlaceProjection (sub_place, pe) -> begin
       (* Can't evaluate this here because of the special case for DSTs. *)
       let sub_e = lazy (expression_of_place env sub_place) in
@@ -707,10 +700,6 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       (* L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr sub_e (C.show_ty sub_place.ty) *)
       (*   (C.show_projection_elem pe); *)
       match pe, sub_place, sub_place.ty with
-      | C.Deref, _, TRef (_, TAdt { id = TBuiltin TArray; generics = { types = [ t ]; _ } }, _)
-      | C.Deref, _, TRawPtr (TAdt { id = TBuiltin TArray; generics = { types = [ t ]; _ } }, _) ->
-          (* Array is passed by reference; when appearing in a place, it'll automatically decay in C *)
-          K.with_type (TBuf (typ_of_ty env t, false)) !*sub_e.K.node
       | C.Deref, _, TRef (_, TAdt { id = TBuiltin TSlice; _ }, _)
       | C.Deref, _, TRawPtr (TAdt { id = TBuiltin TSlice; _ }, _) -> !*sub_e
       | ( C.Deref,
@@ -719,8 +708,8 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           (* All types represented as a pointer at run-time, compiled to a C pointer *)
           begin
             match !*sub_e.K.typ with
-            | TBuf (t_pointee, _) | TArray (t_pointee, _) ->
-                Krml.Helpers.(mk_deref t_pointee !*sub_e.K.node)
+            | TArray (_, _) -> assert false
+            | TBuf (t_pointee, _) -> Krml.Helpers.(mk_deref t_pointee !*sub_e.K.node)
             | t ->
                 L.log "AstOfLlbc" "UNHANDLED DEREFERENCE\ne=%a\nt=%a\nty=%s\npe=%s\n" pexpr !*sub_e
                   ptyp t (C.show_ty sub_place.ty) (C.show_projection_elem pe);
@@ -971,7 +960,7 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
 let maybe_addrof (_env : env) (ty : C.ty) (e : K.expr) =
   (* ty is the *original* Rust type *)
   match ty with
-  | TAdt { id = TBuiltin (TArray | TSlice); _ } -> e
+  | TAdt { id = TBuiltin TSlice; _ } -> e
   | _ -> K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
 
 (** Handling trait clauses as dictionaries *)
@@ -1044,7 +1033,7 @@ let maybe_ts ts t =
    required for trait methods (passed as function pointers). Assumes type
    variables have been suitably bound in the environment.
 *)
-let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.trait_clause list) :
+let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.trait_param list) :
     (var_id * K.typ) list =
   let depth = Option.value ~default:"" depth in
   List.concat_map
@@ -1068,7 +1057,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
       let name = string_of_name env trait_decl.item_meta.name in
       let clause_ref : C.trait_ref =
         Option.value
-          ~default:C.{ trait_id = C.Clause (Free clause_id); trait_decl_ref = tc.trait }
+          ~default:C.{ kind = C.Clause (Free clause_id); trait_decl_ref = tc.trait }
           clause_ref
       in
 
@@ -1090,16 +1079,19 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
 
         (* 1. Associated constants *)
         List.map
-          (fun (item_name, typ) ->
+          (fun (const : C.trait_assoc_const) ->
             let trait_name = trait_decl.C.item_meta.name in
-            let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
-            let t = substitute_visitor#visit_ty subst typ in
+            let pretty_name = string_of_name env trait_name ^ "_" ^ const.C.name in
+            let t = substitute_visitor#visit_ty subst const.C.ty in
             let t = typ_of_ty env t in
-            TraitClauseConstant { item_name; pretty_name; clause_id = clause_ref.trait_id }, t)
+            ( TraitClauseConstant
+                { item_name = const.C.name; pretty_name; clause_id = clause_ref.kind },
+              t ))
           trait_decl.C.consts
         (* 2. Trait methods *)
         @ List.map
-            (fun (item_name, _) ->
+            (fun (mthd : C.trait_method C.binder) ->
+              let item_name = mthd.C.binder_value.C.name in
               let trait_name = trait_decl.C.item_meta.name in
               let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
 
@@ -1109,7 +1101,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
               in
               (* First we substitute the trait generics. *)
               let bound_method_sig : C.fun_sig C.binder =
-                Charon.Substitute.apply_args_to_item_binder clause_ref.trait_id trait_generics
+                Charon.Substitute.apply_args_to_item_binder clause_ref.kind trait_generics
                   (substitute_visitor#visit_binder substitute_visitor#visit_fun_sig)
                   bound_method_sig
               in
@@ -1159,12 +1151,12 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
                       method_params with
                       types =
                         List.map
-                          (fun (var : C.type_var) ->
+                          (fun (var : C.type_param) ->
                             { var with C.index = shift_ty_var var.C.index })
                           method_params.types;
                       const_generics =
                         List.map
-                          (fun (var : C.const_generic_var) ->
+                          (fun (var : C.const_generic_param) ->
                             { var with C.index = shift_cg_var var.C.index })
                           method_params.const_generics;
                     }
@@ -1175,22 +1167,22 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
                 (Charon.PrintGAst.fun_sig_to_string env.format_env "" " " method_sig);
               let ts, t = typ_of_signature env method_sig in
               let t = maybe_ts ts t in
-              TraitClauseMethod { item_name; pretty_name; clause_id = clause_ref.trait_id; ts }, t)
+              TraitClauseMethod { item_name; pretty_name; clause_id = clause_ref.kind; ts }, t)
             trait_decl.C.methods
         (* 1 + 2, recursively, for parent traits *)
         @ List.concat_map
-            (fun (parent_clause : C.trait_clause) ->
+            (fun (parent_clause : C.trait_param) ->
               (* Make the clause valid outside the scope of the trait decl. *)
-              let parent_clause = substitute_visitor#visit_trait_clause subst parent_clause in
+              let parent_clause = substitute_visitor#visit_trait_param subst parent_clause in
               (* Mapping of the methods of the parent clause *)
               let clause_ref : C.trait_ref =
                 {
-                  trait_id = ParentClause (clause_ref, parent_clause.clause_id);
+                  kind = ParentClause (clause_ref, parent_clause.clause_id);
                   trait_decl_ref = parent_clause.trait;
                 }
               in
               mk_clause_binders_and_args env ~depth:(depth ^ "--") ~clause_ref [ parent_clause ])
-            trait_decl.C.parent_clauses
+            trait_decl.C.implied_clauses
       end)
     trait_clauses
 
@@ -1203,7 +1195,7 @@ and lookup_signature env depth signature : lookup_result =
     (String.concat " ++ " (List.map (Charon.PrintTypes.ty_to_string env.format_env) inputs))
     (Charon.PrintTypes.ty_to_string env.format_env output);
   L.log "Calls" "%sType parameters for this signature: %s\n" depth
-    (String.concat " ++ " (List.map Charon.PrintTypes.type_var_to_string type_params));
+    (String.concat " ++ " (List.map Charon.PrintTypes.type_param_to_string type_params));
   let env = push_cg_binders env const_generics in
   let env = push_type_binders env type_params in
 
@@ -1213,7 +1205,8 @@ and lookup_signature env depth signature : lookup_result =
 
   {
     ts = { n = List.length type_params; n_cgs = List.length const_generics };
-    cg_types = List.map (fun (v : C.const_generic_var) -> typ_of_literal_ty env v.ty) const_generics;
+    cg_types =
+      List.map (fun (v : C.const_generic_param) -> typ_of_literal_ty env v.ty) const_generics;
     arg_types =
       (clause_ts
       @ List.map (typ_of_ty env) inputs
@@ -1250,12 +1243,12 @@ and debug_trait_clause_mapping env (mapping : (var_id * K.typ) list) =
       | TraitClauseMethod { clause_id; item_name; ts; _ } ->
           L.log "TraitClauses" "@@@ method name: %s" item_name;
           L.log "TraitClauses" "%s::%s: %a has trait-level %d const generics, %d type vars\n"
-            (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
+            (Charon.PrintTypes.trait_ref_kind_to_string env.format_env None clause_id)
             item_name ptyp t ts.K.n_cgs ts.n
       | TraitClauseConstant { clause_id; item_name; _ } ->
           L.log "TraitClauses" "@@@ method name: %s" item_name;
           L.log "TraitClauses" "%s::%s: associated constant %a\n"
-            (Charon.PrintTypes.trait_instance_id_to_string env.format_env clause_id)
+            (Charon.PrintTypes.trait_ref_kind_to_string env.format_env None clause_id)
             item_name ptyp t
       | _ -> ())
     mapping
@@ -1285,11 +1278,11 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
         K.EQualified lid, lookup_signature env depth signature
       in
 
-      match f.func with
+      match f.kind with
       | FunId (FRegular f) -> lookup_result_of_fun_id f
       | FunId (FBuiltin f) -> fail "unknown builtin function: %s" (C.show_builtin_fun_id f)
       | TraitMethod (trait_ref, method_name, _trait_opaque_signature) -> (
-          match trait_ref.trait_id with
+          match trait_ref.kind with
           | TraitImpl { id; _ } ->
               let trait = env.get_nth_trait_impl id in
               let f =
@@ -1317,7 +1310,7 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
                 method_name))
 
 let fn_ptr_is_opaque env (fn_ptr : C.fn_ptr) =
-  match fn_ptr.func with
+  match fn_ptr.kind with
   | FunId (FRegular id) -> ( try (env.get_nth_function id).body = None with Not_found -> false)
   | _ -> false
 
@@ -1327,9 +1320,9 @@ let fn_ptr_is_opaque env (fn_ptr : C.fn_ptr) =
 let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   let {
     C.generics = { types = type_args; const_generics = const_generic_args; trait_refs; _ };
-    func;
+    kind;
     _;
-  } =
+  } : C.fn_ptr =
     fn_ptr
   in
 
@@ -1349,8 +1342,8 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
      do behave accordingly and provide arguments for both T and U. *)
   let type_args, const_generic_args, trait_refs =
     let generics =
-      match func with
-      | TraitMethod ({ trait_id = TraitImpl { generics; _ }; _ }, _, _) ->
+      match kind with
+      | TraitMethod ({ kind = TraitImpl { generics; _ }; _ }, _, _) ->
           L.log "Calls" "%s--> this is a trait method" depth;
           generics
       | _ -> C.empty_generic_args
@@ -1418,7 +1411,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
             in
             L.log "Calls" "%s--> trait_ref %s: %s\n" depth name (C.show_trait_ref trait_ref);
 
-            match trait_ref.trait_id with
+            match trait_ref.kind with
             | _ when List.mem name blocklisted_trait_decls ->
                 (* Trait not supported -- don't synthesize arguments *)
                 []
@@ -1444,7 +1437,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                       let fun_decl_id = bound_fn.C.binder_value.C.id in
                       let fn_ptr : C.fn_ptr =
                         {
-                          func = TraitMethod (trait_ref, item_name, fun_decl_id);
+                          kind = TraitMethod (trait_ref, item_name, fun_decl_id);
                           generics = Charon.TypesUtils.empty_generic_args;
                         }
                       in
@@ -1458,13 +1451,13 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                      (*_generics.trait_refs*)
                      List.map
                        (Charon.Substitute.st_substitute_visitor#visit_trait_ref subst)
-                       trait_impl.parent_trait_refs)
+                       trait_impl.implied_trait_refs)
             | Clause _ as clause_id ->
                 (* Caller it itself polymorphic and refers to one of its own clauses to synthesize
                    the clause arguments at call-site. We must pass whatever is relevant for this
                    clause, *transitively* (this means all the reachable parents). *)
                 let rec relevant = function
-                  | C.ParentClause (tref', _) -> relevant tref'.trait_id
+                  | C.ParentClause (tref', _) -> relevant tref'.kind
                   | clause_id' -> clause_id = clause_id'
                 in
                 List.rev
@@ -1481,7 +1474,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                 let trait_decl = env.get_nth_trait_decl decl_id in
                 let name = string_of_name env trait_decl.item_meta.name in
                 let clause_id = C.TraitClauseId.to_int clause_id in
-                let parent_clause = List.nth trait_decl.parent_clauses clause_id in
+                let parent_clause = List.nth trait_decl.implied_clauses clause_id in
                 let parent_clause_decl =
                   env.get_nth_trait_decl parent_clause.trait.binder_value.id
                 in
@@ -1578,7 +1571,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
 
 let expression_of_fn_ptr env (fn_ptr : C.fn_ptr) = expression_of_fn_ptr env "" fn_ptr
 
-let global_is_const env id = 
+let global_is_const env id =
   match (env.get_nth_global id).global_kind with
   | NamedConst | AnonConst -> true
   | Static -> false
@@ -1588,25 +1581,18 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
   | Copy ({ kind = PlaceGlobal { id; _ }; _ } as p) when global_is_const env id ->
       (* No need to copy a const since by definition it cannot be modified *)
       expression_of_place env p
-  | Copy p ->
-      let e = expression_of_place env p in
-      begin
-        match p.ty with
-        | C.TAdt { id = TBuiltin TArray; generics = { const_generics = [ cg ]; _ } } ->
-            mk_deep_copy e (expression_of_const_generic env cg)
-        | _ -> e
-      end
+  | Copy p -> expression_of_place env p
   | Move p -> expression_of_place env p
-  | Constant { value = CLiteral l; _ } -> expression_of_literal env l
-  | Constant { value = CVar var; _ } -> expression_of_cg_var_id env (C.expect_free_var var)
-  | Constant { value = CFnPtr fn_ptr; _ } ->
+  | Constant { kind = CLiteral l; _ } -> expression_of_literal env l
+  | Constant { kind = CVar var; _ } -> expression_of_cg_var_id env (C.expect_free_var var)
+  | Constant { kind = CFnPtr fn_ptr; _ } ->
       let e, _, _ = expression_of_fn_ptr env fn_ptr in
       e
-  | Constant { value = CTraitConst (({ C.trait_id; _ } as trait_ref), name); _ } -> begin
+  | Constant { kind = CTraitConst (({ C.kind; _ } as trait_ref), name); _ } -> begin
       (* Logic similar to lookup_fun *)
-      match trait_id with
+      match kind with
       | Clause _ | ParentClause _ ->
-          let i, t = lookup_clause_constant env trait_id name in
+          let i, t = lookup_clause_constant env kind name in
           K.(with_type t (EBound i))
       | TraitImpl { id; _ } ->
           let trait = env.get_nth_trait_impl id in
@@ -1639,6 +1625,13 @@ let is_box_place (p : C.place) =
   | C.TAdt { id = TBuiltin TBox; _ } -> true
   | _ -> false
 
+let expression_of_cg (env : env) (cg : K.cg) =
+  match cg with
+  | CgConst n -> Krml.Helpers.mk_sizet (int_of_string (snd n))
+  | CgVar var ->
+      let diff = List.length env.binders - List.length env.cg_binders in
+      K.with_type (K.TInt SizeT) (K.EBound (var + diff))
+
 let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   match p with
   | Use op -> expression_of_operand env op
@@ -1656,8 +1649,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
      In the future however, we might want to handle [Box] types differently, so this is a note
      to ourselves to be careful with this.
      *)
-  | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _)
-  | RawPtr ({ kind = PlaceProjection (p, Deref); _ }, _) ->
+  | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _, _)
+  | RawPtr ({ kind = PlaceProjection (p, Deref); _ }, _, _) ->
       (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and [p] might be a reference to DST (fat pointer). *)
       expression_of_place env p
   | RvRef
@@ -1668,6 +1661,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
                  Field (ProjAdt (typ_id, None), field_id) );
            _;
          } as p),
+        _,
         _ ) ->
       let field_name = lookup_field env typ_id field_id in
       begin
@@ -1705,7 +1699,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
             let e = expression_of_place env p in
             maybe_addrof env p.ty e
       end
-  | RvRef (p, _) | RawPtr (p, _) ->
+  | RvRef (p, _, _) | RawPtr (p, _, _) ->
       let e = expression_of_place env p in
       (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
          pass one for the other *)
@@ -1716,7 +1710,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
-  | UnaryOp (Cast (CastTransmute ((TRawPtr _) as _from, (TLiteral (TUInt Usize) as to_))), e) ->
+  | UnaryOp (Cast (CastTransmute ((TRawPtr _ as _from), (TLiteral (TUInt Usize) as to_))), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
   | UnaryOp (Cast (CastFnPtr (TFnDef _from, TFnPtr _to)), e) ->
@@ -1736,69 +1730,33 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       let t_from = typ_of_ty env ty_from and t_to = typ_of_ty env ty_to in
       let e = expression_of_operand env e in
       begin
-        (* TODO: this whole piece of code should handle TCgArray too *)
-        match t_from, is_dst env t_to, ty_from, ty_to with
-        | TBuf (TApp (lid1, [ TArray (u1, n) ]), _), Some (lid2, TApp (slice_hd, [ u2 ]), t_u), _, _
-          when lid1 = lid2 && u1 = u2 && slice_hd = Builtin.derefed_slice ->
-            let len = Krml.Helpers.mk_sizet (int_of_string (snd n)) in
+        match t_from, is_dst env t_to with
+        | ( TBuf (TApp (lid1, [ K.TCgApp (K.TApp (lid_arr, [ u1 ]), cg) ]), _),
+            Some (lid2, TApp (slice_hd, [ u2 ]), t_u) )
+          when lid1 = lid2 && u1 = u2 && slice_hd = Builtin.derefed_slice && lid_arr = Builtin.arr
+          ->
             (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
              `Eurydice_derefed_slice data` (a.k.a. `char data[]`) *)
+            let len = expression_of_cg env cg in
             let ptr = K.with_type (TBuf (t_u, false)) (K.ECast (e, TBuf (t_u, false))) in
             Builtin.dst_new ~len ~ptr t_u
-        | ( _,
-            _,
-            TAdt
-              {
-                id = TBuiltin TBox;
-                generics =
-                  {
-                    types =
-                      [
-                        TAdt
-                          {
-                            id = TBuiltin TArray;
-                            generics = { types = [ t1 ]; const_generics = [ cg ]; _ };
-                          };
-                      ];
-                    _;
-                  };
-              },
-            TAdt
-              {
-                id = TBuiltin TBox;
-                generics =
-                  { types = [ TAdt { id = TBuiltin TSlice; generics = { types = [ t2 ]; _ } } ]; _ };
-              } ) ->
-            (* Cast from Box<[T; N]> to Box<[T]> which we represent as Eurydice_slice.
-               This is basically the same as above, but because we translate Box straight to *, in
-               order to account for array decay and the like, we have to match on original Rust
-               types. Note that we cannot really compile Box<T> to a struct, as it would defeat the
-               pointer semantics of Box and turn passing by reference into passing by value (array
-               within struct).
-            *)
-            assert (t1 = t2);
-            let t_from = maybe_cg_array env t1 cg in
-            let t, n =
-              match t_from with
-              | TArray (t, n) -> t, n
-              | _ -> failwith "impossible"
-            in
-            let len = Krml.Helpers.mk_sizet (int_of_string (snd n)) in
-            (* slice_of_boxed_array: 0* -> size_t -> Eurydice_slice 0 *)
-            let slice_of_boxed_array = Builtin.(expr_of_builtin slice_of_boxed_array) in
-            (* slice_of_boxed_array: 0* -> size_t -> Eurydice_slice 0 *)
-            let slice_of_boxed_array =
+        | TBuf (K.TCgApp (K.TApp (lid_arr, [ t ]), cg), _), _ when lid_arr = Builtin.arr ->
+            (* Cast from Box<[T;N]> to Box<[T]> which we represent as Eurydice_slice *)
+            let len = expression_of_cg env cg in
+            (* array_to_slice: size_t -> arr -> Eurydice_slice 0 *)
+            let array_to_slice = Builtin.(expr_of_builtin array_to_slice) in
+            let diff = List.length env.binders - List.length env.cg_binders in
+            let array_to_slice =
               K.with_type
-                (Krml.DeBruijn.subst_t t 0 slice_of_boxed_array.typ)
-                (K.ETApp (slice_of_boxed_array, [], [], [ t ]))
+                Krml.DeBruijn.(subst_t t 0 (subst_ct diff len 0 Builtin.array_to_slice.typ))
+                (K.ETApp (array_to_slice, [ len ], [], [ t ]))
             in
-            K.(with_type (Builtin.mk_slice t) (EApp (slice_of_boxed_array, [ e; len ])))
+            K.(with_type (Builtin.mk_slice t) (EApp (array_to_slice, [ e ])))
         | _ ->
             Krml.Warn.fatal_error "unknown unsize cast: `%s`\nt_to=%a\nt_from=%a"
               (Charon.PrintExpressions.cast_kind_to_string env.format_env ck)
               ptyp t_to ptyp t_from
       end
-
   | UnaryOp (Cast ck, e) ->
       (* Add a simpler case: identity cast is allowed *)
       let is_ident =
@@ -1808,6 +1766,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
         (* The following are `type`s *)
         | C.CastFnPtr (f, t) | C.CastRawPtr (f, t) | C.CastUnsize (f, t, _) | C.CastTransmute (f, t)
           -> f = t
+        | C.CastConcretize _ -> false
       in
       if is_ident then
         expression_of_operand env e
@@ -1872,9 +1831,26 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   | Aggregate (AggregatedAdt ({ id = TBuiltin _; _ }, _, _), _) ->
       failwith "unsupported: AggregatedAdt / TAssume"
   | Aggregate (AggregatedArray (t, cg), ops) ->
-      K.with_type
-        (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
-        (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
+      let ty = typ_of_ty env t in
+      let typ_arr = typ_of_struct_arr env t cg in
+      begin
+        match ops with
+        | [] ->
+            let empty_array =
+              K.with_type
+                Krml.DeBruijn.(subst_t ty 0 Builtin.empty_array.typ)
+                (K.ETApp (Builtin.(expr_of_builtin empty_array), [], [], [ ty ]))
+            in
+            K.with_type typ_arr (K.EApp (empty_array, [ K.with_type ty K.EAny ]))
+            (* a dummy arg is needed to pass the checker *)
+        | _ ->
+            let array_expr =
+              K.with_type
+                (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
+                (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
+            in
+            K.with_type typ_arr (expression_of_struct_Arr array_expr)
+      end
   | rvalue ->
       failwith
         ("unsupported rvalue: `"
@@ -1947,7 +1923,8 @@ let rec expression_of_switch_128bits env ret_var scrutinee branches default : K.
   in
   List.fold_right folder branches else_branch
 
-and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_statement) : K.expr =
+and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.statement_kind) : K.expr
+    =
   match s with
   | Assign (p, rv) ->
       let expected_ty = p.ty in
@@ -1979,7 +1956,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
         func =
           FnOpRegular
             {
-              func = FunId (FBuiltin ArrayRepeat);
+              kind = FunId (FBuiltin ArrayRepeat);
               generics = { types = [ ty ]; const_generics = [ c ]; _ };
               _;
             };
@@ -1990,6 +1967,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
       (* Special treatment *)
       let e = expression_of_operand env e in
       let t = typ_of_ty env ty in
+      let t_array = maybe_cg_array env ty c in
       let len = expression_of_const_generic env c in
       let dest = expression_of_place env dest in
       let repeat =
@@ -2005,14 +1983,19 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
             Krml.DeBruijn.(subst_t t 0 (subst_ct diff len 0 Builtin.array_repeat.typ))
             (ETApp (repeat, [ len ], [], [ t ])))
       in
-      Krml.Helpers.with_unit K.(EAssign (dest, with_type dest.typ (EApp (repeat, [ e ]))))
+      Krml.Helpers.with_unit
+        K.(
+          EAssign
+            ( dest,
+              with_type dest.typ
+                (expression_of_struct_Arr (with_type t_array (EApp (repeat, [ e ])))) ))
   | Call
       {
         func =
           FnOpRegular
             {
-              func = FunId (FBuiltin (Index { is_array = true; mutability = _; is_range = false }));
-              generics = { types = [ ty ]; _ };
+              kind = FunId (FBuiltin (Index { is_array = true; mutability = _; is_range = false }));
+              generics = { types = [ ty ]; const_generics = [ cg ]; _ };
               _;
             };
         args = [ e1; e2 ];
@@ -2020,9 +2003,18 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
         _;
       } ->
       (* Special treatment because of the usage of maybe_addrof *)
+      (* Special treatment for e1[e2] of array which are translated into struct
+         e1[e2] is translated as fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T
+
+         Since [T;N] is transalted into arr$T$N, we need to first dereference
+         the e1 to get the struct, and then take its field "data" to get the
+         array *)
       let e1 = expression_of_operand env e1 in
       let e2 = expression_of_operand env e2 in
       let t = typ_of_ty env ty in
+      let t_array = maybe_cg_array env ty cg in
+      let e1 = Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e1.K.typ) e1.K.node) in
+      let e1 = K.with_type t_array (K.EField (e1, "data")) in
       let dest = expression_of_place env dest in
       Krml.Helpers.with_unit
         K.(EAssign (dest, maybe_addrof env ty (with_type t (EBufRead (e1, e2)))))
@@ -2087,7 +2079,10 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
 
          This 100% does not work in case of a polymorphic function that is later monomorphized,
          meaning we really should be doing this transformation post-monomorphization. *)
-      let hd, output_t =
+
+      (* Array handling: commented special case for array *)
+      (*
+        let hd, output_t =
         match hd.node with
         | K.ETApp ({ node = EQualified lid; _ }, [], [], [ TArray (t, n) ])
           when lid = Builtin.box_new.name ->
@@ -2099,8 +2094,7 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
                   (ETApp (Builtin.(expr_of_builtin box_new_array), [ len ], [], [ t ]))),
               output_t )
         | _ -> hd, output_t
-      in
-
+      in *)
       let rhs =
         if args = [] then
           hd
@@ -2111,13 +2105,13 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
       let rhs =
         (* TODO: determine whether extra_types is necessary *)
         let extra_types =
-          match fn_ptr.func with
-          | TraitMethod ({ trait_id = TraitImpl { id = _; generics }; _ }, _, _) -> generics.types
+          match fn_ptr.kind with
+          | TraitMethod ({ kind = TraitImpl { id = _; generics }; _ }, _, _) -> generics.types
           | _ -> []
         in
-        match fn_ptr.func, fn_ptr.generics.types @ extra_types with
+        match fn_ptr.kind, fn_ptr.generics.types @ extra_types with
         | ( FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })),
-            [ TAdt { id = TBuiltin (TArray | TSlice); _ } ] ) ->
+            [ TAdt { id = TBuiltin TSlice; _ } ] ) ->
             (* Will decay. See comment above maybe_addrof *)
             rhs
         | ( FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })),
@@ -2144,7 +2138,12 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
       let t = lesser e1.typ e2.typ in
       K.(with_type t (EIfThenElse (expression_of_operand env op, e1, e2)))
   | Switch (SwitchInt (scrutinee, int_ty, branches, default)) ->
-      if int_ty = Signed I128 || int_ty = Unsigned U128 then
+      let branches =
+        List.map
+          (fun (litl, block) -> List.map Charon.ValuesUtils.literal_as_scalar litl, block)
+          branches
+      in
+      if int_ty = TInt I128 || int_ty = TUInt U128 then
         expression_of_switch_128bits env ret_var scrutinee branches default
       else
         let scrutinee = expression_of_operand env scrutinee in
@@ -2211,11 +2210,11 @@ and expression_of_raw_statement (env : env) (ret_var : C.local_id) (s : C.raw_st
   | _ ->
       failwith
         ("Unsupported statement: "
-        ^ Charon.PrintLlbcAst.Ast.raw_statement_to_string env.format_env "" "" s)
+        ^ Charon.PrintLlbcAst.Ast.statement_kind_to_string env.format_env "" "" s)
 
 and expression_of_statement (env : env) (ret_var : C.local_id) (s : C.statement) : K.expr =
   {
-    (expression_of_raw_statement env ret_var s.content) with
+    (expression_of_statement_kind env ret_var s.kind) with
     meta =
       (if !Options.comments then
          List.map (fun x -> K.CommentBefore x) s.comments_before
@@ -2242,7 +2241,7 @@ let seen = ref 0
 let total = ref 0
 
 (** List all the ids in this declaration group. *)
-let declaration_group_to_list (g : C.declaration_group) : C.any_decl_id list =
+let declaration_group_to_list (g : C.declaration_group) : C.item_id list =
   match g with
   | FunGroup g -> List.map (fun id -> C.IdFun id) (C.g_declaration_group_to_list g)
   | TypeGroup g -> List.map (fun id -> C.IdType id) (C.g_declaration_group_to_list g)
@@ -2262,7 +2261,7 @@ let flags_of_meta (meta : C.item_meta) : K.flags =
             meta.attr_info.attributes));
   ]
 
-let check_if_dst (env : env) (id : C.any_decl_id) : env =
+let check_if_dst (env : env) (id : C.item_id) : env =
   match id with
   | C.IdType id ->
       let decl = env.get_nth_type id in
@@ -2271,7 +2270,7 @@ let check_if_dst (env : env) (id : C.any_decl_id) : env =
         let sized_pattern = Charon.NameMatcher.parse_pattern "core::marker::Sized" in
         let matches = Charon.NameMatcher.match_name env.name_ctx RustNames.config sized_pattern in
         List.filter
-          (fun (tc : C.trait_clause) ->
+          (fun (tc : C.trait_param) ->
             let trait_decl = env.get_nth_trait_decl tc.trait.binder_value.id in
             matches trait_decl.item_meta.name)
           decl.generics.trait_clauses
@@ -2304,7 +2303,7 @@ let check_if_dst (env : env) (id : C.any_decl_id) : env =
         env
   | _ -> env
 
-let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
+let decl_of_id (env : env) (id : C.item_id) : K.decl option =
   match id with
   | IdType id -> begin
       let decl = env.get_nth_type id in
@@ -2335,7 +2334,8 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
           let has_custom_constants =
             let rec has_custom_constants i = function
               | { C.discriminant; _ } :: bs ->
-                  Charon.Scalars.get_val discriminant <> Z.of_int i
+                  Charon.Scalars.get_val (Charon.ValuesUtils.literal_as_scalar discriminant)
+                  <> Z.of_int i
                   || has_custom_constants (i + 1) bs
               | _ -> false
             in
@@ -2347,7 +2347,8 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
               (fun ({ C.variant_name; discriminant; _ } : C.variant) ->
                 let v =
                   if has_custom_constants then
-                    Some (Charon.Scalars.get_val discriminant)
+                    Some
+                      (Charon.Scalars.get_val (Charon.ValuesUtils.literal_as_scalar discriminant))
                   else
                     None
                 in
@@ -2383,7 +2384,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       match decl with
       | None -> None
       | Some decl -> (
-          let { C.def_id; signature; body; item_meta; kind; _ } = decl in
+          let { C.def_id; signature; body; item_meta; src; _ } = decl in
           let env = { env with generic_params = signature.generics } in
           L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
             (if body = None then
@@ -2395,7 +2396,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
 
           assert (def_id = id);
           let name = lid_of_name env item_meta.name in
-          match body, kind with
+          match body, src with
           | _, TraitDeclItem (_, _, false) ->
               (* We skip those on the basis that they generate useless external prototypes, which we
                  do not really need. *)
@@ -2415,7 +2416,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                   (String.concat " ++ "
                      (List.map
                         (fun (local : C.local) ->
-                          Charon.PrintTypes.ty_to_string env.format_env local.var_ty)
+                          Charon.PrintTypes.ty_to_string env.format_env local.local_ty)
                         locals.locals));
                 L.log "AstOfLlbc" "ty of inputs: %s"
                   (String.concat " ++ "
@@ -2429,7 +2430,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                 let return_var = List.hd args in
                 let args = List.tl args in
 
-                let return_type = typ_of_ty env return_var.var_ty in
+                let return_type = typ_of_ty env return_var.local_ty in
 
                 (* Note: Rust allows zero-argument functions but the krml internal
                    representation wants a unit there. This is aligned with typ_of_signature. *)
@@ -2447,7 +2448,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                     {
                       C.index = Charon.Expressions.LocalId.of_int max_int;
                       name = None;
-                      var_ty = t_unit;
+                      local_ty = t_unit;
                     }
                   in
                   if args = [] then
@@ -2473,7 +2474,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
 
                 let arg_binders =
                   List.map
-                    (fun (arg : C.const_generic_var) ->
+                    (fun (arg : C.const_generic_param) ->
                       Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty))
                     signature.C.generics.const_generics
                   @ List.map
@@ -2486,7 +2487,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
                   @ List.map
                       (fun (arg : C.local) ->
                         let name = Option.value ~default:"_" arg.name in
-                        Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.var_ty))
+                        Krml.Helpers.fresh_binder ~mut:true name (typ_of_ty env arg.local_ty))
                       args
                 in
 
@@ -2548,7 +2549,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
             (* This one needs to have an address, so definitely not emitting it as a macro. *)
             []
       in
-      let body = env.get_nth_function def.body in
+      let body = env.get_nth_function def.init in
       L.log "AstOfLlbc" "Corresponding body:%s"
         (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " body);
       begin
@@ -2564,7 +2565,7 @@ let decl_of_id (env : env) (id : C.any_decl_id) : K.decl option =
       end
   | IdTraitDecl _ | IdTraitImpl _ -> None
 
-let name_of_id env (id : C.any_decl_id) =
+let name_of_id env (id : C.item_id) =
   match id with
   | IdType id -> (env.get_nth_type id).item_meta.name
   | IdFun id -> (env.get_nth_function id).item_meta.name
@@ -2658,13 +2659,23 @@ let decl_of_id env decl =
         else
           None)
 
-let flatten_declarations (d : C.declaration_group list) : C.any_decl_id list =
+let flatten_declarations (d : C.declaration_group list) : C.item_id list =
   List.flatten (List.map declaration_group_to_list d)
 
-let decls_of_declarations (env : env) (d : C.any_decl_id list) : K.decl list =
+let decls_of_declarations (env : env) (d : C.item_id list) : K.decl list =
   incr seen;
   L.log "Progress" "%s: %d/%d" env.crate_name !seen !total;
   Krml.KList.filter_some @@ List.map (decl_of_id env) d
+
+(*
+let impl_obligation (ob: decl_obligation) : K.decl =
+    match ob with ObliArray (lid, t_array) ->
+      L.log "AstOfLlbc" "append new decl of struct: %a" plid lid;
+      K.DType (lid, [], 1, 1, Flat [(Some "data",(t_array,true))])
+     
+let impl_obligations (obpairs : (decl_obligation * unit) list) : K.decl list =
+  List.map impl_obligation (List.map fst obpairs)
+  *)
 
 let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   let {
@@ -2714,4 +2725,7 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
     }
   in
   let env = List.fold_left check_if_dst env declarations in
-  name, decls_of_declarations env declarations
+  let trans_decls = decls_of_declarations env declarations in
+  L.log "AstofLlbc" "Translated decls";
+  let extra_decls = [ Builtin.decl_of_arr ] in
+  name, trans_decls @ extra_decls
