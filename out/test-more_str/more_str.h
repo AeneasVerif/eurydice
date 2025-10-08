@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __more_str_H
-#define __more_str_H
+#ifndef more_str_H
+#define more_str_H
 
 #include "eurydice_glue.h"
 
@@ -37,5 +37,5 @@ void more_str_main(void);
 }
 #endif
 
-#define __more_str_H_DEFINED
-#endif
+#define more_str_H_DEFINED
+#endif /* more_str_H */

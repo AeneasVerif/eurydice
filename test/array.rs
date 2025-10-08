@@ -48,6 +48,14 @@ fn const_eq<const K:usize>(x: [u32; K], y: [u32; K]) -> bool {
 pub fn fun(x: &[[u8; 32]]) -> u8 {
     x[0][0..1][0]
 }
+ 
+fn init() -> [u8; 32] {
+    [0u8; 32]
+}
+
+fn references() -> () {
+    let x = &init();
+}
 
 fn main() {
     // XXX1

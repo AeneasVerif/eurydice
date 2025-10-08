@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __traits3_H
-#define __traits3_H
+#ifndef traits3_H
+#define traits3_H
 
 #include "eurydice_glue.h"
 
@@ -45,5 +45,5 @@ typedef uint64_t_x2 traits3_uint64x2_t;
 }
 #endif
 
-#define __traits3_H_DEFINED
-#endif
+#define traits3_H_DEFINED
+#endif /* traits3_H */

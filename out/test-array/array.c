@@ -32,6 +32,11 @@ uint8_t array_fun(Eurydice_dst_ref_fc x)
       uint8_t *);
 }
 
+Eurydice_arr_60 array_init(void)
+{
+  return (KRML_CLITERAL(Eurydice_arr_60){ .data = { 0U } });
+}
+
 array_Foo array_mk_foo(void)
 {
   Eurydice_arr_b2 x = { .data = { 0U } };
@@ -369,5 +374,10 @@ void array_main(void)
   bool lvalue = true;
   _bool__x2 uu____6 = { .fst = &b, .snd = &lvalue };
   EURYDICE_ASSERT(uu____6.fst[0U] == uu____6.snd[0U], "panic!");
+}
+
+void array_references(void)
+{
+  array_init();
 }
 

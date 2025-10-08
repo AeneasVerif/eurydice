@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __traits2_H
-#define __traits2_H
+#ifndef traits2_H
+#define traits2_H
 
 #include "eurydice_glue.h"
 
@@ -96,5 +96,5 @@ void traits2_main(void);
 }
 #endif
 
-#define __traits2_H_DEFINED
-#endif
+#define traits2_H_DEFINED
+#endif /* traits2_H */

@@ -25,7 +25,9 @@
 #include <utility>
 
 #ifndef __cpp_lib_type_identity
-template <class T> struct type_identity { using type = T; };
+template <class T> struct type_identity {
+  using type = T;
+};
 
 template <class T> using type_identity_t = typename type_identity<T>::type;
 #else
@@ -111,12 +113,12 @@ using std::type_identity_t;
 #define Eurydice_slice_copy(dst, src, t)                                       \
   memcpy(dst.ptr, src.ptr, dst.meta * sizeof(t))
 
-//#define core_array___Array_T__N___as_slice(len_, ptr_, t, _ret_t)
-//  KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
+// #define core_array___Array_T__N___as_slice(len_, ptr_, t, _ret_t)
+//   KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
 
 #define core_array__core__clone__Clone_for__Array_T__N___clone(                \
-    len, src, dst, elem_type, _ret_t)                                          \
-  (memcpy(dst, src, len * sizeof(elem_type)))
+    len, src, elem_type, _ret_t)                                               \
+  (*(src))
 #define TryFromSliceError uint8_t
 #define core_array_TryFromSliceError uint8_t
 

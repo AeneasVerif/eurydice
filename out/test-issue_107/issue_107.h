@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __issue_107_H
-#define __issue_107_H
+#ifndef issue_107_H
+#define issue_107_H
 
 #include "eurydice_glue.h"
 
@@ -26,5 +26,5 @@ uint8_t issue_107_f_90(void);
 }
 #endif
 
-#define __issue_107_H_DEFINED
-#endif
+#define issue_107_H_DEFINED
+#endif /* issue_107_H */

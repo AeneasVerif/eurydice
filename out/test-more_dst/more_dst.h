@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __more_dst_H
-#define __more_dst_H
+#ifndef more_dst_H
+#define more_dst_H
 
 #include "eurydice_glue.h"
 
@@ -125,5 +125,5 @@ void more_dst_main(void);
 }
 #endif
 
-#define __more_dst_H_DEFINED
-#endif
+#define more_dst_H_DEFINED
+#endif /* more_dst_H */

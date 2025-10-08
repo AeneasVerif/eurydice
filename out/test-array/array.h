@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __array_H
-#define __array_H
+#ifndef array_H
+#define array_H
 
 #include "eurydice_glue.h"
 
@@ -77,6 +77,8 @@ typedef struct Eurydice_dst_ref_fc_s
 Eurydice_dst_ref_fc;
 
 uint8_t array_fun(Eurydice_dst_ref_fc x);
+
+Eurydice_arr_60 array_init(void);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -283,9 +285,11 @@ bool array_const_eq_fd(Eurydice_arr_b2 x, Eurydice_arr_b2 y);
 
 void array_main(void);
 
+void array_references(void);
+
 #if defined(__cplusplus)
 }
 #endif
 
-#define __array_H_DEFINED
-#endif
+#define array_H_DEFINED
+#endif /* array_H */
