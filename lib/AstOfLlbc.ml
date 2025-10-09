@@ -362,13 +362,14 @@ let lookup_field env typ_id field_id =
 let mk_expr_arr_struct (expr_array : K.expr) = K.EFlat [ Some "data", expr_array ]
 
 (** A vtable type is actually just a struct type, this function takes out the hinted ID of the
-    vtable struct from the dynamic predicate and then translate it
+    vtable struct from the dynamic predicate and then translate it, returns a reference to the
+    struct type itself.
 
-    Notably, a dynamic predicate is of the form: [dyn Trait<TraitArgs, AssocTy=T, ...> + AutoTraits
-    + 'a]. Namely, it has the arguments to the unique non-auto trait and the assignments to each
-    associated types as the **principal trait** [Trait<...>], and then some additional auto-traits
-    having no methods and finally a region constraint. Here we care only about the principal trait.
-*)
+    Notably, a dynamic predicate is of the form:
+    [dyn Trait<TraitArgs, AssocTy=T, ...> + AutoTraits + 'a]. Namely, it has the arguments to the
+    unique non-auto trait and the assignments to each associated types as the **principal trait**
+    [Trait<...>], and then some additional auto-traits having no methods and finally a region
+    constraint. Here we care only about the principal trait. *)
 let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
   let binder_params = pred.binder.binder_params in
   match binder_params.trait_clauses with
@@ -466,7 +467,9 @@ and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
           match decl.ptr_metadata with
           | C.NoMetadata -> None
           | C.Length -> Some Krml.Helpers.usize
-          | C.VTable ty_ref -> Some (typ_of_ty env (C.TAdt ty_ref))
+          | C.VTable ty_ref ->
+              let ty_ref = { ty_ref with generics = ty_decl_ref.generics } in
+              Some (K.TBuf (typ_of_ty env (C.TAdt ty_ref), false))
           | C.InheritFrom (C.TVar (C.Free var)) ->
               let ty = List.nth ty_decl_ref.generics.types (C.TypeVarId.to_int var) in
               metadata_typ_of_ty env ty
@@ -512,7 +515,8 @@ and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
       failwith
         "Eurydice does not handle taking metadata from assoc types, please consider using \
          monomorphized LLBC."
-  | C.TDynTrait pred -> Some (vtable_typ_of_dyn_pred env pred)
+  (* The metadata of a &dyn Trait object is a pointer to its vtable *)
+  | C.TDynTrait pred -> Some (K.TBuf (vtable_typ_of_dyn_pred env pred, false))
   | C.TLiteral _ | C.TRef (_, _, _) | C.TRawPtr (_, _) | C.TFnPtr _ | C.TFnDef _ -> None
   (* The metadata must not have ptr metadata as they must be Sized. *)
   | C.TPtrMetadata _ -> None
@@ -528,7 +532,8 @@ and ptr_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   (* Special case to handle &str *)
   | TAdt { id = TBuiltin TStr; _ } -> Builtin.str_t
   (* Special case to handle DynTrait *)
-  | TDynTrait pred -> Builtin.mk_dst_ref Builtin.c_void_t (vtable_typ_of_dyn_pred env pred)
+  | TDynTrait pred ->
+      Builtin.mk_dst_ref Builtin.c_void_t (K.TBuf (vtable_typ_of_dyn_pred env pred, false))
   (* General case, all &T is turned to either thin T* or fat Eurydice::DstRef<T,Meta> *)
   | _ -> (
       let typ = typ_of_ty env ty in
