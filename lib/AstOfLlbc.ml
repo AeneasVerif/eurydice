@@ -361,16 +361,101 @@ let lookup_field env typ_id field_id =
 
 let mk_expr_arr_struct (expr_array : K.expr) = K.EFlat [ Some "data", expr_array ]
 
+(** A vtable type is actually just a struct type, this function takes out the hinted ID of the
+    vtable struct from the dynamic predicate and then translate it
+
+    Notably, a dynamic predicate is of the form: [dyn Trait<TraitArgs, AssocTy=T, ...> + AutoTraits
+    + 'a]. Namely, it has the arguments to the unique non-auto trait and the assignments to each
+    associated types as the **principal trait** [Trait<...>], and then some additional auto-traits
+    having no methods and finally a region constraint. Here we care only about the principal trait.
+*)
 let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
-  match pred.binder.binder_params.trait_clauses with
+  let binder_params = pred.binder.binder_params in
+  match binder_params.trait_clauses with
   | [] -> failwith "DynTrait has empty clause! Please report this to Charon."
-  | self_impl :: _ -> begin
-      let decl = env.get_nth_trait_decl self_impl.trait.binder_value.id in
+  (* As guaranteed by Rustc and hence Charon, the first clause must be the principal trait *)
+  | principal_clause :: _ -> (
+      let tref = principal_clause.trait.binder_value in
+      let decl = env.get_nth_trait_decl tref.id in
       match decl.vtable with
       | None ->
           failwith "Fetching vtable from a trait without vtable! Please report this to Charon."
-      | Some ty_ref -> typ_of_ty env (C.TAdt ty_ref)
-    end
+      | Some ty_ref ->
+          (* The ty_ref here is of the form: `{vtable}<TraitParams, AssocTys>` *)
+          (* Hence we need to firstly substitute `TraitParams` with the actual types provided by the dynamic predicate's `TraitArgs` *)
+          (* And then substitute `AssocTys` with the actual types provided by the dynamic predicate's assignments to these associated types *)
+          (* The helper function to handle DbVars *)
+          let out_of_binder_subst : Charon.Substitute.subst =
+            let open Charon.Substitute in
+            let shift = function
+              | C.Bound (dbid, var) ->
+                  assert (dbid > 0);
+                  C.Bound (dbid - 1, var)
+              | Free _ as var -> var
+            in
+            {
+              (* We don't care about the regions, simply ignore it. *)
+              r_subst = erase_regions_subst.r_subst;
+              ty_subst = compose empty_subst.ty_subst shift;
+              cg_subst = compose empty_subst.cg_subst shift;
+              tr_subst = compose empty_subst.tr_subst shift;
+              tr_self = empty_subst.tr_self;
+            }
+          in
+          (* The trait ref is guaranteed to be with empty binding values in the principal clause *)
+          let tref = Charon.Substitute.trait_decl_ref_substitute out_of_binder_subst tref in
+          (* First step: get the `TraitArgs` *)
+          let base_args =
+            let generics = tref.generics in
+            { generics with types = List.tl generics.types }
+          in
+          (* Second step: find from the assignments of assoc tys *)
+          let assoc_tys =
+            let rec drop n l =
+              if n <= 0 then
+                l
+              else
+                match l with
+                | [] -> []
+                | _ :: tl -> drop (n - 1) tl
+            in
+            let base_removal = drop (List.length base_args.types) in
+            let find_assoc_ty_arg = function
+              | C.TTraitType (tref, name) -> (
+                  (* We match by the trait-ID and the assoc-ty name, which should be unique *)
+                  let target_id = tref.trait_decl_ref.binder_value.id in
+                  let assoc_ty_assns = binder_params.trait_type_constraints in
+                  let finder (binded_assn : C.trait_type_constraint C.region_binder) =
+                    let assn =
+                      Charon.Substitute.trait_type_constraint_substitute out_of_binder_subst
+                        binded_assn.binder_value
+                    in
+                    if
+                      assn.trait_ref.trait_decl_ref.binder_value.id = target_id
+                      && assn.type_name = name
+                    then
+                      Some assn.ty
+                    else
+                      None
+                  in
+                  match List.find_map finder assoc_ty_assns with
+                  | Some ty -> ty
+                  | None ->
+                      fail "Could not find associated type assignment for associated type %s" name)
+              | _ ->
+                  failwith
+                    "This should not happen: the rest of the generic types in a vtable-ref in a \
+                     trait-decl should all be referring to associated types."
+            in
+            ty_ref.generics.types
+            (* Remove the base param types from it, leaving the associated types params *)
+            |> base_removal
+            (* For each assoc type param, find the corresponding arg from the dyn predicate *)
+            |> List.map find_assoc_ty_arg
+          in
+          let args = { base_args with types = base_args.types @ assoc_tys } in
+          let ty_args_ref = { ty_ref with generics = args } in
+          typ_of_ty env (C.TAdt ty_args_ref))
 
 and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
   match ty with
