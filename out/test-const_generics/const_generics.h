@@ -18,11 +18,49 @@ extern "C" {
 static inline Eurydice_arr_e9 core_num__u32__to_be_bytes(uint32_t x0);
 
 /**
+A monomorphic instance of Eurydice.dst_ref
+with types uint8_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_87_s
+{
+  uint8_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_87;
+
+/**
+A monomorphic instance of core.ops.range.RangeTo
+with types size_t
+
+*/
+typedef size_t core_ops_range_RangeTo_08;
+
+/**
+A monomorphic instance of core.ops.range.RangeFrom
+with types size_t
+
+*/
+typedef size_t core_ops_range_RangeFrom_08;
+
+/**
+A monomorphic instance of Eurydice.dst_ref
+with types uint32_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_3c_s
+{
+  uint32_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_3c;
+
+/**
 A monomorphic instance of const_generics.serialize
 with const generics
 - OUT_LEN= 8
 */
-Eurydice_arr_c4 const_generics_serialize_3b(Eurydice_slice re);
+Eurydice_arr_c4 const_generics_serialize_3b(Eurydice_dst_ref_3c re);
 
 /**
 A monomorphic instance of Eurydice.arr

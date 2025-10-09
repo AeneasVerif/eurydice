@@ -20,11 +20,23 @@ extern "C" {
 
 typedef uint8_t issue_128_E;
 
-void issue_128_fun_a(Eurydice_slice _x);
+/**
+A monomorphic instance of Eurydice.dst_ref
+with types uint8_t, size_t
 
-void issue_128_fun_b(Eurydice_slice _x);
+*/
+typedef struct Eurydice_dst_ref_87_s
+{
+  uint8_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_87;
 
-void issue_128_use_enum(issue_128_E e, Eurydice_slice x);
+void issue_128_fun_a(Eurydice_dst_ref_87 _x);
+
+void issue_128_fun_b(Eurydice_dst_ref_87 _x);
+
+void issue_128_use_enum(issue_128_E e, Eurydice_dst_ref_87 x);
 
 /**
 A monomorphic instance of Eurydice.arr
