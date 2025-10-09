@@ -58,23 +58,6 @@ using std::type_identity_t;
 
 // SLICES, ARRAYS, ETC.
 
-// We represent a slice as a pair of an (untyped) pointer, along with the length
-// of the slice, i.e. the number of elements in the slice (this is NOT the
-// number of bytes). This design choice has two important consequences.
-// - if you need to use `ptr`, you MUST cast it to a proper type *before*
-//   performing pointer arithmetic on it (remember that C desugars pointer
-//   arithmetic based on the type of the address)
-// - if you need to use `len` for a C style function (e.g. memcpy, memcmp), you
-//   need to multiply it by sizeof t, where t is the type of the elements.
-//
-// Empty slices have `len == 0` and `ptr` always needs to be a valid pointer
-// that is not NULL (otherwise the construction in EURYDICE_SLICE computes `NULL
-// + start`). 20250714: this is fine since C23.
-// typedef struct {
-//  void *ptr;
-//  size_t len;
-// } Eurydice_slice;
-
 #if defined(__cplusplus)
 #define KRML_CLITERAL(type) type
 #else
@@ -87,13 +70,6 @@ using std::type_identity_t;
 #else
 #define EURYDICE_CFIELD(X)
 #endif
-
-// Helper macro to create a slice out of a pointer x, a start index in x
-// (included), and an end index in x (excluded). The argument x must be suitably
-// cast to something that can decay (see remark above about how pointer
-// arithmetic works in C), meaning either pointer or array type.
-// #define EURYDICE_SLICE(x, start, end)
-//  (KRML_CLITERAL(Eurydice_slice){(void *)(x + start), end - (start)})
 
 // Slice length
 #define EURYDICE_SLICE_LEN(s, _) (s).meta
@@ -171,31 +147,6 @@ using std::type_identity_t;
   (src.meta >= len_                                                            \
        ? ((t_res){.tag = core_result_Ok, .val = {.case_Ok = arr_ptr}})         \
        : ((t_res){.tag = core_result_Err, .val = {.case_Err = 0}}))
-
-// SUPPORT FOR DSTs (Dynamically-Sized Types)
-
-// A DST is a fat pointer that keeps tracks of the size of it flexible array
-// member. Slices are a specific case of DSTs, where [T; N] implements
-// Unsize<[T]>, meaning an array of statically known size can be converted to a
-// fat pointer, i.e. a slice.
-//
-// Unlike slices, DSTs have a built-in definition that gets monomorphized, of
-// the form:
-//
-// typedef struct {
-//   T *ptr;
-//   size_t len; // number of elements
-// } Eurydice_dst;
-//
-// Furthermore, T = T0<[U0]> where `struct T0<U: ?Sized>`, where the `U` is the
-// last field. This means that there are two monomorphizations of T0 in the
-// program. One is `T0<[V; N]>`
-// -- this is directly converted to a Eurydice_dst via suitable codegen (no
-// macro). The other is `T = T0<[U]>`, where `[U]` gets emitted to
-// `Eurydice_derefed_slice`, a type that only appears in that precise situation
-// and is thus defined to give rise to a flexible array member.
-
-// typedef char Eurydice_derefed_slice[];
 
 // CORE STUFF (conversions, endianness, ...)
 
