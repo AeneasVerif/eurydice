@@ -39,7 +39,7 @@ void slice_array_f1(void)
       (size_t)2U,
       Eurydice_arr_e9,
       Eurydice_dst_ref_Eurydice_arr_uint8_t___4size_t___size_t_x2).fst;
-  Eurydice_slice_index(y0, (size_t)0U, Eurydice_arr_e9, Eurydice_arr_e9 *).data[0U] = 1U;
+  Eurydice_slice_index(y0, (size_t)0U, Eurydice_arr_e9).data[0U] = 1U;
   uint8_t actual = x.data->data[0U];
   uint8_t expected = 1U;
   _uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
@@ -57,7 +57,7 @@ void slice_array_f2(void)
       (size_t)2U,
       Eurydice_arr_e9,
       Eurydice_dst_ref_Eurydice_arr_uint8_t___4size_t___size_t_x2).fst;
-  Eurydice_arr_e9 z = Eurydice_slice_index(y0, (size_t)0U, Eurydice_arr_e9, Eurydice_arr_e9 *);
+  Eurydice_arr_e9 z = Eurydice_slice_index(y0, (size_t)0U, Eurydice_arr_e9);
   z.data[0U] = 1U;
   uint8_t actual = x.data->data[0U];
   uint8_t expected = 0U;

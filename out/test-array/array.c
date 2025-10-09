@@ -22,14 +22,10 @@ static Eurydice_dst_ref_87 array_to_subslice_36(Eurydice_arr_60 *a, core_ops_ran
 uint8_t array_fun(Eurydice_dst_ref_fc x)
 {
   return
-    Eurydice_slice_index(array_to_subslice_36(&Eurydice_slice_index(x,
-          (size_t)0U,
-          Eurydice_arr_60,
-          Eurydice_arr_60 *),
+    Eurydice_slice_index(array_to_subslice_36(&Eurydice_slice_index(x, (size_t)0U, Eurydice_arr_60),
         (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)1U })),
       (size_t)0U,
-      uint8_t,
-      uint8_t *);
+      uint8_t);
 }
 
 Eurydice_arr_60 array_init(void)

@@ -81,8 +81,7 @@ void dst_check_var_field(Eurydice_dst_ref_ed x)
           KRML_CLITERAL(Eurydice_dst_ref_3c){ .ptr = (uint32_t *)x.ptr->my_data, .meta = x.meta }
         ),
         (size_t)0U,
-        uint32_t,
-        uint32_t *),
+        uint32_t),
       .snd = &lvalue
     };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
@@ -99,8 +98,7 @@ void dst_check_var_field_ref(Eurydice_dst_ref_ed x)
           KRML_CLITERAL(Eurydice_dst_ref_3c){ .ptr = (uint32_t *)x.ptr->my_data, .meta = x.meta }
         ),
         (size_t)0U,
-        uint32_t,
-        uint32_t *),
+        uint32_t),
       .snd = &lvalue
     };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
@@ -120,8 +118,7 @@ void dst_check_var_field_ref3(Eurydice_dst_ref_fd x)
           }
         ),
         (size_t)0U,
-        Eurydice_arr_6f,
-        Eurydice_arr_6f *).data,
+        Eurydice_arr_6f).data,
       .snd = &lvalue
     };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
@@ -166,7 +163,7 @@ void dst_main4(void)
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
   _uint32_t__x2
-  uu____0 = { .fst = &Eurydice_slice_index(x, (size_t)3U, uint32_t, uint32_t *), .snd = &lvalue };
+  uu____0 = { .fst = &Eurydice_slice_index(x, (size_t)3U, uint32_t), .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
@@ -192,8 +189,7 @@ void dst_main(void)
           }
         ),
         (size_t)0U,
-        uint32_t,
-        uint32_t *),
+        uint32_t),
       .snd = &lvalue0
     };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
@@ -210,8 +206,7 @@ void dst_main(void)
           }
         ),
         (size_t)1U,
-        uint32_t,
-        uint32_t *),
+        uint32_t),
       .snd = &lvalue
     };
   EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");

@@ -27,8 +27,7 @@ void more_dst_main(void)
           KRML_CLITERAL(Eurydice_dst_ref_3c){ .ptr = (uint32_t *)y1.ptr->data, .meta = y1.meta }
         ),
         (size_t)1U,
-        uint32_t,
-        uint32_t *),
+        uint32_t),
       .snd = &lvalue0
     };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
@@ -46,8 +45,7 @@ void more_dst_main(void)
           }
         ),
         (size_t)2U,
-        uint32_t,
-        uint32_t *),
+        uint32_t),
       .snd = &lvalue1
     };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
@@ -65,8 +63,7 @@ void more_dst_main(void)
           }
         ),
         (size_t)3U,
-        uint32_t,
-        uint32_t *),
+        uint32_t),
       .snd = &lvalue
     };
   EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");

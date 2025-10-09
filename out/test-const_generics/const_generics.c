@@ -57,13 +57,12 @@ Eurydice_arr_c4 const_generics_serialize_3b(Eurydice_dst_ref_3c re)
   Eurydice_dst_ref_87 uu____0 = array_to_subslice_to_6e(&out, (size_t)4U);
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_e9
-  lvalue0 =
-    core_num__u32__to_be_bytes(Eurydice_slice_index(re, (size_t)0U, uint32_t, uint32_t *));
+  lvalue0 = core_num__u32__to_be_bytes(Eurydice_slice_index(re, (size_t)0U, uint32_t));
   Eurydice_slice_copy(uu____0, array_to_slice_60(&lvalue0), uint8_t);
   Eurydice_dst_ref_87 uu____1 = array_to_subslice_from_8c(&out, (size_t)4U);
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_e9
-  lvalue = core_num__u32__to_be_bytes(Eurydice_slice_index(re, (size_t)1U, uint32_t, uint32_t *));
+  lvalue = core_num__u32__to_be_bytes(Eurydice_slice_index(re, (size_t)1U, uint32_t));
   Eurydice_slice_copy(uu____1, array_to_slice_60(&lvalue), uint8_t);
   return out;
 }

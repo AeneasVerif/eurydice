@@ -75,12 +75,7 @@ using std::type_identity_t;
 #define EURYDICE_SLICE_LEN(s, _) (s).meta
 #define Eurydice_slice_len(s, _) (s).meta
 
-// This macro is a pain because in case the dereferenced element type is an
-// array, you cannot simply write `t x` as it would yield `int[4] x` instead,
-// which is NOT correct C syntax, so we add a dedicated phase in Eurydice that
-// adds an extra argument to this macro at the last minute so that we have the
-// correct type of *pointers* to elements.
-#define Eurydice_slice_index(s, i, t, t_ptr_t) (((t_ptr_t)s.ptr)[i])
+#define Eurydice_slice_index(s, i, t) ((s.ptr)[i])
 
 #define Eurydice_array_repeat(dst, len, init, t)                               \
   ERROR "should've been desugared"

@@ -27,8 +27,7 @@ void castunsize_main1(void)
           KRML_CLITERAL(Eurydice_dst_ref_3c){ .ptr = (uint32_t *)x0.ptr->my_data, .meta = x0.meta }
         ),
         (size_t)3U,
-        uint32_t,
-        uint32_t *),
+        uint32_t),
       .snd = &lvalue
     };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
@@ -58,7 +57,7 @@ void castunsize_main3(void)
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
   _uint32_t__x2
-  uu____0 = { .fst = &Eurydice_slice_index(x, (size_t)3U, uint32_t, uint32_t *), .snd = &lvalue };
+  uu____0 = { .fst = &Eurydice_slice_index(x, (size_t)3U, uint32_t), .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
@@ -80,8 +79,7 @@ void castunsize_main2_c9(void)
           KRML_CLITERAL(Eurydice_dst_ref_3c){ .ptr = (uint32_t *)x0.ptr->my_data, .meta = x0.meta }
         ),
         (size_t)3U,
-        uint32_t,
-        uint32_t *),
+        uint32_t),
       .snd = &lvalue
     };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
@@ -116,7 +114,7 @@ void castunsize_main4_c9(void)
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
   _uint32_t__x2
-  uu____0 = { .fst = &Eurydice_slice_index(x, (size_t)3U, uint32_t, uint32_t *), .snd = &lvalue };
+  uu____0 = { .fst = &Eurydice_slice_index(x, (size_t)3U, uint32_t), .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
