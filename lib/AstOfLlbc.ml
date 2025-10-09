@@ -359,7 +359,7 @@ let lookup_field env typ_id field_id =
   let field = List.nth fields i in
   ensure_named i field.field_name
 
-let expression_of_struct_Arr (expr_array : K.expr) = K.EFlat [ Some "data", expr_array ]
+let mk_expr_arr_struct (expr_array : K.expr) = K.EFlat [ Some "data", expr_array ]
 
 let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
   match pred.binder.binder_params.trait_clauses with
@@ -392,7 +392,7 @@ and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
         end
       | C.TTuple -> begin
           match List.rev @@ ty_decl_ref.generics.types with
-          (* This is `()`, which has metadata `()` *)
+          (* Empty metadata for empty tuple *)
           | [] -> None
           (* For tuple, the type of metadata is the last element *)
           | last :: _ -> metadata_typ_of_ty env last
@@ -759,18 +759,16 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       (* L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr sub_e (C.show_ty sub_place.ty) *)
       (*   (C.show_projection_elem pe); *)
       match pe, sub_place, sub_place.ty with
-      (* slice simply cannot be derefenced into a place which has no size.
-         In other word, it will be reborrowed again directly after the deref, which is handled in
-         expression_of_rvalue)
+      (* slices simply cannot be dereferenced into places which have unknown size.
+         They are supposed to be reborrowed again directly after the deref which is handled in expression_of_rvalue *)
       | C.Deref, _, TRef (_, TAdt { id = TBuiltin TSlice; _ }, _)
-      | C.Deref, _, TRawPtr (TAdt { id = TBuiltin TSlice; _ }, _) -> !*sub_e *)
+      | C.Deref, _, TRawPtr (TAdt { id = TBuiltin TSlice; _ }, _) -> assert false
       | ( C.Deref,
           _,
           (TRawPtr _ | TRef _ | TAdt { id = TBuiltin TBox; generics = { types = [ _ ]; _ } }) ) ->
           (* All types represented as a pointer at run-time, compiled to a C pointer *)
           begin
             match !*sub_e.K.typ with
-            | TArray (_, _) -> assert false
             | TBuf (t_pointee, _) -> Krml.Helpers.(mk_deref t_pointee !*sub_e.K.node)
             | t ->
                 L.log "AstOfLlbc" "UNHANDLED DEREFERENCE\ne=%a\nt=%a\nty=%s\npe=%s\n" pexpr !*sub_e
@@ -1660,6 +1658,7 @@ let is_box_place (p : C.place) =
   | C.TAdt { id = TBuiltin TBox; _ } -> true
   | _ -> false
 
+(* returns either a regular naked C pointer, or a fat pointer in the case of DSTs (i.e. with non-empty metadata) *)
 let mk_reference (e : K.expr) (metadata : K.expr) : K.expr =
   match metadata.typ with
   (* When it is unit, it means there is no metadata, simply take the address *)
@@ -1667,8 +1666,8 @@ let mk_reference (e : K.expr) (metadata : K.expr) : K.expr =
   | _ -> (
       match e.typ with
       | TApp (lid, [ t ]) when lid = Builtin.derefed_slice ->
-          (* Kind of "base case" of DSTs where we have to cast the type [derefed_slice<T>]
-         into [T*] for the .ptr field in slice<T>  *)
+          (* The special "base case" of DSTs: slice<T>
+          where we have to cast [derefed_slice<T>] into [T*] for the .ptr field in the fat pointer  *)
           let ptr = K.(with_type (TBuf (t, false)) (ECast (e, TBuf (t, false)))) in
           K.(
             with_type
@@ -1880,7 +1879,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
                 (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
                 (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
             in
-            K.with_type typ_arr (expression_of_struct_Arr array_expr)
+            K.with_type typ_arr (mk_expr_arr_struct array_expr)
       end
   | rvalue ->
       failwith
@@ -2018,8 +2017,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
         K.(
           EAssign
             ( dest,
-              with_type dest.typ
-                (expression_of_struct_Arr (with_type t_array (EApp (repeat, [ e ])))) ))
+              with_type dest.typ (mk_expr_arr_struct (with_type t_array (EApp (repeat, [ e ])))) ))
   | Call
       {
         func =
