@@ -215,8 +215,6 @@ Supported options:|}
 
   Printf.printf "3️⃣ Monomorphization, datatypes\n";
   let files = Eurydice.Cleanup2.resugar_loops#visit_files () files in
-  let files = Eurydice.Cleanup1.remove_terminal_returns#visit_files true files in
-  let files = Eurydice.Cleanup1.remove_terminal_continues#visit_files false files in
   Eurydice.Logging.log "Phase2.1" "%a" pfiles files;
   (* Sanity check for the big rewriting above. *)
   let errors, files = Krml.Checker.check_everything ~warn:true files in
