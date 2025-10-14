@@ -55,9 +55,79 @@ void slice_array_f2(void)
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 
+/**
+This function found in impl {core::result::Result<T, E>[TraitClause@0, TraitClause@1]}
+*/
+/**
+A monomorphic instance of core.result.unwrap_26
+with types Eurydice_arr uint8_t[[$4size_t]], core_array_TryFromSliceError
+
+*/
+static Eurydice_arr_e9 unwrap_26_84(core_result_Result_44 self)
+{
+  if (self.tag == core_result_Ok)
+  {
+    return self.val.case_Ok;
+  }
+  else
+  {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
+/**
+This function found in impl {core::result::Result<T, E>[TraitClause@0, TraitClause@1]}
+*/
+/**
+A monomorphic instance of core.result.unwrap_26
+with types  Eurydice_arr uint8_t[[$4size_t]]*, core_array_TryFromSliceError
+
+*/
+static Eurydice_arr_e9 *unwrap_26_64(core_result_Result_3c self)
+{
+  if (self.tag == core_result_Ok)
+  {
+    return self.val.case_Ok;
+  }
+  else
+  {
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "unwrap not Ok");
+    KRML_HOST_EXIT(255U);
+  }
+}
+
+void slice_array_f3(void)
+{
+  /* original Rust expression is not an lvalue in C */
+  Eurydice_arr_e9 lvalue0 = { .data = { 0U } };
+  Eurydice_slice x1 = Eurydice_array_to_slice((size_t)4U, &lvalue0, uint8_t);
+  core_result_Result_44 dst;
+  Eurydice_slice_to_array2(&dst,
+    x1,
+    Eurydice_slice,
+    Eurydice_arr_e9,
+    core_array_TryFromSliceError);
+  Eurydice_arr_e9 y1 = unwrap_26_84(dst);
+  /* original Rust expression is not an lvalue in C */
+  Eurydice_arr_e9 lvalue = { .data = { 0U } };
+  Eurydice_slice x2 = Eurydice_array_to_slice((size_t)4U, &lvalue, uint8_t);
+  Eurydice_arr_e9
+  *y2 =
+    unwrap_26_64(Eurydice_slice_to_ref_array((size_t)4U,
+        x2,
+        Eurydice_slice,
+        Eurydice_arr_e9 *,
+        core_array_TryFromSliceError,
+        core_result_Result_3c));
+  _uint8_t__x2 uu____0 = { .fst = y1.data, .snd = y2->data };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+}
+
 void slice_array_main(void)
 {
   slice_array_f1();
   slice_array_f2();
+  slice_array_f3();
 }
 
