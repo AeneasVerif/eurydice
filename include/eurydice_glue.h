@@ -137,9 +137,6 @@ using std::type_identity_t;
 // destination array, since arrays are not values in C.
 // N.B.: see note in karamel/lib/Inlining.ml if you change this.
 
-// Eurydice_slice_to_array and Eurydice_slice_to_ref_array are not used
-// in the current test set. They are handled in next PR.
-
 #define Eurydice_slice_to_ref_array2(len_, src, arr_ptr, t_ptr, t_arr, t_err,  \
                                      t_res)                                    \
   (src.meta >= len_                                                            \

@@ -76,6 +76,91 @@ let remove_array_eq =
       super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t lid bs e
   end
 
+let expression_of_cg (cg : cg) =
+  match cg with
+  | CgConst n -> Krml.Helpers.mk_sizet (int_of_string (snd n))
+  | CgVar _ -> failwith "non-const length in the Arr<T,C>"
+
+let expand_slice_to_array =
+  object (_self)
+    inherit [_] map as super
+
+    method! visit_expr (((), _) as env) e =
+      match e.node with
+      | EApp
+          ( {
+              node =
+                ETApp
+                  ( { node = EQualified lid; _ },
+                    _,
+                    _,
+                    [ _; (TCgApp (TApp (_, [ t ]), cg) as arr_t); _ ] );
+              _;
+            },
+            es )
+        when lid = Builtin.slice_to_array.name ->
+          let src = Krml.KList.one es in
+          let result_t = e.typ in
+          (*let arr = .. *)
+          let arr = with_type arr_t (EBound 0) in
+          let src = (Krml.DeBruijn.lift 1) src in
+          let lhs = with_type (TBuf (t, false)) (EField (arr, "data")) in
+          let rhs = with_type (TBuf (t, false)) (EField (src, "ptr")) in
+          let n = expression_of_cg cg in
+          let zero = H.zero SizeT in
+          let memcpy = H.with_unit (EBufBlit (rhs, zero, lhs, zero, n)) in
+          (* let arr = any in {memcpy (src, slice); OK (arr);} *)
+          with_type result_t
+            (ELet
+               ( H.fresh_binder "arr" arr_t,
+                 H.any,
+                 with_type result_t
+                   (ESequence [ memcpy; with_type result_t (ECons ("Ok", [ arr ])) ]) ))
+      | EApp
+          ( {
+              node =
+                ETApp
+                  ( { node = EQualified lid; _ },
+                    cgs,
+                    _,
+                    [
+                      slice_t;
+                      (TBuf ((TCgApp (TApp (_, [ t ]), cg) as arr_t), false) as arr_ref_t);
+                      err_t;
+                    ] );
+              _;
+            },
+            [ slice ] )
+        when lid = Builtin.slice_to_ref_array.name ->
+          (* allocate a Arr<T,C>, do memcpy and pass its ref as a new argument to the builtin func,
+            let C macro do the choose and define the error value *)
+          let slice_to_ref_array2 = Builtin.(expr_of_builtin slice_to_ref_array2) in
+          let ts = [ slice_t; arr_ref_t; err_t ] in
+          let slice_to_ref_array2 =
+            with_type
+              (Krml.DeBruijn.subst_tn ts Builtin.slice_to_ref_array2.typ)
+              (ETApp (slice_to_ref_array2, cgs, [], ts))
+          in
+          let arr = with_type arr_t (EBound 0) in
+          let arr_ref = with_type arr_ref_t (EAddrOf arr) in
+          let slice = (Krml.DeBruijn.lift 1) slice in
+          let lhs = with_type (TBuf (t, false)) (EField (arr, "data")) in
+          let rhs = with_type (TBuf (t, false)) (EField (slice, "ptr")) in
+          let n = expression_of_cg cg in
+          (* let n = with_type (TInt SizeT) (EField (slice, "meta")) in *)
+          let zero = H.zero SizeT in
+          let memcpy = H.with_unit (EBufBlit (rhs, zero, lhs, zero, n)) in
+          with_type e.typ
+            (ELet
+               ( H.fresh_binder "arr" arr_t,
+                 H.any,
+                 with_type e.typ
+                   (ESequence
+                      [ memcpy; with_type e.typ (EApp (slice_to_ref_array2, [ slice; arr_ref ])) ])
+               ))
+      | _ -> super#visit_expr env e
+  end
+
 (** Comes from [drop_unused] in Inlining.ml, we use it to remove the builtin function defined using
     abstract syntax when they are not used. Otherwise they may use some undefined types and fail the
     check *)
@@ -144,6 +229,7 @@ let precleanup files =
   let files = expand_array_copies files in
   let files = remove_array_eq#visit_files (0, 0) files in
   let files = drop_unused_builtin files in
+  let files = expand_slice_to_array#visit_files () files in
   files
 
 let merge files =
