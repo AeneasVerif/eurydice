@@ -620,6 +620,26 @@ let build_macros files =
   let files = (build_macros map)#visit_files () files in
   files, !map
 
+let rec ends_with pred e =
+  match e.node with
+  | EIfThenElse (_, e1, e2) -> ends_with pred e1 && ends_with pred e2
+  | EMatch (_, _, es) -> List.for_all (fun (_, _, e) -> ends_with pred e) es
+  | ELet (_, _, e) -> ends_with pred e
+  | ESequence es -> ends_with pred (Krml.KList.last es)
+  | _ -> pred e
+
+let ends_with_continue =
+  ends_with (fun n ->
+      match n.node with
+      | EContinue -> true
+      | _ -> false)
+
+let ends_with_return =
+  ends_with (fun n ->
+      match n.node with
+      | EReturn _ -> true
+      | _ -> false)
+
 let resugar_loops =
   object(self)
   inherit [_] map as super
@@ -803,6 +823,36 @@ let resugar_loops =
         mk_incr w,
         self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body))
       ) :: List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest)
+
+    (* Special variant that appears in external crates -- TODO: do we need variants of all other
+       patterns? *)
+    | [%cremepat {|
+      let iter =
+        core::iter::traits::collect::?::into_iter
+          <core::ops::range::Range<?>, ?..>
+          ({ start: ?e_start, end: ?e_end });
+      while true {
+        let x = core::iter::range::?::next<?t1>(&iter);
+        match x {
+          None -> ?e2,
+          Some ? -> ?e_body
+        };
+        abort
+      }
+    |}] when ends_with_return e2 && ends_with_continue e_body
+    (* && x does not appear in e2 *) ->
+      let open Krml.Helpers in
+      let w = match t1 with TInt w -> w | _ -> assert false in
+      let e_some_i = with_type (Builtin.mk_option t1) (ECons ("Some", [with_type t1 (EBound 0)])) in
+      with_type e.typ @@ ESequence [
+        with_type TUnit (EFor (fresh_binder ~mut:true "i" t1,
+          e_start,
+          mk_lt w (Krml.DeBruijn.lift 1 e_end),
+          mk_incr w,
+          self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body))
+        );
+        self#visit_expr env (Krml.DeBruijn.(subst eunit 0 (subst eunit 0 e2)))
+      ]
 
     | [%cremepat {|
       let iter =
