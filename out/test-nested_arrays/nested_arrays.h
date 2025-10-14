@@ -75,16 +75,54 @@ core_iter_range__core__iter__traits__iterator__Iterator___core__ops__range__Rang
   core_ops_range_Range__usize_ *x0
 );
 
+<<<<<<< HEAD
 extern core_ops_range_Range__usize_
 core_iter_traits_collect__core__iter__traits__collect__IntoIterator___core__ops__range__Range___usize____into_iter__core__ops__range__Range___usize__(
   core_ops_range_Range__usize_ x0
 );
+=======
+typedef uint8_t core_panicking_AssertKind;
 
-extern const uint32_t nested_arrays_ZERO[8U];
+typedef struct nested_arrays_Key_s { uint32_t data[8U]; } nested_arrays_Key;
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
+
+#define NESTED_ARRAYS_ZERO ((KRML_CLITERAL(nested_arrays_Key){ .data = { 0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U } }))
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr uint32_t[[$8size_t]]
+with const generics
+- $3size_t
+*/
+typedef struct Eurydice_arr_99_s { nested_arrays_Key data[3U]; } Eurydice_arr_99;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr Eurydice_arr uint32_t[[$8size_t]][[$3size_t]]
+with const generics
+- $3size_t
+*/
+typedef struct Eurydice_arr_0c_s { Eurydice_arr_99 data[3U]; } Eurydice_arr_0c;
 
 void nested_arrays_main(void);
 
-void nested_arrays_test(uint8_t ret[4U][200U]);
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $200size_t
+*/
+typedef struct Eurydice_arr_88_s { uint8_t data[200U]; } Eurydice_arr_88;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr uint8_t[[$200size_t]]
+with const generics
+- $4size_t
+*/
+typedef struct Eurydice_arr_70_s { Eurydice_arr_88 data[4U]; } Eurydice_arr_70;
+
+Eurydice_arr_70 nested_arrays_test(void);
 
 #if defined(__cplusplus)
 }

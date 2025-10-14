@@ -15,12 +15,30 @@
 extern "C" {
 #endif
 
+<<<<<<< HEAD
 typedef struct Eurydice_slice_uint8_t_4size_t__x2_s
+=======
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr uint8_t[[$4size_t]]
+with const generics
+- $4size_t
+*/
+typedef struct Eurydice_arr_11_s { Eurydice_arr_e9 data[4U]; } Eurydice_arr_11;
+
+typedef struct Eurydice_slice_Eurydice_arr_uint8_t___4size_t___x2_s
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 {
   Eurydice_slice fst;
   Eurydice_slice snd;
 }
-Eurydice_slice_uint8_t_4size_t__x2;
+Eurydice_slice_Eurydice_arr_uint8_t___4size_t___x2;
 
 void slice_array_f1(void);
 

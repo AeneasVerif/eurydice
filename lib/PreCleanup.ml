@@ -47,47 +47,51 @@ let remove_array_eq =
   object
     inherit Krml.DeBruijn.map_counting_cg as super
 
-  method! visit_expr (((n_cgs, n_binders) as env), _) e =
-    match AstOfLlbc.re_polymorphize e with
-    | [%cremepat {| core::array::equality::?impl::eq[#?n](#?..)<?t,?u>(?a1, ?a2) |}] ->
-        let rec is_flat = function
-          | TArray (t, _) -> is_flat t
-          | TInt _ | TBool | TUnit -> true
-          | _ -> false
-        in
-        assert (t = u);
-        if is_flat t then
-          let diff = n_binders - n_cgs in
-          let pattern_array_eq = 
-            Str.regexp {|\{core::cmp::PartialEq::<@Array<.*, .*>, @Array<.*, .*>>\}|} in
-          let matches_array_eq_slice =
-            Str.regexp {|\{core::cmp::PartialEq::<&.* @Slice<,*>, @Array<.*, .*)>>\}|} in
+    method! visit_expr (((n_cgs, n_binders) as env), _) e =
+      match AstOfLlbc.re_polymorphize e with
+      | [%cremepat {| core::array::equality::?impl::eq[#?n](#?..)<?t,?u>(?a1, ?a2) |}] ->
+          let rec is_flat = function
+            | TArray (t, _) -> is_flat t
+            | TInt _ | TBool | TUnit -> true
+            | _ -> false
+          in
+          assert (t = u);
+          if is_flat t then
+            let diff = n_binders - n_cgs in
+            let pattern_array_eq =
+              Str.regexp {|\{core::cmp::PartialEq::<@Array<.*, .*>, @Array<.*, .*>>\}|}
+            in
+            let matches_array_eq_slice =
+              Str.regexp {|\{core::cmp::PartialEq::<&.* @Slice<,*>, @Array<.*, .*)>>\}|}
+            in
             (*todo: this pattern is not tested yet*)
-          let matches_array_eq s =
-            match s with
-            | "{core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>}" -> true
-              (* non-monomorphized LLBC *)
-            | _ -> try Str.string_match pattern_array_eq s 0 with Not_found -> false in
-          let matches_array_eq_slice s =
-            match s with
-            | "{core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>}" -> true
-            | _ -> try Str.string_match matches_array_eq_slice s 0 with Not_found -> false in
-          if matches_array_eq impl then with_type TBool (EApp (
-                Builtin.(expr_of_builtin_t ~cgs:(diff, [n]) array_eq [ t ]),
-                [ a1; a2 ]))
-          else if matches_array_eq_slice impl then with_type TBool (EApp (
-                Builtin.(expr_of_builtin_t ~cgs:(diff, [n]) array_eq_slice [ t ]),
-                [ a1; a2 ]))
-          else failwith ("unknown array eq impl: " ^ impl)
-        else failwith "TODO: non-byteeq array comparison"             
-  
-  
-  
+            let matches_array_eq s =
+              match s with
+              | "{core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>}" ->
+                  true (* non-monomorphized LLBC *)
+              | _ -> ( try Str.string_match pattern_array_eq s 0 with Not_found -> false)
+            in
+            let matches_array_eq_slice s =
+              match s with
+              | "{core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>}" -> true
+              | _ -> ( try Str.string_match matches_array_eq_slice s 0 with Not_found -> false)
+            in
+            if matches_array_eq impl then
+              with_type TBool
+                (EApp (Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) array_eq [ t ]), [ a1; a2 ]))
+            else if matches_array_eq_slice impl then
+              with_type TBool
+                (EApp
+                   (Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) array_eq_slice [ t ]), [ a1; a2 ]))
+            else
+              failwith ("unknown array eq impl: " ^ impl)
+          else
+            failwith "TODO: non-byteeq array comparison"
+      | _ -> super#visit_expr (env, e.typ) e
 
-    | _ -> super#visit_expr (env, e.typ) e
-   method! visit_DFunction _ cc flags n_cgs n t lid bs e =
-     super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t lid bs e
-end
+    method! visit_DFunction _ cc flags n_cgs n t lid bs e =
+      super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t lid bs e
+  end
 
 let precleanup files =
   let files = expand_array_copies files in
@@ -99,6 +103,7 @@ let merge files =
   let open Krml.PrintAst.Ops in
   let merge_decl lid d1 d2 =
     match d1, d2 with
+    | _ when Krml.Idents.LidSet.mem lid Builtin.skip -> None
     | Some d1, None | None, Some d1 -> Some d1
     | None, None -> assert false
     | Some d1, Some d2 -> (

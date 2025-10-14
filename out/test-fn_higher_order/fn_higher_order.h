@@ -84,26 +84,65 @@ core_iter_traits_collect__core__iter__traits__collect__IntoIterator___core__ops_
 
 int32_t fn_higher_order_empty_ptr(int32_t (*f)(void));
 
+<<<<<<< HEAD
 size_t fn_higher_order_sum_lst__5usize_(size_t *lst);
 
 size_t fn_higher_order_id__usize_(size_t r);
+=======
+/**
+A monomorphic instance of Eurydice.arr
+with types int32_t
+with const generics
+- $3size_t
+*/
+typedef struct Eurydice_arr_8d_s { int32_t data[3U]; } Eurydice_arr_8d;
+
+int32_t fn_higher_order_more_sum_lst(Eurydice_arr_8d *l);
+
+/**
+A monomorphic instance of Eurydice.arr
+with types size_t
+with const generics
+- $5size_t
+*/
+typedef struct Eurydice_arr_99_s { size_t data[5U]; } Eurydice_arr_99;
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 
 size_t
+<<<<<<< HEAD
 fn_higher_order_compose_cg_apply__usize__usize__usize__5usize_(
   size_t (*f)(size_t *x0),
+=======
+fn_higher_order_compose_cg_apply_fd(
+  size_t (*f)(Eurydice_arr_99 *x0),
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
   size_t (*g)(size_t x0),
-  size_t *arg
+  Eurydice_arr_99 *arg
 );
 
+<<<<<<< HEAD
 int32_t fn_higher_order_more_sum_lst(int32_t *l);
+=======
+/**
+A monomorphic instance of fn_higher_order.sum_lst
+with const generics
+- N= 5
+*/
+size_t fn_higher_order_sum_lst_c9(Eurydice_arr_99 *lst);
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 
 int32_t fn_higher_order_id__i32_(int32_t r);
 
 int32_t
+<<<<<<< HEAD
 fn_higher_order_compose_cg_apply__i32__i32__i32__3usize_(
   int32_t (*f)(int32_t *x0),
+=======
+fn_higher_order_compose_cg_apply_82(
+  int32_t (*f)(Eurydice_arr_8d *x0),
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
   int32_t (*g)(int32_t x0),
-  int32_t *arg
+  Eurydice_arr_8d *arg
 );
 
 void fn_higher_order_use_compose_cg(void);

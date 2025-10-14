@@ -17,14 +17,22 @@ size_t where_clauses_closures_zero_77(void)
 
 size_t_x2 where_clauses_closures_test__usize__1usize_(void)
 {
-  size_t x[1U];
+  Eurydice_arr_e4 arr_struct;
   {
     /* original Rust expression is not an lvalue in C */
     void *lvalue = (void *)0U;
+<<<<<<< HEAD
     x[0U] = where_clauses_closures_test_call_mut__usize__1usize__8a(&lvalue, (size_t)0U);
   }
   size_t y = where_clauses_closures_zero_77();
   return (KRML_CLITERAL(size_t_x2){ .fst = x[0U], .snd = y });
+=======
+    arr_struct.data[0U] = where_clauses_closures_test_call_mut_1a_e3(&lvalue, (size_t)0U);
+  }
+  Eurydice_arr_e4 x = arr_struct;
+  size_t y = where_clauses_closures_zero_38();
+  return (KRML_CLITERAL(size_t_x2){ .fst = x.data[0U], .snd = y });
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 }
 
 typedef struct _size_t__x2_s

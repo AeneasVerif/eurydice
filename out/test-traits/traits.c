@@ -48,9 +48,10 @@ uint32_t traits_to_int______95(Eurydice_slice *self)
 
 void traits_main(void)
 {
-  traits_Foo foos[2U] = { traits_Foo_Foo1, traits_Foo_Foo2 };
+  Eurydice_arr_e2 foos = { .data = { traits_Foo_Foo1, traits_Foo_Foo2 } };
   /* original Rust expression is not an lvalue in C */
   Eurydice_slice
+<<<<<<< HEAD
   lvalue =
     Eurydice_array_to_subslice_mono((size_t)2U,
       foos,
@@ -59,6 +60,10 @@ void traits_main(void)
       core_ops_range_Range__usize_,
       Eurydice_slice);
   if (!(traits_to_int______95(&lvalue) != 2U))
+=======
+  lvalue = Eurydice_array_to_subslice3(&foos, (size_t)0U, (size_t)2U, traits_Foo *);
+  if (!(traits_to_int_88(&lvalue) != 2U))
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
   {
     return;
   }

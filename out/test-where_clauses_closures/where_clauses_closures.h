@@ -29,7 +29,25 @@ typedef struct size_t_x2_s
 }
 size_t_x2;
 
+<<<<<<< HEAD
 size_t_x2 where_clauses_closures_test__usize__1usize_(void);
+=======
+/**
+A monomorphic instance of Eurydice.arr
+with types size_t
+with const generics
+- $1size_t
+*/
+typedef struct Eurydice_arr_e4_s { size_t data[1U]; } Eurydice_arr_e4;
+
+/**
+A monomorphic instance of where_clauses_closures.test
+with types size_t
+with const generics
+- K= 1
+*/
+size_t_x2 where_clauses_closures_test_e3(void);
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 
 void where_clauses_closures_main(void);
 

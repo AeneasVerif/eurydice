@@ -15,6 +15,31 @@
 extern "C" {
 #endif
 
+<<<<<<< HEAD
+=======
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types float32_t
+with const generics
+- $100size_t
+*/
+typedef struct Eurydice_arr_d5_s { float32_t data[100U]; } Eurydice_arr_d5;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types float64_t
+with const generics
+- $100size_t
+*/
+typedef struct Eurydice_arr_22_s { float64_t data[100U]; } Eurydice_arr_22;
+
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 void floating_points_main(void);
 
 #if defined(__cplusplus)

@@ -14,6 +14,7 @@ int32_t fn_higher_order_empty_ptr(int32_t (*f)(void))
   return f();
 }
 
+<<<<<<< HEAD
 size_t fn_higher_order_sum_lst__5usize_(size_t *lst)
 {
   size_t sum = (size_t)0U;
@@ -43,19 +44,37 @@ size_t fn_higher_order_sum_lst__5usize_(size_t *lst)
 size_t fn_higher_order_id__usize_(size_t r)
 {
   return r;
+=======
+int32_t fn_higher_order_more_sum_lst(Eurydice_arr_8d *l)
+{
+  int32_t sum = (int32_t)0;
+  KRML_MAYBE_FOR3(i,
+    (size_t)0U,
+    (size_t)3U,
+    (size_t)1U,
+    size_t i0 = i;
+    sum = sum + l->data[i0];);
+  return sum;
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 }
 
 size_t
+<<<<<<< HEAD
 fn_higher_order_compose_cg_apply__usize__usize__usize__5usize_(
   size_t (*f)(size_t *x0),
+=======
+fn_higher_order_compose_cg_apply_fd(
+  size_t (*f)(Eurydice_arr_99 *x0),
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
   size_t (*g)(size_t x0),
-  size_t *arg
+  Eurydice_arr_99 *arg
 )
 {
   size_t (*uu____0)(size_t x0) = g;
   return uu____0(f(arg));
 }
 
+<<<<<<< HEAD
 int32_t fn_higher_order_more_sum_lst(int32_t *l)
 {
   int32_t sum = (int32_t)0;
@@ -80,6 +99,23 @@ int32_t fn_higher_order_more_sum_lst(int32_t *l)
     }
   }
   return sum;
+=======
+/**
+A monomorphic instance of fn_higher_order.sum_lst
+with const generics
+- N= 5
+*/
+size_t fn_higher_order_sum_lst_c9(Eurydice_arr_99 *lst)
+{
+  size_t sum = (size_t)0U;
+  KRML_MAYBE_FOR5(i,
+    (size_t)0U,
+    (size_t)5U,
+    (size_t)1U,
+    size_t i0 = i;
+    sum = sum + lst->data[i0];);
+  return sum + (size_t)5U;
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 }
 
 int32_t fn_higher_order_id__i32_(int32_t r)
@@ -88,10 +124,15 @@ int32_t fn_higher_order_id__i32_(int32_t r)
 }
 
 int32_t
+<<<<<<< HEAD
 fn_higher_order_compose_cg_apply__i32__i32__i32__3usize_(
   int32_t (*f)(int32_t *x0),
+=======
+fn_higher_order_compose_cg_apply_82(
+  int32_t (*f)(Eurydice_arr_8d *x0),
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
   int32_t (*g)(int32_t x0),
-  int32_t *arg
+  Eurydice_arr_8d *arg
 )
 {
   int32_t (*uu____0)(int32_t x0) = g;
@@ -114,9 +155,12 @@ _int32_t__x2;
 
 void fn_higher_order_use_compose_cg(void)
 {
-  size_t buf0[5U] = { (size_t)1U, (size_t)2U, (size_t)3U, (size_t)4U, (size_t)5U };
+  /* original Rust expression is not an lvalue in C */
+  Eurydice_arr_99
+  lvalue0 = { .data = { (size_t)1U, (size_t)2U, (size_t)3U, (size_t)4U, (size_t)5U } };
   size_t
   x =
+<<<<<<< HEAD
     fn_higher_order_compose_cg_apply__usize__usize__usize__5usize_(fn_higher_order_sum_lst__5usize_,
       fn_higher_order_id__usize_,
       buf0);
@@ -126,13 +170,25 @@ void fn_higher_order_use_compose_cg(void)
     fn_higher_order_compose_cg_apply__i32__i32__i32__3usize_(fn_higher_order_more_sum_lst,
       fn_higher_order_id__i32_,
       buf);
+=======
+    fn_higher_order_compose_cg_apply_fd(fn_higher_order_sum_lst_c9,
+      fn_higher_order_id_37,
+      &lvalue0);
+  /* original Rust expression is not an lvalue in C */
+  Eurydice_arr_8d lvalue1 = { .data = { (int32_t)10, (int32_t)11, (int32_t)12 } };
+  int32_t
+  y =
+    fn_higher_order_compose_cg_apply_82(fn_higher_order_more_sum_lst,
+      fn_higher_order_id_a8,
+      &lvalue1);
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
   /* original Rust expression is not an lvalue in C */
   size_t lvalue = (size_t)20U;
   _size_t__x2 uu____0 = { .fst = &x, .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue0 = (int32_t)33;
-  _int32_t__x2 uu____1 = { .fst = &y, .snd = &lvalue0 };
+  int32_t lvalue2 = (int32_t)33;
+  _int32_t__x2 uu____1 = { .fst = &y, .snd = &lvalue2 };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 

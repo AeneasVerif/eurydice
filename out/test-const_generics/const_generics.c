@@ -9,11 +9,21 @@
 
 #include "Eurydice.h"
 
+<<<<<<< HEAD
 void const_generics_serialize__8usize_(Eurydice_slice re, uint8_t ret[8U])
+=======
+/**
+A monomorphic instance of const_generics.serialize
+with const generics
+- OUT_LEN= 8
+*/
+Eurydice_arr_c4 const_generics_serialize_3b(Eurydice_slice re)
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 {
-  uint8_t out[8U] = { 0U };
+  Eurydice_arr_c4 out = { .data = { 0U } };
   Eurydice_slice
   uu____0 =
+<<<<<<< HEAD
     Eurydice_array_to_subslice_to_mono((size_t)8U,
       out,
       (size_t)4U,
@@ -35,20 +45,56 @@ void const_generics_serialize__8usize_(Eurydice_slice re, uint8_t ret[8U])
   core_num__u32__to_be_bytes(Eurydice_slice_index(re, (size_t)1U, uint32_t, uint32_t *), ret1);
   Eurydice_slice_copy(uu____1, Eurydice_array_to_slice((size_t)4U, ret1, uint8_t), uint8_t);
   memcpy(ret, out, (size_t)8U * sizeof (uint8_t));
+=======
+    Eurydice_array_to_subslice_to((size_t)8U,
+      &out,
+      (size_t)4U,
+      uint8_t,
+      size_t,
+      uint8_t []);
+  /* original Rust expression is not an lvalue in C */
+  Eurydice_arr_e9
+  lvalue0 =
+    core_num__u32__to_be_bytes(Eurydice_slice_index(re, (size_t)0U, uint32_t, uint32_t *));
+  Eurydice_slice_copy(uu____0, Eurydice_array_to_slice((size_t)4U, &lvalue0, uint8_t), uint8_t);
+  Eurydice_slice
+  uu____1 =
+    Eurydice_array_to_subslice_from((size_t)8U,
+      &out,
+      (size_t)4U,
+      uint8_t,
+      size_t,
+      uint8_t []);
+  /* original Rust expression is not an lvalue in C */
+  Eurydice_arr_e9
+  lvalue = core_num__u32__to_be_bytes(Eurydice_slice_index(re, (size_t)1U, uint32_t, uint32_t *));
+  Eurydice_slice_copy(uu____1, Eurydice_array_to_slice((size_t)4U, &lvalue, uint8_t), uint8_t);
+  return out;
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 }
 
 void const_generics_main(void)
 {
+<<<<<<< HEAD
   uint8_t s[8U];
   uint32_t buf[2U] = { 1U, 2U };
   const_generics_serialize__8usize_(Eurydice_array_to_slice((size_t)2U, buf, uint32_t), s);
   EURYDICE_ASSERT(s[3U] == 1U, "panic!");
   EURYDICE_ASSERT(s[7U] == 2U, "panic!");
+=======
+  /* original Rust expression is not an lvalue in C */
+  Eurydice_arr_b2 lvalue = { .data = { 1U, 2U } };
+  Eurydice_arr_c4
+  s = const_generics_serialize_3b(Eurydice_array_to_slice((size_t)2U, &lvalue, uint32_t));
+  EURYDICE_ASSERT(s.data[3U] == 1U, "panic!");
+  EURYDICE_ASSERT(s.data[7U] == 2U, "panic!");
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 }
 
 const_generics_Pair__u32__u32__2usize__2usize_
 const_generics_mk_pairs__u32__u64__2usize__4usize_(uint32_t x, uint64_t y)
 {
+<<<<<<< HEAD
   uint32_t a1[2U];
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, a1[i] = x;);
   uint64_t a2[4U];
@@ -79,6 +125,19 @@ const_generics_mk_pairs__u32__u64__2usize__4usize_(uint32_t x, uint64_t y)
   memcpy(lit.left, uu____4, (size_t)2U * sizeof (uint32_t));
   memcpy(lit.right, uu____5, (size_t)2U * sizeof (uint32_t));
   return lit;
+=======
+  Eurydice_arr_b2 a1;
+  uint32_t repeat_expression0[2U];
+  KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, repeat_expression0[i] = x;);
+  memcpy(a1.data, repeat_expression0, (size_t)2U * sizeof (uint32_t));
+  Eurydice_arr_61 a2;
+  uint64_t repeat_expression[4U];
+  KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U, repeat_expression[i] = y;);
+  memcpy(a2.data, repeat_expression, (size_t)4U * sizeof (uint64_t));
+  const_generics_Pair_a5 p1 = { .left = a1, .right = a2 };
+  const_generics_Pair_87 p2 = { .left = a2, .right = a1 };
+  return (KRML_CLITERAL(const_generics_Pair_4e){ .left = p1.left, .right = p2.right });
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 }
 
 typedef struct _uint32_t__x2_s
@@ -90,37 +149,47 @@ _uint32_t__x2;
 
 void const_generics_main1(void)
 {
+<<<<<<< HEAD
   const_generics_Pair__u32__u32__2usize__2usize_
   uu____0 = const_generics_mk_pairs__u32__u64__2usize__4usize_(0U, 0ULL);
   uint32_t left[2U];
   memcpy(left, uu____0.left, (size_t)2U * sizeof (uint32_t));
   uint32_t right[2U];
   memcpy(right, uu____0.right, (size_t)2U * sizeof (uint32_t));
+=======
+  const_generics_Pair_4e uu____0 = const_generics_mk_pairs_e0(0U, 0ULL);
+  Eurydice_arr_b2 left = uu____0.left;
+  Eurydice_arr_b2 right = uu____0.right;
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
   uint32_t expected = 0U;
-  _uint32_t__x2 uu____1 = { .fst = left, .snd = &expected };
+  _uint32_t__x2 uu____1 = { .fst = left.data, .snd = &expected };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
-  _uint32_t__x2 uu____2 = { .fst = &left[1U], .snd = &expected };
+  _uint32_t__x2 uu____2 = { .fst = &left.data[1U], .snd = &expected };
   EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
-  _uint32_t__x2 uu____3 = { .fst = right, .snd = &expected };
+  _uint32_t__x2 uu____3 = { .fst = right.data, .snd = &expected };
   EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
-  _uint32_t__x2 uu____4 = { .fst = &right[1U], .snd = &expected };
+  _uint32_t__x2 uu____4 = { .fst = &right.data[1U], .snd = &expected };
   EURYDICE_ASSERT(uu____4.fst[0U] == uu____4.snd[0U], "panic!");
 }
 
 bool const_generics_f__1usize__2u32_(uint32_t x, size_t y)
 {
-  uint32_t arr1[1U];
+  Eurydice_arr_a5 arr1;
+  uint32_t repeat_expression0[1U];
   {
-    arr1[0U] = x;
+    repeat_expression0[0U] = x;
   }
-  size_t arr2[1U];
+  memcpy(arr1.data, repeat_expression0, (size_t)1U * sizeof (uint32_t));
+  Eurydice_arr_e4 arr2;
+  size_t repeat_expression[1U];
   {
-    arr2[0U] = y;
+    repeat_expression[0U] = y;
   }
+  memcpy(arr2.data, repeat_expression, (size_t)1U * sizeof (size_t));
   bool uu____0;
-  if (arr1[0U] == 2U)
+  if (arr1.data[0U] == 2U)
   {
-    uu____0 = arr2[0U] == (size_t)1U;
+    uu____0 = arr2.data[0U] == (size_t)1U;
   }
   else
   {
@@ -131,14 +200,18 @@ bool const_generics_f__1usize__2u32_(uint32_t x, size_t y)
 
 bool const_generics_f__3usize__4u32_(uint32_t x, size_t y)
 {
-  uint32_t arr1[3U];
-  KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, arr1[i] = x;);
-  size_t arr2[3U];
-  KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, arr2[i] = y;);
+  Eurydice_arr_6f arr1;
+  uint32_t repeat_expression0[3U];
+  KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, repeat_expression0[i] = x;);
+  memcpy(arr1.data, repeat_expression0, (size_t)3U * sizeof (uint32_t));
+  Eurydice_arr_c8 arr2;
+  size_t repeat_expression[3U];
+  KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, repeat_expression[i] = y;);
+  memcpy(arr2.data, repeat_expression, (size_t)3U * sizeof (size_t));
   bool uu____0;
-  if (arr1[0U] == 4U)
+  if (arr1.data[0U] == 4U)
   {
-    uu____0 = arr2[0U] == (size_t)3U;
+    uu____0 = arr2.data[0U] == (size_t)3U;
   }
   else
   {
