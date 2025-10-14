@@ -7,6 +7,20 @@
 
 #include "slice_array.h"
 
+/**
+A monomorphic instance of Eurydice.array_to_slice
+with types Eurydice_arr uint8_t[[$4size_t]]
+with const generics
+- N= 4
+*/
+static Eurydice_dst_ref_d0 array_to_slice_4f(Eurydice_arr_11 *a)
+{
+  Eurydice_dst_ref_d0 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)4U;
+  return lit;
+}
+
 typedef struct _uint8_t__x2_s
 {
   uint8_t *fst;
@@ -19,13 +33,13 @@ void slice_array_f1(void)
   Eurydice_arr_11
   x =
     { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
-  Eurydice_slice
+  Eurydice_dst_ref_d0
   y0 =
-    Eurydice_slice_split_at_mut(Eurydice_array_to_slice((size_t)4U, &x, Eurydice_arr_e9),
+    Eurydice_slice_split_at_mut(array_to_slice_4f(&x),
       (size_t)2U,
       Eurydice_arr_e9,
-      Eurydice_slice_Eurydice_arr_uint8_t___4size_t___x2).fst;
-  Eurydice_slice_index(y0, (size_t)0U, Eurydice_arr_e9, Eurydice_arr_e9 *).data[0U] = 1U;
+      Eurydice_dst_ref_Eurydice_arr_uint8_t___4size_t___size_t_x2).fst;
+  Eurydice_slice_index(y0, (size_t)0U, Eurydice_arr_e9).data[0U] = 1U;
   uint8_t actual = x.data->data[0U];
   uint8_t expected = 1U;
   _uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
@@ -37,13 +51,13 @@ void slice_array_f2(void)
   Eurydice_arr_11
   x =
     { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
-  Eurydice_slice
+  Eurydice_dst_ref_d0
   y0 =
-    Eurydice_slice_split_at_mut(Eurydice_array_to_slice((size_t)4U, &x, Eurydice_arr_e9),
+    Eurydice_slice_split_at_mut(array_to_slice_4f(&x),
       (size_t)2U,
       Eurydice_arr_e9,
-      Eurydice_slice_Eurydice_arr_uint8_t___4size_t___x2).fst;
-  Eurydice_arr_e9 z = Eurydice_slice_index(y0, (size_t)0U, Eurydice_arr_e9, Eurydice_arr_e9 *);
+      Eurydice_dst_ref_Eurydice_arr_uint8_t___4size_t___size_t_x2).fst;
+  Eurydice_arr_e9 z = Eurydice_slice_index(y0, (size_t)0U, Eurydice_arr_e9);
   z.data[0U] = 1U;
   uint8_t actual = x.data->data[0U];
   uint8_t expected = 0U;
@@ -53,6 +67,20 @@ void slice_array_f2(void)
   uint8_t lvalue = 1U;
   _uint8_t__x2 uu____1 = { .fst = z.data, .snd = &lvalue };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice
+with types uint8_t
+with const generics
+- N= 4
+*/
+static Eurydice_dst_ref_87 array_to_slice_60(Eurydice_arr_e9 *a)
+{
+  Eurydice_dst_ref_87 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)4U;
+  return lit;
 }
 
 /**
@@ -101,22 +129,22 @@ void slice_array_f3(void)
 {
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_e9 lvalue0 = { .data = { 0U } };
-  Eurydice_slice x1 = Eurydice_array_to_slice((size_t)4U, &lvalue0, uint8_t);
+  Eurydice_dst_ref_87 x1 = array_to_slice_60(&lvalue0);
   core_result_Result_44 dst;
   Eurydice_slice_to_array2(&dst,
     x1,
-    Eurydice_slice,
+    Eurydice_dst_ref_87,
     Eurydice_arr_e9,
     core_array_TryFromSliceError);
   Eurydice_arr_e9 y1 = unwrap_26_84(dst);
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_e9 lvalue = { .data = { 0U } };
-  Eurydice_slice x2 = Eurydice_array_to_slice((size_t)4U, &lvalue, uint8_t);
+  Eurydice_dst_ref_87 x2 = array_to_slice_60(&lvalue);
   Eurydice_arr_e9
   *y2 =
     unwrap_26_64(Eurydice_slice_to_ref_array((size_t)4U,
         x2,
-        Eurydice_slice,
+        Eurydice_dst_ref_87,
         Eurydice_arr_e9 *,
         core_array_TryFromSliceError,
         core_result_Result_3c));

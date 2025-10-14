@@ -15,8 +15,6 @@
 extern "C" {
 #endif
 
-#include "Eurydice.h"
-
 /**
 A monomorphic instance of Eurydice.arr
 with types uint32_t
@@ -35,6 +33,18 @@ array_Foo;
 extern bool core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(uint32_t *x0, uint32_t *x1);
 
 /**
+A monomorphic instance of Eurydice.dst_ref
+with types uint8_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_87_s
+{
+  uint8_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_87;
+
+/**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
 with const generics
@@ -42,7 +52,31 @@ with const generics
 */
 typedef struct Eurydice_arr_60_s { uint8_t data[32U]; } Eurydice_arr_60;
 
-uint8_t array_fun(Eurydice_slice x);
+/**
+A monomorphic instance of core.ops.range.Range
+with types size_t
+
+*/
+typedef struct core_ops_range_Range_08_s
+{
+  size_t start;
+  size_t end;
+}
+core_ops_range_Range_08;
+
+/**
+A monomorphic instance of Eurydice.dst_ref
+with types Eurydice_arr uint8_t[[$32size_t]], size_t
+
+*/
+typedef struct Eurydice_dst_ref_fc_s
+{
+  Eurydice_arr_60 *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_fc;
+
+uint8_t array_fun(Eurydice_dst_ref_fc x);
 
 Eurydice_arr_60 array_init(void);
 

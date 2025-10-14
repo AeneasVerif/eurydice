@@ -7,8 +7,6 @@
 
 #include "traits2.h"
 
-#include "Eurydice.h"
-
 void traits2_main(void)
 {
 

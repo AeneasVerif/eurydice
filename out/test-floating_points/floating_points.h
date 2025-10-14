@@ -22,12 +22,36 @@ extern "C" {
 typedef uint8_t core_panicking_AssertKind;
 
 /**
+A monomorphic instance of Eurydice.dst_ref
+with types float32_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_0f_s
+{
+  float32_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_0f;
+
+/**
 A monomorphic instance of Eurydice.arr
 with types float32_t
 with const generics
 - $100size_t
 */
 typedef struct Eurydice_arr_d5_s { float32_t data[100U]; } Eurydice_arr_d5;
+
+/**
+A monomorphic instance of Eurydice.dst_ref
+with types float64_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_51_s
+{
+  float64_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_51;
 
 /**
 A monomorphic instance of Eurydice.arr
