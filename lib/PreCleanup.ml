@@ -77,19 +77,10 @@ let remove_array_eq =
   end
 
 (** Comes from [drop_unused] in Inlining.ml, we use it to remove the builtin function defined using
-    abstract syntax when they are not used. Otherwise they may use some undefined types and fail the
-    check *)
+    abstract syntax when they are not used. Otherwise they will refer to the undefined Range type
+    and fail the check *)
 
-let builtin_func_lids =
-  [
-    [ "Eurydice" ], "array_to_slice";
-    [ "Eurydice" ], "array_to_subslice";
-    [ "Eurydice" ], "array_to_subslice_to";
-    [ "Eurydice" ], "array_to_subslice_from";
-    [ "Eurydice" ], "slice_subslice";
-    [ "Eurydice" ], "slice_subslice_to";
-    [ "Eurydice" ], "slice_subslice_from";
-  ]
+let builtin_func_lids = List.map lid_of_decl Builtin.builtin_defined_funcs
 
 let drop_unused_builtin files =
   let open Krml in
