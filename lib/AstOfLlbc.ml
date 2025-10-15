@@ -1829,9 +1829,10 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       (* possible safe fn to unsafe fn, same in C *)
       expression_of_operand env e
   | UnaryOp (Cast (CastUnsize (ty_from, ty_to, meta) as ck), e) ->
-      (* DSTs: we only support going from T<[U;N]> to T<[U]>. The former is sized, the latter is
-         unsized and becomes a fat pointer. We build this coercion by hand, and slightly violate C's
-         strict aliasing rules. *)
+      (* DSTs: we support going from &T<S1> to &T<S2> where S1 is sized,  S2 is
+         unsized and &T<S2> becomes a fat pointer. The base case is from &T<[U;N]>
+         to T<[U]>. See test/more_dst.rs for user-defined DST case. We build this 
+         coercion by hand, and slightly violate C's strict aliasing rules. *)
       let t_from = typ_of_ty env ty_from and t_to = typ_of_ty env ty_to in
       let e = expression_of_operand env e in
       begin
