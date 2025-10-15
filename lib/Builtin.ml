@@ -697,7 +697,7 @@ let slice_subslice_from_func =
     let meta = mk_sizeT (EApp (Helpers.mk_op Sub SizeT, [ meta; start ])) in
     with_type slice_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
   in
-  DFunction (None, [ Private ], 1, 3, slice_t, lid, binders, expr)
+  DFunction (None, [ Private ], 0, 3, slice_t, lid, binders, expr)
 
 (* Not fully general *)
 let static_assert, static_assert_ref =
