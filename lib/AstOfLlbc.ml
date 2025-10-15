@@ -458,6 +458,8 @@ let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
           let ty_args_ref = { ty_ref with generics = args } in
           typ_of_ty env (C.TAdt ty_args_ref))
 
+(* This functions takes a Charon type, and returns the associated metadata as a krml type,
+   or None if there is no metadata *)
 and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
   match ty with
   | C.TAdt ty_decl_ref -> begin
@@ -489,6 +491,9 @@ and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
       | C.TBuiltin C.TSlice | C.TBuiltin C.TStr -> Some Krml.Helpers.usize
     end
   | C.TVar _ ->
+      (* TEMPORARY:  this needs to be enabled once the monomorphization PR lands -- 
+    for now, there are still polymorphic type definitions of the form type 
+    Foo<T: ?Sized> = ... in the AST (those will be monomorphized away, eventually) *)
       let _var_is_sized (clause : C.trait_param) =
         let trait = clause.trait.binder_value in
         match trait.generics.types with
@@ -522,7 +527,9 @@ and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
   | C.TPtrMetadata _ -> None
   | C.TNever | C.TError _ -> failwith "Error types to fetch metadata"
 
-(* Get the pointer type of the original Charon type. *)
+(* Translate Charon type &T as a krml type -- this handles special cases
+ where address-taking in Rust creates a DST, which we represent as instances
+  of the dst_ref type. There are many such cases: slices, &str, etc. *)
 and ptr_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   (* Handle special cases first *)
   match ty with
@@ -949,7 +956,6 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
             in
             let expr = K.with_type place_typ (K.EBound 0) in
             K.with_type place_typ (K.EMatch (Unchecked, !*sub_e, [ binders, pattern, expr ]))
-      (* | PlaceProjection () *)
       | _ -> fail "unexpected / ill-typed projection"
     end
 
@@ -1769,15 +1775,6 @@ let mk_reference (e : K.expr) (metadata : K.expr) : K.expr =
               (Builtin.mk_dst_ref e.typ metadata.typ)
               (EFlat [ Some "ptr", addrof e; Some "meta", metadata ])))
 
-(* Currently unused when metadata of CastUnsize is given
-let expression_of_cg (env : env) (cg : K.cg) =
-  match cg with
-  |CgConst n -> Krml.Helpers.mk_sizet (int_of_string (snd n))
-  |CgVar var ->
-    let diff = List.length env.binders - List.length env.cg_binders in
-    K.with_type (K.TInt SizeT) (K.EBound (var + diff))
-*)
-
 (* Parse the fat pointer Eurydice_dst_ref<T<U>> into (T,T<U>),
    used to handle the unsized cast from &T<V> to &T<U> *)
 let is_dst_ref t =
@@ -1832,9 +1829,10 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       (* possible safe fn to unsafe fn, same in C *)
       expression_of_operand env e
   | UnaryOp (Cast (CastUnsize (ty_from, ty_to, meta) as ck), e) ->
-      (* DSTs: we only support going from T<[U;N]> to T<[U]>. The former is sized, the latter is
-         unsized and becomes a fat pointer. We build this coercion by hand, and slightly violate C's
-         strict aliasing rules. *)
+      (* DSTs: we support going from &T<S1> to &T<S2> where S1 is sized,  S2 is
+         unsized and &T<S2> becomes a fat pointer. The base case is from &T<[U;N]>
+         to T<[U]>. See test/more_dst.rs for user-defined DST case. We build this 
+         coercion by hand, and slightly violate C's strict aliasing rules. *)
       let t_from = typ_of_ty env ty_from and t_to = typ_of_ty env ty_to in
       let e = expression_of_operand env e in
       begin
@@ -1879,20 +1877,6 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       else
         failwith
           ("unknown cast: `" ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck ^ "`")
-  (* | UnaryOp (PtrMetadata, e) ->
-    let e = expression_of_operand env e in begin
-    match e.typ with
-    | TApp (lid, [ _; meta_ty ]) when lid = Builtin.dst_ref ->
-      K.(with_type meta_ty (EField (e, "meta")))
-    (* In cases like `PtrMetadata(T)` when `T` is a type variable or some types with unresolved type variable,
-       We cannot tell the correct metadata type from it until fully monomorphized.
-       But we can surely rely on monomorphized LLBC, and we ignore handling such cases in Eurydice. *)
-    | ty when has_unresolved_generic ty ->
-      failwith "Eurydice do not handle ptr-metadata for generic types. Consider using monomorphized LLBC."
-    (* Otherwise, fetching ptr-metadata from a non-DST simply results in `()`
-       When a type is fully resolved and it is not `Eurydice::DstRef`, we can be confident that it is not a DST. *)
-    | _ -> K.with_type TUnit K.EUnit
-    end *)
   | UnaryOp (op, o1) -> mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]

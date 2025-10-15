@@ -75,7 +75,7 @@ using std::type_identity_t;
 #define EURYDICE_SLICE_LEN(s, _) (s).meta
 #define Eurydice_slice_len(s, _) (s).meta
 
-#define Eurydice_slice_index(s, i, t) ((s.ptr)[i])
+#define Eurydice_slice_index(s, i, t) ((s).ptr[i])
 
 #define Eurydice_array_repeat(dst, len, init, t)                               \
   ERROR "should've been desugared"
@@ -83,9 +83,6 @@ using std::type_identity_t;
 // Copy a slice with memcopy
 #define Eurydice_slice_copy(dst, src, t)                                       \
   memcpy(dst.ptr, src.ptr, dst.meta * sizeof(t))
-
-// #define core_array___Array_T__N___as_slice(len_, ptr_, t, _ret_t)
-//   KRML_CLITERAL(Eurydice_slice) { ptr_, len_ }
 
 #define core_array__core__clone__Clone_for__Array_T__N___clone(                \
     len, src, elem_type, _ret_t)                                               \
@@ -115,21 +112,21 @@ using std::type_identity_t;
 
 #define Eurydice_slice_split_at(slice, mid, element_type, ret_t)               \
   KRML_CLITERAL(ret_t) {                                                       \
-    EURYDICE_CFIELD(.fst =){EURYDICE_CFIELD(.ptr =)(slice.ptr),                \
+    EURYDICE_CFIELD(.fst =){EURYDICE_CFIELD(.ptr =)((slice).ptr),              \
                             EURYDICE_CFIELD(.meta =) mid},                     \
         EURYDICE_CFIELD(.snd =) {                                              \
       EURYDICE_CFIELD(.ptr =)                                                  \
-      (slice.ptr + mid), EURYDICE_CFIELD(.meta =)(slice.meta - mid)            \
+      ((slice).ptr + mid), EURYDICE_CFIELD(.meta =)((slice).meta - mid)        \
     }                                                                          \
   }
 
 #define Eurydice_slice_split_at_mut(slice, mid, element_type, ret_t)           \
   KRML_CLITERAL(ret_t) {                                                       \
-    EURYDICE_CFIELD(.fst =){EURYDICE_CFIELD(.ptr =)(slice.ptr),                \
+    EURYDICE_CFIELD(.fst =){EURYDICE_CFIELD(.ptr =)((slice).ptr),              \
                             EURYDICE_CFIELD(.meta =) mid},                     \
         EURYDICE_CFIELD(.snd =) {                                              \
       EURYDICE_CFIELD(.ptr =)                                                  \
-      (slice.ptr + mid), EURYDICE_CFIELD(.meta =)(slice.meta - mid)            \
+      ((slice).ptr + mid), EURYDICE_CFIELD(.meta =)((slice).meta - mid)        \
     }                                                                          \
   }
 
@@ -352,71 +349,6 @@ core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__N
 #define core_iter_traits_collect__core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter \
   Eurydice_into_iter
 
-/*
-typedef struct {
-  Eurydice_slice slice;
-  size_t chunk_size;
-} Eurydice_chunks;
-
-// Can't use macros Eurydice_slice_subslice_{to,from} because they require a
-// type, and this static inline function cannot receive a type as an argument.
-// Instead, we receive the element size and use it to peform manual offset
-// computations rather than going through the macros.
-static inline Eurydice_slice chunk_next(Eurydice_chunks *chunks,
-                                        size_t element_size) {
-  size_t chunk_size = chunks->slice.len >= chunks->chunk_size
-                          ? chunks->chunk_size
-                          : chunks->slice.len;
-  Eurydice_slice curr_chunk;
-  curr_chunk.ptr = chunks->slice.ptr;
-  curr_chunk.len = chunk_size;
-  chunks->slice.ptr = (char *)(chunks->slice.ptr) + chunk_size * element_size;
-  chunks->slice.len = chunks->slice.len - chunk_size;
-  return curr_chunk;
-}
-
-#define core_slice___Slice_T___chunks(slice_, sz_, t, _ret_t)                  \
-  ((Eurydice_chunks){.slice = slice_, .chunk_size = sz_})
-#define core_slice___Slice_T___chunks_exact(slice_, sz_, t, _ret_t)            \
-  ((Eurydice_chunks){                                                          \
-      .slice = {.ptr = slice_.ptr, .len = slice_.len - (slice_.len % sz_)},    \
-      .chunk_size = sz_})
-#define core_slice_iter_Chunks Eurydice_chunks
-#define core_slice_iter_ChunksExact Eurydice_chunks
-#define Eurydice_chunks_next(iter, t, ret_t)                                   \
-  (((iter)->slice.len == 0) ? ((ret_t){.tag = core_option_None})               \
-                            : ((ret_t){.tag = core_option_Some,                \
-                                       .f0 = chunk_next(iter, sizeof(t))}))
-#define
-core_slice_iter__core__iter__traits__iterator__Iterator_for_core__slice__iter__Chunks__a__T___next
-\ Eurydice_chunks_next
-// This name changed on 20240627
-#define
-core_slice_iter__core__iter__traits__iterator__Iterator_for_core__slice__iter__Chunks__a__T___next
-\ Eurydice_chunks_next
-#define core_slice_iter__core__slice__iter__ChunksExact__a__T__89__next(       \
-    iter, t, _ret_t)                                                           \
-  core_slice_iter__core__slice__iter__Chunks__a__T__70__next(iter, t)
-
-typedef struct {
-  Eurydice_slice s;
-  size_t index;
-} Eurydice_slice_iterator;
-
-#define core_slice___Slice_T___iter(x, t, _ret_t)                              \
-  ((Eurydice_slice_iterator){.s = x, .index = 0})
-#define core_slice_iter_Iter Eurydice_slice_iterator
-#define core_slice_iter__core__slice__iter__Iter__a__T__next(iter, t, ret_t)   \
-  (((iter)->index == (iter)->s.len)                                            \
-       ? (KRML_CLITERAL(ret_t){.tag = core_option_None})                       \
-       : (KRML_CLITERAL(ret_t){                                                \
-             .tag = core_option_Some,                                          \
-             .f0 = ((iter)->index++,                                           \
-                    &((t *)((iter)->s.ptr))[(iter)->index - 1])}))
-#define core_option__core__option__Option_T__TraitClause_0___is_some(X, _0,    \
-                                                                     _1)       \
-  ((X)->tag == 1)
-*/
 // STRINGS
 
 typedef char Eurydice_c_char_t;
