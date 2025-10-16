@@ -83,6 +83,11 @@ let expression_of_cg (n_cgs, n_binders) (cg : cg) =
       let diff = n_binders - n_cgs in
       with_type (TInt SizeT) (EBound (var + diff))
 
+(* slice_to_array<&[T], [T; N], Error>(src) -> 
+   let arr: Arr<T,N>; memcpy(arr.data, src.ptr, N); Ok arr 
+   slice_to_ref_array<&[T], &[T;N], Error, len>(src) ->
+   let arr: Arr<T,N>; memcpy(arr.data, src.ptr); slice_to_ref_array2<&[T], &[T;N], Error, len>(src, &arr)
+   *)
 let expand_slice_to_array =
   object (_self)
     inherit Krml.DeBruijn.map_counting_cg as super
