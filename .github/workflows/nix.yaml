@@ -50,7 +50,7 @@ jobs:
           cd circus-green
           nix flake update charon --override-input charon github:aeneasverif/charon/$CHARON_REV
           nix flake update eurydice --override-input eurydice github:aeneasverif/eurydice/$EURYDICE_REV
-          nix flake update libcrux --override-input libcrux github:cryspen/libcrux/6bb96b54b65c71a9349cef41ca187d583253f040
+          nix flake update libcrux --override-input libcrux github:cryspen/libcrux/74cb2665cd12828481be600caaa9673ccbc8a3ec
           nix develop --command ./update-cargo-lock.sh libcrux
           ./check.sh ml-kem-small
           # ./check.sh ml-dsa-small
