@@ -412,17 +412,9 @@ let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
           in
           (* Second step: find from the assignments of assoc tys *)
           let assoc_tys =
-            let rec drop n l =
-              if n <= 0 then
-                l
-              else
-                match l with
-                | [] -> []
-                | _ :: tl -> drop (n - 1) tl
-            in
-            let base_removal = drop (List.length base_args.types) in
+            let base_removal = fun l -> snd (Krml.KList.split (List.length base_args.types) l) in
             let find_assoc_ty_arg = function
-              | C.TTraitType (tref, name) -> (
+              | C.TTraitType (tref, name) ->
                   (* We match by the trait-ID and the assoc-ty name, which should be unique *)
                   let target_id = tref.trait_decl_ref.binder_value.id in
                   let assoc_ty_assns = binder_params.trait_type_constraints in
@@ -439,10 +431,12 @@ let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
                     else
                       None
                   in
-                  match List.find_map finder assoc_ty_assns with
-                  | Some ty -> ty
-                  | None ->
-                      fail "Could not find associated type assignment for associated type %s" name)
+                  begin
+                    match List.find_map finder assoc_ty_assns with
+                    | Some ty -> ty
+                    | None ->
+                        fail "Could not find associated type assignment for associated type %s" name
+                  end
               | _ ->
                   failwith
                     "This should not happen: the rest of the generic types in a vtable-ref in a \
