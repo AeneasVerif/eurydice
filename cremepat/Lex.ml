@@ -13,7 +13,15 @@ let uvarlist = [%sedlex.regexp? '?', Star anyident, '.', '.']
 let locate _ tok = tok, Lexing.dummy_pos, Lexing.dummy_pos
 
 let keywords =
-  [ "match", MATCH; "true", TRUE; "break", BREAK; "false", FALSE; "while", WHILE; "let", LET ]
+  [
+    "match", MATCH;
+    "true", TRUE;
+    "break", BREAK;
+    "false", FALSE;
+    "while", WHILE;
+    "let", LET;
+    "abort", ABORT;
+  ]
 
 let lines = ref 1
 let cur_line = ref 0
