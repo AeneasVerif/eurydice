@@ -43,7 +43,7 @@ fn f5<const K:usize>() {
     let x1 : &[u8] = &[0u8;K];
     let y1 : [u8;K] = x1.try_into().unwrap();
     
-    let x2 : &[u8] = &[0u8;K];
+    let x2 : &[u8] = [0u8;K].as_slice();
     let y2 : &[u8;K] = x2.try_into().unwrap();
     
     assert_eq!(y1[0],y2[0]);

@@ -1,0 +1,6 @@
+files:
+  - name: known_types
+    api:
+      - [ known_types ]
+    private:
+      - [ "*" ]

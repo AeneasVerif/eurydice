@@ -198,7 +198,8 @@ void slice_array_f5_ac(void)
       ));
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_e9 lvalue = { .data = { 0U } };
-  Eurydice_dst_ref_87 x2 = array_to_slice_60(&lvalue);
+  Eurydice_dst_ref_87
+  x2 = core_array___Array_T__N___as_slice((size_t)4U, &lvalue, uint8_t, Eurydice_dst_ref_87);
   Eurydice_dst_ref_87 uu____0 = x2;
   Eurydice_arr_e9 arr;
   memcpy(arr.data, uu____0.ptr, (size_t)4U * sizeof (uint8_t));
