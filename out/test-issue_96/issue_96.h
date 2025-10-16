@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __issue_96_H
-#define __issue_96_H
+#ifndef issue_96_H
+#define issue_96_H
 
 #include "eurydice_glue.h"
 
@@ -15,16 +15,24 @@
 extern "C" {
 #endif
 
-typedef struct issue_96_MyStruct_s { uint8_t fst[5U]; } issue_96_MyStruct;
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $5size_t
+*/
+typedef struct Eurydice_arr_3f_s { uint8_t data[5U]; } Eurydice_arr_3f;
+
+typedef Eurydice_arr_3f issue_96_MyStruct;
 
 typedef struct issue_96_MyStruct2_s
 {
-  uint8_t fst[5U];
+  Eurydice_arr_3f fst;
   uint32_t snd;
 }
 issue_96_MyStruct2;
 
-void issue_96_use_it(issue_96_MyStruct *x);
+void issue_96_use_it(Eurydice_arr_3f *x);
 
 void issue_96_use_it2(issue_96_MyStruct2 *x);
 
@@ -34,5 +42,5 @@ void issue_96_main(void);
 }
 #endif
 
-#define __issue_96_H_DEFINED
-#endif
+#define issue_96_H_DEFINED
+#endif /* issue_96_H */

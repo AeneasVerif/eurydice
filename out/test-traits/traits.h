@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __traits_H
-#define __traits_H
+#ifndef traits_H
+#define traits_H
 
 #include "eurydice_glue.h"
 
@@ -32,11 +32,19 @@ This function found in impl {traits::ToInt for &0 (@Slice<traits::Foo>)}
 */
 uint32_t traits_to_int_88(Eurydice_slice *self);
 
+/**
+A monomorphic instance of Eurydice.arr
+with types traits_Foo
+with const generics
+- $2size_t
+*/
+typedef struct Eurydice_arr_e2_s { traits_Foo data[2U]; } Eurydice_arr_e2;
+
 void traits_main(void);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define __traits_H_DEFINED
-#endif
+#define traits_H_DEFINED
+#endif /* traits_H */

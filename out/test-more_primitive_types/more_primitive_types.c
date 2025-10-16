@@ -104,9 +104,19 @@ int32_t more_primitive_types_match_i128(more_primitive_types_MorePrimitiveTypes 
   return (int32_t)3;
 }
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $6size_t
+*/
+typedef struct arr_fd_s { uint8_t data[6U]; } arr_fd;
+
 void more_primitive_types_use_more_primitive_types(void)
 {
-  uint8_t s[6U] = { 97U, 104U, 101U, 108U, 108U, 111U };
+  /* original Rust expression is not an lvalue in C */
+  arr_fd lvalue = { .data = { 97U, 104U, 101U, 108U, 108U, 111U } };
+  arr_fd *s = &lvalue;
   more_primitive_types_MorePrimitiveTypes
   p =
     {
@@ -114,9 +124,9 @@ void more_primitive_types_use_more_primitive_types(void)
       .uint128 = Eurydice_Int128_u128_from_bits(0xffffffffffffULL, 0xffffffffffffffffULL),
       .c = 97U
     };
-  LowStar_Ignore_ignore(more_primitive_types_match_u128(&p), int32_t, void *);
-  LowStar_Ignore_ignore(more_primitive_types_match_i128(&p), int32_t, void *);
-  EURYDICE_ASSERT(p.c == (uint32_t)s[0U], "panic!");
+  more_primitive_types_match_u128(&p);
+  more_primitive_types_match_i128(&p);
+  EURYDICE_ASSERT(p.c == (uint32_t)s->data[0U], "panic!");
 }
 
 void more_primitive_types_main(void)

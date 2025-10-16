@@ -7,8 +7,6 @@
 
 #include "nested_arrays.h"
 
-const uint32_t nested_arrays_ZERO[8U] = { 0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U };
-
 typedef struct _uint32_t__x2_s
 {
   uint32_t *fst;
@@ -18,16 +16,20 @@ _uint32_t__x2;
 
 void nested_arrays_main(void)
 {
-  uint32_t keys[3U][3U][8U];
+  Eurydice_arr_0c keys;
+  Eurydice_arr_99 repeat_expression0[3U];
   for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++)
   {
-    uint32_t repeat_expression[3U][8U];
+    Eurydice_arr_99 lit;
+    nested_arrays_Key repeat_expression[3U];
     for (size_t i = (size_t)0U; i < (size_t)3U; i++)
     {
-      memcpy(repeat_expression[i], nested_arrays_ZERO, (size_t)8U * sizeof (uint32_t));
+      repeat_expression[i] = NESTED_ARRAYS_ZERO;
     }
-    memcpy(keys[i0], repeat_expression, (size_t)3U * sizeof (uint32_t [8U]));
+    memcpy(lit.data, repeat_expression, (size_t)3U * sizeof (nested_arrays_Key));
+    repeat_expression0[i0] = lit;
   }
+  memcpy(keys.data, repeat_expression0, (size_t)3U * sizeof (Eurydice_arr_99));
   for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++)
   {
     size_t i1 = i0;
@@ -37,37 +39,21 @@ void nested_arrays_main(void)
       for (size_t i = (size_t)0U; i < (size_t)8U; i++)
       {
         size_t k = i;
-        uint32_t actual = keys[i1][j][k];
+        uint32_t actual = keys.data[i1].data[j].data[k];
         uint32_t expected = (uint32_t)k;
         _uint32_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
-        uint32_t *left_val = uu____0.fst;
-        uint32_t *right_val = uu____0.snd;
-        EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+        EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
       }
     }
   }
 }
 
-void nested_arrays_test(uint8_t ret[4U][200U])
+Eurydice_arr_70 nested_arrays_test(void)
 {
-  uint8_t out0[200U] = { 0U };
-  uint8_t out1[200U] = { 0U };
-  uint8_t out2[200U] = { 0U };
-  uint8_t out3[200U] = { 0U };
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_out0[200U];
-  memcpy(copy_of_out0, out0, (size_t)200U * sizeof (uint8_t));
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_out1[200U];
-  memcpy(copy_of_out1, out1, (size_t)200U * sizeof (uint8_t));
-  /* Passing arrays by value in Rust generates a copy in C */
-  uint8_t copy_of_out2[200U];
-  memcpy(copy_of_out2, out2, (size_t)200U * sizeof (uint8_t));
-  uint8_t uu____3[200U];
-  memcpy(uu____3, out3, (size_t)200U * sizeof (uint8_t));
-  memcpy(ret[0U], copy_of_out0, (size_t)200U * sizeof (uint8_t));
-  memcpy(ret[1U], copy_of_out1, (size_t)200U * sizeof (uint8_t));
-  memcpy(ret[2U], copy_of_out2, (size_t)200U * sizeof (uint8_t));
-  memcpy(ret[3U], uu____3, (size_t)200U * sizeof (uint8_t));
+  Eurydice_arr_88 out0 = { .data = { 0U } };
+  Eurydice_arr_88 out1 = { .data = { 0U } };
+  Eurydice_arr_88 out2 = { .data = { 0U } };
+  Eurydice_arr_88 out3 = { .data = { 0U } };
+  return (KRML_CLITERAL(Eurydice_arr_70){ .data = { out0, out1, out2, out3 } });
 }
 

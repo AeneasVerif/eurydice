@@ -87,7 +87,12 @@ Supported options:|}
       extern_c := true;
       cxx_compat := true;
       unroll_loops := !funroll_loops;
-      static_header := [ Bundle.Prefix [ "core"; "convert" ]; Bundle.Prefix [ "core"; "num" ]; Bundle.Prefix [ "Eurydice"; "Int128" ] ];
+      static_header :=
+        [
+          Bundle.Prefix [ "core"; "convert" ];
+          Bundle.Prefix [ "core"; "num" ];
+          Bundle.Prefix [ "Eurydice"; "Int128" ];
+        ];
       Warn.parse_warn_error (!warn_error ^ "+8"));
     Monomorphization.NameGen.short_names := true;
     AstToCStar.no_return_type_lids :=
@@ -136,8 +141,20 @@ Supported options:|}
            | [ "Eurydice" ], "vec_len"
            | [ "Eurydice" ], "vec_index"
            | [ "Eurydice" ], "slice_index"
+           | [ "Eurydice" ], "slice_len"
+           | [ "Eurydice" ], "slice_to_ref_array"
            | [ "Eurydice" ], "slice_subslice"
+           | [ "Eurydice" ], "slice_subslice2"
+           | [ "Eurydice" ], "slice_subslice3"
+           | [ "Eurydice" ], "slice_subslice_from"
+           | [ "Eurydice" ], "slice_of_dst"
            | [ "Eurydice" ], "array_to_slice"
+           | [ "Eurydice" ], "array_to_subslice"
+           | [ "Eurydice" ], "array_to_subslice2"
+           | [ "Eurydice" ], "array_to_subslice3"
+           | [ "Eurydice" ], "array_repeat"
+           | [ "core"; "mem" ], "size_of"
+           | "core" :: "slice" :: _, "as_mut_ptr"
            | "core" :: "num" :: _, ("rotate_left" | "from_le_bytes" | "wrapping_add") -> true
            | _ -> false)
         || Hashtbl.mem readonly_lids lid
@@ -163,6 +180,7 @@ Supported options:|}
   in
 
   Printf.printf "1️⃣ LLBC ➡️  AST\n";
+  Eurydice.Logging.log "Phase0" "%a" pfiles files;
   let files = Eurydice.PreCleanup.precleanup files in
 
   Eurydice.Logging.log "Phase1" "%a" pfiles files;
@@ -197,6 +215,8 @@ Supported options:|}
 
   Printf.printf "3️⃣ Monomorphization, datatypes\n";
   let files = Eurydice.Cleanup2.resugar_loops#visit_files () files in
+  let files = Eurydice.Cleanup1.remove_terminal_returns#visit_files true files in
+  let files = Eurydice.Cleanup1.remove_terminal_continues#visit_files false files in
   Eurydice.Logging.log "Phase2.1" "%a" pfiles files;
   (* Sanity check for the big rewriting above. *)
   let errors, files = Krml.Checker.check_everything ~warn:true files in
@@ -238,11 +258,12 @@ Supported options:|}
   let files = Krml.Inlining.drop_unused files in
   let files = Eurydice.Cleanup2.remove_array_temporaries#visit_files () files in
   Eurydice.Logging.log "Phase2.25" "%a" pfiles files;
-  let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
+  let files = Eurydice.Cleanup2.remove_array_repeats#visit_files false files in
   Eurydice.Logging.log "Phase2.26" "%a" pfiles files;
   let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
-  let (map, _, _), files = Krml.DataTypes.everything files in
+  let ((map, _, _) as map3), files = Krml.DataTypes.everything files in
   Eurydice.Cleanup2.fixup_monomorphization_map map;
+  let files = Eurydice.Cleanup2.remove_discriminant_reads map3 files in
   Eurydice.Logging.log "Phase2.3" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_ite#visit_files () files in
   Eurydice.Logging.log "Phase2.4" "%a" pfiles files;
@@ -270,16 +291,19 @@ Supported options:|}
   (* This chunk which reuses key elements of simplify2 *)
   let files = Eurydice.Cleanup2.check_addrof#visit_files () files in
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
-  let files = Krml.Simplify.hoist#visit_files [] files in
+  let files = Eurydice.Cleanup2.hoist#visit_files [] files in
+  let files = Eurydice.Cleanup2.fixup_hoist#visit_files () files in
   Eurydice.Logging.log "Phase2.75" "%a" pfiles files;
-  let files = Krml.Simplify.fixup_hoist#visit_files () files in
+  let files = Eurydice.Cleanup2.globalize_global_locals files in
   Eurydice.Logging.log "Phase2.8" "%a" pfiles files;
   let files = Eurydice.Cleanup2.reconstruct_for_loops#visit_files () files in
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
   Eurydice.Logging.log "Phase2.9" "%a" pfiles files;
+  let files = Eurydice.Cleanup2.float_comments files in
+  Eurydice.Logging.log "Phase2.95" "%a" pfiles files;
   let files = Eurydice.Cleanup2.bonus_cleanups#visit_files [] files in
-  (* Macros stemming from globals *)
+  (* Macros stemming from globals -- FIXME why is this not Krml.AstToCStar.mk_macros_set? *)
   let files, macros = Eurydice.Cleanup2.build_macros files in
 
   Eurydice.Logging.log "Phase3" "%a" pfiles files;
@@ -291,11 +315,8 @@ Supported options:|}
   Eurydice.Cleanup3.(also_skip_prefix_for_external_types scope_env)#visit_files () files;
   let files = Eurydice.Cleanup3.decay_cg_externals#visit_files (scope_env, false) files in
   let files = Eurydice.Cleanup3.add_extra_type_to_slice_index#visit_files () files in
+  let files = Eurydice.Cleanup3.remove_builtin_decls files in
   Eurydice.Logging.log "Phase3.1" "%a" pfiles files;
-  let macros =
-    let cg_macros = Eurydice.Cleanup3.build_cg_macros#visit_files () files in
-    Krml.Idents.LidSet.(union (union macros cg_macros) Eurydice.Builtin.macros)
-  in
   let c_name_map = Krml.GlobalNames.mapping (fst scope_env) in
 
   let open Krml in
@@ -367,6 +388,12 @@ Supported options:|}
   in
   let files = AstToCStar.mk_files files c_name_map Idents.LidSet.empty macros in
 
+  (* Uncomment to debug C* AST *)
+  (* List.iter (fun (f, p) -> *)
+  (*   print_endline f; *)
+  (*   print_endline (CStar.show_program p ); *)
+  (*   print_endline "" *)
+  (* ) files; *)
   let headers = CStarToC11.mk_headers c_name_map files in
   let deps = CStarToC11.drop_empty_headers deps headers in
   let internal_headers =

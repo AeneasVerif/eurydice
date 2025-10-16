@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __Eurydice_H
-#define __Eurydice_H
+#ifndef Eurydice_H
+#define Eurydice_H
 
 #include "eurydice_glue.h"
 
@@ -33,5 +33,5 @@ typedef size_t core_ops_range_RangeFrom_08;
 }
 #endif
 
-#define __Eurydice_H_DEFINED
-#endif
+#define Eurydice_H_DEFINED
+#endif /* Eurydice_H */

@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __array2d_H
-#define __array2d_H
+#ifndef array2d_H
+#define array2d_H
 
 #include "eurydice_glue.h"
 
@@ -15,7 +15,27 @@
 extern "C" {
 #endif
 
-bool array2d_f(uint32_t x[4U][2U]);
+extern bool core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(uint32_t *x0, uint32_t *x1);
+
+extern bool core_cmp_impls__core__cmp__PartialEq_u32__for_u32__ne(uint32_t *x0, uint32_t *x1);
+
+/**
+A monomorphic instance of Eurydice.arr
+with types uint32_t
+with const generics
+- $2size_t
+*/
+typedef struct Eurydice_arr_b2_s { uint32_t data[2U]; } Eurydice_arr_b2;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr uint32_t[[$2size_t]]
+with const generics
+- $4size_t
+*/
+typedef struct Eurydice_arr_c0_s { Eurydice_arr_b2 data[4U]; } Eurydice_arr_c0;
+
+bool array2d_f(Eurydice_arr_c0 x);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -25,11 +45,9 @@ typedef uint8_t core_panicking_AssertKind;
 
 void array2d_main(void);
 
-extern bool core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(uint32_t *x0, uint32_t *x1);
-
 #if defined(__cplusplus)
 }
 #endif
 
-#define __array2d_H_DEFINED
-#endif
+#define array2d_H_DEFINED
+#endif /* array2d_H */

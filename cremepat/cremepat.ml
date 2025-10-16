@@ -153,20 +153,18 @@ let compile_parse_tree (env : env) loc
         (* ELet (_, p1, p2) *)
         ppat_cons_many ~loc "ELet" [ ppat_any ~loc; p1; p2 ]
     | Sequence ps -> ppat_cons_one ~loc "ESequence" (compile_expr_list_pattern env ps)
-    | App (e, ts, es) ->
+    | App { head; cgs; methods; ts; args } ->
         (* EApp (ETApp (e, ts), es) *)
         ppat_cons_many ~loc "EApp"
           [
             ppat_cons_many ~loc "ETApp"
               [
-                compile env e;
-                ppat_any ~loc;
-                (* no syntax to match on const-generics *)
-                ppat_any ~loc;
-                (* no syntax to match on method-generics *)
+                compile env head;
+                compile_expr_list_pattern env cgs;
+                compile_expr_list_pattern env methods;
                 compile_typ_list_pattern env ts;
               ];
-            ppat_list ~loc (List.map (compile env) es);
+            ppat_list ~loc (List.map (compile env) args);
           ]
     | Addr e -> ppat_cons_one ~loc "EAddrOf" (compile env e)
     | Index (e1, e2) ->
@@ -213,6 +211,7 @@ let compile_parse_tree (env : env) loc
         ppat_cons_one ~loc "EBound" (ppat_int ~loc i)
     | Break -> ppat_cons_zero ~loc "EBreak"
     | Bool b -> ppat_cons_one ~loc "EBool" (ppat_bool ~loc b)
+    | Abort -> ppat_cons_many ~loc "EAbort" [ ppat_any ~loc; ppat_any ~loc ]
   (* Paths *)
   and compile_path env (pt : ParseTree.path) =
     let m, n =
@@ -225,6 +224,7 @@ let compile_parse_tree (env : env) loc
     match pt with
     | Wild -> ppat_any ~loc
     | Name s -> ppat_string ~loc s
+    | Var txt -> ppat_var ~loc { txt; loc }
   (* Types *)
   and _compile_typ env pt = compile_with_var env pt compile_pre_typ
   and compile_typ_list_pattern env (es : ParseTree.typ list) =

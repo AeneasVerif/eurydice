@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __slice_array_H
-#define __slice_array_H
+#ifndef slice_array_H
+#define slice_array_H
 
 #include "eurydice_glue.h"
 
@@ -21,12 +21,20 @@ extern "C" {
 
 typedef uint8_t core_panicking_AssertKind;
 
-typedef struct Eurydice_slice_uint8_t_4size_t__x2_s
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr uint8_t[[$4size_t]]
+with const generics
+- $4size_t
+*/
+typedef struct Eurydice_arr_11_s { Eurydice_arr_e9 data[4U]; } Eurydice_arr_11;
+
+typedef struct Eurydice_slice_Eurydice_arr_uint8_t___4size_t___x2_s
 {
   Eurydice_slice fst;
   Eurydice_slice snd;
 }
-Eurydice_slice_uint8_t_4size_t__x2;
+Eurydice_slice_Eurydice_arr_uint8_t___4size_t___x2;
 
 void slice_array_f1(void);
 
@@ -38,5 +46,5 @@ void slice_array_main(void);
 }
 #endif
 
-#define __slice_array_H_DEFINED
-#endif
+#define slice_array_H_DEFINED
+#endif /* slice_array_H */

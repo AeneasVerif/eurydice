@@ -61,10 +61,10 @@ let decay_cg_externals =
 
           (* We're good. Find the allocated C name for our declaration, and allocate a new C name for
              the extra declaration *)
-          let c_name = Option.get (GlobalNames.lookup (fst scope_env) name) in
+          let c_name = Option.get (GlobalNames.lookup (fst scope_env) (name, Other)) in
           let new_name = fst name, snd name ^ "_" in
           self#record scope_env ~is_type:false ~is_external:true flags new_name;
-          let new_c_name = Option.get (GlobalNames.lookup (fst scope_env) new_name) in
+          let new_c_name = Option.get (GlobalNames.lookup (fst scope_env) (new_name, Other)) in
 
           (* We build: #define <<c_name>>(x0, ..., xn, _ret_t) \
              <<new_c_name>>(x0, ..., xn) *)
@@ -107,13 +107,13 @@ let build_cg_macros =
   end
 
 let add_extra_type_to_slice_index =
-  object (_self)
+  object (self)
     inherit [_] map as super
 
     method! visit_ETApp (((), _) as env) e cgs cgs' ts =
       match e.node, cgs, cgs', ts with
       | EQualified ([ "Eurydice" ], "slice_index"), [], [], [ t_elements ] ->
-          ETApp (e, cgs, cgs', ts @ [ TBuf (t_elements, false) ])
+          ETApp (self#visit_expr env e, cgs, cgs', ts @ [ TBuf (t_elements, false) ])
       | _ -> super#visit_ETApp env e cgs cgs' ts
 
     method! visit_EApp env e es =
@@ -155,9 +155,27 @@ let add_extra_type_to_slice_index =
                      [],
                      [],
                      [ TBuf (t_elements, false) ] )),
-              [ e_slice; e_start; e_end ] )
+              [
+                self#visit_expr env e_slice; self#visit_expr env e_start; self#visit_expr env e_end;
+              ] )
       | _ -> super#visit_EApp env e es
   end
+
+(*This identifies the decls which should be generated after monomorphism, but is already defined
+ in eurydice_glue.h for implementing the builtin functions. Currently only for arr<T;N> *)
+let is_builtin_lid lid =
+  match lid with
+  | [ "Eurydice" ], "arr_c4" (* arr {data:[u8;8]}*)
+  | [ "Eurydice" ], "arr_e9" (* arr {data:[u8;4]}*)
+  | [ "Eurydice" ], "arr_8b" (* arr {data:[u8,2]}*) -> true
+  | _ -> false
+
+let remove_builtin_decls files =
+  let checker = function
+    | DType (lid, _, _, _, _) when is_builtin_lid lid -> None
+    | decl -> Some decl
+  in
+  List.map (fun (name, decls) -> name, List.filter_map checker decls) files
 
 let also_skip_prefix_for_external_types (scope_env, _) =
   let open Krml in
@@ -165,10 +183,9 @@ let also_skip_prefix_for_external_types (scope_env, _) =
     inherit [_] iter as _super
 
     method! visit_TQualified () lid =
-      if GlobalNames.lookup scope_env lid = None && GlobalNames.skip_prefix lid then
+      if GlobalNames.lookup scope_env (lid, Type) = None && GlobalNames.skip_prefix lid then
         let target = GlobalNames.target_c_name ~attempt_shortening:true ~kind:Type lid in
-        let actual = GlobalNames.extend scope_env scope_env false lid target in
+        let actual = GlobalNames.extend scope_env scope_env false (lid, Type) target in
         if actual <> fst target then
           KPrint.bprintf "Warning! The skip_prefix options generate name conflicts\n"
   end
-

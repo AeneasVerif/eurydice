@@ -5,8 +5,8 @@
 
  */
 
-#ifndef __where_clauses_simple_H
-#define __where_clauses_simple_H
+#ifndef where_clauses_simple_H
+#define where_clauses_simple_H
 
 #include "eurydice_glue.h"
 
@@ -40,6 +40,14 @@ with const generics
 size_t where_clauses_simple_of_u16_81_e0(uint16_t x);
 
 /**
+A monomorphic instance of Eurydice.arr
+with types uint16_t
+with const generics
+- $3size_t
+*/
+typedef struct Eurydice_arr_7f_s { uint16_t data[3U]; } Eurydice_arr_7f;
+
+/**
 This function found in impl {where_clauses_simple::Ops<K> for usize}
 */
 /**
@@ -47,7 +55,7 @@ A monomorphic instance of where_clauses_simple.add_81
 with const generics
 - K= 3
 */
-size_t where_clauses_simple_add_81_e0(uint16_t x[3U], size_t y);
+size_t where_clauses_simple_add_81_e0(Eurydice_arr_7f x, size_t y);
 
 /**
 A monomorphic instance of where_clauses_simple.fn_k
@@ -60,14 +68,22 @@ size_t where_clauses_simple_fn_k_71(void);
 void where_clauses_simple_k_calls_k(void);
 
 /**
-This function found in impl {where_clauses_simple::Ops<1: usize> for u64}
+A monomorphic instance of Eurydice.arr
+with types uint16_t
+with const generics
+- $1size_t
 */
-uint64_t where_clauses_simple_add_8e(uint16_t x[1U], uint64_t y);
+typedef struct Eurydice_arr_2e_s { uint16_t data[1U]; } Eurydice_arr_2e;
 
 /**
-This function found in impl {where_clauses_simple::Ops<1: usize> for u64}
+This function found in impl {where_clauses_simple::Ops<1usize> for u64}
 */
-uint64_t where_clauses_simple_of_u16_8e(uint16_t x);
+uint64_t where_clauses_simple_add_19(Eurydice_arr_2e x, uint64_t y);
+
+/**
+This function found in impl {where_clauses_simple::Ops<1usize> for u64}
+*/
+uint64_t where_clauses_simple_of_u16_19(uint16_t x);
 
 /**
 A monomorphic instance of where_clauses_simple.fn_k
@@ -75,7 +91,7 @@ with types uint64_t
 with const generics
 - K= 1
 */
-uint64_t where_clauses_simple_fn_k_3a(void);
+uint64_t where_clauses_simple_fn_k_e4(void);
 
 void where_clauses_simple_k_calls_one(void);
 
@@ -97,7 +113,7 @@ A monomorphic instance of where_clauses_simple.add_81
 with const generics
 - K= 1
 */
-size_t where_clauses_simple_add_81_74(uint16_t x[1U], size_t y);
+size_t where_clauses_simple_add_81_74(Eurydice_arr_2e x, size_t y);
 
 /**
 A monomorphic instance of where_clauses_simple.fn_1
@@ -105,7 +121,7 @@ with types size_t
 with const generics
 
 */
-size_t where_clauses_simple_fn_1_e6(void);
+size_t where_clauses_simple_fn_1_a5(void);
 
 void where_clauses_simple_one_calls_k(void);
 
@@ -115,7 +131,7 @@ with types uint64_t
 with const generics
 
 */
-uint64_t where_clauses_simple_fn_1_54(void);
+uint64_t where_clauses_simple_fn_1_e5(void);
 
 void where_clauses_simple_one_calls_one(void);
 
@@ -137,7 +153,7 @@ with types uint64_t, size_t
 with const generics
 
 */
-tuple_65 where_clauses_simple_double_21(uint64_t x, size_t y);
+tuple_65 where_clauses_simple_double_f1(uint64_t x, size_t y);
 
 /**
 A monomorphic instance of K.
@@ -165,5 +181,5 @@ void where_clauses_simple_main(void);
 }
 #endif
 
-#define __where_clauses_simple_H_DEFINED
-#endif
+#define where_clauses_simple_H_DEFINED
+#endif /* where_clauses_simple_H */

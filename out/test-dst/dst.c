@@ -9,26 +9,42 @@
 
 Eurydice_dst_31 dst_alloc(void)
 {
-  Eurydice_dst_31 lit0;
-  dst_S_dd lit;
-  lit.foo = 0U;
-  uint32_t repeat_expression[4U] = { 0U };
-  memcpy(lit.my_data, repeat_expression, (size_t)4U * sizeof (uint32_t));
-  lit0.ptr = (dst_T *)Eurydice_box_new(lit, dst_S_dd, dst_S_dd *);
-  lit0.len = (size_t)4U;
-  return lit0;
+  return
+    (
+      KRML_CLITERAL(Eurydice_dst_31){
+        .ptr = (dst_T *)Eurydice_box_new((
+            KRML_CLITERAL(dst_S_64){ .foo = 0U, .my_data = { .data = { 0U } } }
+          ),
+          dst_S_64,
+          dst_S_64 *),
+        .len = (size_t)4U
+      }
+    );
 }
 
-Eurydice_dst_f1 dst_alloc3(void)
+Eurydice_dst_40 dst_alloc3(void)
 {
-  Eurydice_dst_f1 lit0;
-  dst_S_a4 lit;
-  lit.foo = 0U;
-  uint32_t repeat_expression[4U][3U] = { { 0U } };
-  memcpy(lit.my_data, repeat_expression, (size_t)4U * sizeof (uint32_t [3U]));
-  lit0.ptr = (dst_T3 *)Eurydice_box_new(lit, dst_S_a4, dst_S_a4 *);
-  lit0.len = (size_t)4U;
-  return lit0;
+  return
+    (
+      KRML_CLITERAL(Eurydice_dst_40){
+        .ptr = (dst_T3 *)Eurydice_box_new((
+            KRML_CLITERAL(dst_S_9c){
+              .foo = 0U,
+              .my_data = {
+                .data = {
+                  { .data = { 0U } },
+                  { .data = { 0U } },
+                  { .data = { 0U } },
+                  { .data = { 0U } }
+                }
+              }
+            }
+          ),
+          dst_S_9c,
+          dst_S_9c *),
+        .len = (size_t)4U
+      }
+    );
 }
 
 typedef struct _uint32_t__x2_s
@@ -43,9 +59,7 @@ void dst_check_regular_field(Eurydice_dst_31 x)
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
   _uint32_t__x2 uu____0 = { .fst = &x.ptr->foo, .snd = &lvalue };
-  uint32_t *left_val = uu____0.fst;
-  uint32_t *right_val = uu____0.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
 void dst_check_regular_field_ref(Eurydice_dst_31 x)
@@ -53,165 +67,138 @@ void dst_check_regular_field_ref(Eurydice_dst_31 x)
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
   _uint32_t__x2 uu____0 = { .fst = &x.ptr->foo, .snd = &lvalue };
-  uint32_t *left_val = uu____0.fst;
-  uint32_t *right_val = uu____0.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
 void dst_check_var_field(Eurydice_dst_31 x)
 {
-  size_t uu____0 = (size_t)0U;
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
   _uint32_t__x2
-  uu____1 =
+  uu____0 =
     {
       .fst = &Eurydice_slice_index(Eurydice_slice_of_dst(&x.ptr->my_data,
           x.len,
           uint32_t,
           Eurydice_slice),
-        uu____0,
+        (size_t)0U,
         uint32_t,
         uint32_t *),
       .snd = &lvalue
     };
-  uint32_t *left_val = uu____1.fst;
-  uint32_t *right_val = uu____1.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
 void dst_check_var_field_ref(Eurydice_dst_31 x)
 {
-  size_t uu____0 = (size_t)0U;
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
   _uint32_t__x2
-  uu____1 =
+  uu____0 =
     {
       .fst = &Eurydice_slice_index(Eurydice_slice_of_dst(&x.ptr->my_data,
           x.len,
           uint32_t,
           Eurydice_slice),
-        uu____0,
+        (size_t)0U,
         uint32_t,
         uint32_t *),
       .snd = &lvalue
     };
-  uint32_t *left_val = uu____1.fst;
-  uint32_t *right_val = uu____1.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
-void dst_check_var_field_ref3(Eurydice_dst_f1 x)
+void dst_check_var_field_ref3(Eurydice_dst_40 x)
 {
-  size_t uu____0 = (size_t)0U;
-  size_t uu____1 = (size_t)0U;
-  _uint32_t__x2 uu____2;
-  uu____2.fst =
-    &Eurydice_slice_index(Eurydice_slice_of_dst(&x.ptr->my_data,
-        x.len,
-        uint32_t [3U],
-        Eurydice_slice),
-      uu____0,
-      uint32_t [3U],
-      uint32_t (*)[3U])[uu____1];
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
-  uu____2.snd = &lvalue;
-  uint32_t *left_val = uu____2.fst;
-  uint32_t *right_val = uu____2.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  _uint32_t__x2
+  uu____0 =
+    {
+      .fst = Eurydice_slice_index(Eurydice_slice_of_dst(&x.ptr->my_data,
+          x.len,
+          Eurydice_arr_6f,
+          Eurydice_slice),
+        (size_t)0U,
+        Eurydice_arr_6f,
+        Eurydice_arr_6f *).data,
+      .snd = &lvalue
+    };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
 void dst_main3(void)
 {
-  Eurydice_dst_f1 x = dst_alloc3();
+  Eurydice_dst_40 x = dst_alloc3();
   dst_check_var_field_ref3(x);
 }
 
 Eurydice_dst_7a dst_mk(void)
 {
-  dst_T2_dd x;
-  x.header = (size_t)0U;
-  uint32_t repeat_expression[4U] = { 0U };
-  memcpy(x.my_data, repeat_expression, (size_t)4U * sizeof (uint32_t));
-  x.my_data[1U] = 2U;
+  dst_T2_64 x = { .header = (size_t)0U, .my_data = { .data = { 0U } } };
+  x.my_data.data[1U] = 2U;
   Eurydice_dst_7a
-  y = { .ptr = (dst_T2_be *)Eurydice_box_new(x, dst_T2_dd, dst_T2_dd *), .len = (size_t)4U };
+  y = { .ptr = (dst_T2_be *)Eurydice_box_new(x, dst_T2_64, dst_T2_64 *), .len = (size_t)4U };
   return y;
 }
 
 void dst_main4(void)
 {
-  uint32_t repeat_expression[4U] = { 0U };
   Eurydice_slice
   x =
-    Eurydice_slice_of_boxed_array(Eurydice_box_new_array((size_t)4U,
-        repeat_expression,
-        uint32_t,
-        uint32_t *),
-      (size_t)4U,
-      uint32_t,
-      Eurydice_slice);
+    Eurydice_array_to_slice((size_t)4U,
+      Eurydice_box_new((KRML_CLITERAL(Eurydice_arr_0d){ .data = { 0U } }),
+        Eurydice_arr_0d,
+        Eurydice_arr_0d *),
+      uint32_t);
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
   _uint32_t__x2
   uu____0 = { .fst = &Eurydice_slice_index(x, (size_t)3U, uint32_t, uint32_t *), .snd = &lvalue };
-  uint32_t *left_val = uu____0.fst;
-  uint32_t *right_val = uu____0.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
 void dst_main(void)
 {
   dst_check_regular_field(dst_alloc());
   dst_check_var_field(dst_alloc());
-  dst_S_dd x;
-  x.foo = 0U;
-  uint32_t repeat_expression[4U] = { 0U };
-  memcpy(x.my_data, repeat_expression, (size_t)4U * sizeof (uint32_t));
+  dst_S_64 x = { .foo = 0U, .my_data = { .data = { 0U } } };
   Eurydice_dst_31 x0 = { .ptr = (dst_T *)&x, .len = (size_t)4U };
   dst_check_regular_field_ref(x0);
   dst_check_var_field_ref(x0);
   dst_main3();
   Eurydice_dst_7a uu____0 = dst_mk();
-  size_t uu____1 = (size_t)0U;
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue0 = 0U;
   _uint32_t__x2
-  uu____2 =
+  uu____1 =
     {
       .fst = &Eurydice_slice_index(Eurydice_slice_of_dst(&uu____0.ptr->my_data,
           uu____0.len,
           uint32_t,
           Eurydice_slice),
-        uu____1,
+        (size_t)0U,
         uint32_t,
         uint32_t *),
       .snd = &lvalue0
     };
-  uint32_t *left_val0 = uu____2.fst;
-  uint32_t *right_val0 = uu____2.snd;
-  EURYDICE_ASSERT(left_val0[0U] == right_val0[0U], "panic!");
-  Eurydice_dst_7a uu____3 = dst_mk();
-  size_t uu____4 = (size_t)1U;
+  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+  Eurydice_dst_7a uu____2 = dst_mk();
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 2U;
   _uint32_t__x2
-  uu____5 =
+  uu____3 =
     {
-      .fst = &Eurydice_slice_index(Eurydice_slice_of_dst(&uu____3.ptr->my_data,
-          uu____3.len,
+      .fst = &Eurydice_slice_index(Eurydice_slice_of_dst(&uu____2.ptr->my_data,
+          uu____2.len,
           uint32_t,
           Eurydice_slice),
-        uu____4,
+        (size_t)1U,
         uint32_t,
         uint32_t *),
       .snd = &lvalue
     };
-  uint32_t *left_val = uu____5.fst;
-  uint32_t *right_val = uu____5.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
   dst_main4();
 }
 

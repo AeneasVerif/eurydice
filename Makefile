@@ -3,13 +3,19 @@ KRML_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../karamel
 EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
 CHARON		?= $(CHARON_HOME)/bin/charon
 
-BROKEN_TESTS		= where_clauses println closure chunks mutable_slice_range issue_37 issue_105 issue_99
+BROKEN_TESTS		= where_clauses println closure chunks mutable_slice_range issue_37 issue_99 issue_14
 TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.rs))))
 
 # Warn on old versions of bash
 _ := $(shell bash -c '(( $${BASH_VERSION%%.*} >= 4 ))')
 ifneq ($(.SHELLSTATUS),0)
 _: $(error "bash version is too old; hint: brew install bash")
+endif
+
+# Warn on old versions of make
+ifeq (3.81,$(MAKE_VERSION))
+  $(error You seem to be using the OSX antiquated Make version. Hint: brew \
+    install make, then invoke gmake instead of make)
 endif
 
 # Enable `foo/**` glob syntax
@@ -22,6 +28,10 @@ ifeq ($(shell uname -s),Darwin)
   SED=gsed
 else
   SED=sed
+endif
+
+ifneq ($(shell $(CHARON) version), $(shell cat .charon_version &>/dev/null || true))
+  _ := $(shell $(CHARON) version > .charon_version)
 endif
 
 .PHONY: all
@@ -44,12 +54,29 @@ clean-and-test:
 	$(MAKE) test
 
 .PRECIOUS: %.llbc
-%.llbc: %.rs
-	$(CHARON) rustc --preset=eurydice --dest-file "$@" -- $<
+%.llbc: %.rs .charon_version
+	# --mir elaborated --add-drop-bounds 
+	$(CHARON) rustc --preset=eurydice --dest-file "$@" $(CHARON_EXTRA) -- $<
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
 	sed 's/__NAME__/$*/g' $< > $@
+
+test/issue_105.llbc: CHARON_EXTRA = \
+  --include=core::result::*::branch \
+  --include=core::result::*::from_residual \
+  --include=core::result::*::eq \
+  --include=core::cmp::* \
+  --include=core::convert::*
+
+test/array2d.llbc: CHARON_EXTRA = --include=core::array::equality::*
+
+test/println.llbc: CHARON_EXTRA = \
+  --include=core::fmt::Arguments --include=core::fmt::rt::*::new_const \
+  --include=core::fmt::rt::Argument
+
+test/option.llbc: CHARON_EXTRA = \
+  --include=core::option::*
 
 test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c
 test-nested_arrays: EXTRA = -funroll-loops 0
@@ -57,6 +84,7 @@ test-array: EXTRA = -fcomments
 test-symcrust: CFLAGS += -Wno-unused-function
 test-more_str: EXTRA_C = ../../test/core_str_lib.c
 test-more_primitive_types: EXTRA = --config test/more_primitive_types.yaml
+test-global_ref: EXTRA_C = ../../test/core_cmp_lib.c
 
 
 test-%: test/%.llbc out/test-%/main.c | all
@@ -100,15 +128,11 @@ FORMAT_FILE=include/eurydice_glue.h
 
 .PHONY: format-check
 format-check:
-	@if ! dune build @fmt >/dev/null 2>&1; then \echo "\033[0;31m⚠️⚠️⚠️ SUGGESTED: $(MAKE) format-apply\033[0;m"; fi
-	@F=$$(mktemp); clang-format $(FORMAT_FILE) > $$F; \
-	  if ! diff -q $(FORMAT_FILE) $$F >/dev/null; then \echo "\033[0;31m⚠️⚠️⚠️ SUGGESTED: $(MAKE) format-apply\033[0;m"; fi; \
-	  rm -rf $$F
+	FORMAT_FILE=$(FORMAT_FILE) ./scripts/format.sh check
 
-.PHONY: format-check
+.PHONY: format-apply
 format-apply:
-	dune fmt >/dev/null || true
-	clang-format -i $(FORMAT_FILE)
+	FORMAT_FILE=$(FORMAT_FILE) ./scripts/format.sh apply
 
 .PHONY: clean-llbc
 clean-llbc:

@@ -13,7 +13,15 @@ let uvarlist = [%sedlex.regexp? '?', Star anyident, '.', '.']
 let locate _ tok = tok, Lexing.dummy_pos, Lexing.dummy_pos
 
 let keywords =
-  [ "match", MATCH; "true", TRUE; "break", BREAK; "false", FALSE; "while", WHILE; "let", LET ]
+  [
+    "match", MATCH;
+    "true", TRUE;
+    "break", BREAK;
+    "false", FALSE;
+    "while", WHILE;
+    "let", LET;
+    "abort", ABORT;
+  ]
 
 let lines = ref 1
 let cur_line = ref 0
@@ -44,12 +52,14 @@ let rec token lexbuf =
   | "->" -> locate lexbuf ARROW
   | "," -> locate lexbuf COMMA
   | "=" -> locate lexbuf EQUALS
+  | "[#" -> locate lexbuf LBRACKHASH
   | "[" -> locate lexbuf LBRACK
   | "]" -> locate lexbuf RBRACK
   | "<" -> locate lexbuf LANGLE
   | ">" -> locate lexbuf RANGLE
   | "{" -> locate lexbuf LCURLY
   | "}" -> locate lexbuf RCURLY
+  | "(#" -> locate lexbuf LPARENHASH
   | "(" -> locate lexbuf LPAREN
   | ")" -> locate lexbuf RPAREN
   (* | "_" -> locate lexbuf UNDERSCORE *)

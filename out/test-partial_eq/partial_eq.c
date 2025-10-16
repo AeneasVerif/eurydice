@@ -24,13 +24,24 @@ typedef struct _partial_eq_Enum__x2_s
 }
 _partial_eq_Enum__x2;
 
+typedef struct __partial_eq_Enum___x2_s
+{
+  partial_eq_Enum **fst;
+  partial_eq_Enum **snd;
+}
+__partial_eq_Enum___x2;
+
 void partial_eq_main(void)
 {
   partial_eq_Enum expected = partial_eq_Enum_A;
   _partial_eq_Enum__x2 uu____0 = { .fst = &expected, .snd = &expected };
-  partial_eq_Enum *left_val = uu____0.fst;
-  partial_eq_Enum *right_val = uu____0.snd;
-  EURYDICE_ASSERT(partial_eq_eq_31(left_val, right_val), "panic!");
+  EURYDICE_ASSERT(partial_eq_eq_31(uu____0.fst, uu____0.snd), "panic!");
+  /* original Rust expression is not an lvalue in C */
+  partial_eq_Enum *lvalue0 = &expected;
+  /* original Rust expression is not an lvalue in C */
+  partial_eq_Enum *lvalue = &expected;
+  __partial_eq_Enum___x2 uu____1 = { .fst = &lvalue0, .snd = &lvalue };
+  EURYDICE_ASSERT(partial_eq_eq_31(uu____1.fst[0U], uu____1.snd[0U]), "panic!");
 }
 
 /**

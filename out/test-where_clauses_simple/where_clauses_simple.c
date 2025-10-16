@@ -28,9 +28,9 @@ A monomorphic instance of where_clauses_simple.add_81
 with const generics
 - K= 3
 */
-size_t where_clauses_simple_add_81_e0(uint16_t x[3U], size_t y)
+size_t where_clauses_simple_add_81_e0(Eurydice_arr_7f x, size_t y)
 {
-  return (size_t)x[0U] + y + (size_t)3U;
+  return (size_t)x.data[0U] + y + (size_t)3U;
 }
 
 /**
@@ -42,8 +42,7 @@ with const generics
 size_t where_clauses_simple_fn_k_71(void)
 {
   size_t x = where_clauses_simple_of_u16_81_e0(0U);
-  uint16_t repeat_expression[3U] = { 0U };
-  return where_clauses_simple_add_81_e0(repeat_expression, x);
+  return where_clauses_simple_add_81_e0((KRML_CLITERAL(Eurydice_arr_7f){ .data = { 0U } }), x);
 }
 
 typedef struct _size_t__x2_s
@@ -58,23 +57,21 @@ void where_clauses_simple_k_calls_k(void)
   size_t r = where_clauses_simple_fn_k_71();
   size_t r_expected = (size_t)3U;
   _size_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
-  size_t *left_val = uu____0.fst;
-  size_t *right_val = uu____0.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
 /**
-This function found in impl {where_clauses_simple::Ops<1: usize> for u64}
+This function found in impl {where_clauses_simple::Ops<1usize> for u64}
 */
-uint64_t where_clauses_simple_add_8e(uint16_t x[1U], uint64_t y)
+uint64_t where_clauses_simple_add_19(Eurydice_arr_2e x, uint64_t y)
 {
-  return (uint64_t)x[0U] + y;
+  return (uint64_t)x.data[0U] + y;
 }
 
 /**
-This function found in impl {where_clauses_simple::Ops<1: usize> for u64}
+This function found in impl {where_clauses_simple::Ops<1usize> for u64}
 */
-uint64_t where_clauses_simple_of_u16_8e(uint16_t x)
+uint64_t where_clauses_simple_of_u16_19(uint16_t x)
 {
   return (uint64_t)x;
 }
@@ -85,11 +82,10 @@ with types uint64_t
 with const generics
 - K= 1
 */
-uint64_t where_clauses_simple_fn_k_3a(void)
+uint64_t where_clauses_simple_fn_k_e4(void)
 {
-  uint64_t x = where_clauses_simple_of_u16_8e(0U);
-  uint16_t repeat_expression[1U] = { 0U };
-  return where_clauses_simple_add_8e(repeat_expression, x);
+  uint64_t x = where_clauses_simple_of_u16_19(0U);
+  return where_clauses_simple_add_19((KRML_CLITERAL(Eurydice_arr_2e){ .data = { 0U } }), x);
 }
 
 typedef struct _uint64_t__x2_s
@@ -101,12 +97,10 @@ _uint64_t__x2;
 
 void where_clauses_simple_k_calls_one(void)
 {
-  uint64_t r = where_clauses_simple_fn_k_3a();
+  uint64_t r = where_clauses_simple_fn_k_e4();
   uint64_t r_expected = 0ULL;
   _uint64_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
-  uint64_t *left_val = uu____0.fst;
-  uint64_t *right_val = uu____0.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
 /**
@@ -130,9 +124,9 @@ A monomorphic instance of where_clauses_simple.add_81
 with const generics
 - K= 1
 */
-size_t where_clauses_simple_add_81_74(uint16_t x[1U], size_t y)
+size_t where_clauses_simple_add_81_74(Eurydice_arr_2e x, size_t y)
 {
-  return (size_t)x[0U] + y + (size_t)1U;
+  return (size_t)x.data[0U] + y + (size_t)1U;
 }
 
 /**
@@ -141,21 +135,18 @@ with types size_t
 with const generics
 
 */
-size_t where_clauses_simple_fn_1_e6(void)
+size_t where_clauses_simple_fn_1_a5(void)
 {
   size_t x = where_clauses_simple_of_u16_81_74(0U);
-  uint16_t repeat_expression[1U] = { 0U };
-  return where_clauses_simple_add_81_74(repeat_expression, x);
+  return where_clauses_simple_add_81_74((KRML_CLITERAL(Eurydice_arr_2e){ .data = { 0U } }), x);
 }
 
 void where_clauses_simple_one_calls_k(void)
 {
-  size_t r = where_clauses_simple_fn_1_e6();
+  size_t r = where_clauses_simple_fn_1_a5();
   size_t r_expected = (size_t)1U;
   _size_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
-  size_t *left_val = uu____0.fst;
-  size_t *right_val = uu____0.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
 /**
@@ -164,21 +155,18 @@ with types uint64_t
 with const generics
 
 */
-uint64_t where_clauses_simple_fn_1_54(void)
+uint64_t where_clauses_simple_fn_1_e5(void)
 {
-  uint64_t x = where_clauses_simple_of_u16_8e(0U);
-  uint16_t repeat_expression[1U] = { 0U };
-  return where_clauses_simple_add_8e(repeat_expression, x);
+  uint64_t x = where_clauses_simple_of_u16_19(0U);
+  return where_clauses_simple_add_19((KRML_CLITERAL(Eurydice_arr_2e){ .data = { 0U } }), x);
 }
 
 void where_clauses_simple_one_calls_one(void)
 {
-  uint64_t r = where_clauses_simple_fn_1_54();
+  uint64_t r = where_clauses_simple_fn_1_e5();
   uint64_t r_expected = 0ULL;
   _uint64_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
-  uint64_t *left_val = uu____0.fst;
-  uint64_t *right_val = uu____0.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
 /**
@@ -187,14 +175,17 @@ with types uint64_t, size_t
 with const generics
 
 */
-tuple_65 where_clauses_simple_double_21(uint64_t x, size_t y)
+tuple_65 where_clauses_simple_double_f1(uint64_t x, size_t y)
 {
-  tuple_65 lit;
-  uint16_t repeat_expression[1U] = { 0U };
-  lit.fst = where_clauses_simple_add_8e(repeat_expression, x);
-  uint16_t repeat_expression0[1U] = { 0U };
-  lit.snd = where_clauses_simple_add_81_74(repeat_expression0, y);
-  return lit;
+  uint64_t
+  uu____0 = where_clauses_simple_add_19((KRML_CLITERAL(Eurydice_arr_2e){ .data = { 0U } }), x);
+  return
+    (
+      KRML_CLITERAL(tuple_65){
+        .fst = uu____0,
+        .snd = where_clauses_simple_add_81_74((KRML_CLITERAL(Eurydice_arr_2e){ .data = { 0U } }), y)
+      }
+    );
 }
 
 /**
@@ -205,12 +196,15 @@ with const generics
 */
 tuple_b6 where_clauses_simple_double_k_7b(size_t x, uint64_t y)
 {
-  tuple_b6 lit;
-  uint16_t repeat_expression[3U] = { 0U };
-  lit.fst = where_clauses_simple_add_81_e0(repeat_expression, x);
-  uint16_t repeat_expression0[1U] = { 0U };
-  lit.snd = where_clauses_simple_add_8e(repeat_expression0, y);
-  return lit;
+  size_t
+  uu____0 = where_clauses_simple_add_81_e0((KRML_CLITERAL(Eurydice_arr_7f){ .data = { 0U } }), x);
+  return
+    (
+      KRML_CLITERAL(tuple_b6){
+        .fst = uu____0,
+        .snd = where_clauses_simple_add_19((KRML_CLITERAL(Eurydice_arr_2e){ .data = { 0U } }), y)
+      }
+    );
 }
 
 void where_clauses_simple_main(void)
@@ -219,27 +213,19 @@ void where_clauses_simple_main(void)
   where_clauses_simple_k_calls_one();
   where_clauses_simple_one_calls_k();
   where_clauses_simple_one_calls_one();
-  tuple_65 x = where_clauses_simple_double_21(1ULL, (size_t)1U);
+  tuple_65 x = where_clauses_simple_double_f1(1ULL, (size_t)1U);
   tuple_b6 y = where_clauses_simple_double_k_7b((size_t)1U, 1ULL);
   uint64_t x_0 = 1ULL;
   size_t x_1 = (size_t)2U;
   _uint64_t__x2 uu____0 = { .fst = &x.fst, .snd = &x_0 };
-  uint64_t *left_val0 = uu____0.fst;
-  uint64_t *right_val0 = uu____0.snd;
-  EURYDICE_ASSERT(left_val0[0U] == right_val0[0U], "panic!");
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
   _size_t__x2 uu____1 = { .fst = &x.snd, .snd = &x_1 };
-  size_t *left_val1 = uu____1.fst;
-  size_t *right_val1 = uu____1.snd;
-  EURYDICE_ASSERT(left_val1[0U] == right_val1[0U], "panic!");
+  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
   size_t y_0 = (size_t)4U;
   uint64_t y_1 = 1ULL;
   _size_t__x2 uu____2 = { .fst = &y.fst, .snd = &y_0 };
-  size_t *left_val2 = uu____2.fst;
-  size_t *right_val2 = uu____2.snd;
-  EURYDICE_ASSERT(left_val2[0U] == right_val2[0U], "panic!");
+  EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
   _uint64_t__x2 uu____3 = { .fst = &y.snd, .snd = &y_1 };
-  uint64_t *left_val = uu____3.fst;
-  uint64_t *right_val = uu____3.snd;
-  EURYDICE_ASSERT(left_val[0U] == right_val[0U], "panic!");
+  EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
 }
 

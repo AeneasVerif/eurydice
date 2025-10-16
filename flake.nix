@@ -20,7 +20,6 @@
       karamel = inputs.karamel.packages.${system}.default.override {
         ocamlPackages = pkgs.ocamlPackages;
       };
-      fstar = inputs.karamel.inputs.fstar.packages.${system}.default;
       krml = karamel.passthru.lib;
 
       charon-packages = inputs.charon.packages.${system};
@@ -58,7 +57,7 @@
               tests = clangStdenv.mkDerivation {
                 name = "tests";
                 src = ./.;
-                KRML_HOME = karamel;
+                KRML_HOME = karamel.src;
                 FSTAR_HOME = "dummy";
                 EURYDICE = "${eurydice}/bin/eurydice";
                 buildInputs = [ eurydice ];
@@ -104,7 +103,27 @@
         };
         inherit charon karamel;
       };
-      checks.default = packages.default.tests;
+      checks = {
+        default = packages.default.tests;
+        format = pkgs.runCommand "format-check"
+          {
+            src = ./.;
+            nativeBuildInputs = [
+              pkgs.bash
+              pkgs.gnumake
+              pkgs.clang-tools_18 # For clang-format
+              pkgs.ocamlPackages.ocaml
+              pkgs.ocamlPackages.ocamlformat_0_27_0
+              pkgs.ocamlPackages.dune_3
+            ];
+          } ''
+          cp -r $src src
+          chmod u+w src
+          cd src
+          bash ./scripts/format.sh check
+          touch $out
+        '';
+      };
       devShells.ci = pkgs.mkShell { packages = [ pkgs.jq ]; };
       devShells.default = (pkgs.mkShell.override { stdenv = pkgs.clangStdenv; }) {
         OCAMLRUNPARAM = "b"; # Get backtrace on exception
@@ -116,9 +135,10 @@
           # ocaml-lsp's version must match the ocaml version used. Pinning
           # this here to save me a headache.
           pkgs.ocamlPackages.ocaml-lsp
+          pkgs.rustup
         ];
         buildInputs = [ charon.buildInputs ];
-        nativeBuildInputs = [ charon.nativeBuildInputs fstar pkgs.clang ];
+        nativeBuildInputs = [ charon.nativeBuildInputs pkgs.clang ];
 
         inputsFrom = [
           self.packages.${system}.default
