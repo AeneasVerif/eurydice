@@ -357,8 +357,7 @@ let slice_subslice_from =
     arg_names = [ "s"; "r" ];
   }
 
-(* This one comes out naturally of MIR but can't be implemented in C for obvious reasons. *)
-(* This one comes out naturally of MIR but can't be implemented in C for obvious reasons. *)
+(* This is replaced in PreCleanup because we need to allocate a Arr<T,C> *)
 let slice_to_array =
   {
     name = [ "Eurydice" ], "slice_to_array";
@@ -368,20 +367,20 @@ let slice_to_array =
     arg_names = [ "s" ];
   }
 
-(* This one can be implemented by hand. *)
-let slice_to_array2 =
-  {
-    name = [ "Eurydice" ], "slice_to_array2";
-    typ = Krml.Helpers.fold_arrow [ TBuf (mk_result (TBound 1) (TBound 0), false); TBound 2 ] TUnit;
-    n_type_args = 3;
-    cg_args = [];
-    arg_names = [ "dst"; "s" ];
-  }
-
+(* This is replaced by slice_to_ref_array2 by allocate a  Arr<T,C> and pass the ref as arg*)
 let slice_to_ref_array =
   {
     name = [ "Eurydice" ], "slice_to_ref_array";
     typ = Krml.Helpers.fold_arrow [ TBound 2 ] (mk_result (TBound 1) (TBound 0));
+    n_type_args = 3;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "s" ];
+  }
+
+let slice_to_ref_array2 =
+  {
+    name = [ "Eurydice" ], "slice_to_ref_array2";
+    typ = Krml.Helpers.fold_arrow [ TBound 2; TBound 1 ] (mk_result (TBound 1) (TBound 0));
     n_type_args = 3;
     cg_args = [ TInt SizeT ];
     arg_names = [ "s" ];
@@ -922,7 +921,7 @@ let builtin_funcs =
     slice_index_outparam;
     slice_to_array;
     slice_to_ref_array;
-    slice_to_array2;
+    slice_to_ref_array2;
     discriminant;
     range_iterator_step_by;
     range_step_by_iterator_next;
@@ -961,15 +960,7 @@ let files =
        List.map
          (fun { name; typ; cg_args; n_type_args; arg_names } ->
            let typ = Krml.Helpers.fold_arrow cg_args typ in
-           let flags =
-             (* FIXME: calls to this are generated *after* the reachability
-                analysis during one of the desugaring phases, so there's no good
-                way right now to prevent it from being eliminated *)
-             if name = ([ "Eurydice" ], "slice_to_array2") then
-               []
-             else
-               [ Krml.Common.Private ]
-           in
+           let flags = [ Krml.Common.Private ] in
            K.DExternal (None, flags, List.length cg_args, n_type_args, name, typ, arg_names))
          builtin_funcs
        @ builtin_defined_funcs

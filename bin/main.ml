@@ -258,7 +258,6 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.25" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files false files in
   Eurydice.Logging.log "Phase2.26" "%a" pfiles files;
-  let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
   let ((map, _, _) as map3), files = Krml.DataTypes.everything files in
   Eurydice.Cleanup2.fixup_monomorphization_map map;
   let files = Eurydice.Cleanup2.remove_discriminant_reads map3 files in

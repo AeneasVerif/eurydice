@@ -84,6 +84,10 @@ using std::type_identity_t;
 #define Eurydice_slice_copy(dst, src, t)                                       \
   memcpy(dst.ptr, src.ptr, dst.meta * sizeof(t))
 
+#define core_array___Array_T__N___as_slice(len_, ptr_, t, ret_t)               \
+  (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.ptr =)(ptr_)->data,                   \
+                        EURYDICE_CFIELD(.meta =) len_})
+
 #define core_array__core__clone__Clone_for__Array_T__N___clone(                \
     len, src, elem_type, _ret_t)                                               \
   (*(src))
@@ -133,9 +137,6 @@ using std::type_identity_t;
 // Conversion of slice to an array, rewritten (by Eurydice) to name the
 // destination array, since arrays are not values in C.
 // N.B.: see note in karamel/lib/Inlining.ml if you change this.
-
-// Eurydice_slice_to_array and Eurydice_slice_to_ref_array are not used
-// in the current test set. They are handled in next PR.
 
 #define Eurydice_slice_to_ref_array2(len_, src, arr_ptr, t_ptr, t_arr, t_err,  \
                                      t_res)                                    \
