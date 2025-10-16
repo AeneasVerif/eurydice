@@ -112,9 +112,6 @@ type env = {
   format_env : Charon.PrintLlbcAst.fmt_env;
   (* For picking pretty names *)
   crate_name : string;
-  (* A set of all the DSTs (dynamically-sized types) that we know about, and the name of their
-     flexible member *)
-  dsts : string LidMap.t;
 }
 
 let debug env =
@@ -162,7 +159,7 @@ let with_any = K.(with_type TAny)
 
 let assert_slice (t : K.typ) =
   match t with
-  | TApp (lid, [ t ]) when lid = Builtin.slice -> t
+  | TApp (lid, [ t; _ ]) when lid = Builtin.slice -> t
   | _ -> fail "Not a slice: %a" ptyp t
 
 let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
@@ -337,34 +334,11 @@ let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
   | TUInt C.U128 -> Builtin.uint128_t
   | _ -> K.TInt (width_of_integer_type (Charon.TypesUtils.literal_as_integer ty))
 
-(* Is TApp (lid, [ t ]) meant to compile to a DST? *)
-let to_dst env lid (t : K.typ) =
-  LidMap.mem lid env.dsts
-  &&
-  match t with
-  | TApp (hd, [ _ ]) -> hd = Builtin.derefed_slice
-  | _ -> false
-
-(* Matches an instance of Eurydice_dst<T<U>> -- returns Some (T, U, T<U>) or None *)
-let is_dst env t =
-  match t with
-  | K.TApp (dst_hd, [ (TApp (lid, [ u ]) as t_u) ]) when dst_hd = Builtin.dst ->
-      assert (LidMap.mem lid env.dsts);
-      Some (lid, u, t_u)
-  | _ -> None
-
-let is_slice _env t =
-  match t with
-  | K.TApp (slice_hd, _) when slice_hd = Builtin.slice -> true
-  | _ -> false
-
-(* e: Eurydice_dst<t> *)
-let mk_dst_deref _env t e =
+(* e: Eurydice_dst_ref<t,m> *)
+let mk_dst_deref t e =
   (* ptr_field: t* *)
   let ptr_field = K.(with_type (TBuf (t, false)) (EField (e, "ptr"))) in
   K.(with_type t (EBufRead (ptr_field, Krml.Helpers.zero_usize)))
-
-let is_dst_field env lid f = LidMap.find_opt lid env.dsts = Some f
 
 let ensure_named i name =
   match name, i with
@@ -385,29 +359,199 @@ let lookup_field env typ_id field_id =
   let field = List.nth fields i in
   ensure_named i field.field_name
 
-let expression_of_struct_Arr (expr_array : K.expr) = K.EFlat [ Some "data", expr_array ]
+let mk_expr_arr_struct (expr_array : K.expr) = K.EFlat [ Some "data", expr_array ]
 
-let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
+(** A vtable type is actually just a struct type, this function takes out the hinted ID of the
+    vtable struct from the dynamic predicate and then translate it, returns a reference to the
+    struct type itself.
+
+    Notably, a dynamic predicate is of the form:
+    [dyn Trait<TraitArgs, AssocTy=T, ...> + AutoTraits + 'a]. Namely, it has the arguments to the
+    unique non-auto trait and the assignments to each associated types as the **principal trait**
+    [Trait<...>], and then some additional auto-traits having no methods and finally a region
+    constraint. Here we care only about the principal trait. *)
+let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
+  let binder_params = pred.binder.binder_params in
+  match binder_params.trait_clauses with
+  | [] -> failwith "DynTrait has empty clause! Please report this to Charon."
+  (* As guaranteed by Rustc and hence Charon, the first clause must be the principal trait *)
+  | principal_clause :: _ -> (
+      let tref = principal_clause.trait.binder_value in
+      let decl = env.get_nth_trait_decl tref.id in
+      match decl.vtable with
+      | None ->
+          failwith "Fetching vtable from a trait without vtable! Please report this to Charon."
+      | Some ty_ref ->
+          (* The ty_ref here is of the form: `{vtable}<TraitParams, AssocTys>` *)
+          (* Hence we need to firstly substitute `TraitParams` with the actual types provided by the dynamic predicate's `TraitArgs` *)
+          (* And then substitute `AssocTys` with the actual types provided by the dynamic predicate's assignments to these associated types *)
+          (* The helper function to handle DbVars *)
+          let out_of_binder_subst : Charon.Substitute.subst =
+            let open Charon.Substitute in
+            let shift = function
+              | C.Bound (dbid, var) ->
+                  assert (dbid > 0);
+                  C.Bound (dbid - 1, var)
+              | Free _ as var -> var
+            in
+            {
+              (* We don't care about the regions, simply ignore it. *)
+              r_subst = erase_regions_subst.r_subst;
+              ty_subst = compose empty_subst.ty_subst shift;
+              cg_subst = compose empty_subst.cg_subst shift;
+              tr_subst = compose empty_subst.tr_subst shift;
+              tr_self = empty_subst.tr_self;
+            }
+          in
+          (* The trait ref is guaranteed to be with empty binding values in the principal clause *)
+          let tref = Charon.Substitute.trait_decl_ref_substitute out_of_binder_subst tref in
+          (* First step: get the `TraitArgs` *)
+          let base_args =
+            let generics = tref.generics in
+            { generics with types = List.tl generics.types }
+          in
+          (* Second step: find from the assignments of assoc tys *)
+          let assoc_tys =
+            let base_removal = fun l -> snd (Krml.KList.split (List.length base_args.types) l) in
+            let find_assoc_ty_arg = function
+              | C.TTraitType (tref, name) ->
+                  (* We match by the trait-ID and the assoc-ty name, which should be unique *)
+                  let target_id = tref.trait_decl_ref.binder_value.id in
+                  let assoc_ty_assns = binder_params.trait_type_constraints in
+                  let finder (binded_assn : C.trait_type_constraint C.region_binder) =
+                    let assn =
+                      Charon.Substitute.trait_type_constraint_substitute out_of_binder_subst
+                        binded_assn.binder_value
+                    in
+                    if
+                      assn.trait_ref.trait_decl_ref.binder_value.id = target_id
+                      && assn.type_name = name
+                    then
+                      Some assn.ty
+                    else
+                      None
+                  in
+                  begin
+                    match List.find_map finder assoc_ty_assns with
+                    | Some ty -> ty
+                    | None ->
+                        fail "Could not find associated type assignment for associated type %s" name
+                  end
+              | _ ->
+                  failwith
+                    "This should not happen: the rest of the generic types in a vtable-ref in a \
+                     trait-decl should all be referring to associated types."
+            in
+            ty_ref.generics.types
+            (* Remove the base param types from it, leaving the associated types params *)
+            |> base_removal
+            (* For each assoc type param, find the corresponding arg from the dyn predicate *)
+            |> List.map find_assoc_ty_arg
+          in
+          let args = { base_args with types = base_args.types @ assoc_tys } in
+          let ty_args_ref = { ty_ref with generics = args } in
+          typ_of_ty env (C.TAdt ty_args_ref))
+
+(* This functions takes a Charon type, and returns the associated metadata as a krml type,
+   or None if there is no metadata *)
+and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
+  match ty with
+  | C.TAdt ty_decl_ref -> begin
+      match ty_decl_ref.id with
+      | C.TAdtId decl_id -> begin
+          let decl = env.get_nth_type decl_id in
+          match decl.ptr_metadata with
+          | C.NoMetadata -> None
+          | C.Length -> Some Krml.Helpers.usize
+          | C.VTable ty_ref ->
+              let ty_ref = { ty_ref with generics = ty_decl_ref.generics } in
+              Some (K.TBuf (typ_of_ty env (C.TAdt ty_ref), false))
+          | C.InheritFrom (C.TVar (C.Free var)) ->
+              let ty = List.nth ty_decl_ref.generics.types (C.TypeVarId.to_int var) in
+              metadata_typ_of_ty env ty
+          | C.InheritFrom _ ->
+              failwith
+                "Eurydice does not handle PtrMetadata inheritance, please consider using \
+                 monomorphized LLBC"
+        end
+      | C.TTuple -> begin
+          match List.rev @@ ty_decl_ref.generics.types with
+          (* Empty metadata for empty tuple *)
+          | [] -> None
+          (* For tuple, the type of metadata is the last element *)
+          | last :: _ -> metadata_typ_of_ty env last
+        end
+      | C.TBuiltin C.TBox | C.TBuiltin C.TArray -> None
+      | C.TBuiltin C.TSlice | C.TBuiltin C.TStr -> Some Krml.Helpers.usize
+    end
+  | C.TVar _ ->
+      (* TEMPORARY:  this needs to be enabled once the monomorphization PR lands -- 
+    for now, there are still polymorphic type definitions of the form type 
+    Foo<T: ?Sized> = ... in the AST (those will be monomorphized away, eventually) *)
+      let _var_is_sized (clause : C.trait_param) =
+        let trait = clause.trait.binder_value in
+        match trait.generics.types with
+        | [] -> failwith "Unexpected empty `Self` from trait clause."
+        (* The variable here in C.TVar should be free variable, hence no need to adjust the DB id. *)
+        | self :: _ ->
+            self = ty
+            &&
+            let decl = env.get_nth_trait_decl trait.id in
+            (* It has the Sized marker, which is of lang_item "sized" *)
+            decl.item_meta.lang_item = Some "sized"
+      in
+      let var_is_sized =
+        true
+        (*List.exists var_is_sized env.generic_params.trait_clauses*)
+      in
+      if var_is_sized then
+        None
+      else
+        failwith
+          "Eurydice does not handle taking metadata from non-Sized type vars, please consider \
+           using monomorphized LLBC."
+  | C.TTraitType (_, _) ->
+      failwith
+        "Eurydice does not handle taking metadata from assoc types, please consider using \
+         monomorphized LLBC."
+  (* The metadata of a &dyn Trait object is a pointer to its vtable *)
+  | C.TDynTrait pred -> Some (K.TBuf (vtable_typ_of_dyn_pred env pred, false))
+  | C.TLiteral _ | C.TRef (_, _, _) | C.TRawPtr (_, _) | C.TFnPtr _ | C.TFnDef _ -> None
+  (* The metadata must not have ptr metadata as they must be Sized. *)
+  | C.TPtrMetadata _ -> None
+  | C.TNever | C.TError _ -> failwith "Error types to fetch metadata"
+
+(* Translate Charon type &T as a krml type -- this handles special cases
+ where address-taking in Rust creates a DST, which we represent as instances
+  of the dst_ref type. There are many such cases: slices, &str, etc. *)
+and ptr_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
+  (* Handle special cases first *)
+  match ty with
+  (* Special case to handle slice : &[T] *)
+  | TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
+      Builtin.mk_slice (typ_of_ty env t)
+  (* Special case to handle &str *)
+  | TAdt { id = TBuiltin TStr; _ } -> Builtin.str_t
+  (* Special case to handle DynTrait *)
+  | TDynTrait pred ->
+      Builtin.mk_dst_ref Builtin.c_void_t (K.TBuf (vtable_typ_of_dyn_pred env pred, false))
+  (* General case, all &T is turned to either thin T* or fat Eurydice::DstRef<T,Meta> *)
+  | _ -> (
+      let typ = typ_of_ty env ty in
+      match metadata_typ_of_ty env ty with
+      | None -> K.TBuf (typ, false)
+      | Some meta -> Builtin.mk_dst_ref typ meta)
+
+and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   match ty with
   | TVar var -> K.TBound (lookup_typ env (C.expect_free_var var))
   | TLiteral t -> typ_of_literal_ty env t
   | TNever -> failwith "Impossible: Never"
   | TDynTrait _ -> failwith "TODO: dyn Trait"
+  | TAdt { id = TBuiltin TBox; generics = { types = [ t ]; _ } } | TRef (_, t, _) | TRawPtr (t, _)
+    -> ptr_typ_of_ty env t
   | TAdt { id; generics = { types = [ t ]; _ } as generics } when RustNames.is_vec env id generics
     -> Builtin.mk_vec (typ_of_ty env t)
-  | TAdt
-      {
-        id = TBuiltin TBox;
-        generics = { types = [ TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ]; _ };
-      }
-  | TRef (_, TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } }, _) ->
-      (* We compile slices to fat pointers, which hold the pointer underneath -- no need for an
-         extra reference here. *)
-      Builtin.mk_slice (typ_of_ty env t)
-  | TRef (_, TAdt { id = TBuiltin TStr; generics = { types = []; _ } }, _) -> Builtin.str_t
-  | TRef (_, t, _) ->
-      (* Normal reference *)
-      K.TBuf (typ_of_ty env t, false)
   | TAdt { id = TAdtId id; generics = { types = args; const_generics = generic_args; _ } } ->
       let ts = List.map (typ_of_ty env) args in
       let cgs = List.map (cg_of_const_generic env) generic_args in
@@ -426,18 +570,11 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
       (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
       TApp (Builtin.derefed_slice, [ typ_of_ty env t ])
-  | TAdt { id = TBuiltin TBox; generics = { types = [ t ]; _ } } ->
-      K.TBuf (typ_of_ty env t, false)
-      (* Boxes are immediately translated to a pointer type -- we do not maintain a Box<T>
-         definition in the krml internal AST. *)
   | TAdt { id = TBuiltin TStr; generics = { types = []; _ } } -> Builtin.deref_str_t
   | TAdt { id = TBuiltin f; generics = { types = args; const_generics; _ } } ->
       List.iter (fun x -> print_endline (C.show_const_generic x)) const_generics;
       fail "TODO: Adt/Builtin %s (%d) %d " (C.show_builtin_ty f) (List.length args)
         (List.length const_generics)
-  | TRawPtr (t, _) ->
-      (* Appears in some trait methods, so let's try to handle that. *)
-      K.TBuf (typ_of_ty env t, false)
   | TTraitType _ -> failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
   | TFnPtr fn_sig ->
       let ts, t = fn_sig.binder_value in
@@ -458,26 +595,13 @@ let rec pre_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TFnDef bound_fn_ref -> begin
       match Charon.Substitute.lookup_fndef_sig env.crate bound_fn_ref with
       | None -> failwith "Missing function declaration"
-      | Some fn_sig -> pre_typ_of_ty env (TFnPtr fn_sig)
+      | Some fn_sig -> typ_of_ty env (TFnPtr fn_sig)
     end
-  | TPtrMetadata ty ->
+  | TPtrMetadata _ ->
       failwith
-        ("Couldn't compute metadata type for type "
-        ^ Charon.PrintTypes.ty_to_string env.format_env ty)
+        "The type-level computation `PtrMetadata(t)` should be handled by Charon, consider using \
+         monomorphised LLBC."
   | TError _ -> failwith "Found type error in charon's output"
-
-and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
-  let t = pre_typ_of_ty env ty in
-  (* Handling of DSTs. We need to catch the cases where we have a type T* where T is unsized. For
-     now, we only support `T<[U]>*` -- eventually, we might want to generalize this. *)
-  match t with
-  | TBuf ((TApp (lid, [ u ]) as t), _) when to_dst env lid u ->
-      (* T<[U]>* is a DST, and needs to be a fat pointer with length (in elements). *)
-      Builtin.mk_dst t
-  | _ ->
-      (* T<[U; N]>* is NOT a DST, and retains the usual representation. The unsize cast will move
-         from this to the DST above. *)
-      t
 
 and typ_of_struct_arr (env : env) (t : C.ty) (cg : C.const_generic) : K.typ =
   let typ_t = typ_of_ty env t in
@@ -665,8 +789,8 @@ let expression_of_literal (_env : env) (l : C.literal) : K.expr =
         with_type Builtin.str_t
           (EFlat
              [
-               Some "data", with_type Krml.Checker.c_string (EString ascii);
-               Some "len", with_type Krml.Helpers.usize (EConstant (SizeT, string_of_int len));
+               Some "ptr", with_type Krml.Checker.c_string (EString ascii);
+               Some "meta", with_type Krml.Helpers.usize (EConstant (SizeT, string_of_int len));
              ]))
   | VChar c -> K.(with_type Builtin.char_t (EConstant (UInt32, string_of_int @@ Uchar.to_int c)))
   | VByteStr lst ->
@@ -682,6 +806,16 @@ let expression_of_const_generic env cg =
   | C.CgVar var -> expression_of_cg_var_id env (C.expect_free_var var)
   | C.CgValue l -> expression_of_literal env l
 
+let has_unresolved_generic (ty : K.typ) : bool =
+  (object
+     inherit [_] Krml.Ast.reduce
+     method zero = false
+     method plus = ( || )
+     method! visit_TBound _ _ = true
+  end)
+    #visit_typ
+    false ty
+
 let rec expression_of_place (env : env) (p : C.place) : K.expr =
   (* We construct a target expression. Callers may still use the original type to tell arrays
      and references apart, since their *uses* (e.g. addr-of) compile in a type-directed way based on
@@ -693,6 +827,22 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
   | PlaceGlobal { id; _ } ->
       let global = env.get_nth_global id in
       K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
+  | PlaceProjection (sub_place, PtrMetadata) -> begin
+      let e = expression_of_place env sub_place in
+      match e.typ with
+      | TApp (lid, [ _; meta_ty ]) when lid = Builtin.dst_ref ->
+          K.(with_type meta_ty (EField (e, "meta")))
+      (* In cases like `PtrMetadata(T)` when `T` is a type variable or some types with unresolved type variable,
+       We cannot tell the correct metadata type from it until fully monomorphized.
+       But we can surely rely on monomorphized LLBC, and we ignore handling such cases in Eurydice. *)
+      | ty when has_unresolved_generic ty ->
+          failwith
+            "Eurydice do not handle ptr-metadata for generic types. Consider using monomorphized \
+             LLBC."
+      (* Otherwise, fetching ptr-metadata from a non-DST simply results in `()`
+       When a type is fully resolved and it is not `Eurydice::DstRef`, we can be confident that it is not a DST. *)
+      | _ -> K.with_type TUnit K.EUnit
+    end
   | PlaceProjection (sub_place, pe) -> begin
       (* Can't evaluate this here because of the special case for DSTs. *)
       let sub_e = lazy (expression_of_place env sub_place) in
@@ -700,15 +850,16 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       (* L.log "AstOfLlbc" "e=%a\nty=%s\npe=%s\n" pexpr sub_e (C.show_ty sub_place.ty) *)
       (*   (C.show_projection_elem pe); *)
       match pe, sub_place, sub_place.ty with
+      (* slices simply cannot be dereferenced into places which have unknown size.
+         They are supposed to be reborrowed again directly after the deref which is handled in expression_of_rvalue *)
       | C.Deref, _, TRef (_, TAdt { id = TBuiltin TSlice; _ }, _)
-      | C.Deref, _, TRawPtr (TAdt { id = TBuiltin TSlice; _ }, _) -> !*sub_e
+      | C.Deref, _, TRawPtr (TAdt { id = TBuiltin TSlice; _ }, _) -> assert false
       | ( C.Deref,
           _,
           (TRawPtr _ | TRef _ | TAdt { id = TBuiltin TBox; generics = { types = [ _ ]; _ } }) ) ->
           (* All types represented as a pointer at run-time, compiled to a C pointer *)
           begin
             match !*sub_e.K.typ with
-            | TArray (_, _) -> assert false
             | TBuf (t_pointee, _) -> Krml.Helpers.(mk_deref t_pointee !*sub_e.K.node)
             | t ->
                 L.log "AstOfLlbc" "UNHANDLED DEREFERENCE\ne=%a\nt=%a\nty=%s\npe=%s\n" pexpr !*sub_e
@@ -718,28 +869,14 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       | ( Field (ProjAdt (typ_id, None), field_id),
           { kind = PlaceProjection (sub_place, C.Deref); _ },
           C.TAdt _ ) ->
-          (* Support for DSTs. Recall that values of a DST cannot exist unless behind a pointer
-             (&, Box, etc.). Therefore, a place expression that refers to a DST (and therefore
-             warrants special treatment) begins with `*x` where `x: T<U>` for `U: ?Sized` (we
-             describe the simplified case of a single parameter for T).
-
-             We cannot store or materialize such a value, therefore, after `*x`, we can either:
-             - take its U field (of type [U'], not representable), and in turn takes its address,
-               thus obtaining a value of type `&[U']` -- this is `&(( *x).data)`
-             - take one of the other fields -- this is `( *x).f_i`, no particular requirement on
-               address taking here
-             - reborrow, obtaining a pointer to a DST, also representable -- this is `&( *x)`
-
-             The first and third cases are handled in expression_of_rvalue. The second case, as it
-             involves no borrowing, is handled here.
-          *)
           let field_name = lookup_field env typ_id field_id in
           let sub_e = expression_of_place env sub_place in
           let place_typ = typ_of_ty env p.ty in
           begin
-            match is_dst env sub_e.K.typ with
-            | Some (lid, _u, t_pointee) when not (is_dst_field env lid field_name) ->
-                K.with_type place_typ (K.EField (mk_dst_deref env t_pointee sub_e, field_name))
+            match sub_e.K.typ with
+            | K.TApp (dst_ref_hd, [ dst_t; _meta ]) when dst_ref_hd = Builtin.dst_ref ->
+                (* getting field from a fat pointer of DST  *)
+                K.with_type place_typ (K.EField (mk_dst_deref dst_t sub_e, field_name))
             | _ ->
                 (* Same as below *)
                 K.with_type place_typ
@@ -949,19 +1086,7 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
   in
   K.(with_type ret_t (EApp (op, first :: rest)))
 
-(* According to the rules (see my notebook), array and slice types do not need
-   the address-taking because they are already addresses. Therefore, the
-   compilation scheme skips the address-taking operation and represents a value
-   of type [T; N] as T[N] and a value of type &[T; N] as T*, relying on the fact
-   that the former converts automatically to the latter. This is a type-driven
-   translation that does not work with polymorphism, so perhaps there ought to
-   be a MAYBE_CAST operator that gets desugared post-krml monomorphization. TBD.
-*)
-let maybe_addrof (_env : env) (ty : C.ty) (e : K.expr) =
-  (* ty is the *original* Rust type *)
-  match ty with
-  | TAdt { id = TBuiltin TSlice; _ } -> e
-  | _ -> K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
+let addrof (e : K.expr) = K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
 
 (** Handling trait clauses as dictionaries *)
 
@@ -1618,19 +1743,39 @@ let is_str env var_id =
   | _, _, TRef (_, TAdt { id = TBuiltin TStr; generics = { types = []; _ } }, _) -> true
   | _ -> false
 
-let is_dst_var env var_id = Option.is_some (is_dst env (snd (lookup env var_id)))
-
 let is_box_place (p : C.place) =
   match p.ty with
   | C.TAdt { id = TBuiltin TBox; _ } -> true
   | _ -> false
 
-let expression_of_cg (env : env) (cg : K.cg) =
-  match cg with
-  | CgConst n -> Krml.Helpers.mk_sizet (int_of_string (snd n))
-  | CgVar var ->
-      let diff = List.length env.binders - List.length env.cg_binders in
-      K.with_type (K.TInt SizeT) (K.EBound (var + diff))
+(* returns either a regular naked C pointer, or a fat pointer in the case of DSTs (i.e. with non-empty metadata) *)
+let mk_reference (e : K.expr) (metadata : K.expr) : K.expr =
+  match metadata.typ with
+  (* When it is unit, it means there is no metadata, simply take the address *)
+  | K.TUnit -> addrof e
+  | _ -> (
+      match e.typ with
+      | TApp (lid, [ t ]) when lid = Builtin.derefed_slice ->
+          (* The special "base case" of DSTs: slice<T>
+          where we have to cast [derefed_slice<T>] into [T*] for the .ptr field in the fat pointer  *)
+          let ptr = K.(with_type (TBuf (t, false)) (ECast (e, TBuf (t, false)))) in
+          K.(
+            with_type
+              (Builtin.mk_dst_ref t metadata.typ)
+              (EFlat [ Some "ptr", ptr; Some "meta", metadata ]))
+      | _ ->
+          K.(
+            with_type
+              (Builtin.mk_dst_ref e.typ metadata.typ)
+              (EFlat [ Some "ptr", addrof e; Some "meta", metadata ])))
+
+(* Parse the fat pointer Eurydice_dst_ref<T<U>> into (T,T<U>),
+   used to handle the unsized cast from &T<V> to &T<U> *)
+let is_dst_ref t =
+  match t with
+  | K.TApp (dst_ref_hd, [ (TApp (lid, _) as t_u); _ ]) when dst_ref_hd = Builtin.dst_ref ->
+      Some (lid, t_u)
+  | _ -> None
 
 let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   match p with
@@ -1652,58 +1797,12 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _, _)
   | RawPtr ({ kind = PlaceProjection (p, Deref); _ }, _, _) ->
       (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and [p] might be a reference to DST (fat pointer). *)
+      (* This also works for when the case has metadata, simply ignore it *)
       expression_of_place env p
-  | RvRef
-      ( ({
-           kind =
-             PlaceProjection
-               ( { kind = PlaceProjection (sub_place, C.Deref); _ },
-                 Field (ProjAdt (typ_id, None), field_id) );
-           _;
-         } as p),
-        _,
-        _ ) ->
-      let field_name = lookup_field env typ_id field_id in
-      begin
-        match is_dst env (typ_of_ty env sub_place.ty) with
-        | Some (lid, TApp (slice_hd, [ u ]), t_u)
-          when is_dst_field env lid field_name && slice_hd = Builtin.derefed_slice ->
-            (* Support for DSTs (see above). This is the first case. Building by hand... we are
-             compiling &( *x).f where x: Eurydice_dst<T<[U]>> and x = sub_place, T = lid, U = u,
-             T<[U]> = t_u. The goal is to build an actual slice. *)
-            let sub_place = expression_of_place env sub_place in
-            (* e: T<[U]> *)
-            let e = mk_dst_deref env t_u sub_place in
-            (* e_f_addr = &e.f *)
-            let t_field = typ_of_ty env p.ty in
-            let e_f_addr =
-              K.(
-                with_type
-                  (TBuf (t_field, false))
-                  (EAddrOf (with_type t_field (EField (e, field_name)))))
-            in
-            (* slice_of_dst: (derefed_slice 0)* -> size_t -> Eurydice_slice 0 *)
-            let slice_of_dst = Builtin.(expr_of_builtin slice_of_dst) in
-            (* slice_of_dst: (derefed_slice u)* -> size_t -> Eurydice_slice u *)
-            let slice_of_dst =
-              K.with_type
-                (Krml.DeBruijn.subst_t u 0 slice_of_dst.typ)
-                (K.ETApp (slice_of_dst, [], [], [ u ]))
-            in
-            K.(
-              with_type (Builtin.mk_slice u)
-                (EApp
-                   (slice_of_dst, [ e_f_addr; with_type (TInt SizeT) (EField (sub_place, "len")) ])))
-        | _ ->
-            (* Default case, same as below *)
-            let e = expression_of_place env p in
-            maybe_addrof env p.ty e
-      end
-  | RvRef (p, _, _) | RawPtr (p, _, _) ->
+  | RvRef (p, _, metadata) | RawPtr (p, _, metadata) ->
+      let metadata = expression_of_operand env metadata in
       let e = expression_of_place env p in
-      (* Arrays and ref to arrays are compiled as pointers in C; we allow on implicit array decay to
-         pass one for the other *)
-      maybe_addrof env p.ty e
+      mk_reference e metadata
   | UnaryOp (Cast (CastScalar (_, dst)), e) ->
       let dst = typ_of_literal_ty env dst in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
@@ -1723,26 +1822,25 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   | UnaryOp (Cast (CastFnPtr (TFnPtr _, TFnPtr _)), e) ->
       (* possible safe fn to unsafe fn, same in C *)
       expression_of_operand env e
-  | UnaryOp (Cast (CastUnsize (ty_from, ty_to, _) as ck), e) ->
-      (* DSTs: we only support going from T<[U;N]> to T<[U]>. The former is sized, the latter is
-         unsized and becomes a fat pointer. We build this coercion by hand, and slightly violate C's
-         strict aliasing rules. *)
+  | UnaryOp (Cast (CastUnsize (ty_from, ty_to, meta) as ck), e) ->
+      (* DSTs: we support going from &T<S1> to &T<S2> where S1 is sized,  S2 is
+         unsized and &T<S2> becomes a fat pointer. The base case is from &T<[U;N]>
+         to T<[U]>. See test/more_dst.rs for user-defined DST case. We build this 
+         coercion by hand, and slightly violate C's strict aliasing rules. *)
       let t_from = typ_of_ty env ty_from and t_to = typ_of_ty env ty_to in
       let e = expression_of_operand env e in
       begin
-        match t_from, is_dst env t_to with
-        | ( TBuf (TApp (lid1, [ K.TCgApp (K.TApp (lid_arr, [ u1 ]), cg) ]), _),
-            Some (lid2, TApp (slice_hd, [ u2 ]), t_u) )
-          when lid1 = lid2 && u1 = u2 && slice_hd = Builtin.derefed_slice && lid_arr = Builtin.arr
-          ->
+        match meta, t_from, is_dst_ref t_to with
+        | MetaLength cg, TBuf (TApp (lid1, _), _), Some (lid2, t_u) when lid1 = lid2 ->
             (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
              `Eurydice_derefed_slice data` (a.k.a. `char data[]`) *)
-            let len = expression_of_cg env cg in
+            let len = expression_of_const_generic env cg in
             let ptr = K.with_type (TBuf (t_u, false)) (K.ECast (e, TBuf (t_u, false))) in
             Builtin.dst_new ~len ~ptr t_u
-        | TBuf (K.TCgApp (K.TApp (lid_arr, [ t ]), cg), _), _ when lid_arr = Builtin.arr ->
+        | MetaLength cg, TBuf (K.TCgApp (K.TApp (lid_arr, [ t ]), _), _), _
+          when lid_arr = Builtin.arr ->
             (* Cast from Box<[T;N]> to Box<[T]> which we represent as Eurydice_slice *)
-            let len = expression_of_cg env cg in
+            let len = expression_of_const_generic env cg in
             (* array_to_slice: size_t -> arr -> Eurydice_slice 0 *)
             let array_to_slice = Builtin.(expr_of_builtin array_to_slice) in
             let diff = List.length env.binders - List.length env.cg_binders in
@@ -1849,7 +1947,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
                 (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
                 (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
             in
-            K.with_type typ_arr (expression_of_struct_Arr array_expr)
+            K.with_type typ_arr (mk_expr_arr_struct array_expr)
       end
   | rvalue ->
       failwith
@@ -1987,8 +2085,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
         K.(
           EAssign
             ( dest,
-              with_type dest.typ
-                (expression_of_struct_Arr (with_type t_array (EApp (repeat, [ e ])))) ))
+              with_type dest.typ (mk_expr_arr_struct (with_type t_array (EApp (repeat, [ e ])))) ))
   | Call
       {
         func =
@@ -2002,8 +2099,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
         dest;
         _;
       } ->
-      (* Special treatment because of the usage of maybe_addrof *)
-      (* Special treatment for e1[e2] of array which are translated into struct
+      (* Special treatment for e1[e2] of array which are translated into struct.
          e1[e2] is translated as fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T
 
          Since [T;N] is transalted into arr$T$N, we need to first dereference
@@ -2016,8 +2112,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       let e1 = Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e1.K.typ) e1.K.node) in
       let e1 = K.with_type t_array (K.EField (e1, "data")) in
       let dest = expression_of_place env dest in
-      Krml.Helpers.with_unit
-        K.(EAssign (dest, maybe_addrof env ty (with_type t (EBufRead (e1, e2)))))
+      Krml.Helpers.with_unit K.(EAssign (dest, addrof (with_type t (EBufRead (e1, e2)))))
   | Call { func = FnOpRegular fn_ptr; args; dest; _ }
     when Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u16 fn_ptr
          || Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u32 fn_ptr
@@ -2070,31 +2165,6 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
         else
           args
       in
-
-      (* Another array-to-pointer, decay-related bit of reasoning. The box_new builtin, when applied
-         to an array type, looks like `x := box_new <[T; N]> e` where `e: [T; N]`; However, per the
-         conversion rules, Box<[T; N]> (the type) translates to `T*`, meaning that `x` expects a
-         `T*` but is assigned a `[T; N]*` (because the type application of box_new is not aware of
-         array decay when performing substitution).
-
-         This 100% does not work in case of a polymorphic function that is later monomorphized,
-         meaning we really should be doing this transformation post-monomorphization. *)
-
-      (* Array handling: commented special case for array *)
-      (*
-        let hd, output_t =
-        match hd.node with
-        | K.ETApp ({ node = EQualified lid; _ }, [], [], [ TArray (t, n) ])
-          when lid = Builtin.box_new.name ->
-            let len = K.with_type (TInt SizeT) (K.EConstant n) in
-            let output_t = K.TBuf (t, false) in
-            ( K.(
-                with_type
-                  (TArrow (TArray (t, n), output_t))
-                  (ETApp (Builtin.(expr_of_builtin box_new_array), [ len ], [], [ t ]))),
-              output_t )
-        | _ -> hd, output_t
-      in *)
       let rhs =
         if args = [] then
           hd
@@ -2260,48 +2330,6 @@ let flags_of_meta (meta : C.item_meta) : K.flags =
               | _ -> None)
             meta.attr_info.attributes));
   ]
-
-let check_if_dst (env : env) (id : C.item_id) : env =
-  match id with
-  | C.IdType id ->
-      let decl = env.get_nth_type id in
-      let name = string_of_name env decl.item_meta.name in
-      let sized_clauses =
-        let sized_pattern = Charon.NameMatcher.parse_pattern "core::marker::Sized" in
-        let matches = Charon.NameMatcher.match_name env.name_ctx RustNames.config sized_pattern in
-        List.filter
-          (fun (tc : C.trait_param) ->
-            let trait_decl = env.get_nth_trait_decl tc.trait.binder_value.id in
-            matches trait_decl.item_meta.name)
-          decl.generics.trait_clauses
-      in
-      if List.length decl.generics.types <> List.length sized_clauses then begin
-        if List.length decl.generics.types > 1 then begin
-          Krml.KPrint.beprintf "Unsupported: DST %s has > 1 type parameter\n" name;
-          env
-        end
-        else begin
-          (* From here on, we assume (per Rust restrictions) we can deduce that the last field of this type is
-             exactly the type parameter T. See https://doc.rust-lang.org/std/marker/trait.Unsize.html *)
-          L.log "AstOfLlbc" "%s is a DST\n" name;
-          let lid = lid_of_name env decl.item_meta.name in
-          match decl.kind with
-          | Struct fields ->
-              if fields = [] then begin
-                Krml.KPrint.beprintf "Unsupported: DST %s has no fields\n" name;
-                env
-              end
-              else
-                let field_name = (Krml.KList.last fields).C.field_name in
-                { env with dsts = LidMap.add lid (Option.get field_name) env.dsts }
-          | _ ->
-              Krml.KPrint.beprintf "Unsupported: DST %s has no field name\n" name;
-              env
-        end
-      end
-      else
-        env
-  | _ -> env
 
 let decl_of_id (env : env) (id : C.item_id) : K.decl option =
   match id with
@@ -2715,11 +2743,8 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
       crate_name = name;
       name_ctx;
       generic_params = Charon.TypesUtils.empty_generic_params;
-      dsts = LidMap.empty;
     }
   in
-  let env = List.fold_left check_if_dst env declarations in
   let trans_decls = decls_of_declarations env declarations in
-  L.log "AstofLlbc" "Translated decls";
-  let extra_decls = [ Builtin.decl_of_arr ] in
+  let extra_decls = [ Builtin.dst_ref_decl; Builtin.decl_of_arr ] in
   name, trans_decls @ extra_decls
