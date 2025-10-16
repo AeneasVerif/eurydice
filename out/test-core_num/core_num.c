@@ -16,9 +16,10 @@ _uint32_t__x2;
 
 void core_num_main(void)
 {
+  uint32_t x = CORE_NUM__U32__BITS;
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 32U;
-  _uint32_t__x2 uu____0 = { .fst = &core_num__u32__BITS, .snd = &lvalue };
+  _uint32_t__x2 uu____0 = { .fst = &x, .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 

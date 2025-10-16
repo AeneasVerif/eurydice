@@ -72,10 +72,8 @@ test/issue_105.llbc: CHARON_EXTRA = \
 test/array2d.llbc: CHARON_EXTRA = --include=core::array::equality::*
 
 test/core_num.llbc: CHARON_EXTRA = \
-  --include=core::num::u32::BITS \
-  --include=core::num::u32::MAX \
-  --include=std::primitive::u32::BITS \
-  --include=std::primitive::u32::MAX
+  --include=core::num::*::BITS \
+  --include=core::num::*::MAX
 
 test/println.llbc: CHARON_EXTRA = \
   --include=core::fmt::Arguments --include=core::fmt::rt::*::new_const \

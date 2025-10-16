@@ -15,7 +15,11 @@
 extern "C" {
 #endif
 
-static uint32_t core_num__u32__BITS;
+static inline uint32_t core_num__u32__count_ones(uint32_t x0);
+
+#define CORE_NUM__U32__MAX (~0U)
+
+#define CORE_NUM__U32__BITS (core_num__u32__count_ones(CORE_NUM__U32__MAX))
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
