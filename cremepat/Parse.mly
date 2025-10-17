@@ -6,7 +6,7 @@
 %token<string>  UIDENT LIDENT UVAR UVARLIST
 %token          EOF COMMA EQUALS LBRACK RBRACK LBRACKHASH LANGLE RANGLE LCURLY RCURLY
 %token          COLON COLONCOLON AMP LPAREN RPAREN LPARENHASH SEMI
-%token          MATCH TRUE FALSE LET WHILE BREAK ARROW
+%token          MATCH TRUE FALSE LET WHILE BREAK ARROW ABORT
 
 %type <expr> expr
 %type <path_item> path_item
@@ -171,6 +171,8 @@ pre_atomic_expr:
   { BoundVar x }
 | BREAK
   { Break }
+| ABORT
+  { Abort }
 | FALSE
   { Bool false }
 | TRUE

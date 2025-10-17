@@ -2789,11 +2789,6 @@ let replacements =
     [
       "core::result::{core::result::Result<@T, @E>}::unwrap", Builtin.unwrap;
       "core::slice::{[@T]}::swap", Builtin.slice_swap;
-      (* FIXME: remove the line below once libcrux passes --include 'core::num::*::BITS'
-     --include 'core::num::*::MAX' to charon, AND does a single invocation of charon (instead of
-     three currently) *)
-      ( "core::num::{u32}::BITS",
-        fun lid -> Krml.Ast.DGlobal ([], lid, 0, Krml.Helpers.uint32, Krml.Helpers.mk_uint32 32) );
       "alloc::vec::{alloc::vec::Vec<@T>}::try_with_capacity", Builtin.try_with_capacity;
       "core::ptr::null_mut", Builtin.null_mut;
     ]
@@ -2865,8 +2860,7 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   } =
     crate
   in
-  (* FIXME once libcrux passes --preset=eurydice to charon *)
-  if options.remove_associated_types <> [ "*" ] then begin
+  if options.preset <> Some Eurydice then begin
     Printf.eprintf "ERROR: Eurydice expects Charon to be invoked with `--preset=eurydice`\n";
     exit 255
   end;

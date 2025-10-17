@@ -3,7 +3,7 @@ KRML_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../karamel
 EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
 CHARON		?= $(CHARON_HOME)/bin/charon
 
-BROKEN_TESTS		= where_clauses println closure chunks mutable_slice_range issue_37 issue_99 issue_14
+BROKEN_TESTS		= where_clauses println chunks mutable_slice_range issue_99 issue_14
 TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.rs))))
 
 # Warn on old versions of bash
@@ -62,6 +62,9 @@ out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
 	sed 's/__NAME__/$*/g' $< > $@
 
+test/issue_99.llbc: CHARON_EXTRA = \
+  --include=core::option::*::as_ref
+
 test/issue_105.llbc: CHARON_EXTRA = \
   --include=core::result::*::branch \
   --include=core::result::*::from_residual \
@@ -70,6 +73,10 @@ test/issue_105.llbc: CHARON_EXTRA = \
   --include=core::convert::*
 
 # test/array2d.llbc: CHARON_EXTRA = --include=core::array::equality::*
+
+test/core_num.llbc: CHARON_EXTRA = \
+  --include=core::num::*::BITS \
+  --include=core::num::*::MAX
 
 test/println.llbc: CHARON_EXTRA = \
   --include=core::fmt::Arguments --include=core::fmt::rt::*::new_const \
