@@ -132,6 +132,9 @@ typedef struct {
                  end) /* x is already at an array type, no need for cast */
 #define Eurydice_array_to_subslice(_arraylen, x, r, t, _0, _1)                 \
   EURYDICE_SLICE((t *)x, r.start, r.end)
+// The mono version is exactly the same, just with a different name
+#define Eurydice_array_to_subslice_mono(_arraylen, x, r, t, _0, _1)            \
+  EURYDICE_SLICE((t *)x, r.start, r.end)
 
 // Same as above, variant for when start and end are statically known
 #define Eurydice_array_to_subslice3(x, start, end, t_ptr)                      \
@@ -145,6 +148,11 @@ typedef struct {
 #define Eurydice_array_to_subslice_to(_size, x, r, t, _range_t, _0)            \
   EURYDICE_SLICE((t *)x, 0, r)
 #define Eurydice_array_to_subslice_from(size, x, r, t, _range_t, _0)           \
+  EURYDICE_SLICE((t *)x, r, size)
+// The mono versions are exactly the same, just different names
+#define Eurydice_array_to_subslice_to_mono(_size, x, r, t, _range_t, _0)       \
+  EURYDICE_SLICE((t *)x, 0, r)
+#define Eurydice_array_to_subslice_from_mono(size, x, r, t, _range_t, _0)      \
   EURYDICE_SLICE((t *)x, r, size)
 
 // Copy a slice with memcopy
@@ -326,6 +334,17 @@ core_convert_num__core__convert__From_u16__for_u64__from(uint16_t x) {
 
 static inline size_t
 core_convert_num__core__convert__From_u16__for_usize__from(uint16_t x) {
+  return x;
+}
+
+// for monoed where-clauses_simple
+static inline uint64_t
+core_convert_num__core__convert__From___u64__u16___from(uint16_t x) {
+  return x;
+}
+
+static inline size_t
+core_convert_num__core__convert__From___usize__u16___from(uint16_t x) {
   return x;
 }
 
@@ -549,6 +568,7 @@ typedef const char *Prims_string;
 // This is temporary. Ultimately we want to be able to extract all of this.
 
 typedef void *core_fmt_Formatter;
+typedef void *core_fmt_Formatter_____;
 #define core_fmt_rt__core__fmt__rt__Argument__a___new_display(x1, x2, x3, x4)  \
   NULL
 

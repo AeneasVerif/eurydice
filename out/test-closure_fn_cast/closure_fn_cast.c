@@ -8,37 +8,37 @@
 #include "closure_fn_cast.h"
 
 /**
-This function found in impl {core::ops::function::Fn<(i32), i32> for closure_fn_cast::main::closure}
+This function found in impl {core::ops::function::Fn::<closure_fn_cast::main::closure, (i32)>}
 */
-int32_t closure_fn_cast_main_call_fd(void **_, int32_t tupled_args)
+int32_t closure_fn_cast_main_call_58(void **_, int32_t tupled_args)
 {
   int32_t x = tupled_args;
   return x + (int32_t)42;
 }
 
 /**
-This function found in impl {core::ops::function::FnMut<(i32), i32> for closure_fn_cast::main::closure}
+This function found in impl {core::ops::function::FnMut::<closure_fn_cast::main::closure, (i32)>}
 */
-int32_t closure_fn_cast_main_call_mut_68(void **state, int32_t args)
+int32_t closure_fn_cast_main_call_mut_2c(void **state, int32_t args)
 {
-  return closure_fn_cast_main_call_fd(state, args);
+  return closure_fn_cast_main_call_58(state, args);
 }
 
 /**
-This function found in impl {core::ops::function::FnOnce<(i32), i32> for closure_fn_cast::main::closure}
+This function found in impl {core::ops::function::FnOnce::<closure_fn_cast::main::closure, (i32)>}
 */
-int32_t closure_fn_cast_main_call_once_fd(int32_t _)
+int32_t closure_fn_cast_main_call_once_ef(int32_t _)
 {
   /* original Rust expression is not an lvalue in C */
   void *lvalue = (void *)0U;
-  return closure_fn_cast_main_call_mut_68(&lvalue, _);
+  return closure_fn_cast_main_call_mut_2c(&lvalue, _);
 }
 
 int32_t closure_fn_cast_main_closure_as_fn(int32_t arg1)
 {
   int32_t args = arg1;
   void *state = (void *)0U;
-  return closure_fn_cast_main_call_once_fd(args);
+  return closure_fn_cast_main_call_once_ef(args);
 }
 
 void closure_fn_cast_main(void)
