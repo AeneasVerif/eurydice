@@ -132,14 +132,14 @@ test-libcrux: test/libcrux.llbc
 .PHONY: test/libcrux.llbc
 
 test/libcrux.llbc:
-	cd $(LIBCRUX_HOME)/libcrux-ml-kem && \
-	  RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $(CHARON) cargo --preset eurydice \
+	RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $(CHARON) cargo --preset eurydice \
 	  --include 'libcrux_sha3' \
 	  --include 'libcrux_secrets' \
 	  --start-from libcrux_ml_kem --start-from libcrux_sha3 \
 	  --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
-	  --cargo-arg=--target=x86_64-apple-darwin --dest-file $@
-
+	  --dest-file $$PWD/$@ -- \
+	  -C$(LIBCRUX_HOME)/libcrux-ml-kem \
+	  --target=x86_64-apple-darwin 
 
 .PRECIOUS: out/%
 out/%:
