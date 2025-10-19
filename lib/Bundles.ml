@@ -8,6 +8,10 @@ open Krml.Ast
 type pattern = Prefix of string list | Exact of string list | Lid of lident [@@deriving show]
 type visibility = Api | Internal | Private [@@deriving show]
 
+let string_of_pattern = function
+  | Exact p | Prefix p -> "[ " ^ String.concat "; " p ^ "]"
+  | Lid name -> String.concat "_" (fst name @ [ snd name ])
+
 type file = {
   name : string;
   target : string;
@@ -228,7 +232,7 @@ let find_map f l =
   List.find_map
     (fun (arg, ret) ->
       if f arg then
-        Some ret
+        Some (arg, ret)
       else
         None)
     l
@@ -460,7 +464,7 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
                 | _ -> None)
               cgs
             |||
-            (* Monomorphization using given type name *)
+            (* Monomorphiztation using given type name *)
             List.find_map (uses monomorphizations_using) ts
             |||
             (* Monomorphization of a given polymorphic name *)
@@ -497,8 +501,9 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
     Krml.MonomorphizationState.state;
   (* Debug *)
   Hashtbl.iter
-    (fun lid (target, _inline_static, vis) ->
-      L.log "Reassign" "%a goes into %s (vis: %s)" plid lid target (show_visibility vis))
+    (fun lid (target, _inline_static, (pat, vis)) ->
+      L.log "Reassign" "declaration %a goes into file %s (at visibility: %s) because it matched %s"
+        plid lid target (show_visibility vis) (string_of_pattern pat))
     target_of_lid;
   (* Filter the files, plucking out those that move and registering them under
      the right file name in `reassigned`. We maintain the invariant of one entry
@@ -513,7 +518,7 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
               let lid = lid_of_decl decl in
               match Hashtbl.find_opt target_of_lid lid with
               | None -> true
-              | Some (target, inline_static, vis) ->
+              | Some (target, inline_static, (_, vis)) ->
                   let decl = adjust vis decl in
                   if inline_static then
                     record_inline_static lid;
