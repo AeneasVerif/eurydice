@@ -8,6 +8,11 @@ open Krml.Ast
 type pattern = Prefix of string list | Exact of string list | Lid of lident [@@deriving show]
 type visibility = Api | Internal | Private [@@deriving show]
 
+let string_of_pattern = function
+  | Exact p -> "[ " ^ String.concat ", " p ^ " ]"
+  | Prefix p -> "[ " ^ String.concat ", " p ^ ", '*' ]"
+  | Lid name -> String.concat "_" (fst name @ [ snd name ])
+
 type file = {
   name : string;
   target : string;
@@ -224,11 +229,11 @@ let matches lid p =
   | Prefix prefix -> starts_with (fst lid) prefix
   | Lid lid' -> lid = lid'
 
-let find_map f l =
+let find_map desc f l =
   List.find_map
     (fun (arg, ret) ->
       if f arg then
-        Some ret
+        Some (arg, ret, desc)
       else
         None)
     l
@@ -417,10 +422,12 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
           else
             o1
 
-        method! visit_TQualified _ lid' = find_map (matches lid') monomorphizations_using
+        method! visit_TQualified _ lid' =
+          find_map "monomorphizations_using" (matches lid') monomorphizations_using
 
         method! visit_TApp _ lid' ts =
-          find_map (matches lid') monomorphizations_using ||| super#visit_TApp () lid' ts
+          find_map "monomorphizations_using" (matches lid') monomorphizations_using
+          ||| super#visit_TApp () lid' ts
       end
     end
       #visit_typ
@@ -450,21 +457,22 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
                  _;
                } ->
             (* Monomorphization resulting in exactly this name *)
-            find_map (matches monomorphized_lid) monomorphizations_exact
+            find_map "monomorphizations_exact" (matches monomorphized_lid) monomorphizations_exact
             |||
             (* Monomorphization using given trait name, amongst the arguments *)
             List.find_map
               (fun e ->
                 match e.node with
-                | EQualified lid' -> find_map (matches lid') monomorphizations_using
+                | EQualified lid' ->
+                    find_map "monomorphizations_using" (matches lid') monomorphizations_using
                 | _ -> None)
               cgs
             |||
-            (* Monomorphization using given type name *)
+            (* Monomorphiztation using given type name *)
             List.find_map (uses monomorphizations_using) ts
             |||
             (* Monomorphization of a given polymorphic name *)
-            find_map (matches generic_lid) monomorphizations_of
+            find_map "monomorphizations_of" (matches generic_lid) monomorphizations_of
             |> Option.map (fun vis -> name, inline_static, vis))
           config
       with
@@ -486,9 +494,9 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
                    monomorphizations_exact;
                    _;
                  } ->
-              find_map (matches monomorphized_lid) monomorphizations_exact
+              find_map "monomorphizations_exact" (matches monomorphized_lid) monomorphizations_exact
               ||| List.find_map (uses monomorphizations_using) ts
-              ||| find_map (matches generic_lid) monomorphizations_of
+              ||| find_map "monomorphizations_of" (matches generic_lid) monomorphizations_of
               |> Option.map (fun vis -> name, inline_static, vis))
             config
         with
@@ -497,8 +505,10 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
     Krml.MonomorphizationState.state;
   (* Debug *)
   Hashtbl.iter
-    (fun lid (target, _inline_static, vis) ->
-      L.log "Reassign" "%a goes into %s (vis: %s)" plid lid target (show_visibility vis))
+    (fun lid (target, _inline_static, (pat, vis, desc)) ->
+      L.log "Reassign"
+        "declaration %a goes into file %s (at visibility: %s) because it matched %s in a %s section"
+        plid lid target (show_visibility vis) (string_of_pattern pat) desc)
     target_of_lid;
   (* Filter the files, plucking out those that move and registering them under
      the right file name in `reassigned`. We maintain the invariant of one entry
@@ -513,7 +523,7 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
               let lid = lid_of_decl decl in
               match Hashtbl.find_opt target_of_lid lid with
               | None -> true
-              | Some (target, inline_static, vis) ->
+              | Some (target, inline_static, (_, vis, _)) ->
                   let decl = adjust vis decl in
                   if inline_static then
                     record_inline_static lid;
