@@ -376,8 +376,8 @@ let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
   | [] -> failwith "DynTrait has empty clause! Please report this to Charon."
   (* As guaranteed by Rustc and hence Charon, the first clause must be the principal trait *)
   | principal_clause :: _ -> (
-      let tref = principal_clause.trait.binder_value in
-      let decl = env.get_nth_trait_decl tref.id in
+      let tref = principal_clause.trait in
+      let decl = env.get_nth_trait_decl tref.binder_value.id in
       match decl.vtable with
       | None ->
           failwith "Fetching vtable from a trait without vtable! Please report this to Charon."
@@ -385,26 +385,8 @@ let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
           (* The ty_ref here is of the form: `{vtable}<TraitParams, AssocTys>` *)
           (* Hence we need to firstly substitute `TraitParams` with the actual types provided by the dynamic predicate's `TraitArgs` *)
           (* And then substitute `AssocTys` with the actual types provided by the dynamic predicate's assignments to these associated types *)
-          (* The helper function to handle DbVars *)
-          let out_of_binder_subst : Charon.Substitute.subst =
-            let open Charon.Substitute in
-            let shift = function
-              | C.Bound (dbid, var) ->
-                  assert (dbid > 0);
-                  C.Bound (dbid - 1, var)
-              | Free _ as var -> var
-            in
-            {
-              (* We don't care about the regions, simply ignore it. *)
-              r_subst = erase_regions_subst.r_subst;
-              ty_subst = compose empty_subst.ty_subst shift;
-              cg_subst = compose empty_subst.cg_subst shift;
-              tr_subst = compose empty_subst.tr_subst shift;
-              tr_self = empty_subst.tr_self;
-            }
-          in
           (* The trait ref is guaranteed to be with empty binding values in the principal clause *)
-          let tref = Charon.Substitute.trait_decl_ref_substitute out_of_binder_subst tref in
+          let tref = Charon.Substitute.(extract_from_binder trait_decl_ref_substitute tref) in
           (* First step: get the `TraitArgs` *)
           let base_args =
             let generics = tref.generics in
@@ -420,8 +402,8 @@ let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
                   let assoc_ty_assns = binder_params.trait_type_constraints in
                   let finder (binded_assn : C.trait_type_constraint C.region_binder) =
                     let assn =
-                      Charon.Substitute.trait_type_constraint_substitute out_of_binder_subst
-                        binded_assn.binder_value
+                      Charon.Substitute.(
+                        extract_from_binder trait_type_constraint_substitute binded_assn)
                     in
                     if
                       assn.trait_ref.trait_decl_ref.binder_value.id = target_id
