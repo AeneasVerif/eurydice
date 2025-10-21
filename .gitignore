@@ -1,6 +1,8 @@
+/karamel
+/charon
+/libcrux
+
 _build
-lib/krml
-lib/charon
 test/*/target
 out/*/a.out
 *.DS_Store

@@ -4,8 +4,9 @@
     flake-utils.follows = "karamel/flake-utils";
     karamel.url = "github:FStarLang/karamel";
     karamel.inputs.nixpkgs.follows = "nixpkgs";
-
     charon.url = "github:AeneasVerif/charon";
+    libcrux.url = "github:cryspen/libcrux";
+    libcrux.flake = false;
   };
   outputs =
     { self
@@ -57,12 +58,14 @@
               tests = clangStdenv.mkDerivation {
                 name = "tests";
                 src = ./.;
+                IN_CI = 1; # Tell the script to not check for charon/karamel commit hashes.
                 KRML_HOME = karamel.src;
                 FSTAR_HOME = "dummy";
                 EURYDICE = "${eurydice}/bin/eurydice";
                 buildInputs = [ eurydice ];
                 buildPhase = ''
                   shopt -s globstar
+                  ln -s ${inputs.libcrux} libcrux
                   export CHARON="${charon}/bin/charon"
 
                   # setup CHARON_HOME: it is expected to be writtable, hence the `cp --no-preserve`
@@ -128,6 +131,7 @@
       devShells.default = (pkgs.mkShell.override { stdenv = pkgs.clangStdenv; }) {
         OCAMLRUNPARAM = "b"; # Get backtrace on exception
         packages = [
+          pkgs.jq
           pkgs.clang-tools_18 # For clang-format
           pkgs.ocamlPackages.ocaml
           pkgs.ocamlPackages.ocamlformat_0_27_0
