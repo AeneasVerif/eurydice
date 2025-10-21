@@ -12,6 +12,7 @@ project(libcrux-ml-kem
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_OSX_ARCHITECTURES "x86_64")
 
 if(NOT MSVC)
     # TODO: Clean up
@@ -31,38 +32,43 @@ endif(NOT MSVC)
 
 set(CMAKE_COLOR_DIAGNOSTICS "ON")
 
+set(EURYDICE_ROOT "../..")
+set(OUT_DIR "../../out/test-libcrux")
+
 # For LSP-based editors
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 include_directories(
     ${PROJECT_SOURCE_DIR}
-    ${PROJECT_SOURCE_DIR}/internal
-    ${PROJECT_SOURCE_DIR}/karamel/include
+    ${OUT_DIR}
+    ${OUT_DIR}/internal
+    ${EURYDICE_ROOT}/include
+    ${EURYDICE_ROOT}/karamel/include
 )
 file(GLOB SOURCES
-    ${PROJECT_SOURCE_DIR}/libcrux_core.c
-    ${PROJECT_SOURCE_DIR}/libcrux_platform.c
-    ${PROJECT_SOURCE_DIR}/libcrux_sha3_portable.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem_portable.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_portable.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_portable.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_portable.c
+    ${OUT_DIR}/libcrux_core.c
+    ${OUT_DIR}/libcrux_platform.c
+    ${OUT_DIR}/libcrux_sha3_portable.c
+    ${OUT_DIR}/libcrux_mlkem512.c
+    ${OUT_DIR}/libcrux_mlkem768.c
+    ${OUT_DIR}/libcrux_mlkem1024.c
+    ${OUT_DIR}/libcrux_mlkem_portable.c
+    ${OUT_DIR}/libcrux_mlkem512_portable.c
+    ${OUT_DIR}/libcrux_mlkem768_portable.c
+    ${OUT_DIR}/libcrux_mlkem1024_portable.c
 )
 file(GLOB SOURCES_vec128
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem_neon.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_neon.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_neon.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_neon.c
-    ${PROJECT_SOURCE_DIR}/libcrux_sha3_neon.c
+    ${OUT_DIR}/libcrux_mlkem_neon.c
+    ${OUT_DIR}/libcrux_mlkem512_neon.c
+    ${OUT_DIR}/libcrux_mlkem768_neon.c
+    ${OUT_DIR}/libcrux_mlkem1024_neon.c
+    ${OUT_DIR}/libcrux_sha3_neon.c
 )
 file(GLOB SOURCES_vec256
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem_avx2.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem512_avx2.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem768_avx2.c
-    ${PROJECT_SOURCE_DIR}/libcrux_mlkem1024_avx2.c
-    ${PROJECT_SOURCE_DIR}/libcrux_sha3_avx2.c
+    ${OUT_DIR}/libcrux_mlkem_avx2.c
+    ${OUT_DIR}/libcrux_mlkem512_avx2.c
+    ${OUT_DIR}/libcrux_mlkem768_avx2.c
+    ${OUT_DIR}/libcrux_mlkem1024_avx2.c
+    ${OUT_DIR}/libcrux_sha3_avx2.c
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)

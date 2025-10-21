@@ -126,7 +126,7 @@ test-libcrux: test/libcrux.llbc
 	$(EURYDICE) --config $(LIBCRUX_HOME)/libcrux-ml-kem/c.yaml -funroll-loops 16 \
 	  $< --keep-going --output out/test-libcrux
 	cd test/libcrux/ && cmake -B build -G "Ninja Multi-Config" && cmake --build build --config Release
-	test/libcrux/build/mlkem_test
+	cd test/libcrux/ && ./build/Debug/ml_kem_test && ./build/Debug/sha3_test
 
 
 .PHONY: test/libcrux.llbc
@@ -138,7 +138,7 @@ test/libcrux.llbc:
 	  --start-from libcrux_ml_kem --start-from libcrux_sha3 \
 	  --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
 	  --dest-file $$PWD/$@ -- \
-	  -C$(LIBCRUX_HOME)/libcrux-ml-kem \
+	  --manifest-path $(LIBCRUX_HOME)/libcrux-ml-kem/Cargo.toml \
 	  --target=x86_64-apple-darwin 
 
 .PRECIOUS: out/%
