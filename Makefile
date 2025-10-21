@@ -1,6 +1,6 @@
-CHARON_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../charon
-KRML_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../karamel
-LIBCRUX_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../libcrux
+CHARON_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/charon
+KRML_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/karamel
+LIBCRUX_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/libcrux
 EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
 CHARON		?= $(CHARON_HOME)/bin/charon
 
@@ -42,13 +42,13 @@ all: format-check
 	$(MAKE) build
 
 .PHONY: build
-build:
+build: check-karamel check-charon
 	dune build && ln -sf _build/default/bin/main.exe eurydice
 
 CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
 CXXFLAGS	:= -std=c++17
 
-test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result custom-test-libcrux
+test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result check-charon check-libcrux custom-test-libcrux
 
 clean-and-test:
 	$(MAKE) clean-llbc
@@ -145,9 +145,19 @@ test/libcrux.llbc:
 out/%:
 	mkdir -p $@
 
+.PHONY: check-dependencies
+check-dependencies: check-karamel check-charon check-libcrux
+# % can be "charon", "karamel" or "libcrux".
+.PHONY: check-%
+check-%:
+	@bash ./scripts/check-dependency.sh "$*"
+.PHONY: setup-%
+setup-%:
+	bash ./scripts/check-dependency.sh "$*" --force
+
 .PHONY: nix-magic
 nix-magic:
-	nix flake update karamel charon --extra-experimental-features nix-command --extra-experimental-features flakes
+	nix flake update karamel charon libcrux --extra-experimental-features nix-command --extra-experimental-features flakes
 
 # Updates `flake.lock` with the latest commit from our local charon clone (the one that is symlinked into `lib/charon`).
 .PHONY: update-charon-pin

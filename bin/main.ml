@@ -244,11 +244,20 @@ Supported options:|}
   let files =
     match config with
     | None -> files
-    | Some config ->
+    | Some config -> (
         let files = Eurydice.Bundles.reassign_monomorphizations files config in
         Eurydice.Logging.log "Phase2.15" "%a" pfiles files;
-        let files = Krml.Bundles.topological_sort files in
-        files
+        try
+          let files = Krml.Bundles.topological_sort files in
+          files
+        with e ->
+          flush stdout;
+          flush stderr;
+          Krml.KPrint.bprintf "Error trying to topologically sort files:\n%s\n\n"
+            (Printexc.to_string e);
+          Krml.KPrint.bprintf "Consider passing --log Reassign to Eurydice\n";
+          Krml.KPrint.bprintf "Internal AST before the error:\n%a\n" pfiles files;
+          fail __FILE__ __LINE__)
   in
   Eurydice.Logging.log "Phase2.2" "%a" pfiles files;
   (* Sanity check for the big rewriting above. *)

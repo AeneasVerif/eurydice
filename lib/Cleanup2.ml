@@ -1308,7 +1308,11 @@ let globalize_global_locals files =
   in
   List.map (fun (name, decls) -> name, List.concat_map mapper decls) files
 
+(* The elimination of single-field structs generates new types equations, which
+   we need to substitute away. *)
 let fixup_monomorphization_map map =
+  (* Replace all occurences of lid, a struct that had a single field of type t,
+     with t *)
   let replace =
     object (self)
       inherit [_] Krml.Ast.map
@@ -1319,11 +1323,13 @@ let fixup_monomorphization_map map =
         | _ -> TQualified lid
     end
   in
-  Seq.iter
+  (* Must convert the hashtbl keys to a list instead of a lazy sequence Seq,
+     because this would result in modifying the hashtbl while accessing it. *)
+  List.iter
     (fun ((lid, ts, cgs), v) ->
       let ts = List.map (replace#visit_typ ()) ts in
       Hashtbl.add Krml.MonomorphizationState.state (lid, ts, cgs) v)
-    (Hashtbl.to_seq Krml.MonomorphizationState.state)
+    (List.of_seq (Hashtbl.to_seq Krml.MonomorphizationState.state))
 
 (* Hoist comments to be attached to the nearest statement *)
 let float_comments files =
