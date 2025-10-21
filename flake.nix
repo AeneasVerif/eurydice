@@ -20,7 +20,6 @@
       karamel = inputs.karamel.packages.${system}.default.override {
         ocamlPackages = pkgs.ocamlPackages;
       };
-      fstar = inputs.karamel.inputs.fstar.packages.${system}.default;
       krml = karamel.passthru.lib;
 
       charon-packages = inputs.charon.packages.${system};
@@ -58,7 +57,7 @@
               tests = clangStdenv.mkDerivation {
                 name = "tests";
                 src = ./.;
-                KRML_HOME = karamel;
+                KRML_HOME = karamel.src;
                 FSTAR_HOME = "dummy";
                 EURYDICE = "${eurydice}/bin/eurydice";
                 buildInputs = [ eurydice ];
@@ -139,7 +138,7 @@
           pkgs.rustup
         ];
         buildInputs = [ charon.buildInputs ];
-        nativeBuildInputs = [ charon.nativeBuildInputs fstar pkgs.clang ];
+        nativeBuildInputs = [ charon.nativeBuildInputs pkgs.clang ];
 
         inputsFrom = [
           self.packages.${system}.default

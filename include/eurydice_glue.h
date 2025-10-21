@@ -153,6 +153,8 @@ using std::type_identity_t;
 extern "C" {
 #endif
 
+#define core_hint_black_box(X, _0, _1) (X)
+
 typedef struct Eurydice_arr_8b_s {
   uint8_t data[2];
 } Eurydice_arr_8b;

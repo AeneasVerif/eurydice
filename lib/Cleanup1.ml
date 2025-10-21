@@ -344,7 +344,9 @@ let remove_terminal_returns =
       else
         EReturn (self#visit_expr_w terminal e)
 
-    method! visit_ESequence _ _ = assert false
+    method! visit_ESequence (terminal, _) es =
+      let es, e = Krml.KList.split_at_last es in
+      ESequence (List.map (self#visit_expr_w false) es @ [ self#visit_expr_w terminal e ])
 
     method! visit_EIfThenElse (terminal, _) e1 e2 e3 =
       EIfThenElse
@@ -396,7 +398,9 @@ let remove_terminal_continues =
       else
         EContinue
 
-    method! visit_ESequence _ _ = assert false
+    method! visit_ESequence (terminal, _) es =
+      let es, e = Krml.KList.split_at_last es in
+      ESequence (List.map (self#visit_expr_w false) es @ [ self#visit_expr_w terminal e ])
 
     method! visit_EIfThenElse (terminal, _) e1 e2 e3 =
       EIfThenElse

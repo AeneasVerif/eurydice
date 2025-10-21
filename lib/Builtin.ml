@@ -19,7 +19,7 @@ let mk_range_from (t : K.typ) : K.typ = K.TApp (range_from, [ t ])
 let option : K.lident = [ "core"; "option" ], "Option"
 let mk_option (t : K.typ) : K.typ = K.TApp (option, [ t ])
 
-(** special treatment for the array type: translating [T;C] as rust generic type
+(* special treatment for the array type: translating [T;C] as rust generic type
     struct <const C:usize, T> { data : [T;C]; } *)
 
 let arr : K.lident = [ "Eurydice" ], "arr"
