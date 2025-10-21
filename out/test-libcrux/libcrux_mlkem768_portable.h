@@ -36,7 +36,7 @@ libcrux_ml_kem_mlkem768_portable_decapsulate(
  The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
  bytes of `randomness`.
 */
-Eurydice_tuple_56
+tuple_56
 libcrux_ml_kem_mlkem768_portable_encapsulate(
   Eurydice_arr_74 *public_key,
   Eurydice_arr_60 randomness

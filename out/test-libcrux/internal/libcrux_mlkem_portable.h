@@ -330,7 +330,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-Eurydice_tuple_2b
+tuple_2b
 libcrux_ml_kem_ind_cca_unpacked_encapsulate_0c1(
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af *public_key,
   Eurydice_arr_60 *randomness
@@ -454,7 +454,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-Eurydice_tuple_2b
+tuple_2b
 libcrux_ml_kem_ind_cca_encapsulate_ca1(
   Eurydice_arr_00 *public_key,
   Eurydice_arr_60 *randomness
@@ -788,7 +788,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-Eurydice_tuple_17
+tuple_17
 libcrux_ml_kem_ind_cca_unpacked_encapsulate_0c0(
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 *public_key,
   Eurydice_arr_60 *randomness
@@ -912,7 +912,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-Eurydice_tuple_17
+tuple_17
 libcrux_ml_kem_ind_cca_encapsulate_ca0(
   Eurydice_arr_30 *public_key,
   Eurydice_arr_60 *randomness
@@ -1272,7 +1272,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-Eurydice_tuple_56
+tuple_56
 libcrux_ml_kem_ind_cca_unpacked_encapsulate_0c(
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *public_key,
   Eurydice_arr_60 *randomness
@@ -1396,7 +1396,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-Eurydice_tuple_56
+tuple_56
 libcrux_ml_kem_ind_cca_encapsulate_ca(Eurydice_arr_74 *public_key, Eurydice_arr_60 *randomness);
 
 /**

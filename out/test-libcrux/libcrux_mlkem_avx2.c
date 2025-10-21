@@ -5022,7 +5022,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-Eurydice_tuple_56
+tuple_56
 libcrux_ml_kem_ind_cca_unpacked_encapsulate_701(
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *public_key,
   Eurydice_arr_60 *randomness
@@ -5051,7 +5051,7 @@ libcrux_ml_kem_ind_cca_unpacked_encapsulate_701(
     uint8_t);
   return
     (
-      KRML_CLITERAL(Eurydice_tuple_56){
+      KRML_CLITERAL(tuple_56){
         .fst = libcrux_ml_kem_types_from_e0_80(ciphertext),
         .snd = shared_secret_array
       }
@@ -6083,7 +6083,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-Eurydice_tuple_56
+tuple_56
 libcrux_ml_kem_ind_cca_encapsulate_701(
   Eurydice_arr_74 *public_key,
   Eurydice_arr_60 *randomness
@@ -6130,7 +6130,7 @@ libcrux_ml_kem_ind_cca_encapsulate_701(
       &randomness0,
       pseudorandomness);
   Eurydice_arr_2c uu____2 = libcrux_ml_kem_types_from_e0_80(ciphertext);
-  return (KRML_CLITERAL(Eurydice_tuple_56){ .fst = uu____2, .snd = kdf_39_ae(shared_secret) });
+  return (KRML_CLITERAL(tuple_56){ .fst = uu____2, .snd = kdf_39_ae(shared_secret) });
 }
 
 /**
@@ -8293,7 +8293,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-Eurydice_tuple_2b
+tuple_2b
 libcrux_ml_kem_ind_cca_unpacked_encapsulate_700(
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_39 *public_key,
   Eurydice_arr_60 *randomness
@@ -8322,7 +8322,7 @@ libcrux_ml_kem_ind_cca_unpacked_encapsulate_700(
     uint8_t);
   return
     (
-      KRML_CLITERAL(Eurydice_tuple_2b){
+      KRML_CLITERAL(tuple_2b){
         .fst = libcrux_ml_kem_types_from_e0_af(ciphertext),
         .snd = shared_secret_array
       }
@@ -9018,7 +9018,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-Eurydice_tuple_2b
+tuple_2b
 libcrux_ml_kem_ind_cca_encapsulate_700(
   Eurydice_arr_00 *public_key,
   Eurydice_arr_60 *randomness
@@ -9065,7 +9065,7 @@ libcrux_ml_kem_ind_cca_encapsulate_700(
       &randomness0,
       pseudorandomness);
   Eurydice_arr_00 uu____2 = libcrux_ml_kem_types_from_e0_af(ciphertext);
-  return (KRML_CLITERAL(Eurydice_tuple_2b){ .fst = uu____2, .snd = kdf_39_5e(shared_secret) });
+  return (KRML_CLITERAL(tuple_2b){ .fst = uu____2, .snd = kdf_39_5e(shared_secret) });
 }
 
 /**
@@ -11224,7 +11224,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-Eurydice_tuple_17
+tuple_17
 libcrux_ml_kem_ind_cca_unpacked_encapsulate_70(
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94 *public_key,
   Eurydice_arr_60 *randomness
@@ -11250,7 +11250,7 @@ libcrux_ml_kem_ind_cca_unpacked_encapsulate_70(
     uint8_t);
   return
     (
-      KRML_CLITERAL(Eurydice_tuple_17){
+      KRML_CLITERAL(tuple_17){
         .fst = libcrux_ml_kem_types_from_e0_d0(ciphertext),
         .snd = shared_secret_array
       }
@@ -11915,7 +11915,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-Eurydice_tuple_17
+tuple_17
 libcrux_ml_kem_ind_cca_encapsulate_70(Eurydice_arr_30 *public_key, Eurydice_arr_60 *randomness)
 {
   Eurydice_arr_60
@@ -11959,7 +11959,7 @@ libcrux_ml_kem_ind_cca_encapsulate_70(Eurydice_arr_30 *public_key, Eurydice_arr_
       &randomness0,
       pseudorandomness);
   Eurydice_arr_56 uu____2 = libcrux_ml_kem_types_from_e0_d0(ciphertext);
-  return (KRML_CLITERAL(Eurydice_tuple_17){ .fst = uu____2, .snd = kdf_39_4d(shared_secret) });
+  return (KRML_CLITERAL(tuple_17){ .fst = uu____2, .snd = kdf_39_4d(shared_secret) });
 }
 
 /**

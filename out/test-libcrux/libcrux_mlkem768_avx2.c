@@ -94,8 +94,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static Eurydice_tuple_56
-encapsulate_avx2_cd(Eurydice_arr_74 *public_key, Eurydice_arr_60 *randomness)
+static tuple_56 encapsulate_avx2_cd(Eurydice_arr_74 *public_key, Eurydice_arr_60 *randomness)
 {
   return libcrux_ml_kem_ind_cca_encapsulate_701(public_key, randomness);
 }
@@ -117,8 +116,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static Eurydice_tuple_56
-encapsulate_cd(Eurydice_arr_74 *public_key, Eurydice_arr_60 *randomness)
+static tuple_56 encapsulate_cd(Eurydice_arr_74 *public_key, Eurydice_arr_60 *randomness)
 {
   return encapsulate_avx2_cd(public_key, randomness);
 }
@@ -130,7 +128,7 @@ encapsulate_cd(Eurydice_arr_74 *public_key, Eurydice_arr_60 *randomness)
  The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
  bytes of `randomness`.
 */
-Eurydice_tuple_56
+tuple_56
 libcrux_ml_kem_mlkem768_avx2_encapsulate(
   Eurydice_arr_74 *public_key,
   Eurydice_arr_60 randomness
@@ -372,7 +370,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static Eurydice_tuple_56
+static tuple_56
 encapsulate_avx2_cd0(
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *public_key,
   Eurydice_arr_60 *randomness
@@ -401,7 +399,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static Eurydice_tuple_56
+static tuple_56
 encapsulate_cd0(
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *public_key,
   Eurydice_arr_60 *randomness
@@ -417,7 +415,7 @@ encapsulate_cd0(
  The input is a reference to an unpacked public key of type [`MlKem768PublicKeyUnpacked`],
  the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
 */
-Eurydice_tuple_56
+tuple_56
 libcrux_ml_kem_mlkem768_avx2_unpacked_encapsulate(
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *public_key,
   Eurydice_arr_60 randomness

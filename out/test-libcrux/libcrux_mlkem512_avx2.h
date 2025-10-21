@@ -36,7 +36,7 @@ libcrux_ml_kem_mlkem512_avx2_decapsulate(
  The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
  bytes of `randomness`.
 */
-Eurydice_tuple_17
+tuple_17
 libcrux_ml_kem_mlkem512_avx2_encapsulate(
   Eurydice_arr_30 *public_key,
   Eurydice_arr_60 randomness

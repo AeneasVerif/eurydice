@@ -51,12 +51,12 @@ A monomorphic instance of K.
 with types libcrux_ml_kem_types_MlKemCiphertext[[$1568size_t]], Eurydice_arr uint8_t[[$32size_t]]
 
 */
-typedef struct Eurydice_tuple_2b_s
+typedef struct tuple_2b_s
 {
   Eurydice_arr_00 fst;
   Eurydice_arr_60 snd;
 }
-Eurydice_tuple_2b;
+tuple_2b;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -94,12 +94,12 @@ A monomorphic instance of K.
 with types libcrux_ml_kem_types_MlKemCiphertext[[$1088size_t]], Eurydice_arr uint8_t[[$32size_t]]
 
 */
-typedef struct Eurydice_tuple_56_s
+typedef struct tuple_56_s
 {
   Eurydice_arr_2c fst;
   Eurydice_arr_60 snd;
 }
-Eurydice_tuple_56;
+tuple_56;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -151,12 +151,12 @@ A monomorphic instance of K.
 with types libcrux_ml_kem_types_MlKemCiphertext[[$768size_t]], Eurydice_arr uint8_t[[$32size_t]]
 
 */
-typedef struct Eurydice_tuple_17_s
+typedef struct tuple_17_s
 {
   Eurydice_arr_56 fst;
   Eurydice_arr_60 snd;
 }
-Eurydice_tuple_17;
+tuple_17;
 
 typedef struct libcrux_sha3_Sha3_512Digest_s { uint8_t data[64U]; }
 libcrux_sha3_Sha3_512Digest;

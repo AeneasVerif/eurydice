@@ -42,7 +42,7 @@ libcrux_ml_kem_mlkem512_portable_unpacked_decapsulate(
  The input is a reference to an unpacked public key of type [`MlKem512PublicKeyUnpacked`],
  the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
 */
-Eurydice_tuple_17
+tuple_17
 libcrux_ml_kem_mlkem512_portable_unpacked_encapsulate(
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 *public_key,
   Eurydice_arr_60 randomness

@@ -44,7 +44,7 @@ libcrux_ml_kem_mlkem1024_portable_unpacked_decapsulate(
  TODO: The F* prefix opens required modules, it should go away when the following issue is resolved:
  <https://github.com/hacspec/hax/issues/770>
 */
-Eurydice_tuple_2b
+tuple_2b
 libcrux_ml_kem_mlkem1024_portable_unpacked_encapsulate(
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af *public_key,
   Eurydice_arr_60 randomness

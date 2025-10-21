@@ -94,8 +94,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static Eurydice_tuple_2b
-encapsulate_avx2_8f(Eurydice_arr_00 *public_key, Eurydice_arr_60 *randomness)
+static tuple_2b encapsulate_avx2_8f(Eurydice_arr_00 *public_key, Eurydice_arr_60 *randomness)
 {
   return libcrux_ml_kem_ind_cca_encapsulate_700(public_key, randomness);
 }
@@ -117,8 +116,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static Eurydice_tuple_2b
-encapsulate_8f(Eurydice_arr_00 *public_key, Eurydice_arr_60 *randomness)
+static tuple_2b encapsulate_8f(Eurydice_arr_00 *public_key, Eurydice_arr_60 *randomness)
 {
   return encapsulate_avx2_8f(public_key, randomness);
 }
@@ -130,7 +128,7 @@ encapsulate_8f(Eurydice_arr_00 *public_key, Eurydice_arr_60 *randomness)
  The input is a reference to an [`MlKem1024PublicKey`] and [`SHARED_SECRET_SIZE`]
  bytes of `randomness`.
 */
-Eurydice_tuple_2b
+tuple_2b
 libcrux_ml_kem_mlkem1024_avx2_encapsulate(
   Eurydice_arr_00 *public_key,
   Eurydice_arr_60 randomness
@@ -372,7 +370,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static Eurydice_tuple_2b
+static tuple_2b
 encapsulate_avx2_8f0(
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_39 *public_key,
   Eurydice_arr_60 *randomness
@@ -401,7 +399,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static Eurydice_tuple_2b
+static tuple_2b
 encapsulate_8f0(
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_39 *public_key,
   Eurydice_arr_60 *randomness
@@ -419,7 +417,7 @@ encapsulate_8f0(
  TODO: The F* prefix opens required modules, it should go away when the following issue is resolved:
  <https://github.com/hacspec/hax/issues/770>
 */
-Eurydice_tuple_2b
+tuple_2b
 libcrux_ml_kem_mlkem1024_avx2_unpacked_encapsulate(
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_39 *public_key,
   Eurydice_arr_60 randomness

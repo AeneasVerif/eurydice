@@ -125,7 +125,7 @@ test-libcrux: test/libcrux.llbc
 	mkdir -p out/test-libcrux
 	$(EURYDICE) --config $(LIBCRUX_HOME)/libcrux-ml-kem/c.yaml -funroll-loops 16 \
 	  $< --keep-going --output out/test-libcrux
-	cd test/libcrux/ && cmake -B build -G "Ninja Multi-Config" && cmake --build build --config Release
+	cd test/libcrux/ && cmake -B build -G "Ninja Multi-Config" && cmake --build build --config Debug
 	cd test/libcrux/ && ./build/Debug/ml_kem_test && ./build/Debug/sha3_test
 
 
