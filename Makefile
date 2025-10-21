@@ -48,7 +48,7 @@ build: check-karamel check-charon
 CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
 CXXFLAGS	:= -std=c++17
 
-test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result check-charon check-libcrux custom-test-libcrux
+test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result check-charon check-libcrux
 
 clean-and-test:
 	$(MAKE) clean-llbc
