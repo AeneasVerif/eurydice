@@ -555,14 +555,14 @@ let re_polymorphize expr =
 let pure_c_name (name : C.name) =
   let pre, last = Krml.KList.split_at_last name in
   match last with
-  | PeMonomorphized _args -> pre
+  | PeInstantiated _args -> pre
   | _ -> name
 
 (* get the trait_refs from mono. charon name, used in lookup_fun *)
 let trait_refs_c_name (name : C.name) : C.trait_ref list =
   let _pre, last = Krml.KList.split_at_last name in
   match last with
-  | PeMonomorphized args -> args.trait_refs
+  | PeInstantiated args -> args.binder_value.trait_refs
   | _ -> []
 
 let pure_lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
@@ -584,7 +584,7 @@ let rec insert_lid_full_generic (env : env) (full_name : K.lident) (name : Charo
   let item_name, generic =
     let pre, last = Krml.KList.split_at_last name in
     match last with
-    | PeMonomorphized args -> pure_lid_of_name env pre, (args : C.generic_args)
+    | PeInstantiated args -> pure_lid_of_name env pre, (args.binder_value : C.generic_args)
     | _ -> full_name, { C.types = []; regions = []; const_generics = []; trait_refs = [] }
   in
   let cgs, tys =
@@ -1366,7 +1366,7 @@ and debug_trait_clause_mapping env (mapping : (var_id * K.typ) list) =
 (* Helper for getting monomorphized generic arguments from a name *)
 let try_get_mono_from_name (name : C.name) =
   match List.rev name with
-  | PeMonomorphized generics :: _ -> Some generics
+  | PeInstantiated generics :: _ -> Some generics
   | _ -> None
 
 (* Only get monomorphized generics for known *Eurydice* builtins *)
@@ -1477,7 +1477,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
     | None -> generics
     (* Essentially, there might still be (late-bound) region arguments in the original generics
      But we don't care about them (the regions), so just ignore them. *)
-    | Some generics -> generics
+    | Some generics -> generics.binder_value
   in
   let { C.types = type_args; const_generics = const_generic_args; trait_refs; _ } = generics in
 
@@ -1503,7 +1503,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
           let trait_impl = env.get_nth_trait_impl id in
           match try_get_mono_from_name trait_impl.item_meta.name with
           (* The same applies here: ignoring potential region arguments *)
-          | Some generics when is_known_builtin -> generics
+          | Some generics when is_known_builtin -> generics.binder_value
           | _ -> generics
         end
       | _ -> C.empty_generic_args
