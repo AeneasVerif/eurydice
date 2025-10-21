@@ -1801,6 +1801,12 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       let metadata = expression_of_operand env metadata in
       let e = expression_of_place env p in
       mk_reference e metadata
+  | NullaryOp (SizeOf, ty) ->
+      let t = typ_of_ty env ty in
+      K.(with_type TBool (EApp (Builtin.(expr_of_builtin_t sizeof [ t ]), [])))
+  | NullaryOp (AlignOf, ty) ->
+      let t = typ_of_ty env ty in
+      K.(with_type TBool (EApp (Builtin.(expr_of_builtin_t alignof [ t ]), [])))
   | UnaryOp (Cast (CastScalar (_, dst)), e) ->
       let dst = typ_of_literal_ty env dst in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))

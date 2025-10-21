@@ -56,6 +56,12 @@ using std::type_identity_t;
     }                                                                          \
   } while (0)
 
+// SIZEOF, ALIGNOF
+
+#define Eurydice_sizeof(t) sizeof(t)
+
+#define Eurydice_alignof(t) alignof(t)
+
 // SLICES, ARRAYS, ETC.
 
 #if defined(__cplusplus)

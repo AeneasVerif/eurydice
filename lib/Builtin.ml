@@ -156,6 +156,24 @@ let op_128_cfgs =
 
 let get_128_op (kind, op) : K.expr = expr_of_builtin @@ Op128Map.find (kind, op) op_128_cfgs
 
+let sizeof =
+  {
+    name = [ "Eurydice" ], "sizeof";
+    typ = Krml.Helpers.fold_arrow [] (TInt SizeT);
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [];
+  }
+
+let alignof =
+  {
+    name = [ "Eurydice" ], "alignof";
+    typ = Krml.Helpers.fold_arrow [] (TInt SizeT);
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [];
+  }
+
 let array_to_slice =
   {
     name = [ "Eurydice" ], "array_to_slice";
@@ -913,6 +931,8 @@ type usage = Used | Unused
 
 let builtin_funcs =
   [
+    sizeof;
+    alignof;
     array_repeat;
     array_into_iter;
     array_eq;
