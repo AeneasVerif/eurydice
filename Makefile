@@ -137,7 +137,7 @@ test/libcrux.llbc:
 	  --include 'libcrux_secrets' \
 	  --start-from libcrux_ml_kem --start-from libcrux_sha3 \
 	  --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
-	  --dest-file $$PWD/$@ -- \
+	  --dest-file $@ -- \
 	  --manifest-path $(LIBCRUX_HOME)/libcrux-ml-kem/Cargo.toml \
 	  --target=x86_64-apple-darwin 
 
