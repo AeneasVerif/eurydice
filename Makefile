@@ -125,6 +125,8 @@ test-libcrux: test/libcrux.llbc
 	mkdir -p out/test-libcrux
 	$(EURYDICE) --config $(LIBCRUX_HOME)/libcrux-ml-kem/c.yaml -funroll-loops 16 \
 	  $< --keep-going --output out/test-libcrux
+	$(SED) -i 's/  KaRaMeL version: .*//' out/test-libcrux/**/*.{c,h} # This changes on every commit
+	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-libcrux/**/*.{c,h} # This changes between local and CI
 	cd test/libcrux/ && cmake $(CMAKE_FLAGS) -B build -G "Ninja Multi-Config" && cmake --build build --config Debug
 	cd test/libcrux/ && ./build/Debug/ml_kem_test && ./build/Debug/sha3_test
 
