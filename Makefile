@@ -123,7 +123,7 @@ custom-test-array: test-array
 
 test-libcrux: test/libcrux.llbc
 	mkdir -p out/test-libcrux
-	$(EURYDICE) --config $(LIBCRUX_HOME)/libcrux-ml-kem/c.yaml -funroll-loops 16 \
+	$(EURYDICE) --config test/libcrux/c.yaml -funroll-loops 16 \
 	  $< --keep-going --output out/test-libcrux
 	$(SED) -i 's/  KaRaMeL version: .*//' out/test-libcrux/**/*.{c,h} # This changes on every commit
 	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-libcrux/**/*.{c,h} # This changes between local and CI

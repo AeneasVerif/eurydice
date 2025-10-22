@@ -13,6 +13,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "aes"
+version = "0.8.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b169f7a6d4742236a0a00c541b845991d0ac43e546831af1249753ab4c3aa3a0"
+dependencies = [
+ "cfg-if",
+ "cipher",
+ "cpufeatures",
+]
+
+[[package]]
+name = "aes-gcm"
+version = "0.10.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "831010a0f742e1209b3bcea8fab6a8e149051ba6099432c8cb2cc117dec3ead1"
+dependencies = [
+ "aead",
+ "aes",
+ "cipher",
+ "ctr",
+ "ghash",
+ "subtle",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -106,7 +131,7 @@ name = "benchmarks"
 version = "0.0.2"
 dependencies = [
  "chacha20poly1305",
- "criterion",
+ "criterion 0.7.0",
  "curve25519-dalek",
  "der",
  "ed25519-dalek",
@@ -146,7 +171,7 @@ dependencies = [
  "bitflags",
  "cexpr",
  "clang-sys",
- "itertools",
+ "itertools 0.13.0",
  "log",
  "prettyplease",
  "proc-macro2",
@@ -382,6 +407,32 @@ dependencies = [
 
 [[package]]
 name = "criterion"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f2b12d017a929603d80db1831cd3a24082f8137ce19c69e6447f54f5fc8d692f"
+dependencies = [
+ "anes",
+ "cast",
+ "ciborium",
+ "clap",
+ "criterion-plot 0.5.0",
+ "is-terminal",
+ "itertools 0.10.5",
+ "num-traits",
+ "once_cell",
+ "oorandom",
+ "plotters",
+ "rayon",
+ "regex",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "tinytemplate",
+ "walkdir",
+]
+
+[[package]]
+name = "criterion"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e1c047a62b0cc3e145fa84415a3191f628e980b194c2755aa12300a4e6cbd928"
@@ -390,8 +441,8 @@ dependencies = [
  "cast",
  "ciborium",
  "clap",
- "criterion-plot",
- "itertools",
+ "criterion-plot 0.6.0",
+ "itertools 0.13.0",
  "num-traits",
  "oorandom",
  "plotters",
@@ -405,12 +456,22 @@ dependencies = [
 
 [[package]]
 name = "criterion-plot"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b50826342786a51a89e2da3a28f1c32b06e387201bc2d19791f622c673706b1"
+dependencies = [
+ "cast",
+ "itertools 0.10.5",
+]
+
+[[package]]
+name = "criterion-plot"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b1bcc0dc7dfae599d84ad0b1a55f80cde8af3725da8313b528da95ef783e338"
 dependencies = [
  "cast",
- "itertools",
+ "itertools 0.13.0",
 ]
 
 [[package]]
@@ -465,6 +526,15 @@ dependencies = [
  "generic-array",
  "rand_core 0.6.4",
  "typenum",
+]
+
+[[package]]
+name = "ctr"
+version = "0.9.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0369ee1ad671834580515889b80f2ea915f23b8be8d0daa4bbaf2ac5c7590835"
+dependencies = [
+ "cipher",
 ]
 
 [[package]]
@@ -718,6 +788,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "ghash"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f0d8a4362ccb29cb0b265253fb0a2728f592895ee6854fd9bc13f2ffda266ff1"
+dependencies = [
+ "opaque-debug",
+ "polyval",
+]
+
+[[package]]
 name = "glob"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -855,6 +935,15 @@ checksum = "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695"
 
 [[package]]
 name = "itertools"
+version = "0.10.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
+dependencies = [
+ "either",
+]
+
+[[package]]
+name = "itertools"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
@@ -931,6 +1020,7 @@ dependencies = [
  "hax-lib",
  "hex",
  "libcrux",
+ "libcrux-chacha20poly1305",
  "libcrux-ecdh",
  "libcrux-ed25519",
  "libcrux-hacl",
@@ -956,12 +1046,51 @@ dependencies = [
 ]
 
 [[package]]
+name = "libcrux-aead"
+version = "0.0.3"
+dependencies = [
+ "libcrux-aesgcm",
+ "libcrux-chacha20poly1305",
+ "libcrux-secrets",
+ "libcrux-traits",
+]
+
+[[package]]
+name = "libcrux-aesgcm"
+version = "0.0.3"
+dependencies = [
+ "aes-gcm",
+ "cavp",
+ "criterion 0.5.1",
+ "hex",
+ "libcrux-aesgcm",
+ "libcrux-intrinsics",
+ "libcrux-platform",
+ "libcrux-secrets",
+ "libcrux-traits",
+ "pretty_env_logger",
+ "rand 0.9.2",
+ "rand_core 0.6.4",
+ "wycheproof",
+]
+
+[[package]]
+name = "libcrux-aesgcm-fuzz"
+version = "0.0.0"
+dependencies = [
+ "libcrux-aesgcm",
+ "libcrux-traits",
+ "libfuzzer-sys",
+]
+
+[[package]]
 name = "libcrux-blake2"
 version = "0.0.3"
 dependencies = [
- "criterion",
+ "criterion 0.7.0",
  "libcrux-hacl-rs",
  "libcrux-macros",
+ "libcrux-traits",
  "rand 0.9.2",
 ]
 
@@ -973,6 +1102,7 @@ dependencies = [
  "libcrux-hacl-rs",
  "libcrux-macros",
  "libcrux-poly1305",
+ "libcrux-secrets",
  "libcrux-traits",
  "rand_core 0.9.3",
  "serde",
@@ -985,6 +1115,17 @@ version = "0.0.3"
 dependencies = [
  "libcrux-hacl-rs",
  "libcrux-macros",
+ "libcrux-secrets",
+ "libcrux-traits",
+]
+
+[[package]]
+name = "libcrux-digest"
+version = "0.0.3"
+dependencies = [
+ "libcrux-blake2",
+ "libcrux-sha2",
+ "libcrux-sha3",
  "libcrux-traits",
 ]
 
@@ -1061,6 +1202,7 @@ version = "0.0.3"
 dependencies = [
  "libcrux-hacl-rs",
  "libcrux-hmac",
+ "libcrux-secrets",
 ]
 
 [[package]]
@@ -1078,6 +1220,15 @@ version = "0.0.3"
 dependencies = [
  "core-models",
  "hax-lib",
+]
+
+[[package]]
+name = "libcrux-kats"
+version = "0.0.3"
+dependencies = [
+ "hex",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -1109,10 +1260,11 @@ name = "libcrux-ml-dsa"
 version = "0.0.3"
 dependencies = [
  "core-models",
- "criterion",
+ "criterion 0.7.0",
  "hax-lib",
  "hex",
  "libcrux-intrinsics",
+ "libcrux-kats",
  "libcrux-macros",
  "libcrux-platform",
  "libcrux-sha3",
@@ -1126,10 +1278,11 @@ dependencies = [
 name = "libcrux-ml-kem"
 version = "0.0.3"
 dependencies = [
- "criterion",
+ "criterion 0.7.0",
  "hax-lib",
  "hex",
  "libcrux-intrinsics",
+ "libcrux-kats",
  "libcrux-platform",
  "libcrux-secrets",
  "libcrux-sha3",
@@ -1154,6 +1307,7 @@ version = "0.0.3"
 dependencies = [
  "libcrux-hacl-rs",
  "libcrux-macros",
+ "libcrux-secrets",
  "libcrux-sha2",
  "libcrux-traits",
 ]
@@ -1184,11 +1338,11 @@ dependencies = [
 
 [[package]]
 name = "libcrux-psq"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "clap",
  "classic-mceliece-rust",
- "criterion",
+ "criterion 0.7.0",
  "libcrux-chacha20poly1305",
  "libcrux-ecdh",
  "libcrux-ed25519",
@@ -1221,8 +1375,9 @@ dependencies = [
 name = "libcrux-secrets"
 version = "0.0.3"
 dependencies = [
- "criterion",
+ "criterion 0.7.0",
  "hax-lib",
+ "rand 0.9.2",
 ]
 
 [[package]]
@@ -1241,11 +1396,12 @@ version = "0.0.3"
 dependencies = [
  "cavp",
  "clap",
- "criterion",
+ "criterion 0.7.0",
  "hax-lib",
  "hex",
  "libcrux-intrinsics",
  "libcrux-platform",
+ "libcrux-traits",
  "pretty_env_logger",
  "rand 0.9.2",
 ]
@@ -1552,6 +1708,18 @@ version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8159bd90725d2df49889a078b54f4f79e87f1f8a8444194cdca81d38f5393abf"
 dependencies = [
+ "cpufeatures",
+ "opaque-debug",
+ "universal-hash",
+]
+
+[[package]]
+name = "polyval"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9d1fe60d06143b2430aa532c94cfe9e29783047f06c0d7fd359a9a51b729fa25"
+dependencies = [
+ "cfg-if",
  "cpufeatures",
  "opaque-debug",
  "universal-hash",

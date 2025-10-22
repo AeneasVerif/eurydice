@@ -11,7 +11,7 @@
 #include "libcrux_core.h"
 #include "internal/libcrux_core.h"
 
-KRML_MUSTINLINE libcrux_sha3_Sha3_512Digest
+inline libcrux_sha3_Sha3_512Digest
 libcrux_ml_kem_hash_functions_portable_G(Eurydice_slice input)
 {
   libcrux_sha3_Sha3_512Digest digest = { .data = { 0U } };
@@ -19,7 +19,7 @@ libcrux_ml_kem_hash_functions_portable_G(Eurydice_slice input)
   return digest;
 }
 
-KRML_MUSTINLINE Eurydice_arr_60 libcrux_ml_kem_hash_functions_portable_H(Eurydice_slice input)
+inline Eurydice_arr_60 libcrux_ml_kem_hash_functions_portable_H(Eurydice_slice input)
 {
   Eurydice_arr_60 digest = { .data = { 0U } };
   libcrux_sha3_portable_sha256(Eurydice_array_to_slice((size_t)32U, &digest, uint8_t), input);
@@ -51,7 +51,7 @@ This function found in impl {libcrux_ml_kem::vector::traits::Operations for libc
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_from_i16_array_b8(Eurydice_slice array)
 {
   return
-    libcrux_ml_kem_vector_portable_vector_type_from_i16_array(libcrux_secrets_int_public_integers_classify_ref_c5_03(&array)[0U]);
+    libcrux_ml_kem_vector_portable_vector_type_from_i16_array(libcrux_secrets_int_classify_public_classify_ref_9b_39(array));
 }
 
 KRML_MUSTINLINE uint8_t_x11
@@ -341,7 +341,7 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_11(Eurydice_slice bytes)
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_11(Eurydice_slice a)
 {
   return
-    libcrux_ml_kem_vector_portable_serialize_deserialize_11(libcrux_secrets_int_public_integers_classify_ref_c5_ba(&a)[0U]);
+    libcrux_ml_kem_vector_portable_serialize_deserialize_11(libcrux_secrets_int_classify_public_classify_ref_9b_90(a));
 }
 
 /**
@@ -415,7 +415,7 @@ This function found in impl {libcrux_ml_kem::vector::traits::Operations for libc
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_from_bytes_b8(Eurydice_slice array)
 {
   return
-    libcrux_ml_kem_vector_portable_vector_type_from_bytes(libcrux_secrets_int_public_integers_classify_ref_c5_ba(&array)[0U]);
+    libcrux_ml_kem_vector_portable_vector_type_from_bytes(libcrux_secrets_int_classify_public_classify_ref_9b_90(array));
 }
 
 KRML_MUSTINLINE void
@@ -1284,7 +1284,7 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_1(Eurydice_slice v)
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_1(Eurydice_slice a)
 {
   return
-    libcrux_ml_kem_vector_portable_serialize_deserialize_1(libcrux_secrets_int_public_integers_classify_ref_c5_ba(&a)[0U]);
+    libcrux_ml_kem_vector_portable_serialize_deserialize_1(libcrux_secrets_int_classify_public_classify_ref_9b_90(a));
 }
 
 /**
@@ -1473,7 +1473,7 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_4(Eurydice_slice bytes)
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_4(Eurydice_slice a)
 {
   return
-    libcrux_ml_kem_vector_portable_serialize_deserialize_4(libcrux_secrets_int_public_integers_classify_ref_c5_ba(&a)[0U]);
+    libcrux_ml_kem_vector_portable_serialize_deserialize_4(libcrux_secrets_int_classify_public_classify_ref_9b_90(a));
 }
 
 /**
@@ -1665,7 +1665,7 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_5(Eurydice_slice bytes)
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_5(Eurydice_slice a)
 {
   return
-    libcrux_ml_kem_vector_portable_serialize_deserialize_5(libcrux_secrets_int_public_integers_classify_ref_c5_ba(&a)[0U]);
+    libcrux_ml_kem_vector_portable_serialize_deserialize_5(libcrux_secrets_int_classify_public_classify_ref_9b_90(a));
 }
 
 /**
@@ -1921,7 +1921,7 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_10(Eurydice_slice bytes)
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_10(Eurydice_slice a)
 {
   return
-    libcrux_ml_kem_vector_portable_serialize_deserialize_10(libcrux_secrets_int_public_integers_classify_ref_c5_ba(&a)[0U]);
+    libcrux_ml_kem_vector_portable_serialize_deserialize_10(libcrux_secrets_int_classify_public_classify_ref_9b_90(a));
 }
 
 /**
@@ -2110,7 +2110,7 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_12(Eurydice_slice bytes)
 Eurydice_arr_e2 libcrux_ml_kem_vector_portable_deserialize_12(Eurydice_slice a)
 {
   return
-    libcrux_ml_kem_vector_portable_serialize_deserialize_12(libcrux_secrets_int_public_integers_classify_ref_c5_ba(&a)[0U]);
+    libcrux_ml_kem_vector_portable_serialize_deserialize_12(libcrux_secrets_int_classify_public_classify_ref_9b_90(a));
 }
 
 /**
@@ -2265,7 +2265,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_init_a
 with const generics
 - K= 4
 */
-static KRML_MUSTINLINE Eurydice_arr_180 shake128_init_absorb_final_ac(Eurydice_arr_78 *input)
+static inline Eurydice_arr_180 shake128_init_absorb_final_ac(Eurydice_arr_78 *input)
 {
   Eurydice_arr_180 shake128_state;
   Eurydice_arr_26 repeat_expression[4U];
@@ -2304,8 +2304,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeez
 with const generics
 - K= 4
 */
-static KRML_MUSTINLINE Eurydice_arr_ec
-shake128_squeeze_first_three_blocks_ac(Eurydice_arr_180 *st)
+static inline Eurydice_arr_ec shake128_squeeze_first_three_blocks_ac(Eurydice_arr_180 *st)
 {
   Eurydice_arr_ec
   out =
@@ -2436,7 +2435,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeez
 with const generics
 - K= 4
 */
-static KRML_MUSTINLINE Eurydice_arr_a6 shake128_squeeze_next_block_ac(Eurydice_arr_180 *st)
+static inline Eurydice_arr_a6 shake128_squeeze_next_block_ac(Eurydice_arr_180 *st)
 {
   Eurydice_arr_a6
   out =
@@ -2739,7 +2738,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.H_4a
 with const generics
 - K= 4
 */
-static KRML_MUSTINLINE Eurydice_arr_60 H_4a_ac(Eurydice_slice input)
+static inline Eurydice_arr_60 H_4a_ac(Eurydice_slice input)
 {
   return libcrux_ml_kem_hash_functions_portable_H(input);
 }
@@ -3368,7 +3367,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.G_4a
 with const generics
 - K= 4
 */
-static KRML_MUSTINLINE libcrux_sha3_Sha3_512Digest G_4a_ac(Eurydice_slice input)
+static inline libcrux_sha3_Sha3_512Digest G_4a_ac(Eurydice_slice input)
 {
   return libcrux_ml_kem_hash_functions_portable_G(input);
 }
@@ -3402,7 +3401,7 @@ with const generics
 - K= 4
 - LEN= 128
 */
-static KRML_MUSTINLINE Eurydice_arr_cc0 PRFxN_44(Eurydice_arr_65 *input)
+static inline Eurydice_arr_cc0 PRFxN_44(Eurydice_arr_65 *input)
 {
   Eurydice_arr_cc0
   out =
@@ -3426,7 +3425,7 @@ with const generics
 - K= 4
 - LEN= 128
 */
-static KRML_MUSTINLINE Eurydice_arr_cc0 PRFxN_4a_44(Eurydice_arr_65 *input)
+static inline Eurydice_arr_cc0 PRFxN_4a_44(Eurydice_arr_65 *input)
 {
   return PRFxN_44(input);
 }
@@ -3509,7 +3508,7 @@ sample_from_binomial_distribution_2_ea(Eurydice_slice randomness)
     uint32_t even_bits = random_bits_as_u32 & 1431655765U;
     uint32_t odd_bits = random_bits_as_u32 >> 1U & 1431655765U;
     uint32_t coin_toss_outcomes = even_bits + odd_bits;
-    for (uint32_t i = 0U; i < CORE_NUM__U32__BITS / 4U; i++)
+    for (uint32_t i = 0U; i < 32U / 4U; i++)
     {
       uint32_t outcome_set = i;
       uint32_t outcome_set0 = outcome_set * 4U;
@@ -4398,7 +4397,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.PRF
 with const generics
 - LEN= 128
 */
-static KRML_MUSTINLINE Eurydice_arr_d1 PRF_a6(Eurydice_slice input)
+static inline Eurydice_arr_d1 PRF_a6(Eurydice_slice input)
 {
   Eurydice_arr_d1 digest = { .data = { 0U } };
   libcrux_sha3_portable_shake256(Eurydice_array_to_slice((size_t)128U, &digest, uint8_t), input);
@@ -4414,7 +4413,7 @@ with const generics
 - K= 4
 - LEN= 128
 */
-static KRML_MUSTINLINE Eurydice_arr_d1 PRF_4a_440(Eurydice_slice input)
+static inline Eurydice_arr_d1 PRF_4a_440(Eurydice_slice input)
 {
   return PRF_a6(input);
 }
@@ -5750,7 +5749,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.PRF
 with const generics
 - LEN= 32
 */
-static KRML_MUSTINLINE Eurydice_arr_60 PRF_9e(Eurydice_slice input)
+static inline Eurydice_arr_60 PRF_9e(Eurydice_slice input)
 {
   Eurydice_arr_60 digest = { .data = { 0U } };
   libcrux_sha3_portable_shake256(Eurydice_array_to_slice((size_t)32U, &digest, uint8_t), input);
@@ -5766,7 +5765,7 @@ with const generics
 - K= 4
 - LEN= 32
 */
-static KRML_MUSTINLINE Eurydice_arr_60 PRF_4a_44(Eurydice_slice input)
+static inline Eurydice_arr_60 PRF_4a_44(Eurydice_slice input)
 {
   return PRF_9e(input);
 }
@@ -6400,7 +6399,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_init_a
 with const generics
 - K= 2
 */
-static KRML_MUSTINLINE Eurydice_arr_73 shake128_init_absorb_final_fd(Eurydice_arr_340 *input)
+static inline Eurydice_arr_73 shake128_init_absorb_final_fd(Eurydice_arr_340 *input)
 {
   Eurydice_arr_73 shake128_state;
   Eurydice_arr_26 repeat_expression[2U];
@@ -6441,8 +6440,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeez
 with const generics
 - K= 2
 */
-static KRML_MUSTINLINE Eurydice_arr_45
-shake128_squeeze_first_three_blocks_fd(Eurydice_arr_73 *st)
+static inline Eurydice_arr_45 shake128_squeeze_first_three_blocks_fd(Eurydice_arr_73 *st)
 {
   Eurydice_arr_45 out = { .data = { { .data = { 0U } }, { .data = { 0U } } } };
   KRML_MAYBE_FOR2(i,
@@ -6571,7 +6569,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeez
 with const generics
 - K= 2
 */
-static KRML_MUSTINLINE Eurydice_arr_a9 shake128_squeeze_next_block_fd(Eurydice_arr_73 *st)
+static inline Eurydice_arr_a9 shake128_squeeze_next_block_fd(Eurydice_arr_73 *st)
 {
   Eurydice_arr_a9 out = { .data = { { .data = { 0U } }, { .data = { 0U } } } };
   KRML_MAYBE_FOR2(i,
@@ -6812,7 +6810,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.H_4a
 with const generics
 - K= 2
 */
-static KRML_MUSTINLINE Eurydice_arr_60 H_4a_fd(Eurydice_slice input)
+static inline Eurydice_arr_60 H_4a_fd(Eurydice_slice input)
 {
   return libcrux_ml_kem_hash_functions_portable_H(input);
 }
@@ -7380,7 +7378,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.G_4a
 with const generics
 - K= 2
 */
-static KRML_MUSTINLINE libcrux_sha3_Sha3_512Digest G_4a_fd(Eurydice_slice input)
+static inline libcrux_sha3_Sha3_512Digest G_4a_fd(Eurydice_slice input)
 {
   return libcrux_ml_kem_hash_functions_portable_G(input);
 }
@@ -7414,7 +7412,7 @@ with const generics
 - K= 2
 - LEN= 192
 */
-static KRML_MUSTINLINE Eurydice_arr_a80 PRFxN_49(Eurydice_arr_cf *input)
+static inline Eurydice_arr_a80 PRFxN_49(Eurydice_arr_cf *input)
 {
   Eurydice_arr_a80 out = { .data = { { .data = { 0U } }, { .data = { 0U } } } };
   KRML_MAYBE_FOR2(i,
@@ -7436,7 +7434,7 @@ with const generics
 - K= 2
 - LEN= 192
 */
-static KRML_MUSTINLINE Eurydice_arr_a80 PRFxN_4a_49(Eurydice_arr_cf *input)
+static inline Eurydice_arr_a80 PRFxN_4a_49(Eurydice_arr_cf *input)
 {
   return PRFxN_49(input);
 }
@@ -7900,7 +7898,7 @@ with const generics
 - K= 2
 - LEN= 128
 */
-static KRML_MUSTINLINE Eurydice_arr_a01 PRFxN_490(Eurydice_arr_cf *input)
+static inline Eurydice_arr_a01 PRFxN_490(Eurydice_arr_cf *input)
 {
   Eurydice_arr_a01 out = { .data = { { .data = { 0U } }, { .data = { 0U } } } };
   KRML_MAYBE_FOR2(i,
@@ -7922,7 +7920,7 @@ with const generics
 - K= 2
 - LEN= 128
 */
-static KRML_MUSTINLINE Eurydice_arr_a01 PRFxN_4a_490(Eurydice_arr_cf *input)
+static inline Eurydice_arr_a01 PRFxN_4a_490(Eurydice_arr_cf *input)
 {
   return PRFxN_490(input);
 }
@@ -7982,7 +7980,7 @@ with const generics
 - K= 2
 - LEN= 128
 */
-static KRML_MUSTINLINE Eurydice_arr_d1 PRF_4a_490(Eurydice_slice input)
+static inline Eurydice_arr_d1 PRF_4a_490(Eurydice_slice input)
 {
   return PRF_a6(input);
 }
@@ -8605,7 +8603,7 @@ with const generics
 - K= 2
 - LEN= 32
 */
-static KRML_MUSTINLINE Eurydice_arr_60 PRF_4a_49(Eurydice_slice input)
+static inline Eurydice_arr_60 PRF_4a_49(Eurydice_slice input)
 {
   return PRF_9e(input);
 }
@@ -9239,7 +9237,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_init_a
 with const generics
 - K= 3
 */
-static KRML_MUSTINLINE Eurydice_arr_e4 shake128_init_absorb_final_e0(Eurydice_arr_84 *input)
+static inline Eurydice_arr_e4 shake128_init_absorb_final_e0(Eurydice_arr_84 *input)
 {
   Eurydice_arr_e4 shake128_state;
   Eurydice_arr_26 repeat_expression[3U];
@@ -9278,8 +9276,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeez
 with const generics
 - K= 3
 */
-static KRML_MUSTINLINE Eurydice_arr_35
-shake128_squeeze_first_three_blocks_e0(Eurydice_arr_e4 *st)
+static inline Eurydice_arr_35 shake128_squeeze_first_three_blocks_e0(Eurydice_arr_e4 *st)
 {
   Eurydice_arr_35
   out = { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
@@ -9409,7 +9406,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeez
 with const generics
 - K= 3
 */
-static KRML_MUSTINLINE Eurydice_arr_d6 shake128_squeeze_next_block_e0(Eurydice_arr_e4 *st)
+static inline Eurydice_arr_d6 shake128_squeeze_next_block_e0(Eurydice_arr_e4 *st)
 {
   Eurydice_arr_d6
   out = { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
@@ -9652,7 +9649,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.H_4a
 with const generics
 - K= 3
 */
-static KRML_MUSTINLINE Eurydice_arr_60 H_4a_e0(Eurydice_slice input)
+static inline Eurydice_arr_60 H_4a_e0(Eurydice_slice input)
 {
   return libcrux_ml_kem_hash_functions_portable_H(input);
 }
@@ -10301,7 +10298,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.G_4a
 with const generics
 - K= 3
 */
-static KRML_MUSTINLINE libcrux_sha3_Sha3_512Digest G_4a_e0(Eurydice_slice input)
+static inline libcrux_sha3_Sha3_512Digest G_4a_e0(Eurydice_slice input)
 {
   return libcrux_ml_kem_hash_functions_portable_G(input);
 }
@@ -10335,7 +10332,7 @@ with const generics
 - K= 3
 - LEN= 128
 */
-static KRML_MUSTINLINE Eurydice_arr_db PRFxN_41(Eurydice_arr_46 *input)
+static inline Eurydice_arr_db PRFxN_41(Eurydice_arr_46 *input)
 {
   Eurydice_arr_db
   out = { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
@@ -10358,7 +10355,7 @@ with const generics
 - K= 3
 - LEN= 128
 */
-static KRML_MUSTINLINE Eurydice_arr_db PRFxN_4a_41(Eurydice_arr_46 *input)
+static inline Eurydice_arr_db PRFxN_4a_41(Eurydice_arr_46 *input)
 {
   return PRFxN_41(input);
 }
@@ -10859,7 +10856,7 @@ with const generics
 - K= 3
 - LEN= 128
 */
-static KRML_MUSTINLINE Eurydice_arr_d1 PRF_4a_410(Eurydice_slice input)
+static inline Eurydice_arr_d1 PRF_4a_410(Eurydice_slice input)
 {
   return PRF_a6(input);
 }
@@ -11410,7 +11407,7 @@ with const generics
 - K= 3
 - LEN= 32
 */
-static KRML_MUSTINLINE Eurydice_arr_60 PRF_4a_41(Eurydice_slice input)
+static inline Eurydice_arr_60 PRF_4a_41(Eurydice_slice input)
 {
   return PRF_9e(input);
 }
