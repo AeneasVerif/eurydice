@@ -1,5 +1,6 @@
 CHARON_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/charon
 KRML_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/karamel
+LIBCRUX_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/libcrux
 EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
 CHARON		?= $(CHARON_HOME)/bin/charon
 
@@ -36,8 +37,8 @@ endif
 
 .PHONY: all
 all: format-check
-	@ocamlfind list | grep -q charon || test -L lib/charon || echo "⚠️⚠️⚠️ Charon not found; we suggest cd lib && ln -s path/to/charon charon"
-	@ocamlfind list | grep -q krml || test -L lib/krml || echo "⚠️⚠️⚠️ krml not found; we suggest cd lib && ln -s path/to/karamel/lib krml"
+	@ocamlfind list | grep -q charon || test -L lib/charon || echo "⚠️⚠️⚠️ Charon not found; we suggest run 'make setup-charon'"
+	@ocamlfind list | grep -q krml || test -L lib/krml || echo "⚠️⚠️⚠️ krml not found; we suggest run 'make setup-karamel'"
 	$(MAKE) build
 
 .PHONY: build
@@ -47,7 +48,7 @@ build: check-karamel check-charon
 CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
 CXXFLAGS	:= -std=c++17
 
-test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result check-charon check-libcrux
+test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result check-charon check-libcrux test-libcrux
 
 clean-and-test:
 	$(MAKE) clean-llbc
@@ -117,6 +118,34 @@ custom-test-array: test-array
 	grep -q XXX1 out/test-array/array.c && \
 	grep -q XXX2 out/test-array/array.c && \
 	true
+
+# libcrux tests
+
+test-libcrux: test/libcrux.llbc
+	mkdir -p out/test-libcrux
+	$(EURYDICE) --config $(LIBCRUX_HOME)/libcrux-ml-kem/c.yaml -funroll-loops 16 \
+	  $< --keep-going --output out/test-libcrux
+	$(SED) -i 's/  KaRaMeL version: .*//' out/test-libcrux/**/*.{c,h} # This changes on every commit
+	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-libcrux/**/*.{c,h} # This changes between local and CI
+	cd test/libcrux/ && cmake $(CMAKE_FLAGS) -B build -G "Ninja Multi-Config" && cmake --build build --config Debug
+	cd test/libcrux/ && ./build/Debug/ml_kem_test && ./build/Debug/sha3_test
+
+
+.PHONY: test/libcrux.llbc
+
+test/libcrux.llbc:
+	@# Use our committed `Cargo.lock` by default.
+	cp libcrux-Cargo.lock $(LIBCRUX_HOME)/Cargo.lock
+	RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $(CHARON) cargo --preset eurydice \
+	  --include 'libcrux_sha3' \
+	  --include 'libcrux_secrets' \
+	  --start-from libcrux_ml_kem --start-from libcrux_sha3 \
+	  --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
+	  --dest-file $$PWD/$@ -- \
+	  --manifest-path $(LIBCRUX_HOME)/libcrux-ml-kem/Cargo.toml \
+	  --target=x86_64-apple-darwin 
+	@# Commit the `Cargo.lock` so that the nix CI can use it
+	cp $(LIBCRUX_HOME)/Cargo.lock libcrux-Cargo.lock
 
 .PRECIOUS: out/%
 out/%:
