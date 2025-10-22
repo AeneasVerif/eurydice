@@ -14,6 +14,7 @@ type pre_expr =
   | Qualified of path
   | BoundVar of string
   | Break
+  | Abort
   | Bool of bool
 
 and expr = pre_expr with_vars

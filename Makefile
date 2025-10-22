@@ -1,9 +1,10 @@
-CHARON_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../charon
-KRML_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/../karamel
+CHARON_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/charon
+KRML_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/karamel
+LIBCRUX_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/libcrux
 EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
 CHARON		?= $(CHARON_HOME)/bin/charon
 
-BROKEN_TESTS		= where_clauses println closure chunks mutable_slice_range issue_37 issue_99 issue_14
+BROKEN_TESTS		= where_clauses println chunks mutable_slice_range issue_99 issue_14
 TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.rs))))
 
 # Warn on old versions of bash
@@ -41,13 +42,13 @@ all: format-check
 	$(MAKE) build
 
 .PHONY: build
-build:
+build: check-karamel check-charon
 	dune build && ln -sf _build/default/bin/main.exe eurydice
 
 CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
 CXXFLAGS	:= -std=c++17
 
-test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result
+test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result check-charon check-libcrux test-libcrux
 
 clean-and-test:
 	$(MAKE) clean-llbc
@@ -62,6 +63,9 @@ out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
 	sed 's/__NAME__/$*/g' $< > $@
 
+test/issue_99.llbc: CHARON_EXTRA = \
+  --include=core::option::*::as_ref
+
 test/issue_105.llbc: CHARON_EXTRA = \
   --include=core::result::*::branch \
   --include=core::result::*::from_residual \
@@ -70,6 +74,10 @@ test/issue_105.llbc: CHARON_EXTRA = \
   --include=core::convert::*
 
 test/array2d.llbc: CHARON_EXTRA = --include=core::array::equality::*
+
+test/core_num.llbc: CHARON_EXTRA = \
+  --include=core::num::*::BITS \
+  --include=core::num::*::MAX
 
 test/println.llbc: CHARON_EXTRA = \
   --include=core::fmt::Arguments --include=core::fmt::rt::*::new_const \
@@ -111,13 +119,45 @@ custom-test-array: test-array
 	grep -q XXX2 out/test-array/array.c && \
 	true
 
+# libcrux tests
+
+test-libcrux: test/libcrux.llbc
+	mkdir -p out/test-libcrux
+	$(EURYDICE) --config $(LIBCRUX_HOME)/libcrux-ml-kem/c.yaml -funroll-loops 16 \
+	  $< --keep-going --output out/test-libcrux
+	cd test/libcrux/ && cmake -B build -G "Ninja Multi-Config" && cmake --build build --config Debug
+	cd test/libcrux/ && ./build/Debug/ml_kem_test && ./build/Debug/sha3_test
+
+
+.PHONY: test/libcrux.llbc
+
+test/libcrux.llbc:
+	RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $(CHARON) cargo --preset eurydice \
+	  --include 'libcrux_sha3' \
+	  --include 'libcrux_secrets' \
+	  --start-from libcrux_ml_kem --start-from libcrux_sha3 \
+	  --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
+	  --dest-file $$PWD/$@ -- \
+	  --manifest-path $(LIBCRUX_HOME)/libcrux-ml-kem/Cargo.toml \
+	  --target=x86_64-apple-darwin 
+
 .PRECIOUS: out/%
 out/%:
 	mkdir -p $@
 
+.PHONY: check-dependencies
+check-dependencies: check-karamel check-charon check-libcrux
+# % can be "charon", "karamel" or "libcrux".
+.PHONY: check-%
+check-%:
+	@bash ./scripts/check-dependency.sh "$*"
+.PHONY: setup-%
+setup-%:
+	bash ./scripts/check-dependency.sh "$*" --force
+
 .PHONY: nix-magic
 nix-magic:
-	nix flake update karamel charon --extra-experimental-features nix-command --extra-experimental-features flakes
+	nix flake update karamel charon libcrux --extra-experimental-features nix-command --extra-experimental-features flakes
 
 # Updates `flake.lock` with the latest commit from our local charon clone (the one that is symlinked into `lib/charon`).
 .PHONY: update-charon-pin

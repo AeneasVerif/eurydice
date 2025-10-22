@@ -132,6 +132,22 @@
         "type": "github"
       }
     },
+    "libcrux": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1760596464,
+        "narHash": "sha256-nCUpxkV5ilnuCUfJS2nlQ8fZZvxh07jDVIawz4nyIFw=",
+        "owner": "cryspen",
+        "repo": "libcrux",
+        "rev": "74ae08976fdb9c1f17718d96ae4983a9c838146f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cryspen",
+        "repo": "libcrux",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1743588408,
@@ -170,6 +186,7 @@
           "flake-utils"
         ],
         "karamel": "karamel",
+        "libcrux": "libcrux",
         "nixpkgs": [
           "charon",
           "nixpkgs"

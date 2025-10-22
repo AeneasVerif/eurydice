@@ -211,6 +211,7 @@ let compile_parse_tree (env : env) loc
         ppat_cons_one ~loc "EBound" (ppat_int ~loc i)
     | Break -> ppat_cons_zero ~loc "EBreak"
     | Bool b -> ppat_cons_one ~loc "EBool" (ppat_bool ~loc b)
+    | Abort -> ppat_cons_many ~loc "EAbort" [ ppat_any ~loc; ppat_any ~loc ]
   (* Paths *)
   and compile_path env (pt : ParseTree.path) =
     let m, n =
