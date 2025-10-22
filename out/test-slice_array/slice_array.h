@@ -22,6 +22,18 @@ extern "C" {
 typedef uint8_t core_panicking_AssertKind;
 
 /**
+A monomorphic instance of Eurydice.dst_ref
+with types Eurydice_arr uint8_t[[$4size_t]], size_t
+
+*/
+typedef struct Eurydice_dst_ref_d0_s
+{
+  Eurydice_arr_e9 *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_d0;
+
+/**
 A monomorphic instance of Eurydice.arr
 with types Eurydice_arr uint8_t[[$4size_t]]
 with const generics
@@ -29,12 +41,12 @@ with const generics
 */
 typedef struct Eurydice_arr_11_s { Eurydice_arr_e9 data[4U]; } Eurydice_arr_11;
 
-typedef struct Eurydice_slice_Eurydice_arr_uint8_t___4size_t___x2_s
+typedef struct Eurydice_dst_ref_Eurydice_arr_uint8_t___4size_t___size_t_x2_s
 {
-  Eurydice_slice fst;
-  Eurydice_slice snd;
+  Eurydice_dst_ref_d0 fst;
+  Eurydice_dst_ref_d0 snd;
 }
-Eurydice_slice_Eurydice_arr_uint8_t___4size_t___x2;
+Eurydice_dst_ref_Eurydice_arr_uint8_t___4size_t___size_t_x2;
 
 void slice_array_f1(void);
 

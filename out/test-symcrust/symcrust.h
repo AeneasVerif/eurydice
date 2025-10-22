@@ -15,8 +15,6 @@
 extern "C" {
 #endif
 
-#include "Eurydice.h"
-
 extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(uint8_t *x0);
 
 extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(size_t *x0);
@@ -99,6 +97,30 @@ core_iter_range__core__iter__range__Step_for_usize__steps_between(size_t *x0, si
 static inline Eurydice_arr_e9 core_num__u32__to_le_bytes(uint32_t x0);
 
 /**
+A monomorphic instance of core.ops.range.Range
+with types size_t
+
+*/
+typedef struct core_ops_range_Range_08_s
+{
+  size_t start;
+  size_t end;
+}
+core_ops_range_Range_08;
+
+/**
+A monomorphic instance of Eurydice.dst_ref
+with types uint8_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_87_s
+{
+  uint8_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_87;
+
+/**
 A monomorphic instance of Eurydice.arr
 with types uint16_t
 with const generics
@@ -110,7 +132,7 @@ void
 symcrust_SymCrustMlKemPolyElementCompressAndEncode(
   Eurydice_arr_bc *coeffs,
   uint32_t nBitsPerCoefficient,
-  Eurydice_slice dst
+  Eurydice_dst_ref_87 dst
 );
 
 void symcrust_main(void);
