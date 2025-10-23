@@ -39,6 +39,7 @@ set(OUT_DIR "../../out/test-libcrux")
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 include_directories(
     ${PROJECT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/intrinsics
     ${OUT_DIR}
     ${OUT_DIR}/internal
     ${EURYDICE_ROOT}/include

@@ -37,8 +37,8 @@ endif
 
 .PHONY: all
 all: format-check
-	@ocamlfind list | grep -q charon || test -L lib/charon || echo "⚠️⚠️⚠️ Charon not found; we suggest cd lib && ln -s path/to/charon charon"
-	@ocamlfind list | grep -q krml || test -L lib/krml || echo "⚠️⚠️⚠️ krml not found; we suggest cd lib && ln -s path/to/karamel/lib krml"
+	@ocamlfind list | grep -q charon || test -L lib/charon || echo "⚠️⚠️⚠️ Charon not found; we suggest run 'make setup-charon'"
+	@ocamlfind list | grep -q krml || test -L lib/krml || echo "⚠️⚠️⚠️ krml not found; we suggest run 'make setup-karamel'"
 	$(MAKE) build
 
 .PHONY: build
@@ -123,15 +123,19 @@ custom-test-array: test-array
 
 test-libcrux: test/libcrux.llbc
 	mkdir -p out/test-libcrux
-	$(EURYDICE) --config $(LIBCRUX_HOME)/libcrux-ml-kem/c.yaml -funroll-loops 16 \
+	$(EURYDICE) --config test/libcrux/c.yaml -funroll-loops 16 \
 	  $< --keep-going --output out/test-libcrux
-	cd test/libcrux/ && cmake -B build -G "Ninja Multi-Config" && cmake --build build --config Debug
+	$(SED) -i 's/  KaRaMeL version: .*//' out/test-libcrux/**/*.{c,h} # This changes on every commit
+	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-libcrux/**/*.{c,h} # This changes between local and CI
+	cd test/libcrux/ && cmake $(CMAKE_FLAGS) -B build -G "Ninja Multi-Config" && cmake --build build --config Debug
 	cd test/libcrux/ && ./build/Debug/ml_kem_test && ./build/Debug/sha3_test
 
 
 .PHONY: test/libcrux.llbc
 
 test/libcrux.llbc:
+	@# Use our committed `Cargo.lock` by default.
+	cp libcrux-Cargo.lock $(LIBCRUX_HOME)/Cargo.lock
 	RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $(CHARON) cargo --preset eurydice \
 	  --include 'libcrux_sha3' \
 	  --include 'libcrux_secrets' \
@@ -140,6 +144,8 @@ test/libcrux.llbc:
 	  --dest-file $$PWD/$@ -- \
 	  --manifest-path $(LIBCRUX_HOME)/libcrux-ml-kem/Cargo.toml \
 	  --target=x86_64-apple-darwin 
+	@# Commit the `Cargo.lock` so that the nix CI can use it
+	cp $(LIBCRUX_HOME)/Cargo.lock libcrux-Cargo.lock
 
 .PRECIOUS: out/%
 out/%:
