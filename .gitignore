@@ -11,3 +11,5 @@ out/*/a.out
 eurydice
 /.vscode
 .charon_version
+
+test/libcrux/build
