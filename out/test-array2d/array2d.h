@@ -15,6 +15,9 @@
 extern "C" {
 #endif
 
+<<<<<<< HEAD
+bool array2d_f(uint32_t x[4U][2U]);
+=======
 extern bool core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(uint32_t *x0, uint32_t *x1);
 
 extern bool core_cmp_impls__core__cmp__PartialEq_u32__for_u32__ne(uint32_t *x0, uint32_t *x1);
@@ -36,14 +39,11 @@ with const generics
 typedef struct Eurydice_arr_c0_s { Eurydice_arr_b2 data[4U]; } Eurydice_arr_c0;
 
 bool array2d_f(Eurydice_arr_c0 x);
-
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 
 void array2d_main(void);
+
+extern bool core_cmp_impls__core__cmp__PartialEq___u32__u32___eq(uint32_t *x0, uint32_t *x1);
 
 #if defined(__cplusplus)
 }

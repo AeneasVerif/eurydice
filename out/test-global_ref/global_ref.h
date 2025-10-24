@@ -15,13 +15,7 @@
 extern "C" {
 #endif
 
-extern bool core_cmp_impls__core__cmp__PartialEq_____for_____eq(void **x0, void **x1);
-
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
+extern bool core_cmp_impls__core__cmp__PartialEq____________eq(void **x0, void **x1);
 
 extern void ***global_ref_C_VAL_local_2;
 
