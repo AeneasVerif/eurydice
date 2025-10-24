@@ -20,18 +20,6 @@ extern "C" {
 
 typedef uint8_t issue_128_E;
 
-/**
-A monomorphic instance of Eurydice.dst_ref
-with types uint8_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_87_s
-{
-  uint8_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_87;
-
 void issue_128_fun_a(Eurydice_dst_ref_87 _x);
 
 void issue_128_fun_b(Eurydice_dst_ref_87 _x);

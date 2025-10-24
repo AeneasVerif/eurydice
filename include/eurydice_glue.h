@@ -58,6 +58,19 @@ using std::type_identity_t;
 
 // SLICES, ARRAYS, ETC.
 
+// We define several slice types in order to define builtin definitions for
+// libcrux
+
+typedef struct Eurydice_dst_ref_87_s {
+  uint8_t *ptr;
+  size_t meta;
+} Eurydice_dst_ref_87;
+
+typedef struct Eurydice_dst_ref_9a_s {
+  int16_t *ptr;
+  size_t meta;
+} Eurydice_dst_ref_9a;
+
 #if defined(__cplusplus)
 #define KRML_CLITERAL(type) type
 #else

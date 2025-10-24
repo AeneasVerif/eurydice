@@ -16,18 +16,6 @@ extern "C" {
 #endif
 
 /**
-A monomorphic instance of Eurydice.dst_ref
-with types uint8_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_87_s
-{
-  uint8_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_87;
-
-/**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
 with const generics
@@ -201,18 +189,6 @@ with const generics
 - $20size_t
 */
 typedef struct Eurydice_arr_dc_s { uint8_t data[20U]; } Eurydice_arr_dc;
-
-/**
-A monomorphic instance of Eurydice.dst_ref
-with types int16_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_9a_s
-{
-  int16_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_9a;
 
 typedef struct libcrux_sha3_Sha3_512Digest_s { uint8_t data[64U]; }
 libcrux_sha3_Sha3_512Digest;

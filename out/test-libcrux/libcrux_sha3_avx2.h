@@ -17,8 +17,6 @@ extern "C" {
 
 #include "intrinsics/libcrux_intrinsics_avx2.h"
 
-#include "libcrux_core.h"
-
 /**
 A monomorphic instance of Eurydice.arr
 with types core_core_arch_x86___m256i

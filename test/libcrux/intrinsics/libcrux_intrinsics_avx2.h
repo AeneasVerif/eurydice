@@ -95,35 +95,35 @@ static inline core_core_arch_x86___m256i mm256_set_epi32(int32_t x0, int32_t x1,
 }
 
 static inline core_core_arch_x86___m256i mm256_loadu_si256_i16(
-    Eurydice_slice a) {
+    Eurydice_dst_ref_9a a) {
   return _mm256_loadu_si256((const __m256i*)a.ptr);
 }
 
 static inline core_core_arch_x86___m256i mm256_loadu_si256_u8(
-    Eurydice_slice a) {
+    Eurydice_dst_ref_87 a) {
   return _mm256_loadu_si256((const __m256i*)a.ptr);
 }
 
-static inline core_core_arch_x86___m128i mm_loadu_si128(Eurydice_slice a) {
+static inline core_core_arch_x86___m128i mm_loadu_si128(Eurydice_dst_ref_87 a) {
   return _mm_loadu_si128((const __m128i*)a.ptr);
 }
 
-static inline void mm_storeu_bytes_si128(Eurydice_slice a,
+static inline void mm_storeu_bytes_si128(Eurydice_dst_ref_87 a,
                                          core_core_arch_x86___m128i b) {
   _mm_storeu_si128((__m128i*)a.ptr, b);
 }
 
-static inline void mm256_storeu_si256_i16(Eurydice_slice a,
+static inline void mm256_storeu_si256_i16(Eurydice_dst_ref_9a a,
                                           core_core_arch_x86___m256i b) {
   _mm256_storeu_si256((__m256i*)a.ptr, b);
 }
 
-static inline void mm256_storeu_si256_u8(Eurydice_slice a,
+static inline void mm256_storeu_si256_u8(Eurydice_dst_ref_87 a,
                                          core_core_arch_x86___m256i b) {
   _mm256_storeu_si256((__m256i*)a.ptr, b);
 }
 
-static inline void mm_storeu_si128(Eurydice_slice a,
+static inline void mm_storeu_si128(Eurydice_dst_ref_9a a,
                                    core_core_arch_x86___m128i b) {
   _mm_storeu_si128((__m128i*)a.ptr, b);
 }

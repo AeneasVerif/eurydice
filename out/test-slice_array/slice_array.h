@@ -66,18 +66,6 @@ void slice_array_f1(void);
 void slice_array_f2(void);
 
 /**
-A monomorphic instance of Eurydice.dst_ref
-with types uint8_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_87_s
-{
-  uint8_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_87;
-
-/**
 A monomorphic instance of core.result.Result
 with types Eurydice_arr uint8_t[[$4size_t]], core_array_TryFromSliceError
 
