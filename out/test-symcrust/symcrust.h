@@ -109,18 +109,6 @@ typedef struct core_ops_range_Range_08_s
 core_ops_range_Range_08;
 
 /**
-A monomorphic instance of Eurydice.dst_ref
-with types uint8_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_87_s
-{
-  uint8_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_87;
-
-/**
 A monomorphic instance of Eurydice.arr
 with types uint16_t
 with const generics
