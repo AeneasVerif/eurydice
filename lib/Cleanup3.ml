@@ -106,68 +106,16 @@ let build_cg_macros =
         self#zero
   end
 
-let add_extra_type_to_slice_index =
-  object (self)
-    inherit [_] map as super
-
-    method! visit_ETApp (((), _) as env) e cgs cgs' ts =
-      match e.node, cgs, cgs', ts with
-      | EQualified ([ "Eurydice" ], "slice_index"), [], [], [ t_elements ] ->
-          ETApp (self#visit_expr env e, cgs, cgs', ts @ [ TBuf (t_elements, false) ])
-      | _ -> super#visit_ETApp env e cgs cgs' ts
-
-    method! visit_EApp env e es =
-      match e.node, es with
-      | ( ETApp
-            ({ node = EQualified ([ "Eurydice" ], "slice_subslice"); _ }, [], [], t_elements :: _),
-          [
-            e_slice;
-            {
-              node = EFlat [ (Some "start", e_start); (Some "end", e_end) ];
-              typ = TQualified ([ "core"; "ops"; "range" ], id);
-              _;
-            };
-          ] )
-        when KString.starts_with id "Range" ->
-          EApp
-            ( with_type TUnit
-                (ETApp
-                   ( with_type TUnit (EQualified ([ "Eurydice" ], "slice_subslice3")),
-                     [],
-                     [],
-                     [ TBuf (t_elements, false) ] )),
-              [ e_slice; e_start; e_end ] )
-      | ( ETApp
-            ({ node = EQualified ([ "Eurydice" ], "array_to_subslice"); _ }, _, [], t_elements :: _),
-          [
-            e_slice;
-            {
-              node = EFlat [ (Some "start", e_start); (Some "end", e_end) ];
-              typ = TQualified ([ "core"; "ops"; "range" ], id);
-              _;
-            };
-          ] )
-        when KString.starts_with id "Range" ->
-          EApp
-            ( with_type TUnit
-                (ETApp
-                   ( with_type TUnit (EQualified ([ "Eurydice" ], "array_to_subslice3")),
-                     [],
-                     [],
-                     [ TBuf (t_elements, false) ] )),
-              [
-                self#visit_expr env e_slice; self#visit_expr env e_start; self#visit_expr env e_end;
-              ] )
-      | _ -> super#visit_EApp env e es
-  end
-
 (*This identifies the decls which should be generated after monomorphism, but is already defined
- in eurydice_glue.h for implementing the builtin functions. Currently only for arr<T;N> *)
+ in eurydice_glue.h for implementing the builtin functions. The slices are for libcrux *)
 let is_builtin_lid lid =
   match lid with
   | [ "Eurydice" ], "arr_c4" (* arr {data:[u8;8]}*)
   | [ "Eurydice" ], "arr_e9" (* arr {data:[u8;4]}*)
-  | [ "Eurydice" ], "arr_8b" (* arr {data:[u8,2]}*) -> true
+  | [ "Eurydice" ], "arr_8b" (* arr {data:[u8,2]}*)
+  | [ "Eurydice" ], "dst_ref_87" (* &slice<u8> *)
+  | [ "Eurydice" ], "dst_ref_9a" (* &slice<i16> *)
+  | [ "Prims" ], "string" (* used to pass the checker, defined in glue.h *) -> true
   | _ -> false
 
 let remove_builtin_decls files =

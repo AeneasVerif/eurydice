@@ -269,7 +269,6 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.25" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files false files in
   Eurydice.Logging.log "Phase2.26" "%a" pfiles files;
-  let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
   let ((map, _, _) as map3), files = Krml.DataTypes.everything files in
   Eurydice.Cleanup2.fixup_monomorphization_map map;
   let files = Eurydice.Cleanup2.remove_discriminant_reads map3 files in
@@ -323,7 +322,6 @@ Supported options:|}
   let scope_env = Krml.Simplify.allocate_c_env files in
   Eurydice.Cleanup3.(also_skip_prefix_for_external_types scope_env)#visit_files () files;
   let files = Eurydice.Cleanup3.decay_cg_externals#visit_files (scope_env, false) files in
-  let files = Eurydice.Cleanup3.add_extra_type_to_slice_index#visit_files () files in
   let files = Eurydice.Cleanup3.remove_builtin_decls files in
   Eurydice.Logging.log "Phase3.1" "%a" pfiles files;
   let c_name_map = Krml.GlobalNames.mapping (fst scope_env) in
