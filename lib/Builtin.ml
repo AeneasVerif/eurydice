@@ -6,8 +6,10 @@ end
 
 let vec : K.lident = [ "Eurydice" ], "vec"
 let mk_vec (t : K.typ) : K.typ = K.TApp (vec, [ t ])
-let slice : K.lident = [ "Eurydice" ], "slice"
-let mk_slice (t : K.typ) : K.typ = K.TApp (slice, [ t ])
+let dst_ref = [ "Eurydice" ], "dst_ref"
+let mk_dst_ref (t : K.typ) (meta : K.typ) : K.typ = K.TApp (dst_ref, [ t; meta ])
+let slice : K.lident = dst_ref
+let mk_slice (t : K.typ) : K.typ = K.TApp (slice, [ t; TInt SizeT ])
 let range : K.lident = [ "core"; "ops"; "range" ], "Range"
 let mk_range (t : K.typ) : K.typ = K.TApp (range, [ t ])
 let range_to : K.lident = [ "core"; "ops"; "range" ], "RangeTo"
@@ -39,8 +41,19 @@ let mk_nonzero t = K.TApp (nonzero, [ t ])
 
 (* Internal types *)
 let char_t = K.(TInt UInt32)
+let c_void_t = K.TQualified ([ "Eurydice" ], "c_void_t")
+let c_char_t = K.TQualified ([ "Eurydice" ], "c_char_t")
 let int128_t = K.TQualified ([ "Eurydice"; "Int128" ], "int128_t")
 let uint128_t = K.TQualified ([ "Eurydice"; "Int128" ], "uint128_t")
+
+(* Internal decls *)
+let dst_ref_decl =
+  K.DType
+    ( dst_ref,
+      [],
+      0,
+      2,
+      Flat [ Some "ptr", (TBuf (TBound 1, false), false); Some "meta", (TBound 0, false) ] )
 
 (** A record to hold a builtin *function* with all relevant information for both krml and the
     transpilation phase in AstOfLlbc *)
@@ -344,7 +357,7 @@ let slice_subslice_from =
     arg_names = [ "s"; "r" ];
   }
 
-(* This one comes out naturally of MIR but can't be implemented in C for obvious reasons. *)
+(* This is replaced in PreCleanup because we need to allocate a Arr<T,C> *)
 let slice_to_array =
   {
     name = [ "Eurydice" ], "slice_to_array";
@@ -354,20 +367,20 @@ let slice_to_array =
     arg_names = [ "s" ];
   }
 
-(* This one can be implemented by hand. *)
-let slice_to_array2 =
-  {
-    name = [ "Eurydice" ], "slice_to_array2";
-    typ = Krml.Helpers.fold_arrow [ TBuf (mk_result (TBound 1) (TBound 0), false); TBound 2 ] TUnit;
-    n_type_args = 3;
-    cg_args = [];
-    arg_names = [ "dst"; "s" ];
-  }
-
+(* This is replaced by slice_to_ref_array2 by allocate a  Arr<T,C> and pass the ref as arg*)
 let slice_to_ref_array =
   {
     name = [ "Eurydice" ], "slice_to_ref_array";
     typ = Krml.Helpers.fold_arrow [ TBound 2 ] (mk_result (TBound 1) (TBound 0));
+    n_type_args = 3;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "s" ];
+  }
+
+let slice_to_ref_array2 =
+  {
+    name = [ "Eurydice" ], "slice_to_ref_array2";
+    typ = Krml.Helpers.fold_arrow [ TBound 2; TBound 1 ] (mk_result (TBound 1) (TBound 0));
     n_type_args = 3;
     cg_args = [ TInt SizeT ];
     arg_names = [ "s" ];
@@ -400,40 +413,18 @@ let replace =
     arg_names = [ "v"; "x" ];
   }
 
-let dst = [ "Eurydice" ], "dst"
 let derefed_slice = [ "Eurydice" ], "derefed_slice"
-let str_t_name = [ "Eurydice" ], "str"
 
 (** The C counterpart of `&str` *)
-let str_t = K.TQualified str_t_name
+let str_t = mk_dst_ref c_char_t (TInt SizeT)
 
 (** The C counterpart of `str` and serves twofold functionalities: (1) when in expressions, it
     serves as a placeholder to get referenced again; (2) when in customised DST definition, it is
     defined as [char []] to have 0-length. *)
-let deref_str_t = K.TQualified ([ "Eurydice" ], "deref_str")
+let deref_str_t = K.TApp (derefed_slice, [ c_char_t ])
 
-let dst_def =
-  K.DType
-    ( dst,
-      [],
-      0,
-      1,
-      Flat
-        [
-          Some "ptr", (TBuf (TBound 0, false), false);
-          Some "len", (TInt SizeT, false);
-          (* a number of elements, just like slices *)
-        ] )
-
-let str_t_def =
-  K.DType
-    ( str_t_name,
-      [ Private ],
-      0,
-      0,
-      Flat [ Some "data", (Krml.Checker.c_string, false); Some "len", (TInt SizeT, false) ] )
-
-let mk_dst t : K.typ = TApp (dst, [ t ])
+let c_string_def =
+  K.DType (([ "Prims" ], "string"), [ Private ], 0, 0, Abbrev (TBuf (c_char_t, false)))
 
 (* Gotta use a helper because the definition of Eurydice_slice is opaque (historical mistake?). *)
 let slice_of_dst =
@@ -451,7 +442,7 @@ let slice_of_dst =
 (* Take the type of the ptr field *)
 let dst_new ~ptr ~len t =
   let open K in
-  with_type (mk_dst t) (EFlat [ Some "ptr", ptr; Some "len", len ])
+  with_type (mk_slice t) (EFlat [ Some "ptr", ptr; Some "meta", len ])
 
 (* pointer, value *)
 let bitand_pv_u8 =
@@ -524,6 +515,189 @@ let layout =
     arg_names = [];
   }
 
+(* Implementations, defined as DFunction using abstract syntax, mainly for generic slice type *)
+
+(* Helpers for common use *)
+
+let mk_sizeT = K.with_type (TInt SizeT)
+
+(* a->data where a: Arr<t,n>*, to be used before eurydice monomorphization *)
+let data_of_arrref (arrref : K.expr) t n_cgid =
+  let arr = Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray arrref.typ) arrref.node) in
+  K.(with_type (TCgArray (t, n_cgid)) (EField (arr, "data")))
+
+(* let array_to_slice<T;N> (a : &Arr<T,N>) = dst_ref { ptr = a->data; meta = N }  *)
+let array_to_slice_func =
+  let open Krml in
+  let open Ast in
+  let element_t = TBound 0 in
+  let arrref_t = TBuf (mk_arr (TBound 0) (CgVar 0), false) in
+  let ret_t = mk_slice element_t in
+  let lid = [ "Eurydice" ], "array_to_slice" in
+  let binders = [ Helpers.fresh_binder "N" (TInt SizeT); Helpers.fresh_binder "a" arrref_t ] in
+  let expr =
+    (* args *)
+    let n = mk_sizeT (EBound 1) in
+    let arrref = with_type arrref_t (EBound 0) in
+    let data = data_of_arrref arrref element_t 0 in
+    with_type ret_t (EFlat [ Some "ptr", data; Some "meta", n ])
+  in
+  DFunction (None, [ Private ], 1, 1, ret_t, lid, binders, expr)
+
+(* let array_to_subslice<T;N> (r: Range<SizeT>, x : &Arr<T,N>)
+   = dst_ref { ptr = a->data + r.start ; meta = r.end - r.start }  *)
+let array_to_subslice_func =
+  let open Krml in
+  let open Ast in
+  let element_t = TBound 2 in
+  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), false) in
+  let ret_t = mk_slice element_t in
+  let lid = [ "Eurydice" ], "array_to_subslice" in
+  let binders =
+    [
+      Helpers.fresh_binder "N" (TInt SizeT);
+      Helpers.fresh_binder "a" arrref_t;
+      Helpers.fresh_binder "r" (mk_range (TInt SizeT));
+    ]
+  in
+  let expr =
+    (* args *)
+    let arrref = with_type arrref_t (EBound 1) in
+    let range = with_type (mk_range (TInt SizeT)) (EBound 0) in
+    let data = data_of_arrref arrref element_t 0 in
+    let r_start = mk_sizeT (EField (range, "start")) in
+    let r_end = mk_sizeT (EField (range, "end")) in
+    let meta = mk_sizeT (EApp (Helpers.mk_op Sub SizeT, [ r_end; r_start ])) in
+    let ptr = with_type (TBuf (element_t, false)) (EBufSub (data, r_start)) in
+    with_type ret_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
+  in
+  DFunction (None, [ Private ], 1, 3, ret_t, lid, binders, expr)
+
+(* let array_to_subslice_to<T;N> (r: RangeTo<SizeT>, x : &Arr<T,N>)
+   = dst_ref { ptr = a->data; meta = r.end } *)
+let array_to_subslice_to_func =
+  let open Krml in
+  let open Ast in
+  let element_t = TBound 2 in
+  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), false) in
+  let ret_t = mk_slice element_t in
+  let lid = [ "Eurydice" ], "array_to_subslice_to" in
+  let binders =
+    [
+      Helpers.fresh_binder "N" (TInt SizeT);
+      Helpers.fresh_binder "a" arrref_t;
+      Helpers.fresh_binder "r" (mk_range_to (TInt SizeT));
+    ]
+  in
+  let expr =
+    (* args *)
+    let arrref = with_type arrref_t (EBound 1) in
+    let range = with_type (mk_range_to (TInt SizeT)) (EBound 0) in
+    (* { .ptr = a->data + r.start, .meta = r.end - r.start }*)
+    let data = data_of_arrref arrref element_t 0 in
+    let meta = with_type (TInt SizeT) (EField (range, "end")) in
+    with_type ret_t (EFlat [ Some "ptr", data; Some "meta", meta ])
+  in
+  DFunction (None, [ Private ], 1, 3, ret_t, lid, binders, expr)
+
+(* let array_to_subslice_from<T;N> (r: RangeFrom<SizeT>, x : &Arr<T,N>)
+   = dst_ref { ptr = a->data + r.start; meta = N - r.start } *)
+let array_to_subslice_from_func =
+  let open Krml in
+  let open Ast in
+  let element_t = TBound 2 in
+  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), false) in
+  let ret_t = mk_slice element_t in
+  let lid = [ "Eurydice" ], "array_to_subslice_from" in
+  let binders =
+    [
+      Helpers.fresh_binder "N" (TInt SizeT);
+      Helpers.fresh_binder "a" arrref_t;
+      Helpers.fresh_binder "r" (mk_range_from (TInt SizeT));
+    ]
+  in
+  let expr =
+    (* args *)
+    let n = mk_sizeT (EBound 2) in
+    let arrref = with_type arrref_t (EBound 1) in
+    let range = with_type (mk_range_from (TInt SizeT)) (EBound 0) in
+    let data = data_of_arrref arrref element_t 0 in
+    let start = mk_sizeT (EField (range, "start")) in
+    let meta = mk_sizeT (EApp (Helpers.mk_op Sub SizeT, [ n; start ])) in
+    let ptr = with_type (TBuf (element_t, false)) (EBufSub (data, start)) in
+    with_type ret_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
+  in
+  DFunction (None, [ Private ], 1, 3, ret_t, lid, binders, expr)
+
+(* let slice_subslice<T> (r: Range<SizeT>, s : DstRef<T,N>)
+   = dst_ref { ptr = s.ptr + r.start; meta = r.end - r.start } *)
+let slice_subslice_func =
+  let open Krml in
+  let open Ast in
+  let element_t = TBound 2 in
+  let slice_t = mk_slice element_t in
+  let lid = [ "Eurydice" ], "slice_subslice" in
+  let binders =
+    [ Helpers.fresh_binder "s" slice_t; Helpers.fresh_binder "r" (mk_range (TInt SizeT)) ]
+  in
+  let expr =
+    (* args *)
+    let slice = with_type slice_t (EBound 1) in
+    let range = with_type (mk_range (TInt SizeT)) (EBound 0) in
+    let ptr = with_type (TBuf (element_t, false)) (EField (slice, "ptr")) in
+    let r_start = mk_sizeT (EField (range, "start")) in
+    let r_end = mk_sizeT (EField (range, "end")) in
+    let meta = mk_sizeT (EApp (Helpers.mk_op Sub SizeT, [ r_end; r_start ])) in
+    let ptr = with_type (TBuf (element_t, false)) (EBufSub (ptr, r_start)) in
+    with_type slice_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
+  in
+  DFunction (None, [ Private ], 0, 3, slice_t, lid, binders, expr)
+
+(* let slice_subslice_to<T> (r: RangeTo<SizeT>, s : DstRef<T,N>)
+   = dst_ref { ptr = s.ptr ; meta = r.end } *)
+let slice_subslice_to_func =
+  let open Krml in
+  let open Ast in
+  let element_t = TBound 2 in
+  let slice_t = mk_slice element_t in
+  let lid = [ "Eurydice" ], "slice_subslice_to" in
+  let binders =
+    [ Helpers.fresh_binder "s" slice_t; Helpers.fresh_binder "r" (mk_range_to (TInt SizeT)) ]
+  in
+  let expr =
+    (* args *)
+    let slice = with_type slice_t (EBound 1) in
+    let range = with_type (mk_range_to (TInt SizeT)) (EBound 0) in
+    let ptr = with_type (TBuf (element_t, false)) (EField (slice, "ptr")) in
+    let meta = with_type (TInt SizeT) (EField (range, "end")) in
+    with_type slice_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
+  in
+  DFunction (None, [ Private ], 0, 3, slice_t, lid, binders, expr)
+
+(* let slice_subslice_from<T> (r: RangeFrom<SizeT>, s : DstRef<T,N>)
+   = dst_ref { ptr = s.ptr + r.start ; meta = s.meta - r.start } *)
+let slice_subslice_from_func =
+  let open Krml in
+  let open Ast in
+  let element_t = TBound 2 in
+  let slice_t = mk_slice element_t in
+  let lid = [ "Eurydice" ], "slice_subslice_from" in
+  let binders =
+    [ Helpers.fresh_binder "s" slice_t; Helpers.fresh_binder "r" (mk_range_from (TInt SizeT)) ]
+  in
+  let expr =
+    (* args *)
+    let slice = with_type slice_t (EBound 1) in
+    let range = with_type (mk_range_from (TInt SizeT)) (EBound 0) in
+    let ptr = with_type (TBuf (element_t, false)) (EField (slice, "ptr")) in
+    let meta = mk_sizeT (EField (slice, "meta")) in
+    let start = mk_sizeT (EField (range, "start")) in
+    let ptr = with_type (TBuf (element_t, false)) (EBufSub (ptr, start)) in
+    let meta = mk_sizeT (EApp (Helpers.mk_op Sub SizeT, [ meta; start ])) in
+    with_type slice_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
+  in
+  DFunction (None, [ Private ], 0, 3, slice_t, lid, binders, expr)
+
 (* Not fully general *)
 let static_assert, static_assert_ref =
   let name = [ "Eurydice" ], "assert" in
@@ -589,9 +763,8 @@ let slice_swap =
     ]
   in
   (* with slice type *)
-  let ws = with_type (mk_slice t) in
+  let mk_slice = with_type (mk_slice t) in
   (* with usize type *)
-  let wu = with_type (TInt SizeT) in
   let index s i =
     let slice_index = expr_of_builtin_t slice_index [ t ] in
     with_type t (EApp (slice_index, [ s; i ]))
@@ -612,18 +785,19 @@ let slice_swap =
         with_type TUnit
           (ELet
              ( Helpers.fresh_binder "tmp" t,
-               index (ws (EBound 2)) (wu (EBound 1)),
+               index (mk_slice (EBound 2)) (mk_sizeT (EBound 1)),
                with_type TUnit
                  (ESequence
                     [
                       (* s[i] = s[j] *)
                       with_type TUnit
                         (EAssign
-                           ( lhs (ws (EBound 3)) (wu (EBound 2)),
-                             index (ws (EBound 3)) (wu (EBound 1)) ));
+                           ( lhs (mk_slice (EBound 3)) (mk_sizeT (EBound 2)),
+                             index (mk_slice (EBound 3)) (mk_sizeT (EBound 1)) ));
                       (* s[j] = tmp *)
                       with_type TUnit
-                        (EAssign (lhs (ws (EBound 3)) (wu (EBound 1)), with_type t (EBound 0)));
+                        (EAssign
+                           (lhs (mk_slice (EBound 3)) (mk_sizeT (EBound 1)), with_type t (EBound 0)));
                     ]) )) )
 
 (* Formerly a macro, using GCC expression-statements:
@@ -738,10 +912,6 @@ type usage = Used | Unused
 
 let builtin_funcs =
   [
-    array_to_slice;
-    array_to_subslice;
-    array_to_subslice_to;
-    array_to_subslice_from;
     array_repeat;
     array_into_iter;
     array_eq;
@@ -749,12 +919,9 @@ let builtin_funcs =
     slice_eq;
     slice_index;
     slice_index_outparam;
-    slice_subslice;
-    slice_subslice_to;
-    slice_subslice_from;
     slice_to_array;
     slice_to_ref_array;
-    slice_to_array2;
+    slice_to_ref_array2;
     discriminant;
     range_iterator_step_by;
     range_step_by_iterator_next;
@@ -775,6 +942,17 @@ let builtin_funcs =
       Op128Map.to_seq op_128_cfgs |> List.of_seq |> List.map snd
     end
 
+let builtin_defined_funcs =
+  [
+    array_to_slice_func;
+    array_to_subslice_func;
+    array_to_subslice_to_func;
+    array_to_subslice_from_func;
+    slice_subslice_func;
+    slice_subslice_to_func;
+    slice_subslice_from_func;
+  ]
+
 let files =
   [
     Krml.Builtin.lowstar_ignore;
@@ -782,18 +960,11 @@ let files =
        List.map
          (fun { name; typ; cg_args; n_type_args; arg_names } ->
            let typ = Krml.Helpers.fold_arrow cg_args typ in
-           let flags =
-             (* FIXME: calls to this are generated *after* the reachability
-                analysis during one of the desugaring phases, so there's no good
-                way right now to prevent it from being eliminated *)
-             if name = ([ "Eurydice" ], "slice_to_array2") then
-               []
-             else
-               [ Krml.Common.Private ]
-           in
+           let flags = [ Krml.Common.Private ] in
            K.DExternal (None, flags, List.length cg_args, n_type_args, name, typ, arg_names))
          builtin_funcs
-       @ [ nonzero_def; static_assert; dst_def; str_t_def ]
+       @ builtin_defined_funcs
+       @ [ nonzero_def; static_assert; c_string_def ]
      in
      "Eurydice", externals);
   ]

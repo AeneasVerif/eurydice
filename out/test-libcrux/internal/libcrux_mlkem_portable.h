@@ -30,7 +30,7 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - $16size_t
 */
-typedef struct Eurydice_arr_b9_s { Eurydice_arr_e2 data[16U]; } Eurydice_arr_b9;
+typedef struct Eurydice_arr_b9_s { Eurydice_arr_e20 data[16U]; } Eurydice_arr_b9;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -111,6 +111,18 @@ Eurydice_arr_a6
 libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_4a_ac(
   Eurydice_arr_180 *self
 );
+
+/**
+A monomorphic instance of Eurydice.dst_ref
+with types libcrux_ml_kem_polynomial_PolynomialRingElement libcrux_ml_kem_vector_portable_vector_type_PortableVector, size_t
+
+*/
+typedef struct Eurydice_dst_ref_30_s
+{
+  Eurydice_arr_b9 *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_30;
 
 /**
  Generate an unpacked key from a serialized key.
@@ -208,9 +220,9 @@ with const generics
 */
 void
 libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_60(
-  Eurydice_slice private_key,
-  Eurydice_slice public_key,
-  Eurydice_slice implicit_rejection_value,
+  Eurydice_dst_ref_87 private_key,
+  Eurydice_dst_ref_87 public_key,
+  Eurydice_dst_ref_87 implicit_rejection_value,
   Eurydice_arr_17 *serialized
 );
 
@@ -291,6 +303,30 @@ with const generics
 */
 libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
 libcrux_ml_kem_ind_cca_unpacked_default_7b_d0(void);
+
+/**
+A monomorphic instance of Eurydice.dst_ref
+with types Eurydice_arr libcrux_ml_kem_polynomial_PolynomialRingElement libcrux_ml_kem_vector_portable_vector_type_PortableVector[[$4size_t]], size_t
+
+*/
+typedef struct Eurydice_dst_ref_440_s
+{
+  Eurydice_arr_0d *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_440;
+
+/**
+A monomorphic instance of Eurydice.dst_ref
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector, size_t
+
+*/
+typedef struct Eurydice_dst_ref_f3_s
+{
+  Eurydice_arr_e20 *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_f3;
 
 /**
  Generate Unpacked Keys
@@ -504,7 +540,7 @@ with types Eurydice_arr libcrux_ml_kem_polynomial_PolynomialRingElement libcrux_
 with const generics
 - $2size_t
 */
-typedef struct Eurydice_arr_e21_s { Eurydice_arr_270 data[2U]; } Eurydice_arr_e21;
+typedef struct Eurydice_arr_e22_s { Eurydice_arr_270 data[2U]; } Eurydice_arr_e22;
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.unpacked.IndCpaPublicKeyUnpacked
@@ -516,7 +552,7 @@ typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_d4_s
 {
   Eurydice_arr_270 t_as_ntt;
   Eurydice_arr_60 seed_for_A;
-  Eurydice_arr_e21 A;
+  Eurydice_arr_e22 A;
 }
 libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_d4;
 
@@ -542,9 +578,7 @@ with const generics
 - K= 2
 */
 Eurydice_arr_73
-libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_fd(
-  Eurydice_arr_340 *input
-);
+libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_fd(Eurydice_arr_34 *input);
 
 /**
 This function found in impl {libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
@@ -666,9 +700,9 @@ with const generics
 */
 void
 libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_30(
-  Eurydice_slice private_key,
-  Eurydice_slice public_key,
-  Eurydice_slice implicit_rejection_value,
+  Eurydice_dst_ref_87 private_key,
+  Eurydice_dst_ref_87 public_key,
+  Eurydice_dst_ref_87 implicit_rejection_value,
   Eurydice_arr_7f *serialized
 );
 
@@ -749,6 +783,18 @@ with const generics
 */
 libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
 libcrux_ml_kem_ind_cca_unpacked_default_7b_a0(void);
+
+/**
+A monomorphic instance of Eurydice.dst_ref
+with types Eurydice_arr libcrux_ml_kem_polynomial_PolynomialRingElement libcrux_ml_kem_vector_portable_vector_type_PortableVector[[$2size_t]], size_t
+
+*/
+typedef struct Eurydice_dst_ref_ca0_s
+{
+  Eurydice_arr_270 *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_ca0;
 
 /**
  Generate Unpacked Keys
@@ -1150,9 +1196,9 @@ with const generics
 */
 void
 libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_d6(
-  Eurydice_slice private_key,
-  Eurydice_slice public_key,
-  Eurydice_slice implicit_rejection_value,
+  Eurydice_dst_ref_87 private_key,
+  Eurydice_dst_ref_87 public_key,
+  Eurydice_dst_ref_87 implicit_rejection_value,
   Eurydice_arr_ea *serialized
 );
 
@@ -1233,6 +1279,18 @@ with const generics
 */
 libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
 libcrux_ml_kem_ind_cca_unpacked_default_7b_1b(void);
+
+/**
+A monomorphic instance of Eurydice.dst_ref
+with types Eurydice_arr libcrux_ml_kem_polynomial_PolynomialRingElement libcrux_ml_kem_vector_portable_vector_type_PortableVector[[$3size_t]], size_t
+
+*/
+typedef struct Eurydice_dst_ref_94_s
+{
+  Eurydice_arr_c41 *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_94;
 
 /**
  Generate Unpacked Keys

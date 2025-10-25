@@ -15,7 +15,17 @@
 extern "C" {
 #endif
 
-#include "Eurydice.h"
+/**
+A monomorphic instance of core.ops.range.Range
+with types size_t
+
+*/
+typedef struct core_ops_range_Range_08_s
+{
+  size_t start;
+  size_t end;
+}
+core_ops_range_Range_08;
 
 #define traits_Foo_Foo1 0
 #define traits_Foo_Foo2 1
@@ -28,9 +38,21 @@ This function found in impl {traits::ToInt for traits::Foo}
 uint32_t traits_to_int_ac(traits_Foo *self);
 
 /**
+A monomorphic instance of Eurydice.dst_ref
+with types traits_Foo, size_t
+
+*/
+typedef struct Eurydice_dst_ref_e2_s
+{
+  traits_Foo *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_e2;
+
+/**
 This function found in impl {traits::ToInt for &0 (@Slice<traits::Foo>)}
 */
-uint32_t traits_to_int_88(Eurydice_slice *self);
+uint32_t traits_to_int_88(Eurydice_dst_ref_e2 *self);
 
 /**
 A monomorphic instance of Eurydice.arr
