@@ -17,12 +17,6 @@ extern "C" {
 
 #include "../libcrux_core.h"
 
-static inline uint32_t core_num__u32__count_ones(uint32_t x0);
-
-#define CORE_NUM__U32__MAX (~0U)
-
-#define CORE_NUM__U32__BITS (core_num__u32__count_ones(CORE_NUM__U32__MAX))
-
 static inline uint64_t core_num__u64__from_le_bytes(Eurydice_arr_c4 x0);
 
 static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1);
@@ -1524,15 +1518,15 @@ with types Eurydice_arr int16_t[[$16size_t]]
 Eurydice_arr_e20 libcrux_secrets_int_public_integers_declassify_d8_3a(Eurydice_arr_e20 self);
 
 /**
-This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a (T)> for &'a (T)}
+This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a (@Slice<T>)> for &'a (@Slice<T>)}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.classify_ref_c5
-with types Eurydice_dst_ref uint8_t size_t
+A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_9b
+with types uint8_t
 
 */
 Eurydice_dst_ref_87
-*libcrux_secrets_int_public_integers_classify_ref_c5_44(Eurydice_dst_ref_87 *self);
+libcrux_secrets_int_classify_public_classify_ref_9b_90(Eurydice_dst_ref_87 self);
 
 /**
 This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
@@ -1554,15 +1548,15 @@ Eurydice_dst_ref_9a
 Eurydice_array_to_subslice_85(Eurydice_arr_e20 *a, core_ops_range_Range_08 r);
 
 /**
-This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a (T)> for &'a (T)}
+This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a (@Slice<T>)> for &'a (@Slice<T>)}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.classify_ref_c5
-with types Eurydice_dst_ref int16_t size_t
+A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_9b
+with types int16_t
 
 */
 Eurydice_dst_ref_9a
-*libcrux_secrets_int_public_integers_classify_ref_c5_24(Eurydice_dst_ref_9a *self);
+libcrux_secrets_int_classify_public_classify_ref_9b_39(Eurydice_dst_ref_9a self);
 
 /**
 A monomorphic instance of Eurydice.slice_subslice
@@ -1787,14 +1781,6 @@ with const generics
 */
 Eurydice_dst_ref_87
 Eurydice_array_to_subslice_36(Eurydice_arr_a0 *a, core_ops_range_Range_08 r);
-
-/**
-A monomorphic instance of Eurydice.arr
-with types uint64_t
-with const generics
-- $5size_t
-*/
-typedef struct Eurydice_arr_a5_s { uint64_t data[5U]; } Eurydice_arr_a5;
 
 /**
 A monomorphic instance of Eurydice.slice_subslice

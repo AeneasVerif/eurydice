@@ -2054,15 +2054,15 @@ Eurydice_arr_e20 libcrux_secrets_int_public_integers_declassify_d8_3a(Eurydice_a
 }
 
 /**
-This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a (T)> for &'a (T)}
+This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a (@Slice<T>)> for &'a (@Slice<T>)}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.classify_ref_c5
-with types Eurydice_dst_ref uint8_t size_t
+A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_9b
+with types uint8_t
 
 */
 Eurydice_dst_ref_87
-*libcrux_secrets_int_public_integers_classify_ref_c5_44(Eurydice_dst_ref_87 *self)
+libcrux_secrets_int_classify_public_classify_ref_9b_90(Eurydice_dst_ref_87 self)
 {
   return self;
 }
@@ -2094,15 +2094,15 @@ Eurydice_array_to_subslice_85(Eurydice_arr_e20 *a, core_ops_range_Range_08 r)
 }
 
 /**
-This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a (T)> for &'a (T)}
+This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a (@Slice<T>)> for &'a (@Slice<T>)}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.classify_ref_c5
-with types Eurydice_dst_ref int16_t size_t
+A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_9b
+with types int16_t
 
 */
 Eurydice_dst_ref_9a
-*libcrux_secrets_int_public_integers_classify_ref_c5_24(Eurydice_dst_ref_9a *self)
+libcrux_secrets_int_classify_public_classify_ref_9b_39(Eurydice_dst_ref_9a self)
 {
   return self;
 }

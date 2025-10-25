@@ -261,6 +261,14 @@ libcrux_sha3_Sha3_224Digest;
 
 /**
 A monomorphic instance of Eurydice.arr
+with types uint64_t
+with const generics
+- $5size_t
+*/
+typedef struct Eurydice_arr_a5_s { uint64_t data[5U]; } Eurydice_arr_a5;
+
+/**
+A monomorphic instance of Eurydice.arr
 with types Eurydice_dst_ref uint8_t size_t
 with const generics
 - $1size_t
