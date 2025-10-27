@@ -37,8 +37,6 @@ typedef struct core_marker_MetaSized__vtable__s
 }
 core_marker_MetaSized__vtable_;
 
-void dyn_trait_struct_type_main(void);
-
 typedef struct dyn_trait_struct_type_Trait__vtable__s dyn_trait_struct_type_Trait__vtable_;
 
 /**
@@ -63,7 +61,28 @@ typedef struct dyn_trait_struct_type_Trait__vtable__s
 }
 dyn_trait_struct_type_Trait__vtable_;
 
+/**
+This function found in impl {dyn_trait_struct_type::Trait for i32}
+*/
+void dyn_trait_struct_type__vtable_drop_shim__80(Eurydice_dst_ref_06 dyn_self);
+
+/**
+This function found in impl {dyn_trait_struct_type::Trait for i32}
+*/
+void dyn_trait_struct_type_method_80(int32_t *self);
+
+/**
+This function found in impl {dyn_trait_struct_type::Trait for i32}
+*/
+void dyn_trait_struct_type_method__vtable_method__80(Eurydice_dst_ref_06 _);
+
+extern const
+dyn_trait_struct_type_Trait__vtable_
+dyn_trait_struct_type__dyn_trait_struct_type__Trait_for_i32___vtable_;
+
 void dyn_trait_struct_type_use_trait(Eurydice_dst_ref_06 t);
+
+void dyn_trait_struct_type_main(void);
 
 #if defined(__cplusplus)
 }

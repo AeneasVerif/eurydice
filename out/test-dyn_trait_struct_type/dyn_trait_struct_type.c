@@ -7,14 +7,64 @@
 
 #include "dyn_trait_struct_type.h"
 
-void dyn_trait_struct_type_main(void)
+/**
+This function found in impl {dyn_trait_struct_type::Trait for i32}
+*/
+void dyn_trait_struct_type__vtable_drop_shim__80(Eurydice_dst_ref_06 dyn_self)
 {
 
 }
+
+/**
+This function found in impl {dyn_trait_struct_type::Trait for i32}
+*/
+void dyn_trait_struct_type_method_80(int32_t *self)
+{
+  EURYDICE_ASSERT(self[0U] > (int32_t)0, "panic!");
+}
+
+/**
+This function found in impl {dyn_trait_struct_type::Trait for i32}
+*/
+void dyn_trait_struct_type_method__vtable_method__80(Eurydice_dst_ref_06 _)
+{
+  dyn_trait_struct_type_method_80((int32_t *)_.ptr);
+}
+
+static size_t _vtable__local_0 = Eurydice_sizeof(int32_t, size_t);
+
+static size_t _vtable__local_1 = Eurydice_alignof(int32_t, size_t);
+
+static dyn_trait_struct_type_Trait__vtable_
+_vtable__local_2 =
+  {
+    .size = _vtable__local_0, .align = _vtable__local_1,
+    .drop = dyn_trait_struct_type__vtable_drop_shim__80,
+    .method_method = dyn_trait_struct_type_method__vtable_method__80,
+    .super_trait_0 = Eurydice_opaque("missing supertrait vtable",
+      core_marker_MetaSized__vtable_ *,
+      core_marker_MetaSized__vtable_ *)
+  };
+
+const
+dyn_trait_struct_type_Trait__vtable_
+dyn_trait_struct_type__dyn_trait_struct_type__Trait_for_i32___vtable_ = _vtable__local_2;
 
 void dyn_trait_struct_type_use_trait(Eurydice_dst_ref_06 t)
 {
   Eurydice_dst_ref_06 uu____0 = t;
   uu____0.meta->method_method(uu____0);
+}
+
+void dyn_trait_struct_type_main(void)
+{
+  /* original Rust expression is not an lvalue in C */
+  int32_t lvalue = (int32_t)100;
+  dyn_trait_struct_type_use_trait((
+      KRML_CLITERAL(Eurydice_dst_ref_06){
+        .ptr = (Eurydice_c_void_t *)&lvalue,
+        .meta = &dyn_trait_struct_type__dyn_trait_struct_type__Trait_for_i32___vtable_
+      }
+    ));
 }
 
