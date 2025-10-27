@@ -3247,7 +3247,7 @@ sample_from_binomial_distribution_2_84(Eurydice_dst_ref_87 randomness)
     uint32_t even_bits = random_bits_as_u32 & 1431655765U;
     uint32_t odd_bits = random_bits_as_u32 >> 1U & 1431655765U;
     uint32_t coin_toss_outcomes = even_bits + odd_bits;
-    for (uint32_t i = 0U; i < CORE_NUM__U32__BITS / 4U; i++)
+    for (uint32_t i = 0U; i < 32U / 4U; i++)
     {
       uint32_t outcome_set = i;
       uint32_t outcome_set0 = outcome_set * 4U;

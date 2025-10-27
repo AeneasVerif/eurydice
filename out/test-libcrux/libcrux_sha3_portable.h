@@ -158,6 +158,17 @@ uint64_t *libcrux_sha3_generic_keccak_index_c2_04(Eurydice_arr_26 *self, size_t_
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0, TraitClause@1]}
 */
 /**
+A monomorphic instance of libcrux_sha3.generic_keccak.theta_80
+with types uint64_t
+with const generics
+- N= 1
+*/
+Eurydice_arr_a5 libcrux_sha3_generic_keccak_theta_80_04(Eurydice_arr_26 *self);
+
+/**
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0, TraitClause@1]}
+*/
+/**
 A monomorphic instance of libcrux_sha3.generic_keccak.set_80
 with types uint64_t
 with const generics
@@ -810,12 +821,12 @@ uint64_t libcrux_sha3_simd_portable_xor_and_rotate_d2_fd(uint64_t a, uint64_t b)
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0, TraitClause@1]}
 */
 /**
-A monomorphic instance of libcrux_sha3.generic_keccak.theta_rho_80
+A monomorphic instance of libcrux_sha3.generic_keccak.rho_80
 with types uint64_t
 with const generics
 - N= 1
 */
-void libcrux_sha3_generic_keccak_theta_rho_80_04(Eurydice_arr_26 *self);
+void libcrux_sha3_generic_keccak_rho_80_04(Eurydice_arr_26 *self, Eurydice_arr_a5 t);
 
 /**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0, TraitClause@1]}
