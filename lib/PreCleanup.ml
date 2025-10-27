@@ -76,16 +76,23 @@ let remove_array_eq =
       super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t lid bs e
   end
 
-let expression_of_cg (cg : cg) =
+let expression_of_cg (n_cgs, n_binders) (cg : cg) =
   match cg with
-  | CgConst n -> Krml.Helpers.mk_sizet (int_of_string (snd n))
-  | CgVar _ -> failwith "non-const length in the Arr<T,C>"
+  | CgConst n -> H.mk_sizet (int_of_string (snd n))
+  | CgVar var ->
+      let diff = n_binders - n_cgs in
+      with_type (TInt SizeT) (EBound (var + diff))
 
+(* slice_to_array<&[T], [T; N], Error>(src) -> 
+   let arr: Arr<T,N>; memcpy(arr.data, src.ptr, N); Ok arr 
+   slice_to_ref_array<&[T], &[T;N], Error, len>(src) ->
+   let arr: Arr<T,N>; memcpy(arr.data, src.ptr); slice_to_ref_array2<&[T], &[T;N], Error, len>(src, &arr)
+   *)
 let expand_slice_to_array =
   object (_self)
-    inherit [_] map as super
+    inherit Krml.DeBruijn.map_counting_cg as super
 
-    method! visit_expr (((), _) as env) e =
+    method! visit_expr ((count, _) as env) e =
       match e.node with
       | EApp
           ( {
@@ -103,10 +110,10 @@ let expand_slice_to_array =
           let result_t = e.typ in
           (*let arr = .. *)
           let arr = with_type arr_t (EBound 0) in
-          let src = (Krml.DeBruijn.lift 1) src in
+          let src = Krml.DeBruijn.lift 1 src in
           let lhs = with_type (TBuf (t, false)) (EField (arr, "data")) in
           let rhs = with_type (TBuf (t, false)) (EField (src, "ptr")) in
-          let n = expression_of_cg cg in
+          let n = Krml.DeBruijn.lift 1 (expression_of_cg count cg) in
           let zero = H.zero SizeT in
           let memcpy = H.with_unit (EBufBlit (rhs, zero, lhs, zero, n)) in
           (* let arr = any in {memcpy (src, slice); OK (arr);} *)
@@ -139,14 +146,14 @@ let expand_slice_to_array =
           let slice_to_ref_array2 =
             with_type
               (Krml.DeBruijn.subst_tn ts Builtin.slice_to_ref_array2.typ)
-              (ETApp (slice_to_ref_array2, cgs, [], ts))
+              (ETApp (slice_to_ref_array2, List.map (Krml.DeBruijn.lift 1) cgs, [], ts))
           in
           let arr = with_type arr_t (EBound 0) in
           let arr_ref = with_type arr_ref_t (EAddrOf arr) in
-          let slice = (Krml.DeBruijn.lift 1) slice in
+          let slice = Krml.DeBruijn.lift 1 slice in
           let lhs = with_type (TBuf (t, false)) (EField (arr, "data")) in
           let rhs = with_type (TBuf (t, false)) (EField (slice, "ptr")) in
-          let n = expression_of_cg cg in
+          let n = Krml.DeBruijn.lift 1 (expression_of_cg count cg) in
           (* let n = with_type (TInt SizeT) (EField (slice, "meta")) in *)
           let zero = H.zero SizeT in
           let memcpy = H.with_unit (EBufBlit (rhs, zero, lhs, zero, n)) in
@@ -159,22 +166,16 @@ let expand_slice_to_array =
                       [ memcpy; with_type e.typ (EApp (slice_to_ref_array2, [ slice; arr_ref ])) ])
                ))
       | _ -> super#visit_expr env e
+
+    method! visit_DFunction _ cc flags n_cgs n t name bs e =
+      super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t name bs e
   end
 
 (** Comes from [drop_unused] in Inlining.ml, we use it to remove the builtin function defined using
-    abstract syntax when they are not used. Otherwise they may use some undefined types and fail the
-    check *)
+    abstract syntax when they are not used. Otherwise they will refer to the undefined Range type
+    and fail the check *)
 
-let builtin_func_lids =
-  [
-    [ "Eurydice" ], "array_to_slice";
-    [ "Eurydice" ], "array_to_subslice";
-    [ "Eurydice" ], "array_to_subslice_to";
-    [ "Eurydice" ], "array_to_subslice_from";
-    [ "Eurydice" ], "slice_subslice";
-    [ "Eurydice" ], "slice_subslice_to";
-    [ "Eurydice" ], "slice_subslice_from";
-  ]
+let builtin_func_lids = List.map lid_of_decl Builtin.builtin_defined_funcs
 
 let drop_unused_builtin files =
   let open Krml in
@@ -229,7 +230,7 @@ let precleanup files =
   let files = expand_array_copies files in
   let files = remove_array_eq#visit_files (0, 0) files in
   let files = drop_unused_builtin files in
-  let files = expand_slice_to_array#visit_files () files in
+  let files = expand_slice_to_array#visit_files (0, 0) files in
   files
 
 let merge files =

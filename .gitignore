@@ -1,6 +1,8 @@
+/karamel
+/charon
+/libcrux
+
 _build
-lib/krml
-lib/charon
 test/*/target
 out/*/a.out
 *.DS_Store
@@ -9,3 +11,5 @@ out/*/a.out
 eurydice
 /.vscode
 .charon_version
+
+test/libcrux/build

@@ -35,22 +35,3 @@ jobs:
         with:
           fetch-depth: 0 # deep clone in order to get access to other commits
       - run: nix develop '.#ci' --command ./scripts/ci-check-charon-pin-is-merged.sh
-
-  kyber:
-    needs: [check]
-    runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v4
-      - run: |
-          # Flake overrides aren't recursive: if we want to use eurydice with
-          # any newly pinned dependencies, we must override all of them.
-          EURYDICE_REV="${{ github.sha }}"
-          CHARON_REV="$(nix develop '.#ci' --command jq -r .nodes.charon.locked.rev flake.lock)"
-          git clone https://github.com/Inria-Prosecco/circus-green
-          cd circus-green
-          nix flake update charon --override-input charon github:aeneasverif/charon/$CHARON_REV
-          nix flake update eurydice --override-input eurydice github:aeneasverif/eurydice/$EURYDICE_REV
-          nix flake update libcrux --override-input libcrux github:cryspen/libcrux/2a86482d716650976b09e0f60f5c87aa166b5f41
-          nix develop --command ./update-cargo-lock.sh libcrux
-          ./check.sh ml-kem-small
-          # ./check.sh ml-dsa-small
