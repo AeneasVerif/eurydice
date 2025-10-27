@@ -62,6 +62,8 @@ using std::type_identity_t;
 
 #define Eurydice_alignof(t) alignof(t)
 
+#define Eurydice_opaque(t, reason) *((t *)0)
+
 // SLICES, ARRAYS, ETC.
 
 // We define several slice types in order to define builtin definitions for

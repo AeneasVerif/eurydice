@@ -208,7 +208,7 @@ Supported options:|}
   in
   let files = Eurydice.Cleanup1.cleanup files in
 
-  Eurydice.Logging.log "Phase2" "%a" pfiles files;
+  Eurydice.Logging.log "Phase2" "Phase 2 start:\n%a" pfiles files;
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
     fail __FILE__ __LINE__;
@@ -217,7 +217,7 @@ Supported options:|}
   let files = Eurydice.Cleanup2.resugar_loops#visit_files () files in
   let files = Eurydice.Cleanup1.remove_terminal_returns#visit_files true files in
   let files = Eurydice.Cleanup1.remove_terminal_continues#visit_files false files in
-  Eurydice.Logging.log "Phase2.1" "%a" pfiles files;
+  Eurydice.Logging.log "Phase2.1" "Phase 2.1:\n%a" pfiles files;
   (* Sanity check for the big rewriting above. *)
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
