@@ -641,6 +641,44 @@ let ends_with_return =
       | EReturn _ -> true
       | _ -> false)
 
+let width_of_int_name name : width =
+  match name with
+  | "<i8>" -> Int8
+  | "<i16>" -> Int16
+  | "<i32>" -> Int32
+  | "<i64>" -> Int64
+  | "<u8>" -> UInt8
+  | "<u16>" -> UInt16
+  | "<u32>" -> UInt32
+  | "<u64>" -> UInt64
+  | "<usize>" -> SizeT
+  | _ -> invalid_arg name
+
+let type_of_int_name name = TInt (width_of_int_name name)
+let node_of_with_type e' = e'.node
+let typ_of_with_type e' = e'.typ
+
+let rest_of_let' e_let =
+  match e_let with
+  | ELet (_, _, e_rest) -> e_rest
+  | _ -> assert false
+
+let rest_of_let e_let' = e_let' |> node_of_with_type |> rest_of_let'
+
+let body_of_while' e_while =
+  match e_while with
+  | EWhile (_, e_body) -> e_body
+  | _ -> assert false
+
+let body_of_while e_while' = e_while' |> node_of_with_type |> body_of_while'
+
+let binder_of_let e_let =
+  match e_let with
+  | ELet (b, _, _) -> b
+  | _ -> assert false
+
+let typ_of_let e_let = e_let |> node_of_with_type |> binder_of_let |> typ_of_with_type
+
 let resugar_loops =
   object(self)
   inherit [_] map as super
@@ -870,6 +908,129 @@ let resugar_loops =
     |}] ->
       let open Krml.Helpers in
       let w = match t1 with TInt w -> w | _ -> assert false in
+      with_type e.typ @@ ESequence (with_type TUnit (EFor (fresh_binder ~mut:true "i" t1,
+        e_start,
+        mk_lt w (Krml.DeBruijn.lift 1 e_end),
+        mk_incr w,
+        self#visit_expr env e_body)
+      ) :: List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest)
+
+    (* Terminal position (regular range for-loop) *)
+    | [%cremepat {|
+      let iter =
+        core::iter::traits::collect::?::into_iter::?range_name
+          ({ start: ?e_start, end: ?e_end });
+      while true {
+        let x = core::iter::range::?::next::?t1_name(&iter);
+        match x {
+          None -> break,
+          Some ? -> ?e_body
+        }
+      }
+    |}] when Krml.KString.starts_with range_name "<core::ops::range::Range::" ->
+      let open Krml.Helpers in
+      let w = width_of_int_name t1_name in
+      let t1 = TInt w in
+      let t_op = e |> rest_of_let |> body_of_while |> typ_of_let in 
+      let e_some_i = with_type t_op (ECons ("Some", [with_type t1 (EBound 0)])) in
+      with_type e.typ @@ EFor (fresh_binder ~mut:true "i" t1,
+        e_start,
+        mk_lt w (Krml.DeBruijn.lift 1 e_end),
+        mk_incr w,
+        self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body))
+
+    | [%cremepat {|
+      let iter =
+        core::iter::traits::collect::?::into_iter::?range_name
+          ({ start: ?e_start, end: ?e_end });
+      while true {
+        match (core::iter::range::?::next::?t1_name(&iter)) {
+          None -> break,
+          Some ? -> ?e_body
+        }
+      }
+    |}] when Krml.KString.starts_with range_name "<core::ops::range::Range::" ->
+      let open Krml.Helpers in
+      let w = width_of_int_name t1_name in
+      let t1 = TInt w in
+      with_type e.typ @@ EFor (fresh_binder ~mut:true "i" t1,
+        e_start,
+        mk_lt w (Krml.DeBruijn.lift 1 e_end),
+        mk_incr w,
+        self#visit_expr env e_body)
+
+    (* Non-terminal position (regular range for-loop) *)
+    | [%cremepat {|
+      let iter =
+        core::iter::traits::collect::?::into_iter::?range_name
+          ({ start: ?e_start, end: ?e_end });
+      while true {
+        let x = core::iter::range::?::next::?t1_name(&iter);
+        match x {
+          None -> break,
+          Some ? -> ?e_body
+        }
+      };
+      ?rest..
+    |}] when Krml.KString.starts_with range_name "<core::ops::range::Range::"->
+      let open Krml.Helpers in
+      let w = width_of_int_name t1_name in
+      let t1 = TInt w in
+      let t_op = e |> rest_of_let |> body_of_while |> typ_of_let in
+      let e_some_i = with_type t_op (ECons ("Some", [with_type t1 (EBound 0)])) in
+      with_type e.typ @@ ESequence (with_type TUnit (EFor (fresh_binder ~mut:true "i" t1,
+        e_start,
+        mk_lt w (Krml.DeBruijn.lift 1 e_end),
+        mk_incr w,
+        self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body))
+      ) :: List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest)
+
+    (* Special variant that appears in external crates -- TODO: do we need variants of all other
+       patterns? *)
+    | [%cremepat {|
+      let iter =
+        core::iter::traits::collect::?::into_iter::?range_name
+          ({ start: ?e_start, end: ?e_end });
+      while true {
+        let x = core::iter::range::?::next::?t1_name(&iter);
+        match x {
+          None -> ?e2,
+          Some ? -> ?e_body
+        };
+        abort
+      }
+    |}] when Krml.KString.starts_with range_name "<core::ops::range::Range::" && ends_with_return e2 && ends_with_continue e_body
+    (* && x does not appear in e2 *) ->
+      let open Krml.Helpers in
+      let w = width_of_int_name t1_name in
+      let t1 = TInt w in
+      let t_op = e |> rest_of_let |> body_of_while |> typ_of_let in
+      let e_some_i = with_type t_op (ECons ("Some", [with_type t1 (EBound 0)])) in
+      with_type e.typ @@ ESequence [
+        with_type TUnit (EFor (fresh_binder ~mut:true "i" t1,
+          e_start,
+          mk_lt w (Krml.DeBruijn.lift 1 e_end),
+          mk_incr w,
+          self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body))
+        );
+        self#visit_expr env (Krml.DeBruijn.(subst eunit 0 (subst eunit 0 e2)))
+      ]
+
+    | [%cremepat {|
+      let iter =
+        core::iter::traits::collect::?::into_iter::?range_name
+          ({ start: ?e_start, end: ?e_end });
+      while true {
+        match (core::iter::range::?::next::?t1_name(&iter)) {
+          None -> break,
+          Some ? -> ?e_body
+        }
+      };
+      ?rest..
+    |}] when Krml.KString.starts_with range_name "<core::ops::range::Range::" ->
+      let open Krml.Helpers in
+      let w = width_of_int_name t1_name in
+      let t1 = TInt w in
       with_type e.typ @@ ESequence (with_type TUnit (EFor (fresh_binder ~mut:true "i" t1,
         e_start,
         mk_lt w (Krml.DeBruijn.lift 1 e_end),

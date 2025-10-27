@@ -157,13 +157,16 @@ let compile_parse_tree (env : env) loc
         (* EApp (ETApp (e, ts), es) *)
         ppat_cons_many ~loc "EApp"
           [
-            ppat_cons_many ~loc "ETApp"
-              [
-                compile env head;
-                compile_expr_list_pattern env cgs;
-                compile_expr_list_pattern env methods;
-                compile_typ_list_pattern env ts;
-              ];
+            (if cgs = [] && methods = [] && ts = [] then
+               compile env head
+             else
+               ppat_cons_many ~loc "ETApp"
+                 [
+                   compile env head;
+                   compile_expr_list_pattern env cgs;
+                   compile_expr_list_pattern env methods;
+                   compile_typ_list_pattern env ts;
+                 ]);
             ppat_list ~loc (List.map (compile env) args);
           ]
     | Addr e -> ppat_cons_one ~loc "EAddrOf" (compile env e)
