@@ -386,6 +386,7 @@ let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
           (* Hence we need to firstly substitute `TraitParams` with the actual types provided by the dynamic predicate's `TraitArgs` *)
           (* And then substitute `AssocTys` with the actual types provided by the dynamic predicate's assignments to these associated types *)
           (* The trait ref is guaranteed to be with empty binding values in the principal clause *)
+          (* Yet, we will need to move shift the internal DeBruijn indices with `extract_from_binder` *)
           let tref = Charon.Substitute.(extract_from_binder trait_decl_ref_substitute tref) in
           (* First step: get the `TraitArgs` *)
           let base_args =
