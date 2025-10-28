@@ -933,6 +933,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
             in
             let expr = K.with_type place_typ (K.EBound 0) in
             K.with_type place_typ (K.EMatch (Unchecked, !*sub_e, [ binders, pattern, expr ]))
+      (* | PlaceProjection () *)
       | _ -> fail "unexpected / ill-typed projection"
     end
 
@@ -1935,6 +1936,20 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       else
         failwith
           ("unknown cast: `" ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck ^ "`")
+  (* | UnaryOp (PtrMetadata, e) ->
+    let e = expression_of_operand env e in begin
+    match e.typ with
+    | TApp (lid, [ _; meta_ty ]) when lid = Builtin.dst_ref ->
+      K.(with_type meta_ty (EField (e, "meta")))
+    (* In cases like `PtrMetadata(T)` when `T` is a type variable or some types with unresolved type variable,
+       We cannot tell the correct metadata type from it until fully monomorphized.
+       But we can surely rely on monomorphized LLBC, and we ignore handling such cases in Eurydice. *)
+    | ty when has_unresolved_generic ty ->
+      failwith "Eurydice do not handle ptr-metadata for generic types. Consider using monomorphized LLBC."
+    (* Otherwise, fetching ptr-metadata from a non-DST simply results in `()`
+       When a type is fully resolved and it is not `Eurydice::DstRef`, we can be confident that it is not a DST. *)
+    | _ -> K.with_type TUnit K.EUnit
+    end *)
   | UnaryOp (op, o1) -> mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]

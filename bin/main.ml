@@ -111,7 +111,6 @@ Supported options:|}
         [ "Eurydice" ], "slice_len";
         [ "Eurydice" ], "slice_copy";
         [ "Eurydice" ], "array_eq";
-        [ "Eurydice" ], "slice_to_array2";
       ]);
 
   (* Some logic for more precisely tracking readonly functions, so as to remove
