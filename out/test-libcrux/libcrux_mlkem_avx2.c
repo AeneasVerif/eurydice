@@ -74,8 +74,10 @@ KRML_MUSTINLINE Eurydice_arr_e20 libcrux_ml_kem_vector_avx2_to_i16_array_f5(__m2
 KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_from_bytes(Eurydice_dst_ref_87 array)
 {
   return
-    mm256_loadu_si256_u8(Eurydice_slice_subslice_7e(array,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)32U })));
+    mm256_loadu_si256_u8(Eurydice_slice_subslice3(array,
+        (size_t)0U,
+        (size_t)32U,
+        Eurydice_dst_ref_87));
 }
 
 /**
@@ -88,8 +90,10 @@ KRML_MUSTINLINE __m256i libcrux_ml_kem_vector_avx2_from_bytes_f5(Eurydice_dst_re
 
 KRML_MUSTINLINE void libcrux_ml_kem_vector_avx2_to_bytes(__m256i x, Eurydice_dst_ref_87 bytes)
 {
-  mm256_storeu_si256_u8(Eurydice_slice_subslice_7e(bytes,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)32U })),
+  mm256_storeu_si256_u8(Eurydice_slice_subslice3(bytes,
+      (size_t)0U,
+      (size_t)32U,
+      Eurydice_dst_ref_87),
     x);
 }
 
@@ -1003,8 +1007,7 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_4(__m256i vector)
   mm_storeu_bytes_si128(Eurydice_array_to_slice_46(&serialized), combined0);
   Eurydice_arr_c4 arr;
   memcpy(arr.data,
-    Eurydice_array_to_subslice_366(&serialized,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)8U })).ptr,
+    Eurydice_array_to_subslice3(&serialized, (size_t)0U, (size_t)8U, Eurydice_dst_ref_87).ptr,
     (size_t)8U * sizeof (uint8_t));
   return
     core_result_unwrap_26_ab((
@@ -1163,17 +1166,20 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_5(__m256i vector)
         (int32_t)12));
   __m256i adjacent_8_combined1 = mm256_srli_epi64((int32_t)12, adjacent_8_combined0, __m256i);
   __m128i lower_8 = mm256_castsi256_si128(adjacent_8_combined1);
-  mm_storeu_bytes_si128(Eurydice_array_to_subslice_365(&serialized,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)16U })),
+  mm_storeu_bytes_si128(Eurydice_array_to_subslice3(&serialized,
+      (size_t)0U,
+      (size_t)16U,
+      Eurydice_dst_ref_87),
     lower_8);
   __m128i upper_8 = mm256_extracti128_si256((int32_t)1, adjacent_8_combined1, __m128i);
-  mm_storeu_bytes_si128(Eurydice_array_to_subslice_365(&serialized,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)5U, .end = (size_t)21U })),
+  mm_storeu_bytes_si128(Eurydice_array_to_subslice3(&serialized,
+      (size_t)5U,
+      (size_t)21U,
+      Eurydice_dst_ref_87),
     upper_8);
   Eurydice_arr_77 arr;
   memcpy(arr.data,
-    Eurydice_array_to_subslice_365(&serialized,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)10U })).ptr,
+    Eurydice_array_to_subslice3(&serialized, (size_t)0U, (size_t)10U, Eurydice_dst_ref_87).ptr,
     (size_t)10U * sizeof (uint8_t));
   return
     core_result_unwrap_26_3d((
@@ -1359,16 +1365,19 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_10(__m256i vector)
   __m128i lower_8 = uu____0.fst;
   __m128i upper_8 = uu____0.snd;
   Eurydice_arr_60 serialized = { .data = { 0U } };
-  mm_storeu_bytes_si128(Eurydice_array_to_subslice_365(&serialized,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)16U })),
+  mm_storeu_bytes_si128(Eurydice_array_to_subslice3(&serialized,
+      (size_t)0U,
+      (size_t)16U,
+      Eurydice_dst_ref_87),
     lower_8);
-  mm_storeu_bytes_si128(Eurydice_array_to_subslice_365(&serialized,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)10U, .end = (size_t)26U })),
+  mm_storeu_bytes_si128(Eurydice_array_to_subslice3(&serialized,
+      (size_t)10U,
+      (size_t)26U,
+      Eurydice_dst_ref_87),
     upper_8);
   Eurydice_arr_dc arr;
   memcpy(arr.data,
-    Eurydice_array_to_subslice_365(&serialized,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)20U })).ptr,
+    Eurydice_array_to_subslice3(&serialized, (size_t)0U, (size_t)20U, Eurydice_dst_ref_87).ptr,
     (size_t)20U * sizeof (uint8_t));
   return
     core_result_unwrap_26_51((
@@ -1465,12 +1474,16 @@ libcrux_ml_kem_vector_avx2_serialize_deserialize_10(Eurydice_dst_ref_87 bytes)
 {
   Eurydice_dst_ref_87
   lower_coefficients =
-    Eurydice_slice_subslice_7e(bytes,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)16U }));
+    Eurydice_slice_subslice3(bytes,
+      (size_t)0U,
+      (size_t)16U,
+      Eurydice_dst_ref_87);
   Eurydice_dst_ref_87
   upper_coefficients =
-    Eurydice_slice_subslice_7e(bytes,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)4U, .end = (size_t)20U }));
+    Eurydice_slice_subslice3(bytes,
+      (size_t)4U,
+      (size_t)20U,
+      Eurydice_dst_ref_87);
   return
     libcrux_ml_kem_vector_avx2_serialize_deserialize_10_deserialize_10_vec(mm_loadu_si128(lower_coefficients),
       mm_loadu_si128(upper_coefficients));
@@ -1588,16 +1601,19 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_12(__m256i vector)
   uu____0 = libcrux_ml_kem_vector_avx2_serialize_serialize_12_serialize_12_vec(vector);
   __m128i lower_8 = uu____0.fst;
   __m128i upper_8 = uu____0.snd;
-  mm_storeu_bytes_si128(Eurydice_array_to_subslice_365(&serialized,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)16U })),
+  mm_storeu_bytes_si128(Eurydice_array_to_subslice3(&serialized,
+      (size_t)0U,
+      (size_t)16U,
+      Eurydice_dst_ref_87),
     lower_8);
-  mm_storeu_bytes_si128(Eurydice_array_to_subslice_365(&serialized,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)12U, .end = (size_t)28U })),
+  mm_storeu_bytes_si128(Eurydice_array_to_subslice3(&serialized,
+      (size_t)12U,
+      (size_t)28U,
+      Eurydice_dst_ref_87),
     upper_8);
   Eurydice_arr_6d arr;
   memcpy(arr.data,
-    Eurydice_array_to_subslice_365(&serialized,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)24U })).ptr,
+    Eurydice_array_to_subslice3(&serialized, (size_t)0U, (size_t)24U, Eurydice_dst_ref_87).ptr,
     (size_t)24U * sizeof (uint8_t));
   return
     core_result_unwrap_26_a9((
@@ -1694,12 +1710,10 @@ libcrux_ml_kem_vector_avx2_serialize_deserialize_12(Eurydice_dst_ref_87 bytes)
 {
   __m128i
   lower_coefficients =
-    mm_loadu_si128(Eurydice_slice_subslice_7e(bytes,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)16U })));
+    mm_loadu_si128(Eurydice_slice_subslice3(bytes, (size_t)0U, (size_t)16U, Eurydice_dst_ref_87));
   __m128i
   upper_coefficients =
-    mm_loadu_si128(Eurydice_slice_subslice_7e(bytes,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)8U, .end = (size_t)24U })));
+    mm_loadu_si128(Eurydice_slice_subslice3(bytes, (size_t)8U, (size_t)24U, Eurydice_dst_ref_87));
   return
     libcrux_ml_kem_vector_avx2_serialize_deserialize_12_deserialize_12_vec(lower_coefficients,
       upper_coefficients);
@@ -1744,13 +1758,10 @@ libcrux_ml_kem_vector_avx2_sampling_rejection_sample(
   __m128i
   upper_coefficients = mm256_extracti128_si256((int32_t)1, potential_coefficients, __m128i);
   __m128i upper_coefficients0 = mm_shuffle_epi8(upper_coefficients, upper_shuffles0);
-  mm_storeu_si128(Eurydice_slice_subslice_76(output,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = sampled_count,
-          .end = sampled_count + (size_t)8U
-        }
-      )),
+  mm_storeu_si128(Eurydice_slice_subslice3(output,
+      sampled_count,
+      sampled_count + (size_t)8U,
+      Eurydice_dst_ref_9a),
     upper_coefficients0);
   size_t uu____0 = sampled_count;
   return uu____0 + (size_t)core_num__u8__count_ones(good.data[1U]);
@@ -1815,13 +1826,10 @@ deserialize_to_reduced_ring_element_84(Eurydice_dst_ref_87 serialized)
     size_t i0 = i;
     Eurydice_dst_ref_87
     bytes =
-      Eurydice_slice_subslice_7e(serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 * (size_t)24U,
-            .end = i0 * (size_t)24U + (size_t)24U
-          }
-        ));
+      Eurydice_slice_subslice3(serialized,
+        i0 * (size_t)24U,
+        i0 * (size_t)24U + (size_t)24U,
+        Eurydice_dst_ref_87);
     __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_12_f5(bytes);
     re.data[i0] = libcrux_ml_kem_vector_avx2_cond_subtract_3329_f5(coefficient);
   }
@@ -1852,14 +1860,11 @@ deserialize_ring_elements_reduced_ab(
     size_t i0 = i;
     Eurydice_dst_ref_87
     ring_element =
-      Eurydice_slice_subslice_7e(public_key,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-            .end = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
-              LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT
-          }
-        ));
+      Eurydice_slice_subslice3(public_key,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
+          LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        Eurydice_dst_ref_87);
     Eurydice_arr_51 uu____0 = deserialize_to_reduced_ring_element_84(ring_element);
     deserialized_pk->data[i0] = uu____0;
   }
@@ -1999,20 +2004,14 @@ sample_from_uniform_distribution_next_ed(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_3610(&randomness->data[i1],
-              (
-                KRML_CLITERAL(core_ops_range_Range_08){
-                  .start = r * (size_t)24U,
-                  .end = r * (size_t)24U + (size_t)24U
-                }
-              )),
-            Eurydice_array_to_subslice_850(&out->data[i1],
-              (
-                KRML_CLITERAL(core_ops_range_Range_08){
-                  .start = sampled_coefficients->data[i1],
-                  .end = sampled_coefficients->data[i1] + (size_t)16U
-                }
-              )));
+          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice3(&randomness->data[i1],
+              r * (size_t)24U,
+              r * (size_t)24U + (size_t)24U,
+              Eurydice_dst_ref_87),
+            Eurydice_array_to_subslice3(&out->data[i1],
+              sampled_coefficients->data[i1],
+              sampled_coefficients->data[i1] + (size_t)16U,
+              Eurydice_dst_ref_9a));
         size_t uu____0 = i1;
         sampled_coefficients->data[uu____0] = sampled_coefficients->data[uu____0] + sampled;
       }
@@ -2137,20 +2136,14 @@ sample_from_uniform_distribution_next_ed0(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_362(&randomness->data[i1],
-              (
-                KRML_CLITERAL(core_ops_range_Range_08){
-                  .start = r * (size_t)24U,
-                  .end = r * (size_t)24U + (size_t)24U
-                }
-              )),
-            Eurydice_array_to_subslice_850(&out->data[i1],
-              (
-                KRML_CLITERAL(core_ops_range_Range_08){
-                  .start = sampled_coefficients->data[i1],
-                  .end = sampled_coefficients->data[i1] + (size_t)16U
-                }
-              )));
+          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice3(&randomness->data[i1],
+              r * (size_t)24U,
+              r * (size_t)24U + (size_t)24U,
+              Eurydice_dst_ref_87),
+            Eurydice_array_to_subslice3(&out->data[i1],
+              sampled_coefficients->data[i1],
+              sampled_coefficients->data[i1] + (size_t)16U,
+              Eurydice_dst_ref_9a));
         size_t uu____0 = i1;
         sampled_coefficients->data[uu____0] = sampled_coefficients->data[uu____0] + sampled;
       }
@@ -2204,13 +2197,10 @@ static KRML_MUSTINLINE Eurydice_arr_51 from_i16_array_84(Eurydice_dst_ref_9a a)
   {
     size_t i0 = i;
     result.data[i0] =
-      libcrux_ml_kem_vector_avx2_from_i16_array_f5(Eurydice_slice_subslice_76(a,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = i0 * (size_t)16U,
-              .end = (i0 + (size_t)1U) * (size_t)16U
-            }
-          )));
+      libcrux_ml_kem_vector_avx2_from_i16_array_f5(Eurydice_slice_subslice3(a,
+          i0 * (size_t)16U,
+          (i0 + (size_t)1U) * (size_t)16U,
+          Eurydice_dst_ref_9a));
   }
   return result;
 }
@@ -2242,8 +2232,10 @@ static Eurydice_arr_51 call_mut_e7_6c1(Eurydice_arr_a00 tupled_args)
 {
   Eurydice_arr_a00 s = tupled_args;
   return
-    from_i16_array_d6_84(Eurydice_array_to_subslice_850(&s,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)256U })));
+    from_i16_array_d6_84(Eurydice_array_to_subslice3(&s,
+        (size_t)0U,
+        (size_t)256U,
+        Eurydice_dst_ref_9a));
 }
 
 /**
@@ -2505,13 +2497,10 @@ serialize_uncompressed_ring_element_84(Eurydice_arr_51 *re)
     size_t i0 = i;
     __m256i coefficient = to_unsigned_field_modulus_84(re->data[i0]);
     Eurydice_arr_6d bytes = libcrux_ml_kem_vector_avx2_serialize_12_f5(coefficient);
-    Eurydice_slice_copy(Eurydice_array_to_subslice_3614(&serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = (size_t)24U * i0,
-            .end = (size_t)24U * i0 + (size_t)24U
-          }
-        )),
+    Eurydice_slice_copy(Eurydice_array_to_subslice3(&serialized,
+        (size_t)24U * i0,
+        (size_t)24U * i0 + (size_t)24U,
+        Eurydice_dst_ref_87),
       Eurydice_array_to_slice_0b(&bytes),
       uint8_t);
   }
@@ -2539,13 +2528,10 @@ static KRML_MUSTINLINE void serialize_vector_ab(Eurydice_arr_260 *key, Eurydice_
     Eurydice_arr_51 re = key->data[i0];
     Eurydice_dst_ref_87
     uu____0 =
-      Eurydice_slice_subslice_7e(out,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-            .end = (i0 + (size_t)1U) * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT
-          }
-        ));
+      Eurydice_slice_subslice3(out,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        (i0 + (size_t)1U) * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        Eurydice_dst_ref_87);
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_cc lvalue = serialize_uncompressed_ring_element_84(&re);
     Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_fe(&lvalue), uint8_t);
@@ -2570,13 +2556,10 @@ serialize_public_key_mut_ed(
 )
 {
   serialize_vector_ab(t_as_ntt,
-    Eurydice_array_to_subslice_3618(serialized,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)3U)
-        }
-      )));
+    Eurydice_array_to_subslice3(serialized,
+      (size_t)0U,
+      libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)3U),
+      Eurydice_dst_ref_87));
   Eurydice_slice_copy(Eurydice_array_to_subslice_from_8c4(serialized,
       libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)3U)),
     seed_for_a,
@@ -2776,13 +2759,10 @@ deserialize_to_uncompressed_ring_element_84(Eurydice_dst_ref_87 serialized)
     size_t i0 = i;
     Eurydice_dst_ref_87
     bytes =
-      Eurydice_slice_subslice_7e(serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 * (size_t)24U,
-            .end = i0 * (size_t)24U + (size_t)24U
-          }
-        ));
+      Eurydice_slice_subslice3(serialized,
+        i0 * (size_t)24U,
+        i0 * (size_t)24U + (size_t)24U,
+        Eurydice_dst_ref_87);
     re.data[i0] = libcrux_ml_kem_vector_avx2_deserialize_12_f5(bytes);
   }
   return re;
@@ -2807,13 +2787,10 @@ deserialize_vector_ab(Eurydice_dst_ref_87 secret_key, Eurydice_arr_260 *secret_a
     size_t i0 = i;
     Eurydice_arr_51
     uu____0 =
-      deserialize_to_uncompressed_ring_element_84(Eurydice_slice_subslice_7e(secret_key,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-              .end = (i0 + (size_t)1U) * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT
-            }
-          )));
+      deserialize_to_uncompressed_ring_element_84(Eurydice_slice_subslice3(secret_key,
+          i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+          (i0 + (size_t)1U) * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+          Eurydice_dst_ref_87));
     secret_as_ntt->data[i0] = uu____0;);
 }
 
@@ -2830,8 +2807,10 @@ static Eurydice_arr_51 call_mut_e7_b31(Eurydice_arr_a00 tupled_args)
 {
   Eurydice_arr_a00 s = tupled_args;
   return
-    from_i16_array_d6_84(Eurydice_array_to_subslice_850(&s,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)256U })));
+    from_i16_array_d6_84(Eurydice_array_to_subslice3(&s,
+        (size_t)0U,
+        (size_t)256U,
+        Eurydice_dst_ref_9a));
 }
 
 /**
@@ -3111,13 +3090,10 @@ static KRML_MUSTINLINE libcrux_sha3_Sha3_512Digest
 cpa_keygen_seed_39_be(Eurydice_dst_ref_87 key_generation_seed)
 {
   Eurydice_arr_3e seed = { .data = { 0U } };
-  Eurydice_slice_copy(Eurydice_array_to_subslice_3612(&seed,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&seed,
+      (size_t)0U,
+      LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE,
+      Eurydice_dst_ref_87),
     key_generation_seed,
     uint8_t);
   seed.data[LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE] = (uint8_t)(size_t)3U;
@@ -3231,13 +3207,10 @@ sample_from_binomial_distribution_2_84(Eurydice_dst_ref_87 randomness)
     size_t chunk_number = i0;
     Eurydice_dst_ref_87
     byte_chunk =
-      Eurydice_slice_subslice_7e(randomness,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = chunk_number * (size_t)4U,
-            .end = chunk_number * (size_t)4U + (size_t)4U
-          }
-        ));
+      Eurydice_slice_subslice3(randomness,
+        chunk_number * (size_t)4U,
+        chunk_number * (size_t)4U + (size_t)4U,
+        Eurydice_dst_ref_87);
     uint32_t
     random_bits_as_u32 =
       (((uint32_t)Eurydice_slice_index(byte_chunk, (size_t)0U, uint8_t) |
@@ -3275,13 +3248,10 @@ sample_from_binomial_distribution_3_84(Eurydice_dst_ref_87 randomness)
     size_t chunk_number = i0;
     Eurydice_dst_ref_87
     byte_chunk =
-      Eurydice_slice_subslice_7e(randomness,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = chunk_number * (size_t)3U,
-            .end = chunk_number * (size_t)3U + (size_t)3U
-          }
-        ));
+      Eurydice_slice_subslice3(randomness,
+        chunk_number * (size_t)3U,
+        chunk_number * (size_t)3U + (size_t)3U,
+        Eurydice_dst_ref_87);
     uint32_t
     random_bits_as_u24 =
       ((uint32_t)Eurydice_slice_index(byte_chunk, (size_t)0U, uint8_t) |
@@ -3982,13 +3952,10 @@ libcrux_ml_kem_ind_cca_unpacked_generate_keypair_bb1(
 {
   Eurydice_dst_ref_87
   ind_cpa_keypair_randomness =
-    Eurydice_array_to_subslice_368(&randomness,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE
-        }
-      ));
+    Eurydice_array_to_subslice3(&randomness,
+      (size_t)0U,
+      LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE,
+      Eurydice_dst_ref_87);
   Eurydice_dst_ref_87
   implicit_rejection_value =
     Eurydice_array_to_subslice_from_8c0(&randomness,
@@ -4461,13 +4428,10 @@ static KRML_MUSTINLINE Eurydice_arr_b7 compress_then_serialize_10_0e(Eurydice_ar
     size_t i0 = i;
     __m256i coefficient = compress_f5_ef(to_unsigned_field_modulus_84(re->data[i0]));
     Eurydice_arr_dc bytes = libcrux_ml_kem_vector_avx2_serialize_10_f5(coefficient);
-    Eurydice_slice_copy(Eurydice_array_to_subslice_3613(&serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = (size_t)20U * i0,
-            .end = (size_t)20U * i0 + (size_t)20U
-          }
-        )),
+    Eurydice_slice_copy(Eurydice_array_to_subslice3(&serialized,
+        (size_t)20U * i0,
+        (size_t)20U * i0 + (size_t)20U,
+        Eurydice_dst_ref_87),
       Eurydice_array_to_slice_c2(&bytes),
       uint8_t);
   }
@@ -4573,13 +4537,10 @@ compress_then_serialize_u_8c(Eurydice_arr_260 input, Eurydice_dst_ref_87 out)
     Eurydice_arr_51 re = input.data[i0];
     Eurydice_dst_ref_87
     uu____0 =
-      Eurydice_slice_subslice_7e(out,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 * ((size_t)960U / (size_t)3U),
-            .end = (i0 + (size_t)1U) * ((size_t)960U / (size_t)3U)
-          }
-        ));
+      Eurydice_slice_subslice3(out,
+        i0 * ((size_t)960U / (size_t)3U),
+        (i0 + (size_t)1U) * ((size_t)960U / (size_t)3U),
+        Eurydice_dst_ref_87);
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_b7 lvalue = compress_then_serialize_ring_element_u_a4(&re);
     Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_d3(&lvalue), uint8_t);
@@ -4654,13 +4615,10 @@ deserialize_then_decompress_message_84(Eurydice_arr_60 *serialized)
     size_t i0 = i;
     __m256i
     coefficient_compressed =
-      libcrux_ml_kem_vector_avx2_deserialize_1_f5(Eurydice_array_to_subslice_365(serialized,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = (size_t)2U * i0,
-              .end = (size_t)2U * i0 + (size_t)2U
-            }
-          )));
+      libcrux_ml_kem_vector_avx2_deserialize_1_f5(Eurydice_array_to_subslice3(serialized,
+          (size_t)2U * i0,
+          (size_t)2U * i0 + (size_t)2U,
+          Eurydice_dst_ref_87));
     re.data[i0] = libcrux_ml_kem_vector_avx2_decompress_1_f5(coefficient_compressed););
   return re;
 }
@@ -4816,13 +4774,10 @@ compress_then_serialize_4_84(Eurydice_arr_51 re, Eurydice_dst_ref_87 serialized)
     size_t i0 = i;
     __m256i coefficient = compress_f5_d1(to_unsigned_field_modulus_84(re.data[i0]));
     Eurydice_arr_c4 bytes = libcrux_ml_kem_vector_avx2_serialize_4_f5(coefficient);
-    Eurydice_slice_copy(Eurydice_slice_subslice_7e(serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = (size_t)8U * i0,
-            .end = (size_t)8U * i0 + (size_t)8U
-          }
-        )),
+    Eurydice_slice_copy(Eurydice_slice_subslice3(serialized,
+        (size_t)8U * i0,
+        (size_t)8U * i0 + (size_t)8U,
+        Eurydice_dst_ref_87),
       Eurydice_array_to_slice_41(&bytes),
       uint8_t);
   }
@@ -4905,13 +4860,10 @@ compress_then_serialize_5_84(Eurydice_arr_51 re, Eurydice_dst_ref_87 serialized)
     coefficients =
       compress_f5_f4(libcrux_ml_kem_vector_avx2_to_unsigned_representative_f5(re.data[i0]));
     Eurydice_arr_77 bytes = libcrux_ml_kem_vector_avx2_serialize_5_f5(coefficients);
-    Eurydice_slice_copy(Eurydice_slice_subslice_7e(serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = (size_t)10U * i0,
-            .end = (size_t)10U * i0 + (size_t)10U
-          }
-        )),
+    Eurydice_slice_copy(Eurydice_slice_subslice3(serialized,
+        (size_t)10U * i0,
+        (size_t)10U * i0 + (size_t)10U,
+        Eurydice_dst_ref_87),
       Eurydice_array_to_slice_2f(&bytes),
       uint8_t);
   }
@@ -5024,8 +4976,7 @@ encrypt_unpacked_741(
   uu____0 =
     encrypt_c1_481(randomness,
       &public_key->A,
-      Eurydice_array_to_subslice_3616(&ciphertext,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)960U })));
+      Eurydice_array_to_subslice3(&ciphertext, (size_t)0U, (size_t)960U, Eurydice_dst_ref_87));
   Eurydice_arr_260 r_as_ntt = uu____0.fst;
   Eurydice_arr_51 error_2 = uu____0.snd;
   encrypt_c2_ed(&public_key->t_as_ntt,
@@ -5159,13 +5110,10 @@ deserialize_then_decompress_10_84(Eurydice_dst_ref_87 serialized)
     size_t i0 = i;
     Eurydice_dst_ref_87
     bytes =
-      Eurydice_slice_subslice_7e(serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 * (size_t)20U,
-            .end = i0 * (size_t)20U + (size_t)20U
-          }
-        ));
+      Eurydice_slice_subslice3(serialized,
+        i0 * (size_t)20U,
+        i0 * (size_t)20U + (size_t)20U,
+        Eurydice_dst_ref_87);
     __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_10_f5(bytes);
     re.data[i0] = decompress_ciphertext_coefficient_f5_ef(coefficient);
   }
@@ -5227,13 +5175,10 @@ deserialize_then_decompress_11_84(Eurydice_dst_ref_87 serialized)
     size_t i0 = i;
     Eurydice_dst_ref_87
     bytes =
-      Eurydice_slice_subslice_7e(serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 * (size_t)22U,
-            .end = i0 * (size_t)22U + (size_t)22U
-          }
-        ));
+      Eurydice_slice_subslice3(serialized,
+        i0 * (size_t)22U,
+        i0 * (size_t)22U + (size_t)22U,
+        Eurydice_dst_ref_87);
     __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_11_f5(bytes);
     re.data[i0] = decompress_ciphertext_coefficient_f5_c4(coefficient);
   }
@@ -5306,16 +5251,11 @@ deserialize_then_decompress_u_ed(Eurydice_arr_2c *ciphertext)
     size_t i0 = i;
     Eurydice_dst_ref_87
     u_bytes =
-      Eurydice_array_to_subslice_3616(ciphertext,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 *
-              (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)10U / (size_t)8U),
-            .end = i0 *
-              (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)10U / (size_t)8U)
-            + LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)10U / (size_t)8U
-          }
-        ));
+      Eurydice_array_to_subslice3(ciphertext,
+        i0 * (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)10U / (size_t)8U),
+        i0 * (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)10U / (size_t)8U) +
+          LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)10U / (size_t)8U,
+        Eurydice_dst_ref_87);
     u_as_ntt.data[i0] = deserialize_then_decompress_ring_element_u_ee(u_bytes);
     ntt_vector_u_ee(&u_as_ntt.data[i0]);
   }
@@ -5377,13 +5317,10 @@ deserialize_then_decompress_4_84(Eurydice_dst_ref_87 serialized)
     size_t i0 = i;
     Eurydice_dst_ref_87
     bytes =
-      Eurydice_slice_subslice_7e(serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 * (size_t)8U,
-            .end = i0 * (size_t)8U + (size_t)8U
-          }
-        ));
+      Eurydice_slice_subslice3(serialized,
+        i0 * (size_t)8U,
+        i0 * (size_t)8U + (size_t)8U,
+        Eurydice_dst_ref_87);
     __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_4_f5(bytes);
     re.data[i0] = decompress_ciphertext_coefficient_f5_d1(coefficient);
   }
@@ -5445,13 +5382,10 @@ deserialize_then_decompress_5_84(Eurydice_dst_ref_87 serialized)
     size_t i0 = i;
     Eurydice_dst_ref_87
     bytes =
-      Eurydice_slice_subslice_7e(serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 * (size_t)10U,
-            .end = i0 * (size_t)10U + (size_t)10U
-          }
-        ));
+      Eurydice_slice_subslice3(serialized,
+        i0 * (size_t)10U,
+        i0 * (size_t)10U + (size_t)10U,
+        Eurydice_dst_ref_87);
     re.data[i0] = libcrux_ml_kem_vector_avx2_deserialize_5_f5(bytes);
     re.data[i0] = decompress_ciphertext_coefficient_f5_f4(re.data[i0]);
   }
@@ -5557,13 +5491,10 @@ static KRML_MUSTINLINE Eurydice_arr_60 compress_then_serialize_message_84(Eurydi
     __m256i coefficient = to_unsigned_field_modulus_84(re.data[i0]);
     __m256i coefficient_compressed = libcrux_ml_kem_vector_avx2_compress_1_f5(coefficient);
     Eurydice_arr_8b bytes = libcrux_ml_kem_vector_avx2_serialize_1_f5(coefficient_compressed);
-    Eurydice_slice_copy(Eurydice_array_to_subslice_365(&serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = (size_t)2U * i0,
-            .end = (size_t)2U * i0 + (size_t)2U
-          }
-        )),
+    Eurydice_slice_copy(Eurydice_array_to_subslice3(&serialized,
+        (size_t)2U * i0,
+        (size_t)2U * i0 + (size_t)2U,
+        Eurydice_dst_ref_87),
       Eurydice_array_to_slice_26(&bytes),
       uint8_t););
   return serialized;
@@ -5800,22 +5731,16 @@ bool libcrux_ml_kem_ind_cca_validate_private_key_only_ae(Eurydice_arr_ea *privat
 {
   Eurydice_arr_60
   t =
-    H_41_e0(Eurydice_array_to_subslice_3619(private_key,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = (size_t)384U * (size_t)3U,
-            .end = (size_t)768U * (size_t)3U + (size_t)32U
-          }
-        )));
+    H_41_e0(Eurydice_array_to_subslice3(private_key,
+        (size_t)384U * (size_t)3U,
+        (size_t)768U * (size_t)3U + (size_t)32U,
+        Eurydice_dst_ref_87));
   Eurydice_dst_ref_87
   expected =
-    Eurydice_array_to_subslice_3619(private_key,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)768U * (size_t)3U + (size_t)32U,
-          .end = (size_t)768U * (size_t)3U + (size_t)64U
-        }
-      ));
+    Eurydice_array_to_subslice3(private_key,
+      (size_t)768U * (size_t)3U + (size_t)32U,
+      (size_t)768U * (size_t)3U + (size_t)64U,
+      Eurydice_dst_ref_87);
   return Eurydice_array_eq_slice((size_t)32U, &t, &expected, uint8_t, bool);
 }
 
@@ -5884,38 +5809,29 @@ serialize_kem_secret_key_mut_ae(
   Eurydice_arr_ea *uu____0 = serialized;
   size_t uu____1 = pointer;
   size_t uu____2 = pointer;
-  Eurydice_slice_copy(Eurydice_array_to_subslice_3619(uu____0,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = uu____1,
-          .end = uu____2 + Eurydice_slice_len(private_key, uint8_t)
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(uu____0,
+      uu____1,
+      uu____2 + Eurydice_slice_len(private_key, uint8_t),
+      Eurydice_dst_ref_87),
     private_key,
     uint8_t);
   pointer = pointer + Eurydice_slice_len(private_key, uint8_t);
   Eurydice_arr_ea *uu____3 = serialized;
   size_t uu____4 = pointer;
   size_t uu____5 = pointer;
-  Eurydice_slice_copy(Eurydice_array_to_subslice_3619(uu____3,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = uu____4,
-          .end = uu____5 + Eurydice_slice_len(public_key, uint8_t)
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(uu____3,
+      uu____4,
+      uu____5 + Eurydice_slice_len(public_key, uint8_t),
+      Eurydice_dst_ref_87),
     public_key,
     uint8_t);
   pointer = pointer + Eurydice_slice_len(public_key, uint8_t);
   Eurydice_dst_ref_87
   uu____6 =
-    Eurydice_array_to_subslice_3619(serialized,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = pointer,
-          .end = pointer + LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE
-        }
-      ));
+    Eurydice_array_to_subslice3(serialized,
+      pointer,
+      pointer + LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE,
+      Eurydice_dst_ref_87);
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_60 lvalue = H_41_e0(public_key);
   Eurydice_slice_copy(uu____6, Eurydice_array_to_slice_6e(&lvalue), uint8_t);
@@ -5923,13 +5839,10 @@ serialize_kem_secret_key_mut_ae(
   Eurydice_arr_ea *uu____7 = serialized;
   size_t uu____8 = pointer;
   size_t uu____9 = pointer;
-  Eurydice_slice_copy(Eurydice_array_to_subslice_3619(uu____7,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = uu____8,
-          .end = uu____9 + Eurydice_slice_len(implicit_rejection_value, uint8_t)
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(uu____7,
+      uu____8,
+      uu____9 + Eurydice_slice_len(implicit_rejection_value, uint8_t),
+      Eurydice_dst_ref_87),
     implicit_rejection_value,
     uint8_t);
 }
@@ -5977,13 +5890,10 @@ libcrux_ml_kem_ind_cca_generate_keypair_bb1(libcrux_sha3_Sha3_512Digest *randomn
 {
   Eurydice_dst_ref_87
   ind_cpa_keypair_randomness =
-    Eurydice_array_to_subslice_368(randomness,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE
-        }
-      ));
+    Eurydice_array_to_subslice3(randomness,
+      (size_t)0U,
+      LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE,
+      Eurydice_dst_ref_87);
   Eurydice_dst_ref_87
   implicit_rejection_value =
     Eurydice_array_to_subslice_from_8c0(randomness,
@@ -6295,14 +6205,11 @@ deserialize_ring_elements_reduced_42(
     size_t i0 = i;
     Eurydice_dst_ref_87
     ring_element =
-      Eurydice_slice_subslice_7e(public_key,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-            .end = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
-              LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT
-          }
-        ));
+      Eurydice_slice_subslice3(public_key,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
+          LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        Eurydice_dst_ref_87);
     Eurydice_arr_51 uu____0 = deserialize_to_reduced_ring_element_84(ring_element);
     deserialized_pk->data[i0] = uu____0;
   }
@@ -6444,20 +6351,14 @@ sample_from_uniform_distribution_next_78(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_3610(&randomness->data[i1],
-              (
-                KRML_CLITERAL(core_ops_range_Range_08){
-                  .start = r * (size_t)24U,
-                  .end = r * (size_t)24U + (size_t)24U
-                }
-              )),
-            Eurydice_array_to_subslice_850(&out->data[i1],
-              (
-                KRML_CLITERAL(core_ops_range_Range_08){
-                  .start = sampled_coefficients->data[i1],
-                  .end = sampled_coefficients->data[i1] + (size_t)16U
-                }
-              )));
+          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice3(&randomness->data[i1],
+              r * (size_t)24U,
+              r * (size_t)24U + (size_t)24U,
+              Eurydice_dst_ref_87),
+            Eurydice_array_to_subslice3(&out->data[i1],
+              sampled_coefficients->data[i1],
+              sampled_coefficients->data[i1] + (size_t)16U,
+              Eurydice_dst_ref_9a));
         size_t uu____0 = i1;
         sampled_coefficients->data[uu____0] = sampled_coefficients->data[uu____0] + sampled;
       }
@@ -6584,20 +6485,14 @@ sample_from_uniform_distribution_next_780(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_362(&randomness->data[i1],
-              (
-                KRML_CLITERAL(core_ops_range_Range_08){
-                  .start = r * (size_t)24U,
-                  .end = r * (size_t)24U + (size_t)24U
-                }
-              )),
-            Eurydice_array_to_subslice_850(&out->data[i1],
-              (
-                KRML_CLITERAL(core_ops_range_Range_08){
-                  .start = sampled_coefficients->data[i1],
-                  .end = sampled_coefficients->data[i1] + (size_t)16U
-                }
-              )));
+          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice3(&randomness->data[i1],
+              r * (size_t)24U,
+              r * (size_t)24U + (size_t)24U,
+              Eurydice_dst_ref_87),
+            Eurydice_array_to_subslice3(&out->data[i1],
+              sampled_coefficients->data[i1],
+              sampled_coefficients->data[i1] + (size_t)16U,
+              Eurydice_dst_ref_9a));
         size_t uu____0 = i1;
         sampled_coefficients->data[uu____0] = sampled_coefficients->data[uu____0] + sampled;
       }
@@ -6632,8 +6527,10 @@ static Eurydice_arr_51 call_mut_e7_6c0(Eurydice_arr_a00 tupled_args)
 {
   Eurydice_arr_a00 s = tupled_args;
   return
-    from_i16_array_d6_84(Eurydice_array_to_subslice_850(&s,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)256U })));
+    from_i16_array_d6_84(Eurydice_array_to_subslice3(&s,
+        (size_t)0U,
+        (size_t)256U,
+        Eurydice_dst_ref_9a));
 }
 
 /**
@@ -6809,13 +6706,10 @@ static KRML_MUSTINLINE void serialize_vector_42(Eurydice_arr_4c *key, Eurydice_d
     Eurydice_arr_51 re = key->data[i0];
     Eurydice_dst_ref_87
     uu____0 =
-      Eurydice_slice_subslice_7e(out,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-            .end = (i0 + (size_t)1U) * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT
-          }
-        ));
+      Eurydice_slice_subslice3(out,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        (i0 + (size_t)1U) * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        Eurydice_dst_ref_87);
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_cc lvalue = serialize_uncompressed_ring_element_84(&re);
     Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_fe(&lvalue), uint8_t);
@@ -6840,13 +6734,10 @@ serialize_public_key_mut_78(
 )
 {
   serialize_vector_42(t_as_ntt,
-    Eurydice_array_to_subslice_3620(serialized,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)4U)
-        }
-      )));
+    Eurydice_array_to_subslice3(serialized,
+      (size_t)0U,
+      libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)4U),
+      Eurydice_dst_ref_87));
   Eurydice_slice_copy(Eurydice_array_to_subslice_from_8c5(serialized,
       libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)4U)),
     seed_for_a,
@@ -7050,13 +6941,10 @@ deserialize_vector_42(Eurydice_dst_ref_87 secret_key, Eurydice_arr_4c *secret_as
     size_t i0 = i;
     Eurydice_arr_51
     uu____0 =
-      deserialize_to_uncompressed_ring_element_84(Eurydice_slice_subslice_7e(secret_key,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-              .end = (i0 + (size_t)1U) * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT
-            }
-          )));
+      deserialize_to_uncompressed_ring_element_84(Eurydice_slice_subslice3(secret_key,
+          i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+          (i0 + (size_t)1U) * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+          Eurydice_dst_ref_87));
     secret_as_ntt->data[i0] = uu____0;);
 }
 
@@ -7073,8 +6961,10 @@ static Eurydice_arr_51 call_mut_e7_b30(Eurydice_arr_a00 tupled_args)
 {
   Eurydice_arr_a00 s = tupled_args;
   return
-    from_i16_array_d6_84(Eurydice_array_to_subslice_850(&s,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)256U })));
+    from_i16_array_d6_84(Eurydice_array_to_subslice3(&s,
+        (size_t)0U,
+        (size_t)256U,
+        Eurydice_dst_ref_9a));
 }
 
 /**
@@ -7355,13 +7245,10 @@ static KRML_MUSTINLINE libcrux_sha3_Sha3_512Digest
 cpa_keygen_seed_39_6a(Eurydice_dst_ref_87 key_generation_seed)
 {
   Eurydice_arr_3e seed = { .data = { 0U } };
-  Eurydice_slice_copy(Eurydice_array_to_subslice_3612(&seed,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&seed,
+      (size_t)0U,
+      LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE,
+      Eurydice_dst_ref_87),
     key_generation_seed,
     uint8_t);
   seed.data[LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE] = (uint8_t)(size_t)4U;
@@ -7747,13 +7634,10 @@ libcrux_ml_kem_ind_cca_unpacked_generate_keypair_bb0(
 {
   Eurydice_dst_ref_87
   ind_cpa_keypair_randomness =
-    Eurydice_array_to_subslice_368(&randomness,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE
-        }
-      ));
+    Eurydice_array_to_subslice3(&randomness,
+      (size_t)0U,
+      LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE,
+      Eurydice_dst_ref_87);
   Eurydice_dst_ref_87
   implicit_rejection_value =
     Eurydice_array_to_subslice_from_8c0(&randomness,
@@ -8007,13 +7891,10 @@ static KRML_MUSTINLINE Eurydice_arr_79 compress_then_serialize_11_0e0(Eurydice_a
     coefficient =
       compress_f5_c4(libcrux_ml_kem_vector_avx2_to_unsigned_representative_f5(re->data[i0]));
     Eurydice_arr_f3 bytes = libcrux_ml_kem_vector_avx2_serialize_11_f5(coefficient);
-    Eurydice_slice_copy(Eurydice_array_to_subslice_3622(&serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = (size_t)22U * i0,
-            .end = (size_t)22U * i0 + (size_t)22U
-          }
-        )),
+    Eurydice_slice_copy(Eurydice_array_to_subslice3(&serialized,
+        (size_t)22U * i0,
+        (size_t)22U * i0 + (size_t)22U,
+        Eurydice_dst_ref_87),
       Eurydice_array_to_slice_ad(&bytes),
       uint8_t);
   }
@@ -8058,13 +7939,10 @@ compress_then_serialize_u_c9(Eurydice_arr_4c input, Eurydice_dst_ref_87 out)
     Eurydice_arr_51 re = input.data[i0];
     Eurydice_dst_ref_87
     uu____0 =
-      Eurydice_slice_subslice_7e(out,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 * ((size_t)1408U / (size_t)4U),
-            .end = (i0 + (size_t)1U) * ((size_t)1408U / (size_t)4U)
-          }
-        ));
+      Eurydice_slice_subslice3(out,
+        i0 * ((size_t)1408U / (size_t)4U),
+        (i0 + (size_t)1U) * ((size_t)1408U / (size_t)4U),
+        Eurydice_dst_ref_87);
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_79 lvalue = compress_then_serialize_ring_element_u_6f(&re);
     Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_89(&lvalue), uint8_t);
@@ -8258,8 +8136,7 @@ encrypt_unpacked_740(
   uu____0 =
     encrypt_c1_480(randomness,
       &public_key->A,
-      Eurydice_array_to_subslice_3620(&ciphertext,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)1408U })));
+      Eurydice_array_to_subslice3(&ciphertext, (size_t)0U, (size_t)1408U, Eurydice_dst_ref_87));
   Eurydice_arr_4c r_as_ntt = uu____0.fst;
   Eurydice_arr_51 error_2 = uu____0.snd;
   encrypt_c2_1e(&public_key->t_as_ntt,
@@ -8404,16 +8281,11 @@ deserialize_then_decompress_u_1e(Eurydice_arr_00 *ciphertext)
     size_t i0 = i;
     Eurydice_dst_ref_87
     u_bytes =
-      Eurydice_array_to_subslice_3620(ciphertext,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 *
-              (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)11U / (size_t)8U),
-            .end = i0 *
-              (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)11U / (size_t)8U)
-            + LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)11U / (size_t)8U
-          }
-        ));
+      Eurydice_array_to_subslice3(ciphertext,
+        i0 * (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)11U / (size_t)8U),
+        i0 * (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)11U / (size_t)8U) +
+          LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)11U / (size_t)8U,
+        Eurydice_dst_ref_87);
     u_as_ntt.data[i0] = deserialize_then_decompress_ring_element_u_85(u_bytes);
     ntt_vector_u_85(&u_as_ntt.data[i0]);
   }
@@ -8683,22 +8555,16 @@ bool libcrux_ml_kem_ind_cca_validate_private_key_only_5e(Eurydice_arr_17 *privat
 {
   Eurydice_arr_60
   t =
-    H_41_ac(Eurydice_array_to_subslice_3623(private_key,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = (size_t)384U * (size_t)4U,
-            .end = (size_t)768U * (size_t)4U + (size_t)32U
-          }
-        )));
+    H_41_ac(Eurydice_array_to_subslice3(private_key,
+        (size_t)384U * (size_t)4U,
+        (size_t)768U * (size_t)4U + (size_t)32U,
+        Eurydice_dst_ref_87));
   Eurydice_dst_ref_87
   expected =
-    Eurydice_array_to_subslice_3623(private_key,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)768U * (size_t)4U + (size_t)32U,
-          .end = (size_t)768U * (size_t)4U + (size_t)64U
-        }
-      ));
+    Eurydice_array_to_subslice3(private_key,
+      (size_t)768U * (size_t)4U + (size_t)32U,
+      (size_t)768U * (size_t)4U + (size_t)64U,
+      Eurydice_dst_ref_87);
   return Eurydice_array_eq_slice((size_t)32U, &t, &expected, uint8_t, bool);
 }
 
@@ -8767,38 +8633,29 @@ serialize_kem_secret_key_mut_5e(
   Eurydice_arr_17 *uu____0 = serialized;
   size_t uu____1 = pointer;
   size_t uu____2 = pointer;
-  Eurydice_slice_copy(Eurydice_array_to_subslice_3623(uu____0,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = uu____1,
-          .end = uu____2 + Eurydice_slice_len(private_key, uint8_t)
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(uu____0,
+      uu____1,
+      uu____2 + Eurydice_slice_len(private_key, uint8_t),
+      Eurydice_dst_ref_87),
     private_key,
     uint8_t);
   pointer = pointer + Eurydice_slice_len(private_key, uint8_t);
   Eurydice_arr_17 *uu____3 = serialized;
   size_t uu____4 = pointer;
   size_t uu____5 = pointer;
-  Eurydice_slice_copy(Eurydice_array_to_subslice_3623(uu____3,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = uu____4,
-          .end = uu____5 + Eurydice_slice_len(public_key, uint8_t)
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(uu____3,
+      uu____4,
+      uu____5 + Eurydice_slice_len(public_key, uint8_t),
+      Eurydice_dst_ref_87),
     public_key,
     uint8_t);
   pointer = pointer + Eurydice_slice_len(public_key, uint8_t);
   Eurydice_dst_ref_87
   uu____6 =
-    Eurydice_array_to_subslice_3623(serialized,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = pointer,
-          .end = pointer + LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE
-        }
-      ));
+    Eurydice_array_to_subslice3(serialized,
+      pointer,
+      pointer + LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE,
+      Eurydice_dst_ref_87);
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_60 lvalue = H_41_ac(public_key);
   Eurydice_slice_copy(uu____6, Eurydice_array_to_slice_6e(&lvalue), uint8_t);
@@ -8806,13 +8663,10 @@ serialize_kem_secret_key_mut_5e(
   Eurydice_arr_17 *uu____7 = serialized;
   size_t uu____8 = pointer;
   size_t uu____9 = pointer;
-  Eurydice_slice_copy(Eurydice_array_to_subslice_3623(uu____7,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = uu____8,
-          .end = uu____9 + Eurydice_slice_len(implicit_rejection_value, uint8_t)
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(uu____7,
+      uu____8,
+      uu____9 + Eurydice_slice_len(implicit_rejection_value, uint8_t),
+      Eurydice_dst_ref_87),
     implicit_rejection_value,
     uint8_t);
 }
@@ -8860,13 +8714,10 @@ libcrux_ml_kem_ind_cca_generate_keypair_bb0(libcrux_sha3_Sha3_512Digest *randomn
 {
   Eurydice_dst_ref_87
   ind_cpa_keypair_randomness =
-    Eurydice_array_to_subslice_368(randomness,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE
-        }
-      ));
+    Eurydice_array_to_subslice3(randomness,
+      (size_t)0U,
+      LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE,
+      Eurydice_dst_ref_87);
   Eurydice_dst_ref_87
   implicit_rejection_value =
     Eurydice_array_to_subslice_from_8c0(randomness,
@@ -9178,14 +9029,11 @@ deserialize_ring_elements_reduced_89(
     size_t i0 = i;
     Eurydice_dst_ref_87
     ring_element =
-      Eurydice_slice_subslice_7e(public_key,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-            .end = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
-              LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT
-          }
-        ));
+      Eurydice_slice_subslice3(public_key,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT +
+          LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        Eurydice_dst_ref_87);
     Eurydice_arr_51 uu____0 = deserialize_to_reduced_ring_element_84(ring_element);
     deserialized_pk->data[i0] = uu____0;
   }
@@ -9323,20 +9171,14 @@ sample_from_uniform_distribution_next_29(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_3610(&randomness->data[i1],
-              (
-                KRML_CLITERAL(core_ops_range_Range_08){
-                  .start = r * (size_t)24U,
-                  .end = r * (size_t)24U + (size_t)24U
-                }
-              )),
-            Eurydice_array_to_subslice_850(&out->data[i1],
-              (
-                KRML_CLITERAL(core_ops_range_Range_08){
-                  .start = sampled_coefficients->data[i1],
-                  .end = sampled_coefficients->data[i1] + (size_t)16U
-                }
-              )));
+          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice3(&randomness->data[i1],
+              r * (size_t)24U,
+              r * (size_t)24U + (size_t)24U,
+              Eurydice_dst_ref_87),
+            Eurydice_array_to_subslice3(&out->data[i1],
+              sampled_coefficients->data[i1],
+              sampled_coefficients->data[i1] + (size_t)16U,
+              Eurydice_dst_ref_9a));
         size_t uu____0 = i1;
         sampled_coefficients->data[uu____0] = sampled_coefficients->data[uu____0] + sampled;
       }
@@ -9459,20 +9301,14 @@ sample_from_uniform_distribution_next_290(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_362(&randomness->data[i1],
-              (
-                KRML_CLITERAL(core_ops_range_Range_08){
-                  .start = r * (size_t)24U,
-                  .end = r * (size_t)24U + (size_t)24U
-                }
-              )),
-            Eurydice_array_to_subslice_850(&out->data[i1],
-              (
-                KRML_CLITERAL(core_ops_range_Range_08){
-                  .start = sampled_coefficients->data[i1],
-                  .end = sampled_coefficients->data[i1] + (size_t)16U
-                }
-              )));
+          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice3(&randomness->data[i1],
+              r * (size_t)24U,
+              r * (size_t)24U + (size_t)24U,
+              Eurydice_dst_ref_87),
+            Eurydice_array_to_subslice3(&out->data[i1],
+              sampled_coefficients->data[i1],
+              sampled_coefficients->data[i1] + (size_t)16U,
+              Eurydice_dst_ref_9a));
         size_t uu____0 = i1;
         sampled_coefficients->data[uu____0] = sampled_coefficients->data[uu____0] + sampled;
       }
@@ -9507,8 +9343,10 @@ static Eurydice_arr_51 call_mut_e7_6c(Eurydice_arr_a00 tupled_args)
 {
   Eurydice_arr_a00 s = tupled_args;
   return
-    from_i16_array_d6_84(Eurydice_array_to_subslice_850(&s,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)256U })));
+    from_i16_array_d6_84(Eurydice_array_to_subslice3(&s,
+        (size_t)0U,
+        (size_t)256U,
+        Eurydice_dst_ref_9a));
 }
 
 /**
@@ -9682,13 +9520,10 @@ static KRML_MUSTINLINE void serialize_vector_89(Eurydice_arr_36 *key, Eurydice_d
     Eurydice_arr_51 re = key->data[i0];
     Eurydice_dst_ref_87
     uu____0 =
-      Eurydice_slice_subslice_7e(out,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-            .end = (i0 + (size_t)1U) * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT
-          }
-        ));
+      Eurydice_slice_subslice3(out,
+        i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        (i0 + (size_t)1U) * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+        Eurydice_dst_ref_87);
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_cc lvalue = serialize_uncompressed_ring_element_84(&re);
     Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_fe(&lvalue), uint8_t);
@@ -9713,13 +9548,10 @@ serialize_public_key_mut_29(
 )
 {
   serialize_vector_89(t_as_ntt,
-    Eurydice_array_to_subslice_369(serialized,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)2U)
-        }
-      )));
+    Eurydice_array_to_subslice3(serialized,
+      (size_t)0U,
+      libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)2U),
+      Eurydice_dst_ref_87));
   Eurydice_slice_copy(Eurydice_array_to_subslice_from_8c1(serialized,
       libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)2U)),
     seed_for_a,
@@ -9923,13 +9755,10 @@ deserialize_vector_89(Eurydice_dst_ref_87 secret_key, Eurydice_arr_36 *secret_as
     size_t i0 = i;
     Eurydice_arr_51
     uu____0 =
-      deserialize_to_uncompressed_ring_element_84(Eurydice_slice_subslice_7e(secret_key,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
-              .end = (i0 + (size_t)1U) * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT
-            }
-          )));
+      deserialize_to_uncompressed_ring_element_84(Eurydice_slice_subslice3(secret_key,
+          i0 * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+          (i0 + (size_t)1U) * LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT,
+          Eurydice_dst_ref_87));
     secret_as_ntt->data[i0] = uu____0;);
 }
 
@@ -9946,8 +9775,10 @@ static Eurydice_arr_51 call_mut_e7_b3(Eurydice_arr_a00 tupled_args)
 {
   Eurydice_arr_a00 s = tupled_args;
   return
-    from_i16_array_d6_84(Eurydice_array_to_subslice_850(&s,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)256U })));
+    from_i16_array_d6_84(Eurydice_array_to_subslice3(&s,
+        (size_t)0U,
+        (size_t)256U,
+        Eurydice_dst_ref_9a));
 }
 
 /**
@@ -10225,13 +10056,10 @@ static KRML_MUSTINLINE libcrux_sha3_Sha3_512Digest
 cpa_keygen_seed_39_f8(Eurydice_dst_ref_87 key_generation_seed)
 {
   Eurydice_arr_3e seed = { .data = { 0U } };
-  Eurydice_slice_copy(Eurydice_array_to_subslice_3612(&seed,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&seed,
+      (size_t)0U,
+      LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE,
+      Eurydice_dst_ref_87),
     key_generation_seed,
     uint8_t);
   seed.data[LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE] = (uint8_t)(size_t)2U;
@@ -10625,13 +10453,10 @@ libcrux_ml_kem_ind_cca_unpacked_generate_keypair_bb(
 {
   Eurydice_dst_ref_87
   ind_cpa_keypair_randomness =
-    Eurydice_array_to_subslice_368(&randomness,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE
-        }
-      ));
+    Eurydice_array_to_subslice3(&randomness,
+      (size_t)0U,
+      LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE,
+      Eurydice_dst_ref_87);
   Eurydice_dst_ref_87
   implicit_rejection_value =
     Eurydice_array_to_subslice_from_8c0(&randomness,
@@ -10934,13 +10759,10 @@ compress_then_serialize_u_2d(Eurydice_arr_36 input, Eurydice_dst_ref_87 out)
     Eurydice_arr_51 re = input.data[i0];
     Eurydice_dst_ref_87
     uu____0 =
-      Eurydice_slice_subslice_7e(out,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 * ((size_t)640U / (size_t)2U),
-            .end = (i0 + (size_t)1U) * ((size_t)640U / (size_t)2U)
-          }
-        ));
+      Eurydice_slice_subslice3(out,
+        i0 * ((size_t)640U / (size_t)2U),
+        (i0 + (size_t)1U) * ((size_t)640U / (size_t)2U),
+        Eurydice_dst_ref_87);
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_b7 lvalue = compress_then_serialize_ring_element_u_a4(&re);
     Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_d3(&lvalue), uint8_t);
@@ -11133,8 +10955,7 @@ encrypt_unpacked_74(
   uu____0 =
     encrypt_c1_48(randomness,
       &public_key->A,
-      Eurydice_array_to_subslice_367(&ciphertext,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)640U })));
+      Eurydice_array_to_subslice3(&ciphertext, (size_t)0U, (size_t)640U, Eurydice_dst_ref_87));
   Eurydice_arr_36 r_as_ntt = uu____0.fst;
   Eurydice_arr_51 error_2 = uu____0.snd;
   encrypt_c2_ba(&public_key->t_as_ntt,
@@ -11245,16 +11066,11 @@ deserialize_then_decompress_u_ba(Eurydice_arr_56 *ciphertext)
     size_t i0 = i;
     Eurydice_dst_ref_87
     u_bytes =
-      Eurydice_array_to_subslice_367(ciphertext,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = i0 *
-              (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)10U / (size_t)8U),
-            .end = i0 *
-              (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)10U / (size_t)8U)
-            + LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)10U / (size_t)8U
-          }
-        ));
+      Eurydice_array_to_subslice3(ciphertext,
+        i0 * (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)10U / (size_t)8U),
+        i0 * (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)10U / (size_t)8U) +
+          LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)10U / (size_t)8U,
+        Eurydice_dst_ref_87);
     u_as_ntt.data[i0] = deserialize_then_decompress_ring_element_u_ee(u_bytes);
     ntt_vector_u_ee(&u_as_ntt.data[i0]);
   }
@@ -11524,22 +11340,16 @@ bool libcrux_ml_kem_ind_cca_validate_private_key_only_4d(Eurydice_arr_7f *privat
 {
   Eurydice_arr_60
   t =
-    H_41_fd(Eurydice_array_to_subslice_3615(private_key,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = (size_t)384U * (size_t)2U,
-            .end = (size_t)768U * (size_t)2U + (size_t)32U
-          }
-        )));
+    H_41_fd(Eurydice_array_to_subslice3(private_key,
+        (size_t)384U * (size_t)2U,
+        (size_t)768U * (size_t)2U + (size_t)32U,
+        Eurydice_dst_ref_87));
   Eurydice_dst_ref_87
   expected =
-    Eurydice_array_to_subslice_3615(private_key,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)768U * (size_t)2U + (size_t)32U,
-          .end = (size_t)768U * (size_t)2U + (size_t)64U
-        }
-      ));
+    Eurydice_array_to_subslice3(private_key,
+      (size_t)768U * (size_t)2U + (size_t)32U,
+      (size_t)768U * (size_t)2U + (size_t)64U,
+      Eurydice_dst_ref_87);
   return Eurydice_array_eq_slice((size_t)32U, &t, &expected, uint8_t, bool);
 }
 
@@ -11608,38 +11418,29 @@ serialize_kem_secret_key_mut_4d(
   Eurydice_arr_7f *uu____0 = serialized;
   size_t uu____1 = pointer;
   size_t uu____2 = pointer;
-  Eurydice_slice_copy(Eurydice_array_to_subslice_3615(uu____0,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = uu____1,
-          .end = uu____2 + Eurydice_slice_len(private_key, uint8_t)
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(uu____0,
+      uu____1,
+      uu____2 + Eurydice_slice_len(private_key, uint8_t),
+      Eurydice_dst_ref_87),
     private_key,
     uint8_t);
   pointer = pointer + Eurydice_slice_len(private_key, uint8_t);
   Eurydice_arr_7f *uu____3 = serialized;
   size_t uu____4 = pointer;
   size_t uu____5 = pointer;
-  Eurydice_slice_copy(Eurydice_array_to_subslice_3615(uu____3,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = uu____4,
-          .end = uu____5 + Eurydice_slice_len(public_key, uint8_t)
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(uu____3,
+      uu____4,
+      uu____5 + Eurydice_slice_len(public_key, uint8_t),
+      Eurydice_dst_ref_87),
     public_key,
     uint8_t);
   pointer = pointer + Eurydice_slice_len(public_key, uint8_t);
   Eurydice_dst_ref_87
   uu____6 =
-    Eurydice_array_to_subslice_3615(serialized,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = pointer,
-          .end = pointer + LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE
-        }
-      ));
+    Eurydice_array_to_subslice3(serialized,
+      pointer,
+      pointer + LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE,
+      Eurydice_dst_ref_87);
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_60 lvalue = H_41_fd(public_key);
   Eurydice_slice_copy(uu____6, Eurydice_array_to_slice_6e(&lvalue), uint8_t);
@@ -11647,13 +11448,10 @@ serialize_kem_secret_key_mut_4d(
   Eurydice_arr_7f *uu____7 = serialized;
   size_t uu____8 = pointer;
   size_t uu____9 = pointer;
-  Eurydice_slice_copy(Eurydice_array_to_subslice_3615(uu____7,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = uu____8,
-          .end = uu____9 + Eurydice_slice_len(implicit_rejection_value, uint8_t)
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(uu____7,
+      uu____8,
+      uu____9 + Eurydice_slice_len(implicit_rejection_value, uint8_t),
+      Eurydice_dst_ref_87),
     implicit_rejection_value,
     uint8_t);
 }
@@ -11701,13 +11499,10 @@ libcrux_ml_kem_ind_cca_generate_keypair_bb(libcrux_sha3_Sha3_512Digest *randomne
 {
   Eurydice_dst_ref_87
   ind_cpa_keypair_randomness =
-    Eurydice_array_to_subslice_368(randomness,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE
-        }
-      ));
+    Eurydice_array_to_subslice3(randomness,
+      (size_t)0U,
+      LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE,
+      Eurydice_dst_ref_87);
   Eurydice_dst_ref_87
   implicit_rejection_value =
     Eurydice_array_to_subslice_from_8c0(randomness,

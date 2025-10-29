@@ -10,16 +10,6 @@
 #include "internal/Eurydice.h"
 
 /**
-A monomorphic instance of Eurydice.slice_subslice
-with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
-
-*/
-static Eurydice_dst_ref_87 slice_subslice_7e(Eurydice_dst_ref_87 s, core_ops_range_Range_08 r)
-{
-  return (KRML_CLITERAL(Eurydice_dst_ref_87){ .ptr = s.ptr + r.start, .meta = r.end - r.start });
-}
-
-/**
 A monomorphic instance of Eurydice.array_to_slice
 with types uint8_t
 with const generics
@@ -77,13 +67,10 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
       {
         Eurydice_dst_ref_87
         uu____0 =
-          slice_subslice_7e(dst,
-            (
-              KRML_CLITERAL(core_ops_range_Range_08){
-                .start = cbDstWritten,
-                .end = cbDstWritten + (size_t)4U
-              }
-            ));
+          Eurydice_slice_subslice3(dst,
+            cbDstWritten,
+            cbDstWritten + (size_t)4U,
+            Eurydice_dst_ref_87);
         /* original Rust expression is not an lvalue in C */
         Eurydice_arr_e9 lvalue = core_num__u32__to_le_bytes(accumulator);
         Eurydice_slice_copy(uu____0, array_to_slice_60(&lvalue), uint8_t);

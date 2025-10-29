@@ -604,19 +604,6 @@ Eurydice_dst_ref_87 Eurydice_array_to_subslice_from_8c6(Eurydice_arr_e7 *a, size
 }
 
 /**
-A monomorphic instance of Eurydice.array_to_subslice
-with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
-with const generics
-- N= 1600
-*/
-static Eurydice_dst_ref_87
-array_to_subslice_3621(Eurydice_arr_e7 *a, core_ops_range_Range_08 r)
-{
-  return
-    (KRML_CLITERAL(Eurydice_dst_ref_87){ .ptr = a->data + r.start, .meta = r.end - r.start });
-}
-
-/**
  Pad the `slice` with `0`s at the end.
 */
 /**
@@ -628,13 +615,10 @@ Eurydice_arr_e7 libcrux_ml_kem_utils_into_padded_array_7f(Eurydice_dst_ref_87 sl
 {
   Eurydice_arr_e7 out = { .data = { 0U } };
   Eurydice_arr_e7 *uu____0 = &out;
-  Eurydice_slice_copy(array_to_subslice_3621(uu____0,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = Eurydice_slice_len(slice, uint8_t)
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(uu____0,
+      (size_t)0U,
+      Eurydice_slice_len(slice, uint8_t),
+      Eurydice_dst_ref_87),
     slice,
     uint8_t);
   return out;
@@ -970,19 +954,6 @@ Eurydice_dst_ref_87 Eurydice_array_to_subslice_from_8c3(Eurydice_arr_480 *a, siz
 }
 
 /**
-A monomorphic instance of Eurydice.array_to_subslice
-with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
-with const generics
-- N= 1120
-*/
-static Eurydice_dst_ref_87
-array_to_subslice_3617(Eurydice_arr_480 *a, core_ops_range_Range_08 r)
-{
-  return
-    (KRML_CLITERAL(Eurydice_dst_ref_87){ .ptr = a->data + r.start, .meta = r.end - r.start });
-}
-
-/**
  Pad the `slice` with `0`s at the end.
 */
 /**
@@ -994,13 +965,10 @@ Eurydice_arr_480 libcrux_ml_kem_utils_into_padded_array_15(Eurydice_dst_ref_87 s
 {
   Eurydice_arr_480 out = { .data = { 0U } };
   Eurydice_arr_480 *uu____0 = &out;
-  Eurydice_slice_copy(array_to_subslice_3617(uu____0,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = Eurydice_slice_len(slice, uint8_t)
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(uu____0,
+      (size_t)0U,
+      Eurydice_slice_len(slice, uint8_t),
+      Eurydice_dst_ref_87),
     slice,
     uint8_t);
   return out;
@@ -1118,13 +1086,10 @@ Eurydice_arr_60 libcrux_ml_kem_utils_into_padded_array_9e(Eurydice_dst_ref_87 sl
 {
   Eurydice_arr_60 out = { .data = { 0U } };
   Eurydice_arr_60 *uu____0 = &out;
-  Eurydice_slice_copy(Eurydice_array_to_subslice_365(uu____0,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = Eurydice_slice_len(slice, uint8_t)
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(uu____0,
+      (size_t)0U,
+      Eurydice_slice_len(slice, uint8_t),
+      Eurydice_dst_ref_87),
     slice,
     uint8_t);
   return out;
@@ -1480,29 +1445,13 @@ Eurydice_arr_3e libcrux_ml_kem_utils_into_padded_array_c8(Eurydice_dst_ref_87 sl
 {
   Eurydice_arr_3e out = { .data = { 0U } };
   Eurydice_arr_3e *uu____0 = &out;
-  Eurydice_slice_copy(Eurydice_array_to_subslice_3612(uu____0,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = Eurydice_slice_len(slice, uint8_t)
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(uu____0,
+      (size_t)0U,
+      Eurydice_slice_len(slice, uint8_t),
+      Eurydice_dst_ref_87),
     slice,
     uint8_t);
   return out;
-}
-
-/**
-A monomorphic instance of Eurydice.array_to_subslice
-with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
-with const generics
-- N= 34
-*/
-static Eurydice_dst_ref_87
-array_to_subslice_3611(Eurydice_arr_48 *a, core_ops_range_Range_08 r)
-{
-  return
-    (KRML_CLITERAL(Eurydice_dst_ref_87){ .ptr = a->data + r.start, .meta = r.end - r.start });
 }
 
 /**
@@ -1517,13 +1466,10 @@ Eurydice_arr_48 libcrux_ml_kem_utils_into_padded_array_b6(Eurydice_dst_ref_87 sl
 {
   Eurydice_arr_48 out = { .data = { 0U } };
   Eurydice_arr_48 *uu____0 = &out;
-  Eurydice_slice_copy(array_to_subslice_3611(uu____0,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = Eurydice_slice_len(slice, uint8_t)
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(uu____0,
+      (size_t)0U,
+      Eurydice_slice_len(slice, uint8_t),
+      Eurydice_dst_ref_87),
     slice,
     uint8_t);
   return out;
@@ -1680,13 +1626,10 @@ Eurydice_arr_30 libcrux_ml_kem_utils_into_padded_array_4d(Eurydice_dst_ref_87 sl
 {
   Eurydice_arr_30 out = { .data = { 0U } };
   Eurydice_arr_30 *uu____0 = &out;
-  Eurydice_slice_copy(Eurydice_array_to_subslice_369(uu____0,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = Eurydice_slice_len(slice, uint8_t)
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(uu____0,
+      (size_t)0U,
+      Eurydice_slice_len(slice, uint8_t),
+      Eurydice_dst_ref_87),
     slice,
     uint8_t);
   return out;
@@ -1730,13 +1673,10 @@ libcrux_ml_kem_utils_into_padded_array_24(Eurydice_dst_ref_87 slice)
 {
   libcrux_sha3_Sha3_512Digest out = { .data = { 0U } };
   libcrux_sha3_Sha3_512Digest *uu____0 = &out;
-  Eurydice_slice_copy(Eurydice_array_to_subslice_368(uu____0,
-      (
-        KRML_CLITERAL(core_ops_range_Range_08){
-          .start = (size_t)0U,
-          .end = Eurydice_slice_len(slice, uint8_t)
-        }
-      )),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(uu____0,
+      (size_t)0U,
+      Eurydice_slice_len(slice, uint8_t),
+      Eurydice_dst_ref_87),
     slice,
     uint8_t);
   return out;
