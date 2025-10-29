@@ -166,8 +166,7 @@ libcrux_sha3_simd_portable_load_block_f8(
     size_t offset = start + (size_t)8U * i0;
     Eurydice_arr_c4 arr;
     memcpy(arr.data,
-      Eurydice_slice_subslice_7e(blocks,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = offset, .end = offset + (size_t)8U })).ptr,
+      Eurydice_slice_subslice3(blocks, offset, offset + (size_t)8U, Eurydice_dst_ref_87).ptr,
       (size_t)8U * sizeof (uint8_t));
     Eurydice_arr_c4
     uu____0 =
@@ -1643,10 +1642,8 @@ libcrux_sha3_simd_portable_load_last_96(
 )
 {
   Eurydice_arr_a0 buffer = { .data = { 0U } };
-  Eurydice_slice_copy(Eurydice_array_to_subslice_36(&buffer,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = len })),
-    Eurydice_slice_subslice_7e(blocks,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + len })),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&buffer, (size_t)0U, len, Eurydice_dst_ref_87),
+    Eurydice_slice_subslice3(blocks, start, start + len, Eurydice_dst_ref_87),
     uint8_t);
   buffer.data[len] = 6U;
   size_t uu____0 = (size_t)72U - (size_t)1U;
@@ -1718,13 +1715,10 @@ libcrux_sha3_simd_portable_store_block_f8(
     size_t i0 = i;
     Eurydice_dst_ref_87
     uu____0 =
-      Eurydice_slice_subslice_7e(out,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)8U * i0,
-            .end = start + (size_t)8U * i0 + (size_t)8U
-          }
-        ));
+      Eurydice_slice_subslice3(out,
+        start + (size_t)8U * i0,
+        start + (size_t)8U * i0 + (size_t)8U,
+        Eurydice_dst_ref_87);
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_c4
     lvalue =
@@ -1738,13 +1732,10 @@ libcrux_sha3_simd_portable_store_block_f8(
   {
     Eurydice_dst_ref_87
     uu____1 =
-      Eurydice_slice_subslice_7e(out,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + len - remaining,
-            .end = start + len
-          }
-        ));
+      Eurydice_slice_subslice3(out,
+        start + len - remaining,
+        start + len,
+        Eurydice_dst_ref_87);
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_c4
     lvalue =
@@ -1752,8 +1743,7 @@ libcrux_sha3_simd_portable_store_block_f8(
           octets / (size_t)5U,
           octets % (size_t)5U)[0U]);
     Eurydice_slice_copy(uu____1,
-      Eurydice_array_to_subslice_360(&lvalue,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = remaining })),
+      Eurydice_array_to_subslice3(&lvalue, (size_t)0U, remaining, Eurydice_dst_ref_87),
       uint8_t);
   }
 }
@@ -1853,8 +1843,7 @@ libcrux_sha3_simd_portable_load_block_5b(
     size_t offset = start + (size_t)8U * i0;
     Eurydice_arr_c4 arr;
     memcpy(arr.data,
-      Eurydice_slice_subslice_7e(blocks,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = offset, .end = offset + (size_t)8U })).ptr,
+      Eurydice_slice_subslice3(blocks, offset, offset + (size_t)8U, Eurydice_dst_ref_87).ptr,
       (size_t)8U * sizeof (uint8_t));
     Eurydice_arr_c4
     uu____0 =
@@ -1928,10 +1917,8 @@ libcrux_sha3_simd_portable_load_last_ad(
 )
 {
   Eurydice_arr_3d buffer = { .data = { 0U } };
-  Eurydice_slice_copy(Eurydice_array_to_subslice_361(&buffer,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = len })),
-    Eurydice_slice_subslice_7e(blocks,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + len })),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&buffer, (size_t)0U, len, Eurydice_dst_ref_87),
+    Eurydice_slice_subslice3(blocks, start, start + len, Eurydice_dst_ref_87),
     uint8_t);
   buffer.data[len] = 6U;
   size_t uu____0 = (size_t)136U - (size_t)1U;
@@ -2003,13 +1990,10 @@ libcrux_sha3_simd_portable_store_block_5b(
     size_t i0 = i;
     Eurydice_dst_ref_87
     uu____0 =
-      Eurydice_slice_subslice_7e(out,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)8U * i0,
-            .end = start + (size_t)8U * i0 + (size_t)8U
-          }
-        ));
+      Eurydice_slice_subslice3(out,
+        start + (size_t)8U * i0,
+        start + (size_t)8U * i0 + (size_t)8U,
+        Eurydice_dst_ref_87);
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_c4
     lvalue =
@@ -2023,13 +2007,10 @@ libcrux_sha3_simd_portable_store_block_5b(
   {
     Eurydice_dst_ref_87
     uu____1 =
-      Eurydice_slice_subslice_7e(out,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + len - remaining,
-            .end = start + len
-          }
-        ));
+      Eurydice_slice_subslice3(out,
+        start + len - remaining,
+        start + len,
+        Eurydice_dst_ref_87);
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_c4
     lvalue =
@@ -2037,8 +2018,7 @@ libcrux_sha3_simd_portable_store_block_5b(
           octets / (size_t)5U,
           octets % (size_t)5U)[0U]);
     Eurydice_slice_copy(uu____1,
-      Eurydice_array_to_subslice_360(&lvalue,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = remaining })),
+      Eurydice_array_to_subslice3(&lvalue, (size_t)0U, remaining, Eurydice_dst_ref_87),
       uint8_t);
   }
 }
@@ -2134,10 +2114,8 @@ libcrux_sha3_simd_portable_load_last_ad0(
 )
 {
   Eurydice_arr_3d buffer = { .data = { 0U } };
-  Eurydice_slice_copy(Eurydice_array_to_subslice_361(&buffer,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = len })),
-    Eurydice_slice_subslice_7e(blocks,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + len })),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&buffer, (size_t)0U, len, Eurydice_dst_ref_87),
+    Eurydice_slice_subslice3(blocks, start, start + len, Eurydice_dst_ref_87),
     uint8_t);
   buffer.data[len] = 31U;
   size_t uu____0 = (size_t)136U - (size_t)1U;
@@ -2274,8 +2252,7 @@ libcrux_sha3_simd_portable_load_block_3a(
     size_t offset = start + (size_t)8U * i0;
     Eurydice_arr_c4 arr;
     memcpy(arr.data,
-      Eurydice_slice_subslice_7e(blocks,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = offset, .end = offset + (size_t)8U })).ptr,
+      Eurydice_slice_subslice3(blocks, offset, offset + (size_t)8U, Eurydice_dst_ref_87).ptr,
       (size_t)8U * sizeof (uint8_t));
     Eurydice_arr_c4
     uu____0 =
@@ -2310,10 +2287,8 @@ libcrux_sha3_simd_portable_load_last_c6(
 )
 {
   Eurydice_arr_27 buffer = { .data = { 0U } };
-  Eurydice_slice_copy(Eurydice_array_to_subslice_362(&buffer,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = len })),
-    Eurydice_slice_subslice_7e(blocks,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + len })),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&buffer, (size_t)0U, len, Eurydice_dst_ref_87),
+    Eurydice_slice_subslice3(blocks, start, start + len, Eurydice_dst_ref_87),
     uint8_t);
   buffer.data[len] = 31U;
   size_t uu____0 = (size_t)168U - (size_t)1U;
@@ -2404,13 +2379,10 @@ libcrux_sha3_simd_portable_store_block_3a(
     size_t i0 = i;
     Eurydice_dst_ref_87
     uu____0 =
-      Eurydice_slice_subslice_7e(out,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)8U * i0,
-            .end = start + (size_t)8U * i0 + (size_t)8U
-          }
-        ));
+      Eurydice_slice_subslice3(out,
+        start + (size_t)8U * i0,
+        start + (size_t)8U * i0 + (size_t)8U,
+        Eurydice_dst_ref_87);
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_c4
     lvalue =
@@ -2424,13 +2396,10 @@ libcrux_sha3_simd_portable_store_block_3a(
   {
     Eurydice_dst_ref_87
     uu____1 =
-      Eurydice_slice_subslice_7e(out,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + len - remaining,
-            .end = start + len
-          }
-        ));
+      Eurydice_slice_subslice3(out,
+        start + len - remaining,
+        start + len,
+        Eurydice_dst_ref_87);
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_c4
     lvalue =
@@ -2438,8 +2407,7 @@ libcrux_sha3_simd_portable_store_block_3a(
           octets / (size_t)5U,
           octets % (size_t)5U)[0U]);
     Eurydice_slice_copy(uu____1,
-      Eurydice_array_to_subslice_360(&lvalue,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = remaining })),
+      Eurydice_array_to_subslice3(&lvalue, (size_t)0U, remaining, Eurydice_dst_ref_87),
       uint8_t);
   }
 }
@@ -2578,8 +2546,7 @@ libcrux_sha3_simd_portable_load_block_2c(
     size_t offset = start + (size_t)8U * i0;
     Eurydice_arr_c4 arr;
     memcpy(arr.data,
-      Eurydice_slice_subslice_7e(blocks,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = offset, .end = offset + (size_t)8U })).ptr,
+      Eurydice_slice_subslice3(blocks, offset, offset + (size_t)8U, Eurydice_dst_ref_87).ptr,
       (size_t)8U * sizeof (uint8_t));
     Eurydice_arr_c4
     uu____0 =
@@ -2653,10 +2620,8 @@ libcrux_sha3_simd_portable_load_last_1e(
 )
 {
   Eurydice_arr_a8 buffer = { .data = { 0U } };
-  Eurydice_slice_copy(Eurydice_array_to_subslice_363(&buffer,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = len })),
-    Eurydice_slice_subslice_7e(blocks,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + len })),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&buffer, (size_t)0U, len, Eurydice_dst_ref_87),
+    Eurydice_slice_subslice3(blocks, start, start + len, Eurydice_dst_ref_87),
     uint8_t);
   buffer.data[len] = 6U;
   size_t uu____0 = (size_t)144U - (size_t)1U;
@@ -2728,13 +2693,10 @@ libcrux_sha3_simd_portable_store_block_2c(
     size_t i0 = i;
     Eurydice_dst_ref_87
     uu____0 =
-      Eurydice_slice_subslice_7e(out,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)8U * i0,
-            .end = start + (size_t)8U * i0 + (size_t)8U
-          }
-        ));
+      Eurydice_slice_subslice3(out,
+        start + (size_t)8U * i0,
+        start + (size_t)8U * i0 + (size_t)8U,
+        Eurydice_dst_ref_87);
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_c4
     lvalue =
@@ -2748,13 +2710,10 @@ libcrux_sha3_simd_portable_store_block_2c(
   {
     Eurydice_dst_ref_87
     uu____1 =
-      Eurydice_slice_subslice_7e(out,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + len - remaining,
-            .end = start + len
-          }
-        ));
+      Eurydice_slice_subslice3(out,
+        start + len - remaining,
+        start + len,
+        Eurydice_dst_ref_87);
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_c4
     lvalue =
@@ -2762,8 +2721,7 @@ libcrux_sha3_simd_portable_store_block_2c(
           octets / (size_t)5U,
           octets % (size_t)5U)[0U]);
     Eurydice_slice_copy(uu____1,
-      Eurydice_array_to_subslice_360(&lvalue,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = remaining })),
+      Eurydice_array_to_subslice3(&lvalue, (size_t)0U, remaining, Eurydice_dst_ref_87),
       uint8_t);
   }
 }
@@ -2864,8 +2822,7 @@ libcrux_sha3_simd_portable_load_block_7a(
     size_t offset = start + (size_t)8U * i0;
     Eurydice_arr_c4 arr;
     memcpy(arr.data,
-      Eurydice_slice_subslice_7e(blocks,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = offset, .end = offset + (size_t)8U })).ptr,
+      Eurydice_slice_subslice3(blocks, offset, offset + (size_t)8U, Eurydice_dst_ref_87).ptr,
       (size_t)8U * sizeof (uint8_t));
     Eurydice_arr_c4
     uu____0 =
@@ -2939,10 +2896,8 @@ libcrux_sha3_simd_portable_load_last_7c(
 )
 {
   Eurydice_arr_18 buffer = { .data = { 0U } };
-  Eurydice_slice_copy(Eurydice_array_to_subslice_364(&buffer,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = len })),
-    Eurydice_slice_subslice_7e(blocks,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + len })),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&buffer, (size_t)0U, len, Eurydice_dst_ref_87),
+    Eurydice_slice_subslice3(blocks, start, start + len, Eurydice_dst_ref_87),
     uint8_t);
   buffer.data[len] = 6U;
   size_t uu____0 = (size_t)104U - (size_t)1U;
@@ -3014,13 +2969,10 @@ libcrux_sha3_simd_portable_store_block_7a(
     size_t i0 = i;
     Eurydice_dst_ref_87
     uu____0 =
-      Eurydice_slice_subslice_7e(out,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)8U * i0,
-            .end = start + (size_t)8U * i0 + (size_t)8U
-          }
-        ));
+      Eurydice_slice_subslice3(out,
+        start + (size_t)8U * i0,
+        start + (size_t)8U * i0 + (size_t)8U,
+        Eurydice_dst_ref_87);
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_c4
     lvalue =
@@ -3034,13 +2986,10 @@ libcrux_sha3_simd_portable_store_block_7a(
   {
     Eurydice_dst_ref_87
     uu____1 =
-      Eurydice_slice_subslice_7e(out,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + len - remaining,
-            .end = start + len
-          }
-        ));
+      Eurydice_slice_subslice3(out,
+        start + len - remaining,
+        start + len,
+        Eurydice_dst_ref_87);
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_c4
     lvalue =
@@ -3048,8 +2997,7 @@ libcrux_sha3_simd_portable_store_block_7a(
           octets / (size_t)5U,
           octets % (size_t)5U)[0U]);
     Eurydice_slice_copy(uu____1,
-      Eurydice_array_to_subslice_360(&lvalue,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = remaining })),
+      Eurydice_array_to_subslice3(&lvalue, (size_t)0U, remaining, Eurydice_dst_ref_87),
       uint8_t);
   }
 }
