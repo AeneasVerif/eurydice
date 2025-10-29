@@ -98,11 +98,11 @@ typedef struct Eurydice_dst_ref_9a_s {
 
 #define Eurydice_array_to_subslice3(x, start, end, ret_t)                      \
   (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.ptr =)(x)->data + start,              \
-                        EURYDICE_CFIELD(.meta =) start - end})
+                        EURYDICE_CFIELD(.meta =) end - start})
 
 #define Eurydice_slice_subslice3(s, start, end, ret_t)                         \
   (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.ptr =)(s).ptr + start,                \
-                        EURYDICE_CFIELD(.meta =) start - end})
+                        EURYDICE_CFIELD(.meta =) end - start})
 
 #define Eurydice_array_repeat(dst, len, init, t)                               \
   ERROR "should've been desugared"
