@@ -62,7 +62,7 @@ using std::type_identity_t;
 
 #define Eurydice_alignof(t, _) _Alignof(t)
 
-#define Eurydice_opaque(reason, t, _) *((t *)0)
+#define Eurydice_opaque(reason, t, _) KRML_EABORT(t, reason)
 
 // SLICES, ARRAYS, ETC.
 
