@@ -2800,12 +2800,37 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   let declarations = flatten_declarations declarations in
   seen := 0;
   total := List.length declarations;
-  let get_nth_function id = C.FunDeclId.Map.find id fun_decls in
-  let get_nth_type id = C.TypeDeclId.Map.find id type_decls in
-  let get_nth_global id = C.GlobalDeclId.Map.find id global_decls in
-  let get_nth_trait_impl id = C.TraitImplId.Map.find id trait_impls in
-  let get_nth_trait_decl id = C.TraitDeclId.Map.find id trait_decls in
   let format_env = Charon.PrintLlbcAst.Crate.crate_to_fmt_env crate in
+  let get_nth_function id =
+    match C.FunDeclId.Map.find_opt id fun_decls with
+    | Some f -> f
+    | None ->
+        fail "Function id not found: %s"
+          (Charon.PrintExpressions.fun_decl_id_to_string format_env id)
+  in
+  let get_nth_type id =
+    match C.TypeDeclId.Map.find_opt id type_decls with
+    | Some ty -> ty
+    | None -> fail "Type id not found: %s" (Charon.PrintTypes.type_decl_id_to_string format_env id)
+  in
+  let get_nth_global id =
+    match C.GlobalDeclId.Map.find_opt id global_decls with
+    | Some g -> g
+    | None ->
+        fail "Global id not found: %s" (Charon.PrintTypes.global_decl_id_to_string format_env id)
+  in
+  let get_nth_trait_impl id =
+    match C.TraitImplId.Map.find_opt id trait_impls with
+    | Some impl -> impl
+    | None ->
+        fail "Trait impl id not found: %s" (Charon.PrintTypes.trait_impl_id_to_string format_env id)
+  in
+  let get_nth_trait_decl id =
+    match C.TraitDeclId.Map.find_opt id trait_decls with
+    | Some decl -> decl
+    | None ->
+        fail "Trait decl id not found: %s" (Charon.PrintTypes.trait_decl_id_to_string format_env id)
+  in
   let name_ctx = Charon.NameMatcher.ctx_from_crate crate in
   let env =
     {
