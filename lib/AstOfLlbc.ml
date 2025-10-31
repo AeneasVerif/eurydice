@@ -2658,6 +2658,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
             []
       in
       let body = env.get_nth_function def.init in
+      let env = push_cg_binders env generics.const_generics in
       let env = push_type_binders env generics.types in
       L.log "AstOfLlbc" "Corresponding body:%s"
         (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " body);
