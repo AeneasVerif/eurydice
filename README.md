@@ -49,25 +49,32 @@ Alternatively, you can do a local setup as follows.
 sudo apt install opam cargo # or brew on OSX
 opam init
 
-# Step 2: karamel, charon and eurydice -- we assume you are putting projects side by side
-git clone https://github.com/AeneasVerif/charon
-git clone https://github.com/FStarLang/karamel
+# Step 2: clone eurydice
 git clone https://github.com/AeneasVerif/eurydice
-
-# Step 3: install required OCaml packages. Note: the invocation for karamel might fail, in which
-# case you want to install all the packages in the `depends` field of karamel.opam except fstar. At
-# the time of writing, this means typing:
-# opam install ocamlfind batteries zarith stdint yojson ocamlbuild fileutils menhir pprint ulex process fix visitors wasm ppx_deriving ppx_deriving_yojson uucp
-(cd charon && opam install --deps-only .)
-(cd karamel && opam install --deps-only .)
-(cd eurydice && opam install --deps-only .)
-
-# Step 4: misc. setup steps
-(cd charon && make)
-(cd karamel && make lib/AutoConfig.ml)
-(cd eurydice/lib && ln -s ../../karamel/lib krml && ln -s ../../charon)
-
-# Step 5: ready!
 cd eurydice
+
+# Step 3: install dependent projects
+# This will clone karamel, charon and libcrux. If you intend to also develop on one of these
+# projects, you can symlink your working copy (e.g. `ln -s ../my-charon charon`) instead.
+# Note: the invocation for karamel might fail, in which case you want to install all the packages
+# in the `depends` field of karamel.opam except fstar. At the time of writing, this means typing:
+# opam install ocamlfind batteries zarith stdint yojson ocamlbuild fileutils menhir pprint ulex process fix visitors wasm ppx_deriving ppx_deriving_yojson uucp
+make setup-karamel
+make setup-charon
+make setup-libcrux
+
+# Step 4: ready!
 make test
 ```
+
+# Submitting a successful PR
+
+The C output of the test suite is under version control, and your PR will fail CI if running `make
+test` generates a diff for the C files in `out/`. The reason for this is that we need to assess the
+impact of a PR on the shape of the generated C code. To make sure the output of the tests is
+up-to-date, you can run `make -B test` to force regeneration of the C files.
+
+Our CI will also check that your OCaml and C files have proper formatting -- the target `make
+format-apply` reformats your source code to conform to our style guide. It might sometimes be
+difficult to have the exact right versions of ocamlformat and clang-format -- in case your PR still
+fails, we recommend running `nix develop` followed by `make format-apply`.

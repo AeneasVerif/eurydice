@@ -15,11 +15,21 @@
 extern "C" {
 #endif
 
-#include "Eurydice.h"
+/**
+A monomorphic instance of Eurydice.dst_ref
+with types Eurydice_c_char_t, size_t
 
-extern size_t core_str__str__len(Eurydice_str x0);
+*/
+typedef struct Eurydice_dst_ref_65_s
+{
+  Eurydice_c_char_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_65;
 
-void more_str_use_str(Eurydice_str s);
+extern size_t core_str__str__len(Eurydice_dst_ref_65 x0);
+
+void more_str_use_str(Eurydice_dst_ref_65 s);
 
 void more_str_main(void);
 

@@ -15,8 +15,6 @@
 extern "C" {
 #endif
 
-#include "../Eurydice.h"
-
 extern uint32_t Eurydice_min_u32(uint32_t x, uint32_t y);
 
 #if defined(__cplusplus)

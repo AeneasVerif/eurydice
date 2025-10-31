@@ -7,5 +7,4 @@ pub fn bb(x: &[u8]) -> [u8; 32] {
 }
 
 fn main() {
-    println!("Hello, world!");
 }

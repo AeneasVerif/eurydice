@@ -7,14 +7,37 @@
 
 #include "symcrust.h"
 
-#include "Eurydice.h"
 #include "internal/Eurydice.h"
+
+/**
+A monomorphic instance of Eurydice.slice_subslice
+with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
+
+*/
+static Eurydice_dst_ref_87 slice_subslice_7e(Eurydice_dst_ref_87 s, core_ops_range_Range_08 r)
+{
+  return (KRML_CLITERAL(Eurydice_dst_ref_87){ .ptr = s.ptr + r.start, .meta = r.end - r.start });
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice
+with types uint8_t
+with const generics
+- N= 4
+*/
+static Eurydice_dst_ref_87 array_to_slice_60(Eurydice_arr_e9 *a)
+{
+  Eurydice_dst_ref_87 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)4U;
+  return lit;
+}
 
 void
 symcrust_SymCrustMlKemPolyElementCompressAndEncode(
-  const uint16_t *coeffs,
+  Eurydice_arr_bc *coeffs,
   uint32_t nBitsPerCoefficient,
-  Eurydice_slice dst
+  Eurydice_dst_ref_87 dst
 )
 {
   uint64_t SYMCRYPT_MLKEM_COMPRESS_MULCONSTANT = 10321339ULL;
@@ -31,7 +54,7 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
   {
     size_t i0 = i;
     uint32_t nBitsInCoefficient = nBitsPerCoefficient;
-    uint32_t coefficient = (uint32_t)coeffs[i0];
+    uint32_t coefficient = (uint32_t)coeffs->data[i0];
     if (nBitsPerCoefficient < 12U)
     {
       uint64_t multiplication = (uint64_t)coefficient * SYMCRYPT_MLKEM_COMPRESS_MULCONSTANT;
@@ -52,13 +75,18 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
       nBitsInAccumulator = nBitsInAccumulator + nBitsToEncode;
       if (nBitsInAccumulator == 32U)
       {
-        Eurydice_slice
-        uu____0 = Eurydice_slice_subslice3(dst, cbDstWritten, cbDstWritten + (size_t)4U, uint8_t *);
-        uint8_t ret[4U];
-        core_num__u32__to_le_bytes(accumulator, ret);
-        Eurydice_slice_copy(uu____0,
-          Eurydice_array_to_slice_shared((size_t)4U, ret, uint8_t),
-          uint8_t);
+        Eurydice_dst_ref_87
+        uu____0 =
+          slice_subslice_7e(dst,
+            (
+              KRML_CLITERAL(core_ops_range_Range_08){
+                .start = cbDstWritten,
+                .end = cbDstWritten + (size_t)4U
+              }
+            ));
+        /* original Rust expression is not an lvalue in C */
+        Eurydice_arr_e9 lvalue = core_num__u32__to_le_bytes(accumulator);
+        Eurydice_slice_copy(uu____0, array_to_slice_60(&lvalue), uint8_t);
         cbDstWritten = cbDstWritten + (size_t)4U;
         accumulator = 0U;
         nBitsInAccumulator = 0U;

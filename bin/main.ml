@@ -115,7 +115,6 @@ Supported options:|}
         [ "Eurydice" ], "slice_len";
         [ "Eurydice" ], "slice_copy";
         [ "Eurydice" ], "array_eq";
-        [ "Eurydice" ], "slice_to_array2";
       ]);
 
   (* Some logic for more precisely tracking readonly functions, so as to remove
@@ -219,6 +218,8 @@ Supported options:|}
 
   Printf.printf "3️⃣ Monomorphization, datatypes\n";
   let files = Eurydice.Cleanup2.resugar_loops#visit_files () files in
+  let files = Eurydice.Cleanup1.remove_terminal_returns#visit_files true files in
+  let files = Eurydice.Cleanup1.remove_terminal_continues#visit_files false files in
   Eurydice.Logging.log "Phase2.1" "%a" pfiles files;
   (* Sanity check for the big rewriting above. *)
   let errors, files = Krml.Checker.check_everything ~warn:true files in
@@ -246,11 +247,20 @@ Supported options:|}
   let files =
     match config with
     | None -> files
-    | Some config ->
+    | Some config -> (
         let files = Eurydice.Bundles.reassign_monomorphizations files config in
         Eurydice.Logging.log "Phase2.15" "%a" pfiles files;
-        let files = Krml.Bundles.topological_sort files in
-        files
+        try
+          let files = Krml.Bundles.topological_sort files in
+          files
+        with e ->
+          flush stdout;
+          flush stderr;
+          Krml.KPrint.bprintf "Error trying to topologically sort files:\n%s\n\n"
+            (Printexc.to_string e);
+          Krml.KPrint.bprintf "Consider passing --log Reassign to Eurydice\n";
+          Krml.KPrint.bprintf "Internal AST before the error:\n%a\n" pfiles files;
+          fail __FILE__ __LINE__)
   in
   Eurydice.Logging.log "Phase2.2" "%a" pfiles files;
   (* Sanity check for the big rewriting above. *)
@@ -260,9 +270,8 @@ Supported options:|}
   let files = Krml.Inlining.drop_unused files in
   let files = Eurydice.Cleanup2.remove_array_temporaries#visit_files () files in
   Eurydice.Logging.log "Phase2.25" "%a" pfiles files;
-  let files = Eurydice.Cleanup2.remove_array_repeats#visit_files () files in
+  let files = Eurydice.Cleanup2.remove_array_repeats#visit_files false files in
   Eurydice.Logging.log "Phase2.26" "%a" pfiles files;
-  let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
   let ((map, _, _) as map3), files = Krml.DataTypes.everything files in
   Eurydice.Cleanup2.fixup_monomorphization_map map;
   let files = Eurydice.Cleanup2.remove_discriminant_reads map3 files in
@@ -316,7 +325,7 @@ Supported options:|}
   let scope_env = Krml.Simplify.allocate_c_env files in
   Eurydice.Cleanup3.(also_skip_prefix_for_external_types scope_env)#visit_files () files;
   let files = Eurydice.Cleanup3.decay_cg_externals#visit_files (scope_env, false) files in
-  let files = Eurydice.Cleanup3.add_extra_type_to_slice_index#visit_files () files in
+  let files = Eurydice.Cleanup3.remove_builtin_decls files in
   Eurydice.Logging.log "Phase3.1" "%a" pfiles files;
   let c_name_map = Krml.GlobalNames.mapping (fst scope_env) in
 
@@ -395,7 +404,6 @@ Supported options:|}
   (*   print_endline (CStar.show_program p ); *)
   (*   print_endline "" *)
   (* ) files; *)
-
   let headers = CStarToC11.mk_headers c_name_map files in
   let deps = CStarToC11.drop_empty_headers deps headers in
   let internal_headers =

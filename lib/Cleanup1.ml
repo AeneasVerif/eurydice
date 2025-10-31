@@ -344,7 +344,9 @@ let remove_terminal_returns =
       else
         EReturn (self#visit_expr_w terminal e)
 
-    method! visit_ESequence _ _ = assert false
+    method! visit_ESequence (terminal, _) es =
+      let es, e = Krml.KList.split_at_last es in
+      ESequence (List.map (self#visit_expr_w false) es @ [ self#visit_expr_w terminal e ])
 
     method! visit_EIfThenElse (terminal, _) e1 e2 e3 =
       EIfThenElse
@@ -396,7 +398,9 @@ let remove_terminal_continues =
       else
         EContinue
 
-    method! visit_ESequence _ _ = assert false
+    method! visit_ESequence (terminal, _) es =
+      let es, e = Krml.KList.split_at_last es in
+      ESequence (List.map (self#visit_expr_w false) es @ [ self#visit_expr_w terminal e ])
 
     method! visit_EIfThenElse (terminal, _) e1 e2 e3 =
       EIfThenElse
@@ -434,36 +438,36 @@ let unsigned_overflow_is_ok_in_c =
 
 (* PPrint.(Krml.Print.(print (Krml.PrintAst.print_files files ^^ hardline))); *)
 
-let remove_slice_eq = object
-  inherit [_] map as super
+let remove_slice_eq =
+  object
+    inherit [_] map as super
 
-  method! visit_expr _ e =
-    match e with
-    | [%cremepat {| core::cmp::impls::?impl::eq(#?eq..)<?t,?u>(?s1, ?s2) |}] ->
-        begin match impl with
-        | "{core::cmp::PartialEq<&0 mut (B)> for &1 mut (A)}"
-        | "{core::cmp::PartialEq<&0 (B)> for &1 (A)}" ->
-            assert (t = u);
-            begin match flatten_tapp t with
-            | lid, [ t ], [] when lid = Builtin.derefed_slice ->
-                let rec is_flat = function
-                  | TArray (t, _) -> is_flat t
-                  | TInt _ | TBool | TUnit -> true
-                  | _ -> false
-                in
-                if not (is_flat t) then
-                  failwith "TODO: slice eq at non-flat types";
-                with_type TBool (EApp (
-                  Builtin.(expr_of_builtin_t slice_eq [ t ]),
-                  [ s1; s2 ]))
-            | _ ->
-                let deref e = with_type (H.assert_tbuf e.typ) (EBufRead (e, H.zero_usize)) in
-                with_type TBool (EApp (List.hd eq, [ deref s1; deref s2]))
-            end
-        | _ -> failwith "unknown eq impl in core::cmp::impls"
+    method! visit_expr _ e =
+      match e with
+      | [%cremepat {| core::cmp::impls::?impl::eq(#?eq..)<?t,?u>(?s1, ?s2) |}] -> begin
+          match impl with
+          | "{core::cmp::PartialEq<&0 mut (B)> for &1 mut (A)}"
+          | "{core::cmp::PartialEq<&0 (B)> for &1 (A)}" ->
+              assert (t = u);
+              begin
+                match flatten_tapp t with
+                | lid, [ t ], [] when lid = Builtin.derefed_slice ->
+                    let rec is_flat = function
+                      | TArray (t, _) -> is_flat t
+                      | TInt _ | TBool | TUnit -> true
+                      | _ -> false
+                    in
+                    if not (is_flat t) then
+                      failwith "TODO: slice eq at non-flat types";
+                    with_type TBool (EApp (Builtin.(expr_of_builtin_t slice_eq [ t ]), [ s1; s2 ]))
+                | _ ->
+                    let deref e = with_type (H.assert_tbuf e.typ) (EBufRead (e, H.zero_usize)) in
+                    with_type TBool (EApp (List.hd eq, [ deref s1; deref s2 ]))
+              end
+          | _ -> failwith "unknown eq impl in core::cmp::impls"
         end
-    | _ -> super#visit_expr ((), e.typ) e
-end
+      | _ -> super#visit_expr ((), e.typ) e
+  end
 
 let cleanup files =
   let files = remove_units#visit_files () files in

@@ -7,17 +7,17 @@
 
 #include "issue_128.h"
 
-void issue_128_fun_a(Eurydice_slice _x)
+void issue_128_fun_a(Eurydice_dst_ref_87 _x)
 {
 
 }
 
-void issue_128_fun_b(Eurydice_slice _x)
+void issue_128_fun_b(Eurydice_dst_ref_87 _x)
 {
 
 }
 
-void issue_128_use_enum(issue_128_E e, Eurydice_slice x)
+void issue_128_use_enum(issue_128_E e, Eurydice_dst_ref_87 x)
 {
   void *uu____0 = (void *)0U;
   switch (e)
@@ -38,10 +38,25 @@ void issue_128_use_enum(issue_128_E e, Eurydice_slice x)
   }
 }
 
+/**
+A monomorphic instance of Eurydice.array_to_slice
+with types uint8_t
+with const generics
+- N= 0
+*/
+static Eurydice_dst_ref_87 array_to_slice_5d(Eurydice_arr_51 *a)
+{
+  Eurydice_dst_ref_87 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)0U;
+  return lit;
+}
+
 void issue_128_main(void)
 {
   issue_128_E uu____0 = issue_128_E_A;
-  uint8_t buf[0U] = {  };
-  issue_128_use_enum(uu____0, Eurydice_array_to_slice_shared((size_t)0U, buf, uint8_t));
+  /* original Rust expression is not an lvalue in C */
+  Eurydice_arr_51 lvalue = Eurydice_empty_array((void *)0U, uint8_t, Eurydice_arr_51);
+  issue_128_use_enum(uu____0, array_to_slice_5d(&lvalue));
 }
 
