@@ -7,7 +7,10 @@ end
 let vec : K.lident = [ "Eurydice" ], "vec"
 let mk_vec (t : K.typ) : K.typ = K.TApp (vec, [ t ])
 let dst_ref = [ "Eurydice" ], "dst_ref"
+
+(** Given `T` and `TMeta`, returns `Eurydice::dst_ref<T, TMeta>` *)
 let mk_dst_ref (t : K.typ) (meta : K.typ) : K.typ = K.TApp (dst_ref, [ t; meta ])
+
 let slice : K.lident = dst_ref
 let mk_slice (t : K.typ) : K.typ = K.TApp (slice, [ t; TInt SizeT ])
 let range : K.lident = [ "core"; "ops"; "range" ], "Range"
@@ -161,7 +164,7 @@ let get_128_op (kind, op) : K.expr = expr_of_builtin @@ Op128Map.find (kind, op)
 let sizeof =
   {
     name = [ "Eurydice" ], "sizeof";
-    typ = Krml.Helpers.fold_arrow [] (TInt SizeT);
+    typ = Krml.Helpers.fold_arrow [ TUnit ] (TInt SizeT);
     n_type_args = 1;
     cg_args = [];
     arg_names = [];
@@ -172,11 +175,25 @@ let sizeof =
 let alignof =
   {
     name = [ "Eurydice" ], "alignof";
-    typ = Krml.Helpers.fold_arrow [] (TInt SizeT);
+    typ = Krml.Helpers.fold_arrow [ TUnit ] (TInt SizeT);
     n_type_args = 1;
     cg_args = [];
     arg_names = [];
   }
+
+let opaque =
+  {
+    name = [ "Eurydice" ], "opaque";
+    typ = Krml.Helpers.fold_arrow [ TBuf (c_char_t, false) ] (TBound 0);
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [ "reason" ];
+  }
+
+let opaque_with_reason ret_t reason =
+  let app_typ = Krml.Helpers.fold_arrow [ TBuf (c_char_t, false) ] ret_t in
+  let opaque = K.with_type app_typ (K.ETApp (expr_of_builtin opaque, [], [], [ ret_t ])) in
+  K.with_type ret_t (K.EApp (opaque, [ K.with_type (TBuf (c_char_t, false)) (K.EString reason) ]))
 
 let array_to_slice =
   {
@@ -936,6 +953,7 @@ let builtin_funcs =
   [
     sizeof;
     alignof;
+    opaque;
     array_repeat;
     array_into_iter;
     array_eq;
