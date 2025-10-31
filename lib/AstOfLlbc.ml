@@ -2665,13 +2665,27 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
       begin
         match body.body with
         | Some body ->
+            if List.length generics.const_generics <> 0 then
+              fail
+                "Global variables with const generics are not supported, please consider using \
+                 mono LLBC: %s"
+                (string_of_name env name);
             let ret_var = List.hd body.locals.locals in
             let body =
               with_locals env ty body.locals.locals (fun env ->
                   expression_of_block env ret_var.index body.body)
             in
-            Some (K.DGlobal (flags, lid_of_name env name, 0, ty, body))
-        | None -> Some (K.DExternal (None, [], 0, 0, lid_of_name env name, ty, []))
+            Some (K.DGlobal (flags, lid_of_name env name, List.length generics.types, ty, body))
+        | None ->
+            Some
+              (K.DExternal
+                 ( None,
+                   [],
+                   List.length generics.const_generics,
+                   List.length generics.types,
+                   lid_of_name env name,
+                   ty,
+                   [] ))
       end
   | IdTraitDecl _ | IdTraitImpl _ -> None
 
