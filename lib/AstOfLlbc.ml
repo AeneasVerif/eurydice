@@ -809,7 +809,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       K.(with_type t (EBound i))
   | PlaceGlobal { id; _ } ->
       let global = env.get_nth_global id in
-      K.with_type (typ_of_ty env global.ty) (K.EQualified (lid_of_name env global.item_meta.name))
+      K.with_type (typ_of_ty env p.ty) (K.EQualified (lid_of_name env global.item_meta.name))
   | PlaceProjection (sub_place, PtrMetadata) -> begin
       let e = expression_of_place env sub_place in
       match e.typ with
