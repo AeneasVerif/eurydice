@@ -36,7 +36,11 @@ fn f3() {
     let x2 : &[u8] = &[0u8;4];
     let y2 : &[u8;4] = x2.try_into().unwrap();
     
+    let x3 : &mut [u8] = &mut [0u8;4];
+    let y3 : [u8;4] = x3.try_into().unwrap();
+    
     assert_eq!(y1[0],y2[0]);
+    assert_eq!(y1[0],y3[0]);
 }
 
 fn f5<const K:usize>() {
