@@ -6,43 +6,6 @@ module H = Krml.Helpers
 
 let expr_of_constant (w, n) = with_type (TInt w) (EConstant (w, n))
 
-let expand_array_copies files =
-  begin
-    object
-      inherit [_] map as super
-
-      method! visit_EAssign env lhs rhs =
-        match rhs.node with
-        | EApp ({ node = EQualified lid; _ }, [ src; len ]) when lid = Builtin.array_copy ->
-            (* Krml.Helpers.mk_copy_assignment (t, n) lhs.node rhs *)
-            let zero = H.zero_usize in
-            EBufBlit (src, zero, lhs, zero, len)
-        | _ -> super#visit_EAssign env lhs rhs
-
-      method! visit_EApp env hd args =
-        match hd, args with
-        | { node = EQualified lid; _ }, [ src; len ] when lid = Builtin.array_copy ->
-            ELet
-              ( H.fresh_binder "array_copy" src.typ,
-                H.any,
-                with_type src.typ
-                  (ESequence
-                     [
-                       with_type TUnit
-                         (EBufBlit
-                            ( Krml.DeBruijn.lift 1 src,
-                              H.zero_usize,
-                              with_type src.typ (EBound 0),
-                              H.zero_usize,
-                              Krml.DeBruijn.lift 1 len ));
-                       with_type src.typ (EBound 0);
-                     ]) )
-        | _ -> super#visit_EApp env hd args
-    end
-  end
-    #visit_files
-    () files
-
 let remove_array_eq =
   object
     inherit Krml.DeBruijn.map_counting_cg as super
@@ -65,7 +28,7 @@ let remove_array_eq =
             | "{core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>}" ->
                 with_type TBool
                   (EApp
-                     ( Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) array_eq_slice [ t ]),
+                     ( Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) array_eq_slice_shared [ t ]),
                        [ a1; a2 ] ))
             | _ -> failwith ("unknown array eq impl: " ^ impl)
           else
@@ -227,7 +190,6 @@ let drop_unused_builtin files =
     files
 
 let precleanup files =
-  let files = expand_array_copies files in
   let files = remove_array_eq#visit_files (0, 0) files in
   let files = drop_unused_builtin files in
   let files = expand_slice_to_array#visit_files (0, 0) files in

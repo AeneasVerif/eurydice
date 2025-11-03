@@ -159,7 +159,8 @@ let with_any = K.(with_type TAny)
 
 let assert_slice (t : K.typ) =
   match t with
-  | TApp (lid, [ t; _ ]) when lid = Builtin.slice -> t
+  | TApp (lid, [ t; u ]) when Builtin.(lid = dst_ref_mut || lid = dst_ref_shared) && u = TInt SizeT
+    -> t
   | _ -> fail "Not a slice: %a" ptyp t
 
 let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
@@ -196,36 +197,48 @@ module RustNames = struct
   let range = parse_pattern "core::ops::range::Range<@>"
   let option = parse_pattern "core::option::Option<@>"
 
+  (* Just to have a uniform view of the table of distinguished declarations *)
+  let builtin_of_function decl : Builtin.builtin =
+    match decl with
+    | Krml.Ast.DFunction (_, _, n_type_args, n_cgs, ret_t, name, binders, _) ->
+        let cg_args, rest = Krml.KList.split n_cgs binders in
+        {
+          name;
+          typ = Krml.Helpers.fold_arrow (List.map (fun (x : Krml.Ast.binder) -> x.typ) rest) ret_t;
+          n_type_args;
+          cg_args = List.map (fun (x : Krml.Ast.binder) -> x.typ) cg_args;
+          arg_names = List.map (fun (x : Krml.Ast.binder) -> x.node.name) rest;
+        }
+    | _ -> failwith "impossible"
+
   let known_builtins =
     [
     (* slices *)
-    parse_pattern "SliceIndexShared<'_, @T>", Builtin.slice_index;
-    parse_pattern "SliceIndexMut<'_, @T>", Builtin.slice_index;
+    parse_pattern "SliceIndexShared<'_, @T>", Builtin.slice_index_shared;
+    parse_pattern "SliceIndexMut<'_, @T>", Builtin.slice_index_mut;
 
-    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
-    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
-    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@]>", Builtin.slice_subslice_to;
-    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@]>", Builtin.slice_subslice_to;
-    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@]>", Builtin.slice_subslice_from;
-    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@]>", Builtin.slice_subslice_from;
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::Range<usize>, [@]>", builtin_of_function Builtin.slice_subslice_func_shared;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::Range<usize>, [@]>", builtin_of_function Builtin.slice_subslice_func_mut;
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@]>", builtin_of_function Builtin.slice_subslice_to_func_shared;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@]>", builtin_of_function Builtin.slice_subslice_to_func_mut;
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@]>", builtin_of_function Builtin.slice_subslice_from_func_shared;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@]>", builtin_of_function Builtin.slice_subslice_from_func_mut;
 
     (* arrays *)
-    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::Range<usize>, [@], @>", Builtin.array_to_subslice_shared;
-    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@], @>", Builtin.array_to_subslice_mut;
-    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@], @>", Builtin.array_to_subslice_to_shared;
-    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@], @>", Builtin.array_to_subslice_to_mut;
-    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", Builtin.array_to_subslice_from_shared;
-    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", Builtin.array_to_subslice_from_mut;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::Range<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_func_shared;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_func_mut;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_to_func_shared;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_to_func_mut;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_from_func_shared;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_from_func_mut;
 
     (* slices <-> arrays *)
-    parse_pattern "ArrayToSliceShared<'_, @T, @N>", Builtin.array_to_slice_shared;
-    parse_pattern "ArrayToSliceMut<'_, @T, @N>", Builtin.array_to_slice_mut;
+    parse_pattern "ArrayToSliceShared<'_, @T, @N>", builtin_of_function Builtin.array_to_slice_func_shared;
+    parse_pattern "ArrayToSliceMut<'_, @T, @N>", builtin_of_function Builtin.array_to_slice_func_mut;
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ mut [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], &'_ [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ mut [@T], &'_ mut [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
-
-    (* iterators XXX are any of these used? *)
-    parse_pattern "core::iter::traits::collect::IntoIterator<[@; @]>::into_iter", Builtin.array_into_iter;
 
     (* bitwise & arithmetic operations *)
     parse_pattern "core::ops::bit::BitAnd<&'_ u8, u8>::bitand", Builtin.bitand_pv_u8;
@@ -337,27 +350,6 @@ let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
 let const_of_ref_kind = function
   | C.RMut -> false
   | C.RShared -> true
-
-(* Is TApp (lid, [ t ]) meant to compile to a DST? *)
-let to_dst env lid (t : K.typ) =
-  LidMap.mem lid env.dsts
-  &&
-  match t with
-  | TApp (hd, [ _ ]) -> hd = Builtin.derefed_slice
-  | _ -> false
-
-(* Matches an instance of Eurydice_dst<T<U>> -- returns Some (T, U, T<U>) or None *)
-let is_dst env t =
-  match t with
-  | K.TApp (dst_hd, [ (TApp (lid, [ u ]) as t_u) ]) when dst_hd = Builtin.dst ->
-      assert (LidMap.mem lid env.dsts);
-      Some (lid, u, t_u)
-  | _ -> None
-
-let is_slice _env t =
-  match t with
-  | K.TApp (slice_hd, _) when slice_hd = Builtin.slice -> true
-  | _ -> false
 
 (* e: Eurydice_dst<t> *)
 let mk_dst_deref _env t e =
@@ -869,7 +861,11 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           begin
             match !*sub_e.K.typ with
             | TBuf (t_pointee, _) ->
-                let const = match sub_place.ty with TRef (_, _, k) -> const_of_ref_kind k | _ -> false in
+                let const =
+                  match sub_place.ty with
+                  | TRef (_, _, k) -> const_of_ref_kind k
+                  | _ -> false
+                in
                 Krml.Helpers.(mk_deref ~const t_pointee !*sub_e.K.node)
             | t ->
                 L.log "AstOfLlbc" "UNHANDLED DEREFERENCE\ne=%a\nt=%a\nty=%s\npe=%s\n" pexpr !*sub_e
@@ -882,18 +878,24 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           let field_name = lookup_field env typ_id field_id in
           let sub_e = expression_of_place env sub_place in
           let place_typ = typ_of_ty env p.ty in
-          let const = match sub_place.ty with TRef (_, _, k) -> const_of_ref_kind k | _ -> false in
+          let const =
+            match sub_place.ty with
+            | TRef (_, _, k) -> const_of_ref_kind k
+            | _ -> false
+          in
           begin
             match sub_e.K.typ with
             | K.TApp (dst_ref_hd, [ dst_t; _meta ]) when dst_ref_hd = Builtin.dst_ref ->
                 (* getting field from a fat pointer of DST  *)
-                K.with_type place_typ (K.EField (mk_dst_deref dst_t sub_e, field_name))
+                K.with_type place_typ (K.EField (mk_dst_deref env dst_t sub_e, field_name))
             | _ ->
                 (* Same as below *)
                 K.with_type place_typ
                   (K.EField
                      ( Krml.Helpers.(
-                         mk_deref ~const (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node),
+                         mk_deref ~const
+                           (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ)
+                           sub_e.K.node),
                        field_name ))
           end
       | Field (ProjAdt (typ_id, variant_id), field_id), _, C.TAdt _ -> begin
