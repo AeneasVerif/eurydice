@@ -82,7 +82,7 @@ let mk_nonzero t = K.TApp (nonzero, [ t ])
 let derefed_slice = [ "Eurydice" ], "derefed_slice"
 
 (** The C counterpart of `&str` *)
-let str_t = mk_dst_ref c_char_t (TInt SizeT)
+let str_t ~const = mk_dst_ref ~const c_char_t (TInt SizeT)
 
 (** The C counterpart of `str` and serves twofold functionalities: (1) when in expressions, it
     serves as a placeholder to get referenced again; (2) when in customised DST definition, it is
@@ -485,7 +485,7 @@ let array_to_slice_func const =
   let open Krml in
   let open Ast in
   let element_t = TBound 0 in
-  let arrref_t = TBuf (mk_arr (TBound 0) (CgVar 0), const) in
+  let arrref_t = TBuf (mk_arr (TBound 0) (CgVar 0), true) in
   let ret_t = mk_slice ~const element_t in
   let lid = [ "Eurydice" ], "array_to_slice" ^ suffix_of_const const in
   let binders = [ Helpers.fresh_binder "N" (TInt SizeT); Helpers.fresh_binder "a" arrref_t ] in
@@ -507,7 +507,7 @@ let array_to_subslice_func const =
   let open Krml in
   let open Ast in
   let element_t = TBound 2 in
-  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), const) in
+  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), true) in
   let ret_t = mk_slice ~const element_t in
   let lid = [ "Eurydice" ], "array_to_subslice" ^ suffix_of_const const in
   let binders =
@@ -539,7 +539,7 @@ let array_to_subslice_to_func const =
   let open Krml in
   let open Ast in
   let element_t = TBound 2 in
-  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), false) in
+  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), true) in
   let ret_t = mk_slice ~const element_t in
   let lid = [ "Eurydice" ], "array_to_subslice_to" ^ suffix_of_const const in
   let binders =
@@ -569,7 +569,7 @@ let array_to_subslice_from_func const =
   let open Krml in
   let open Ast in
   let element_t = TBound 2 in
-  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), false) in
+  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), true) in
   let ret_t = mk_slice ~const element_t in
   let lid = [ "Eurydice" ], "array_to_subslice_from" ^ suffix_of_const const in
   let binders =
