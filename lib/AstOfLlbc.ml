@@ -201,6 +201,9 @@ module RustNames = struct
   let builtin_of_function decl : Builtin.builtin =
     match decl with
     | Krml.Ast.DFunction (_, _, n_type_args, n_cgs, ret_t, name, binders, _) ->
+        if n_cgs > List.length binders then
+          Krml.Warn.fatal_error "n_cgs=%d, but List.length binders=%d for %a\n" n_cgs
+            (List.length binders) Krml.PrintAst.Ops.plid name;
         let cg_args, rest = Krml.KList.split n_cgs binders in
         {
           name;
