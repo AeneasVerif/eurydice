@@ -146,7 +146,6 @@ Supported options:|}
            | [ "Eurydice" ], "slice_subslice2"
            | [ "Eurydice" ], "slice_subslice3"
            | [ "Eurydice" ], "slice_subslice_from"
-           | [ "Eurydice" ], "slice_of_dst"
            | [ "Eurydice" ], "array_to_slice"
            | [ "Eurydice" ], "array_to_subslice"
            | [ "Eurydice" ], "array_to_subslice2"
