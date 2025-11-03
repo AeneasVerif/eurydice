@@ -29,8 +29,6 @@ let decl_of_arr = K.DType (arr, [], 1, 1, Flat [ Some "data", (K.TCgArray (TBoun
      1  : we have one const generic C
      1  : we have one type argument T *)
 
-let array_copy = [ "Eurydice" ], "array_copy"
-
 (* Things that could otherwise be emitted as an extern prototype, but for some
    reason ought to be skipped. *)
 let skip = Krml.Idents.LidSet.of_list [ [ "Eurydice" ], "assert"; [], "UNIT_METADATA" ]
