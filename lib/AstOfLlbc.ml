@@ -1873,13 +1873,15 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
                     let trait_impl = env.get_nth_trait_impl id in
                     begin
                       match trait_impl.vtable with
-                      | Some instance -> { instance with C.generics }
+                      | Some instance -> { instance with generics }
                       | None -> failwith "Trait impl has no vtable instance"
                     end
                 | _ -> failwith "unsupported trait_ref kind in unsize cast"
               in
               let instance_def = env.get_nth_global vtable_instance.C.id in
-              let instance_ty =
+              let generic_typs = List.map (typ_of_ty env) vtable_instance.generics.types in
+              let cgs = List.map (expression_of_const_generic env) vtable_instance.generics.const_generics in
+              let ret_typ =
                 let subst =
                   Charon.Substitute.make_subst_from_generics instance_def.generics
                     vtable_instance.generics
@@ -1887,8 +1889,18 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
                 let real_ty = Charon.Substitute.(ty_substitute subst instance_def.ty) in
                 typ_of_ty env real_ty
               in
-              let vtable_instance =
+              L.log "Ast" "[debug] ret_typ:%a\n" ptyp ret_typ;
+              (* let ret_typ = typ_of_ty env instance_def.ty in *)
+              let instance_ty =
+                let ts = { K.n = List.length generic_typs; K.n_cgs = List.length cgs } in
+                K.TPoly (ts, ret_typ)
+                (* List.fold_right (fun t acc -> K.TArrow (t, acc)) generic_typs ret_typ *)
+              in
+              let vtable_func_head =
                 K.with_type instance_ty (K.EQualified (lid_of_name env instance_def.item_meta.name))
+              in
+              let vtable_instance =
+                K.with_type ret_typ (K.ETApp (vtable_func_head, cgs, [], generic_typs))
               in
               addrof vtable_instance
             in
