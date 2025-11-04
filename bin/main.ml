@@ -13,6 +13,8 @@ Supported options:|}
   in
   let module O = Eurydice.Options in
   let debug s =
+    if s = "backtrace" then
+      Krml.Options.backtrace := true;
     Krml.Options.debug_modules := Krml.KString.split_on_char ',' s @ !Krml.Options.debug_modules
   in
   let funroll_loops = ref 16 in

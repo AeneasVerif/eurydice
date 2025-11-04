@@ -65,8 +65,10 @@ let mk_arr (t : K.typ) (cg : K.cg) : K.typ = K.TCgApp (K.TApp (arr, [ t ]), cg)
 let decl_of_arr = K.DType (arr, [], 1, 1, Flat [ Some "data", (K.TCgArray (TBound 0, 0), true) ])
 
 (* a->data where a: Arr<t,n>*, to be used before eurydice monomorphization *)
-let data_of_arrref (arrref : K.expr) t n_cgid =
-  let arr = Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray arrref.typ) arrref.node) in
+let data_of_arrref ?const (arrref : K.expr) t n_cgid =
+  let arr =
+    Krml.Helpers.(mk_deref ?const (Krml.Helpers.assert_tbuf_or_tarray arrref.typ) arrref.node)
+  in
   K.(with_type (TCgArray (t, n_cgid)) (EField (arr, "data")))
 
 let c_string_def =
@@ -271,7 +273,7 @@ let array_eq =
     name = [ "Eurydice" ], "array_eq";
     typ =
       Krml.Helpers.fold_arrow
-        [ TBuf (mk_arr (TBound 0) (CgVar 0), false); TBuf (mk_arr (TBound 0) (CgVar 0), false) ]
+        [ TBuf (mk_arr (TBound 0) (CgVar 0), true); TBuf (mk_arr (TBound 0) (CgVar 0), true) ]
         TBool;
     n_type_args = 1;
     cg_args = [ TInt SizeT ];
@@ -493,7 +495,7 @@ let array_to_slice_func const =
     (* args *)
     let n = mk_sizeT (EBound 1) in
     let arrref = with_type arrref_t (EBound 0) in
-    let data = data_of_arrref arrref element_t 0 in
+    let data = data_of_arrref ~const:true arrref element_t 0 in
     with_type ret_t (EFlat [ Some "ptr", data; Some "meta", n ])
   in
   DFunction (None, [ Private ], 1, 1, ret_t, lid, binders, expr)
@@ -521,11 +523,11 @@ let array_to_subslice_func const =
     (* args *)
     let arrref = with_type arrref_t (EBound 1) in
     let range = with_type (mk_range (TInt SizeT)) (EBound 0) in
-    let data = data_of_arrref arrref element_t 0 in
+    let data = data_of_arrref ~const:true arrref element_t 0 in
     let r_start = mk_sizeT (EField (range, "start")) in
     let r_end = mk_sizeT (EField (range, "end")) in
     let meta = mk_sizeT (EApp (Helpers.mk_op Sub SizeT, [ r_end; r_start ])) in
-    let ptr = with_type (TBuf (element_t, false)) (EBufSub (data, r_start)) in
+    let ptr = with_type (TBuf (element_t, const)) (EBufSub (data, r_start)) in
     with_type ret_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
   in
   DFunction (None, [ Private ], 1, 1, ret_t, lid, binders, expr)
