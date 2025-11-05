@@ -359,9 +359,14 @@ let const_of_borrow_kind = function
   | C.BShallow -> true
   | _ -> false
 
+let const_of_tbuf = function
+  | K.TBuf (_, const) -> const
+  | _ -> failwith "not a tbuf"
+
 (* e: Eurydice_dst<t> *)
 let mk_dst_deref _env t e =
   (* ptr_field: t* *)
+  (* XXX need proper const here *)
   let ptr_field = K.(with_type (TBuf (t, false)) (EField (e, "ptr"))) in
   K.(with_type t (EBufRead (ptr_field, Krml.Helpers.zero_usize)))
 
@@ -2187,14 +2192,17 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       (* Special treatment for e1[e2] of array which are translated into struct.
          e1[e2] is translated as fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T
 
-         Since [T;N] is transalted into arr$T$N, we need to first dereference
+         Since [T;N] is translated into arr$T$N, we need to first dereference
          the e1 to get the struct, and then take its field "data" to get the
          array *)
       let e1 = expression_of_operand env e1 in
       let e2 = expression_of_operand env e2 in
       let t = typ_of_ty env ty in
       let t_array = maybe_cg_array env ty cg in
-      let e1 = Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e1.K.typ) e1.K.node) in
+      let e1 =
+        Krml.Helpers.(
+          mk_deref ~const:(const_of_tbuf e1.K.typ) (Krml.Helpers.assert_tbuf e1.K.typ) e1.K.node)
+      in
       let e1 = K.with_type t_array (K.EField (e1, "data")) in
       let dest = expression_of_place env dest in
       Krml.Helpers.with_unit K.(EAssign (dest, addrof (with_type t (EBufRead (e1, e2)))))
