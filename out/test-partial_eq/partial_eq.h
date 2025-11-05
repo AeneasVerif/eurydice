@@ -16,16 +16,16 @@ extern "C" {
 #endif
 
 /**
-A monomorphic instance of Eurydice.dst_ref
+A monomorphic instance of Eurydice.dst_ref_shared
 with types Eurydice_c_char_t, size_t
 
 */
-typedef struct Eurydice_dst_ref_65_s
+typedef struct Eurydice_dst_ref_shared_65_s
 {
-  Eurydice_c_char_t *ptr;
+  const Eurydice_c_char_t *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_65;
+Eurydice_dst_ref_shared_65;
 
 #define core_result_Ok 0
 #define core_result_Err 1
@@ -33,7 +33,10 @@ Eurydice_dst_ref_65;
 typedef uint8_t core_result_Result_10;
 
 extern core_result_Result_10
-core_fmt__core__fmt__Formatter__a___write_str(core_fmt_Formatter *x0, Eurydice_dst_ref_65 x1);
+core_fmt__core__fmt__Formatter__a___write_str(
+  core_fmt_Formatter *x0,
+  Eurydice_dst_ref_shared_65 x1
+);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -51,6 +54,18 @@ This function found in impl {core::cmp::PartialEq<partial_eq::Enum> for partial_
 bool partial_eq_eq_31(const partial_eq_Enum *self, const partial_eq_Enum *other);
 
 void partial_eq_main(void);
+
+/**
+A monomorphic instance of Eurydice.dst_ref_mut
+with types Eurydice_c_char_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_mut_65_s
+{
+  Eurydice_c_char_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_mut_65;
 
 /**
 This function found in impl {core::fmt::Debug for partial_eq::Enum}

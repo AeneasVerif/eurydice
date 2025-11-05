@@ -7,12 +7,12 @@
 
 #include "nested_arrays.h"
 
-typedef struct _uint32_t__x2_s
+typedef struct const_uint32_t__x2_s
 {
-  uint32_t *fst;
-  uint32_t *snd;
+  const uint32_t *fst;
+  const uint32_t *snd;
 }
-_uint32_t__x2;
+const_uint32_t__x2;
 
 void nested_arrays_main(void)
 {
@@ -41,7 +41,7 @@ void nested_arrays_main(void)
         size_t k = i;
         uint32_t actual = keys.data[i1].data[j].data[k];
         uint32_t expected = (uint32_t)k;
-        _uint32_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
+        const_uint32_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
         EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
       }
     }

@@ -17,7 +17,7 @@ const_uint8_t__x2;
 void raw_pointers_main(void)
 {
   uint8_t x = 0U;
-  uint8_t *px = (uint8_t *)&x;
+  const uint8_t *px = (const uint8_t *)&x;
   /* original Rust expression is not an lvalue in C */
   uint8_t lvalue = 0U;
   const_uint8_t__x2 uu____0 = { .fst = &lvalue, .snd = px };

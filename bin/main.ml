@@ -99,7 +99,8 @@ Supported options:|}
     Monomorphization.NameGen.short_names := true;
     AstToCStar.no_return_type_lids :=
       [
-        [ "Eurydice" ], "slice_index";
+        [ "Eurydice" ], "slice_index_shared";
+        [ "Eurydice" ], "slice_index_mut";
         [ "Eurydice" ], "slice_len";
         [ "Eurydice" ], "slice_copy";
         [ "Eurydice" ], "array_eq";
@@ -131,7 +132,8 @@ Supported options:|}
            | "libcrux_intrinsics" :: _, _ -> ret_t <> TUnit
            | [ "Eurydice" ], "vec_len"
            | [ "Eurydice" ], "vec_index"
-           | [ "Eurydice" ], "slice_index"
+           | [ "Eurydice" ], "slice_index_shared"
+           | [ "Eurydice" ], "slice_index_mut"
            | [ "Eurydice" ], "slice_len"
            | [ "Eurydice" ], "slice_to_ref_array"
            | [ "Eurydice" ], "slice_to_ref_array2"

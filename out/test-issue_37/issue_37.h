@@ -23,9 +23,21 @@ with const generics
 */
 typedef struct Eurydice_arr_60_s { uint8_t data[32U]; } Eurydice_arr_60;
 
-Eurydice_arr_60 issue_37_b(Eurydice_dst_ref_87 x);
+/**
+A monomorphic instance of Eurydice.dst_ref_shared
+with types uint8_t, size_t
 
-Eurydice_arr_60 issue_37_bb(Eurydice_dst_ref_87 x);
+*/
+typedef struct Eurydice_dst_ref_shared_87_s
+{
+  const uint8_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_shared_87;
+
+Eurydice_arr_60 issue_37_b(Eurydice_dst_ref_shared_87 x);
+
+Eurydice_arr_60 issue_37_bb(Eurydice_dst_ref_shared_87 x);
 
 void issue_37_main(void);
 

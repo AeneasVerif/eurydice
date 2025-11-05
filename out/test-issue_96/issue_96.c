@@ -7,12 +7,12 @@
 
 #include "issue_96.h"
 
-void issue_96_use_it(Eurydice_arr_3f *x)
+void issue_96_use_it(const Eurydice_arr_3f *x)
 {
   EURYDICE_ASSERT(!!((size_t)0U < (size_t)5U), "assert failure");
 }
 
-void issue_96_use_it2(issue_96_MyStruct2 *x)
+void issue_96_use_it2(const issue_96_MyStruct2 *x)
 {
   EURYDICE_ASSERT(!!((size_t)0U < (size_t)5U), "assert failure");
 }

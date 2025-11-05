@@ -7,12 +7,12 @@
 
 #include "issue_k630.h"
 
-typedef struct _uint32_t__x2_s
+typedef struct const_uint32_t__x2_s
 {
-  uint32_t *fst;
-  uint32_t *snd;
+  const uint32_t *fst;
+  const uint32_t *snd;
 }
-_uint32_t__x2;
+const_uint32_t__x2;
 
 void issue_k630_main(void)
 {
@@ -29,7 +29,7 @@ void issue_k630_main(void)
   memcpy(v.data, repeat_expression0, (size_t)5U * sizeof (Eurydice_arr_a5));
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 2U;
-  _uint32_t__x2 uu____0 = { .fst = v.data->data, .snd = &lvalue };
+  const_uint32_t__x2 uu____0 = { .fst = v.data->data, .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
