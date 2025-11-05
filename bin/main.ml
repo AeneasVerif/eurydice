@@ -100,20 +100,6 @@ Supported options:|}
     AstToCStar.no_return_type_lids :=
       [
         [ "Eurydice" ], "slice_index";
-        [ "Eurydice" ], "slice_subslice";
-        [ "Eurydice" ], "slice_subslice3";
-        [ "Eurydice" ], "slice_subslice_to";
-        [ "Eurydice" ], "slice_subslice_from";
-        [ "Eurydice" ], "array_to_slice_shared";
-        [ "Eurydice" ], "array_to_slice_mut";
-        [ "Eurydice" ], "array_to_subslice_shared";
-        [ "Eurydice" ], "array_to_subslice_mut";
-        [ "Eurydice" ], "array_to_subslice3";
-        [ "Eurydice" ], "array_to_subslice_to_shared";
-        [ "Eurydice" ], "array_to_subslice_to_mut";
-        [ "Eurydice" ], "array_to_subslice_from_shared";
-        [ "Eurydice" ], "array_to_subslice_from_mut";
-        [ "Eurydice" ], "array_repeat";
         [ "Eurydice" ], "slice_len";
         [ "Eurydice" ], "slice_copy";
         [ "Eurydice" ], "array_eq";
@@ -148,14 +134,17 @@ Supported options:|}
            | [ "Eurydice" ], "slice_index"
            | [ "Eurydice" ], "slice_len"
            | [ "Eurydice" ], "slice_to_ref_array"
-           | [ "Eurydice" ], "slice_subslice"
-           | [ "Eurydice" ], "slice_subslice2"
-           | [ "Eurydice" ], "slice_subslice3"
-           | [ "Eurydice" ], "slice_subslice_from"
-           | [ "Eurydice" ], "array_to_slice"
-           | [ "Eurydice" ], "array_to_subslice"
-           | [ "Eurydice" ], "array_to_subslice2"
-           | [ "Eurydice" ], "array_to_subslice3"
+           | [ "Eurydice" ], "slice_to_ref_array2"
+           | [ "Eurydice" ], "slice_subslice_shared"
+           | [ "Eurydice" ], "slice_subslice_mut"
+           | [ "Eurydice" ], "slice_subslice_to_shared"
+           | [ "Eurydice" ], "slice_subslice_to_mut"
+           | [ "Eurydice" ], "slice_subslice_from_shared"
+           | [ "Eurydice" ], "slice_subslice_from_mut"
+           | [ "Eurydice" ], "array_to_slice_shared"
+           | [ "Eurydice" ], "array_to_slice_mut"
+           | [ "Eurydice" ], "array_to_subslice_shared"
+           | [ "Eurydice" ], "array_to_subslice_mut"
            | [ "Eurydice" ], "array_repeat"
            | [ "core"; "mem" ], "size_of"
            | "core" :: "slice" :: _, "as_mut_ptr"

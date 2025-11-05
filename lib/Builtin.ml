@@ -503,7 +503,7 @@ let array_to_slice_func const =
 let array_to_slice_func_shared = array_to_slice_func true
 let array_to_slice_func_mut = array_to_slice_func false
 
-(* let array_to_subslice<T;N> (r: Range<SizeT>, x : &Arr<T,N>)
+(* let array_to_subslice<T, _, _;N> (r: Range<SizeT>, x : &Arr<T,N>)
    = dst_ref { ptr = a->data + r.start ; meta = r.end - r.start }  *)
 let array_to_subslice_func const =
   let open Krml in
@@ -530,7 +530,7 @@ let array_to_subslice_func const =
     let ptr = with_type (TBuf (element_t, const)) (EBufSub (data, r_start)) in
     with_type ret_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
   in
-  DFunction (None, [ Private ], 1, 1, ret_t, lid, binders, expr)
+  DFunction (None, [ Private ], 1, 3, ret_t, lid, binders, expr)
 
 let array_to_subslice_func_shared = array_to_subslice_func true
 let array_to_subslice_func_mut = array_to_subslice_func false
@@ -560,12 +560,12 @@ let array_to_subslice_to_func const =
     let meta = with_type (TInt SizeT) (EField (range, "end")) in
     with_type ret_t (EFlat [ Some "ptr", data; Some "meta", meta ])
   in
-  DFunction (None, [ Private ], 1, 1, ret_t, lid, binders, expr)
+  DFunction (None, [ Private ], 1, 3, ret_t, lid, binders, expr)
 
 let array_to_subslice_to_func_shared = array_to_subslice_to_func true
 let array_to_subslice_to_func_mut = array_to_subslice_to_func false
 
-(* let array_to_subslice_from<T;N> (r: RangeFrom<SizeT>, x : &Arr<T,N>)
+(* let array_to_subslice_from<T, _, _;N> (r: RangeFrom<SizeT>, x : &Arr<T,N>)
    = dst_ref { ptr = a->data + r.start; meta = N - r.start } *)
 let array_to_subslice_from_func const =
   let open Krml in
@@ -592,12 +592,12 @@ let array_to_subslice_from_func const =
     let ptr = with_type (TBuf (element_t, false)) (EBufSub (data, start)) in
     with_type ret_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
   in
-  DFunction (None, [ Private ], 1, 1, ret_t, lid, binders, expr)
+  DFunction (None, [ Private ], 1, 3, ret_t, lid, binders, expr)
 
 let array_to_subslice_from_func_shared = array_to_subslice_from_func true
 let array_to_subslice_from_func_mut = array_to_subslice_from_func false
 
-(* let slice_subslice<T> (r: Range<SizeT>, s : DstRef<T,N>)
+(* let slice_subslice<T, _, _> (r: Range<SizeT>, s : DstRef<T,N>)
    = dst_ref { ptr = s.ptr + r.start; meta = r.end - r.start } *)
 let slice_subslice_func const =
   let open Krml in
@@ -619,12 +619,12 @@ let slice_subslice_func const =
     let ptr = with_type (TBuf (element_t, false)) (EBufSub (ptr, r_start)) in
     with_type slice_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
   in
-  DFunction (None, [ Private ], 1, 0, slice_t, lid, binders, expr)
+  DFunction (None, [ Private ], 0, 3, slice_t, lid, binders, expr)
 
 let slice_subslice_func_shared = slice_subslice_func true
 let slice_subslice_func_mut = slice_subslice_func false
 
-(* let slice_subslice_to<T> (r: RangeTo<SizeT>, s : DstRef<T,N>)
+(* let slice_subslice_to<T, _, _> (r: RangeTo<SizeT>, s : DstRef<T,N>)
    = dst_ref { ptr = s.ptr ; meta = r.end } *)
 let slice_subslice_to_func const =
   let open Krml in
@@ -643,12 +643,12 @@ let slice_subslice_to_func const =
     let meta = with_type (TInt SizeT) (EField (range, "end")) in
     with_type slice_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
   in
-  DFunction (None, [ Private ], 1, 0, slice_t, lid, binders, expr)
+  DFunction (None, [ Private ], 0, 3, slice_t, lid, binders, expr)
 
 let slice_subslice_to_func_shared = slice_subslice_to_func true
 let slice_subslice_to_func_mut = slice_subslice_to_func false
 
-(* let slice_subslice_from<T> (r: RangeFrom<SizeT>, s : DstRef<T,N>)
+(* let slice_subslice_from<T, _, _> (r: RangeFrom<SizeT>, s : DstRef<T,N>)
    = dst_ref { ptr = s.ptr + r.start ; meta = s.meta - r.start } *)
 let slice_subslice_from_func const =
   let open Krml in
@@ -670,7 +670,7 @@ let slice_subslice_from_func const =
     let meta = mk_sizeT (EApp (Helpers.mk_op Sub SizeT, [ meta; start ])) in
     with_type slice_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
   in
-  DFunction (None, [ Private ], 1, 0, slice_t, lid, binders, expr)
+  DFunction (None, [ Private ], 0, 3, slice_t, lid, binders, expr)
 
 let slice_subslice_from_func_shared = slice_subslice_from_func true
 let slice_subslice_from_func_mut = slice_subslice_from_func false

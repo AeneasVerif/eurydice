@@ -102,8 +102,8 @@ let expand_slice_to_array =
             },
             [ slice ] )
         when lid = Builtin.slice_to_ref_array.name ->
-          (* allocate a Arr<T,C>, do memcpy and pass its ref as a new argument to the builtin func,
-            let C macro do the choose and define the error value *)
+          (* allocate a Arr<T,C>, do memcpy and let the C macro do the choose and define the return
+             or error value *)
           let slice_to_ref_array2 = Builtin.(expr_of_builtin slice_to_ref_array2) in
           let ts = [ slice_t; arr_ref_t; err_t ] in
           let slice_to_ref_array2 =
