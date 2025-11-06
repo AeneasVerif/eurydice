@@ -15,6 +15,8 @@
 extern "C" {
 #endif
 
+#include "substr_stubs.h"
+
 /**
 A monomorphic instance of Eurydice.dst_ref
 with types Eurydice_c_char_t, size_t
@@ -26,66 +28,6 @@ typedef struct Eurydice_dst_ref_65_s
   size_t meta;
 }
 Eurydice_dst_ref_65;
-
-/**
-A monomorphic instance of core.ops.range.RangeFrom
-with types size_t
-
-*/
-typedef size_t core_ops_range_RangeFrom_08;
-
-#define core_option_None 0
-#define core_option_Some 1
-
-typedef uint8_t core_option_Option_26_tags;
-
-/**
-A monomorphic instance of core.option.Option
-with types Eurydice_dst_ref Eurydice_c_char_t size_t
-
-*/
-typedef struct core_option_Option_26_s
-{
-  core_option_Option_26_tags tag;
-  Eurydice_dst_ref_65 f0;
-}
-core_option_Option_26;
-
-extern core_option_Option_26
-core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize__core__marker__Sized_usize____get(
-  size_t x0,
-  Eurydice_dst_ref_65 x1
-);
-
-extern core_option_Option_26
-core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize__core__marker__Sized_usize____get_mut(
-  size_t x0,
-  Eurydice_dst_ref_65 x1
-);
-
-extern Eurydice_dst_ref_65
-core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize__core__marker__Sized_usize____get_unchecked(
-  size_t x0,
-  Eurydice_dst_ref_65 x1
-);
-
-extern Eurydice_dst_ref_65
-core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize__core__marker__Sized_usize____get_unchecked_mut(
-  size_t x0,
-  Eurydice_dst_ref_65 x1
-);
-
-extern Eurydice_dst_ref_65
-core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize__core__marker__Sized_usize____index(
-  size_t x0,
-  Eurydice_dst_ref_65 x1
-);
-
-extern Eurydice_dst_ref_65
-core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize__core__marker__Sized_usize____index_mut(
-  size_t x0,
-  Eurydice_dst_ref_65 x1
-);
 
 extern size_t core_str__str__len(Eurydice_dst_ref_65 x0);
 

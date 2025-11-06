@@ -1,0 +1,11 @@
+files:
+  - name: substr
+    include_in_h: [ "\"substr_stubs.h\"" ]
+    api:
+      patterns:
+        - [ substr ]
+      exact:
+        - [ core, str, "{str}", len ]
+    private:
+      - [ "*" ]
+

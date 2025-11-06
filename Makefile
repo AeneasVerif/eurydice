@@ -86,6 +86,8 @@ test/println.llbc: CHARON_EXTRA = \
 test/option.llbc: CHARON_EXTRA = \
   --include=core::option::*
 
+test-substr: EXTRA_C = -I../../test ../../test/substr_impl.c
+test-substr: EXTRA = --config test/substr.yaml
 test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c
 test-nested_arrays: EXTRA = -funroll-loops 0
 test-array: EXTRA = -fcomments

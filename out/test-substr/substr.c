@@ -7,6 +7,59 @@
 
 #include "substr.h"
 
+#define None 0
+#define Some 1
+
+typedef uint8_t Option_26_tags;
+
+/**
+A monomorphic instance of core.option.Option
+with types Eurydice_dst_ref Eurydice_c_char_t size_t
+
+*/
+typedef struct Option_26_s
+{
+  Option_26_tags tag;
+  Eurydice_dst_ref_65 f0;
+}
+Option_26;
+
+extern Option_26
+core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize__core__marker__Sized_usize____get(
+  size_t x0,
+  Eurydice_dst_ref_65 x1
+);
+
+extern Option_26
+core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize__core__marker__Sized_usize____get_mut(
+  size_t x0,
+  Eurydice_dst_ref_65 x1
+);
+
+extern Eurydice_dst_ref_65
+core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize__core__marker__Sized_usize____get_unchecked(
+  size_t x0,
+  Eurydice_dst_ref_65 x1
+);
+
+extern Eurydice_dst_ref_65
+core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize__core__marker__Sized_usize____get_unchecked_mut(
+  size_t x0,
+  Eurydice_dst_ref_65 x1
+);
+
+extern Eurydice_dst_ref_65
+core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize__core__marker__Sized_usize____index(
+  size_t x0,
+  Eurydice_dst_ref_65 x1
+);
+
+extern Eurydice_dst_ref_65
+core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize__core__marker__Sized_usize____index_mut(
+  size_t x0,
+  Eurydice_dst_ref_65 x1
+);
+
 void substr_main(void)
 {
   Eurydice_dst_ref_65 str = { .ptr = "abc", .meta = (size_t)3U };
