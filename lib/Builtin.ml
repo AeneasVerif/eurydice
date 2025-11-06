@@ -126,6 +126,9 @@ type builtin = {
     transpilation phase in AstOfLlbc *)
 
 let expr_of_builtin { name; typ; cg_args; _ } =
+  (* let open Krml in *)
+  (* let open PrintAst.Ops in *)
+  (* KPrint.bprintf "%a:\n  typ = %a\n  cg_args=%a\n\n" plid name ptyp typ ptyps cg_args; *)
   let typ = List.fold_right (fun t acc -> K.TArrow (t, acc)) cg_args typ in
   K.(with_type typ (EQualified name))
 
@@ -487,7 +490,7 @@ let array_to_slice_func const =
   let open Krml in
   let open Ast in
   let element_t = TBound 0 in
-  let arrref_t = TBuf (mk_arr (TBound 0) (CgVar 0), true) in
+  let arrref_t = TBuf (mk_arr (TBound 0) (CgVar 0), const) in
   let ret_t = mk_slice ~const element_t in
   let lid = [ "Eurydice" ], "array_to_slice" ^ suffix_of_const const in
   let binders = [ Helpers.fresh_binder "N" (TInt SizeT); Helpers.fresh_binder "a" arrref_t ] in
@@ -509,7 +512,7 @@ let array_to_subslice_func const =
   let open Krml in
   let open Ast in
   let element_t = TBound 2 in
-  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), true) in
+  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), const) in
   let ret_t = mk_slice ~const element_t in
   let lid = [ "Eurydice" ], "array_to_subslice" ^ suffix_of_const const in
   let binders =
@@ -541,7 +544,7 @@ let array_to_subslice_to_func const =
   let open Krml in
   let open Ast in
   let element_t = TBound 2 in
-  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), true) in
+  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), const) in
   let ret_t = mk_slice ~const element_t in
   let lid = [ "Eurydice" ], "array_to_subslice_to" ^ suffix_of_const const in
   let binders =
@@ -571,7 +574,7 @@ let array_to_subslice_from_func const =
   let open Krml in
   let open Ast in
   let element_t = TBound 2 in
-  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), true) in
+  let arrref_t = TBuf (mk_arr (TBound 2) (CgVar 0), const) in
   let ret_t = mk_slice ~const element_t in
   let lid = [ "Eurydice" ], "array_to_subslice_from" ^ suffix_of_const const in
   let binders =

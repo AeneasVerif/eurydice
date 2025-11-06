@@ -367,7 +367,7 @@ let const_of_tbuf = function
 let mk_dst_deref _env t e =
   (* ptr_field: t* *)
   (* XXX need proper const here *)
-  let ptr_field = K.(with_type (TBuf (t, false)) (EField (e, "ptr"))) in
+  let ptr_field = K.(with_type (TBuf (t, true)) (EField (e, "ptr"))) in
   K.(with_type t (EBufRead (ptr_field, Krml.Helpers.zero_usize)))
 
 let ensure_named i name =
@@ -1789,7 +1789,7 @@ let mk_reference ~const (e : K.expr) (metadata : K.expr) : K.expr =
       | TApp (lid, [ t ]) when lid = Builtin.derefed_slice ->
           (* The special "base case" of DSTs: slice<T>
           where we have to cast [derefed_slice<T>] into [T*] for the .ptr field in the fat pointer  *)
-          let ptr = K.(with_type (TBuf (t, false)) (ECast (e, TBuf (t, false)))) in
+          let ptr = K.(with_type (TBuf (t, const)) (ECast (e, TBuf (t, const)))) in
           K.(
             with_type
               (Builtin.mk_dst_ref ~const t metadata.typ)
@@ -1811,6 +1811,7 @@ let destruct_dst_ref_typ t =
    I.e., from `e : Eurydice_dst_ref<T, meta>` to `e.ptr : T*` *)
 let get_dst_ref_base dst_ref =
   match destruct_dst_ref_typ dst_ref.K.typ with
+  (* XXX fixme *)
   | Some (base, _) -> Some K.(with_type (TBuf (base, false)) (EField (dst_ref, "ptr")))
   | None -> None
 
@@ -1821,6 +1822,27 @@ let destruct_arr_dst_ref t =
   match t with
   | K.TApp (dst_ref_hd, [ (TApp (lid, _) as t_u); _ ]) when is_dst_ref dst_ref_hd -> Some (lid, t_u)
   | _ -> None
+
+(* Reborrows allow going from a mutable slice to an immutable one. *)
+let maybe_reborrow_slice t_dst e_src =
+  let open K in
+  match e_src.typ, t_dst with
+  | TApp (hd1, [ t_ptr; t_meta ]), TApp (hd2, _) when is_dst_ref hd1 && is_dst_ref hd2 && hd1 <> hd2
+    ->
+      with_type t_dst
+        (ELet
+           ( Krml.Helpers.fresh_binder "reborrowed_slice" e_src.typ,
+             e_src,
+             with_type t_dst
+               (EFlat
+                  [
+                    ( Some "ptr",
+                      with_type
+                        (TBuf (t_ptr, true))
+                        (EField (with_type e_src.typ (EBound 0), "ptr")) );
+                    Some "meta", with_type t_meta (EField (with_type e_src.typ (EBound 0), "meta"));
+                  ]) ))
+  | _ -> e_src
 
 let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   match p with
@@ -1841,9 +1863,10 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
      *)
   | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _, _)
   | RawPtr ({ kind = PlaceProjection (p, Deref); _ }, _, _) ->
-      (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and [p] might be a reference to DST (fat pointer). *)
+      (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and [p] might
+         be a reference to DST (fat pointer). *)
       (* This also works for when the case has metadata, simply ignore it *)
-      expression_of_place env p
+      maybe_reborrow_slice (typ_of_ty env expected_ty) (expression_of_place env p)
   | RvRef (p, bk, metadata) ->
       let metadata = expression_of_operand env metadata in
       let e = expression_of_place env p in
@@ -1892,12 +1915,17 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
             let len = expression_of_const_generic env cg in
             let ptr = K.with_type (TBuf (t_u, const)) (K.ECast (e, TBuf (t_u, const))) in
             Builtin.dst_new ~const ~len ~ptr t_u
-        | MetaLength cg, TBuf (K.TCgApp (K.TApp (lid_arr, [ t ]), _), _), Some (lid, _)
+        | MetaLength cg, TBuf (K.TCgApp (K.TApp (lid_arr, [ t ]), _), _), _
           when lid_arr = Builtin.arr ->
             (* Cast from Box<[T;N]> (represented as a mut reference to an array) to Box<[T]> (which we
                represent as a slice). See the translation of types. *)
             let len = expression_of_const_generic env cg in
-            let const = lid = Builtin.dst_ref_shared in
+            let const =
+              match t_to with
+              | K.TApp (dst_ref_hd, _) when dst_ref_hd = Builtin.dst_ref_shared -> true
+              | K.TApp (dst_ref_hd, _) when dst_ref_hd = Builtin.dst_ref_mut -> false
+              | _ -> assert false
+            in
             let array_to_slice =
               RustNames.builtin_of_function
                 (if const then
@@ -1905,16 +1933,20 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
                  else
                    Builtin.array_to_slice_func_mut)
             in
+            let t_without_cg = array_to_slice.typ in
             (* array_to_slice: size_t -> arr -> Eurydice_slice 0 *)
             let array_to_slice = Builtin.(expr_of_builtin array_to_slice) in
             let diff = List.length env.binders - List.length env.cg_binders in
             let array_to_slice =
               K.with_type
-                Krml.DeBruijn.(subst_t t 0 (subst_ct diff len 0 array_to_slice.typ))
+                Krml.DeBruijn.(subst_t t 0 (subst_ct diff len 0 t_without_cg))
                 (K.ETApp (array_to_slice, [ len ], [], [ t ]))
             in
             K.(with_type (Builtin.mk_slice ~const t) (EApp (array_to_slice, [ e ])))
-        | _ ->
+        | _, _, _ ->
+            Krml.KPrint.bprintf "t_to = %a\n" ptyp t_to;
+            Krml.KPrint.bprintf "destruct_arr_dst_ref t_to = None? %b\n"
+              (destruct_arr_dst_ref t_to = None);
             Krml.Warn.fatal_error "unknown unsize cast: `%s`\nt_to=%a\nt_from=%a"
               (Charon.PrintExpressions.cast_kind_to_string env.format_env ck)
               ptyp t_to ptyp t_from

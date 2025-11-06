@@ -49,30 +49,42 @@ typedef struct castunsize_S_64_s
 castunsize_S_64;
 
 /**
-A monomorphic instance of Eurydice.dst_ref
+A monomorphic instance of Eurydice.dst_ref_shared
 with types castunsize_S Eurydice_derefed_slice uint32_t, size_t
 
 */
-typedef struct Eurydice_dst_ref_5e_s
+typedef struct Eurydice_dst_ref_shared_5e_s
 {
-  castunsize_T *ptr;
+  const castunsize_T *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_5e;
+Eurydice_dst_ref_shared_5e;
 
 /**
-A monomorphic instance of Eurydice.dst_ref
+A monomorphic instance of Eurydice.dst_ref_shared
 with types uint32_t, size_t
 
 */
-typedef struct Eurydice_dst_ref_3c_s
+typedef struct Eurydice_dst_ref_shared_3c_s
+{
+  const uint32_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_shared_3c;
+
+void castunsize_main1(void);
+
+/**
+A monomorphic instance of Eurydice.dst_ref_mut
+with types uint32_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_mut_3c_s
 {
   uint32_t *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_3c;
-
-void castunsize_main1(void);
+Eurydice_dst_ref_mut_3c;
 
 void castunsize_main3(void);
 
