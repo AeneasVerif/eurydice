@@ -32,8 +32,6 @@ let decl_of_arr = K.DType (arr, [], 1, 1, Flat [ Some "data", (K.TCgArray (TBoun
      1  : we have one const generic C
      1  : we have one type argument T *)
 
-let array_copy = [ "Eurydice" ], "array_copy"
-
 (* Things that could otherwise be emitted as an extern prototype, but for some
    reason ought to be skipped. *)
 let skip = Krml.Idents.LidSet.of_list [ [ "Eurydice" ], "assert"; [], "UNIT_METADATA" ]
@@ -269,15 +267,6 @@ let discriminant =
 let iterator : K.lident = [ "core"; "iter"; "traits"; "iterator" ], "Iterator"
 let mk_iterator t = K.TApp (iterator, [ t ])
 
-let array_into_iter =
-  {
-    name = [ "Eurydice" ], "array_into_iter";
-    typ = Krml.Helpers.fold_arrow [ TCgArray (TBound 0, 0) ] (mk_iterator (TCgArray (TBound 0, 0)));
-    n_type_args = 1;
-    cg_args = [ TInt SizeT ];
-    arg_names = [ "arr" ];
-  }
-
 let array_eq =
   {
     name = [ "Eurydice" ], "array_eq";
@@ -464,19 +453,6 @@ let deref_str_t = K.TApp (derefed_slice, [ c_char_t ])
 
 let c_string_def =
   K.DType (([ "Prims" ], "string"), [ Private ], 0, 0, Abbrev (TBuf (c_char_t, false)))
-
-(* Gotta use a helper because the definition of Eurydice_slice is opaque (historical mistake?). *)
-let slice_of_dst =
-  {
-    name = [ "Eurydice" ], "slice_of_dst";
-    typ =
-      Krml.Helpers.fold_arrow
-        [ TBuf (TApp (derefed_slice, [ TBound 0 ]), false); TInt SizeT ]
-        (mk_slice (TBound 0));
-    n_type_args = 1;
-    cg_args = [];
-    arg_names = [ "ptr"; "len" ];
-  }
 
 (* Take the type of the ptr field *)
 let dst_new ~ptr ~len t =
@@ -955,7 +931,6 @@ let builtin_funcs =
     alignof;
     opaque;
     array_repeat;
-    array_into_iter;
     array_eq;
     array_eq_slice;
     slice_eq;
@@ -970,7 +945,6 @@ let builtin_funcs =
     box_new;
     empty_array;
     replace;
-    slice_of_dst;
     bitand_pv_u8;
     shr_pv_u8;
     min_u32;
