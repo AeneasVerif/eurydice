@@ -1877,6 +1877,12 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
         match ck with
         (* Here are `literal_type`s *)
         | C.CastScalar (f, t) -> f = t
+        | C.CastTransmute
+            ( TRef (_, TAdt { id = TBuiltin TStr; _ }, _),
+              TRef
+                ( _,
+                  TAdt { id = TBuiltin TSlice; generics = { types = [ TLiteral (TUInt U8) ]; _ } },
+                  _ ) ) -> true
         (* The following are `type`s *)
         | C.CastFnPtr (f, t) | C.CastRawPtr (f, t) | C.CastUnsize (f, t, _) | C.CastTransmute (f, t)
           -> f = t
@@ -1979,6 +1985,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
             in
             K.with_type typ_arr (mk_expr_arr_struct array_expr)
       end
+  | NullaryOp (UbChecks, TLiteral TBool) -> Krml.Helpers.etrue
   | rvalue ->
       failwith
         ("unsupported rvalue: `"

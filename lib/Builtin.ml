@@ -427,7 +427,7 @@ let replace =
 let derefed_slice = [ "Eurydice" ], "derefed_slice"
 
 (** The C counterpart of `&str` *)
-let str_t = mk_dst_ref c_char_t (TInt SizeT)
+let str_t = mk_dst_ref (TInt UInt8) (TInt SizeT)
 
 (** The C counterpart of `str` and serves twofold functionalities: (1) when in expressions, it
     serves as a placeholder to get referenced again; (2) when in customised DST definition, it is
@@ -435,7 +435,7 @@ let str_t = mk_dst_ref c_char_t (TInt SizeT)
 let deref_str_t = K.TApp (derefed_slice, [ c_char_t ])
 
 let c_string_def =
-  K.DType (([ "Prims" ], "string"), [ Private ], 0, 0, Abbrev (TBuf (c_char_t, false)))
+  K.DType (([ "Prims" ], "string"), [ Private ], 0, 0, Abbrev (TBuf (TInt UInt8, false)))
 
 (* Take the type of the ptr field *)
 let dst_new ~ptr ~len t =

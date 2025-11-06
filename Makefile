@@ -63,6 +63,9 @@ out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
 	sed 's/__NAME__/$*/g' $< > $@
 
+test/substr.llbc: CHARON_EXTRA = \
+  --include=core::str::traits::*
+
 test/issue_99.llbc: CHARON_EXTRA = \
   --include=core::option::*::as_ref
 
@@ -86,6 +89,7 @@ test/println.llbc: CHARON_EXTRA = \
 test/option.llbc: CHARON_EXTRA = \
   --include=core::option::*
 
+test-substr: EXTRA = --keep-going
 test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c
 test-nested_arrays: EXTRA = -funroll-loops 0
 test-array: EXTRA = -fcomments
