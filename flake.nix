@@ -154,7 +154,7 @@
             nativeBuildInputs = [
               pkgs.bash
               pkgs.gnumake
-              pkgs.clang-tools_18 # For clang-format
+              pkgs.llvmPackages_18.clang-tools # For clang-format
               pkgs.ocamlPackages.ocaml
               pkgs.ocamlPackages.ocamlformat_0_27_0
               pkgs.ocamlPackages.dune_3
@@ -172,7 +172,7 @@
         OCAMLRUNPARAM = "b"; # Get backtrace on exception
         packages = [
           pkgs.jq
-          pkgs.clang-tools_18 # For clang-format
+          pkgs.llvmPackages_18.clang-tools # For clang-format
           pkgs.ocamlPackages.ocaml
           pkgs.ocamlPackages.ocamlformat_0_27_0
           pkgs.ocamlPackages.menhir
