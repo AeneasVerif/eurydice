@@ -424,11 +424,11 @@
     "json": {
       "flake": false,
       "locked": {
-        "lastModified": 1633696761,
-        "narHash": "sha256-EBzwaHyDWF8h/z3Zfq4p/n5Vpz7Ozlc3eoWDKXWv2YY=",
+        "lastModified": 1744360948,
+        "narHash": "sha256-cECvDOLxgX7Q9R3IE86Hj9JJUxraDQvhoyPDF03B2CY=",
         "owner": "nlohmann",
         "repo": "json",
-        "rev": "aa0e847e5b57a00696bdcb6a834b927231b81613",
+        "rev": "55f93686c01528224f448c19128836e7df245f72",
         "type": "github"
       },
       "original": {
@@ -506,11 +506,11 @@
         "nixpkgs": "nixpkgs_7"
       },
       "locked": {
-        "lastModified": 1762437313,
-        "narHash": "sha256-D54uvKnKOTNAoZam1CFGfJc9yZ+1TF6561Dj+5eRDdY=",
+        "lastModified": 1762477336,
+        "narHash": "sha256-ctjVTO2bJo/kiO99OW4ejTvGP4n1IUR3hGuPgMtaxYY=",
         "owner": "cryspen",
         "repo": "libcrux",
-        "rev": "1d1d3208e37eda90d03c368d532fe9dab68c59d8",
+        "rev": "5fcfe374d99320bb49bfe96ac15646a6158111cc",
         "type": "github"
       },
       "original": {
