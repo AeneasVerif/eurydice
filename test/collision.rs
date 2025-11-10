@@ -1,6 +1,6 @@
 enum Either {
   Left(i32),
-  Right(String),
+  Right(bool),
 }
 enum Direction {
   Left(u64),
