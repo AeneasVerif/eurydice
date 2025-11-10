@@ -1144,6 +1144,9 @@ let blocklisted_trait_decls =
     "core::iter::range::Step";
     (* TODO: figure out what to do with those *)
     "core::clone::Clone";
+    (* TODO: these ones carry the drop_in_place code, but sometimes there's no
+       explicit impl (because it's trivial e.g. for usize) which is tricky. *)
+    "core::marker::Destruct";
     "core::fmt::Debug";
     "core::ptr::metadata::Thin";
   ]
@@ -1640,8 +1643,13 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                 if List.mem parent_name blocklisted_trait_decls then
                   []
                 else
-                  failwith "Don't know how to resolve trait_ref above (1)"
-            | _ -> failwith "Don't know how to resolve trait_ref above (2)")
+                  failwith
+                    ("Don't know how to resolve trait_ref above (2): "
+                    ^ Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref)
+            | _ ->
+                failwith
+                  ("Don't know how to resolve trait_ref above (2): "
+                  ^ Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref))
           trait_refs
       in
       build_trait_ref_mapping depth trait_refs

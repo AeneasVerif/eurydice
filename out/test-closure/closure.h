@@ -77,7 +77,11 @@ closure_f_closure_closure__core__marker__Destruct_for_closure__f__closure__closu
 
 extern void
 closure_f_closure__core__marker__Destruct_for_closure__f__closure_0___drop_in_place(
+<<<<<<< HEAD
   const Eurydice_arr_e4 **x0
+=======
+  Eurydice_arr_e4 **x0
+>>>>>>> origin/main
 );
 
 #if defined(__cplusplus)

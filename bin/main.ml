@@ -271,7 +271,6 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_trivial_ite#visit_files () files in
   Eurydice.Logging.log "Phase2.4" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_into#visit_files () files in
-  let files = Krml.Structs.pass_by_ref files in
   Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_literals files in
   (* Eurydice does something more involved than krml and performs a conservative
