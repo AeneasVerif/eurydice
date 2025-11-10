@@ -615,7 +615,7 @@ let slice_subslice_func const =
     (* args *)
     let slice = with_type slice_t (EBound 1) in
     let range = with_type (mk_range (TInt SizeT)) (EBound 0) in
-    let ptr = with_type (TBuf (element_t, false)) (EField (slice, "ptr")) in
+    let ptr = with_type (TBuf (element_t, const)) (EField (slice, "ptr")) in
     let r_start = mk_sizeT (EField (range, "start")) in
     let r_end = mk_sizeT (EField (range, "end")) in
     let meta = mk_sizeT (EApp (Helpers.mk_op Sub SizeT, [ r_end; r_start ])) in
