@@ -101,7 +101,7 @@ let expand_slice_to_array =
                     _,
                     [
                       slice_t;
-                      (TBuf ((TCgApp (TApp (_, [ t ]), cg) as arr_t), false) as arr_ref_t);
+                      (TBuf ((TCgApp (TApp (_, [ t ]), cg) as arr_t), _) as arr_ref_t);
                       err_t;
                     ] );
               _;
