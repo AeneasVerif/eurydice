@@ -9,10 +9,7 @@
 
 int32_t issue_123_fun(issue_123_E e)
 {
-  ptrdiff_t uu____0 = (ptrdiff_t)e;
-  uint8_t uu____1 = (uint8_t)uu____0;
-  EURYDICE_ASSERT(!!(uu____1 >= 1U && uu____1 <= 5U), "assert failure");
-  return (int32_t)uu____0;
+  return (int32_t)(ptrdiff_t)e;
 }
 
 typedef struct _ptrdiff_t__x2_s
