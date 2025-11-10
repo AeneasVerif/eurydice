@@ -297,7 +297,7 @@ let array_eq_slice_shared =
 
 let slice_eq const =
   {
-    name = [ "Eurydice" ], "slice_eq";
+    name = [ "Eurydice" ], "slice_eq" ^ suffix_of_const const;
     typ =
       Krml.Helpers.fold_arrow
         [ TBuf (mk_slice ~const (TBound 0), true); TBuf (mk_slice ~const (TBound 0), true) ]

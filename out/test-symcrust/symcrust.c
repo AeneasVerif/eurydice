@@ -10,24 +10,14 @@
 #include "internal/Eurydice.h"
 
 /**
-A monomorphic instance of Eurydice.slice_subslice
-with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
-
-*/
-static Eurydice_dst_ref_87 slice_subslice_7e(Eurydice_dst_ref_87 s, core_ops_range_Range_08 r)
-{
-  return (KRML_CLITERAL(Eurydice_dst_ref_87){ .ptr = s.ptr + r.start, .meta = r.end - r.start });
-}
-
-/**
-A monomorphic instance of Eurydice.array_to_slice
+A monomorphic instance of Eurydice.array_to_slice_shared
 with types uint8_t
 with const generics
 - N= 4
 */
-static Eurydice_dst_ref_87 array_to_slice_60(Eurydice_arr_e9 *a)
+static Eurydice_dst_ref_shared_87 array_to_slice_shared_60(const Eurydice_arr_e9 *a)
 {
-  Eurydice_dst_ref_87 lit;
+  Eurydice_dst_ref_shared_87 lit;
   lit.ptr = a->data;
   lit.meta = (size_t)4U;
   return lit;
@@ -35,9 +25,9 @@ static Eurydice_dst_ref_87 array_to_slice_60(Eurydice_arr_e9 *a)
 
 void
 symcrust_SymCrustMlKemPolyElementCompressAndEncode(
-  Eurydice_arr_bc *coeffs,
+  const Eurydice_arr_bc *coeffs,
   uint32_t nBitsPerCoefficient,
-  Eurydice_dst_ref_87 dst
+  Eurydice_dst_ref_mut_87 dst
 )
 {
   uint64_t SYMCRYPT_MLKEM_COMPRESS_MULCONSTANT = 10321339ULL;
@@ -47,8 +37,15 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
   uint32_t nBitsInAccumulator = 0U;
   EURYDICE_ASSERT(nBitsPerCoefficient > 0U, "panic!");
   EURYDICE_ASSERT(nBitsPerCoefficient <= 12U, "panic!");
-  EURYDICE_ASSERT((uint64_t)Eurydice_slice_len(dst, uint8_t) ==
-      256ULL * (uint64_t)nBitsPerCoefficient / 8ULL,
+  Eurydice_dst_ref_mut_87 reborrowed_slice = dst;
+  EURYDICE_ASSERT((uint64_t)Eurydice_slice_len((
+        KRML_CLITERAL(Eurydice_dst_ref_shared_87){
+          .ptr = reborrowed_slice.ptr,
+          .meta = reborrowed_slice.meta
+        }
+      ),
+      uint8_t)
+    == 256ULL * (uint64_t)nBitsPerCoefficient / 8ULL,
     "panic!");
   for (size_t i = (size_t)0U; i < (size_t)256U; i++)
   {
@@ -75,18 +72,40 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
       nBitsInAccumulator = nBitsInAccumulator + nBitsToEncode;
       if (nBitsInAccumulator == 32U)
       {
-        Eurydice_dst_ref_87
+        Eurydice_dst_ref_mut_87
         uu____0 =
-          slice_subslice_7e(dst,
+          core_slice_index__core__ops__index__IndexMut_I__Clause2_Output__for__Slice_T___index_mut(core_slice_index__core__slice__index__SliceIndex__Slice_T____Slice_T___for_core__ops__range__Range_usize__core__marker__Sized_usize____get(uint8_t,
+              core_option_Option_05 (*)(core_ops_range_Range_08 x0, Eurydice_dst_ref_shared_87 x1)),
+            core_slice_index__core__slice__index__SliceIndex__Slice_T____Slice_T___for_core__ops__range__Range_usize__core__marker__Sized_usize____get_mut(uint8_t,
+              core_option_Option_33 (*)(core_ops_range_Range_08 x0, Eurydice_dst_ref_mut_87 x1)),
+            core_slice_index__core__slice__index__SliceIndex__Slice_T____Slice_T___for_core__ops__range__Range_usize__core__marker__Sized_usize____get_unchecked(uint8_t,
+              Eurydice_dst_ref_shared_87 (*)(
+                core_ops_range_Range_08 x0,
+                Eurydice_dst_ref_shared_87 x1
+              )),
+            core_slice_index__core__slice__index__SliceIndex__Slice_T____Slice_T___for_core__ops__range__Range_usize__core__marker__Sized_usize____get_unchecked_mut(uint8_t,
+              Eurydice_dst_ref_mut_87 (*)(core_ops_range_Range_08 x0, Eurydice_dst_ref_mut_87 x1)),
+            core_slice_index__core__slice__index__SliceIndex__Slice_T____Slice_T___for_core__ops__range__Range_usize__core__marker__Sized_usize____index(uint8_t,
+              Eurydice_dst_ref_shared_87 (*)(
+                core_ops_range_Range_08 x0,
+                Eurydice_dst_ref_shared_87 x1
+              )),
+            core_slice_index__core__slice__index__SliceIndex__Slice_T____Slice_T___for_core__ops__range__Range_usize__core__marker__Sized_usize____index_mut(uint8_t,
+              Eurydice_dst_ref_mut_87 (*)(core_ops_range_Range_08 x0, Eurydice_dst_ref_mut_87 x1)),
+            dst,
             (
               KRML_CLITERAL(core_ops_range_Range_08){
                 .start = cbDstWritten,
                 .end = cbDstWritten + (size_t)4U
               }
-            ));
+            ),
+            uint8_t,
+            core_ops_range_Range_08,
+            uint8_t [],
+            Eurydice_dst_ref_mut_87);
         /* original Rust expression is not an lvalue in C */
         Eurydice_arr_e9 lvalue = core_num__u32__to_le_bytes(accumulator);
-        Eurydice_slice_copy(uu____0, array_to_slice_60(&lvalue), uint8_t);
+        Eurydice_slice_copy(uu____0, array_to_slice_shared_60(&lvalue), uint8_t);
         cbDstWritten = cbDstWritten + (size_t)4U;
         accumulator = 0U;
         nBitsInAccumulator = 0U;

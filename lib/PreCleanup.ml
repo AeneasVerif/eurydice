@@ -51,6 +51,12 @@ let expression_of_cg (n_cgs, n_binders) (cg : cg) =
    slice_to_ref_array<&[T], &[T;N], Error, len>(src) ->
    let arr: Arr<T,N>; memcpy(arr.data, src.ptr); slice_to_ref_array2<&[T], &[T;N], Error, len>(src, &arr)
    *)
+let constness_of_slice_type t =
+  match t with
+  | TApp (lid, _) when lid = Builtin.dst_ref_shared -> true
+  | TApp (lid, _) when lid = Builtin.dst_ref_mut -> false
+  | _ -> assert false
+
 let expand_slice_to_array =
   object (_self)
     inherit Krml.DeBruijn.map_counting_cg as super
@@ -74,11 +80,11 @@ let expand_slice_to_array =
           (*let arr = .. *)
           let arr = with_type arr_t (EBound 0) in
           let src = Krml.DeBruijn.lift 1 src in
-          let lhs = with_type (TBuf (t, false)) (EField (arr, "data")) in
-          let rhs = with_type (TBuf (t, false)) (EField (src, "ptr")) in
+          let dst = with_type (TBuf (t, false)) (EField (arr, "data")) in
+          let src = with_type (TBuf (t, constness_of_slice_type src.typ)) (EField (src, "ptr")) in
           let n = Krml.DeBruijn.lift 1 (expression_of_cg count cg) in
           let zero = H.zero SizeT in
-          let memcpy = H.with_unit (EBufBlit (rhs, zero, lhs, zero, n)) in
+          let memcpy = H.with_unit (EBufBlit (src, zero, dst, zero, n)) in
           (* let arr = any in {memcpy (src, slice); OK (arr);} *)
           with_type result_t
             (ELet
@@ -104,6 +110,7 @@ let expand_slice_to_array =
         when lid = Builtin.slice_to_ref_array.name ->
           (* allocate a Arr<T,C>, do memcpy and let the C macro do the choose and define the return
              or error value *)
+          let const = constness_of_slice_type slice_t in
           let slice_to_ref_array2 = Builtin.(expr_of_builtin slice_to_ref_array2) in
           let ts = [ slice_t; arr_ref_t; err_t ] in
           let slice_to_ref_array2 =
@@ -114,12 +121,12 @@ let expand_slice_to_array =
           let arr = with_type arr_t (EBound 0) in
           let arr_ref = with_type arr_ref_t (EAddrOf arr) in
           let slice = Krml.DeBruijn.lift 1 slice in
-          let lhs = with_type (TBuf (t, false)) (EField (arr, "data")) in
-          let rhs = with_type (TBuf (t, false)) (EField (slice, "ptr")) in
+          let dst = with_type (TBuf (t, true)) (EField (arr, "data")) in
+          let src = with_type (TBuf (t, const)) (EField (slice, "ptr")) in
           let n = Krml.DeBruijn.lift 1 (expression_of_cg count cg) in
           (* let n = with_type (TInt SizeT) (EField (slice, "meta")) in *)
           let zero = H.zero SizeT in
-          let memcpy = H.with_unit (EBufBlit (rhs, zero, lhs, zero, n)) in
+          let memcpy = H.with_unit (EBufBlit (src, zero, dst, zero, n)) in
           with_type e.typ
             (ELet
                ( H.fresh_binder "arr" arr_t,
