@@ -801,7 +801,7 @@ let expression_of_literal (_env : env) (l : C.literal) : K.expr =
       let ascii = Utf8.ascii_of_utf8_str s in
       let len = String.length s in
       K.(
-        with_type (Builtin.str_t ~const:false)
+        with_type (Builtin.str_t ~const:true)
           (EFlat
              [
                Some "ptr", with_type Krml.Checker.c_string (EString ascii);

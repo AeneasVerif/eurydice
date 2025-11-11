@@ -56,18 +56,6 @@ bool partial_eq_eq_31(const partial_eq_Enum *self, const partial_eq_Enum *other)
 void partial_eq_main(void);
 
 /**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types Eurydice_c_char_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_65_s
-{
-  Eurydice_c_char_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_mut_65;
-
-/**
 This function found in impl {core::fmt::Debug for partial_eq::Enum}
 */
 core_result_Result_10 partial_eq_fmt_29(const partial_eq_Enum *self, core_fmt_Formatter *f);
