@@ -16,6 +16,18 @@ extern "C" {
 #endif
 
 /**
+A monomorphic instance of Eurydice.dst_ref_shared
+with types uint8_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_shared_87_s
+{
+  const uint8_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_shared_87;
+
+/**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
 with const generics
@@ -45,6 +57,18 @@ typedef struct libcrux_ml_kem_mlkem1024_MlKem1024KeyPair_s
   Eurydice_arr_00 pk;
 }
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair;
+
+/**
+A monomorphic instance of Eurydice.dst_ref_mut
+with types uint8_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_mut_87_s
+{
+  uint8_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_mut_87;
 
 /**
 A monomorphic instance of K.
@@ -142,17 +166,20 @@ libcrux_ml_kem_types_MlKemKeyPair_3e;
 A monomorphic instance of Eurydice.arr
 with types uint8_t
 with const generics
-- $24size_t
+- $768size_t
 */
-typedef struct Eurydice_arr_6d_s { uint8_t data[24U]; } Eurydice_arr_6d;
+typedef struct Eurydice_arr_56_s { uint8_t data[768U]; } Eurydice_arr_56;
 
 /**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
 with const generics
-- $768size_t
+- $24size_t
 */
-typedef struct Eurydice_arr_56_s { uint8_t data[768U]; } Eurydice_arr_56;
+typedef struct Eurydice_arr_6d_s { uint8_t data[24U]; } Eurydice_arr_6d;
+
+typedef struct libcrux_sha3_Sha3_512Digest_s { uint8_t data[64U]; }
+libcrux_sha3_Sha3_512Digest;
 
 /**
 A monomorphic instance of K.
@@ -190,8 +217,29 @@ with const generics
 */
 typedef struct Eurydice_arr_dc_s { uint8_t data[20U]; } Eurydice_arr_dc;
 
-typedef struct libcrux_sha3_Sha3_512Digest_s { uint8_t data[64U]; }
-libcrux_sha3_Sha3_512Digest;
+/**
+A monomorphic instance of Eurydice.dst_ref_shared
+with types int16_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_shared_9a_s
+{
+  const int16_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_shared_9a;
+
+/**
+A monomorphic instance of Eurydice.dst_ref_mut
+with types int16_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_mut_9a_s
+{
+  int16_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_mut_9a;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -207,7 +255,7 @@ with types int16_t
 with const generics
 - $16size_t
 */
-typedef struct Eurydice_arr_e20_s { int16_t data[16U]; } Eurydice_arr_e20;
+typedef struct Eurydice_arr_e2_s { int16_t data[16U]; } Eurydice_arr_e2;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -226,16 +274,28 @@ with const generics
 typedef struct Eurydice_arr_3d_s { uint8_t data[136U]; } Eurydice_arr_3d;
 
 /**
-A monomorphic instance of Eurydice.dst_ref
+A monomorphic instance of Eurydice.dst_ref_mut
 with types int32_t, size_t
 
 */
-typedef struct Eurydice_dst_ref_fc_s
+typedef struct Eurydice_dst_ref_mut_fc_s
 {
   int32_t *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_fc;
+Eurydice_dst_ref_mut_fc;
+
+/**
+A monomorphic instance of Eurydice.dst_ref_shared
+with types int32_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_shared_fc_s
+{
+  const int32_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_shared_fc;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -269,11 +329,11 @@ typedef struct Eurydice_arr_a5_s { uint64_t data[5U]; } Eurydice_arr_a5;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_dst_ref uint8_t size_t
+with types Eurydice_dst_ref_shared uint8_t size_t
 with const generics
 - $1size_t
 */
-typedef struct Eurydice_arr_e2_s { Eurydice_dst_ref_87 data[1U]; } Eurydice_arr_e2;
+typedef struct Eurydice_arr_8e_s { Eurydice_dst_ref_shared_87 data[1U]; } Eurydice_arr_8e;
 
 /**
 A monomorphic instance of Eurydice.arr

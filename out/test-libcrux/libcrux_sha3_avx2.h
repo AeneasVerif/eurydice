@@ -17,6 +17,8 @@ extern "C" {
 
 #include "intrinsics/libcrux_intrinsics_avx2.h"
 
+#include "libcrux_core.h"
+
 /**
 A monomorphic instance of Eurydice.arr
 with types core_core_arch_x86___m256i
@@ -30,14 +32,14 @@ typedef struct Eurydice_arr_05_s { __m256i data[25U]; } Eurydice_arr_05;
 */
 void
 libcrux_sha3_avx2_x4_shake256(
-  Eurydice_dst_ref_87 input0,
-  Eurydice_dst_ref_87 input1,
-  Eurydice_dst_ref_87 input2,
-  Eurydice_dst_ref_87 input3,
-  Eurydice_dst_ref_87 out0,
-  Eurydice_dst_ref_87 out1,
-  Eurydice_dst_ref_87 out2,
-  Eurydice_dst_ref_87 out3
+  Eurydice_dst_ref_shared_87 input0,
+  Eurydice_dst_ref_shared_87 input1,
+  Eurydice_dst_ref_shared_87 input2,
+  Eurydice_dst_ref_shared_87 input3,
+  Eurydice_dst_ref_mut_87 out0,
+  Eurydice_dst_ref_mut_87 out1,
+  Eurydice_dst_ref_mut_87 out2,
+  Eurydice_dst_ref_mut_87 out3
 );
 
 /**
@@ -51,10 +53,10 @@ Eurydice_arr_05 libcrux_sha3_avx2_x4_incremental_init(void);
 void
 libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
   Eurydice_arr_05 *s,
-  Eurydice_dst_ref_87 data0,
-  Eurydice_dst_ref_87 data1,
-  Eurydice_dst_ref_87 data2,
-  Eurydice_dst_ref_87 data3
+  Eurydice_dst_ref_shared_87 data0,
+  Eurydice_dst_ref_shared_87 data1,
+  Eurydice_dst_ref_shared_87 data2,
+  Eurydice_dst_ref_shared_87 data3
 );
 
 /**
@@ -63,10 +65,10 @@ libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
 void
 libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
   Eurydice_arr_05 *s,
-  Eurydice_dst_ref_87 out0,
-  Eurydice_dst_ref_87 out1,
-  Eurydice_dst_ref_87 out2,
-  Eurydice_dst_ref_87 out3
+  Eurydice_dst_ref_mut_87 out0,
+  Eurydice_dst_ref_mut_87 out1,
+  Eurydice_dst_ref_mut_87 out2,
+  Eurydice_dst_ref_mut_87 out3
 );
 
 /**
@@ -75,10 +77,10 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
 void
 libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
   Eurydice_arr_05 *s,
-  Eurydice_dst_ref_87 out0,
-  Eurydice_dst_ref_87 out1,
-  Eurydice_dst_ref_87 out2,
-  Eurydice_dst_ref_87 out3
+  Eurydice_dst_ref_mut_87 out0,
+  Eurydice_dst_ref_mut_87 out1,
+  Eurydice_dst_ref_mut_87 out2,
+  Eurydice_dst_ref_mut_87 out3
 );
 
 /**
@@ -87,10 +89,10 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
 void
 libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_five_blocks(
   Eurydice_arr_05 *s,
-  Eurydice_dst_ref_87 out0,
-  Eurydice_dst_ref_87 out1,
-  Eurydice_dst_ref_87 out2,
-  Eurydice_dst_ref_87 out3
+  Eurydice_dst_ref_mut_87 out0,
+  Eurydice_dst_ref_mut_87 out1,
+  Eurydice_dst_ref_mut_87 out2,
+  Eurydice_dst_ref_mut_87 out3
 );
 
 /**
@@ -99,10 +101,10 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_five_blocks(
 void
 libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
   Eurydice_arr_05 *s,
-  Eurydice_dst_ref_87 data0,
-  Eurydice_dst_ref_87 data1,
-  Eurydice_dst_ref_87 data2,
-  Eurydice_dst_ref_87 data3
+  Eurydice_dst_ref_shared_87 data0,
+  Eurydice_dst_ref_shared_87 data1,
+  Eurydice_dst_ref_shared_87 data2,
+  Eurydice_dst_ref_shared_87 data3
 );
 
 /**
@@ -111,10 +113,10 @@ libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
 void
 libcrux_sha3_avx2_x4_incremental_shake256_squeeze_first_block(
   Eurydice_arr_05 *s,
-  Eurydice_dst_ref_87 out0,
-  Eurydice_dst_ref_87 out1,
-  Eurydice_dst_ref_87 out2,
-  Eurydice_dst_ref_87 out3
+  Eurydice_dst_ref_mut_87 out0,
+  Eurydice_dst_ref_mut_87 out1,
+  Eurydice_dst_ref_mut_87 out2,
+  Eurydice_dst_ref_mut_87 out3
 );
 
 /**
@@ -123,10 +125,10 @@ libcrux_sha3_avx2_x4_incremental_shake256_squeeze_first_block(
 void
 libcrux_sha3_avx2_x4_incremental_shake256_squeeze_next_block(
   Eurydice_arr_05 *s,
-  Eurydice_dst_ref_87 out0,
-  Eurydice_dst_ref_87 out1,
-  Eurydice_dst_ref_87 out2,
-  Eurydice_dst_ref_87 out3
+  Eurydice_dst_ref_mut_87 out0,
+  Eurydice_dst_ref_mut_87 out1,
+  Eurydice_dst_ref_mut_87 out2,
+  Eurydice_dst_ref_mut_87 out3
 );
 
 #if defined(__cplusplus)

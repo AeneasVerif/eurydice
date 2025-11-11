@@ -217,6 +217,7 @@ Supported options:|}
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
     fail __FILE__ __LINE__;
+  Eurydice.Logging.log "Phase2.11" "%a" pfiles files;
   let files = Eurydice.Cleanup2.improve_names files in
   let files = Eurydice.Cleanup2.recognize_asserts#visit_files () files in
   (* Temporary workaround until Aeneas supports nested loops *)
@@ -309,6 +310,7 @@ Supported options:|}
   let files, macros = Eurydice.Cleanup2.build_macros files in
 
   Eurydice.Logging.log "Phase3" "%a" pfiles files;
+  (* debug "checker"; *)
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
     fail __FILE__ __LINE__;

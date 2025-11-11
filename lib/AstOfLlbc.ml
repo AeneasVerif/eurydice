@@ -1117,7 +1117,7 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
   in
   K.(with_type ret_t (EApp (op, first :: rest)))
 
-let addrof (e : K.expr) = K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
+let addrof ~const (e : K.expr) = K.(with_type (TBuf (e.typ, const)) (EAddrOf e))
 
 (** Handling trait clauses as dictionaries *)
 
@@ -1791,7 +1791,7 @@ let is_box_place (p : C.place) =
 let mk_reference ~const (e : K.expr) (metadata : K.expr) : K.expr =
   match metadata.typ with
   (* When it is unit, it means there is no metadata, simply take the address *)
-  | K.TUnit -> addrof e
+  | K.TUnit -> addrof ~const e
   | _ -> (
       match e.typ with
       | TApp (lid, [ t ]) when lid = Builtin.derefed_slice ->
@@ -1806,7 +1806,7 @@ let mk_reference ~const (e : K.expr) (metadata : K.expr) : K.expr =
           K.(
             with_type
               (Builtin.mk_dst_ref ~const e.typ metadata.typ)
-              (EFlat [ Some "ptr", addrof e; Some "meta", metadata ])))
+              (EFlat [ Some "ptr", addrof ~const e; Some "meta", metadata ])))
 
 (* To destruct a DST reference type into its base and metadata types
    I.e., from Eurydice_dst_ref<T, meta> to (T, meta) *)
@@ -2234,18 +2234,20 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
 
          Since [T;N] is translated into arr$T$N, we need to first dereference
          the e1 to get the struct, and then take its field "data" to get the
-         array *)
+         array
+          
+         We construct dest := &( *e1).data[e2]
+         *)
       let e1 = expression_of_operand env e1 in
       let e2 = expression_of_operand env e2 in
       let t = typ_of_ty env ty in
       let t_array = maybe_cg_array env ty cg in
-      let e1 =
-        Krml.Helpers.(
-          mk_deref ~const:(const_of_tbuf e1.K.typ) (Krml.Helpers.assert_tbuf e1.K.typ) e1.K.node)
-      in
+      (* let const = const_of_tbuf e1.K.typ in *)
+      let e1 = Krml.Helpers.(mk_deref ~const:true (Krml.Helpers.assert_tbuf e1.K.typ) e1.K.node) in
       let e1 = K.with_type t_array (K.EField (e1, "data")) in
       let dest = expression_of_place env dest in
-      Krml.Helpers.with_unit K.(EAssign (dest, addrof (with_type t (EBufRead (e1, e2)))))
+      Krml.Helpers.with_unit
+        K.(EAssign (dest, addrof ~const:false (with_type t (EBufRead (e1, e2)))))
   | Call { func = FnOpRegular fn_ptr; args; dest; _ }
     when Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u16 fn_ptr
          || Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u32 fn_ptr
