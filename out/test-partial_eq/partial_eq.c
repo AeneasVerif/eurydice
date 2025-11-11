@@ -35,9 +35,9 @@ void partial_eq_main(void)
   const_partial_eq_Enum__x2 uu____0 = { .fst = &expected, .snd = &expected };
   EURYDICE_ASSERT(partial_eq_eq_31(uu____0.fst, uu____0.snd), "panic!");
   /* original Rust expression is not an lvalue in C */
-  partial_eq_Enum *lvalue0 = &expected;
+  const partial_eq_Enum *lvalue0 = &expected;
   /* original Rust expression is not an lvalue in C */
-  partial_eq_Enum *lvalue = &expected;
+  const partial_eq_Enum *lvalue = &expected;
   const_const_partial_eq_Enum___x2 uu____1 = { .fst = &lvalue0, .snd = &lvalue };
   EURYDICE_ASSERT(partial_eq_eq_31(uu____1.fst[0U], uu____1.snd[0U]), "panic!");
 }

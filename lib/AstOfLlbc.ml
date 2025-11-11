@@ -221,11 +221,11 @@ module RustNames = struct
     parse_pattern "SliceIndexMut<'_, @T>", Builtin.slice_index_mut;
 
     parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::Range<usize>, [@]>", builtin_of_function Builtin.slice_subslice_func_shared;
-    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::Range<usize>, [@]>", builtin_of_function Builtin.slice_subslice_func_mut;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@]>", builtin_of_function Builtin.slice_subslice_func_mut;
     parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@]>", builtin_of_function Builtin.slice_subslice_to_func_shared;
-    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@]>", builtin_of_function Builtin.slice_subslice_to_func_mut;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@]>", builtin_of_function Builtin.slice_subslice_to_func_mut;
     parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@]>", builtin_of_function Builtin.slice_subslice_from_func_shared;
-    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@]>", builtin_of_function Builtin.slice_subslice_from_func_mut;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@]>", builtin_of_function Builtin.slice_subslice_from_func_mut;
 
     (* arrays *)
     parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::Range<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_func_shared;
