@@ -155,20 +155,28 @@ load_block_5b(Eurydice_arr_05 *state, Eurydice_arr_66 *blocks, size_t offset)
     size_t start = offset + (size_t)32U * i4;
     __m256i
     v00 =
-      mm256_loadu_si256_u8(Eurydice_slice_subslice_7e(blocks->data[0U],
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + (size_t)32U })));
+      mm256_loadu_si256_u8(Eurydice_slice_subslice3(blocks->data[0U],
+          start,
+          start + (size_t)32U,
+          Eurydice_dst_ref_87));
     __m256i
     v10 =
-      mm256_loadu_si256_u8(Eurydice_slice_subslice_7e(blocks->data[1U],
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + (size_t)32U })));
+      mm256_loadu_si256_u8(Eurydice_slice_subslice3(blocks->data[1U],
+          start,
+          start + (size_t)32U,
+          Eurydice_dst_ref_87));
     __m256i
     v20 =
-      mm256_loadu_si256_u8(Eurydice_slice_subslice_7e(blocks->data[2U],
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + (size_t)32U })));
+      mm256_loadu_si256_u8(Eurydice_slice_subslice3(blocks->data[2U],
+          start,
+          start + (size_t)32U,
+          Eurydice_dst_ref_87));
     __m256i
     v30 =
-      mm256_loadu_si256_u8(Eurydice_slice_subslice_7e(blocks->data[3U],
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + (size_t)32U })));
+      mm256_loadu_si256_u8(Eurydice_slice_subslice3(blocks->data[3U],
+          start,
+          start + (size_t)32U,
+          Eurydice_dst_ref_87));
     __m256i v0l = mm256_unpacklo_epi64(v00, v10);
     __m256i v1h = mm256_unpackhi_epi64(v00, v10);
     __m256i v2l = mm256_unpacklo_epi64(v20, v30);
@@ -193,25 +201,29 @@ load_block_5b(Eurydice_arr_05 *state, Eurydice_arr_66 *blocks, size_t offset)
   size_t rem = (size_t)136U % (size_t)32U;
   size_t start = offset + (size_t)32U * ((size_t)136U / (size_t)32U);
   Eurydice_arr_60 u8s = { .data = { 0U } };
-  Eurydice_slice_copy(Eurydice_array_to_subslice_365(&u8s,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)8U })),
-    Eurydice_slice_subslice_7e(blocks->data[0U],
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + (size_t)8U })),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&u8s,
+      (size_t)0U,
+      (size_t)8U,
+      Eurydice_dst_ref_87),
+    Eurydice_slice_subslice3(blocks->data[0U], start, start + (size_t)8U, Eurydice_dst_ref_87),
     uint8_t);
-  Eurydice_slice_copy(Eurydice_array_to_subslice_365(&u8s,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)8U, .end = (size_t)16U })),
-    Eurydice_slice_subslice_7e(blocks->data[1U],
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + (size_t)8U })),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&u8s,
+      (size_t)8U,
+      (size_t)16U,
+      Eurydice_dst_ref_87),
+    Eurydice_slice_subslice3(blocks->data[1U], start, start + (size_t)8U, Eurydice_dst_ref_87),
     uint8_t);
-  Eurydice_slice_copy(Eurydice_array_to_subslice_365(&u8s,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)16U, .end = (size_t)24U })),
-    Eurydice_slice_subslice_7e(blocks->data[2U],
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + (size_t)8U })),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&u8s,
+      (size_t)16U,
+      (size_t)24U,
+      Eurydice_dst_ref_87),
+    Eurydice_slice_subslice3(blocks->data[2U], start, start + (size_t)8U, Eurydice_dst_ref_87),
     uint8_t);
-  Eurydice_slice_copy(Eurydice_array_to_subslice_365(&u8s,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)24U, .end = (size_t)32U })),
-    Eurydice_slice_subslice_7e(blocks->data[3U],
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + (size_t)8U })),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&u8s,
+      (size_t)24U,
+      (size_t)32U,
+      Eurydice_dst_ref_87),
+    Eurydice_slice_subslice3(blocks->data[3U], start, start + (size_t)8U, Eurydice_dst_ref_87),
     uint8_t);
   __m256i
   u =
@@ -225,45 +237,41 @@ load_block_5b(Eurydice_arr_05 *state, Eurydice_arr_66 *blocks, size_t offset)
   if (rem == (size_t)16U)
   {
     Eurydice_arr_60 u8s0 = { .data = { 0U } };
-    Eurydice_slice_copy(Eurydice_array_to_subslice_365(&u8s0,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)8U })),
-      Eurydice_slice_subslice_7e(blocks->data[0U],
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)8U,
-            .end = start + (size_t)16U
-          }
-        )),
+    Eurydice_slice_copy(Eurydice_array_to_subslice3(&u8s0,
+        (size_t)0U,
+        (size_t)8U,
+        Eurydice_dst_ref_87),
+      Eurydice_slice_subslice3(blocks->data[0U],
+        start + (size_t)8U,
+        start + (size_t)16U,
+        Eurydice_dst_ref_87),
       uint8_t);
-    Eurydice_slice_copy(Eurydice_array_to_subslice_365(&u8s0,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)8U, .end = (size_t)16U })),
-      Eurydice_slice_subslice_7e(blocks->data[1U],
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)8U,
-            .end = start + (size_t)16U
-          }
-        )),
+    Eurydice_slice_copy(Eurydice_array_to_subslice3(&u8s0,
+        (size_t)8U,
+        (size_t)16U,
+        Eurydice_dst_ref_87),
+      Eurydice_slice_subslice3(blocks->data[1U],
+        start + (size_t)8U,
+        start + (size_t)16U,
+        Eurydice_dst_ref_87),
       uint8_t);
-    Eurydice_slice_copy(Eurydice_array_to_subslice_365(&u8s0,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)16U, .end = (size_t)24U })),
-      Eurydice_slice_subslice_7e(blocks->data[2U],
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)8U,
-            .end = start + (size_t)16U
-          }
-        )),
+    Eurydice_slice_copy(Eurydice_array_to_subslice3(&u8s0,
+        (size_t)16U,
+        (size_t)24U,
+        Eurydice_dst_ref_87),
+      Eurydice_slice_subslice3(blocks->data[2U],
+        start + (size_t)8U,
+        start + (size_t)16U,
+        Eurydice_dst_ref_87),
       uint8_t);
-    Eurydice_slice_copy(Eurydice_array_to_subslice_365(&u8s0,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)24U, .end = (size_t)32U })),
-      Eurydice_slice_subslice_7e(blocks->data[3U],
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)8U,
-            .end = start + (size_t)16U
-          }
-        )),
+    Eurydice_slice_copy(Eurydice_array_to_subslice3(&u8s0,
+        (size_t)24U,
+        (size_t)32U,
+        Eurydice_dst_ref_87),
+      Eurydice_slice_subslice3(blocks->data[3U],
+        start + (size_t)8U,
+        start + (size_t)16U,
+        Eurydice_dst_ref_87),
       uint8_t);
     __m256i
     u0 =
@@ -1728,10 +1736,11 @@ load_last_ad(Eurydice_arr_05 *state, Eurydice_arr_66 *blocks, size_t start, size
     (size_t)4U,
     (size_t)1U,
     size_t i0 = i;
-    Eurydice_slice_copy(Eurydice_array_to_subslice_361(&buffers.data[i0],
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = len })),
-      Eurydice_slice_subslice_7e(blocks->data[i0],
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + len })),
+    Eurydice_slice_copy(Eurydice_array_to_subslice3(&buffers.data[i0],
+        (size_t)0U,
+        len,
+        Eurydice_dst_ref_87),
+      Eurydice_slice_subslice3(blocks->data[i0], start, start + len, Eurydice_dst_ref_87),
       uint8_t);
     buffers.data[i0].data[len] = 31U;
     size_t uu____0 = i0;
@@ -1840,37 +1849,25 @@ store_block_5b(
     __m256i v1 = mm256_unpackhi_epi64(v0l, v1h);
     __m256i v2 = mm256_unpacklo_epi64(v2l, v3h);
     __m256i v3 = mm256_unpackhi_epi64(v2l, v3h);
-    mm256_storeu_si256_u8(Eurydice_slice_subslice_7e(out0,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)32U * i4,
-            .end = start + (size_t)32U * (i4 + (size_t)1U)
-          }
-        )),
+    mm256_storeu_si256_u8(Eurydice_slice_subslice3(out0,
+        start + (size_t)32U * i4,
+        start + (size_t)32U * (i4 + (size_t)1U),
+        Eurydice_dst_ref_87),
       v0);
-    mm256_storeu_si256_u8(Eurydice_slice_subslice_7e(out1,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)32U * i4,
-            .end = start + (size_t)32U * (i4 + (size_t)1U)
-          }
-        )),
+    mm256_storeu_si256_u8(Eurydice_slice_subslice3(out1,
+        start + (size_t)32U * i4,
+        start + (size_t)32U * (i4 + (size_t)1U),
+        Eurydice_dst_ref_87),
       v1);
-    mm256_storeu_si256_u8(Eurydice_slice_subslice_7e(out2,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)32U * i4,
-            .end = start + (size_t)32U * (i4 + (size_t)1U)
-          }
-        )),
+    mm256_storeu_si256_u8(Eurydice_slice_subslice3(out2,
+        start + (size_t)32U * i4,
+        start + (size_t)32U * (i4 + (size_t)1U),
+        Eurydice_dst_ref_87),
       v2);
-    mm256_storeu_si256_u8(Eurydice_slice_subslice_7e(out3,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)32U * i4,
-            .end = start + (size_t)32U * (i4 + (size_t)1U)
-          }
-        )),
+    mm256_storeu_si256_u8(Eurydice_slice_subslice3(out3,
+        start + (size_t)32U * i4,
+        start + (size_t)32U * (i4 + (size_t)1U),
+        Eurydice_dst_ref_87),
       v3);
   }
   size_t rem = len % (size_t)32U;
@@ -1886,45 +1883,29 @@ store_block_5b(
       size_t j = ((size_t)4U * chunks + k) % (size_t)5U;
       Eurydice_dst_ref_87 uu____0 = Eurydice_array_to_slice_6e(&u8s);
       mm256_storeu_si256_u8(uu____0, get_ij_a6(s, i, j)[0U]);
-      Eurydice_slice_copy(Eurydice_slice_subslice_7e(out0,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start0 + (size_t)8U * k,
-              .end = start0 + (size_t)8U * (k + (size_t)1U)
-            }
-          )),
-        Eurydice_array_to_subslice_365(&u8s,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)8U })),
+      Eurydice_slice_copy(Eurydice_slice_subslice3(out0,
+          start0 + (size_t)8U * k,
+          start0 + (size_t)8U * (k + (size_t)1U),
+          Eurydice_dst_ref_87),
+        Eurydice_array_to_subslice3(&u8s, (size_t)0U, (size_t)8U, Eurydice_dst_ref_87),
         uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice_7e(out1,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start0 + (size_t)8U * k,
-              .end = start0 + (size_t)8U * (k + (size_t)1U)
-            }
-          )),
-        Eurydice_array_to_subslice_365(&u8s,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)8U, .end = (size_t)16U })),
+      Eurydice_slice_copy(Eurydice_slice_subslice3(out1,
+          start0 + (size_t)8U * k,
+          start0 + (size_t)8U * (k + (size_t)1U),
+          Eurydice_dst_ref_87),
+        Eurydice_array_to_subslice3(&u8s, (size_t)8U, (size_t)16U, Eurydice_dst_ref_87),
         uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice_7e(out2,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start0 + (size_t)8U * k,
-              .end = start0 + (size_t)8U * (k + (size_t)1U)
-            }
-          )),
-        Eurydice_array_to_subslice_365(&u8s,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)16U, .end = (size_t)24U })),
+      Eurydice_slice_copy(Eurydice_slice_subslice3(out2,
+          start0 + (size_t)8U * k,
+          start0 + (size_t)8U * (k + (size_t)1U),
+          Eurydice_dst_ref_87),
+        Eurydice_array_to_subslice3(&u8s, (size_t)16U, (size_t)24U, Eurydice_dst_ref_87),
         uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice_7e(out3,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start0 + (size_t)8U * k,
-              .end = start0 + (size_t)8U * (k + (size_t)1U)
-            }
-          )),
-        Eurydice_array_to_subslice_365(&u8s,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)24U, .end = (size_t)32U })),
+      Eurydice_slice_copy(Eurydice_slice_subslice3(out3,
+          start0 + (size_t)8U * k,
+          start0 + (size_t)8U * (k + (size_t)1U),
+          Eurydice_dst_ref_87),
+        Eurydice_array_to_subslice3(&u8s, (size_t)24U, (size_t)32U, Eurydice_dst_ref_87),
         uint8_t);
     }
     size_t rem8 = rem % (size_t)8U;
@@ -1934,45 +1915,29 @@ store_block_5b(
       size_t j = ((size_t)4U * chunks + chunks8) % (size_t)5U;
       Eurydice_dst_ref_87 uu____1 = Eurydice_array_to_slice_6e(&u8s);
       mm256_storeu_si256_u8(uu____1, get_ij_a6(s, i, j)[0U]);
-      Eurydice_slice_copy(Eurydice_slice_subslice_7e(out0,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start0 + len - rem8,
-              .end = start0 + len
-            }
-          )),
-        Eurydice_array_to_subslice_365(&u8s,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = rem })),
+      Eurydice_slice_copy(Eurydice_slice_subslice3(out0,
+          start0 + len - rem8,
+          start0 + len,
+          Eurydice_dst_ref_87),
+        Eurydice_array_to_subslice3(&u8s, (size_t)0U, rem, Eurydice_dst_ref_87),
         uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice_7e(out1,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start0 + len - rem8,
-              .end = start0 + len
-            }
-          )),
-        Eurydice_array_to_subslice_365(&u8s,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)8U, .end = (size_t)8U + rem })),
+      Eurydice_slice_copy(Eurydice_slice_subslice3(out1,
+          start0 + len - rem8,
+          start0 + len,
+          Eurydice_dst_ref_87),
+        Eurydice_array_to_subslice3(&u8s, (size_t)8U, (size_t)8U + rem, Eurydice_dst_ref_87),
         uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice_7e(out2,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start0 + len - rem8,
-              .end = start0 + len
-            }
-          )),
-        Eurydice_array_to_subslice_365(&u8s,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)16U, .end = (size_t)16U + rem })),
+      Eurydice_slice_copy(Eurydice_slice_subslice3(out2,
+          start0 + len - rem8,
+          start0 + len,
+          Eurydice_dst_ref_87),
+        Eurydice_array_to_subslice3(&u8s, (size_t)16U, (size_t)16U + rem, Eurydice_dst_ref_87),
         uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice_7e(out3,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start0 + len - rem8,
-              .end = start0 + len
-            }
-          )),
-        Eurydice_array_to_subslice_365(&u8s,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)24U, .end = (size_t)24U + rem })),
+      Eurydice_slice_copy(Eurydice_slice_subslice3(out3,
+          start0 + len - rem8,
+          start0 + len,
+          Eurydice_dst_ref_87),
+        Eurydice_array_to_subslice3(&u8s, (size_t)24U, (size_t)24U + rem, Eurydice_dst_ref_87),
         uint8_t);
     }
   }
@@ -2090,20 +2055,28 @@ load_block_3a(Eurydice_arr_05 *state, Eurydice_arr_66 *blocks, size_t offset)
     size_t start = offset + (size_t)32U * i4;
     __m256i
     v00 =
-      mm256_loadu_si256_u8(Eurydice_slice_subslice_7e(blocks->data[0U],
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + (size_t)32U })));
+      mm256_loadu_si256_u8(Eurydice_slice_subslice3(blocks->data[0U],
+          start,
+          start + (size_t)32U,
+          Eurydice_dst_ref_87));
     __m256i
     v10 =
-      mm256_loadu_si256_u8(Eurydice_slice_subslice_7e(blocks->data[1U],
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + (size_t)32U })));
+      mm256_loadu_si256_u8(Eurydice_slice_subslice3(blocks->data[1U],
+          start,
+          start + (size_t)32U,
+          Eurydice_dst_ref_87));
     __m256i
     v20 =
-      mm256_loadu_si256_u8(Eurydice_slice_subslice_7e(blocks->data[2U],
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + (size_t)32U })));
+      mm256_loadu_si256_u8(Eurydice_slice_subslice3(blocks->data[2U],
+          start,
+          start + (size_t)32U,
+          Eurydice_dst_ref_87));
     __m256i
     v30 =
-      mm256_loadu_si256_u8(Eurydice_slice_subslice_7e(blocks->data[3U],
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + (size_t)32U })));
+      mm256_loadu_si256_u8(Eurydice_slice_subslice3(blocks->data[3U],
+          start,
+          start + (size_t)32U,
+          Eurydice_dst_ref_87));
     __m256i v0l = mm256_unpacklo_epi64(v00, v10);
     __m256i v1h = mm256_unpackhi_epi64(v00, v10);
     __m256i v2l = mm256_unpacklo_epi64(v20, v30);
@@ -2128,25 +2101,29 @@ load_block_3a(Eurydice_arr_05 *state, Eurydice_arr_66 *blocks, size_t offset)
   size_t rem = (size_t)168U % (size_t)32U;
   size_t start = offset + (size_t)32U * ((size_t)168U / (size_t)32U);
   Eurydice_arr_60 u8s = { .data = { 0U } };
-  Eurydice_slice_copy(Eurydice_array_to_subslice_365(&u8s,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)8U })),
-    Eurydice_slice_subslice_7e(blocks->data[0U],
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + (size_t)8U })),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&u8s,
+      (size_t)0U,
+      (size_t)8U,
+      Eurydice_dst_ref_87),
+    Eurydice_slice_subslice3(blocks->data[0U], start, start + (size_t)8U, Eurydice_dst_ref_87),
     uint8_t);
-  Eurydice_slice_copy(Eurydice_array_to_subslice_365(&u8s,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)8U, .end = (size_t)16U })),
-    Eurydice_slice_subslice_7e(blocks->data[1U],
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + (size_t)8U })),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&u8s,
+      (size_t)8U,
+      (size_t)16U,
+      Eurydice_dst_ref_87),
+    Eurydice_slice_subslice3(blocks->data[1U], start, start + (size_t)8U, Eurydice_dst_ref_87),
     uint8_t);
-  Eurydice_slice_copy(Eurydice_array_to_subslice_365(&u8s,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)16U, .end = (size_t)24U })),
-    Eurydice_slice_subslice_7e(blocks->data[2U],
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + (size_t)8U })),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&u8s,
+      (size_t)16U,
+      (size_t)24U,
+      Eurydice_dst_ref_87),
+    Eurydice_slice_subslice3(blocks->data[2U], start, start + (size_t)8U, Eurydice_dst_ref_87),
     uint8_t);
-  Eurydice_slice_copy(Eurydice_array_to_subslice_365(&u8s,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)24U, .end = (size_t)32U })),
-    Eurydice_slice_subslice_7e(blocks->data[3U],
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + (size_t)8U })),
+  Eurydice_slice_copy(Eurydice_array_to_subslice3(&u8s,
+      (size_t)24U,
+      (size_t)32U,
+      Eurydice_dst_ref_87),
+    Eurydice_slice_subslice3(blocks->data[3U], start, start + (size_t)8U, Eurydice_dst_ref_87),
     uint8_t);
   __m256i
   u =
@@ -2160,45 +2137,41 @@ load_block_3a(Eurydice_arr_05 *state, Eurydice_arr_66 *blocks, size_t offset)
   if (rem == (size_t)16U)
   {
     Eurydice_arr_60 u8s0 = { .data = { 0U } };
-    Eurydice_slice_copy(Eurydice_array_to_subslice_365(&u8s0,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)8U })),
-      Eurydice_slice_subslice_7e(blocks->data[0U],
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)8U,
-            .end = start + (size_t)16U
-          }
-        )),
+    Eurydice_slice_copy(Eurydice_array_to_subslice3(&u8s0,
+        (size_t)0U,
+        (size_t)8U,
+        Eurydice_dst_ref_87),
+      Eurydice_slice_subslice3(blocks->data[0U],
+        start + (size_t)8U,
+        start + (size_t)16U,
+        Eurydice_dst_ref_87),
       uint8_t);
-    Eurydice_slice_copy(Eurydice_array_to_subslice_365(&u8s0,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)8U, .end = (size_t)16U })),
-      Eurydice_slice_subslice_7e(blocks->data[1U],
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)8U,
-            .end = start + (size_t)16U
-          }
-        )),
+    Eurydice_slice_copy(Eurydice_array_to_subslice3(&u8s0,
+        (size_t)8U,
+        (size_t)16U,
+        Eurydice_dst_ref_87),
+      Eurydice_slice_subslice3(blocks->data[1U],
+        start + (size_t)8U,
+        start + (size_t)16U,
+        Eurydice_dst_ref_87),
       uint8_t);
-    Eurydice_slice_copy(Eurydice_array_to_subslice_365(&u8s0,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)16U, .end = (size_t)24U })),
-      Eurydice_slice_subslice_7e(blocks->data[2U],
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)8U,
-            .end = start + (size_t)16U
-          }
-        )),
+    Eurydice_slice_copy(Eurydice_array_to_subslice3(&u8s0,
+        (size_t)16U,
+        (size_t)24U,
+        Eurydice_dst_ref_87),
+      Eurydice_slice_subslice3(blocks->data[2U],
+        start + (size_t)8U,
+        start + (size_t)16U,
+        Eurydice_dst_ref_87),
       uint8_t);
-    Eurydice_slice_copy(Eurydice_array_to_subslice_365(&u8s0,
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)24U, .end = (size_t)32U })),
-      Eurydice_slice_subslice_7e(blocks->data[3U],
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)8U,
-            .end = start + (size_t)16U
-          }
-        )),
+    Eurydice_slice_copy(Eurydice_array_to_subslice3(&u8s0,
+        (size_t)24U,
+        (size_t)32U,
+        Eurydice_dst_ref_87),
+      Eurydice_slice_subslice3(blocks->data[3U],
+        start + (size_t)8U,
+        start + (size_t)16U,
+        Eurydice_dst_ref_87),
       uint8_t);
     __m256i
     u0 =
@@ -2229,10 +2202,11 @@ load_last_c6(Eurydice_arr_05 *state, Eurydice_arr_66 *blocks, size_t start, size
     (size_t)4U,
     (size_t)1U,
     size_t i0 = i;
-    Eurydice_slice_copy(Eurydice_array_to_subslice_362(&buffers.data[i0],
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = len })),
-      Eurydice_slice_subslice_7e(blocks->data[i0],
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = start, .end = start + len })),
+    Eurydice_slice_copy(Eurydice_array_to_subslice3(&buffers.data[i0],
+        (size_t)0U,
+        len,
+        Eurydice_dst_ref_87),
+      Eurydice_slice_subslice3(blocks->data[i0], start, start + len, Eurydice_dst_ref_87),
       uint8_t);
     buffers.data[i0].data[len] = 31U;
     size_t uu____0 = i0;
@@ -2360,37 +2334,25 @@ store_block_3a(
     __m256i v1 = mm256_unpackhi_epi64(v0l, v1h);
     __m256i v2 = mm256_unpacklo_epi64(v2l, v3h);
     __m256i v3 = mm256_unpackhi_epi64(v2l, v3h);
-    mm256_storeu_si256_u8(Eurydice_slice_subslice_7e(out0,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)32U * i4,
-            .end = start + (size_t)32U * (i4 + (size_t)1U)
-          }
-        )),
+    mm256_storeu_si256_u8(Eurydice_slice_subslice3(out0,
+        start + (size_t)32U * i4,
+        start + (size_t)32U * (i4 + (size_t)1U),
+        Eurydice_dst_ref_87),
       v0);
-    mm256_storeu_si256_u8(Eurydice_slice_subslice_7e(out1,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)32U * i4,
-            .end = start + (size_t)32U * (i4 + (size_t)1U)
-          }
-        )),
+    mm256_storeu_si256_u8(Eurydice_slice_subslice3(out1,
+        start + (size_t)32U * i4,
+        start + (size_t)32U * (i4 + (size_t)1U),
+        Eurydice_dst_ref_87),
       v1);
-    mm256_storeu_si256_u8(Eurydice_slice_subslice_7e(out2,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)32U * i4,
-            .end = start + (size_t)32U * (i4 + (size_t)1U)
-          }
-        )),
+    mm256_storeu_si256_u8(Eurydice_slice_subslice3(out2,
+        start + (size_t)32U * i4,
+        start + (size_t)32U * (i4 + (size_t)1U),
+        Eurydice_dst_ref_87),
       v2);
-    mm256_storeu_si256_u8(Eurydice_slice_subslice_7e(out3,
-        (
-          KRML_CLITERAL(core_ops_range_Range_08){
-            .start = start + (size_t)32U * i4,
-            .end = start + (size_t)32U * (i4 + (size_t)1U)
-          }
-        )),
+    mm256_storeu_si256_u8(Eurydice_slice_subslice3(out3,
+        start + (size_t)32U * i4,
+        start + (size_t)32U * (i4 + (size_t)1U),
+        Eurydice_dst_ref_87),
       v3);
   }
   size_t rem = len % (size_t)32U;
@@ -2406,45 +2368,29 @@ store_block_3a(
       size_t j = ((size_t)4U * chunks + k) % (size_t)5U;
       Eurydice_dst_ref_87 uu____0 = Eurydice_array_to_slice_6e(&u8s);
       mm256_storeu_si256_u8(uu____0, get_ij_a6(s, i, j)[0U]);
-      Eurydice_slice_copy(Eurydice_slice_subslice_7e(out0,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start0 + (size_t)8U * k,
-              .end = start0 + (size_t)8U * (k + (size_t)1U)
-            }
-          )),
-        Eurydice_array_to_subslice_365(&u8s,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)8U })),
+      Eurydice_slice_copy(Eurydice_slice_subslice3(out0,
+          start0 + (size_t)8U * k,
+          start0 + (size_t)8U * (k + (size_t)1U),
+          Eurydice_dst_ref_87),
+        Eurydice_array_to_subslice3(&u8s, (size_t)0U, (size_t)8U, Eurydice_dst_ref_87),
         uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice_7e(out1,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start0 + (size_t)8U * k,
-              .end = start0 + (size_t)8U * (k + (size_t)1U)
-            }
-          )),
-        Eurydice_array_to_subslice_365(&u8s,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)8U, .end = (size_t)16U })),
+      Eurydice_slice_copy(Eurydice_slice_subslice3(out1,
+          start0 + (size_t)8U * k,
+          start0 + (size_t)8U * (k + (size_t)1U),
+          Eurydice_dst_ref_87),
+        Eurydice_array_to_subslice3(&u8s, (size_t)8U, (size_t)16U, Eurydice_dst_ref_87),
         uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice_7e(out2,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start0 + (size_t)8U * k,
-              .end = start0 + (size_t)8U * (k + (size_t)1U)
-            }
-          )),
-        Eurydice_array_to_subslice_365(&u8s,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)16U, .end = (size_t)24U })),
+      Eurydice_slice_copy(Eurydice_slice_subslice3(out2,
+          start0 + (size_t)8U * k,
+          start0 + (size_t)8U * (k + (size_t)1U),
+          Eurydice_dst_ref_87),
+        Eurydice_array_to_subslice3(&u8s, (size_t)16U, (size_t)24U, Eurydice_dst_ref_87),
         uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice_7e(out3,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start0 + (size_t)8U * k,
-              .end = start0 + (size_t)8U * (k + (size_t)1U)
-            }
-          )),
-        Eurydice_array_to_subslice_365(&u8s,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)24U, .end = (size_t)32U })),
+      Eurydice_slice_copy(Eurydice_slice_subslice3(out3,
+          start0 + (size_t)8U * k,
+          start0 + (size_t)8U * (k + (size_t)1U),
+          Eurydice_dst_ref_87),
+        Eurydice_array_to_subslice3(&u8s, (size_t)24U, (size_t)32U, Eurydice_dst_ref_87),
         uint8_t);
     }
     size_t rem8 = rem % (size_t)8U;
@@ -2454,45 +2400,29 @@ store_block_3a(
       size_t j = ((size_t)4U * chunks + chunks8) % (size_t)5U;
       Eurydice_dst_ref_87 uu____1 = Eurydice_array_to_slice_6e(&u8s);
       mm256_storeu_si256_u8(uu____1, get_ij_a6(s, i, j)[0U]);
-      Eurydice_slice_copy(Eurydice_slice_subslice_7e(out0,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start0 + len - rem8,
-              .end = start0 + len
-            }
-          )),
-        Eurydice_array_to_subslice_365(&u8s,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = rem })),
+      Eurydice_slice_copy(Eurydice_slice_subslice3(out0,
+          start0 + len - rem8,
+          start0 + len,
+          Eurydice_dst_ref_87),
+        Eurydice_array_to_subslice3(&u8s, (size_t)0U, rem, Eurydice_dst_ref_87),
         uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice_7e(out1,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start0 + len - rem8,
-              .end = start0 + len
-            }
-          )),
-        Eurydice_array_to_subslice_365(&u8s,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)8U, .end = (size_t)8U + rem })),
+      Eurydice_slice_copy(Eurydice_slice_subslice3(out1,
+          start0 + len - rem8,
+          start0 + len,
+          Eurydice_dst_ref_87),
+        Eurydice_array_to_subslice3(&u8s, (size_t)8U, (size_t)8U + rem, Eurydice_dst_ref_87),
         uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice_7e(out2,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start0 + len - rem8,
-              .end = start0 + len
-            }
-          )),
-        Eurydice_array_to_subslice_365(&u8s,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)16U, .end = (size_t)16U + rem })),
+      Eurydice_slice_copy(Eurydice_slice_subslice3(out2,
+          start0 + len - rem8,
+          start0 + len,
+          Eurydice_dst_ref_87),
+        Eurydice_array_to_subslice3(&u8s, (size_t)16U, (size_t)16U + rem, Eurydice_dst_ref_87),
         uint8_t);
-      Eurydice_slice_copy(Eurydice_slice_subslice_7e(out3,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start0 + len - rem8,
-              .end = start0 + len
-            }
-          )),
-        Eurydice_array_to_subslice_365(&u8s,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)24U, .end = (size_t)24U + rem })),
+      Eurydice_slice_copy(Eurydice_slice_subslice3(out3,
+          start0 + len - rem8,
+          start0 + len,
+          Eurydice_dst_ref_87),
+        Eurydice_array_to_subslice3(&u8s, (size_t)24U, (size_t)24U + rem, Eurydice_dst_ref_87),
         uint8_t);
     }
   }

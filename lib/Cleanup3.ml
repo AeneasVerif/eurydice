@@ -106,6 +106,64 @@ let build_cg_macros =
         self#zero
   end
 
+let add_extra_type_to_slice_index =
+  object (self)
+    inherit [_] map as super
+
+    (* method! visit_ETApp (((), _) as env) e cgs cgs' ts =
+      match e.node, cgs, cgs', ts with
+      | EQualified ([ "Eurydice" ], "slice_index"), [], [], [ t_elements ] ->
+          ETApp (self#visit_expr env e, cgs, cgs', ts @ [ TBuf (t_elements, false) ])
+      | _ -> super#visit_ETApp env e cgs cgs' ts *)
+
+    method! visit_EApp (((), _) as env) e es =
+      match e.node, es with
+      | ( EQualified ([ "Eurydice" ], id_slice_subslice),
+          [
+            e_slice;
+            {
+              node = EFlat [ (Some "start", e_start); (Some "end", e_end) ];
+              typ = TQualified ([ "core"; "ops"; "range" ], id);
+              _;
+            };
+          ] )
+        when KString.starts_with id "Range"
+             && KString.starts_with id_slice_subslice "slice_subslice" ->
+          let ret_t, _ = Helpers.flatten_arrow e.typ in
+          EApp
+            ( with_type TUnit
+                (ETApp
+                   ( with_type TUnit (EQualified ([ "Eurydice" ], "slice_subslice3")),
+                     [],
+                     [],
+                     [ ret_t ] )),
+              [ e_slice; e_start; e_end ] )
+      | ( EQualified ([ "Eurydice" ], id_array_to_subslice),
+          [
+            e_array;
+            {
+              node = EFlat [ (Some "start", e_start); (Some "end", e_end) ];
+              typ = TQualified ([ "core"; "ops"; "range" ], id);
+              _;
+            };
+          ] )
+        when KString.starts_with id "Range"
+             && KString.starts_with id_array_to_subslice "array_to_subslice" ->
+          let ret_t, _ = Helpers.flatten_arrow e.typ in
+          Logging.log "Cleanup3" "[debug]found array_to_subslice\n";
+          EApp
+            ( with_type TUnit
+                (ETApp
+                   ( with_type TUnit (EQualified ([ "Eurydice" ], "array_to_subslice3")),
+                     [],
+                     [],
+                     [ ret_t ] )),
+              [
+                self#visit_expr env e_array; self#visit_expr env e_start; self#visit_expr env e_end;
+              ] )
+      | _ -> super#visit_EApp env e es
+  end
+
 (*This identifies the decls which should be generated after monomorphism, but is already defined
  in eurydice_glue.h for implementing the builtin functions. The slices are for libcrux *)
 let is_builtin_lid lid =
