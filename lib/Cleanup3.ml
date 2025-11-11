@@ -113,8 +113,6 @@ let is_builtin_lid lid =
   | [ "Eurydice" ], "arr_c4" (* arr {data:[u8;8]}*)
   | [ "Eurydice" ], "arr_e9" (* arr {data:[u8;4]}*)
   | [ "Eurydice" ], "arr_8b" (* arr {data:[u8,2]}*)
-  | [ "Eurydice" ], "dst_ref_87" (* &slice<u8> *)
-  | [ "Eurydice" ], "dst_ref_9a" (* &slice<i16> *)
   | [ "Prims" ], "string" (* used to pass the checker, defined in glue.h *) -> true
   | _ -> false
 
