@@ -559,7 +559,7 @@ let array_to_subslice_to_func const =
     let arrref = with_type arrref_t (EBound 1) in
     let range = with_type (mk_range_to (TInt SizeT)) (EBound 0) in
     (* { .ptr = a->data + r.start, .meta = r.end - r.start }*)
-    let data = data_of_arrref arrref element_t 0 in
+    let data = data_of_arrref ~const:true arrref element_t 0 in
     let meta = with_type (TInt SizeT) (EField (range, "end")) in
     with_type ret_t (EFlat [ Some "ptr", data; Some "meta", meta ])
   in
@@ -589,10 +589,10 @@ let array_to_subslice_from_func const =
     let n = mk_sizeT (EBound 2) in
     let arrref = with_type arrref_t (EBound 1) in
     let range = with_type (mk_range_from (TInt SizeT)) (EBound 0) in
-    let data = data_of_arrref arrref element_t 0 in
+    let data = data_of_arrref ~const:true arrref element_t 0 in
     let start = mk_sizeT (EField (range, "start")) in
     let meta = mk_sizeT (EApp (Helpers.mk_op Sub SizeT, [ n; start ])) in
-    let ptr = with_type (TBuf (element_t, false)) (EBufSub (data, start)) in
+    let ptr = with_type (TBuf (element_t, const)) (EBufSub (data, start)) in
     with_type ret_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
   in
   DFunction (None, [ Private ], 1, 3, ret_t, lid, binders, expr)
@@ -619,7 +619,7 @@ let slice_subslice_func const =
     let r_start = mk_sizeT (EField (range, "start")) in
     let r_end = mk_sizeT (EField (range, "end")) in
     let meta = mk_sizeT (EApp (Helpers.mk_op Sub SizeT, [ r_end; r_start ])) in
-    let ptr = with_type (TBuf (element_t, false)) (EBufSub (ptr, r_start)) in
+    let ptr = with_type (TBuf (element_t, const)) (EBufSub (ptr, r_start)) in
     with_type slice_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
   in
   DFunction (None, [ Private ], 0, 3, slice_t, lid, binders, expr)
@@ -642,7 +642,7 @@ let slice_subslice_to_func const =
     (* args *)
     let slice = with_type slice_t (EBound 1) in
     let range = with_type (mk_range_to (TInt SizeT)) (EBound 0) in
-    let ptr = with_type (TBuf (element_t, false)) (EField (slice, "ptr")) in
+    let ptr = with_type (TBuf (element_t, const)) (EField (slice, "ptr")) in
     let meta = with_type (TInt SizeT) (EField (range, "end")) in
     with_type slice_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
   in
@@ -666,10 +666,10 @@ let slice_subslice_from_func const =
     (* args *)
     let slice = with_type slice_t (EBound 1) in
     let range = with_type (mk_range_from (TInt SizeT)) (EBound 0) in
-    let ptr = with_type (TBuf (element_t, false)) (EField (slice, "ptr")) in
+    let ptr = with_type (TBuf (element_t, const)) (EField (slice, "ptr")) in
     let meta = mk_sizeT (EField (slice, "meta")) in
     let start = mk_sizeT (EField (range, "start")) in
-    let ptr = with_type (TBuf (element_t, false)) (EBufSub (ptr, start)) in
+    let ptr = with_type (TBuf (element_t, const)) (EBufSub (ptr, start)) in
     let meta = mk_sizeT (EApp (Helpers.mk_op Sub SizeT, [ meta; start ])) in
     with_type slice_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
   in
