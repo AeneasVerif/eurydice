@@ -78,18 +78,6 @@ Eurydice_dst_ref_shared_d0;
 void slice_array_f2(void);
 
 /**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types uint8_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_87_s
-{
-  const uint8_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_87;
-
-/**
 A monomorphic instance of core.result.Result
 with types Eurydice_arr uint8_t[[$4size_t]], core_array_TryFromSliceError
 
@@ -120,18 +108,6 @@ typedef struct core_result_Result_63_s
   val;
 }
 core_result_Result_63;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types uint8_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_87_s
-{
-  uint8_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_mut_87;
 
 void slice_array_f3(void);
 

@@ -64,6 +64,35 @@ using std::type_identity_t;
 
 // SLICES, ARRAYS, ETC.
 
+// For convenience, we give these common slice types, below, a distinguished
+// status and rather than emit them in the client code, we skip their
+// code-generation in Cleanup3.ml and write them by hand here. This makes it
+// easy to write interop code that brings those definitions in scope.
+
+// &[u8]
+typedef struct Eurydice_dst_ref_shared_87_s {
+  const uint8_t *ptr;
+  size_t meta;
+} Eurydice_dst_ref_shared_87;
+
+// &[u16]
+typedef struct Eurydice_dst_ref_shared_9a_s {
+  const int16_t *ptr;
+  size_t meta;
+} Eurydice_dst_ref_shared_9a;
+
+// &mut [u8]
+typedef struct Eurydice_dst_ref_mut_87_s {
+  uint8_t *ptr;
+  size_t meta;
+} Eurydice_dst_ref_mut_87;
+
+// &mut [u16]
+typedef struct Eurydice_dst_ref_mut_9a_s {
+  int16_t *ptr;
+  size_t meta;
+} Eurydice_dst_ref_mut_9a;
+
 #if defined(__cplusplus)
 #define KRML_CLITERAL(type) type
 #else
@@ -163,12 +192,17 @@ extern "C" {
 
 #define core_hint_black_box(X, _0, _1) (X)
 
+// [ u8; 2 ]
 typedef struct Eurydice_arr_8b_s {
   uint8_t data[2];
 } Eurydice_arr_8b;
+
+// [ u8; 4 ]
 typedef struct Eurydice_arr_e9_s {
   uint8_t data[4];
 } Eurydice_arr_e9;
+
+// [ u8; 8 ]
 typedef struct Eurydice_arr_c4_s {
   uint8_t data[8];
 } Eurydice_arr_c4;

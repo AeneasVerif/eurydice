@@ -107,12 +107,17 @@ let build_cg_macros =
   end
 
 (*This identifies the decls which should be generated after monomorphism, but is already defined
- in eurydice_glue.h for implementing the builtin functions. The slices are for libcrux *)
+ in eurydice_glue.h for implementing the builtin functions. The slices are for
+ libcrux, specifically to be able to define the intrinsic function signatures *)
 let is_builtin_lid lid =
   match lid with
   | [ "Eurydice" ], "arr_c4" (* arr {data:[u8;8]}*)
   | [ "Eurydice" ], "arr_e9" (* arr {data:[u8;4]}*)
   | [ "Eurydice" ], "arr_8b" (* arr {data:[u8,2]}*)
+  | [ "Eurydice" ], "dst_ref_shared_87" (* &[u8] *)
+  | [ "Eurydice" ], "dst_ref_shared_9a" (* &[i16] *)
+  | [ "Eurydice" ], "dst_ref_mut_87" (* &mut [u8] *)
+  | [ "Eurydice" ], "dst_ref_mut_9a" (* &mut [i16] *)
   | [ "Prims" ], "string" (* used to pass the checker, defined in glue.h *) -> true
   | _ -> false
 

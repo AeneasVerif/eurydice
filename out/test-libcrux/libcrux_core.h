@@ -16,18 +16,6 @@ extern "C" {
 #endif
 
 /**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types uint8_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_87_s
-{
-  const uint8_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_87;
-
-/**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
 with const generics
@@ -57,18 +45,6 @@ typedef struct libcrux_ml_kem_mlkem1024_MlKem1024KeyPair_s
   Eurydice_arr_00 pk;
 }
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types uint8_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_87_s
-{
-  uint8_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_mut_87;
 
 /**
 A monomorphic instance of K.
@@ -216,30 +192,6 @@ with const generics
 - $20size_t
 */
 typedef struct Eurydice_arr_dc_s { uint8_t data[20U]; } Eurydice_arr_dc;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types int16_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_9a_s
-{
-  const int16_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_9a;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types int16_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_9a_s
-{
-  int16_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_mut_9a;
 
 /**
 A monomorphic instance of Eurydice.arr

@@ -18,35 +18,11 @@ extern "C" {
 static inline Eurydice_arr_e9 core_num__u32__to_be_bytes(uint32_t x0);
 
 /**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types uint8_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_87_s
-{
-  uint8_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_mut_87;
-
-/**
 A monomorphic instance of core.ops.range.RangeTo
 with types size_t
 
 */
 typedef size_t core_ops_range_RangeTo_08;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types uint8_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_87_s
-{
-  const uint8_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_87;
 
 /**
 A monomorphic instance of core.ops.range.RangeFrom

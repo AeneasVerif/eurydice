@@ -99,18 +99,6 @@ core_ops_range_Range_08;
 
 void traits2_main(void);
 
-/**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types int16_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_9a_s
-{
-  const int16_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_9a;
-
 #if defined(__cplusplus)
 }
 #endif

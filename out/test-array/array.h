@@ -34,18 +34,6 @@ extern bool
 core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(const uint32_t *x0, const uint32_t *x1);
 
 /**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types uint8_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_87_s
-{
-  const uint8_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_87;
-
-/**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
 with const generics
