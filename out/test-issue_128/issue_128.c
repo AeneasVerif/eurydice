@@ -56,6 +56,6 @@ void issue_128_main(void)
 {
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_51 lvalue = Eurydice_empty_array((void *)0U, uint8_t, Eurydice_arr_51);
-  issue_128_use_enum(issue_128_E_A, array_to_slice_5d(&lvalue));
+  issue_128_use_enum(issue_128_E_A, array_to_slice_shared_5d(&lvalue));
 }
 
