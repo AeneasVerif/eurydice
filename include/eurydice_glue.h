@@ -75,7 +75,7 @@ typedef struct Eurydice_dst_ref_shared_87_s {
   size_t meta;
 } Eurydice_dst_ref_shared_87;
 
-// &[u16]
+// &[i16]
 typedef struct Eurydice_dst_ref_shared_9a_s {
   const int16_t *ptr;
   size_t meta;
@@ -87,7 +87,7 @@ typedef struct Eurydice_dst_ref_mut_87_s {
   size_t meta;
 } Eurydice_dst_ref_mut_87;
 
-// &mut [u16]
+// &mut [i16]
 typedef struct Eurydice_dst_ref_mut_9a_s {
   int16_t *ptr;
   size_t meta;

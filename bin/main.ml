@@ -18,8 +18,10 @@ Supported options:|}
       Krml.Options.backtrace := true
   in
   let funroll_loops = ref 16 in
+  let gen_types = ref false in
   let spec =
     [
+      "--gen_types", Arg.Set gen_types, "";
       "--log", Arg.Set_string O.log_level, " log level, use * for everything";
       "--debug", Arg.String debug, " debug options, to be passed to krml";
       "--output", Arg.Set_string Krml.Options.tmpdir, " output directory in which to write files";
@@ -56,6 +58,11 @@ Supported options:|}
       Printf.printf "Error parsing command-line: %s\n%s\n" (Printexc.get_backtrace ())
         (Printexc.to_string e);
       fatal_error "Incorrect invocation, was: %s\n" (String.concat "␣" (Array.to_list Sys.argv))
+  end;
+
+  if !gen_types then begin
+    Eurydice.GenTypes.gen_types ();
+    exit 0
   end;
 
   if !files = [] then
