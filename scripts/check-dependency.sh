@@ -29,16 +29,24 @@ if !which jq 2> /dev/null 1>&2; then
 fi
 
 rebuild() {
+    if which nix 2> /dev/null 1>&2; then
+      local has_nix=true
+    else
+      local has_nix=false
+    fi
     case "$1" in
         karamel)
-            opam install --deps-only .
+            if ! $has_nix; then
+              opam install --deps-only .
+            fi
             make lib/AutoConfig.ml
         ;;
         charon)
-            opam install --deps-only .
-            if which nix 2> /dev/null 1>&2; then
+            if $has_nix; then
+                # No need to install dependencies via opam if we're within nix
                 nix develop --command bash -c "make test"
             elif which rustup 2> /dev/null 1>&2; then
+                opam install --deps-only .
                 make test
             else
                 echo 'Error: Neither `rustup` nor `nix` appears to be installed. Install one or the other in order to build `charon`.'
