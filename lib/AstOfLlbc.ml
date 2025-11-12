@@ -156,10 +156,11 @@ let push_type_binders env (ts : C.type_param list) = List.fold_left push_type_bi
 (** Helpers: types *)
 
 let with_any = K.(with_type TAny)
+let is_dst_ref lid = Builtin.(lid = dst_ref_mut || lid = dst_ref_shared)
 
 let assert_slice (t : K.typ) =
   match t with
-  | TApp (lid, [ t; _ ]) when lid = Builtin.slice -> t
+  | TApp (lid, [ t; u ]) when is_dst_ref lid && u = TInt SizeT -> t
   | _ -> fail "Not a slice: %a" ptyp t
 
 let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
@@ -196,30 +197,47 @@ module RustNames = struct
   let range = parse_pattern "core::ops::range::Range<@>"
   let option = parse_pattern "core::option::Option<@>"
 
+  (* Just to have a uniform view of the table of distinguished declarations *)
+  let builtin_of_function decl : Builtin.builtin =
+    match decl with
+    | Krml.Ast.DFunction (_, _, n_cgs, n_type_args, ret_t, name, binders, _) ->
+        if n_cgs > List.length binders then
+          Krml.Warn.fatal_error "n_cgs=%d, but List.length binders=%d for %a\n" n_cgs
+            (List.length binders) Krml.PrintAst.Ops.plid name;
+        let cg_args, rest = Krml.KList.split n_cgs binders in
+        {
+          name;
+          typ = Krml.Helpers.fold_arrow (List.map (fun (x : Krml.Ast.binder) -> x.typ) rest) ret_t;
+          n_type_args;
+          cg_args = List.map (fun (x : Krml.Ast.binder) -> x.typ) cg_args;
+          arg_names = List.map (fun (x : Krml.Ast.binder) -> x.node.name) rest;
+        }
+    | _ -> failwith "impossible"
+
   let known_builtins =
     [
     (* slices *)
-    parse_pattern "SliceIndexShared<'_, @T>", Builtin.slice_index;
-    parse_pattern "SliceIndexMut<'_, @T>", Builtin.slice_index;
+    parse_pattern "SliceIndexShared<'_, @T>", Builtin.slice_index_shared;
+    parse_pattern "SliceIndexMut<'_, @T>", Builtin.slice_index_mut;
 
-    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
-    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@]>", Builtin.slice_subslice;
-    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@]>", Builtin.slice_subslice_to;
-    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@]>", Builtin.slice_subslice_to;
-    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@]>", Builtin.slice_subslice_from;
-    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@]>", Builtin.slice_subslice_from;
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::Range<usize>, [@]>", builtin_of_function Builtin.slice_subslice_func_shared;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@]>", builtin_of_function Builtin.slice_subslice_func_mut;
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@]>", builtin_of_function Builtin.slice_subslice_to_func_shared;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@]>", builtin_of_function Builtin.slice_subslice_to_func_mut;
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@]>", builtin_of_function Builtin.slice_subslice_from_func_shared;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@]>", builtin_of_function Builtin.slice_subslice_from_func_mut;
 
     (* arrays *)
-    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::Range<usize>, [@], @>", Builtin.array_to_subslice;
-    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@], @>", Builtin.array_to_subslice;
-    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@], @>", Builtin.array_to_subslice_to;
-    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@], @>", Builtin.array_to_subslice_to;
-    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", Builtin.array_to_subslice_from;
-    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", Builtin.array_to_subslice_from;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::Range<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_func_shared;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_func_mut;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_to_func_shared;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_to_func_mut;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_from_func_shared;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_from_func_mut;
 
     (* slices <-> arrays *)
-    parse_pattern "ArrayToSliceShared<'_, @T, @N>", Builtin.array_to_slice;
-    parse_pattern "ArrayToSliceMut<'_, @T, @N>", Builtin.array_to_slice;
+    parse_pattern "ArrayToSliceShared<'_, @T, @N>", builtin_of_function Builtin.array_to_slice_func_shared;
+    parse_pattern "ArrayToSliceMut<'_, @T, @N>", builtin_of_function Builtin.array_to_slice_func_mut;
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ mut [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], &'_ [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
@@ -332,10 +350,24 @@ let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
   | TUInt C.U128 -> Builtin.uint128_t
   | _ -> K.TInt (width_of_integer_type (Charon.TypesUtils.literal_as_integer ty))
 
-(* e: Eurydice_dst_ref<t,m> *)
-let mk_dst_deref t e =
+let const_of_ref_kind = function
+  | C.RMut -> false
+  | C.RShared -> true
+
+let const_of_borrow_kind = function
+  | C.BShared -> true
+  | C.BShallow -> true
+  | _ -> false
+
+let const_of_tbuf = function
+  | K.TBuf (_, const) -> const
+  | _ -> failwith "not a tbuf"
+
+(* e: Eurydice_dst<t> *)
+let mk_dst_deref _env t e =
   (* ptr_field: t* *)
-  let ptr_field = K.(with_type (TBuf (t, false)) (EField (e, "ptr"))) in
+  (* XXX need proper const here *)
+  let ptr_field = K.(with_type (TBuf (t, true)) (EField (e, "ptr"))) in
   K.(with_type t (EBufRead (ptr_field, Krml.Helpers.zero_usize)))
 
 let ensure_named i name =
@@ -505,23 +537,23 @@ and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
 (* Translate Charon type &T as a krml type -- this handles special cases
  where address-taking in Rust creates a DST, which we represent as instances
   of the dst_ref type. There are many such cases: slices, &str, etc. *)
-and ptr_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
+and ptr_typ_of_ty (env : env) ~const (ty : Charon.Types.ty) : K.typ =
   (* Handle special cases first *)
   match ty with
   (* Special case to handle slice : &[T] *)
   | TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
-      Builtin.mk_slice (typ_of_ty env t)
+      Builtin.mk_slice ~const (typ_of_ty env t)
   (* Special case to handle &str *)
-  | TAdt { id = TBuiltin TStr; _ } -> Builtin.str_t
+  | TAdt { id = TBuiltin TStr; _ } -> Builtin.str_t ~const
   (* Special case to handle DynTrait *)
   | TDynTrait pred ->
-      Builtin.mk_dst_ref Builtin.c_void_t (K.TBuf (vtable_typ_of_dyn_pred env pred, false))
+      Builtin.mk_dst_ref ~const Builtin.c_void_t (K.TBuf (vtable_typ_of_dyn_pred env pred, false))
   (* General case, all &T is turned to either thin T* or fat Eurydice::DstRef<T,Meta> *)
   | _ -> (
       let typ = typ_of_ty env ty in
       match metadata_typ_of_ty env ty with
-      | None -> K.TBuf (typ, false)
-      | Some meta -> Builtin.mk_dst_ref typ meta)
+      | None -> K.TBuf (typ, const)
+      | Some meta -> Builtin.mk_dst_ref ~const typ meta)
 
 and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   match ty with
@@ -529,8 +561,10 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TLiteral t -> typ_of_literal_ty env t
   | TNever -> failwith "Impossible: Never"
   | TDynTrait _ -> failwith "TODO: dyn Trait"
-  | TAdt { id = TBuiltin TBox; generics = { types = [ t ]; _ } } | TRef (_, t, _) | TRawPtr (t, _)
-    -> ptr_typ_of_ty env t
+  | TAdt { id = TBuiltin TBox; generics = { types = [ t ]; _ } } -> ptr_typ_of_ty ~const:false env t
+  | TRef (_, t, rk) | TRawPtr (t, rk) ->
+      let const = const_of_ref_kind rk in
+      ptr_typ_of_ty env ~const t
   | TAdt { id; generics = { types = [ t ]; _ } as generics } when RustNames.is_vec env id generics
     -> Builtin.mk_vec (typ_of_ty env t)
   | TAdt { id = TAdtId id; generics = { types = args; const_generics = generic_args; _ } } ->
@@ -767,7 +801,7 @@ let expression_of_literal (_env : env) (l : C.literal) : K.expr =
       let ascii = Utf8.ascii_of_utf8_str s in
       let len = String.length s in
       K.(
-        with_type Builtin.str_t
+        with_type (Builtin.str_t ~const:true)
           (EFlat
              [
                Some "ptr", with_type Krml.Checker.c_string (EString ascii);
@@ -811,7 +845,8 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
   | PlaceProjection (sub_place, PtrMetadata) -> begin
       let e = expression_of_place env sub_place in
       match e.typ with
-      | TApp (lid, [ _; meta_ty ]) when lid = Builtin.dst_ref ->
+      | TApp (lid, [ _; meta_ty ]) when is_dst_ref lid ->
+          (* XXX need to adjust *)
           K.(with_type meta_ty (EField (e, "meta")))
       (* In cases like `PtrMetadata(T)` when `T` is a type variable or some types with unresolved type variable,
        We cannot tell the correct metadata type from it until fully monomorphized.
@@ -841,7 +876,13 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           (* All types represented as a pointer at run-time, compiled to a C pointer *)
           begin
             match !*sub_e.K.typ with
-            | TBuf (t_pointee, _) -> Krml.Helpers.(mk_deref t_pointee !*sub_e.K.node)
+            | TBuf (t_pointee, _) ->
+                let const =
+                  match sub_place.ty with
+                  | TRef (_, _, k) -> const_of_ref_kind k
+                  | _ -> false
+                in
+                Krml.Helpers.(mk_deref ~const t_pointee !*sub_e.K.node)
             | t ->
                 L.log "AstOfLlbc" "UNHANDLED DEREFERENCE\ne=%a\nt=%a\nty=%s\npe=%s\n" pexpr !*sub_e
                   ptyp t (C.show_ty sub_place.ty) (C.show_projection_elem pe);
@@ -853,17 +894,25 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           let field_name = lookup_field env typ_id field_id in
           let sub_e = expression_of_place env sub_place in
           let place_typ = typ_of_ty env p.ty in
+          let const =
+            match sub_place.ty with
+            | TRef (_, _, k) -> const_of_ref_kind k
+            | _ -> false
+          in
           begin
             match sub_e.K.typ with
-            | K.TApp (dst_ref_hd, [ dst_t; _meta ]) when dst_ref_hd = Builtin.dst_ref ->
+            | K.TApp (dst_ref_hd, [ dst_t; _meta ]) when is_dst_ref dst_ref_hd ->
                 (* getting field from a fat pointer of DST  *)
-                K.with_type place_typ (K.EField (mk_dst_deref dst_t sub_e, field_name))
+                (* XXX need to adjust *)
+                K.with_type place_typ (K.EField (mk_dst_deref env dst_t sub_e, field_name))
             | _ ->
                 (* Same as below *)
                 K.with_type place_typ
                   (K.EField
                      ( Krml.Helpers.(
-                         mk_deref (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node),
+                         mk_deref ~const
+                           (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ)
+                           sub_e.K.node),
                        field_name ))
           end
       | Field (ProjAdt (typ_id, variant_id), field_id), _, C.TAdt _ -> begin
@@ -1068,7 +1117,7 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
   in
   K.(with_type ret_t (EApp (op, first :: rest)))
 
-let addrof (e : K.expr) = K.(with_type (TBuf (e.typ, false)) (EAddrOf e))
+let addrof ~const (e : K.expr) = K.(with_type (TBuf (e.typ, const)) (EAddrOf e))
 
 (** Handling trait clauses as dictionaries *)
 
@@ -1739,38 +1788,38 @@ let is_box_place (p : C.place) =
   | _ -> false
 
 (* returns either a regular naked C pointer, or a fat pointer in the case of DSTs (i.e. with non-empty metadata) *)
-let mk_reference (e : K.expr) (metadata : K.expr) : K.expr =
+let mk_reference ~const (e : K.expr) (metadata : K.expr) : K.expr =
   match metadata.typ with
   (* When it is unit, it means there is no metadata, simply take the address *)
-  | K.TUnit -> addrof e
+  | K.TUnit -> addrof ~const e
   | _ -> (
       match e.typ with
       | TApp (lid, [ t ]) when lid = Builtin.derefed_slice ->
           (* The special "base case" of DSTs: slice<T>
           where we have to cast [derefed_slice<T>] into [T*] for the .ptr field in the fat pointer  *)
-          let ptr = K.(with_type (TBuf (t, false)) (ECast (e, TBuf (t, false)))) in
+          let ptr = K.(with_type (TBuf (t, const)) (ECast (e, TBuf (t, const)))) in
           K.(
             with_type
-              (Builtin.mk_dst_ref t metadata.typ)
+              (Builtin.mk_dst_ref ~const t metadata.typ)
               (EFlat [ Some "ptr", ptr; Some "meta", metadata ]))
       | _ ->
           K.(
             with_type
-              (Builtin.mk_dst_ref e.typ metadata.typ)
-              (EFlat [ Some "ptr", addrof e; Some "meta", metadata ])))
+              (Builtin.mk_dst_ref ~const e.typ metadata.typ)
+              (EFlat [ Some "ptr", addrof ~const e; Some "meta", metadata ])))
 
 (* To destruct a DST reference type into its base and metadata types
    I.e., from Eurydice_dst_ref<T, meta> to (T, meta) *)
 let destruct_dst_ref_typ t =
   match t with
-  | K.TApp (dst_ref_hd, [ t_base; t_meta ]) when dst_ref_hd = Builtin.dst_ref ->
-      Some (t_base, t_meta)
+  | K.TApp (dst_ref_hd, [ t_base; t_meta ]) when is_dst_ref dst_ref_hd -> Some (t_base, t_meta)
   | _ -> None
 
 (* Get the base pointer expression from a DST reference expression
    I.e., from `e : Eurydice_dst_ref<T, meta>` to `e.ptr : T*` *)
 let get_dst_ref_base dst_ref =
   match destruct_dst_ref_typ dst_ref.K.typ with
+  (* XXX fixme *)
   | Some (base, _) -> Some K.(with_type (TBuf (base, false)) (EField (dst_ref, "ptr")))
   | None -> None
 
@@ -1779,9 +1828,29 @@ let get_dst_ref_base dst_ref =
    used to handle the unsized cast from &T<V> to &T<U> *)
 let destruct_arr_dst_ref t =
   match t with
-  | K.TApp (dst_ref_hd, [ (TApp (lid, _) as t_u); _ ]) when dst_ref_hd = Builtin.dst_ref ->
-      Some (lid, t_u)
+  | K.TApp (dst_ref_hd, [ (TApp (lid, _) as t_u); _ ]) when is_dst_ref dst_ref_hd -> Some (lid, t_u)
   | _ -> None
+
+(* Reborrows allow going from a mutable slice to an immutable one. *)
+let maybe_reborrow_slice t_dst e_src =
+  let open K in
+  match e_src.typ, t_dst with
+  | TApp (hd1, [ t_ptr; t_meta ]), TApp (hd2, _) when is_dst_ref hd1 && is_dst_ref hd2 && hd1 <> hd2
+    ->
+      with_type t_dst
+        (ELet
+           ( Krml.Helpers.fresh_binder "reborrowed_slice" e_src.typ,
+             e_src,
+             with_type t_dst
+               (EFlat
+                  [
+                    ( Some "ptr",
+                      with_type
+                        (TBuf (t_ptr, true))
+                        (EField (with_type e_src.typ (EBound 0), "ptr")) );
+                    Some "meta", with_type t_meta (EField (with_type e_src.typ (EBound 0), "meta"));
+                  ]) ))
+  | _ -> e_src
 
 let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   match p with
@@ -1802,13 +1871,18 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
      *)
   | RvRef ({ kind = PlaceProjection (p, Deref); _ }, _, _)
   | RawPtr ({ kind = PlaceProjection (p, Deref); _ }, _, _) ->
-      (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and [p] might be a reference to DST (fat pointer). *)
+      (* Notably, this is NOT simply an optimisation, as this represents re-borrowing, and [p] might
+         be a reference to DST (fat pointer). *)
       (* This also works for when the case has metadata, simply ignore it *)
-      expression_of_place env p
-  | RvRef (p, _, metadata) | RawPtr (p, _, metadata) ->
+      maybe_reborrow_slice (typ_of_ty env expected_ty) (expression_of_place env p)
+  | RvRef (p, bk, metadata) ->
       let metadata = expression_of_operand env metadata in
       let e = expression_of_place env p in
-      mk_reference e metadata
+      mk_reference ~const:(const_of_borrow_kind bk) e metadata
+  | RawPtr (p, rk, metadata) ->
+      let metadata = expression_of_operand env metadata in
+      let e = expression_of_place env p in
+      mk_reference ~const:(const_of_ref_kind rk) e metadata
   | NullaryOp (SizeOf, ty) ->
       let t = typ_of_ty env ty in
       K.(with_type TBool (EApp (Builtin.(expr_of_builtin_t sizeof [ t ]), [])))
@@ -1843,26 +1917,44 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       let e = expression_of_operand env e in
       begin
         match meta, t_from, destruct_arr_dst_ref t_to with
-        | MetaLength cg, TBuf (TApp (lid1, _), _), Some (lid2, t_u) when lid1 = lid2 ->
+        | MetaLength cg, TBuf (TApp (lid1, _), const), Some (lid2, t_u) when lid1 = lid2 ->
             (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
              `Eurydice_derefed_slice data` (a.k.a. `char data[]`) *)
             let len = expression_of_const_generic env cg in
-            let ptr = K.with_type (TBuf (t_u, false)) (K.ECast (e, TBuf (t_u, false))) in
-            Builtin.dst_new ~len ~ptr t_u
+            let ptr = K.with_type (TBuf (t_u, const)) (K.ECast (e, TBuf (t_u, const))) in
+            Builtin.dst_new ~const ~len ~ptr t_u
         | MetaLength cg, TBuf (K.TCgApp (K.TApp (lid_arr, [ t ]), _), _), _
           when lid_arr = Builtin.arr ->
-            (* Cast from Box<[T;N]> to Box<[T]> which we represent as Eurydice_slice *)
+            (* Cast from Box<[T;N]> (represented as a mut reference to an array) to Box<[T]> (which we
+               represent as a slice). See the translation of types. *)
             let len = expression_of_const_generic env cg in
+            let const =
+              match t_to with
+              | K.TApp (dst_ref_hd, _) when dst_ref_hd = Builtin.dst_ref_shared -> true
+              | K.TApp (dst_ref_hd, _) when dst_ref_hd = Builtin.dst_ref_mut -> false
+              | _ -> assert false
+            in
+            let array_to_slice =
+              RustNames.builtin_of_function
+                (if const then
+                   Builtin.array_to_slice_func_shared
+                 else
+                   Builtin.array_to_slice_func_mut)
+            in
+            let t_without_cg = array_to_slice.typ in
             (* array_to_slice: size_t -> arr -> Eurydice_slice 0 *)
             let array_to_slice = Builtin.(expr_of_builtin array_to_slice) in
             let diff = List.length env.binders - List.length env.cg_binders in
             let array_to_slice =
               K.with_type
-                Krml.DeBruijn.(subst_t t 0 (subst_ct diff len 0 Builtin.array_to_slice.typ))
+                Krml.DeBruijn.(subst_t t 0 (subst_ct diff len 0 t_without_cg))
                 (K.ETApp (array_to_slice, [ len ], [], [ t ]))
             in
-            K.(with_type (Builtin.mk_slice t) (EApp (array_to_slice, [ e ])))
-        | _ ->
+            K.(with_type (Builtin.mk_slice ~const t) (EApp (array_to_slice, [ e ])))
+        | _, _, _ ->
+            Krml.KPrint.bprintf "t_to = %a\n" ptyp t_to;
+            Krml.KPrint.bprintf "destruct_arr_dst_ref t_to = None? %b\n"
+              (destruct_arr_dst_ref t_to = None);
             Krml.Warn.fatal_error "unknown unsize cast: `%s`\nt_to=%a\nt_from=%a"
               (Charon.PrintExpressions.cast_kind_to_string env.format_env ck)
               ptyp t_to ptyp t_from
@@ -2140,17 +2232,22 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       (* Special treatment for e1[e2] of array which are translated into struct.
          e1[e2] is translated as fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T
 
-         Since [T;N] is transalted into arr$T$N, we need to first dereference
+         Since [T;N] is translated into arr$T$N, we need to first dereference
          the e1 to get the struct, and then take its field "data" to get the
-         array *)
+         array
+          
+         We construct dest := &( *e1).data[e2]
+         *)
       let e1 = expression_of_operand env e1 in
       let e2 = expression_of_operand env e2 in
       let t = typ_of_ty env ty in
       let t_array = maybe_cg_array env ty cg in
-      let e1 = Krml.Helpers.(mk_deref (Krml.Helpers.assert_tbuf_or_tarray e1.K.typ) e1.K.node) in
+      (* let const = const_of_tbuf e1.K.typ in *)
+      let e1 = Krml.Helpers.(mk_deref ~const:true (Krml.Helpers.assert_tbuf e1.K.typ) e1.K.node) in
       let e1 = K.with_type t_array (K.EField (e1, "data")) in
       let dest = expression_of_place env dest in
-      Krml.Helpers.with_unit K.(EAssign (dest, addrof (with_type t (EBufRead (e1, e2)))))
+      Krml.Helpers.with_unit
+        K.(EAssign (dest, addrof ~const:false (with_type t (EBufRead (e1, e2)))))
   | Call { func = FnOpRegular fn_ptr; args; dest; _ }
     when Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u16 fn_ptr
          || Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u32 fn_ptr
@@ -2809,5 +2906,5 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
     }
   in
   let trans_decls = decls_of_declarations env declarations in
-  let extra_decls = [ Builtin.dst_ref_decl; Builtin.decl_of_arr ] in
+  let extra_decls = Builtin.[ dst_ref_shared_decl; dst_ref_mut_decl; decl_of_arr ] in
   name, trans_decls @ extra_decls

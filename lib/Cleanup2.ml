@@ -1135,7 +1135,8 @@ let check_addrof =
       | EQualified _ (* case 1 *) | EBufRead _ (* case 4 *) -> EAddrOf (self#visit_expr_w () e)
       | EApp ({ node = EQualified lid; _ }, _)
       | EApp ({ node = ETApp ({ node = EQualified lid; _ }, _, _, _); _ }, _)
-        when lid = Builtin.slice_index.name
+        when lid = Builtin.slice_index_shared.name
+             || lid = Builtin.slice_index_mut.name
              || Krml.KString.starts_with (snd lid) "op_Bang_Star__" (* case 4, case 3 *) ->
           EAddrOf e
       | _ ->

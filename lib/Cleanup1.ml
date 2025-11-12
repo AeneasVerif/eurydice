@@ -439,31 +439,38 @@ let unsigned_overflow_is_ok_in_c =
 (* PPrint.(Krml.Print.(print (Krml.PrintAst.print_files files ^^ hardline))); *)
 
 let remove_slice_eq =
-  object
+  object (self)
     inherit [_] map as super
+
+    method private do_it ~const eq t u s1 s2 =
+      assert (t = u);
+      let slice_eq =
+        if const then
+          Builtin.slice_eq_shared
+        else
+          Builtin.slice_eq_mut
+      in
+      match flatten_tapp t with
+      | lid, [ t ], [] when lid = Builtin.derefed_slice ->
+          let rec is_flat = function
+            | TArray (t, _) -> is_flat t
+            | TInt _ | TBool | TUnit -> true
+            | _ -> false
+          in
+          if not (is_flat t) then
+            failwith "TODO: slice eq at non-flat types";
+          with_type TBool (EApp (Builtin.expr_of_builtin_t slice_eq [ t ], [ s1; s2 ]))
+      | _ ->
+          let deref e = with_type (H.assert_tbuf e.typ) (EBufRead (e, H.zero_usize)) in
+          with_type TBool (EApp (List.hd eq, [ deref s1; deref s2 ]))
 
     method! visit_expr _ e =
       match e with
       | [%cremepat {| core::cmp::impls::?impl::eq(#?eq..)<?t,?u>(?s1, ?s2) |}] -> begin
           match impl with
-          | "{core::cmp::PartialEq<&0 mut (B)> for &1 mut (A)}"
-          | "{core::cmp::PartialEq<&0 (B)> for &1 (A)}" ->
-              assert (t = u);
-              begin
-                match flatten_tapp t with
-                | lid, [ t ], [] when lid = Builtin.derefed_slice ->
-                    let rec is_flat = function
-                      | TArray (t, _) -> is_flat t
-                      | TInt _ | TBool | TUnit -> true
-                      | _ -> false
-                    in
-                    if not (is_flat t) then
-                      failwith "TODO: slice eq at non-flat types";
-                    with_type TBool (EApp (Builtin.(expr_of_builtin_t slice_eq [ t ]), [ s1; s2 ]))
-                | _ ->
-                    let deref e = with_type (H.assert_tbuf e.typ) (EBufRead (e, H.zero_usize)) in
-                    with_type TBool (EApp (List.hd eq, [ deref s1; deref s2 ]))
-              end
+          | "{core::cmp::PartialEq<&0 mut (B)> for &1 mut (A)}" ->
+              self#do_it ~const:false eq t u s1 s2
+          | "{core::cmp::PartialEq<&0 (B)> for &1 (A)}" -> self#do_it ~const:true eq t u s1 s2
           | _ -> failwith "unknown eq impl in core::cmp::impls"
         end
       | _ -> super#visit_expr ((), e.typ) e
@@ -472,6 +479,7 @@ let remove_slice_eq =
 let cleanup files =
   let files = remove_units#visit_files () files in
   let files = remove_assignments#visit_files AtomMap.empty files in
+  (* Krml.(PPrint.(Print.(print (PrintAst.print_files files ^^ hardline)))); *)
   let files = unsigned_overflow_is_ok_in_c#visit_files () files in
   let files = Krml.Simplify.optimize_lets files in
   let files = remove_terminal_returns#visit_files true files in

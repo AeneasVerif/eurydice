@@ -18,22 +18,22 @@ extern "C" {
 /**
 This function found in impl {core::cmp::PartialEq<()> for ()}
 */
-bool core_cmp_impls_eq_cf(void **self, void **_other);
+bool core_cmp_impls_eq_cf(void *const *self, void *const *_other);
 
 /**
 This function found in impl {core::cmp::PartialEq<()> for ()}
 */
-bool core_cmp_impls_ne_cf(void **self, void **_other);
+bool core_cmp_impls_ne_cf(void *const *self, void *const *_other);
 
 /**
 This function found in impl {core::cmp::PartialEq<u8> for u8}
 */
-bool core_cmp_impls_eq_c3(uint8_t *self, uint8_t *other);
+bool core_cmp_impls_eq_c3(const uint8_t *self, const uint8_t *other);
 
 /**
 This function found in impl {core::cmp::PartialEq<u8> for u8}
 */
-bool core_cmp_impls_ne_c3(uint8_t *self, uint8_t *other);
+bool core_cmp_impls_ne_c3(const uint8_t *self, const uint8_t *other);
 
 
 
@@ -145,7 +145,8 @@ with types (), uint8_t
 with const generics
 
 */
-bool core_result_eq_0b_c6(core_result_Result_1d *self, core_result_Result_1d *other);
+bool
+core_result_eq_0b_74(const core_result_Result_1d *self, const core_result_Result_1d *other);
 
 void issue_105_main(void);
 

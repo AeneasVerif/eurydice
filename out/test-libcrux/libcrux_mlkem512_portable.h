@@ -25,8 +25,8 @@ extern "C" {
 */
 Eurydice_arr_60
 libcrux_ml_kem_mlkem512_portable_decapsulate(
-  Eurydice_arr_7f *private_key,
-  Eurydice_arr_56 *ciphertext
+  const Eurydice_arr_7f *private_key,
+  const Eurydice_arr_56 *ciphertext
 );
 
 /**
@@ -38,7 +38,7 @@ libcrux_ml_kem_mlkem512_portable_decapsulate(
 */
 tuple_17
 libcrux_ml_kem_mlkem512_portable_encapsulate(
-  Eurydice_arr_30 *public_key,
+  const Eurydice_arr_30 *public_key,
   Eurydice_arr_60 randomness
 );
 
@@ -55,8 +55,8 @@ libcrux_ml_kem_mlkem512_portable_generate_key_pair(libcrux_sha3_Sha3_512Digest r
 */
 bool
 libcrux_ml_kem_mlkem512_portable_validate_private_key(
-  Eurydice_arr_7f *private_key,
-  Eurydice_arr_56 *ciphertext
+  const Eurydice_arr_7f *private_key,
+  const Eurydice_arr_56 *ciphertext
 );
 
 /**
@@ -64,14 +64,15 @@ libcrux_ml_kem_mlkem512_portable_validate_private_key(
 
  Returns `true` if valid, and `false` otherwise.
 */
-bool libcrux_ml_kem_mlkem512_portable_validate_private_key_only(Eurydice_arr_7f *private_key);
+bool
+libcrux_ml_kem_mlkem512_portable_validate_private_key_only(const Eurydice_arr_7f *private_key);
 
 /**
  Validate a public key.
 
  Returns `true` if valid, and `false` otherwise.
 */
-bool libcrux_ml_kem_mlkem512_portable_validate_public_key(Eurydice_arr_30 *public_key);
+bool libcrux_ml_kem_mlkem512_portable_validate_public_key(const Eurydice_arr_30 *public_key);
 
 #if defined(__cplusplus)
 }

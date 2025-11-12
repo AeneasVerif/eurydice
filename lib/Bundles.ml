@@ -559,5 +559,6 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
   let files = List.map (fun (f, decls) -> f, topological_sort decls) files in
 
   let c1 = count_decls files in
-  assert (c0 = c1);
+  if c0 <> c1 then
+    Krml.Warn.fatal_error "Previous %d declarations, now %d\n" c0 c1;
   files

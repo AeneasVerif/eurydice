@@ -36,7 +36,7 @@ int32_t more_primitive_types_int128_operations(more_primitive_types_MorePrimitiv
   return (int32_t)x;
 }
 
-int32_t more_primitive_types_match_u128(more_primitive_types_MorePrimitiveTypes *p)
+int32_t more_primitive_types_match_u128(const more_primitive_types_MorePrimitiveTypes *p)
 {
   if
   (
@@ -69,7 +69,7 @@ int32_t more_primitive_types_match_u128(more_primitive_types_MorePrimitiveTypes 
   return (int32_t)3;
 }
 
-int32_t more_primitive_types_match_i128(more_primitive_types_MorePrimitiveTypes *p)
+int32_t more_primitive_types_match_i128(const more_primitive_types_MorePrimitiveTypes *p)
 {
   if
   (
@@ -116,7 +116,7 @@ void more_primitive_types_use_more_primitive_types(void)
 {
   /* original Rust expression is not an lvalue in C */
   arr_fd lvalue = { .data = { 97U, 104U, 101U, 108U, 108U, 111U } };
-  arr_fd *s = &lvalue;
+  const arr_fd *s = &lvalue;
   more_primitive_types_MorePrimitiveTypes
   p =
     {

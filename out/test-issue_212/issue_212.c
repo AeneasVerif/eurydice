@@ -12,7 +12,7 @@ A monomorphic instance of issue_212.id_mut
 with types Eurydice_arr int32_t[[$3size_t]]
 
 */
-Eurydice_arr_8d *issue_212_id_mut_16(Eurydice_arr_8d *x)
+const Eurydice_arr_8d *issue_212_id_mut_16(const Eurydice_arr_8d *x)
 {
   return x;
 }
@@ -20,7 +20,7 @@ Eurydice_arr_8d *issue_212_id_mut_16(Eurydice_arr_8d *x)
 void issue_212_main(void)
 {
   Eurydice_arr_8d arr = { .data = { (int32_t)1, (int32_t)2, (int32_t)3 } };
-  Eurydice_arr_8d *r = issue_212_id_mut_16(&arr);
+  const Eurydice_arr_8d *r = issue_212_id_mut_16(&arr);
   EURYDICE_ASSERT(r->data[0U] > (int32_t)0, "panic!");
 }
 

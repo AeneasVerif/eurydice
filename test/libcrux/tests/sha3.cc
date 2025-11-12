@@ -42,7 +42,7 @@ TEST(Sha3Test, ConsistencyTest)
     const char* message = "Hello, World!";
     uint32_t message_size = strlen(message);
 
-    Eurydice_dst_ref_87 input;
+    Eurydice_borrow_slice_u8 input;
     input.ptr = (uint8_t*) message;
     input.meta = message_size;
 

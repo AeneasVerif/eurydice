@@ -10,7 +10,7 @@
 /**
 This function found in impl {core::cmp::PartialEq<()> for ()}
 */
-inline bool core_cmp_impls_eq_cf(void **self, void **_other)
+inline bool core_cmp_impls_eq_cf(void *const *self, void *const *_other)
 {
   return true;
 }
@@ -18,7 +18,7 @@ inline bool core_cmp_impls_eq_cf(void **self, void **_other)
 /**
 This function found in impl {core::cmp::PartialEq<()> for ()}
 */
-inline bool core_cmp_impls_ne_cf(void **self, void **_other)
+inline bool core_cmp_impls_ne_cf(void *const *self, void *const *_other)
 {
   return false;
 }
@@ -26,7 +26,7 @@ inline bool core_cmp_impls_ne_cf(void **self, void **_other)
 /**
 This function found in impl {core::cmp::PartialEq<u8> for u8}
 */
-inline bool core_cmp_impls_eq_c3(uint8_t *self, uint8_t *other)
+inline bool core_cmp_impls_eq_c3(const uint8_t *self, const uint8_t *other)
 {
   return self[0U] == other[0U];
 }
@@ -34,7 +34,7 @@ inline bool core_cmp_impls_eq_c3(uint8_t *self, uint8_t *other)
 /**
 This function found in impl {core::cmp::PartialEq<u8> for u8}
 */
-inline bool core_cmp_impls_ne_c3(uint8_t *self, uint8_t *other)
+inline bool core_cmp_impls_ne_c3(const uint8_t *self, const uint8_t *other)
 {
   return self[0U] != other[0U];
 }
@@ -111,7 +111,8 @@ with types (), uint8_t
 with const generics
 
 */
-inline bool core_result_eq_0b_c6(core_result_Result_1d *self, core_result_Result_1d *other)
+inline bool
+core_result_eq_0b_74(const core_result_Result_1d *self, const core_result_Result_1d *other)
 {
   ptrdiff_t __self_discr = (ptrdiff_t)self->tag;
   ptrdiff_t __arg1_discr = (ptrdiff_t)other->tag;
@@ -123,17 +124,17 @@ inline bool core_result_eq_0b_c6(core_result_Result_1d *self, core_result_Result
       EURYDICE_ASSERT(!!((ptrdiff_t)other->tag == (ptrdiff_t)0), "assert failure");
       /* original Rust expression is not an lvalue in C */
       void *lvalue0 = (void *)0U;
-      void **__self_0 = &lvalue0;
+      void *const *__self_0 = &lvalue0;
       /* original Rust expression is not an lvalue in C */
       void *lvalue = (void *)0U;
-      void **__arg1_0 = &lvalue;
+      void *const *__arg1_0 = &lvalue;
       uu____0 = core_cmp_impls_eq_cf(__self_0, __arg1_0);
     }
     else
     {
       EURYDICE_ASSERT(!!((ptrdiff_t)other->tag == (ptrdiff_t)1), "assert failure");
-      uint8_t *__self_0 = &self->f0;
-      uint8_t *__arg1_0 = &other->f0;
+      const uint8_t *__self_0 = &self->f0;
+      const uint8_t *__arg1_0 = &other->f0;
       uu____0 = core_cmp_impls_eq_c3(__self_0, __arg1_0);
     }
   }
@@ -144,12 +145,12 @@ inline bool core_result_eq_0b_c6(core_result_Result_1d *self, core_result_Result
   return uu____0;
 }
 
-typedef struct _core_result_Result____uint8_t__x2_s
+typedef struct const_core_result_Result____uint8_t__x2_s
 {
-  core_result_Result_1d *fst;
-  core_result_Result_1d *snd;
+  const core_result_Result_1d *fst;
+  const core_result_Result_1d *snd;
 }
-_core_result_Result____uint8_t__x2;
+const_core_result_Result____uint8_t__x2;
 
 void issue_105_main(void)
 {
@@ -157,7 +158,7 @@ void issue_105_main(void)
   core_result_Result_1d lvalue0 = issue_105_call_it();
   /* original Rust expression is not an lvalue in C */
   core_result_Result_1d lvalue = { .tag = core_result_Err, .f0 = 1U };
-  _core_result_Result____uint8_t__x2 uu____0 = { .fst = &lvalue0, .snd = &lvalue };
-  EURYDICE_ASSERT(core_result_eq_0b_c6(uu____0.fst, uu____0.snd), "panic!");
+  const_core_result_Result____uint8_t__x2 uu____0 = { .fst = &lvalue0, .snd = &lvalue };
+  EURYDICE_ASSERT(core_result_eq_0b_74(uu____0.fst, uu____0.snd), "panic!");
 }
 

@@ -7,24 +7,27 @@
 
 #include "more_dst.h"
 
-typedef struct _uint32_t__x2_s
+typedef struct const_uint32_t__x2_s
 {
-  uint32_t *fst;
-  uint32_t *snd;
+  const uint32_t *fst;
+  const uint32_t *snd;
 }
-_uint32_t__x2;
+const_uint32_t__x2;
 
 void more_dst_main(void)
 {
   more_dst_TS1 x1 = { .foo = 0U, .data = { .data = { 0U } } };
-  Eurydice_dst_ref_90 y1 = { .ptr = (more_dst_T1 *)&x1, .meta = (size_t)4U };
+  Eurydice_dst_ref_shared_90 y1 = { .ptr = (const more_dst_T1 *)&x1, .meta = (size_t)4U };
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue0 = 0U;
-  _uint32_t__x2
+  const_uint32_t__x2
   uu____0 =
     {
-      .fst = &Eurydice_slice_index((
-          KRML_CLITERAL(Eurydice_dst_ref_3c){ .ptr = (uint32_t *)y1.ptr->data, .meta = y1.meta }
+      .fst = &Eurydice_slice_index_shared((
+          KRML_CLITERAL(Eurydice_dst_ref_shared_3c){
+            .ptr = (const uint32_t *)y1.ptr->data,
+            .meta = y1.meta
+          }
         ),
         (size_t)1U,
         uint32_t),
@@ -32,15 +35,15 @@ void more_dst_main(void)
     };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
   more_dst_TS2 x2 = { .foo = 0U, .data = x1 };
-  Eurydice_dst_ref_5e y2 = { .ptr = (more_dst_T2 *)&x2, .meta = (size_t)4U };
+  Eurydice_dst_ref_shared_5e y2 = { .ptr = (const more_dst_T2 *)&x2, .meta = (size_t)4U };
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue1 = 0U;
-  _uint32_t__x2
+  const_uint32_t__x2
   uu____1 =
     {
-      .fst = &Eurydice_slice_index((
-          KRML_CLITERAL(Eurydice_dst_ref_3c){
-            .ptr = (uint32_t *)y2.ptr->data.data,
+      .fst = &Eurydice_slice_index_shared((
+          KRML_CLITERAL(Eurydice_dst_ref_shared_3c){
+            .ptr = (const uint32_t *)y2.ptr->data.data,
             .meta = y2.meta
           }
         ),
@@ -50,15 +53,15 @@ void more_dst_main(void)
     };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
   more_dst_TS3 x3 = { .foo = 0U, .data = x2 };
-  Eurydice_dst_ref_5e0 y3 = { .ptr = (more_dst_T3 *)&x3, .meta = (size_t)4U };
+  Eurydice_dst_ref_shared_5e0 y3 = { .ptr = (const more_dst_T3 *)&x3, .meta = (size_t)4U };
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
-  _uint32_t__x2
+  const_uint32_t__x2
   uu____2 =
     {
-      .fst = &Eurydice_slice_index((
-          KRML_CLITERAL(Eurydice_dst_ref_3c){
-            .ptr = (uint32_t *)y3.ptr->data.data.data,
+      .fst = &Eurydice_slice_index_shared((
+          KRML_CLITERAL(Eurydice_dst_ref_shared_3c){
+            .ptr = (const uint32_t *)y3.ptr->data.data.data,
             .meta = y3.meta
           }
         ),

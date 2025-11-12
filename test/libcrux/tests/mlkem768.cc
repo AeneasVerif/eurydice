@@ -19,9 +19,9 @@ using namespace std;
 
 typedef vector<uint8_t> bytes;
 
-Eurydice_dst_ref_87 mk_slice_u8(uint8_t *x, size_t len)
+Eurydice_borrow_slice_u8 mk_slice_u8(uint8_t *x, size_t len)
 {
-    Eurydice_dst_ref_87 s;
+    Eurydice_borrow_slice_u8 s;
     s.ptr = x;
     s.meta = len;
     return s;
@@ -163,7 +163,7 @@ compute_implicit_rejection_shared_secret(uint8_t *ciphertext,
 {
     uint8_t *hashInput = new uint8_t[32 + ciphertext_size];
     uint8_t *sharedSecret = new uint8_t[32];
-    Eurydice_dst_ref_87 ss;
+    Eurydice_mut_borrow_slice_u8 ss;
     ss.ptr = sharedSecret;
     ss.meta = 32;
 

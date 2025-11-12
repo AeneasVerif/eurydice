@@ -3,7 +3,7 @@ files:
     include_in_h: [ "\"substr_stubs.h\"" ]
     api:
       patterns:
-        - [ substr ]
+        - [ substr, "*" ]
       exact:
         - [ core, str, "{str}", len ]
     private:
