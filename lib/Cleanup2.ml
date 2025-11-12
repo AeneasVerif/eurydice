@@ -1212,6 +1212,26 @@ let fixup_hoist =
       DGlobal (flags, name, n, ret, Krml.Simplify.fixup_return_pos expr)
   end
 
+(* For the [DGlobal], we do the following two inlining of [let] in order to 
+    avoid the non-constant initializer of struct fields *)
+let aggressive_inlining_lets_global =
+  object (self)
+    inherit [_] map
+
+    method private optimize_ELet _b e1 e2 =
+      match e2.node with
+      | EBound 0 -> e1.node
+      | _ -> (Krml.DeBruijn.subst e1 0 e2).node
+
+    method! visit_DGlobal () flags name n ret expr =
+      let rec optimize_expr expr =
+        match expr.node with
+        | ELet (b, e1, e2) -> with_type expr.typ (self#optimize_ELet b e1 (optimize_expr e2))
+        | _ -> expr
+      in
+      DGlobal (flags, name, n, ret, optimize_expr expr)
+  end
+
 (** For any [DGlobal], if the expression has any locals remaining We should let them also be
     globals, so to make the overall expr valid.
 
