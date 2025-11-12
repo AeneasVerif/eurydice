@@ -218,7 +218,7 @@ load_block_5b(Eurydice_arr_05 *state, const Eurydice_arr_e9 *blocks, size_t offs
     mm256_loadu_si256_u8(core_array___Array_T__N___as_slice((size_t)32U,
         &u8s,
         uint8_t,
-        Eurydice_dst_ref_shared_87));
+        Eurydice_borrow_slice_u8));
   size_t i0 = (size_t)4U * ((size_t)136U / (size_t)32U) / (size_t)5U;
   size_t j0 = (size_t)4U * ((size_t)136U / (size_t)32U) % (size_t)5U;
   set_ij_a6(state, i0, j0, mm256_xor_si256(get_ij_a6(state, i0, j0)[0U], u));
@@ -270,7 +270,7 @@ load_block_5b(Eurydice_arr_05 *state, const Eurydice_arr_e9 *blocks, size_t offs
       mm256_loadu_si256_u8(core_array___Array_T__N___as_slice((size_t)32U,
           &u8s0,
           uint8_t,
-          Eurydice_dst_ref_shared_87));
+          Eurydice_borrow_slice_u8));
     size_t i = ((size_t)4U * ((size_t)136U / (size_t)32U) + (size_t)1U) / (size_t)5U;
     size_t j = ((size_t)4U * ((size_t)136U / (size_t)32U) + (size_t)1U) % (size_t)5U;
     set_ij_a6(state, i, j, mm256_xor_si256(get_ij_a6(state, i, j)[0U], u0));
@@ -1797,10 +1797,10 @@ with const generics
 static KRML_MUSTINLINE void
 store_block_5b(
   const Eurydice_arr_05 *s,
-  Eurydice_dst_ref_mut_87 out0,
-  Eurydice_dst_ref_mut_87 out1,
-  Eurydice_dst_ref_mut_87 out2,
-  Eurydice_dst_ref_mut_87 out3,
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3,
   size_t start,
   size_t len
 )
@@ -1889,7 +1889,7 @@ store_block_5b(
       size_t k = i0;
       size_t i = ((size_t)4U * chunks + k) / (size_t)5U;
       size_t j = ((size_t)4U * chunks + k) % (size_t)5U;
-      Eurydice_dst_ref_mut_87 uu____0 = Eurydice_array_to_slice_mut_6e(&u8s);
+      Eurydice_mut_borrow_slice_u8 uu____0 = Eurydice_array_to_slice_mut_6e(&u8s);
       mm256_storeu_si256_u8(uu____0, get_ij_a6(s, i, j)[0U]);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_7e(out0,
           (
@@ -1937,7 +1937,7 @@ store_block_5b(
     {
       size_t i = ((size_t)4U * chunks + chunks8) / (size_t)5U;
       size_t j = ((size_t)4U * chunks + chunks8) % (size_t)5U;
-      Eurydice_dst_ref_mut_87 uu____1 = Eurydice_array_to_slice_mut_6e(&u8s);
+      Eurydice_mut_borrow_slice_u8 uu____1 = Eurydice_array_to_slice_mut_6e(&u8s);
       mm256_storeu_si256_u8(uu____1, get_ij_a6(s, i, j)[0U]);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_7e(out0,
           (
@@ -1994,10 +1994,10 @@ with const generics
 static void
 squeeze4_17_5b(
   const Eurydice_arr_05 *self,
-  Eurydice_dst_ref_mut_87 out0,
-  Eurydice_dst_ref_mut_87 out1,
-  Eurydice_dst_ref_mut_87 out2,
-  Eurydice_dst_ref_mut_87 out3,
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3,
   size_t start,
   size_t len
 )
@@ -2014,10 +2014,10 @@ with const generics
 static KRML_MUSTINLINE void
 keccak4_ad(
   const Eurydice_arr_e9 *data,
-  Eurydice_dst_ref_mut_87 out0,
-  Eurydice_dst_ref_mut_87 out1,
-  Eurydice_dst_ref_mut_87 out2,
-  Eurydice_dst_ref_mut_87 out3
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
 )
 {
   Eurydice_arr_05 s = new_80_a6();
@@ -2029,11 +2029,11 @@ keccak4_ad(
   }
   size_t rem = data_len % (size_t)136U;
   absorb_final_80_fb(&s, data, data_len - rem, rem);
-  Eurydice_dst_ref_mut_87 reborrowed_slice = out0;
+  Eurydice_mut_borrow_slice_u8 reborrowed_slice = out0;
   size_t
   outlen =
     Eurydice_slice_len((
-        KRML_CLITERAL(Eurydice_dst_ref_shared_87){
+        KRML_CLITERAL(Eurydice_borrow_slice_u8){
           .ptr = reborrowed_slice.ptr,
           .meta = reborrowed_slice.meta
         }
@@ -2067,14 +2067,14 @@ keccak4_ad(
 */
 void
 libcrux_sha3_avx2_x4_shake256(
-  Eurydice_dst_ref_shared_87 input0,
-  Eurydice_dst_ref_shared_87 input1,
-  Eurydice_dst_ref_shared_87 input2,
-  Eurydice_dst_ref_shared_87 input3,
-  Eurydice_dst_ref_mut_87 out0,
-  Eurydice_dst_ref_mut_87 out1,
-  Eurydice_dst_ref_mut_87 out2,
-  Eurydice_dst_ref_mut_87 out3
+  Eurydice_borrow_slice_u8 input0,
+  Eurydice_borrow_slice_u8 input1,
+  Eurydice_borrow_slice_u8 input2,
+  Eurydice_borrow_slice_u8 input3,
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
 )
 {
   /* original Rust expression is not an lvalue in C */
@@ -2167,7 +2167,7 @@ load_block_3a(Eurydice_arr_05 *state, const Eurydice_arr_e9 *blocks, size_t offs
     mm256_loadu_si256_u8(core_array___Array_T__N___as_slice((size_t)32U,
         &u8s,
         uint8_t,
-        Eurydice_dst_ref_shared_87));
+        Eurydice_borrow_slice_u8));
   size_t i0 = (size_t)4U * ((size_t)168U / (size_t)32U) / (size_t)5U;
   size_t j0 = (size_t)4U * ((size_t)168U / (size_t)32U) % (size_t)5U;
   set_ij_a6(state, i0, j0, mm256_xor_si256(get_ij_a6(state, i0, j0)[0U], u));
@@ -2219,7 +2219,7 @@ load_block_3a(Eurydice_arr_05 *state, const Eurydice_arr_e9 *blocks, size_t offs
       mm256_loadu_si256_u8(core_array___Array_T__N___as_slice((size_t)32U,
           &u8s0,
           uint8_t,
-          Eurydice_dst_ref_shared_87));
+          Eurydice_borrow_slice_u8));
     size_t i = ((size_t)4U * ((size_t)168U / (size_t)32U) + (size_t)1U) / (size_t)5U;
     size_t j = ((size_t)4U * ((size_t)168U / (size_t)32U) + (size_t)1U) % (size_t)5U;
     set_ij_a6(state, i, j, mm256_xor_si256(get_ij_a6(state, i, j)[0U], u0));
@@ -2310,10 +2310,10 @@ absorb_final_80_fb0(
 void
 libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
   Eurydice_arr_05 *s,
-  Eurydice_dst_ref_shared_87 data0,
-  Eurydice_dst_ref_shared_87 data1,
-  Eurydice_dst_ref_shared_87 data2,
-  Eurydice_dst_ref_shared_87 data3
+  Eurydice_borrow_slice_u8 data0,
+  Eurydice_borrow_slice_u8 data1,
+  Eurydice_borrow_slice_u8 data2,
+  Eurydice_borrow_slice_u8 data3
 )
 {
   Eurydice_arr_05 *uu____0 = s;
@@ -2331,10 +2331,10 @@ with const generics
 static KRML_MUSTINLINE void
 store_block_3a(
   const Eurydice_arr_05 *s,
-  Eurydice_dst_ref_mut_87 out0,
-  Eurydice_dst_ref_mut_87 out1,
-  Eurydice_dst_ref_mut_87 out2,
-  Eurydice_dst_ref_mut_87 out3,
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3,
   size_t start,
   size_t len
 )
@@ -2423,7 +2423,7 @@ store_block_3a(
       size_t k = i0;
       size_t i = ((size_t)4U * chunks + k) / (size_t)5U;
       size_t j = ((size_t)4U * chunks + k) % (size_t)5U;
-      Eurydice_dst_ref_mut_87 uu____0 = Eurydice_array_to_slice_mut_6e(&u8s);
+      Eurydice_mut_borrow_slice_u8 uu____0 = Eurydice_array_to_slice_mut_6e(&u8s);
       mm256_storeu_si256_u8(uu____0, get_ij_a6(s, i, j)[0U]);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_7e(out0,
           (
@@ -2471,7 +2471,7 @@ store_block_3a(
     {
       size_t i = ((size_t)4U * chunks + chunks8) / (size_t)5U;
       size_t j = ((size_t)4U * chunks + chunks8) % (size_t)5U;
-      Eurydice_dst_ref_mut_87 uu____1 = Eurydice_array_to_slice_mut_6e(&u8s);
+      Eurydice_mut_borrow_slice_u8 uu____1 = Eurydice_array_to_slice_mut_6e(&u8s);
       mm256_storeu_si256_u8(uu____1, get_ij_a6(s, i, j)[0U]);
       Eurydice_slice_copy(Eurydice_slice_subslice_mut_7e(out0,
           (
@@ -2528,10 +2528,10 @@ with const generics
 static void
 squeeze4_17_3a(
   const Eurydice_arr_05 *self,
-  Eurydice_dst_ref_mut_87 out0,
-  Eurydice_dst_ref_mut_87 out1,
-  Eurydice_dst_ref_mut_87 out2,
-  Eurydice_dst_ref_mut_87 out3,
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3,
   size_t start,
   size_t len
 )
@@ -2550,10 +2550,10 @@ with const generics
 static KRML_MUSTINLINE void
 squeeze_first_three_blocks_81_3a(
   Eurydice_arr_05 *self,
-  Eurydice_dst_ref_mut_87 out0,
-  Eurydice_dst_ref_mut_87 out1,
-  Eurydice_dst_ref_mut_87 out2,
-  Eurydice_dst_ref_mut_87 out3
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
 )
 {
   squeeze4_17_3a(self, out0, out1, out2, out3, (size_t)0U, (size_t)168U);
@@ -2569,10 +2569,10 @@ squeeze_first_three_blocks_81_3a(
 void
 libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
   Eurydice_arr_05 *s,
-  Eurydice_dst_ref_mut_87 out0,
-  Eurydice_dst_ref_mut_87 out1,
-  Eurydice_dst_ref_mut_87 out2,
-  Eurydice_dst_ref_mut_87 out3
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
 )
 {
   squeeze_first_three_blocks_81_3a(s, out0, out1, out2, out3);
@@ -2589,10 +2589,10 @@ with const generics
 static KRML_MUSTINLINE void
 squeeze_next_block_81_3a(
   Eurydice_arr_05 *self,
-  Eurydice_dst_ref_mut_87 out0,
-  Eurydice_dst_ref_mut_87 out1,
-  Eurydice_dst_ref_mut_87 out2,
-  Eurydice_dst_ref_mut_87 out3,
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3,
   size_t start
 )
 {
@@ -2606,10 +2606,10 @@ squeeze_next_block_81_3a(
 void
 libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
   Eurydice_arr_05 *s,
-  Eurydice_dst_ref_mut_87 out0,
-  Eurydice_dst_ref_mut_87 out1,
-  Eurydice_dst_ref_mut_87 out2,
-  Eurydice_dst_ref_mut_87 out3
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
 )
 {
   squeeze_next_block_81_3a(s, out0, out1, out2, out3, (size_t)0U);
@@ -2626,10 +2626,10 @@ with const generics
 static KRML_MUSTINLINE void
 squeeze_first_five_blocks_81_3a(
   Eurydice_arr_05 *self,
-  Eurydice_dst_ref_mut_87 out0,
-  Eurydice_dst_ref_mut_87 out1,
-  Eurydice_dst_ref_mut_87 out2,
-  Eurydice_dst_ref_mut_87 out3
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
 )
 {
   squeeze4_17_3a(self, out0, out1, out2, out3, (size_t)0U, (size_t)168U);
@@ -2649,10 +2649,10 @@ squeeze_first_five_blocks_81_3a(
 KRML_MUSTINLINE void
 libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_five_blocks(
   Eurydice_arr_05 *s,
-  Eurydice_dst_ref_mut_87 out0,
-  Eurydice_dst_ref_mut_87 out1,
-  Eurydice_dst_ref_mut_87 out2,
-  Eurydice_dst_ref_mut_87 out3
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
 )
 {
   squeeze_first_five_blocks_81_3a(s, out0, out1, out2, out3);
@@ -2664,10 +2664,10 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_five_blocks(
 KRML_MUSTINLINE void
 libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
   Eurydice_arr_05 *s,
-  Eurydice_dst_ref_shared_87 data0,
-  Eurydice_dst_ref_shared_87 data1,
-  Eurydice_dst_ref_shared_87 data2,
-  Eurydice_dst_ref_shared_87 data3
+  Eurydice_borrow_slice_u8 data0,
+  Eurydice_borrow_slice_u8 data1,
+  Eurydice_borrow_slice_u8 data2,
+  Eurydice_borrow_slice_u8 data3
 )
 {
   Eurydice_arr_05 *uu____0 = s;
@@ -2688,10 +2688,10 @@ with const generics
 static KRML_MUSTINLINE void
 squeeze_first_block_81_5b(
   const Eurydice_arr_05 *self,
-  Eurydice_dst_ref_mut_87 out0,
-  Eurydice_dst_ref_mut_87 out1,
-  Eurydice_dst_ref_mut_87 out2,
-  Eurydice_dst_ref_mut_87 out3
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
 )
 {
   squeeze4_17_5b(self, out0, out1, out2, out3, (size_t)0U, (size_t)136U);
@@ -2703,10 +2703,10 @@ squeeze_first_block_81_5b(
 KRML_MUSTINLINE void
 libcrux_sha3_avx2_x4_incremental_shake256_squeeze_first_block(
   Eurydice_arr_05 *s,
-  Eurydice_dst_ref_mut_87 out0,
-  Eurydice_dst_ref_mut_87 out1,
-  Eurydice_dst_ref_mut_87 out2,
-  Eurydice_dst_ref_mut_87 out3
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
 )
 {
   squeeze_first_block_81_5b(s, out0, out1, out2, out3);
@@ -2723,10 +2723,10 @@ with const generics
 static KRML_MUSTINLINE void
 squeeze_next_block_81_5b(
   Eurydice_arr_05 *self,
-  Eurydice_dst_ref_mut_87 out0,
-  Eurydice_dst_ref_mut_87 out1,
-  Eurydice_dst_ref_mut_87 out2,
-  Eurydice_dst_ref_mut_87 out3,
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3,
   size_t start
 )
 {
@@ -2740,10 +2740,10 @@ squeeze_next_block_81_5b(
 KRML_MUSTINLINE void
 libcrux_sha3_avx2_x4_incremental_shake256_squeeze_next_block(
   Eurydice_arr_05 *s,
-  Eurydice_dst_ref_mut_87 out0,
-  Eurydice_dst_ref_mut_87 out1,
-  Eurydice_dst_ref_mut_87 out2,
-  Eurydice_dst_ref_mut_87 out3
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
 )
 {
   squeeze_next_block_81_5b(s, out0, out1, out2, out3, (size_t)0U);

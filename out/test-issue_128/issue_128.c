@@ -7,17 +7,17 @@
 
 #include "issue_128.h"
 
-void issue_128_fun_a(Eurydice_dst_ref_shared_87 _x)
+void issue_128_fun_a(Eurydice_borrow_slice_u8 _x)
 {
 
 }
 
-void issue_128_fun_b(Eurydice_dst_ref_shared_87 _x)
+void issue_128_fun_b(Eurydice_borrow_slice_u8 _x)
 {
 
 }
 
-void issue_128_use_enum(issue_128_E e, Eurydice_dst_ref_shared_87 x)
+void issue_128_use_enum(issue_128_E e, Eurydice_borrow_slice_u8 x)
 {
   void *uu____0 = (void *)0U;
   switch (e)
@@ -44,9 +44,9 @@ with types uint8_t
 with const generics
 - N= 0
 */
-static Eurydice_dst_ref_shared_87 array_to_slice_shared_5d(const Eurydice_arr_51 *a)
+static Eurydice_borrow_slice_u8 array_to_slice_shared_5d(const Eurydice_arr_51 *a)
 {
-  Eurydice_dst_ref_shared_87 lit;
+  Eurydice_borrow_slice_u8 lit;
   lit.ptr = a->data;
   lit.meta = (size_t)0U;
   return lit;

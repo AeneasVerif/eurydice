@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-static inline Eurydice_arr_e9 core_num__u32__to_be_bytes(uint32_t x0);
+static inline Eurydice_array_u8x4 core_num__u32__to_be_bytes(uint32_t x0);
 
 /**
 A monomorphic instance of core.ops.range.RangeTo
@@ -48,7 +48,7 @@ A monomorphic instance of const_generics.serialize
 with const generics
 - OUT_LEN= 8
 */
-Eurydice_arr_c4 const_generics_serialize_3b(Eurydice_dst_ref_shared_3c re);
+Eurydice_array_u8x8 const_generics_serialize_3b(Eurydice_dst_ref_shared_3c re);
 
 /**
 A monomorphic instance of Eurydice.arr

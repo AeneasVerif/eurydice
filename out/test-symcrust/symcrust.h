@@ -105,7 +105,7 @@ core_iter_range__core__iter__range__Step_for_usize__steps_between(
   const size_t *x1
 );
 
-static inline Eurydice_arr_e9 core_num__u32__to_le_bytes(uint32_t x0);
+static inline Eurydice_array_u8x4 core_num__u32__to_le_bytes(uint32_t x0);
 
 /**
 A monomorphic instance of core.ops.range.Range
@@ -131,7 +131,7 @@ void
 symcrust_SymCrustMlKemPolyElementCompressAndEncode(
   const Eurydice_arr_bc *coeffs,
   uint32_t nBitsPerCoefficient,
-  Eurydice_dst_ref_mut_87 dst
+  Eurydice_mut_borrow_slice_u8 dst
 );
 
 void symcrust_main(void);

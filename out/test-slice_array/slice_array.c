@@ -37,9 +37,9 @@ void slice_array_f1(void)
   y0 =
     Eurydice_slice_split_at_mut(array_to_slice_mut_4f(&x),
       (size_t)2U,
-      Eurydice_arr_e9,
+      Eurydice_array_u8x4,
       Eurydice_dst_ref_mut_Eurydice_arr_uint8_t___4size_t___size_t_x2).fst;
-  Eurydice_slice_index_mut(y0, (size_t)0U, Eurydice_arr_e9).data[0U] = 1U;
+  Eurydice_slice_index_mut(y0, (size_t)0U, Eurydice_array_u8x4).data[0U] = 1U;
   uint8_t actual = x.data->data[0U];
   uint8_t expected = 1U;
   const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
@@ -55,10 +55,10 @@ void slice_array_f2(void)
   y0 =
     Eurydice_slice_split_at_mut(array_to_slice_mut_4f(&x),
       (size_t)2U,
-      Eurydice_arr_e9,
+      Eurydice_array_u8x4,
       Eurydice_dst_ref_mut_Eurydice_arr_uint8_t___4size_t___size_t_x2).fst;
   Eurydice_dst_ref_mut_d0 reborrowed_slice = y0;
-  Eurydice_arr_e9
+  Eurydice_array_u8x4
   z =
     Eurydice_slice_index_shared((
         KRML_CLITERAL(Eurydice_dst_ref_shared_d0){
@@ -67,7 +67,7 @@ void slice_array_f2(void)
         }
       ),
       (size_t)0U,
-      Eurydice_arr_e9);
+      Eurydice_array_u8x4);
   z.data[0U] = 1U;
   uint8_t actual = x.data->data[0U];
   uint8_t expected = 0U;
@@ -85,9 +85,9 @@ with types uint8_t
 with const generics
 - N= 4
 */
-static Eurydice_dst_ref_shared_87 array_to_slice_shared_60(const Eurydice_arr_e9 *a)
+static Eurydice_borrow_slice_u8 array_to_slice_shared_60(const Eurydice_array_u8x4 *a)
 {
-  Eurydice_dst_ref_shared_87 lit;
+  Eurydice_borrow_slice_u8 lit;
   lit.ptr = a->data;
   lit.meta = (size_t)4U;
   return lit;
@@ -101,7 +101,7 @@ A monomorphic instance of core.result.unwrap_26
 with types Eurydice_arr uint8_t[[$4size_t]], core_array_TryFromSliceError
 
 */
-static Eurydice_arr_e9 unwrap_26_84(core_result_Result_44 self)
+static Eurydice_array_u8x4 unwrap_26_84(core_result_Result_44 self)
 {
   if (self.tag == core_result_Ok)
   {
@@ -122,7 +122,7 @@ A monomorphic instance of core.result.unwrap_26
 with types const Eurydice_arr uint8_t[[$4size_t]]*, core_array_TryFromSliceError
 
 */
-static const Eurydice_arr_e9 *unwrap_26_16(core_result_Result_63 self)
+static const Eurydice_array_u8x4 *unwrap_26_16(core_result_Result_63 self)
 {
   if (self.tag == core_result_Ok)
   {
@@ -141,9 +141,9 @@ with types uint8_t
 with const generics
 - N= 4
 */
-static Eurydice_dst_ref_mut_87 array_to_slice_mut_60(Eurydice_arr_e9 *a)
+static Eurydice_mut_borrow_slice_u8 array_to_slice_mut_60(Eurydice_array_u8x4 *a)
 {
-  Eurydice_dst_ref_mut_87 lit;
+  Eurydice_mut_borrow_slice_u8 lit;
   lit.ptr = a->data;
   lit.meta = (size_t)4U;
   return lit;
@@ -152,37 +152,37 @@ static Eurydice_dst_ref_mut_87 array_to_slice_mut_60(Eurydice_arr_e9 *a)
 void slice_array_f3(void)
 {
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_e9 lvalue0 = { .data = { 0U } };
-  Eurydice_dst_ref_shared_87 x1 = array_to_slice_shared_60(&lvalue0);
-  Eurydice_arr_e9 arr0;
+  Eurydice_array_u8x4 lvalue0 = { .data = { 0U } };
+  Eurydice_borrow_slice_u8 x1 = array_to_slice_shared_60(&lvalue0);
+  Eurydice_array_u8x4 arr0;
   memcpy(arr0.data, x1.ptr, (size_t)4U * sizeof (uint8_t));
-  Eurydice_arr_e9
+  Eurydice_array_u8x4
   y1 =
     unwrap_26_84((
         KRML_CLITERAL(core_result_Result_44){ .tag = core_result_Ok, .val = { .case_Ok = arr0 } }
       ));
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_e9 lvalue1 = { .data = { 0U } };
-  Eurydice_dst_ref_shared_87 x2 = array_to_slice_shared_60(&lvalue1);
-  Eurydice_dst_ref_shared_87 uu____0 = x2;
-  Eurydice_arr_e9 arr1;
+  Eurydice_array_u8x4 lvalue1 = { .data = { 0U } };
+  Eurydice_borrow_slice_u8 x2 = array_to_slice_shared_60(&lvalue1);
+  Eurydice_borrow_slice_u8 uu____0 = x2;
+  Eurydice_array_u8x4 arr1;
   memcpy(arr1.data, uu____0.ptr, (size_t)4U * sizeof (uint8_t));
   const
-  Eurydice_arr_e9
+  Eurydice_array_u8x4
   *y2 =
     unwrap_26_16(Eurydice_slice_to_ref_array2((size_t)4U,
         uu____0,
         &arr1,
-        Eurydice_dst_ref_shared_87,
-        const Eurydice_arr_e9 *,
+        Eurydice_borrow_slice_u8,
+        const Eurydice_array_u8x4 *,
         core_array_TryFromSliceError,
         core_result_Result_63));
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_e9 lvalue = { .data = { 0U } };
-  Eurydice_dst_ref_mut_87 x3 = array_to_slice_mut_60(&lvalue);
-  Eurydice_arr_e9 arr;
+  Eurydice_array_u8x4 lvalue = { .data = { 0U } };
+  Eurydice_mut_borrow_slice_u8 x3 = array_to_slice_mut_60(&lvalue);
+  Eurydice_array_u8x4 arr;
   memcpy(arr.data, x3.ptr, (size_t)4U * sizeof (uint8_t));
-  Eurydice_arr_e9
+  Eurydice_array_u8x4
   y3 =
     unwrap_26_84((
         KRML_CLITERAL(core_result_Result_44){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
@@ -207,9 +207,9 @@ void slice_array_f4_ac(void)
   y0 =
     Eurydice_slice_split_at_mut(array_to_slice_mut_4f(&x),
       (size_t)2U,
-      Eurydice_arr_e9,
+      Eurydice_array_u8x4,
       Eurydice_dst_ref_mut_Eurydice_arr_uint8_t___4size_t___size_t_x2).fst;
-  Eurydice_slice_index_mut(y0, (size_t)0U, Eurydice_arr_e9).data[0U] = 1U;
+  Eurydice_slice_index_mut(y0, (size_t)0U, Eurydice_array_u8x4).data[0U] = 1U;
   uint8_t actual = x.data->data[0U];
   uint8_t expected = 1U;
   const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
@@ -224,34 +224,30 @@ with const generics
 void slice_array_f5_ac(void)
 {
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_e9 lvalue0 = { .data = { 0U } };
-  Eurydice_dst_ref_shared_87 x1 = array_to_slice_shared_60(&lvalue0);
-  Eurydice_arr_e9 arr0;
+  Eurydice_array_u8x4 lvalue0 = { .data = { 0U } };
+  Eurydice_borrow_slice_u8 x1 = array_to_slice_shared_60(&lvalue0);
+  Eurydice_array_u8x4 arr0;
   memcpy(arr0.data, x1.ptr, (size_t)4U * sizeof (uint8_t));
-  Eurydice_arr_e9
+  Eurydice_array_u8x4
   y1 =
     unwrap_26_84((
         KRML_CLITERAL(core_result_Result_44){ .tag = core_result_Ok, .val = { .case_Ok = arr0 } }
       ));
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_e9 lvalue = { .data = { 0U } };
-  Eurydice_dst_ref_shared_87
-  x2 =
-    core_array___Array_T__N___as_slice((size_t)4U,
-      &lvalue,
-      uint8_t,
-      Eurydice_dst_ref_shared_87);
-  Eurydice_dst_ref_shared_87 uu____0 = x2;
-  Eurydice_arr_e9 arr;
+  Eurydice_array_u8x4 lvalue = { .data = { 0U } };
+  Eurydice_borrow_slice_u8
+  x2 = core_array___Array_T__N___as_slice((size_t)4U, &lvalue, uint8_t, Eurydice_borrow_slice_u8);
+  Eurydice_borrow_slice_u8 uu____0 = x2;
+  Eurydice_array_u8x4 arr;
   memcpy(arr.data, uu____0.ptr, (size_t)4U * sizeof (uint8_t));
   const
-  Eurydice_arr_e9
+  Eurydice_array_u8x4
   *y2 =
     unwrap_26_16(Eurydice_slice_to_ref_array2((size_t)4U,
         uu____0,
         &arr,
-        Eurydice_dst_ref_shared_87,
-        const Eurydice_arr_e9 *,
+        Eurydice_borrow_slice_u8,
+        const Eurydice_array_u8x4 *,
         core_array_TryFromSliceError,
         core_result_Result_63));
   const_uint8_t__x2 uu____1 = { .fst = y1.data, .snd = y2->data };

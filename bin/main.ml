@@ -97,6 +97,7 @@ Supported options:|}
         ];
       Warn.parse_warn_error (!warn_error ^ "+8"));
     Monomorphization.NameGen.short_names := true;
+    Monomorphization.NameGen.distinguished := Eurydice.Cleanup3.distinguished_names;
     AstToCStar.no_return_type_lids :=
       [
         [ "Eurydice" ], "slice_index_shared";

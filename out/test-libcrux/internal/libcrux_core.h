@@ -17,11 +17,11 @@ extern "C" {
 
 #include "../libcrux_core.h"
 
-static inline uint64_t core_num__u64__from_le_bytes(Eurydice_arr_c4 x0);
+static inline uint64_t core_num__u64__from_le_bytes(Eurydice_array_u8x8 x0);
 
 static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1);
 
-static inline Eurydice_arr_c4 core_num__u64__to_le_bytes(uint64_t x0);
+static inline Eurydice_array_u8x8 core_num__u64__to_le_bytes(uint64_t x0);
 
 static inline uint32_t core_num__u8__count_ones(uint8_t x0);
 
@@ -39,25 +39,25 @@ core_ops_range_Range_08;
 
 uint8_t
 libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
-  Eurydice_dst_ref_shared_87 lhs,
-  Eurydice_dst_ref_shared_87 rhs
+  Eurydice_borrow_slice_u8 lhs,
+  Eurydice_borrow_slice_u8 rhs
 );
 
 #define LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE ((size_t)32U)
 
 Eurydice_arr_60
 libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
-  Eurydice_dst_ref_shared_87 lhs,
-  Eurydice_dst_ref_shared_87 rhs,
+  Eurydice_borrow_slice_u8 lhs,
+  Eurydice_borrow_slice_u8 rhs,
   uint8_t selector
 );
 
 Eurydice_arr_60
 libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_constant_time(
-  Eurydice_dst_ref_shared_87 lhs_c,
-  Eurydice_dst_ref_shared_87 rhs_c,
-  Eurydice_dst_ref_shared_87 lhs_s,
-  Eurydice_dst_ref_shared_87 rhs_s
+  Eurydice_borrow_slice_u8 lhs_c,
+  Eurydice_borrow_slice_u8 rhs_c,
+  Eurydice_borrow_slice_u8 lhs_s,
+  Eurydice_borrow_slice_u8 rhs_s
 );
 
 #define LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_COEFFICIENT ((size_t)12U)
@@ -183,7 +183,7 @@ with types uint8_t, core_ops_range_RangeTo size_t, Eurydice_derefed_slice uint8_
 with const generics
 - N= 1568
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_to_shared_6e1(const Eurydice_arr_00 *a, size_t r);
 
 /**
@@ -192,7 +192,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 3168
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_shared_3610(const Eurydice_arr_17 *a, core_ops_range_Range_08 r);
 
 /**
@@ -241,7 +241,7 @@ with types uint8_t
 with const generics
 - N= 1536
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_c9(const Eurydice_arr_38 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_c9(const Eurydice_arr_38 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -249,7 +249,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 3168
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_3620(Eurydice_arr_17 *a, core_ops_range_Range_08 r);
 
 /**
@@ -258,7 +258,7 @@ with types uint8_t
 with const generics
 - N= 1536
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_slice_mut_c9(Eurydice_arr_38 *a);
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_c9(Eurydice_arr_38 *a);
 
 /**
 This function found in impl {core::convert::From<@Array<u8, SIZE>> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
@@ -296,7 +296,8 @@ with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint
 with const generics
 - N= 1568
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_subslice_from_mut_8c6(Eurydice_arr_00 *a, size_t r);
+Eurydice_mut_borrow_slice_u8
+Eurydice_array_to_subslice_from_mut_8c6(Eurydice_arr_00 *a, size_t r);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -304,7 +305,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 1568
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_3619(Eurydice_arr_00 *a, core_ops_range_Range_08 r);
 
 /**
@@ -321,7 +322,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 352
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_3618(Eurydice_arr_79 *a, core_ops_range_Range_08 r);
 
 /**
@@ -330,7 +331,7 @@ with types uint8_t
 with const generics
 - N= 352
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_89(const Eurydice_arr_79 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_89(const Eurydice_arr_79 *a);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -442,7 +443,7 @@ with types uint8_t
 with const generics
 - N= 1600
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_8e(const Eurydice_arr_e7 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_8e(const Eurydice_arr_e7 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_shared
@@ -450,7 +451,7 @@ with types uint8_t
 with const generics
 - N= 1568
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_4e(const Eurydice_arr_00 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_4e(const Eurydice_arr_00 *a);
 
 /**
 This function found in impl {core::convert::AsRef<@Slice<u8>> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
@@ -460,7 +461,7 @@ A monomorphic instance of libcrux_ml_kem.types.as_ref_d3
 with const generics
 - SIZE= 1568
 */
-Eurydice_dst_ref_shared_87 libcrux_ml_kem_types_as_ref_d3_af(const Eurydice_arr_00 *self);
+Eurydice_borrow_slice_u8 libcrux_ml_kem_types_as_ref_d3_af(const Eurydice_arr_00 *self);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_from_mut
@@ -468,7 +469,8 @@ with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint
 with const generics
 - N= 1600
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_subslice_from_mut_8c5(Eurydice_arr_e7 *a, size_t r);
+Eurydice_mut_borrow_slice_u8
+Eurydice_array_to_subslice_from_mut_8c5(Eurydice_arr_e7 *a, size_t r);
 
 /**
  Pad the `slice` with `0`s at the end.
@@ -478,7 +480,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 1600
 */
-Eurydice_arr_e7 libcrux_ml_kem_utils_into_padded_array_7f(Eurydice_dst_ref_shared_87 slice);
+Eurydice_arr_e7 libcrux_ml_kem_utils_into_padded_array_7f(Eurydice_borrow_slice_u8 slice);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_from_shared
@@ -486,7 +488,7 @@ with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint
 with const generics
 - N= 1568
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_from_shared_8c4(const Eurydice_arr_00 *a, size_t r);
 
 /**
@@ -495,7 +497,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 1568
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_shared_369(const Eurydice_arr_00 *a, core_ops_range_Range_08 r);
 
 /**
@@ -504,21 +506,21 @@ with types uint8_t
 with const generics
 - N= 3168
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_a6(const Eurydice_arr_17 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_a6(const Eurydice_arr_17 *a);
 
 typedef struct Eurydice_dst_ref_shared_uint8_t_size_t_x4_s
 {
-  Eurydice_dst_ref_shared_87 fst;
-  Eurydice_dst_ref_shared_87 snd;
-  Eurydice_dst_ref_shared_87 thd;
-  Eurydice_dst_ref_shared_87 f3;
+  Eurydice_borrow_slice_u8 fst;
+  Eurydice_borrow_slice_u8 snd;
+  Eurydice_borrow_slice_u8 thd;
+  Eurydice_borrow_slice_u8 f3;
 }
 Eurydice_dst_ref_shared_uint8_t_size_t_x4;
 
 typedef struct Eurydice_dst_ref_shared_uint8_t_size_t_x2_s
 {
-  Eurydice_dst_ref_shared_87 fst;
-  Eurydice_dst_ref_shared_87 snd;
+  Eurydice_borrow_slice_u8 fst;
+  Eurydice_borrow_slice_u8 snd;
 }
 Eurydice_dst_ref_shared_uint8_t_size_t_x2;
 
@@ -534,7 +536,7 @@ with const generics
 - PUBLIC_KEY_SIZE= 1568
 */
 Eurydice_dst_ref_shared_uint8_t_size_t_x4
-libcrux_ml_kem_types_unpack_private_key_1f(Eurydice_dst_ref_shared_87 private_key);
+libcrux_ml_kem_types_unpack_private_key_1f(Eurydice_borrow_slice_u8 private_key);
 
 /**
 This function found in impl {core::default::Default for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
@@ -552,7 +554,7 @@ with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint
 with const generics
 - N= 1184
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_from_shared_8c3(const Eurydice_arr_74 *a, size_t r);
 
 /**
@@ -561,7 +563,7 @@ with types uint8_t, core_ops_range_RangeTo size_t, Eurydice_derefed_slice uint8_
 with const generics
 - N= 1184
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_to_shared_6e0(const Eurydice_arr_74 *a, size_t r);
 
 /**
@@ -570,7 +572,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 2400
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_shared_368(const Eurydice_arr_ea *a, core_ops_range_Range_08 r);
 
 /**
@@ -619,7 +621,7 @@ with types uint8_t
 with const generics
 - N= 1152
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_06(const Eurydice_arr_600 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_06(const Eurydice_arr_600 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -627,7 +629,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 2400
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_3616(Eurydice_arr_ea *a, core_ops_range_Range_08 r);
 
 /**
@@ -636,7 +638,7 @@ with types uint8_t
 with const generics
 - N= 1152
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_slice_mut_06(Eurydice_arr_600 *a);
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_06(Eurydice_arr_600 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_from_mut
@@ -644,7 +646,8 @@ with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint
 with const generics
 - N= 1184
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_subslice_from_mut_8c4(Eurydice_arr_74 *a, size_t r);
+Eurydice_mut_borrow_slice_u8
+Eurydice_array_to_subslice_from_mut_8c4(Eurydice_arr_74 *a, size_t r);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -652,7 +655,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 1184
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_3615(Eurydice_arr_74 *a, core_ops_range_Range_08 r);
 
 /**
@@ -681,7 +684,7 @@ with types uint8_t
 with const generics
 - N= 1184
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_45(const Eurydice_arr_74 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_45(const Eurydice_arr_74 *a);
 
 /**
 This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
@@ -699,7 +702,8 @@ with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint
 with const generics
 - N= 1088
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_subslice_from_mut_8c3(Eurydice_arr_2c *a, size_t r);
+Eurydice_mut_borrow_slice_u8
+Eurydice_array_to_subslice_from_mut_8c3(Eurydice_arr_2c *a, size_t r);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -707,7 +711,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 1088
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_3614(Eurydice_arr_2c *a, core_ops_range_Range_08 r);
 
 /**
@@ -788,7 +792,7 @@ with types uint8_t
 with const generics
 - N= 1120
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_74(const Eurydice_arr_481 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_74(const Eurydice_arr_481 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_shared
@@ -796,7 +800,7 @@ with types uint8_t
 with const generics
 - N= 1088
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_42(const Eurydice_arr_2c *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_42(const Eurydice_arr_2c *a);
 
 /**
 This function found in impl {core::convert::AsRef<@Slice<u8>> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
@@ -806,7 +810,7 @@ A monomorphic instance of libcrux_ml_kem.types.as_ref_d3
 with const generics
 - SIZE= 1088
 */
-Eurydice_dst_ref_shared_87 libcrux_ml_kem_types_as_ref_d3_80(const Eurydice_arr_2c *self);
+Eurydice_borrow_slice_u8 libcrux_ml_kem_types_as_ref_d3_80(const Eurydice_arr_2c *self);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_from_mut
@@ -814,7 +818,8 @@ with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint
 with const generics
 - N= 1120
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_subslice_from_mut_8c2(Eurydice_arr_481 *a, size_t r);
+Eurydice_mut_borrow_slice_u8
+Eurydice_array_to_subslice_from_mut_8c2(Eurydice_arr_481 *a, size_t r);
 
 /**
  Pad the `slice` with `0`s at the end.
@@ -824,7 +829,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 1120
 */
-Eurydice_arr_481 libcrux_ml_kem_utils_into_padded_array_15(Eurydice_dst_ref_shared_87 slice);
+Eurydice_arr_481 libcrux_ml_kem_utils_into_padded_array_15(Eurydice_borrow_slice_u8 slice);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_from_shared
@@ -832,7 +837,7 @@ with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint
 with const generics
 - N= 1088
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_from_shared_8c2(const Eurydice_arr_2c *a, size_t r);
 
 /**
@@ -841,7 +846,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 1088
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_shared_367(const Eurydice_arr_2c *a, core_ops_range_Range_08 r);
 
 /**
@@ -850,7 +855,7 @@ with types uint8_t
 with const generics
 - N= 2400
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_ec(const Eurydice_arr_ea *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_ec(const Eurydice_arr_ea *a);
 
 /**
  Unpack an incoming private key into it's different parts.
@@ -864,7 +869,7 @@ with const generics
 - PUBLIC_KEY_SIZE= 1184
 */
 Eurydice_dst_ref_shared_uint8_t_size_t_x4
-libcrux_ml_kem_types_unpack_private_key_b4(Eurydice_dst_ref_shared_87 private_key);
+libcrux_ml_kem_types_unpack_private_key_b4(Eurydice_borrow_slice_u8 private_key);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -872,7 +877,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 32
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_364(Eurydice_arr_60 *a, core_ops_range_Range_08 r);
 
 /**
@@ -883,7 +888,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 32
 */
-Eurydice_arr_60 libcrux_ml_kem_utils_into_padded_array_9e(Eurydice_dst_ref_shared_87 slice);
+Eurydice_arr_60 libcrux_ml_kem_utils_into_padded_array_9e(Eurydice_borrow_slice_u8 slice);
 
 /**
 This function found in impl {core::default::Default for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
@@ -901,7 +906,7 @@ with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint
 with const generics
 - N= 800
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_from_shared_8c1(const Eurydice_arr_30 *a, size_t r);
 
 /**
@@ -910,7 +915,7 @@ with types uint8_t, core_ops_range_RangeTo size_t, Eurydice_derefed_slice uint8_
 with const generics
 - N= 800
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_to_shared_6e(const Eurydice_arr_30 *a, size_t r);
 
 /**
@@ -919,7 +924,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 1632
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_shared_366(const Eurydice_arr_7f *a, core_ops_range_Range_08 r);
 
 /**
@@ -960,7 +965,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 1632
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_3612(Eurydice_arr_7f *a, core_ops_range_Range_08 r);
 
 /**
@@ -969,7 +974,7 @@ with types uint8_t
 with const generics
 - N= 768
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_slice_mut_ee(Eurydice_arr_56 *a);
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_ee(Eurydice_arr_56 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_shared
@@ -977,7 +982,7 @@ with types uint8_t
 with const generics
 - N= 24
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_0b(const Eurydice_arr_6d *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_0b(const Eurydice_arr_6d *a);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -993,7 +998,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 384
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_3611(Eurydice_arr_cc *a, core_ops_range_Range_08 r);
 
 /**
@@ -1002,7 +1007,7 @@ with types uint8_t
 with const generics
 - N= 384
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_fe(const Eurydice_arr_cc *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_fe(const Eurydice_arr_cc *a);
 
 #define core_result_Ok 0
 #define core_result_Err 1
@@ -1041,7 +1046,7 @@ with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint
 with const generics
 - N= 64
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_from_shared_8c0(const libcrux_sha3_Sha3_512Digest *a, size_t r);
 
 /**
@@ -1050,7 +1055,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 64
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_shared_365(
   const libcrux_sha3_Sha3_512Digest *a,
   core_ops_range_Range_08 r
@@ -1092,7 +1097,8 @@ with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint
 with const generics
 - N= 768
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_subslice_from_mut_8c1(Eurydice_arr_56 *a, size_t r);
+Eurydice_mut_borrow_slice_u8
+Eurydice_array_to_subslice_from_mut_8c1(Eurydice_arr_56 *a, size_t r);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_shared
@@ -1100,7 +1106,7 @@ with types uint8_t
 with const generics
 - N= 10
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_2f(const Eurydice_arr_77 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_2f(const Eurydice_arr_77 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -1108,7 +1114,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 768
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_3610(Eurydice_arr_56 *a, core_ops_range_Range_08 r);
 
 /**
@@ -1117,7 +1123,7 @@ with types uint8_t
 with const generics
 - N= 22
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_ad(const Eurydice_arr_f3 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_ad(const Eurydice_arr_f3 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_shared
@@ -1125,7 +1131,7 @@ with types uint8_t
 with const generics
 - N= 20
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_c2(const Eurydice_arr_dc *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_c2(const Eurydice_arr_dc *a);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -1141,7 +1147,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 320
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_369(Eurydice_arr_b7 *a, core_ops_range_Range_08 r);
 
 /**
@@ -1150,7 +1156,7 @@ with types uint8_t
 with const generics
 - N= 320
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_d3(const Eurydice_arr_b7 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_d3(const Eurydice_arr_b7 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_shared
@@ -1158,7 +1164,7 @@ with types uint8_t
 with const generics
 - N= 128
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_18(const Eurydice_arr_d1 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_18(const Eurydice_arr_d1 *a);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -1174,7 +1180,7 @@ with types uint8_t
 with const generics
 - N= 128
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_slice_mut_18(Eurydice_arr_d1 *a);
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_18(Eurydice_arr_d1 *a);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -1190,7 +1196,7 @@ with types uint8_t
 with const generics
 - N= 192
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_34(const Eurydice_arr_f2 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_34(const Eurydice_arr_f2 *a);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -1206,7 +1212,7 @@ with types int16_t
 with const generics
 - N= 256
 */
-Eurydice_dst_ref_shared_9a Eurydice_array_to_slice_shared_1a(const Eurydice_arr_c1 *a);
+Eurydice_borrow_slice_i16 Eurydice_array_to_slice_shared_1a(const Eurydice_arr_c1 *a);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -1222,7 +1228,7 @@ with types uint8_t
 with const generics
 - N= 192
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_slice_mut_34(Eurydice_arr_f2 *a);
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_34(Eurydice_arr_f2 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_shared
@@ -1230,7 +1236,7 @@ with types uint8_t
 with const generics
 - N= 33
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_61(const Eurydice_arr_3e *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_61(const Eurydice_arr_3e *a);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -1254,7 +1260,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 33
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_368(Eurydice_arr_3e *a, core_ops_range_Range_08 r);
 
 /**
@@ -1265,7 +1271,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 33
 */
-Eurydice_arr_3e libcrux_ml_kem_utils_into_padded_array_c8(Eurydice_dst_ref_shared_87 slice);
+Eurydice_arr_3e libcrux_ml_kem_utils_into_padded_array_c8(Eurydice_borrow_slice_u8 slice);
 
 /**
  Pad the `slice` with `0`s at the end.
@@ -1275,7 +1281,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 34
 */
-Eurydice_arr_48 libcrux_ml_kem_utils_into_padded_array_b6(Eurydice_dst_ref_shared_87 slice);
+Eurydice_arr_48 libcrux_ml_kem_utils_into_padded_array_b6(Eurydice_borrow_slice_u8 slice);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_shared
@@ -1283,7 +1289,7 @@ with types int16_t, core_ops_range_Range size_t, Eurydice_derefed_slice int16_t
 with const generics
 - N= 272
 */
-Eurydice_dst_ref_shared_9a
+Eurydice_borrow_slice_i16
 Eurydice_array_to_subslice_shared_850(const Eurydice_arr_a00 *a, core_ops_range_Range_08 r);
 
 /**
@@ -1292,7 +1298,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 168
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_shared_364(const Eurydice_arr_27 *a, core_ops_range_Range_08 r);
 
 /**
@@ -1309,7 +1315,7 @@ with types uint8_t
 with const generics
 - N= 168
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_slice_mut_7b(Eurydice_arr_27 *a);
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_7b(Eurydice_arr_27 *a);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -1333,7 +1339,7 @@ with types int16_t, core_ops_range_Range size_t, Eurydice_derefed_slice int16_t
 with const generics
 - N= 272
 */
-Eurydice_dst_ref_mut_9a
+Eurydice_mut_borrow_slice_i16
 Eurydice_array_to_subslice_mut_85(Eurydice_arr_a00 *a, core_ops_range_Range_08 r);
 
 /**
@@ -1342,7 +1348,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 504
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_shared_363(const Eurydice_arr_b0 *a, core_ops_range_Range_08 r);
 
 /**
@@ -1359,7 +1365,7 @@ with types uint8_t
 with const generics
 - N= 504
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_slice_mut_85(Eurydice_arr_b0 *a);
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_85(Eurydice_arr_b0 *a);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -1375,23 +1381,23 @@ with types uint8_t
 with const generics
 - N= 34
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_8d(const Eurydice_arr_48 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_8d(const Eurydice_arr_48 *a);
 
 /**
 A monomorphic instance of Eurydice.slice_subslice_from_shared
 with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint8_t
 
 */
-Eurydice_dst_ref_shared_87
-Eurydice_slice_subslice_from_shared_6b(Eurydice_dst_ref_shared_87 s, size_t r);
+Eurydice_borrow_slice_u8
+Eurydice_slice_subslice_from_shared_6b(Eurydice_borrow_slice_u8 s, size_t r);
 
 /**
 A monomorphic instance of Eurydice.slice_subslice_to_shared
 with types uint8_t, core_ops_range_RangeTo size_t, Eurydice_derefed_slice uint8_t
 
 */
-Eurydice_dst_ref_shared_87
-Eurydice_slice_subslice_to_shared_c6(Eurydice_dst_ref_shared_87 s, size_t r);
+Eurydice_borrow_slice_u8
+Eurydice_slice_subslice_to_shared_c6(Eurydice_borrow_slice_u8 s, size_t r);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_shared
@@ -1399,7 +1405,7 @@ with types uint8_t
 with const generics
 - N= 800
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_03(const Eurydice_arr_30 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_03(const Eurydice_arr_30 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_shared
@@ -1407,7 +1413,7 @@ with types uint8_t
 with const generics
 - N= 768
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_ee(const Eurydice_arr_56 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_ee(const Eurydice_arr_56 *a);
 
 /**
 This function found in impl {core::convert::AsRef<@Slice<u8>> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
@@ -1417,7 +1423,7 @@ A monomorphic instance of libcrux_ml_kem.types.as_ref_d3
 with const generics
 - SIZE= 768
 */
-Eurydice_dst_ref_shared_87 libcrux_ml_kem_types_as_ref_d3_d0(const Eurydice_arr_56 *self);
+Eurydice_borrow_slice_u8 libcrux_ml_kem_types_as_ref_d3_d0(const Eurydice_arr_56 *self);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_from_mut
@@ -1425,7 +1431,8 @@ with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint
 with const generics
 - N= 800
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_subslice_from_mut_8c0(Eurydice_arr_30 *a, size_t r);
+Eurydice_mut_borrow_slice_u8
+Eurydice_array_to_subslice_from_mut_8c0(Eurydice_arr_30 *a, size_t r);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -1433,7 +1440,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 800
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_366(Eurydice_arr_30 *a, core_ops_range_Range_08 r);
 
 /**
@@ -1444,7 +1451,7 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 800
 */
-Eurydice_arr_30 libcrux_ml_kem_utils_into_padded_array_4d(Eurydice_dst_ref_shared_87 slice);
+Eurydice_arr_30 libcrux_ml_kem_utils_into_padded_array_4d(Eurydice_borrow_slice_u8 slice);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_shared
@@ -1452,7 +1459,7 @@ with types uint8_t
 with const generics
 - N= 64
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_slice_shared_d8(const libcrux_sha3_Sha3_512Digest *a);
 
 /**
@@ -1461,7 +1468,7 @@ with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint
 with const generics
 - N= 64
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_from_mut_8c(libcrux_sha3_Sha3_512Digest *a, size_t r);
 
 /**
@@ -1470,7 +1477,7 @@ with types uint8_t
 with const generics
 - N= 32
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_6e(const Eurydice_arr_60 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_6e(const Eurydice_arr_60 *a);
 
 /**
  Pad the `slice` with `0`s at the end.
@@ -1481,7 +1488,7 @@ with const generics
 - LEN= 64
 */
 libcrux_sha3_Sha3_512Digest
-libcrux_ml_kem_utils_into_padded_array_24(Eurydice_dst_ref_shared_87 slice);
+libcrux_ml_kem_utils_into_padded_array_24(Eurydice_borrow_slice_u8 slice);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_shared
@@ -1489,7 +1496,7 @@ with types uint8_t
 with const generics
 - N= 2
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_26(const Eurydice_arr_8b *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_26(const Eurydice_array_u8x2 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_from_shared
@@ -1497,7 +1504,7 @@ with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint
 with const generics
 - N= 768
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_from_shared_8c(const Eurydice_arr_56 *a, size_t r);
 
 /**
@@ -1506,7 +1513,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 768
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_shared_362(const Eurydice_arr_56 *a, core_ops_range_Range_08 r);
 
 /**
@@ -1515,7 +1522,7 @@ with types uint8_t
 with const generics
 - N= 1632
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_1c(const Eurydice_arr_7f *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_1c(const Eurydice_arr_7f *a);
 
 /**
  Unpack an incoming private key into it's different parts.
@@ -1529,15 +1536,15 @@ with const generics
 - PUBLIC_KEY_SIZE= 800
 */
 Eurydice_dst_ref_shared_uint8_t_size_t_x4
-libcrux_ml_kem_types_unpack_private_key_0c(Eurydice_dst_ref_shared_87 private_key);
+libcrux_ml_kem_types_unpack_private_key_0c(Eurydice_borrow_slice_u8 private_key);
 
 /**
 A monomorphic instance of Eurydice.slice_subslice_mut
 with types int16_t, core_ops_range_Range size_t, Eurydice_derefed_slice int16_t
 
 */
-Eurydice_dst_ref_mut_9a
-Eurydice_slice_subslice_mut_76(Eurydice_dst_ref_mut_9a s, core_ops_range_Range_08 r);
+Eurydice_mut_borrow_slice_i16
+Eurydice_slice_subslice_mut_76(Eurydice_mut_borrow_slice_i16 s, core_ops_range_Range_08 r);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_shared
@@ -1545,7 +1552,7 @@ with types uint8_t
 with const generics
 - N= 16
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_46(const Eurydice_arr_88 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_46(const Eurydice_arr_88 *a);
 
 /**
 A monomorphic instance of core.result.Result
@@ -1579,7 +1586,7 @@ with types int16_t
 with const generics
 - N= 16
 */
-Eurydice_dst_ref_shared_9a Eurydice_array_to_slice_shared_b4(const Eurydice_arr_e2 *a);
+Eurydice_borrow_slice_i16 Eurydice_array_to_slice_shared_b4(const Eurydice_arr_e2 *a);
 
 /**
 A monomorphic instance of core.result.Result
@@ -1639,7 +1646,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 16
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_shared_361(const Eurydice_arr_88 *a, core_ops_range_Range_08 r);
 
 /**
@@ -1648,7 +1655,7 @@ with types uint8_t
 with const generics
 - N= 16
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_slice_mut_46(Eurydice_arr_88 *a);
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_46(Eurydice_arr_88 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_mut
@@ -1656,7 +1663,7 @@ with types int16_t
 with const generics
 - N= 16
 */
-Eurydice_dst_ref_mut_9a Eurydice_array_to_slice_mut_b4(Eurydice_arr_e2 *a);
+Eurydice_mut_borrow_slice_i16 Eurydice_array_to_slice_mut_b4(Eurydice_arr_e2 *a);
 
 /**
 This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
@@ -1696,7 +1703,8 @@ A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
 with types Eurydice_arr uint8_t[[$8size_t]]
 
 */
-Eurydice_arr_c4 libcrux_secrets_int_public_integers_declassify_d8_36(Eurydice_arr_c4 self);
+Eurydice_array_u8x8
+libcrux_secrets_int_public_integers_declassify_d8_36(Eurydice_array_u8x8 self);
 
 /**
 This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
@@ -1706,7 +1714,8 @@ A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
 with types Eurydice_arr uint8_t[[$2size_t]]
 
 */
-Eurydice_arr_8b libcrux_secrets_int_public_integers_declassify_d8_ee(Eurydice_arr_8b self);
+Eurydice_array_u8x2
+libcrux_secrets_int_public_integers_declassify_d8_ee(Eurydice_array_u8x2 self);
 
 /**
  Classify a mutable slice (identity)
@@ -1717,8 +1726,8 @@ A monomorphic instance of libcrux_secrets.int.public_integers.classify_mut_slice
 with types Eurydice_dst_ref_mut uint8_t size_t
 
 */
-Eurydice_dst_ref_mut_87
-libcrux_secrets_int_public_integers_classify_mut_slice_47(Eurydice_dst_ref_mut_87 x);
+Eurydice_mut_borrow_slice_u8
+libcrux_secrets_int_public_integers_classify_mut_slice_47(Eurydice_mut_borrow_slice_u8 x);
 
 /**
 This function found in impl {libcrux_secrets::traits::Classify<T> for T}
@@ -1748,8 +1757,8 @@ A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_9b
 with types uint8_t
 
 */
-Eurydice_dst_ref_shared_87
-libcrux_secrets_int_classify_public_classify_ref_9b_90(Eurydice_dst_ref_shared_87 self);
+Eurydice_borrow_slice_u8
+libcrux_secrets_int_classify_public_classify_ref_9b_90(Eurydice_borrow_slice_u8 self);
 
 /**
 This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
@@ -1767,7 +1776,7 @@ with types int16_t, core_ops_range_Range size_t, Eurydice_derefed_slice int16_t
 with const generics
 - N= 16
 */
-Eurydice_dst_ref_shared_9a
+Eurydice_borrow_slice_i16
 Eurydice_array_to_subslice_shared_85(const Eurydice_arr_e2 *a, core_ops_range_Range_08 r);
 
 /**
@@ -1778,16 +1787,16 @@ A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_9b
 with types int16_t
 
 */
-Eurydice_dst_ref_shared_9a
-libcrux_secrets_int_classify_public_classify_ref_9b_39(Eurydice_dst_ref_shared_9a self);
+Eurydice_borrow_slice_i16
+libcrux_secrets_int_classify_public_classify_ref_9b_39(Eurydice_borrow_slice_i16 self);
 
 /**
 A monomorphic instance of Eurydice.slice_subslice_shared
 with types int16_t, core_ops_range_Range size_t, Eurydice_derefed_slice int16_t
 
 */
-Eurydice_dst_ref_shared_9a
-Eurydice_slice_subslice_shared_76(Eurydice_dst_ref_shared_9a s, core_ops_range_Range_08 r);
+Eurydice_borrow_slice_i16
+Eurydice_slice_subslice_shared_76(Eurydice_borrow_slice_i16 s, core_ops_range_Range_08 r);
 
 /**
 A monomorphic instance of core.result.Result
@@ -1837,7 +1846,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 32
 */
-Eurydice_dst_ref_shared_87
+Eurydice_borrow_slice_u8
 Eurydice_array_to_subslice_shared_360(const Eurydice_arr_60 *a, core_ops_range_Range_08 r);
 
 /**
@@ -1849,12 +1858,20 @@ with const generics
 typedef struct Eurydice_arr_91_s { Eurydice_arr_3d data[4U]; } Eurydice_arr_91;
 
 /**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_dst_ref_shared uint8_t size_t
+with const generics
+- $4size_t
+*/
+typedef struct Eurydice_arr_e9_s { Eurydice_borrow_slice_u8 data[4U]; } Eurydice_arr_e9;
+
+/**
 A monomorphic instance of Eurydice.array_to_slice_mut
 with types uint8_t
 with const generics
 - N= 64
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_slice_mut_d8(libcrux_sha3_Sha3_512Digest *a);
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_d8(libcrux_sha3_Sha3_512Digest *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_mut
@@ -1862,7 +1879,7 @@ with types uint8_t
 with const generics
 - N= 48
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_slice_mut_95(libcrux_sha3_Sha3_384Digest *a);
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_95(libcrux_sha3_Sha3_384Digest *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_mut
@@ -1870,7 +1887,7 @@ with types uint8_t
 with const generics
 - N= 32
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_slice_mut_6e(Eurydice_arr_60 *a);
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_6e(Eurydice_arr_60 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_mut
@@ -1878,7 +1895,7 @@ with types uint8_t
 with const generics
 - N= 28
 */
-Eurydice_dst_ref_mut_87 Eurydice_array_to_slice_mut_c0(libcrux_sha3_Sha3_224Digest *a);
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_c0(libcrux_sha3_Sha3_224Digest *a);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -1894,7 +1911,7 @@ with types uint8_t
 with const generics
 - N= 104
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_9c(const Eurydice_arr_18 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_9c(const Eurydice_arr_18 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -1902,7 +1919,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 104
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_363(Eurydice_arr_18 *a, core_ops_range_Range_08 r);
 
 /**
@@ -1919,7 +1936,7 @@ with types uint8_t
 with const generics
 - N= 144
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_d1(const Eurydice_arr_a8 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_d1(const Eurydice_arr_a8 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -1927,7 +1944,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 144
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_362(Eurydice_arr_a8 *a, core_ops_range_Range_08 r);
 
 /**
@@ -1936,7 +1953,7 @@ with types uint8_t
 with const generics
 - N= 168
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_7b(const Eurydice_arr_27 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_7b(const Eurydice_arr_27 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -1944,7 +1961,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 168
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_361(Eurydice_arr_27 *a, core_ops_range_Range_08 r);
 
 /**
@@ -1953,7 +1970,7 @@ with types uint8_t
 with const generics
 - N= 136
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_d4(const Eurydice_arr_3d *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_d4(const Eurydice_arr_3d *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -1961,7 +1978,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 136
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_360(Eurydice_arr_3d *a, core_ops_range_Range_08 r);
 
 /**
@@ -1970,8 +1987,8 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 8
 */
-Eurydice_dst_ref_shared_87
-Eurydice_array_to_subslice_shared_36(const Eurydice_arr_c4 *a, core_ops_range_Range_08 r);
+Eurydice_borrow_slice_u8
+Eurydice_array_to_subslice_shared_36(const Eurydice_array_u8x8 *a, core_ops_range_Range_08 r);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_shared
@@ -1979,15 +1996,15 @@ with types uint8_t
 with const generics
 - N= 8
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_41(const Eurydice_arr_c4 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_41(const Eurydice_array_u8x8 *a);
 
 /**
 A monomorphic instance of Eurydice.slice_subslice_mut
 with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 
 */
-Eurydice_dst_ref_mut_87
-Eurydice_slice_subslice_mut_7e(Eurydice_dst_ref_mut_87 s, core_ops_range_Range_08 r);
+Eurydice_mut_borrow_slice_u8
+Eurydice_slice_subslice_mut_7e(Eurydice_mut_borrow_slice_u8 s, core_ops_range_Range_08 r);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -2003,7 +2020,7 @@ with types uint8_t
 with const generics
 - N= 72
 */
-Eurydice_dst_ref_shared_87 Eurydice_array_to_slice_shared_7d(const Eurydice_arr_a0 *a);
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_7d(const Eurydice_arr_a0 *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -2011,7 +2028,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 72
 */
-Eurydice_dst_ref_mut_87
+Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_36(Eurydice_arr_a0 *a, core_ops_range_Range_08 r);
 
 /**
@@ -2019,8 +2036,8 @@ A monomorphic instance of Eurydice.slice_subslice_shared
 with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 
 */
-Eurydice_dst_ref_shared_87
-Eurydice_slice_subslice_shared_7e(Eurydice_dst_ref_shared_87 s, core_ops_range_Range_08 r);
+Eurydice_borrow_slice_u8
+Eurydice_slice_subslice_shared_7e(Eurydice_borrow_slice_u8 s, core_ops_range_Range_08 r);
 
 /**
 A monomorphic instance of core.result.Result
@@ -2031,7 +2048,7 @@ typedef struct core_result_Result_a4_s
 {
   core_result_Result_95_tags tag;
   union {
-    Eurydice_arr_c4 case_Ok;
+    Eurydice_array_u8x8 case_Ok;
     core_array_TryFromSliceError case_Err;
   }
   val;
@@ -2046,7 +2063,7 @@ A monomorphic instance of core.result.unwrap_26
 with types Eurydice_arr uint8_t[[$8size_t]], core_array_TryFromSliceError
 
 */
-Eurydice_arr_c4 core_result_unwrap_26_ab(core_result_Result_a4 self);
+Eurydice_array_u8x8 core_result_unwrap_26_ab(core_result_Result_a4 self);
 
 typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair768_s
 {

@@ -41,7 +41,7 @@ with types Eurydice_arr uint8_t[[$4size_t]], size_t
 */
 typedef struct Eurydice_dst_ref_mut_d0_s
 {
-  Eurydice_arr_e9 *ptr;
+  Eurydice_array_u8x4 *ptr;
   size_t meta;
 }
 Eurydice_dst_ref_mut_d0;
@@ -52,7 +52,7 @@ with types Eurydice_arr uint8_t[[$4size_t]]
 with const generics
 - $4size_t
 */
-typedef struct Eurydice_arr_11_s { Eurydice_arr_e9 data[4U]; } Eurydice_arr_11;
+typedef struct Eurydice_arr_11_s { Eurydice_array_u8x4 data[4U]; } Eurydice_arr_11;
 
 typedef struct Eurydice_dst_ref_mut_Eurydice_arr_uint8_t___4size_t___size_t_x2_s
 {
@@ -70,7 +70,7 @@ with types Eurydice_arr uint8_t[[$4size_t]], size_t
 */
 typedef struct Eurydice_dst_ref_shared_d0_s
 {
-  const Eurydice_arr_e9 *ptr;
+  const Eurydice_array_u8x4 *ptr;
   size_t meta;
 }
 Eurydice_dst_ref_shared_d0;
@@ -86,7 +86,7 @@ typedef struct core_result_Result_44_s
 {
   core_result_Result_10 tag;
   union {
-    Eurydice_arr_e9 case_Ok;
+    Eurydice_array_u8x4 case_Ok;
     core_array_TryFromSliceError case_Err;
   }
   val;
@@ -102,7 +102,7 @@ typedef struct core_result_Result_63_s
 {
   core_result_Result_10 tag;
   union {
-    const Eurydice_arr_e9 *case_Ok;
+    const Eurydice_array_u8x4 *case_Ok;
     core_array_TryFromSliceError case_Err;
   }
   val;

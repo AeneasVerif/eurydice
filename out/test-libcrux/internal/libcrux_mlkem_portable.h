@@ -222,9 +222,9 @@ with const generics
 */
 void
 libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_60(
-  Eurydice_dst_ref_shared_87 private_key,
-  Eurydice_dst_ref_shared_87 public_key,
-  Eurydice_dst_ref_shared_87 implicit_rejection_value,
+  Eurydice_borrow_slice_u8 private_key,
+  Eurydice_borrow_slice_u8 public_key,
+  Eurydice_borrow_slice_u8 implicit_rejection_value,
   Eurydice_arr_17 *serialized
 );
 
@@ -704,9 +704,9 @@ with const generics
 */
 void
 libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_30(
-  Eurydice_dst_ref_shared_87 private_key,
-  Eurydice_dst_ref_shared_87 public_key,
-  Eurydice_dst_ref_shared_87 implicit_rejection_value,
+  Eurydice_borrow_slice_u8 private_key,
+  Eurydice_borrow_slice_u8 public_key,
+  Eurydice_borrow_slice_u8 implicit_rejection_value,
   Eurydice_arr_7f *serialized
 );
 
@@ -1004,7 +1004,7 @@ with types libcrux_ml_kem_polynomial_PolynomialRingElement libcrux_ml_kem_vector
 with const generics
 - $3size_t
 */
-typedef struct Eurydice_arr_c41_s { Eurydice_arr_b9 data[3U]; } Eurydice_arr_c41;
+typedef struct Eurydice_arr_c40_s { Eurydice_arr_b9 data[3U]; } Eurydice_arr_c40;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -1012,7 +1012,7 @@ with types Eurydice_arr libcrux_ml_kem_polynomial_PolynomialRingElement libcrux_
 with const generics
 - $3size_t
 */
-typedef struct Eurydice_arr_aa_s { Eurydice_arr_c41 data[3U]; } Eurydice_arr_aa;
+typedef struct Eurydice_arr_aa_s { Eurydice_arr_c40 data[3U]; } Eurydice_arr_aa;
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.unpacked.IndCpaPublicKeyUnpacked
@@ -1022,7 +1022,7 @@ with const generics
 */
 typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0_s
 {
-  Eurydice_arr_c41 t_as_ntt;
+  Eurydice_arr_c40 t_as_ntt;
   Eurydice_arr_60 seed_for_A;
   Eurydice_arr_aa A;
 }
@@ -1103,7 +1103,7 @@ with const generics
 */
 typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0_s
 {
-  Eurydice_arr_c41 ind_cpa_private_key;
+  Eurydice_arr_c40 ind_cpa_private_key;
   Eurydice_arr_60 implicit_rejection_value;
 }
 libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0;
@@ -1203,9 +1203,9 @@ with const generics
 */
 void
 libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_d6(
-  Eurydice_dst_ref_shared_87 private_key,
-  Eurydice_dst_ref_shared_87 public_key,
-  Eurydice_dst_ref_shared_87 implicit_rejection_value,
+  Eurydice_borrow_slice_u8 private_key,
+  Eurydice_borrow_slice_u8 public_key,
+  Eurydice_borrow_slice_u8 implicit_rejection_value,
   Eurydice_arr_ea *serialized
 );
 
@@ -1294,7 +1294,7 @@ with types Eurydice_arr libcrux_ml_kem_polynomial_PolynomialRingElement libcrux_
 */
 typedef struct Eurydice_dst_ref_shared_94_s
 {
-  const Eurydice_arr_c41 *ptr;
+  const Eurydice_arr_c40 *ptr;
   size_t meta;
 }
 Eurydice_dst_ref_shared_94;

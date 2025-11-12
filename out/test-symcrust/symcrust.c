@@ -14,11 +14,13 @@ A monomorphic instance of Eurydice.slice_subslice_mut
 with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 
 */
-static Eurydice_dst_ref_mut_87
-slice_subslice_mut_7e(Eurydice_dst_ref_mut_87 s, core_ops_range_Range_08 r)
+static Eurydice_mut_borrow_slice_u8
+slice_subslice_mut_7e(Eurydice_mut_borrow_slice_u8 s, core_ops_range_Range_08 r)
 {
   return
-    (KRML_CLITERAL(Eurydice_dst_ref_mut_87){ .ptr = s.ptr + r.start, .meta = r.end - r.start });
+    (
+      KRML_CLITERAL(Eurydice_mut_borrow_slice_u8){ .ptr = s.ptr + r.start, .meta = r.end - r.start }
+    );
 }
 
 /**
@@ -27,9 +29,9 @@ with types uint8_t
 with const generics
 - N= 4
 */
-static Eurydice_dst_ref_shared_87 array_to_slice_shared_60(const Eurydice_arr_e9 *a)
+static Eurydice_borrow_slice_u8 array_to_slice_shared_60(const Eurydice_array_u8x4 *a)
 {
-  Eurydice_dst_ref_shared_87 lit;
+  Eurydice_borrow_slice_u8 lit;
   lit.ptr = a->data;
   lit.meta = (size_t)4U;
   return lit;
@@ -39,7 +41,7 @@ void
 symcrust_SymCrustMlKemPolyElementCompressAndEncode(
   const Eurydice_arr_bc *coeffs,
   uint32_t nBitsPerCoefficient,
-  Eurydice_dst_ref_mut_87 dst
+  Eurydice_mut_borrow_slice_u8 dst
 )
 {
   uint64_t SYMCRYPT_MLKEM_COMPRESS_MULCONSTANT = 10321339ULL;
@@ -49,9 +51,9 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
   uint32_t nBitsInAccumulator = 0U;
   EURYDICE_ASSERT(nBitsPerCoefficient > 0U, "panic!");
   EURYDICE_ASSERT(nBitsPerCoefficient <= 12U, "panic!");
-  Eurydice_dst_ref_mut_87 reborrowed_slice = dst;
+  Eurydice_mut_borrow_slice_u8 reborrowed_slice = dst;
   EURYDICE_ASSERT((uint64_t)Eurydice_slice_len((
-        KRML_CLITERAL(Eurydice_dst_ref_shared_87){
+        KRML_CLITERAL(Eurydice_borrow_slice_u8){
           .ptr = reborrowed_slice.ptr,
           .meta = reborrowed_slice.meta
         }
@@ -84,7 +86,7 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
       nBitsInAccumulator = nBitsInAccumulator + nBitsToEncode;
       if (nBitsInAccumulator == 32U)
       {
-        Eurydice_dst_ref_mut_87
+        Eurydice_mut_borrow_slice_u8
         uu____0 =
           slice_subslice_mut_7e(dst,
             (
@@ -94,7 +96,7 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
               }
             ));
         /* original Rust expression is not an lvalue in C */
-        Eurydice_arr_e9 lvalue = core_num__u32__to_le_bytes(accumulator);
+        Eurydice_array_u8x4 lvalue = core_num__u32__to_le_bytes(accumulator);
         Eurydice_slice_copy(uu____0, array_to_slice_shared_60(&lvalue), uint8_t);
         cbDstWritten = cbDstWritten + (size_t)4U;
         accumulator = 0U;

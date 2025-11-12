@@ -255,7 +255,7 @@ with types Eurydice_arr uint8_t[[$136size_t]]
 with const generics
 - $1size_t
 */
-typedef struct Eurydice_arr_c40_s { Eurydice_arr_3d data[1U]; } Eurydice_arr_c40;
+typedef struct Eurydice_arr_c4_s { Eurydice_arr_3d data[1U]; } Eurydice_arr_c4;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -285,7 +285,7 @@ with types Eurydice_dst_ref_shared uint8_t size_t
 with const generics
 - $1size_t
 */
-typedef struct Eurydice_arr_8e_s { Eurydice_dst_ref_shared_87 data[1U]; } Eurydice_arr_8e;
+typedef struct Eurydice_arr_8e_s { Eurydice_borrow_slice_u8 data[1U]; } Eurydice_arr_8e;
 
 /**
 A monomorphic instance of Eurydice.arr

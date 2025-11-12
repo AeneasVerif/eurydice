@@ -13,13 +13,11 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 with const generics
 - N= 32
 */
-static Eurydice_dst_ref_shared_87
+static Eurydice_borrow_slice_u8
 array_to_subslice_shared_36(const Eurydice_arr_60 *a, core_ops_range_Range_08 r)
 {
   return
-    (
-      KRML_CLITERAL(Eurydice_dst_ref_shared_87){ .ptr = a->data + r.start, .meta = r.end - r.start }
-    );
+    (KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = a->data + r.start, .meta = r.end - r.start });
 }
 
 uint8_t array_fun(Eurydice_dst_ref_shared_fc x)
