@@ -27,7 +27,6 @@ void issue_128_use_enum(issue_128_E e, Eurydice_borrow_slice_u8 x)
       }
     case issue_128_E_B:
       {
-        issue_128_fun_b(x);
         return;
       }
     default:
@@ -36,7 +35,6 @@ void issue_128_use_enum(issue_128_E e, Eurydice_borrow_slice_u8 x)
         KRML_HOST_EXIT(253U);
       }
   }
-  issue_128_fun_a(x);
 }
 
 /**
