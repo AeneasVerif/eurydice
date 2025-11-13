@@ -19,7 +19,7 @@ void we_need_charon_monomorphization_use_ref_ee(const int32_t (*_t)[])
 
 void we_need_charon_monomorphization_supply_ref(Eurydice_dst_ref_shared_fc s)
 {
-
+  we_need_charon_monomorphization_use_ref_ee(s);
 }
 
 /**

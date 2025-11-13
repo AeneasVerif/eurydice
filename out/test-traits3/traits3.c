@@ -28,7 +28,7 @@ void traits3_keccak_cc(void)
 
 void traits3_keccakx2(void)
 {
-
+  traits3_keccak_cc();
 }
 
 void traits3_main(void)
