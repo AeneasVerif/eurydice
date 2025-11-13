@@ -50,11 +50,11 @@ let remove_assignments =
           self#peel_lets to_close e2
       | _ ->
           let e = Krml.Simplify.sequence_to_let#visit_expr_w () e in
-          (* Krml.(KPrint.bprintf "after peeling:\n%a\n\n" PrintAst.Ops.ppexpr e); *)
+          Krml.(KPrint.bprintf "after peeling:\n%a\n\n" PrintAst.Ops.ppexpr e);
           self#visit_expr_w to_close e
 
     method! visit_DFunction (to_close : remove_env) cc flags n_cgs n t name bs e =
-      (* Krml.(KPrint.bprintf "visiting %a\n" PrintAst.Ops.plid name); *)
+      Krml.(KPrint.bprintf "visiting %a\n" PrintAst.Ops.plid name);
       assert (AtomMap.is_empty to_close);
       DFunction
         ( cc,
@@ -461,9 +461,35 @@ let remove_slice_eq =
       | _ -> super#visit_expr ((), e.typ) e
   end
 
+let remove_units =
+  object (self)
+    inherit [_] map as super
+
+    (* Every local variable at type unit is suitably initialized *)
+    method! visit_ELet env b e1 e2 =
+      if b.typ = TUnit && e1.node = EAny then
+        ELet (b, Krml.Helpers.eunit, self#visit_expr_w () e2)
+      else
+        super#visit_ELet env b e1 e2
+
+    (* Assigning into a local variable of type unit is meaningless and the rhs can be used instead
+       -- no uninitialized variables issues, because of ELet above. *)
+    method! visit_EAssign env e1 e2 =
+      match e1.node with
+      | EBound _ when e1.typ = TUnit -> (self#visit_expr_w () e2).node
+      | _ -> super#visit_EAssign env e1 e2
+
+    (* Returning a local variable of type unit is equivalent to returning a unit *)
+    method! visit_EReturn env e =
+      match e.node with
+      | EBound _ when e.typ = TUnit -> EReturn Krml.Helpers.eunit
+      | _ -> super#visit_EReturn env e
+  end
+
 let cleanup files =
-  (* Krml.(PPrint.(Print.(print (PrintAst.print_files files ^^ hardline)))); *)
   let files = remove_assignments#visit_files AtomMap.empty files in
+  let files = remove_units#visit_files () files in
+  Krml.(PPrint.(Print.(print (PrintAst.print_files files ^^ hardline))));
   let files = unsigned_overflow_is_ok_in_c#visit_files () files in
   let files = Krml.Simplify.optimize_lets files in
   let files = remove_terminal_returns#visit_files true files in
