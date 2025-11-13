@@ -19,7 +19,6 @@ void issue_128_fun_b(Eurydice_borrow_slice_u8 _x)
 
 void issue_128_use_enum(issue_128_E e, Eurydice_borrow_slice_u8 x)
 {
-  void *uu____0 = (void *)0U;
   switch (e)
   {
     case issue_128_E_A:

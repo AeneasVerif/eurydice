@@ -146,9 +146,13 @@ Eurydice_dst_ref_mut_96 dst_mk(void)
 {
   dst_T2_64 x = { .header = (size_t)0U, .my_data = { .data = { 0U } } };
   x.my_data.data[1U] = 2U;
-  Eurydice_dst_ref_mut_96
-  y = { .ptr = (dst_T2_be *)Eurydice_box_new(x, dst_T2_64, dst_T2_64 *), .meta = (size_t)4U };
-  return y;
+  return
+    (
+      KRML_CLITERAL(Eurydice_dst_ref_mut_96){
+        .ptr = (dst_T2_be *)Eurydice_box_new(x, dst_T2_64, dst_T2_64 *),
+        .meta = (size_t)4U
+      }
+    );
 }
 
 /**

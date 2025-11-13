@@ -50,7 +50,7 @@ let remove_assignments =
           self#peel_lets to_close e2
       | _ ->
           let e = Krml.Simplify.sequence_to_let#visit_expr_w () e in
-          (* Krml.(KPrint.bprintf "after peeling:\n%a" PrintAst.Ops.ppexpr e); *)
+          (* Krml.(KPrint.bprintf "after peeling:\n%a\n\n" PrintAst.Ops.ppexpr e); *)
           self#visit_expr_w to_close e
 
     method! visit_DFunction (to_close : remove_env) cc flags n_cgs n t name bs e =
@@ -292,21 +292,6 @@ let remove_assignments =
               ELet (b, self#visit_expr_w not_yet_closed e1, recurse_or_close not_yet_closed e2))
   end
 
-let remove_units =
-  object (self)
-    inherit [_] map as super
-
-    method! visit_EAssign env e1 e2 =
-      if e1.typ = TUnit && Krml.Helpers.is_readonly_c_expression e2 then
-        EUnit
-      else if e1.typ = TUnit && Krml.Helpers.is_readonly_c_expression e1 then
-        (* Unit nodes have been initialized at declaration-time by
-           remove_assignments above. So, e1 := e2 can safely become e2. *)
-        (self#visit_expr env e2).node
-      else
-        super#visit_EAssign env e1 e2
-  end
-
 let remove_terminal_returns =
   object (self)
     inherit [_] map
@@ -326,7 +311,17 @@ let remove_terminal_returns =
             self#visit_expr_w env e )
 
     method! visit_ELet (terminal, _) b e1 e2 =
-      ELet (b, self#visit_expr_w false e1, self#visit_expr_w terminal e2)
+      (* let _ = x := e in
+         return x                 ~~~>      return e
+      *)
+      match e1.node, e2.node with
+      | EAssign ({ node = EBound i; _ }, e1), EReturn { node = EBound j; _ } when j = i + 1 ->
+          (* This early optimization is important to avoid superfluous variable
+             declarations for the return value of the function -- these
+             interfere with pattern-matches such as resugar_loops. See
+             test/for.rs *)
+          self#visit_EReturn (terminal, e2.typ) e1
+      | _ -> ELet (b, self#visit_expr_w false e1, self#visit_expr_w terminal e2)
 
     method! visit_EWhile _ e1 e2 = EWhile (self#visit_expr_w false e1, self#visit_expr_w false e2)
 
@@ -476,13 +471,45 @@ let remove_slice_eq =
       | _ -> super#visit_expr ((), e.typ) e
   end
 
+let remove_units =
+  object (self)
+    inherit [_] map as super
+
+    (* Every local variable at type unit is suitably initialized *)
+    method! visit_ELet env b e1 e2 =
+      if b.typ = TUnit && e1.node = EAny then
+        ELet (b, Krml.Helpers.eunit, self#visit_expr_w () e2)
+      else
+        super#visit_ELet env b e1 e2
+
+    (* Assigning into a local variable of type unit is meaningless and the rhs can be used instead
+       -- no uninitialized variables issues, because of ELet above. *)
+    method! visit_EAssign env e1 e2 =
+      match e1.node with
+      | EBound _ when e1.typ = TUnit -> (self#visit_expr_w () e2).node
+      | _ -> super#visit_EAssign env e1 e2
+
+    (* Returning a local variable of type unit is equivalent to returning a unit *)
+    method! visit_EReturn env e =
+      match e.node with
+      | EBound _ when e.typ = TUnit -> EReturn Krml.Helpers.eunit
+      | _ -> super#visit_EReturn env e
+
+    method! visit_ESequence _env es =
+      let es = List.filter (fun x -> x.node <> EUnit) (List.map (self#visit_expr_w ()) es) in
+      match es with
+      | [] -> EUnit
+      | [ e ] -> e.node
+      | _ -> ESequence es
+  end
+
 let cleanup files =
   let files = remove_units#visit_files () files in
   let files = remove_assignments#visit_files AtomMap.empty files in
-  (* Krml.(PPrint.(Print.(print (PrintAst.print_files files ^^ hardline)))); *)
   let files = unsigned_overflow_is_ok_in_c#visit_files () files in
-  let files = Krml.Simplify.optimize_lets files in
   let files = remove_terminal_returns#visit_files true files in
+  let files = Krml.Simplify.optimize_lets files in
+  (* Krml.(PPrint.(Print.(print (PrintAst.print_files files ^^ hardline)))); *)
   let files = remove_terminal_continues#visit_files false files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
   let files = remove_slice_eq#visit_files () files in
