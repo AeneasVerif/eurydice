@@ -7,23 +7,23 @@
 
 #include "more_str.h"
 
-void more_str_use_str(Eurydice_dst_ref_65 s)
+void more_str_use_str(Eurydice_dst_ref_shared_65 s)
 {
   EURYDICE_ASSERT(core_str__str__len(s) > (size_t)2U, "panic!");
 }
 
 void more_str_main(void)
 {
-  Eurydice_dst_ref_65 eng = { .ptr = "Hello, world!", .meta = (size_t)13U };
-  Eurydice_dst_ref_65
+  Eurydice_dst_ref_shared_65 eng = { .ptr = "Hello, world!", .meta = (size_t)13U };
+  Eurydice_dst_ref_shared_65
   chn = { .ptr = "\\u{4f60}\\u{597d}\\u{ff0c}\\u{4e16}\\u{754c}\\u{ff01}", .meta = (size_t)18U };
-  Eurydice_dst_ref_65
+  Eurydice_dst_ref_shared_65
   jpn =
     {
       .ptr = "\\u{3053}\\u{3093}\\u{306b}\\u{3061}\\u{306f}\\u{4e16}\\u{754c}\\u{ff01}",
       .meta = (size_t)24U
     };
-  Eurydice_dst_ref_65
+  Eurydice_dst_ref_shared_65
   mix =
     {
       .ptr = "Hello, \\u{4f60}\\u{597d}\\u{ff0c}\\u{3053}\\u{3093}\\u{306b}\\u{3061}\\u{306f}\\u{4e16}\\u{754c}\\u{ff01}123Hi",

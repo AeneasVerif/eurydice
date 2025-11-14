@@ -29,7 +29,7 @@ with types Eurydice_arr uint8_t[[$4size_t]]
 with const generics
 - $8size_t
 */
-typedef struct Eurydice_arr_cb_s { Eurydice_arr_e9 data[8U]; } Eurydice_arr_cb;
+typedef struct Eurydice_arr_cb_s { Eurydice_array_u8x4 data[8U]; } Eurydice_arr_cb;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -37,7 +37,7 @@ with types Eurydice_arr uint8_t[[$8size_t]]
 with const generics
 - $4size_t
 */
-typedef struct Eurydice_arr_1c_s { Eurydice_arr_c4 data[4U]; } Eurydice_arr_1c;
+typedef struct Eurydice_arr_1c_s { Eurydice_array_u8x8 data[4U]; } Eurydice_arr_1c;
 
 /**
 This function found in impl {where_clauses_fncg::Foo<K> for u64}
@@ -66,7 +66,7 @@ with types Eurydice_arr uint8_t[[$4size_t]]
 with const generics
 - $12size_t
 */
-typedef struct Eurydice_arr_91_s { Eurydice_arr_e9 data[12U]; } Eurydice_arr_91;
+typedef struct Eurydice_arr_91_s { Eurydice_array_u8x4 data[12U]; } Eurydice_arr_91;
 
 /**
 A monomorphic instance of Eurydice.arr

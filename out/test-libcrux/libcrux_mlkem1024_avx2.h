@@ -25,8 +25,8 @@ extern "C" {
 */
 Eurydice_arr_60
 libcrux_ml_kem_mlkem1024_avx2_decapsulate(
-  Eurydice_arr_17 *private_key,
-  Eurydice_arr_00 *ciphertext
+  const Eurydice_arr_17 *private_key,
+  const Eurydice_arr_00 *ciphertext
 );
 
 /**
@@ -38,7 +38,7 @@ libcrux_ml_kem_mlkem1024_avx2_decapsulate(
 */
 tuple_2b
 libcrux_ml_kem_mlkem1024_avx2_encapsulate(
-  Eurydice_arr_00 *public_key,
+  const Eurydice_arr_00 *public_key,
   Eurydice_arr_60 randomness
 );
 
@@ -55,8 +55,8 @@ libcrux_ml_kem_mlkem1024_avx2_generate_key_pair(libcrux_sha3_Sha3_512Digest rand
 */
 bool
 libcrux_ml_kem_mlkem1024_avx2_validate_private_key(
-  Eurydice_arr_17 *private_key,
-  Eurydice_arr_00 *ciphertext
+  const Eurydice_arr_17 *private_key,
+  const Eurydice_arr_00 *ciphertext
 );
 
 /**
@@ -64,14 +64,15 @@ libcrux_ml_kem_mlkem1024_avx2_validate_private_key(
 
  Returns `true` if valid, and `false` otherwise.
 */
-bool libcrux_ml_kem_mlkem1024_avx2_validate_private_key_only(Eurydice_arr_17 *private_key);
+bool
+libcrux_ml_kem_mlkem1024_avx2_validate_private_key_only(const Eurydice_arr_17 *private_key);
 
 /**
  Validate a public key.
 
  Returns `true` if valid, and `false` otherwise.
 */
-bool libcrux_ml_kem_mlkem1024_avx2_validate_public_key(Eurydice_arr_00 *public_key);
+bool libcrux_ml_kem_mlkem1024_avx2_validate_public_key(const Eurydice_arr_00 *public_key);
 
 #if defined(__cplusplus)
 }

@@ -7,37 +7,37 @@
 
 #include "reborrow.h"
 
-typedef struct _uint8_t__x2_s
+typedef struct const_uint8_t__x2_s
 {
-  uint8_t *fst;
-  uint8_t *snd;
+  const uint8_t *fst;
+  const uint8_t *snd;
 }
-_uint8_t__x2;
+const_uint8_t__x2;
 
 void reborrow_main(void)
 {
   uint8_t x = 0U;
-  uint8_t *px = (uint8_t *)&x;
+  const uint8_t *px = (const uint8_t *)&x;
   /* original Rust expression is not an lvalue in C */
   uint8_t lvalue0 = 0U;
-  _uint8_t__x2 uu____0 = { .fst = &lvalue0, .snd = px };
+  const_uint8_t__x2 uu____0 = { .fst = &lvalue0, .snd = px };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
-  uint8_t *py = px;
+  const uint8_t *py = px;
   /* original Rust expression is not an lvalue in C */
   uint8_t lvalue1 = 0U;
-  _uint8_t__x2 uu____1 = { .fst = &lvalue1, .snd = py };
+  const_uint8_t__x2 uu____1 = { .fst = &lvalue1, .snd = py };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
   uint8_t val = 0U;
   uint8_t *b = Eurydice_box_new(val, uint8_t, uint8_t *);
-  uint8_t *pb = b;
+  const uint8_t *pb = b;
   /* original Rust expression is not an lvalue in C */
   uint8_t lvalue2 = 0U;
-  _uint8_t__x2 uu____2 = { .fst = &lvalue2, .snd = pb };
+  const_uint8_t__x2 uu____2 = { .fst = &lvalue2, .snd = pb };
   EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
-  uint8_t *pb2 = pb;
+  const uint8_t *pb2 = pb;
   /* original Rust expression is not an lvalue in C */
   uint8_t lvalue = 0U;
-  _uint8_t__x2 uu____3 = { .fst = &lvalue, .snd = pb2 };
+  const_uint8_t__x2 uu____3 = { .fst = &lvalue, .snd = pb2 };
   EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
 }
 

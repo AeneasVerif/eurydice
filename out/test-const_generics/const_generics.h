@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-static inline Eurydice_arr_e9 core_num__u32__to_be_bytes(uint32_t x0);
+static inline Eurydice_array_u8x4 core_num__u32__to_be_bytes(uint32_t x0);
 
 /**
 A monomorphic instance of core.ops.range.RangeTo
@@ -32,23 +32,23 @@ with types size_t
 typedef size_t core_ops_range_RangeFrom_08;
 
 /**
-A monomorphic instance of Eurydice.dst_ref
+A monomorphic instance of Eurydice.dst_ref_shared
 with types uint32_t, size_t
 
 */
-typedef struct Eurydice_dst_ref_3c_s
+typedef struct Eurydice_dst_ref_shared_3c_s
 {
-  uint32_t *ptr;
+  const uint32_t *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_3c;
+Eurydice_dst_ref_shared_3c;
 
 /**
 A monomorphic instance of const_generics.serialize
 with const generics
 - OUT_LEN= 8
 */
-Eurydice_arr_c4 const_generics_serialize_3b(Eurydice_dst_ref_3c re);
+Eurydice_array_u8x8 const_generics_serialize_3b(Eurydice_dst_ref_shared_3c re);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -185,11 +185,11 @@ bool const_generics_g_70(uint32_t x, size_t y);
 
 void const_generics_main3(void);
 
-extern uint32_t core_clone_impls__core__clone__Clone_for_u32__clone(uint32_t *x0);
+extern uint32_t core_clone_impls__core__clone__Clone_for_u32__clone(const uint32_t *x0);
 
-extern uint64_t core_clone_impls__core__clone__Clone_for_u64__clone(uint64_t *x0);
+extern uint64_t core_clone_impls__core__clone__Clone_for_u64__clone(const uint64_t *x0);
 
-extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(uint8_t *x0);
+extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(const uint8_t *x0);
 
 #if defined(__cplusplus)
 }

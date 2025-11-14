@@ -45,18 +45,18 @@ size_t where_clauses_simple_fn_k_71(void)
   return where_clauses_simple_add_81_e0((KRML_CLITERAL(Eurydice_arr_7f){ .data = { 0U } }), x);
 }
 
-typedef struct _size_t__x2_s
+typedef struct const_size_t__x2_s
 {
-  size_t *fst;
-  size_t *snd;
+  const size_t *fst;
+  const size_t *snd;
 }
-_size_t__x2;
+const_size_t__x2;
 
 void where_clauses_simple_k_calls_k(void)
 {
   size_t r = where_clauses_simple_fn_k_71();
   size_t r_expected = (size_t)3U;
-  _size_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
+  const_size_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
@@ -88,18 +88,18 @@ uint64_t where_clauses_simple_fn_k_e4(void)
   return where_clauses_simple_add_19((KRML_CLITERAL(Eurydice_arr_2e){ .data = { 0U } }), x);
 }
 
-typedef struct _uint64_t__x2_s
+typedef struct const_uint64_t__x2_s
 {
-  uint64_t *fst;
-  uint64_t *snd;
+  const uint64_t *fst;
+  const uint64_t *snd;
 }
-_uint64_t__x2;
+const_uint64_t__x2;
 
 void where_clauses_simple_k_calls_one(void)
 {
   uint64_t r = where_clauses_simple_fn_k_e4();
   uint64_t r_expected = 0ULL;
-  _uint64_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
+  const_uint64_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
@@ -145,7 +145,7 @@ void where_clauses_simple_one_calls_k(void)
 {
   size_t r = where_clauses_simple_fn_1_a5();
   size_t r_expected = (size_t)1U;
-  _size_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
+  const_size_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
@@ -165,7 +165,7 @@ void where_clauses_simple_one_calls_one(void)
 {
   uint64_t r = where_clauses_simple_fn_1_e5();
   uint64_t r_expected = 0ULL;
-  _uint64_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
+  const_uint64_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
@@ -217,15 +217,15 @@ void where_clauses_simple_main(void)
   tuple_b6 y = where_clauses_simple_double_k_7b((size_t)1U, 1ULL);
   uint64_t x_0 = 1ULL;
   size_t x_1 = (size_t)2U;
-  _uint64_t__x2 uu____0 = { .fst = &x.fst, .snd = &x_0 };
+  const_uint64_t__x2 uu____0 = { .fst = &x.fst, .snd = &x_0 };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
-  _size_t__x2 uu____1 = { .fst = &x.snd, .snd = &x_1 };
+  const_size_t__x2 uu____1 = { .fst = &x.snd, .snd = &x_1 };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
   size_t y_0 = (size_t)4U;
   uint64_t y_1 = 1ULL;
-  _size_t__x2 uu____2 = { .fst = &y.fst, .snd = &y_0 };
+  const_size_t__x2 uu____2 = { .fst = &y.fst, .snd = &y_0 };
   EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
-  _uint64_t__x2 uu____3 = { .fst = &y.snd, .snd = &y_1 };
+  const_uint64_t__x2 uu____3 = { .fst = &y.snd, .snd = &y_1 };
   EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
 }
 

@@ -16,20 +16,20 @@ extern "C" {
 #endif
 
 /**
-A monomorphic instance of Eurydice.dst_ref
+A monomorphic instance of Eurydice.dst_ref_shared
 with types Eurydice_c_char_t, size_t
 
 */
-typedef struct Eurydice_dst_ref_65_s
+typedef struct Eurydice_dst_ref_shared_65_s
 {
-  Eurydice_c_char_t *ptr;
+  const Eurydice_c_char_t *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_65;
+Eurydice_dst_ref_shared_65;
 
-extern size_t core_str__str__len(Eurydice_dst_ref_65 x0);
+extern size_t core_str__str__len(Eurydice_dst_ref_shared_65 x0);
 
-void more_str_use_str(Eurydice_dst_ref_65 s);
+void more_str_use_str(Eurydice_dst_ref_shared_65 s);
 
 void more_str_main(void);
 

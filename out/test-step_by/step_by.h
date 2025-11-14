@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-extern int32_t core_clone_impls__core__clone__Clone_for_i32__clone(int32_t *x0);
+extern int32_t core_clone_impls__core__clone__Clone_for_i32__clone(const int32_t *x0);
 
 #define core_cmp_Ordering_Less -1
 #define core_cmp_Ordering_Equal 0
@@ -23,7 +23,8 @@ extern int32_t core_clone_impls__core__clone__Clone_for_i32__clone(int32_t *x0);
 
 typedef int8_t core_cmp_Ordering;
 
-extern bool core_cmp_impls__core__cmp__PartialEq_i32__for_i32__eq(int32_t *x0, int32_t *x1);
+extern bool
+core_cmp_impls__core__cmp__PartialEq_i32__for_i32__eq(const int32_t *x0, const int32_t *x1);
 
 #define core_option_None 0
 #define core_option_Some 1
@@ -43,7 +44,10 @@ typedef struct core_option_Option_77_s
 core_option_Option_77;
 
 extern core_option_Option_77
-core_cmp_impls__core__cmp__PartialOrd_i32__for_i32__partial_cmp(int32_t *x0, int32_t *x1);
+core_cmp_impls__core__cmp__PartialOrd_i32__for_i32__partial_cmp(
+  const int32_t *x0,
+  const int32_t *x1
+);
 
 /**
 A monomorphic instance of core.option.Option
@@ -88,7 +92,10 @@ typedef struct tuple_04_s
 tuple_04;
 
 extern tuple_04
-core_iter_range__core__iter__range__Step_for_i32__steps_between(int32_t *x0, int32_t *x1);
+core_iter_range__core__iter__range__Step_for_i32__steps_between(
+  const int32_t *x0,
+  const int32_t *x1
+);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1

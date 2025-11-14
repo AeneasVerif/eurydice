@@ -13,7 +13,9 @@ Supported options:|}
   in
   let module O = Eurydice.Options in
   let debug s =
-    Krml.Options.debug_modules := Krml.KString.split_on_char ',' s @ !Krml.Options.debug_modules
+    Krml.Options.debug_modules := Krml.KString.split_on_char ',' s @ !Krml.Options.debug_modules;
+    if List.mem "backtrace" !Krml.Options.debug_modules then
+      Krml.Options.backtrace := true
   in
   let funroll_loops = ref 16 in
   let spec =
@@ -95,19 +97,11 @@ Supported options:|}
         ];
       Warn.parse_warn_error (!warn_error ^ "+8"));
     Monomorphization.NameGen.short_names := true;
+    Monomorphization.NameGen.distinguished := Eurydice.Cleanup3.distinguished_names;
     AstToCStar.no_return_type_lids :=
       [
-        [ "Eurydice" ], "slice_index";
-        [ "Eurydice" ], "slice_subslice";
-        [ "Eurydice" ], "slice_subslice3";
-        [ "Eurydice" ], "slice_subslice_to";
-        [ "Eurydice" ], "slice_subslice_from";
-        [ "Eurydice" ], "array_to_slice";
-        [ "Eurydice" ], "array_to_subslice";
-        [ "Eurydice" ], "array_to_subslice3";
-        [ "Eurydice" ], "array_to_subslice_to";
-        [ "Eurydice" ], "array_to_subslice_from";
-        [ "Eurydice" ], "array_repeat";
+        [ "Eurydice" ], "slice_index_shared";
+        [ "Eurydice" ], "slice_index_mut";
         [ "Eurydice" ], "slice_len";
         [ "Eurydice" ], "slice_copy";
         [ "Eurydice" ], "array_eq";
@@ -139,17 +133,21 @@ Supported options:|}
            | "libcrux_intrinsics" :: _, _ -> ret_t <> TUnit
            | [ "Eurydice" ], "vec_len"
            | [ "Eurydice" ], "vec_index"
-           | [ "Eurydice" ], "slice_index"
+           | [ "Eurydice" ], "slice_index_shared"
+           | [ "Eurydice" ], "slice_index_mut"
            | [ "Eurydice" ], "slice_len"
            | [ "Eurydice" ], "slice_to_ref_array"
-           | [ "Eurydice" ], "slice_subslice"
-           | [ "Eurydice" ], "slice_subslice2"
-           | [ "Eurydice" ], "slice_subslice3"
-           | [ "Eurydice" ], "slice_subslice_from"
-           | [ "Eurydice" ], "array_to_slice"
-           | [ "Eurydice" ], "array_to_subslice"
-           | [ "Eurydice" ], "array_to_subslice2"
-           | [ "Eurydice" ], "array_to_subslice3"
+           | [ "Eurydice" ], "slice_to_ref_array2"
+           | [ "Eurydice" ], "slice_subslice_shared"
+           | [ "Eurydice" ], "slice_subslice_mut"
+           | [ "Eurydice" ], "slice_subslice_to_shared"
+           | [ "Eurydice" ], "slice_subslice_to_mut"
+           | [ "Eurydice" ], "slice_subslice_from_shared"
+           | [ "Eurydice" ], "slice_subslice_from_mut"
+           | [ "Eurydice" ], "array_to_slice_shared"
+           | [ "Eurydice" ], "array_to_slice_mut"
+           | [ "Eurydice" ], "array_to_subslice_shared"
+           | [ "Eurydice" ], "array_to_subslice_mut"
            | [ "Eurydice" ], "array_repeat"
            | [ "core"; "mem" ], "size_of"
            | "core" :: "slice" :: _, "as_mut_ptr"
@@ -220,6 +218,7 @@ Supported options:|}
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
     fail __FILE__ __LINE__;
+  Eurydice.Logging.log "Phase2.11" "%a" pfiles files;
   let files = Eurydice.Cleanup2.improve_names files in
   let files = Eurydice.Cleanup2.recognize_asserts#visit_files () files in
   (* Temporary workaround until Aeneas supports nested loops *)
@@ -314,6 +313,7 @@ Supported options:|}
   let files, macros = Eurydice.Cleanup2.build_macros files in
 
   Eurydice.Logging.log "Phase3" "%a" pfiles files;
+  (* debug "checker"; *)
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
     fail __FILE__ __LINE__;
@@ -395,11 +395,12 @@ Supported options:|}
   let files = AstToCStar.mk_files files c_name_map Idents.LidSet.empty macros in
 
   (* Uncomment to debug C* AST *)
-  (* List.iter (fun (f, p) -> *)
-  (*   print_endline f; *)
-  (*   print_endline (CStar.show_program p ); *)
-  (*   print_endline "" *)
-  (* ) files; *)
+  (* List.iter *)
+  (*   (fun (f, p) -> *)
+  (*     print_endline f; *)
+  (*     print_endline (CStar.show_program p); *)
+  (*     print_endline "") *)
+  (*   files; *)
   let headers = CStarToC11.mk_headers c_name_map files in
   let deps = CStarToC11.drop_empty_headers deps headers in
   let internal_headers =

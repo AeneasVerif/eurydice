@@ -35,24 +35,24 @@ typedef uint8_t traits_Foo;
 /**
 This function found in impl {traits::ToInt for traits::Foo}
 */
-uint32_t traits_to_int_ac(traits_Foo *self);
+uint32_t traits_to_int_ac(const traits_Foo *self);
 
 /**
-A monomorphic instance of Eurydice.dst_ref
+A monomorphic instance of Eurydice.dst_ref_shared
 with types traits_Foo, size_t
 
 */
-typedef struct Eurydice_dst_ref_e2_s
+typedef struct Eurydice_dst_ref_shared_e2_s
 {
-  traits_Foo *ptr;
+  const traits_Foo *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_e2;
+Eurydice_dst_ref_shared_e2;
 
 /**
 This function found in impl {traits::ToInt for &0 (@Slice<traits::Foo>)}
 */
-uint32_t traits_to_int_88(Eurydice_dst_ref_e2 *self);
+uint32_t traits_to_int_88(const Eurydice_dst_ref_shared_e2 *self);
 
 /**
 A monomorphic instance of Eurydice.arr

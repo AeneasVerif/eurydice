@@ -18,7 +18,7 @@ extern "C" {
 /**
 This function found in impl {core::ops::function::Fn<(i32), i32> for closure_fn_cast::main::closure}
 */
-int32_t closure_fn_cast_main_call_fd(void **_, int32_t tupled_args);
+int32_t closure_fn_cast_main_call_fd(void *const *_, int32_t tupled_args);
 
 /**
 This function found in impl {core::ops::function::FnMut<(i32), i32> for closure_fn_cast::main::closure}
@@ -33,6 +33,11 @@ int32_t closure_fn_cast_main_call_once_fd(int32_t _);
 int32_t closure_fn_cast_main_closure_as_fn(int32_t arg1);
 
 void closure_fn_cast_main(void);
+
+extern void
+closure_fn_cast_main_closure__core__marker__Destruct_for_closure_fn_cast__main__closure__drop_in_place(
+  void **x0
+);
 
 #if defined(__cplusplus)
 }

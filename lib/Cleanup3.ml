@@ -106,17 +106,24 @@ let build_cg_macros =
         self#zero
   end
 
+let distinguished_names =
+  [
+    (B.arr, [ TInt UInt8 ], [ CgConst (SizeT, "2") ]), ([ "Eurydice" ], "array_u8x2");
+    (B.arr, [ TInt UInt8 ], [ CgConst (SizeT, "4") ]), ([ "Eurydice" ], "array_u8x4");
+    (B.arr, [ TInt UInt8 ], [ CgConst (SizeT, "8") ]), ([ "Eurydice" ], "array_u8x8");
+    (B.dst_ref_shared, [ TInt UInt8; TInt SizeT ], []), ([ "Eurydice" ], "borrow_slice_u8");
+    (B.dst_ref_shared, [ TInt Int16; TInt SizeT ], []), ([ "Eurydice" ], "borrow_slice_i16");
+    (B.dst_ref_mut, [ TInt UInt8; TInt SizeT ], []), ([ "Eurydice" ], "mut_borrow_slice_u8");
+    (B.dst_ref_mut, [ TInt Int16; TInt SizeT ], []), ([ "Eurydice" ], "mut_borrow_slice_i16");
+  ]
+
 (*This identifies the decls which should be generated after monomorphism, but is already defined
- in eurydice_glue.h for implementing the builtin functions. The slices are for libcrux *)
+ in eurydice_glue.h for implementing the builtin functions. The slices are for
+ libcrux, specifically to be able to define the intrinsic function signatures *)
 let is_builtin_lid lid =
   match lid with
-  | [ "Eurydice" ], "arr_c4" (* arr {data:[u8;8]}*)
-  | [ "Eurydice" ], "arr_e9" (* arr {data:[u8;4]}*)
-  | [ "Eurydice" ], "arr_8b" (* arr {data:[u8,2]}*)
-  | [ "Eurydice" ], "dst_ref_87" (* &slice<u8> *)
-  | [ "Eurydice" ], "dst_ref_9a" (* &slice<i16> *)
   | [ "Prims" ], "string" (* used to pass the checker, defined in glue.h *) -> true
-  | _ -> false
+  | _ -> List.exists (fun (_, lid') -> lid' = lid) distinguished_names
 
 let remove_builtin_decls files =
   let checker = function

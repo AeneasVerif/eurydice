@@ -66,18 +66,34 @@ using std::type_identity_t;
 
 // SLICES, ARRAYS, ETC.
 
-// We define several slice types in order to define builtin definitions for
-// libcrux
+// For convenience, we give these common slice types, below, a distinguished
+// status and rather than emit them in the client code, we skip their
+// code-generation in Cleanup3.ml and write them by hand here. This makes it
+// easy to write interop code that brings those definitions in scope.
 
-typedef struct Eurydice_dst_ref_87_s {
+// &[u8]
+typedef struct Eurydice_borrow_slice_u8_s {
+  const uint8_t *ptr;
+  size_t meta;
+} Eurydice_borrow_slice_u8;
+
+// &[u16]
+typedef struct Eurydice_borrow_slice_i16_s {
+  const int16_t *ptr;
+  size_t meta;
+} Eurydice_borrow_slice_i16;
+
+// &mut [u8]
+typedef struct Eurydice_mut_borrow_slice_u8_s {
   uint8_t *ptr;
   size_t meta;
-} Eurydice_dst_ref_87;
+} Eurydice_mut_borrow_slice_u8;
 
-typedef struct Eurydice_dst_ref_9a_s {
+// &mut [u16]
+typedef struct Eurydice_mut_borrow_slice_i16_s {
   int16_t *ptr;
   size_t meta;
-} Eurydice_dst_ref_9a;
+} Eurydice_mut_borrow_slice_i16;
 
 #if defined(__cplusplus)
 #define KRML_CLITERAL(type) type
@@ -96,7 +112,8 @@ typedef struct Eurydice_dst_ref_9a_s {
 #define EURYDICE_SLICE_LEN(s, _) (s).meta
 #define Eurydice_slice_len(s, _) (s).meta
 
-#define Eurydice_slice_index(s, i, t) ((s).ptr[i])
+#define Eurydice_slice_index_mut(s, i, t) ((s).ptr[i])
+#define Eurydice_slice_index_shared(s, i, t) ((s).ptr[i])
 
 #define Eurydice_array_repeat(dst, len, init, t)                               \
   ERROR "should've been desugared"
@@ -177,45 +194,50 @@ extern "C" {
 
 #define core_hint_black_box(X, _0, _1) (X)
 
-typedef struct Eurydice_arr_8b_s {
+// [ u8; 2 ]
+typedef struct Eurydice_array_u8x2_s {
   uint8_t data[2];
-} Eurydice_arr_8b;
-typedef struct Eurydice_arr_e9_s {
-  uint8_t data[4];
-} Eurydice_arr_e9;
-typedef struct Eurydice_arr_c4_s {
-  uint8_t data[8];
-} Eurydice_arr_c4;
+} Eurydice_array_u8x2;
 
-static inline uint16_t core_num__u16__from_le_bytes(Eurydice_arr_8b buf) {
+// [ u8; 4 ]
+typedef struct Eurydice_array_u8x4_s {
+  uint8_t data[4];
+} Eurydice_array_u8x4;
+
+// [ u8; 8 ]
+typedef struct Eurydice_array_u8x8_s {
+  uint8_t data[8];
+} Eurydice_array_u8x8;
+
+static inline uint16_t core_num__u16__from_le_bytes(Eurydice_array_u8x2 buf) {
   return load16_le(buf.data);
 }
 
-static inline Eurydice_arr_e9 core_num__u32__to_be_bytes(uint32_t src) {
+static inline Eurydice_array_u8x4 core_num__u32__to_be_bytes(uint32_t src) {
   // TODO: why not store32_be?
-  Eurydice_arr_e9 a;
+  Eurydice_array_u8x4 a;
   uint32_t x = htobe32(src);
   memcpy(a.data, &x, 4);
   return a;
 }
 
-static inline Eurydice_arr_e9 core_num__u32__to_le_bytes(uint32_t src) {
-  Eurydice_arr_e9 a;
+static inline Eurydice_array_u8x4 core_num__u32__to_le_bytes(uint32_t src) {
+  Eurydice_array_u8x4 a;
   store32_le(a.data, src);
   return a;
 }
 
-static inline uint32_t core_num__u32__from_le_bytes(Eurydice_arr_e9 buf) {
+static inline uint32_t core_num__u32__from_le_bytes(Eurydice_array_u8x4 buf) {
   return load32_le(buf.data);
 }
 
-static inline Eurydice_arr_c4 core_num__u64__to_le_bytes(uint64_t v) {
-  Eurydice_arr_c4 a;
+static inline Eurydice_array_u8x8 core_num__u64__to_le_bytes(uint64_t v) {
+  Eurydice_array_u8x8 a;
   store64_le(a.data, v);
   return a;
 }
 
-static inline uint64_t core_num__u64__from_le_bytes(Eurydice_arr_c4 buf) {
+static inline uint64_t core_num__u64__from_le_bytes(Eurydice_array_u8x8 buf) {
   return load64_le(buf.data);
 }
 

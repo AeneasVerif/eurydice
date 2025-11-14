@@ -100,24 +100,24 @@ uint64_t where_clauses_fncg_g_ec(void)
   return where_clauses_fncg_method_foo_db_7c();
 }
 
-typedef struct _uint64_t__x2_s
+typedef struct const_uint64_t__x2_s
 {
-  uint64_t *fst;
-  uint64_t *snd;
+  const uint64_t *fst;
+  const uint64_t *snd;
 }
-_uint64_t__x2;
+const_uint64_t__x2;
 
 void where_clauses_fncg_main(void)
 {
   uint64_t r = where_clauses_fncg_f_43();
   /* original Rust expression is not an lvalue in C */
   uint64_t lvalue0 = 0ULL;
-  _uint64_t__x2 uu____0 = { .fst = &r, .snd = &lvalue0 };
+  const_uint64_t__x2 uu____0 = { .fst = &r, .snd = &lvalue0 };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
   uint64_t r0 = where_clauses_fncg_g_ec();
   /* original Rust expression is not an lvalue in C */
   uint64_t lvalue = 0ULL;
-  _uint64_t__x2 uu____1 = { .fst = &r0, .snd = &lvalue };
+  const_uint64_t__x2 uu____1 = { .fst = &r0, .snd = &lvalue };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 

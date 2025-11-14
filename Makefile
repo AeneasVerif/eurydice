@@ -48,7 +48,7 @@ build: check-karamel check-charon
 CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
 CXXFLAGS	:= -std=c++17
 
-test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result check-charon check-libcrux test-libcrux
+test: $(addprefix test-,$(TEST_DIRS)) custom-test-array custom-test-for testxx-result check-charon check-libcrux test-libcrux
 
 clean-and-test:
 	$(MAKE) clean-llbc
@@ -86,6 +86,8 @@ test/println.llbc: CHARON_EXTRA = \
 test/option.llbc: CHARON_EXTRA = \
   --include=core::option::*
 
+test-substr: EXTRA_C = -I../../test ../../test/substr_impl.c
+test-substr: EXTRA = --config test/substr.yaml
 test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c
 test-nested_arrays: EXTRA = -funroll-loops 0
 test-array: EXTRA = -fcomments
@@ -118,6 +120,9 @@ custom-test-array: test-array
 	grep -q XXX1 out/test-array/array.c && \
 	grep -q XXX2 out/test-array/array.c && \
 	true
+
+custom-test-for: test-for
+	! grep -q while out/test-for/for.c
 
 # libcrux tests
 
