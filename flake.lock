@@ -451,11 +451,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1763137518,
-        "narHash": "sha256-/ZztKIVM3x+yw3kPvjitNe1yakTPzUEeRoEwGkS+YbQ=",
+        "lastModified": 1763138412,
+        "narHash": "sha256-xRgZdmWLst2m1FQj8LnD4WqSbbOpS4SsKtJZt53Ef3A=",
         "owner": "fstarlang",
         "repo": "karamel",
-        "rev": "cc9d8f6772122dc5716a4284594c2d70df81b330",
+        "rev": "0fd7ab47dea400421e2503a7591388ed0593aa45",
         "type": "github"
       },
       "original": {
