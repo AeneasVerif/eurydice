@@ -1805,14 +1805,10 @@ libcrux_sha3_generic_keccak_portable_keccak1_96(
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_8e lvalue = { .data = { data } };
   libcrux_sha3_generic_keccak_absorb_final_80_9e(&s, &lvalue, data_len - rem, rem);
-  Eurydice_mut_borrow_slice_u8 reborrowed_slice = out;
   size_t
   outlen =
     Eurydice_slice_len((
-        KRML_CLITERAL(Eurydice_borrow_slice_u8){
-          .ptr = reborrowed_slice.ptr,
-          .meta = reborrowed_slice.meta
-        }
+        KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = out.ptr, .meta = out.meta }
       ),
       uint8_t);
   size_t blocks = outlen / (size_t)72U;
@@ -2103,14 +2099,10 @@ libcrux_sha3_generic_keccak_portable_keccak1_ad(
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_8e lvalue = { .data = { data } };
   libcrux_sha3_generic_keccak_absorb_final_80_9e0(&s, &lvalue, data_len - rem, rem);
-  Eurydice_mut_borrow_slice_u8 reborrowed_slice = out;
   size_t
   outlen =
     Eurydice_slice_len((
-        KRML_CLITERAL(Eurydice_borrow_slice_u8){
-          .ptr = reborrowed_slice.ptr,
-          .meta = reborrowed_slice.meta
-        }
+        KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = out.ptr, .meta = out.meta }
       ),
       uint8_t);
   size_t blocks = outlen / (size_t)136U;
@@ -2244,14 +2236,10 @@ libcrux_sha3_generic_keccak_portable_keccak1_ad0(
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_8e lvalue = { .data = { data } };
   libcrux_sha3_generic_keccak_absorb_final_80_9e1(&s, &lvalue, data_len - rem, rem);
-  Eurydice_mut_borrow_slice_u8 reborrowed_slice = out;
   size_t
   outlen =
     Eurydice_slice_len((
-        KRML_CLITERAL(Eurydice_borrow_slice_u8){
-          .ptr = reborrowed_slice.ptr,
-          .meta = reborrowed_slice.meta
-        }
+        KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = out.ptr, .meta = out.meta }
       ),
       uint8_t);
   size_t blocks = outlen / (size_t)136U;
@@ -2854,14 +2842,10 @@ libcrux_sha3_generic_keccak_portable_keccak1_1e(
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_8e lvalue = { .data = { data } };
   libcrux_sha3_generic_keccak_absorb_final_80_9e3(&s, &lvalue, data_len - rem, rem);
-  Eurydice_mut_borrow_slice_u8 reborrowed_slice = out;
   size_t
   outlen =
     Eurydice_slice_len((
-        KRML_CLITERAL(Eurydice_borrow_slice_u8){
-          .ptr = reborrowed_slice.ptr,
-          .meta = reborrowed_slice.meta
-        }
+        KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = out.ptr, .meta = out.meta }
       ),
       uint8_t);
   size_t blocks = outlen / (size_t)144U;
@@ -3152,14 +3136,10 @@ libcrux_sha3_generic_keccak_portable_keccak1_7c(
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_8e lvalue = { .data = { data } };
   libcrux_sha3_generic_keccak_absorb_final_80_9e4(&s, &lvalue, data_len - rem, rem);
-  Eurydice_mut_borrow_slice_u8 reborrowed_slice = out;
   size_t
   outlen =
     Eurydice_slice_len((
-        KRML_CLITERAL(Eurydice_borrow_slice_u8){
-          .ptr = reborrowed_slice.ptr,
-          .meta = reborrowed_slice.meta
-        }
+        KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = out.ptr, .meta = out.meta }
       ),
       uint8_t);
   size_t blocks = outlen / (size_t)104U;
@@ -3340,14 +3320,10 @@ libcrux_sha3_generic_keccak_portable_keccak1_c6(
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_8e lvalue = { .data = { data } };
   libcrux_sha3_generic_keccak_absorb_final_80_9e2(&s, &lvalue, data_len - rem, rem);
-  Eurydice_mut_borrow_slice_u8 reborrowed_slice = out;
   size_t
   outlen =
     Eurydice_slice_len((
-        KRML_CLITERAL(Eurydice_borrow_slice_u8){
-          .ptr = reborrowed_slice.ptr,
-          .meta = reborrowed_slice.meta
-        }
+        KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = out.ptr, .meta = out.meta }
       ),
       uint8_t);
   size_t blocks = outlen / (size_t)168U;
