@@ -1,11 +1,11 @@
 enum Struct {
-  A(u8),
+  A(Vec<u8>),
   B(Box<i32>),
   C
 }
 enum ThreeWays {
   Middle(i32),
-  Left(u8),
+  Left(Vec<u8>),
   Right(Box<f64>),
 }
 fn use_struct(s: ThreeWays) -> Struct {
@@ -16,3 +16,4 @@ fn use_struct(s: ThreeWays) -> Struct {
   }
 }
 fn main() { }
+
