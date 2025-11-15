@@ -1774,6 +1774,9 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
           fail "expression_of_operand Constant: %s"
             (Charon.PrintExpressions.operand_to_string env.format_env op)
     end
+  | Constant { kind = COpaque reason; ty } ->
+      let typ = typ_of_ty env ty in
+      Builtin.opaque_with_reason typ reason
   | Constant _ ->
       fail "expression_of_operand: %s" (Charon.PrintExpressions.operand_to_string env.format_env op)
 
@@ -1888,10 +1891,14 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       mk_reference ~const:(const_of_ref_kind rk) e metadata
   | NullaryOp (SizeOf, ty) ->
       let t = typ_of_ty env ty in
-      K.(with_type TBool (EApp (Builtin.(expr_of_builtin_t sizeof [ t ]), [])))
+      K.(
+        with_type (TInt SizeT)
+          (EApp (Builtin.(expr_of_builtin_t sizeof [ t ]), [ Krml.Helpers.eunit ])))
   | NullaryOp (AlignOf, ty) ->
       let t = typ_of_ty env ty in
-      K.(with_type TBool (EApp (Builtin.(expr_of_builtin_t alignof [ t ]), [])))
+      K.(
+        with_type (TInt SizeT)
+          (EApp (Builtin.(expr_of_builtin_t alignof [ t ]), [ Krml.Helpers.eunit ])))
   | UnaryOp (Cast (CastScalar (_, dst)), e) ->
       let dst = typ_of_literal_ty env dst in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
@@ -1954,6 +1961,47 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
                 (K.ETApp (array_to_slice, [ len ], [], [ t ]))
             in
             K.(with_type (Builtin.mk_slice ~const t) (EApp (array_to_slice, [ e ])))
+        | MetaVTablePtr trait_ref, TBuf (_, const), _ ->
+            (* Cast from T<Sized> to T<Unsized> where Unsized is a user-defined DST.
+               We build the vtable pointer for the trait object here. *)
+            (* TODO: I'm not sure whether this should be for vtable instance for now *)
+            let vtable_ptr =
+              let vtable_instance =
+                match trait_ref.kind with
+                | TraitImpl { id; generics } ->
+                    let trait_impl = env.get_nth_trait_impl id in
+                    begin
+                      match trait_impl.vtable with
+                      | Some instance -> { instance with C.generics }
+                      | None -> failwith "Trait impl has no vtable instance"
+                    end
+                | _ -> failwith "unsupported trait_ref kind in unsize cast"
+              in
+              let instance_def = env.get_nth_global vtable_instance.C.id in
+              let instance_ty =
+                let subst =
+                  Charon.Substitute.make_subst_from_generics instance_def.generics
+                    vtable_instance.generics
+                in
+                let real_ty = Charon.Substitute.(ty_substitute subst instance_def.ty) in
+                typ_of_ty env real_ty
+              in
+              let vtable_instance =
+                K.with_type instance_ty (K.EQualified (lid_of_name env instance_def.item_meta.name))
+              in
+              addrof ~const vtable_instance
+            in
+            let coercion =
+              K.with_type
+                (K.TBuf (Builtin.c_void_t, false))
+                (K.ECast (e, K.TBuf (Builtin.c_void_t, false)))
+            in
+            (* Do not use `mk_reference` here,
+               as `e` itself is already the target, not its reference *)
+            K.(
+              with_type
+                (Builtin.mk_dst_ref ~const Builtin.c_void_t vtable_ptr.typ)
+                (EFlat [ Some "ptr", coercion; Some "meta", vtable_ptr ]))
         | _, _, _ ->
             Krml.KPrint.bprintf "t_to = %a\n" ptyp t_to;
             Krml.KPrint.bprintf "destruct_arr_dst_ref t_to = None? %b\n"
@@ -2689,7 +2737,8 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
                        body ))))
   | IdGlobal id ->
       let global = env.get_nth_global id in
-      let { C.item_meta; ty; def_id; _ } = global in
+      let { C.item_meta; generics; ty; def_id; _ } = global in
+      let env = { env with generic_params = generics } in
       let name = item_meta.name in
       let def = env.get_nth_global def_id in
       L.log "AstOfLlbc" "Visiting global: %s\n%s" (string_of_name env name)
@@ -2716,18 +2765,34 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
             []
       in
       let body = env.get_nth_function def.init in
+      let env = push_cg_binders env generics.const_generics in
+      let env = push_type_binders env generics.types in
       L.log "AstOfLlbc" "Corresponding body:%s"
         (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " body);
       begin
         match body.body with
         | Some body ->
+            if List.length generics.const_generics <> 0 then
+              fail
+                "Global variables with const generics are not supported, please consider using \
+                 mono LLBC: %s"
+                (string_of_name env name);
             let ret_var = List.hd body.locals.locals in
             let body =
               with_locals env ty body.locals.locals (fun env ->
                   expression_of_block env ret_var.index body.body)
             in
-            Some (K.DGlobal (flags, lid_of_name env name, 0, ty, body))
-        | None -> Some (K.DExternal (None, [], 0, 0, lid_of_name env name, ty, []))
+            Some (K.DGlobal (flags, lid_of_name env name, List.length generics.types, ty, body))
+        | None ->
+            Some
+              (K.DExternal
+                 ( None,
+                   [],
+                   List.length generics.const_generics,
+                   List.length generics.types,
+                   lid_of_name env name,
+                   ty,
+                   [] ))
       end
   | IdTraitDecl _ | IdTraitImpl _ -> None
 
