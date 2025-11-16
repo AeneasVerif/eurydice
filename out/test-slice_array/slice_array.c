@@ -57,14 +57,10 @@ void slice_array_f2(void)
       (size_t)2U,
       Eurydice_array_u8x4,
       Eurydice_dst_ref_mut_Eurydice_arr_uint8_t___4size_t___size_t_x2).fst;
-  Eurydice_dst_ref_mut_d0 reborrowed_slice = y0;
   Eurydice_array_u8x4
   z =
     Eurydice_slice_index_shared((
-        KRML_CLITERAL(Eurydice_dst_ref_shared_d0){
-          .ptr = reborrowed_slice.ptr,
-          .meta = reborrowed_slice.meta
-        }
+        KRML_CLITERAL(Eurydice_dst_ref_shared_d0){ .ptr = y0.ptr, .meta = y0.meta }
       ),
       (size_t)0U,
       Eurydice_array_u8x4);
