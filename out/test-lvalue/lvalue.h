@@ -25,7 +25,7 @@ typedef struct lvalue_Struct_s
 {
   lvalue_Struct_tags tag;
   union {
-    uint8_t case_A;
+    Eurydice_vec case_A;
     int32_t *case_B;
   }
   val;
@@ -43,7 +43,7 @@ typedef struct lvalue_ThreeWays_s
   lvalue_ThreeWays_tags tag;
   union {
     int32_t case_Middle;
-    uint8_t case_Left;
+    Eurydice_vec case_Left;
     float64_t *case_Right;
   }
   val;
