@@ -86,6 +86,9 @@ test/println.llbc: CHARON_EXTRA = \
 test/option.llbc: CHARON_EXTRA = \
   --include=core::option::*
 
+test/lvalue.llbc: CHARON_EXTRA = \
+  --mir elaborated
+
 test-substr: EXTRA_C = -I../../test ../../test/substr_impl.c
 test-substr: EXTRA = --config test/substr.yaml
 test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c
@@ -95,6 +98,7 @@ test-symcrust: CFLAGS += -Wno-unused-function
 test-more_str: EXTRA_C = ../../test/core_str_lib.c
 test-more_primitive_types: EXTRA = --config test/more_primitive_types.yaml
 test-global_ref: EXTRA_C = ../../test/core_cmp_lib.c
+test-lvalue: CFLAGS += -Wno-unused-but-set-variable
 
 
 test-%: test/%.llbc out/test-%/main.c | all
