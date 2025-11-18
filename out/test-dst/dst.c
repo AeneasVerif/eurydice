@@ -133,12 +133,9 @@ void dst_check_var_field_ref3(Eurydice_dst_ref_shared_fd x)
 void dst_main3(void)
 {
   Eurydice_dst_ref_mut_fd x = dst_alloc3();
-  Eurydice_dst_ref_mut_fd reborrowed_slice = x;
+  const Eurydice_dst_ref_mut_fd *uu____0 = &x;
   dst_check_var_field_ref3((
-      KRML_CLITERAL(Eurydice_dst_ref_shared_fd){
-        .ptr = reborrowed_slice.ptr,
-        .meta = reborrowed_slice.meta
-      }
+      KRML_CLITERAL(Eurydice_dst_ref_shared_fd){ .ptr = uu____0->ptr, .meta = uu____0->meta }
     ));
 }
 
@@ -176,17 +173,13 @@ void dst_main4(void)
     array_to_slice_mut_ad(Eurydice_box_new((KRML_CLITERAL(Eurydice_arr_0d){ .data = { 0U } }),
         Eurydice_arr_0d,
         Eurydice_arr_0d *));
-  Eurydice_dst_ref_mut_3c reborrowed_slice = x;
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
   const_uint32_t__x2
   uu____0 =
     {
       .fst = &Eurydice_slice_index_shared((
-          KRML_CLITERAL(Eurydice_dst_ref_shared_3c){
-            .ptr = reborrowed_slice.ptr,
-            .meta = reborrowed_slice.meta
-          }
+          KRML_CLITERAL(Eurydice_dst_ref_shared_3c){ .ptr = x.ptr, .meta = x.meta }
         ),
         (size_t)3U,
         uint32_t),

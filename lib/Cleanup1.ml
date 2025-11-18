@@ -201,7 +201,7 @@ let remove_assignments =
               in
               let not_yet_closed = AtomMap.remove atom not_yet_closed in
               (* Krml.(KPrint.bprintf "rebuilt: %a\n" PrintAst.Ops.pexpr (with_type TUnit (ELet (b, e_rhs, e2)))); *)
-              let e2 = self#visit_expr_w not_yet_closed (close_binder b e2) in
+              let e2 = recurse_or_close not_yet_closed (close_binder b e2) in
               ELet (b, e_rhs, e2))
       | EIfThenElse (e, e', e'') ->
           assert (is_sequence b.node.meta);

@@ -1840,19 +1840,22 @@ let maybe_reborrow_slice t_dst e_src =
   match e_src.typ, t_dst with
   | TApp (hd1, [ t_ptr; t_meta ]), TApp (hd2, _) when is_dst_ref hd1 && is_dst_ref hd2 && hd1 <> hd2
     ->
-      with_type t_dst
-        (ELet
-           ( Krml.Helpers.fresh_binder "reborrowed_slice" e_src.typ,
-             e_src,
-             with_type t_dst
-               (EFlat
-                  [
-                    ( Some "ptr",
-                      with_type
-                        (TBuf (t_ptr, true))
-                        (EField (with_type e_src.typ (EBound 0), "ptr")) );
-                    Some "meta", with_type t_meta (EField (with_type e_src.typ (EBound 0), "meta"));
-                  ]) ))
+      let mk e =
+        with_type t_dst
+          (EFlat
+             [
+               Some "ptr", with_type (TBuf (t_ptr, true)) (EField (e, "ptr"));
+               Some "meta", with_type t_meta (EField (e, "meta"));
+             ])
+      in
+      if Krml.Helpers.is_readonly_c_expression e_src then
+        mk e_src
+      else
+        with_type t_dst
+          (ELet
+             ( Krml.Helpers.fresh_binder "reborrowed_slice" e_src.typ,
+               e_src,
+               mk (with_type e_src.typ (EBound 0)) ))
   | _ -> e_src
 
 let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =

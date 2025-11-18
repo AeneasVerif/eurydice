@@ -2029,14 +2029,10 @@ keccak4_ad(
   }
   size_t rem = data_len % (size_t)136U;
   absorb_final_80_fb(&s, data, data_len - rem, rem);
-  Eurydice_mut_borrow_slice_u8 reborrowed_slice = out0;
   size_t
   outlen =
     Eurydice_slice_len((
-        KRML_CLITERAL(Eurydice_borrow_slice_u8){
-          .ptr = reborrowed_slice.ptr,
-          .meta = reborrowed_slice.meta
-        }
+        KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = out0.ptr, .meta = out0.meta }
       ),
       uint8_t);
   size_t blocks = outlen / (size_t)136U;
