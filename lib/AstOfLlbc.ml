@@ -547,8 +547,8 @@ and ptr_typ_of_ty (env : env) ~const (ty : Charon.Types.ty) : K.typ =
   | TAdt { id = TBuiltin TStr; _ } -> Builtin.str_t ~const
   (* Special case to handle DynTrait *)
   | TDynTrait pred ->
-      let const = false in
-      Builtin.mk_dst_ref ~const Builtin.c_void_t (K.TBuf (vtable_typ_of_dyn_pred env pred, false))
+      Builtin.mk_dst_ref ~const:false Builtin.c_void_t
+        (K.TBuf (vtable_typ_of_dyn_pred env pred, false))
   (* General case, all &T is turned to either thin T* or fat Eurydice::DstRef<T,Meta> *)
   | _ -> (
       let typ = typ_of_ty env ty in
@@ -1963,7 +1963,6 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
             in
             K.(with_type (Builtin.mk_slice ~const t) (EApp (array_to_slice, [ e ])))
         | MetaVTablePtr trait_ref, TBuf (_, _), _ ->
-            let const = false in
             (* Cast from T<Sized> to T<Unsized> where Unsized is a user-defined DST.
                We build the vtable pointer for the trait object here. *)
             (* TODO: I'm not sure whether this should be for vtable instance for now *)
@@ -1991,7 +1990,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
               let vtable_instance =
                 K.with_type instance_ty (K.EQualified (lid_of_name env instance_def.item_meta.name))
               in
-              addrof ~const vtable_instance
+              addrof ~const:false vtable_instance
             in
             let coercion =
               K.with_type
@@ -2002,7 +2001,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
                as `e` itself is already the target, not its reference *)
             K.(
               with_type
-                (Builtin.mk_dst_ref ~const Builtin.c_void_t vtable_ptr.typ)
+                (Builtin.mk_dst_ref ~const:false Builtin.c_void_t vtable_ptr.typ)
                 (EFlat [ Some "ptr", coercion; Some "meta", vtable_ptr ]))
         | _, _, _ ->
             Krml.KPrint.bprintf "t_to = %a\n" ptyp t_to;
