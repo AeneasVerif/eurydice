@@ -22,11 +22,11 @@ typedef uint8_t core_result_Result_10;
 
 extern core_result_Result_10
 core_array__core__fmt__Debug_for_core__array__TryFromSliceError__fmt(
-  core_array_TryFromSliceError *x0,
+  const core_array_TryFromSliceError *x0,
   core_fmt_Formatter *x1
 );
 
-extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(uint8_t *x0);
+extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(const uint8_t *x0);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -63,6 +63,18 @@ Eurydice_dst_ref_mut_Eurydice_arr_uint8_t___4size_t___size_t_x2;
 
 void slice_array_f1(void);
 
+/**
+A monomorphic instance of Eurydice.dst_ref_shared
+with types Eurydice_arr uint8_t[[$4size_t]], size_t
+
+*/
+typedef struct Eurydice_dst_ref_shared_d0_s
+{
+  const Eurydice_array_u8x4 *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_shared_d0;
+
 void slice_array_f2(void);
 
 /**
@@ -83,19 +95,19 @@ core_result_Result_44;
 
 /**
 A monomorphic instance of core.result.Result
-with types  Eurydice_arr uint8_t[[$4size_t]]*, core_array_TryFromSliceError
+with types const Eurydice_arr uint8_t[[$4size_t]]*, core_array_TryFromSliceError
 
 */
-typedef struct core_result_Result_3c_s
+typedef struct core_result_Result_63_s
 {
   core_result_Result_10 tag;
   union {
-    Eurydice_array_u8x4 *case_Ok;
+    const Eurydice_array_u8x4 *case_Ok;
     core_array_TryFromSliceError case_Err;
   }
   val;
 }
-core_result_Result_3c;
+core_result_Result_63;
 
 void slice_array_f3(void);
 

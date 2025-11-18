@@ -23,12 +23,12 @@ uint8_t issue_104_call(void)
   return issue_104_sth_50();
 }
 
-typedef struct _uint8_t__x2_s
+typedef struct const_uint8_t__x2_s
 {
-  uint8_t *fst;
-  uint8_t *snd;
+  const uint8_t *fst;
+  const uint8_t *snd;
 }
-_uint8_t__x2;
+const_uint8_t__x2;
 
 void issue_104_main(void)
 {
@@ -36,7 +36,7 @@ void issue_104_main(void)
   uint8_t lvalue0 = issue_104_call();
   /* original Rust expression is not an lvalue in C */
   uint8_t lvalue = 5U;
-  _uint8_t__x2 uu____0 = { .fst = &lvalue0, .snd = &lvalue };
+  const_uint8_t__x2 uu____0 = { .fst = &lvalue0, .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 

@@ -23,12 +23,12 @@ with const generics
 */
 typedef struct Eurydice_arr_e4_s { size_t data[1U]; } Eurydice_arr_e4;
 
-typedef Eurydice_arr_e4 *closure_f_closure;
+typedef const Eurydice_arr_e4 *closure_f_closure;
 
 typedef struct closure_f_closure_closure_s
 {
-  Eurydice_arr_e4 *fst;
-  size_t *snd;
+  const Eurydice_arr_e4 *fst;
+  const size_t *snd;
 }
 closure_f_closure_closure;
 
@@ -45,12 +45,12 @@ size_t closure_f_closure_call_once_b7(closure_f_closure_closure _, size_t _0);
 /**
 This function found in impl {core::ops::function::FnMut<(usize), @Array<usize, 1usize>> for closure::f::closure<0>}
 */
-Eurydice_arr_e4 closure_f_call_mut_59(Eurydice_arr_e4 **_, size_t tupled_args);
+Eurydice_arr_e4 closure_f_call_mut_59(const Eurydice_arr_e4 **_, size_t tupled_args);
 
 /**
 This function found in impl {core::ops::function::FnOnce<(usize), @Array<usize, 1usize>> for closure::f::closure<0>}
 */
-Eurydice_arr_e4 closure_f_call_once_71(Eurydice_arr_e4 *_, size_t _0);
+Eurydice_arr_e4 closure_f_call_once_71(const Eurydice_arr_e4 *_, size_t _0);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -77,7 +77,7 @@ closure_f_closure_closure__core__marker__Destruct_for_closure__f__closure__closu
 
 extern void
 closure_f_closure__core__marker__Destruct_for_closure__f__closure_0___drop_in_place(
-  Eurydice_arr_e4 **x0
+  const Eurydice_arr_e4 **x0
 );
 
 #if defined(__cplusplus)

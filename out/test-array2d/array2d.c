@@ -23,12 +23,12 @@ bool array2d_f(Eurydice_arr_c0 x)
   return Eurydice_array_eq((size_t)4U, &x, &y, Eurydice_arr_b2);
 }
 
-typedef struct _bool__x2_s
+typedef struct const_bool__x2_s
 {
-  bool *fst;
-  bool *snd;
+  const bool *fst;
+  const bool *snd;
 }
-_bool__x2;
+const_bool__x2;
 
 void array2d_main(void)
 {
@@ -44,7 +44,7 @@ void array2d_main(void)
   y.data[3U] = (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 3U, 4U } });
   bool actual = array2d_f(y);
   bool expected = true;
-  _bool__x2 uu____0 = { .fst = &actual, .snd = &expected };
+  const_bool__x2 uu____0 = { .fst = &actual, .snd = &expected };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 

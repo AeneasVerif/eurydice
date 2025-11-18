@@ -12,7 +12,7 @@ void for_main(void)
 
 }
 
-uint8_t for_other(Eurydice_mut_borrow_slice_u8 input)
+uint8_t for_other(Eurydice_borrow_slice_u8 input)
 {
   for (int32_t i = (int32_t)0; i < (int32_t)5; i++)
   {
@@ -23,6 +23,6 @@ uint8_t for_other(Eurydice_mut_borrow_slice_u8 input)
     }
     return 6U;
   }
-  return Eurydice_slice_index_mut(input, (size_t)0U, uint8_t);
+  return Eurydice_slice_index_shared(input, (size_t)0U, uint8_t);
 }
 

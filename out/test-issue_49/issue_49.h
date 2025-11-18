@@ -38,14 +38,19 @@ typedef struct core_option_Option_77_s
 }
 core_option_Option_77;
 
-extern core_cmp_Ordering core_cmp_impls__core__cmp__Ord_for_usize__cmp(size_t *x0, size_t *x1);
+extern core_cmp_Ordering
+core_cmp_impls__core__cmp__Ord_for_usize__cmp(const size_t *x0, const size_t *x1);
 
 extern size_t core_cmp_impls__core__cmp__Ord_for_usize__min(size_t x0, size_t x1);
 
-extern bool core_cmp_impls__core__cmp__PartialEq_usize__for_usize__eq(size_t *x0, size_t *x1);
+extern bool
+core_cmp_impls__core__cmp__PartialEq_usize__for_usize__eq(const size_t *x0, const size_t *x1);
 
 extern core_option_Option_77
-core_cmp_impls__core__cmp__PartialOrd_usize__for_usize__partial_cmp(size_t *x0, size_t *x1);
+core_cmp_impls__core__cmp__PartialOrd_usize__for_usize__partial_cmp(
+  const size_t *x0,
+  const size_t *x1
+);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1

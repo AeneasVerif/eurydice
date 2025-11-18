@@ -10,7 +10,7 @@
 /**
 This function found in impl {core::ops::function::Fn<(i32), i32> for closure_fn_cast::main::closure}
 */
-int32_t closure_fn_cast_main_call_fd(void **_, int32_t tupled_args)
+int32_t closure_fn_cast_main_call_fd(void *const *_, int32_t tupled_args)
 {
   int32_t x = tupled_args;
   return x + (int32_t)42;

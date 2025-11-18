@@ -48,15 +48,15 @@ void option_main(void);
 
 /**
 A monomorphic instance of core.option.Option
-with types  Eurydice_arr uint8_t[[$16size_t]]*
+with types const Eurydice_arr uint8_t[[$16size_t]]*
 
 */
-typedef struct core_option_Option_18_s
+typedef struct core_option_Option_e9_s
 {
   core_option_Option_62_tags tag;
-  Eurydice_arr_88 *f0;
+  const Eurydice_arr_88 *f0;
 }
-core_option_Option_18;
+core_option_Option_e9;
 
 /**
  Converts from `&Option<T>` to `Option<&T>`.
@@ -88,12 +88,12 @@ A monomorphic instance of core.option.as_ref_cd
 with types Eurydice_arr uint8_t[[$16size_t]]
 
 */
-core_option_Option_18 core_option_as_ref_cd_ca(core_option_Option_62 *self);
+core_option_Option_e9 core_option_as_ref_cd_ca(const core_option_Option_62 *self);
 
 /**
 This function found in impl {option::S}
 */
-core_option_Option_18 option_option_ref_b6(core_option_Option_62 *self);
+core_option_Option_e9 option_option_ref_b6(const core_option_Option_62 *self);
 
 #if defined(__cplusplus)
 }

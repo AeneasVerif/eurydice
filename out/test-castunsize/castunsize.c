@@ -7,25 +7,25 @@
 
 #include "castunsize.h"
 
-typedef struct _uint32_t__x2_s
+typedef struct const_uint32_t__x2_s
 {
-  uint32_t *fst;
-  uint32_t *snd;
+  const uint32_t *fst;
+  const uint32_t *snd;
 }
-_uint32_t__x2;
+const_uint32_t__x2;
 
 void castunsize_main1(void)
 {
   castunsize_S_64 x = { .foo = 0U, .my_data = { .data = { 0U } } };
-  Eurydice_dst_ref_mut_5e x0 = { .ptr = (castunsize_T *)&x, .meta = (size_t)4U };
+  Eurydice_dst_ref_shared_5e x0 = { .ptr = (const castunsize_T *)&x, .meta = (size_t)4U };
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
-  _uint32_t__x2
+  const_uint32_t__x2
   uu____0 =
     {
-      .fst = &Eurydice_slice_index_mut((
-          KRML_CLITERAL(Eurydice_dst_ref_mut_3c){
-            .ptr = (uint32_t *)x0.ptr->my_data,
+      .fst = &Eurydice_slice_index_shared((
+          KRML_CLITERAL(Eurydice_dst_ref_shared_3c){
+            .ptr = (const uint32_t *)x0.ptr->my_data,
             .meta = x0.meta
           }
         ),
@@ -59,8 +59,16 @@ void castunsize_main3(void)
         Eurydice_arr_0d *));
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
-  _uint32_t__x2
-  uu____0 = { .fst = &Eurydice_slice_index_mut(x, (size_t)3U, uint32_t), .snd = &lvalue };
+  const_uint32_t__x2
+  uu____0 =
+    {
+      .fst = &Eurydice_slice_index_shared((
+          KRML_CLITERAL(Eurydice_dst_ref_shared_3c){ .ptr = x.ptr, .meta = x.meta }
+        ),
+        (size_t)3U,
+        uint32_t),
+      .snd = &lvalue
+    };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
@@ -72,15 +80,15 @@ with const generics
 void castunsize_main2_c9(void)
 {
   castunsize_S_dd x = { .foo = 0U, .my_data = { .data = { 0U } } };
-  Eurydice_dst_ref_mut_5e x0 = { .ptr = (castunsize_T *)&x, .meta = (size_t)5U };
+  Eurydice_dst_ref_shared_5e x0 = { .ptr = (const castunsize_T *)&x, .meta = (size_t)5U };
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
-  _uint32_t__x2
+  const_uint32_t__x2
   uu____0 =
     {
-      .fst = &Eurydice_slice_index_mut((
-          KRML_CLITERAL(Eurydice_dst_ref_mut_3c){
-            .ptr = (uint32_t *)x0.ptr->my_data,
+      .fst = &Eurydice_slice_index_shared((
+          KRML_CLITERAL(Eurydice_dst_ref_shared_3c){
+            .ptr = (const uint32_t *)x0.ptr->my_data,
             .meta = x0.meta
           }
         ),
@@ -119,8 +127,16 @@ void castunsize_main4_c9(void)
         Eurydice_arr_88 *));
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
-  _uint32_t__x2
-  uu____0 = { .fst = &Eurydice_slice_index_mut(x, (size_t)3U, uint32_t), .snd = &lvalue };
+  const_uint32_t__x2
+  uu____0 =
+    {
+      .fst = &Eurydice_slice_index_shared((
+          KRML_CLITERAL(Eurydice_dst_ref_shared_3c){ .ptr = x.ptr, .meta = x.meta }
+        ),
+        (size_t)3U,
+        uint32_t),
+      .snd = &lvalue
+    };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
