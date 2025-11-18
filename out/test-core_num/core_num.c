@@ -7,19 +7,19 @@
 
 #include "core_num.h"
 
-typedef struct const_uint32_t__x2_s
+typedef struct _uint32_t__x2_s
 {
-  const uint32_t *fst;
-  const uint32_t *snd;
+  uint32_t *fst;
+  uint32_t *snd;
 }
-const_uint32_t__x2;
+_uint32_t__x2;
 
 void core_num_main(void)
 {
   uint32_t x = CORE_NUM__U32__BITS;
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 32U;
-  const_uint32_t__x2 uu____0 = { .fst = &x, .snd = &lvalue };
+  _uint32_t__x2 uu____0 = { .fst = &x, .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 

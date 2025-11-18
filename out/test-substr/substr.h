@@ -18,18 +18,18 @@ extern "C" {
 #include "substr_stubs.h"
 
 /**
-A monomorphic instance of Eurydice.dst_ref_shared
+A monomorphic instance of Eurydice.dst_ref_mut
 with types Eurydice_c_char_t, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_65_s
+typedef struct Eurydice_dst_ref_mut_65_s
 {
-  const Eurydice_c_char_t *ptr;
+  Eurydice_c_char_t *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_65;
+Eurydice_dst_ref_mut_65;
 
-extern size_t core_str__str__len(Eurydice_dst_ref_shared_65 x0);
+extern size_t core_str__str__len(Eurydice_dst_ref_mut_65 x0);
 
 void substr_main(void);
 

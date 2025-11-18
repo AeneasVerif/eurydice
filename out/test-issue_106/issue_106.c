@@ -17,7 +17,7 @@ void issue_106_main(void)
 
 }
 
-uint8_t issue_106_use_it(const uint8_t *x)
+uint8_t issue_106_use_it(uint8_t *x)
 {
   return x[0U];
 }

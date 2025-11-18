@@ -102,7 +102,7 @@ test-lvalue: CFLAGS += -Wno-unused-but-set-variable
 
 
 test-%: test/%.llbc out/test-%/main.c | all
-	$(EURYDICE) $(EXTRA) --output out/test-$* $<
+	$(EURYDICE) $(EXTRA) --no-const --output out/test-$* $<
 	$(SED) -i 's/  KaRaMeL version: .*//' out/test-$*/**/*.{c,h} # This changes on every commit
 	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-$*/**/*.{c,h} # This changes between local and CI
 	cd out/test-$* && $(CC) $(CFLAGS) -I. -I../../include $(EXTRA_C) $*.c main.c && ./a.out

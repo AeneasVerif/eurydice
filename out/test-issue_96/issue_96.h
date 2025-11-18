@@ -32,9 +32,9 @@ typedef struct issue_96_MyStruct2_s
 }
 issue_96_MyStruct2;
 
-void issue_96_use_it(const Eurydice_arr_3f *x);
+void issue_96_use_it(Eurydice_arr_3f *x);
 
-void issue_96_use_it2(const issue_96_MyStruct2 *x);
+void issue_96_use_it2(issue_96_MyStruct2 *x);
 
 void issue_96_main(void);
 

@@ -21,7 +21,7 @@ uint8_t issue_106_generate(void);
 
 void issue_106_main(void);
 
-uint8_t issue_106_use_it(const uint8_t *x);
+uint8_t issue_106_use_it(uint8_t *x);
 
 uint8_t issue_106_use_ref(void);
 

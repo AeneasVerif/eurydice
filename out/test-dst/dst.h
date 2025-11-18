@@ -113,61 +113,37 @@ Eurydice_dst_ref_mut_fd dst_alloc3(void);
 
 void dst_check_regular_field(Eurydice_dst_ref_mut_ed x);
 
-/**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types dst_S Eurydice_derefed_slice uint32_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_ed_s
-{
-  const dst_T *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_ed;
-
-void dst_check_regular_field_ref(Eurydice_dst_ref_shared_ed x);
+void dst_check_regular_field_ref(Eurydice_dst_ref_mut_ed x);
 
 /**
-A monomorphic instance of Eurydice.dst_ref_shared
+A monomorphic instance of Eurydice.dst_ref_mut
 with types uint32_t, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_3c_s
+typedef struct Eurydice_dst_ref_mut_3c_s
 {
-  const uint32_t *ptr;
+  uint32_t *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_3c;
+Eurydice_dst_ref_mut_3c;
 
 void dst_check_var_field(Eurydice_dst_ref_mut_ed x);
 
-void dst_check_var_field_ref(Eurydice_dst_ref_shared_ed x);
+void dst_check_var_field_ref(Eurydice_dst_ref_mut_ed x);
 
 /**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types dst_S Eurydice_derefed_slice Eurydice_arr uint32_t[[$3size_t]], size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_fd_s
-{
-  const dst_T3 *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_fd;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_shared
+A monomorphic instance of Eurydice.dst_ref_mut
 with types Eurydice_arr uint32_t[[$3size_t]], size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_51_s
+typedef struct Eurydice_dst_ref_mut_51_s
 {
-  const Eurydice_arr_6f *ptr;
+  Eurydice_arr_6f *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_51;
+Eurydice_dst_ref_mut_51;
 
-void dst_check_var_field_ref3(Eurydice_dst_ref_shared_fd x);
+void dst_check_var_field_ref3(Eurydice_dst_ref_mut_fd x);
 
 void dst_main3(void);
 
@@ -208,18 +184,6 @@ typedef struct dst_T2_64_s
 dst_T2_64;
 
 Eurydice_dst_ref_mut_96 dst_mk(void);
-
-/**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types uint32_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_3c_s
-{
-  uint32_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_mut_3c;
 
 void dst_main4(void);
 

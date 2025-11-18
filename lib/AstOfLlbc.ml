@@ -350,18 +350,30 @@ let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
   | TUInt C.U128 -> Builtin.uint128_t
   | _ -> K.TInt (width_of_integer_type (Charon.TypesUtils.literal_as_integer ty))
 
-let const_of_ref_kind = function
-  | C.RMut -> false
-  | C.RShared -> true
+let const_of_ref_kind kind =
+  if !Options.no_const then
+    false
+  else
+    match kind with
+    | C.RMut -> false
+    | C.RShared -> true
 
-let const_of_borrow_kind = function
-  | C.BShared -> true
-  | C.BShallow -> true
-  | _ -> false
+let const_of_borrow_kind bk =
+  if !Options.no_const then
+    false
+  else
+    match bk with
+    | C.BShared -> true
+    | C.BShallow -> true
+    | _ -> false
 
-let const_of_tbuf = function
-  | K.TBuf (_, const) -> const
-  | _ -> failwith "not a tbuf"
+let const_of_tbuf b =
+  if !Options.no_const then
+    false
+  else
+    match b with
+    | K.TBuf (_, const) -> const
+    | _ -> failwith "not a tbuf"
 
 (* e: Eurydice_dst<t> *)
 let mk_dst_deref _env t e =
@@ -2246,7 +2258,13 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       let t = typ_of_ty env ty in
       let t_array = maybe_cg_array env ty cg in
       (* let const = const_of_tbuf e1.K.typ in *)
-      let e1 = Krml.Helpers.(mk_deref ~const:true (Krml.Helpers.assert_tbuf e1.K.typ) e1.K.node) in
+      let const =
+        if !Options.no_const then
+          false
+        else
+          true
+      in
+      let e1 = Krml.Helpers.(mk_deref ~const (Krml.Helpers.assert_tbuf e1.K.typ) e1.K.node) in
       let e1 = K.with_type t_array (K.EField (e1, "data")) in
       let dest = expression_of_place env dest in
       Krml.Helpers.with_unit

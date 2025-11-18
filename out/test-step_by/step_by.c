@@ -7,12 +7,12 @@
 
 #include "step_by.h"
 
-typedef struct const_int32_t__x2_s
+typedef struct _int32_t__x2_s
 {
-  const int32_t *fst;
-  const int32_t *snd;
+  int32_t *fst;
+  int32_t *snd;
 }
-const_int32_t__x2;
+_int32_t__x2;
 
 void step_by_bar(void)
 {
@@ -24,7 +24,7 @@ void step_by_bar(void)
   }
   /* original Rust expression is not an lvalue in C */
   int32_t lvalue = (int32_t)36;
-  const_int32_t__x2 uu____0 = { .fst = &i0, .snd = &lvalue };
+  _int32_t__x2 uu____0 = { .fst = &i0, .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
