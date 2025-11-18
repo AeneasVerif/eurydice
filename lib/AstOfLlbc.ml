@@ -2746,21 +2746,8 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
         (Charon.PrintLlbcAst.Ast.global_decl_to_string env.format_env "  " "  " def);
       let ty = typ_of_ty env ty in
       let flags =
-        [ Krml.Common.Const "" ]
-        @
         match global.global_kind with
-        | NamedConst | AnonConst ->
-            (* This is trickier: const can be evaluated at compile-time, so in theory, we could just
-               emit a macro, except (!) in C, arrays need to be top-level declarations (not macros)
-               because even with compound literals, you can't do `((int[1]){0})[0]` in expression
-               position.
-
-               We can't use the test "is_bufcreate" because the expression might only be a bufcreate
-               *after* simplification, so we rely on the type here. *)
-            if Krml.Helpers.is_array ty then
-              []
-            else
-              [ Macro ]
+        | NamedConst | AnonConst -> [ Krml.Common.Const ""; Krml.Common.Macro ]
         | Static ->
             (* This one needs to have an address, so definitely not emitting it as a macro. *)
             []

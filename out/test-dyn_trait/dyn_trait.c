@@ -31,7 +31,6 @@ void dyn_trait_method__vtable_method__92(Eurydice_dst_ref_mut_dd _)
   dyn_trait_method_92((const int32_t *)_.ptr);
 }
 
-const
 dyn_trait_Trait__vtable_
 dyn_trait__dyn_trait__Trait_for_i32___vtable_ =
   {

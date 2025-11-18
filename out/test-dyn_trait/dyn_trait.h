@@ -76,7 +76,7 @@ This function found in impl {dyn_trait::Trait for i32}
 */
 void dyn_trait_method__vtable_method__92(Eurydice_dst_ref_mut_dd _);
 
-extern const dyn_trait_Trait__vtable_ dyn_trait__dyn_trait__Trait_for_i32___vtable_;
+extern dyn_trait_Trait__vtable_ dyn_trait__dyn_trait__Trait_for_i32___vtable_;
 
 void dyn_trait_use_trait(Eurydice_dst_ref_mut_dd t);
 
