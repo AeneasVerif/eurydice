@@ -18,67 +18,67 @@ extern "C" {
 typedef struct core_marker_MetaSized__vtable__s core_marker_MetaSized__vtable_;
 
 /**
-A monomorphic instance of Eurydice.dst_ref
+A monomorphic instance of Eurydice.dst_ref_mut
 with types Eurydice_c_void_t,  core_marker_MetaSized_{vtable}*
 
 */
-typedef struct Eurydice_dst_ref_05_s
+typedef struct Eurydice_dst_ref_mut_05_s
 {
   Eurydice_c_void_t *ptr;
   core_marker_MetaSized__vtable_ *meta;
 }
-Eurydice_dst_ref_05;
+Eurydice_dst_ref_mut_05;
 
 typedef struct core_marker_MetaSized__vtable__s
 {
   size_t size;
   size_t align;
-  void (*drop)(Eurydice_dst_ref_05 x0);
+  void (*drop)(Eurydice_dst_ref_mut_05 x0);
 }
 core_marker_MetaSized__vtable_;
 
 typedef struct dyn_trait_Trait__vtable__s dyn_trait_Trait__vtable_;
 
 /**
-A monomorphic instance of Eurydice.dst_ref
+A monomorphic instance of Eurydice.dst_ref_mut
 with types Eurydice_c_void_t,  dyn_trait_Trait_{vtable}*
 
 */
-typedef struct Eurydice_dst_ref_dd_s
+typedef struct Eurydice_dst_ref_mut_dd_s
 {
   Eurydice_c_void_t *ptr;
   dyn_trait_Trait__vtable_ *meta;
 }
-Eurydice_dst_ref_dd;
+Eurydice_dst_ref_mut_dd;
 
 typedef struct dyn_trait_Trait__vtable__s
 {
   size_t size;
   size_t align;
-  void (*drop)(Eurydice_dst_ref_dd x0);
-  void (*method_method)(Eurydice_dst_ref_dd x0);
-  core_marker_MetaSized__vtable_ *super_trait_0;
+  void (*drop)(Eurydice_dst_ref_mut_dd x0);
+  void (*method_method)(Eurydice_dst_ref_mut_dd x0);
+  const core_marker_MetaSized__vtable_ *super_trait_0;
 }
 dyn_trait_Trait__vtable_;
 
 /**
 This function found in impl {dyn_trait::Trait for i32}
 */
-void dyn_trait__vtable_drop_shim__92(Eurydice_dst_ref_dd dyn_self);
+void dyn_trait__vtable_drop_shim__92(Eurydice_dst_ref_mut_dd dyn_self);
 
 /**
 This function found in impl {dyn_trait::Trait for i32}
 */
-void dyn_trait_method_92(int32_t *self);
+void dyn_trait_method_92(const int32_t *self);
 
 /**
 This function found in impl {dyn_trait::Trait for i32}
 */
-void dyn_trait_method__vtable_method__92(Eurydice_dst_ref_dd _);
+void dyn_trait_method__vtable_method__92(Eurydice_dst_ref_mut_dd _);
 
 extern const dyn_trait_Trait__vtable_ dyn_trait__dyn_trait__Trait_for_i32___vtable_;
 
-void dyn_trait_use_trait(Eurydice_dst_ref_dd t);
+void dyn_trait_use_trait(Eurydice_dst_ref_mut_dd t);
 
 void dyn_trait_main(void);
 

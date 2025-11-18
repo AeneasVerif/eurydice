@@ -10,7 +10,7 @@
 /**
 This function found in impl {dyn_trait::Trait for i32}
 */
-void dyn_trait__vtable_drop_shim__92(Eurydice_dst_ref_dd dyn_self)
+void dyn_trait__vtable_drop_shim__92(Eurydice_dst_ref_mut_dd dyn_self)
 {
 
 }
@@ -18,7 +18,7 @@ void dyn_trait__vtable_drop_shim__92(Eurydice_dst_ref_dd dyn_self)
 /**
 This function found in impl {dyn_trait::Trait for i32}
 */
-void dyn_trait_method_92(int32_t *self)
+void dyn_trait_method_92(const int32_t *self)
 {
   EURYDICE_ASSERT(self[0U] > (int32_t)0, "panic!");
 }
@@ -26,32 +26,25 @@ void dyn_trait_method_92(int32_t *self)
 /**
 This function found in impl {dyn_trait::Trait for i32}
 */
-void dyn_trait_method__vtable_method__92(Eurydice_dst_ref_dd _)
+void dyn_trait_method__vtable_method__92(Eurydice_dst_ref_mut_dd _)
 {
-  dyn_trait_method_92((int32_t *)_.ptr);
+  dyn_trait_method_92((const int32_t *)_.ptr);
 }
-
-static size_t _vtable__local_0 = Eurydice_sizeof(int32_t, size_t);
-
-static size_t _vtable__local_1 = Eurydice_alignof(int32_t, size_t);
-
-static dyn_trait_Trait__vtable_
-_vtable__local_2 =
-  {
-    .size = _vtable__local_0, .align = _vtable__local_1, .drop = dyn_trait__vtable_drop_shim__92,
-    .method_method = dyn_trait_method__vtable_method__92,
-    .super_trait_0 = Eurydice_opaque("missing supertrait vtable",
-      core_marker_MetaSized__vtable_ *,
-      core_marker_MetaSized__vtable_ *)
-  };
 
 const
 dyn_trait_Trait__vtable_
-dyn_trait__dyn_trait__Trait_for_i32___vtable_ = _vtable__local_2;
+dyn_trait__dyn_trait__Trait_for_i32___vtable_ =
+  {
+    .size = Eurydice_sizeof(int32_t, size_t), .align = Eurydice_alignof(int32_t, size_t),
+    .drop = dyn_trait__vtable_drop_shim__92, .method_method = dyn_trait_method__vtable_method__92,
+    .super_trait_0 = Eurydice_opaque("missing supertrait vtable",
+      const core_marker_MetaSized__vtable_ *,
+      const core_marker_MetaSized__vtable_ *)
+  };
 
-void dyn_trait_use_trait(Eurydice_dst_ref_dd t)
+void dyn_trait_use_trait(Eurydice_dst_ref_mut_dd t)
 {
-  Eurydice_dst_ref_dd uu____0 = t;
+  Eurydice_dst_ref_mut_dd uu____0 = t;
   uu____0.meta->method_method(uu____0);
 }
 
@@ -60,7 +53,7 @@ void dyn_trait_main(void)
   /* original Rust expression is not an lvalue in C */
   int32_t lvalue = (int32_t)100;
   dyn_trait_use_trait((
-      KRML_CLITERAL(Eurydice_dst_ref_dd){
+      KRML_CLITERAL(Eurydice_dst_ref_mut_dd){
         .ptr = (Eurydice_c_void_t *)&lvalue,
         .meta = &dyn_trait__dyn_trait__Trait_for_i32___vtable_
       }
