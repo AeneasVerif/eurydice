@@ -2305,13 +2305,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       let t = typ_of_ty env ty in
       let t_array = maybe_cg_array env ty cg in
       (* let const = const_of_tbuf e1.K.typ in *)
-      let const =
-        if !Options.no_const then
-          false
-        else
-          true
-      in
-      let e1 = Krml.Helpers.(mk_deref ~const (Krml.Helpers.assert_tbuf e1.K.typ) e1.K.node) in
+      let e1 = Krml.Helpers.(mk_deref ~const:true (Krml.Helpers.assert_tbuf e1.K.typ) e1.K.node) in
       let e1 = K.with_type t_array (K.EField (e1, "data")) in
       let dest = expression_of_place env dest in
       Krml.Helpers.with_unit
