@@ -165,7 +165,7 @@ Supported options:|}
         | _ -> false);
 
   let files =
-    Eurydice.Builtin.files !O.no_const
+    Eurydice.Builtin.files
     @ [
         Eurydice.PreCleanup.merge
           (List.map

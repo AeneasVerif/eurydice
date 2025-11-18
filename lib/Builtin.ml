@@ -313,15 +313,7 @@ let slice_eq const =
     arg_names = [ "s1"; "s2" ];
   }
 
-let slice_eq_shared =
-  let const =
-    if !Options.no_const then
-      true
-    else
-      false
-  in
-  slice_eq const
-
+let slice_eq_shared = slice_eq true
 let slice_eq_mut = slice_eq false
 
 (* XXX investigate whether this can be extracted now...?
@@ -361,15 +353,7 @@ let slice_index const =
     arg_names = [ "s"; "i" ];
   }
 
-let slice_index_shared =
-  let const =
-    if !Options.no_const then
-      true
-    else
-      false
-  in
-  slice_index const
-
+let slice_index_shared = slice_index true
 let slice_index_mut = slice_index false
 
 (* The three entries below do not need a shared/mut variant because of the way the &mut[T] vs &[T]
@@ -525,15 +509,7 @@ let array_to_slice_func const =
   in
   DFunction (None, [ Private ], 1, 1, ret_t, lid, binders, expr)
 
-let array_to_slice_func_shared =
-  let const =
-    if !Options.no_const then
-      true
-    else
-      false
-  in
-  array_to_slice_func const
-
+let array_to_slice_func_shared = array_to_slice_func true
 let array_to_slice_func_mut = array_to_slice_func false
 
 (* let array_to_subslice<T, _, _;N> (r: Range<SizeT>, x : &Arr<T,N>)
@@ -565,15 +541,7 @@ let array_to_subslice_func const =
   in
   DFunction (None, [ Private ], 1, 3, ret_t, lid, binders, expr)
 
-let array_to_subslice_func_shared =
-  let const =
-    if !Options.no_const then
-      true
-    else
-      false
-  in
-  array_to_subslice_func const
-
+let array_to_subslice_func_shared = array_to_subslice_func true
 let array_to_subslice_func_mut = array_to_subslice_func false
 
 (* let array_to_subslice_to<T;N> (r: RangeTo<SizeT>, x : &Arr<T,N>)
@@ -603,15 +571,7 @@ let array_to_subslice_to_func const =
   in
   DFunction (None, [ Private ], 1, 3, ret_t, lid, binders, expr)
 
-let array_to_subslice_to_func_shared =
-  let const =
-    if !Options.no_const then
-      true
-    else
-      false
-  in
-  array_to_subslice_to_func const
-
+let array_to_subslice_to_func_shared = array_to_subslice_to_func true
 let array_to_subslice_to_func_mut = array_to_subslice_to_func false
 
 (* let array_to_subslice_from<T, _, _;N> (r: RangeFrom<SizeT>, x : &Arr<T,N>)
@@ -643,15 +603,7 @@ let array_to_subslice_from_func const =
   in
   DFunction (None, [ Private ], 1, 3, ret_t, lid, binders, expr)
 
-let array_to_subslice_from_func_shared =
-  let const =
-    if !Options.no_const then
-      true
-    else
-      false
-  in
-  array_to_subslice_from_func const
-
+let array_to_subslice_from_func_shared = array_to_subslice_from_func true
 let array_to_subslice_from_func_mut = array_to_subslice_from_func false
 
 (* let slice_subslice<T, _, _> (r: Range<SizeT>, s : DstRef<T,N>)
@@ -678,15 +630,7 @@ let slice_subslice_func const =
   in
   DFunction (None, [ Private ], 0, 3, slice_t, lid, binders, expr)
 
-let slice_subslice_func_shared =
-  let const =
-    if !Options.no_const then
-      true
-    else
-      false
-  in
-  slice_subslice_func const
-
+let slice_subslice_func_shared = slice_subslice_func true
 let slice_subslice_func_mut = slice_subslice_func false
 
 (* let slice_subslice_to<T, _, _> (r: RangeTo<SizeT>, s : DstRef<T,N>)
@@ -710,15 +654,7 @@ let slice_subslice_to_func const =
   in
   DFunction (None, [ Private ], 0, 3, slice_t, lid, binders, expr)
 
-let slice_subslice_to_func_shared =
-  let const =
-    if !Options.no_const then
-      true
-    else
-      false
-  in
-  slice_subslice_to_func const
-
+let slice_subslice_to_func_shared = slice_subslice_to_func true
 let slice_subslice_to_func_mut = slice_subslice_to_func false
 
 (* let slice_subslice_from<T, _, _> (r: RangeFrom<SizeT>, s : DstRef<T,N>)
@@ -745,15 +681,7 @@ let slice_subslice_from_func const =
   in
   DFunction (None, [ Private ], 0, 3, slice_t, lid, binders, expr)
 
-let slice_subslice_from_func_shared =
-  let const =
-    if !Options.no_const then
-      true
-    else
-      false
-  in
-  slice_subslice_from_func const
-
+let slice_subslice_from_func_shared = slice_subslice_from_func true
 let slice_subslice_from_func_mut = slice_subslice_from_func false
 
 (* Not fully general *)
@@ -973,7 +901,9 @@ let builtin_funcs =
     array_repeat;
     array_eq;
     array_eq_slice_shared;
+    slice_eq_shared;
     slice_eq_mut;
+    slice_index_shared;
     slice_index_mut;
     slice_to_array;
     slice_to_ref_array;
@@ -997,31 +927,25 @@ let builtin_funcs =
       Op128Map.to_seq op_128_cfgs |> List.of_seq |> List.map snd
     end
 
-let builtin_funcs_const = [ slice_eq_shared; slice_index_shared ]
-
 let builtin_defined_funcs =
   [
+    array_to_slice_func_shared;
     array_to_slice_func_mut;
+    array_to_subslice_func_shared;
     array_to_subslice_func_mut;
+    array_to_subslice_to_func_shared;
     array_to_subslice_to_func_mut;
+    array_to_subslice_from_func_shared;
     array_to_subslice_from_func_mut;
+    slice_subslice_func_shared;
     slice_subslice_func_mut;
+    slice_subslice_to_func_shared;
     slice_subslice_to_func_mut;
+    slice_subslice_from_func_shared;
     slice_subslice_from_func_mut;
   ]
 
-let builtin_defined_funcs_const =
-  [
-    array_to_slice_func_shared;
-    array_to_subslice_func_shared;
-    array_to_subslice_to_func_shared;
-    array_to_subslice_from_func_shared;
-    slice_subslice_func_shared;
-    slice_subslice_to_func_shared;
-    slice_subslice_from_func_shared;
-  ]
-
-let files no_const =
+let files =
   [
     Krml.Builtin.lowstar_ignore;
     (let externals =
@@ -1030,17 +954,8 @@ let files no_const =
            let typ = Krml.Helpers.fold_arrow cg_args typ in
            let flags = [ Krml.Common.Private ] in
            K.DExternal (None, flags, List.length cg_args, n_type_args, name, typ, arg_names))
-         (builtin_funcs
-         @
-         if no_const then
-           []
-         else
-           builtin_funcs_const)
+         builtin_funcs
        @ builtin_defined_funcs
-       @ (if no_const then
-            []
-          else
-            builtin_defined_funcs_const)
        @ [ nonzero_def; static_assert; c_string_def ]
      in
      "Eurydice", externals);
