@@ -107,7 +107,7 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 192
 */
 static libcrux_ml_kem_types_MlKemKeyPair_3e
-generate_keypair_9c(const libcrux_sha3_Sha3_512Digest *randomness)
+generate_keypair_9c(const Eurydice_arr_06 *randomness)
 {
   return libcrux_ml_kem_ind_cca_generate_keypair_150(randomness);
 }
@@ -116,7 +116,7 @@ generate_keypair_9c(const libcrux_sha3_Sha3_512Digest *randomness)
  Generate ML-KEM 512 Key Pair
 */
 libcrux_ml_kem_types_MlKemKeyPair_3e
-libcrux_ml_kem_mlkem512_portable_generate_key_pair(libcrux_sha3_Sha3_512Digest randomness)
+libcrux_ml_kem_mlkem512_portable_generate_key_pair(Eurydice_arr_06 randomness)
 {
   return generate_keypair_9c(&randomness);
 }
@@ -308,7 +308,7 @@ with const generics
 */
 static KRML_MUSTINLINE void
 generate_keypair_9c0(
-  libcrux_sha3_Sha3_512Digest randomness,
+  Eurydice_arr_06 randomness,
   libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *out
 )
 {
@@ -320,7 +320,7 @@ generate_keypair_9c0(
 */
 void
 libcrux_ml_kem_mlkem512_portable_unpacked_generate_key_pair_mut(
-  libcrux_sha3_Sha3_512Digest randomness,
+  Eurydice_arr_06 randomness,
   libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *key_pair
 )
 {
@@ -331,9 +331,7 @@ libcrux_ml_kem_mlkem512_portable_unpacked_generate_key_pair_mut(
  Generate ML-KEM 512 Key Pair in "unpacked" form.
 */
 libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
-libcrux_ml_kem_mlkem512_portable_unpacked_generate_key_pair(
-  libcrux_sha3_Sha3_512Digest randomness
-)
+libcrux_ml_kem_mlkem512_portable_unpacked_generate_key_pair(Eurydice_arr_06 randomness)
 {
   libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
   key_pair = libcrux_ml_kem_ind_cca_unpacked_default_7b_a0();

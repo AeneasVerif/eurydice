@@ -51,8 +51,7 @@ static KRML_MUSTINLINE __m256i rotate_left_76(__m256i x)
 
 static KRML_MUSTINLINE __m256i _vrax1q_u64(__m256i a, __m256i b)
 {
-  __m256i uu____0 = a;
-  return mm256_xor_si256(uu____0, rotate_left_76(b));
+  return mm256_xor_si256(a, rotate_left_76(b));
 }
 
 /**
@@ -359,27 +358,18 @@ static KRML_MUSTINLINE arr_c0 theta_80_a6(Eurydice_arr_05 *self)
           index_c2_a6(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)4U }))[0U])
       }
     };
-  __m256i
-  uu____0 =
-    rotate_left1_and_xor_b0(c.data[((size_t)0U + (size_t)4U) % (size_t)5U],
-      c.data[((size_t)0U + (size_t)1U) % (size_t)5U]);
-  __m256i
-  uu____1 =
-    rotate_left1_and_xor_b0(c.data[((size_t)1U + (size_t)4U) % (size_t)5U],
-      c.data[((size_t)1U + (size_t)1U) % (size_t)5U]);
-  __m256i
-  uu____2 =
-    rotate_left1_and_xor_b0(c.data[((size_t)2U + (size_t)4U) % (size_t)5U],
-      c.data[((size_t)2U + (size_t)1U) % (size_t)5U]);
-  __m256i
-  uu____3 =
-    rotate_left1_and_xor_b0(c.data[((size_t)3U + (size_t)4U) % (size_t)5U],
-      c.data[((size_t)3U + (size_t)1U) % (size_t)5U]);
   return
     (
       KRML_CLITERAL(arr_c0){
         .data = {
-          uu____0, uu____1, uu____2, uu____3,
+          rotate_left1_and_xor_b0(c.data[((size_t)0U + (size_t)4U) % (size_t)5U],
+            c.data[((size_t)0U + (size_t)1U) % (size_t)5U]),
+          rotate_left1_and_xor_b0(c.data[((size_t)1U + (size_t)4U) % (size_t)5U],
+            c.data[((size_t)1U + (size_t)1U) % (size_t)5U]),
+          rotate_left1_and_xor_b0(c.data[((size_t)2U + (size_t)4U) % (size_t)5U],
+            c.data[((size_t)2U + (size_t)1U) % (size_t)5U]),
+          rotate_left1_and_xor_b0(c.data[((size_t)3U + (size_t)4U) % (size_t)5U],
+            c.data[((size_t)3U + (size_t)1U) % (size_t)5U]),
           rotate_left1_and_xor_b0(c.data[((size_t)4U + (size_t)4U) % (size_t)5U],
             c.data[((size_t)4U + (size_t)1U) % (size_t)5U])
         }
@@ -1341,169 +1331,145 @@ static KRML_MUSTINLINE void rho_80_a6(Eurydice_arr_05 *self, arr_c0 t)
     xor_b0(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)0U }))[0U],
       t.data[0U]));
-  Eurydice_arr_05 *uu____0 = self;
-  set_80_a6(uu____0,
+  set_80_a6(self,
     (size_t)1U,
     (size_t)0U,
     xor_and_rotate_b0_02(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)0U }))[0U],
       t.data[0U]));
-  Eurydice_arr_05 *uu____1 = self;
-  set_80_a6(uu____1,
+  set_80_a6(self,
     (size_t)2U,
     (size_t)0U,
     xor_and_rotate_b0_ac(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)0U }))[0U],
       t.data[0U]));
-  Eurydice_arr_05 *uu____2 = self;
-  set_80_a6(uu____2,
+  set_80_a6(self,
     (size_t)3U,
     (size_t)0U,
     xor_and_rotate_b0_020(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)0U }))[0U],
       t.data[0U]));
-  Eurydice_arr_05 *uu____3 = self;
-  set_80_a6(uu____3,
+  set_80_a6(self,
     (size_t)4U,
     (size_t)0U,
     xor_and_rotate_b0_a9(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)0U }))[0U],
       t.data[0U]));
-  Eurydice_arr_05 *uu____4 = self;
-  set_80_a6(uu____4,
+  set_80_a6(self,
     (size_t)0U,
     (size_t)1U,
     xor_and_rotate_b0_76(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)1U }))[0U],
       t.data[1U]));
-  Eurydice_arr_05 *uu____5 = self;
-  set_80_a6(uu____5,
+  set_80_a6(self,
     (size_t)1U,
     (size_t)1U,
     xor_and_rotate_b0_58(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)1U }))[0U],
       t.data[1U]));
-  Eurydice_arr_05 *uu____6 = self;
-  set_80_a6(uu____6,
+  set_80_a6(self,
     (size_t)2U,
     (size_t)1U,
     xor_and_rotate_b0_e0(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)1U }))[0U],
       t.data[1U]));
-  Eurydice_arr_05 *uu____7 = self;
-  set_80_a6(uu____7,
+  set_80_a6(self,
     (size_t)3U,
     (size_t)1U,
     xor_and_rotate_b0_63(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)1U }))[0U],
       t.data[1U]));
-  Eurydice_arr_05 *uu____8 = self;
-  set_80_a6(uu____8,
+  set_80_a6(self,
     (size_t)4U,
     (size_t)1U,
     xor_and_rotate_b0_6a(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)1U }))[0U],
       t.data[1U]));
-  Eurydice_arr_05 *uu____9 = self;
-  set_80_a6(uu____9,
+  set_80_a6(self,
     (size_t)0U,
     (size_t)2U,
     xor_and_rotate_b0_ab(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)2U }))[0U],
       t.data[2U]));
-  Eurydice_arr_05 *uu____10 = self;
-  set_80_a6(uu____10,
+  set_80_a6(self,
     (size_t)1U,
     (size_t)2U,
     xor_and_rotate_b0_5b(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)2U }))[0U],
       t.data[2U]));
-  Eurydice_arr_05 *uu____11 = self;
-  set_80_a6(uu____11,
+  set_80_a6(self,
     (size_t)2U,
     (size_t)2U,
     xor_and_rotate_b0_6f(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)2U }))[0U],
       t.data[2U]));
-  Eurydice_arr_05 *uu____12 = self;
-  set_80_a6(uu____12,
+  set_80_a6(self,
     (size_t)3U,
     (size_t)2U,
     xor_and_rotate_b0_62(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)2U }))[0U],
       t.data[2U]));
-  Eurydice_arr_05 *uu____13 = self;
-  set_80_a6(uu____13,
+  set_80_a6(self,
     (size_t)4U,
     (size_t)2U,
     xor_and_rotate_b0_23(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)2U }))[0U],
       t.data[2U]));
-  Eurydice_arr_05 *uu____14 = self;
-  set_80_a6(uu____14,
+  set_80_a6(self,
     (size_t)0U,
     (size_t)3U,
     xor_and_rotate_b0_37(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)3U }))[0U],
       t.data[3U]));
-  Eurydice_arr_05 *uu____15 = self;
-  set_80_a6(uu____15,
+  set_80_a6(self,
     (size_t)1U,
     (size_t)3U,
     xor_and_rotate_b0_bb(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)3U }))[0U],
       t.data[3U]));
-  Eurydice_arr_05 *uu____16 = self;
-  set_80_a6(uu____16,
+  set_80_a6(self,
     (size_t)2U,
     (size_t)3U,
     xor_and_rotate_b0_b9(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)3U }))[0U],
       t.data[3U]));
-  Eurydice_arr_05 *uu____17 = self;
-  set_80_a6(uu____17,
+  set_80_a6(self,
     (size_t)3U,
     (size_t)3U,
     xor_and_rotate_b0_54(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)3U }))[0U],
       t.data[3U]));
-  Eurydice_arr_05 *uu____18 = self;
-  set_80_a6(uu____18,
+  set_80_a6(self,
     (size_t)4U,
     (size_t)3U,
     xor_and_rotate_b0_4c(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)3U }))[0U],
       t.data[3U]));
-  Eurydice_arr_05 *uu____19 = self;
-  set_80_a6(uu____19,
+  set_80_a6(self,
     (size_t)0U,
     (size_t)4U,
     xor_and_rotate_b0_ce(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)4U }))[0U],
       t.data[4U]));
-  Eurydice_arr_05 *uu____20 = self;
-  set_80_a6(uu____20,
+  set_80_a6(self,
     (size_t)1U,
     (size_t)4U,
     xor_and_rotate_b0_77(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)4U }))[0U],
       t.data[4U]));
-  Eurydice_arr_05 *uu____21 = self;
-  set_80_a6(uu____21,
+  set_80_a6(self,
     (size_t)2U,
     (size_t)4U,
     xor_and_rotate_b0_25(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)4U }))[0U],
       t.data[4U]));
-  Eurydice_arr_05 *uu____22 = self;
-  set_80_a6(uu____22,
+  set_80_a6(self,
     (size_t)3U,
     (size_t)4U,
     xor_and_rotate_b0_af(index_c2_a6(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)4U }))[0U],
       t.data[4U]));
-  Eurydice_arr_05 *uu____23 = self;
-  set_80_a6(uu____23,
+  set_80_a6(self,
     (size_t)4U,
     (size_t)4U,
     xor_and_rotate_b0_fd(index_c2_a6(self,

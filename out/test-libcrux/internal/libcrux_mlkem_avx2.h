@@ -312,7 +312,7 @@ with const generics
 */
 void
 libcrux_ml_kem_ind_cca_unpacked_generate_keypair_bb1(
-  libcrux_sha3_Sha3_512Digest randomness,
+  Eurydice_arr_06 randomness,
   libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *out
 );
 
@@ -438,7 +438,7 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_bb1(const libcrux_sha3_Sha3_512Digest *randomness);
+libcrux_ml_kem_ind_cca_generate_keypair_bb1(const Eurydice_arr_06 *randomness);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
@@ -727,7 +727,7 @@ with const generics
 */
 void
 libcrux_ml_kem_ind_cca_unpacked_generate_keypair_bb0(
-  libcrux_sha3_Sha3_512Digest randomness,
+  Eurydice_arr_06 randomness,
   libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *out
 );
 
@@ -853,7 +853,7 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_bb0(const libcrux_sha3_Sha3_512Digest *randomness);
+libcrux_ml_kem_ind_cca_generate_keypair_bb0(const Eurydice_arr_06 *randomness);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
@@ -1142,7 +1142,7 @@ with const generics
 */
 void
 libcrux_ml_kem_ind_cca_unpacked_generate_keypair_bb(
-  libcrux_sha3_Sha3_512Digest randomness,
+  Eurydice_arr_06 randomness,
   libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked *out
 );
 
@@ -1268,7 +1268,7 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 192
 */
 libcrux_ml_kem_types_MlKemKeyPair_3e
-libcrux_ml_kem_ind_cca_generate_keypair_bb(const libcrux_sha3_Sha3_512Digest *randomness);
+libcrux_ml_kem_ind_cca_generate_keypair_bb(const Eurydice_arr_06 *randomness);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate

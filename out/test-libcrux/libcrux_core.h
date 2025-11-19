@@ -154,8 +154,13 @@ with const generics
 */
 typedef struct Eurydice_arr_6d_s { uint8_t data[24U]; } Eurydice_arr_6d;
 
-typedef struct libcrux_sha3_Sha3_512Digest_s { uint8_t data[64U]; }
-libcrux_sha3_Sha3_512Digest;
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $64size_t
+*/
+typedef struct Eurydice_arr_06_s { uint8_t data[64U]; } Eurydice_arr_06;
 
 /**
 A monomorphic instance of K.
@@ -265,11 +270,21 @@ with const generics
 */
 typedef struct Eurydice_arr_75_s { Eurydice_arr_27 data[1U]; } Eurydice_arr_75;
 
-typedef struct libcrux_sha3_Sha3_384Digest_s { uint8_t data[48U]; }
-libcrux_sha3_Sha3_384Digest;
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $48size_t
+*/
+typedef struct Eurydice_arr_5f_s { uint8_t data[48U]; } Eurydice_arr_5f;
 
-typedef struct libcrux_sha3_Sha3_224Digest_s { uint8_t data[28U]; }
-libcrux_sha3_Sha3_224Digest;
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $28size_t
+*/
+typedef struct Eurydice_arr_f1_s { uint8_t data[28U]; } Eurydice_arr_f1;
 
 /**
 A monomorphic instance of Eurydice.arr
