@@ -53,7 +53,7 @@ libcrux_ml_kem_mlkem768_portable_unpacked_encapsulate(
 */
 void
 libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair_mut(
-  libcrux_sha3_Sha3_512Digest randomness,
+  Eurydice_arr_06 randomness,
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair
 );
 
@@ -61,9 +61,7 @@ libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair_mut(
  Generate ML-KEM 768 Key Pair in "unpacked" form.
 */
 libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
-libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair(
-  libcrux_sha3_Sha3_512Digest randomness
-);
+libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair(Eurydice_arr_06 randomness);
 
 /**
  Create a new, empty unpacked key.

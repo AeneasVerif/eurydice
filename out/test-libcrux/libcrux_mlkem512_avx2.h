@@ -46,7 +46,7 @@ libcrux_ml_kem_mlkem512_avx2_encapsulate(
  Generate ML-KEM 512 Key Pair
 */
 libcrux_ml_kem_types_MlKemKeyPair_3e
-libcrux_ml_kem_mlkem512_avx2_generate_key_pair(libcrux_sha3_Sha3_512Digest randomness);
+libcrux_ml_kem_mlkem512_avx2_generate_key_pair(Eurydice_arr_06 randomness);
 
 /**
  Validate a private key.

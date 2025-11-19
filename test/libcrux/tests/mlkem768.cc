@@ -178,6 +178,8 @@ compute_implicit_rejection_shared_secret(uint8_t *ciphertext,
     return sharedSecret;
 }
 
+typedef Eurydice_arr_06 libcrux_sha3_Sha3_512Digest;
+
 TEST(MlKem768TestPortable, ConsistencyTest)
 {
     libcrux_sha3_Sha3_512Digest randomness;

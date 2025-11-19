@@ -17,8 +17,7 @@ extern "C" {
 
 #include "libcrux_core.h"
 
-libcrux_sha3_Sha3_512Digest
-libcrux_ml_kem_hash_functions_portable_G(Eurydice_borrow_slice_u8 input);
+Eurydice_arr_06 libcrux_ml_kem_hash_functions_portable_G(Eurydice_borrow_slice_u8 input);
 
 Eurydice_arr_60 libcrux_ml_kem_hash_functions_portable_H(Eurydice_borrow_slice_u8 input);
 
