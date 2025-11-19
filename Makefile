@@ -48,7 +48,7 @@ build: check-karamel check-charon
 CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
 CXXFLAGS	:= -std=c++17
 
-test: $(addprefix test-,$(TEST_DIRS)) custom-test-array custom-test-for testxx-result check-charon check-libcrux test-libcrux
+test: $(addprefix test-,$(TEST_DIRS)) custom-test-libcrux-no-const custom-test-array custom-test-for testxx-result check-charon check-libcrux test-libcrux
 
 clean-and-test:
 	$(MAKE) clean-llbc
@@ -129,6 +129,11 @@ custom-test-for: test-for
 	! grep -q while out/test-for/for.c
 
 # libcrux tests
+
+custom-test-libcrux-no-const: test/libcrux.llbc
+	mkdir -p out/test-libcrux-noconst
+	$(EURYDICE) --config test/libcrux/c.yaml -funroll-loops 16 \
+	  $< --keep-going --output out/test-libcrux-noconst --no-const
 
 test-libcrux: test/libcrux.llbc
 	mkdir -p out/test-libcrux
