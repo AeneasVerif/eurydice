@@ -19,7 +19,7 @@ static const int32_t *S_VAL_local_1 = &S_VAL_local_0;
 
 static const int32_t *const *S_VAL_local_2 = &S_VAL_local_1;
 
-const int32_t *const *const *const global_ref_S_VAL = &S_VAL_local_2;
+const int32_t *const *const *global_ref_S_VAL = &S_VAL_local_2;
 
 typedef struct const_____x2_s
 {
