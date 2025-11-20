@@ -16,8 +16,8 @@ const_uint32_t__x2;
 
 void castunsize_main1(void)
 {
-  castunsize_S_64 x = { .foo = 0U, .my_data = { .data = { 0U } } };
-  Eurydice_dst_ref_shared_5e x0 = { .ptr = (const castunsize_T *)&x, .meta = (size_t)4U };
+  castunsize_S_f9 x = { .foo = 0U, .my_data = { .data = { 0U } } };
+  Eurydice_dst_ref_shared_88 x0 = { .ptr = (const castunsize_T *)&x, .meta = (size_t)4U };
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
   const_uint32_t__x2
@@ -79,8 +79,8 @@ with const generics
 */
 void castunsize_main2_c9(void)
 {
-  castunsize_S_dd x = { .foo = 0U, .my_data = { .data = { 0U } } };
-  Eurydice_dst_ref_shared_5e x0 = { .ptr = (const castunsize_T *)&x, .meta = (size_t)5U };
+  castunsize_S_bc x = { .foo = 0U, .my_data = { .data = { 0U } } };
+  Eurydice_dst_ref_shared_88 x0 = { .ptr = (const castunsize_T *)&x, .meta = (size_t)5U };
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
   const_uint32_t__x2
