@@ -16,11 +16,11 @@ const_uint32_t__x2;
 
 void nested_arrays_main(void)
 {
-  Eurydice_arr_0c keys;
-  Eurydice_arr_99 repeat_expression0[3U];
+  Eurydice_arr_06 keys;
+  Eurydice_arr_3d repeat_expression0[3U];
   for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++)
   {
-    Eurydice_arr_99 lit;
+    Eurydice_arr_3d lit;
     nested_arrays_Key repeat_expression[3U];
     for (size_t i = (size_t)0U; i < (size_t)3U; i++)
     {
@@ -29,7 +29,7 @@ void nested_arrays_main(void)
     memcpy(lit.data, repeat_expression, (size_t)3U * sizeof (nested_arrays_Key));
     repeat_expression0[i0] = lit;
   }
-  memcpy(keys.data, repeat_expression0, (size_t)3U * sizeof (Eurydice_arr_99));
+  memcpy(keys.data, repeat_expression0, (size_t)3U * sizeof (Eurydice_arr_3d));
   for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++)
   {
     size_t i1 = i0;
@@ -48,12 +48,12 @@ void nested_arrays_main(void)
   }
 }
 
-Eurydice_arr_70 nested_arrays_test(void)
+Eurydice_arr_dd nested_arrays_test(void)
 {
   Eurydice_arr_88 out0 = { .data = { 0U } };
   Eurydice_arr_88 out1 = { .data = { 0U } };
   Eurydice_arr_88 out2 = { .data = { 0U } };
   Eurydice_arr_88 out3 = { .data = { 0U } };
-  return (KRML_CLITERAL(Eurydice_arr_70){ .data = { out0, out1, out2, out3 } });
+  return (KRML_CLITERAL(Eurydice_arr_dd){ .data = { out0, out1, out2, out3 } });
 }
 

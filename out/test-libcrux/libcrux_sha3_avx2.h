@@ -26,6 +26,14 @@ with const generics
 typedef struct Eurydice_arr_05_s { __m256i data[25U]; } Eurydice_arr_05;
 
 /**
+A monomorphic instance of libcrux_sha3.generic_keccak.KeccakState
+with types core_core_arch_x86___m256i
+with const generics
+- $4size_t
+*/
+typedef Eurydice_arr_05 libcrux_sha3_generic_keccak_KeccakState_55;
+
+/**
  Perform 4 SHAKE256 operations in parallel
 */
 void
@@ -39,6 +47,9 @@ libcrux_sha3_avx2_x4_shake256(
   Eurydice_mut_borrow_slice_u8 out2,
   Eurydice_mut_borrow_slice_u8 out3
 );
+
+typedef libcrux_sha3_generic_keccak_KeccakState_55
+libcrux_sha3_avx2_x4_incremental_KeccakState;
 
 /**
  Initialise the [`KeccakState`].

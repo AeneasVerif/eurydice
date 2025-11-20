@@ -83,19 +83,19 @@ core_result_Result_8f;
 #define core_ops_control_flow_Continue 0
 #define core_ops_control_flow_Break 1
 
-typedef uint8_t core_ops_control_flow_ControlFlow_6f_tags;
+typedef uint8_t core_ops_control_flow_ControlFlow_19_tags;
 
 /**
 A monomorphic instance of core.ops.control_flow.ControlFlow
-with types core_result_Result core_convert_Infallible uint8_t, ()
+with types core_result_Result_8f, ()
 
 */
-typedef struct core_ops_control_flow_ControlFlow_6f_s
+typedef struct core_ops_control_flow_ControlFlow_19_s
 {
-  core_ops_control_flow_ControlFlow_6f_tags tag;
+  core_ops_control_flow_ControlFlow_19_tags tag;
   core_result_Result_8f f0;
 }
-core_ops_control_flow_ControlFlow_6f;
+core_ops_control_flow_ControlFlow_19;
 
 /**
 This function found in impl {core::ops::try_trait::Try<T, core::result::Result<core::convert::Infallible, E>[core::marker::Sized<core::convert::Infallible>, TraitClause@1]> for core::result::Result<T, E>[TraitClause@0, TraitClause@1]}
@@ -105,7 +105,7 @@ A monomorphic instance of core.result.branch_71
 with types (), uint8_t
 
 */
-core_ops_control_flow_ControlFlow_6f core_result_branch_71_e9(core_result_Result_1d self);
+core_ops_control_flow_ControlFlow_19 core_result_branch_71_e9(core_result_Result_1d self);
 
 /**
  Returns the argument unchanged.

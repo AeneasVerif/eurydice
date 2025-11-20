@@ -7,10 +7,10 @@
 
 #include "array2d.h"
 
-bool array2d_f(Eurydice_arr_c0 x)
+bool array2d_f(Eurydice_arr_1e x)
 {
   x.data[0U] = (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 1U, 2U } });
-  Eurydice_arr_c0
+  Eurydice_arr_1e
   y =
     {
       .data = {
@@ -32,7 +32,7 @@ const_bool__x2;
 
 void array2d_main(void)
 {
-  Eurydice_arr_c0 y;
+  Eurydice_arr_1e y;
   Eurydice_arr_b2 repeat_expression[4U];
   KRML_MAYBE_FOR4(i,
     (size_t)0U,

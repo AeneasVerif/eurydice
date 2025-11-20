@@ -16,7 +16,7 @@ with const generics
 - K= 8
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_16_7b(Eurydice_arr_cb x, Eurydice_arr_1c _)
+uint64_t where_clauses_fncg_bar_16_7b(Eurydice_arr_8b x, Eurydice_arr_5a _)
 {
   return (uint64_t)x.data->data[0U];
 }
@@ -33,7 +33,7 @@ uint64_t where_clauses_fncg_f_43(void)
 {
   return
     where_clauses_fncg_bar_16_7b((
-        KRML_CLITERAL(Eurydice_arr_cb){
+        KRML_CLITERAL(Eurydice_arr_8b){
           .data = {
             { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } },
             { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }
@@ -41,7 +41,7 @@ uint64_t where_clauses_fncg_f_43(void)
         }
       ),
       (
-        KRML_CLITERAL(Eurydice_arr_1c){
+        KRML_CLITERAL(Eurydice_arr_5a){
           .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } }
         }
       ));
@@ -56,7 +56,7 @@ with const generics
 - K= 12
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_16_fa(Eurydice_arr_91 x, Eurydice_arr_b1 _)
+uint64_t where_clauses_fncg_bar_16_fa(Eurydice_arr_fb x, Eurydice_arr_c5 _)
 {
   return (uint64_t)x.data->data[0U];
 }
@@ -74,7 +74,7 @@ uint64_t where_clauses_fncg_method_foo_db_7c(void)
 {
   return
     where_clauses_fncg_bar_16_fa((
-        KRML_CLITERAL(Eurydice_arr_91){
+        KRML_CLITERAL(Eurydice_arr_fb){
           .data = {
             { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } },
             { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } },
@@ -83,7 +83,7 @@ uint64_t where_clauses_fncg_method_foo_db_7c(void)
         }
       ),
       (
-        KRML_CLITERAL(Eurydice_arr_b1){
+        KRML_CLITERAL(Eurydice_arr_c5){
           .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } }
         }
       ));

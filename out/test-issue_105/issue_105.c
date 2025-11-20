@@ -52,7 +52,7 @@ A monomorphic instance of core.result.branch_71
 with types (), uint8_t
 
 */
-inline core_ops_control_flow_ControlFlow_6f
+inline core_ops_control_flow_ControlFlow_19
 core_result_branch_71_e9(core_result_Result_1d self)
 {
   if (!(self.tag == core_result_Ok))
@@ -60,14 +60,14 @@ core_result_branch_71_e9(core_result_Result_1d self)
     uint8_t e = self.f0;
     return
       (
-        KRML_CLITERAL(core_ops_control_flow_ControlFlow_6f){
+        KRML_CLITERAL(core_ops_control_flow_ControlFlow_19){
           .tag = core_ops_control_flow_Break,
           .f0 = { .tag = core_result_Err, .val = { .case_Err = e } }
         }
       );
   }
   return
-    (KRML_CLITERAL(core_ops_control_flow_ControlFlow_6f){ .tag = core_ops_control_flow_Continue });
+    (KRML_CLITERAL(core_ops_control_flow_ControlFlow_19){ .tag = core_ops_control_flow_Continue });
 }
 
 /**
@@ -93,7 +93,7 @@ inline core_result_Result_1d core_result_from_residual_1f_48(core_result_Result_
 
 core_result_Result_1d issue_105_call_it(void)
 {
-  core_ops_control_flow_ControlFlow_6f uu____0 = core_result_branch_71_e9(issue_105_inner());
+  core_ops_control_flow_ControlFlow_19 uu____0 = core_result_branch_71_e9(issue_105_inner());
   if (!(uu____0.tag == core_ops_control_flow_Continue))
   {
     core_result_Result_8f residual = uu____0.f0;
@@ -145,12 +145,12 @@ core_result_eq_0b_74(const core_result_Result_1d *self, const core_result_Result
   return uu____0;
 }
 
-typedef struct const_core_result_Result____uint8_t__x2_s
+typedef struct const_core_result_Result_1d__x2_s
 {
   const core_result_Result_1d *fst;
   const core_result_Result_1d *snd;
 }
-const_core_result_Result____uint8_t__x2;
+const_core_result_Result_1d__x2;
 
 void issue_105_main(void)
 {
@@ -158,7 +158,7 @@ void issue_105_main(void)
   core_result_Result_1d lvalue0 = issue_105_call_it();
   /* original Rust expression is not an lvalue in C */
   core_result_Result_1d lvalue = { .tag = core_result_Err, .f0 = 1U };
-  const_core_result_Result____uint8_t__x2 uu____0 = { .fst = &lvalue0, .snd = &lvalue };
+  const_core_result_Result_1d__x2 uu____0 = { .fst = &lvalue0, .snd = &lvalue };
   EURYDICE_ASSERT(core_result_eq_0b_74(uu____0.fst, uu____0.snd), "panic!");
 }
 
