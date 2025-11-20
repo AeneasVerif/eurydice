@@ -44,7 +44,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_decapsulate(
  TODO: The F* prefix opens required modules, it should go away when the following issue is resolved:
  <https://github.com/hacspec/hax/issues/770>
 */
-tuple_2b
+tuple_4d
 libcrux_ml_kem_mlkem1024_avx2_unpacked_encapsulate(
   const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_39 *public_key,
   Eurydice_arr_60 randomness
@@ -55,7 +55,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_encapsulate(
 */
 void
 libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair_mut(
-  Eurydice_arr_06 randomness,
+  Eurydice_arr_060 randomness,
   libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
 );
 
@@ -63,7 +63,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair_mut(
  Generate ML-KEM 1024 Key Pair in "unpacked" form.
 */
 libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked
-libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair(Eurydice_arr_06 randomness);
+libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair(Eurydice_arr_060 randomness);
 
 /**
  Create a new, empty unpacked key.

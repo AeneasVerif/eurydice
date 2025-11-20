@@ -36,7 +36,7 @@ libcrux_ml_kem_mlkem768_avx2_decapsulate(
  The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
  bytes of `randomness`.
 */
-tuple_56
+tuple_7f
 libcrux_ml_kem_mlkem768_avx2_encapsulate(
   const Eurydice_arr_74 *public_key,
   Eurydice_arr_60 randomness
@@ -46,7 +46,7 @@ libcrux_ml_kem_mlkem768_avx2_encapsulate(
  Generate ML-KEM 768 Key Pair
 */
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_mlkem768_avx2_generate_key_pair(Eurydice_arr_06 randomness);
+libcrux_ml_kem_mlkem768_avx2_generate_key_pair(Eurydice_arr_060 randomness);
 
 /**
  Validate a private key.

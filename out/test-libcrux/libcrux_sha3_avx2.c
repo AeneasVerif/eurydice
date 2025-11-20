@@ -146,7 +146,7 @@ with const generics
 - RATE= 136
 */
 static KRML_MUSTINLINE void
-load_block_5b(Eurydice_arr_05 *state, const Eurydice_arr_e9 *blocks, size_t offset)
+load_block_5b(Eurydice_arr_05 *state, const Eurydice_arr_cd *blocks, size_t offset)
 {
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)32U; i++)
   {
@@ -284,7 +284,7 @@ A monomorphic instance of libcrux_sha3.simd.avx2.load_block_8f
 with const generics
 - RATE= 136
 */
-static void load_block_8f_5b(Eurydice_arr_05 *self, const Eurydice_arr_e9 *input, size_t start)
+static void load_block_8f_5b(Eurydice_arr_05 *self, const Eurydice_arr_cd *input, size_t start)
 {
   load_block_5b(self, input, start);
 }
@@ -1671,7 +1671,7 @@ with const generics
 - RATE= 136
 */
 static KRML_MUSTINLINE void
-absorb_block_80_97(Eurydice_arr_05 *self, const Eurydice_arr_e9 *blocks, size_t start)
+absorb_block_80_97(Eurydice_arr_05 *self, const Eurydice_arr_cd *blocks, size_t start)
 {
   load_block_8f_5b(self, blocks, start);
   keccakf1600_80_a6(self);
@@ -1684,9 +1684,9 @@ with const generics
 - DELIMITER= 31
 */
 static KRML_MUSTINLINE void
-load_last_ad(Eurydice_arr_05 *state, const Eurydice_arr_e9 *blocks, size_t start, size_t len)
+load_last_ad(Eurydice_arr_05 *state, const Eurydice_arr_cd *blocks, size_t start, size_t len)
 {
-  Eurydice_arr_91
+  Eurydice_arr_1a
   buffers =
     { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
   KRML_MAYBE_FOR4(i,
@@ -1704,7 +1704,7 @@ load_last_ad(Eurydice_arr_05 *state, const Eurydice_arr_e9 *blocks, size_t start
     size_t uu____1 = (size_t)136U - (size_t)1U;
     buffers.data[uu____0].data[uu____1] = (uint32_t)buffers.data[uu____0].data[uu____1] | 128U;);
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_e9
+  Eurydice_arr_cd
   lvalue =
     {
       .data = {
@@ -1727,7 +1727,7 @@ with const generics
 - DELIMITER= 31
 */
 static void
-load_last_8f_ad(Eurydice_arr_05 *self, const Eurydice_arr_e9 *input, size_t start, size_t len)
+load_last_8f_ad(Eurydice_arr_05 *self, const Eurydice_arr_cd *input, size_t start, size_t len)
 {
   load_last_ad(self, input, start, len);
 }
@@ -1746,7 +1746,7 @@ with const generics
 static KRML_MUSTINLINE void
 absorb_final_80_fb(
   Eurydice_arr_05 *self,
-  const Eurydice_arr_e9 *last,
+  const Eurydice_arr_cd *last,
   size_t start,
   size_t len
 )
@@ -1979,7 +1979,7 @@ with const generics
 */
 static KRML_MUSTINLINE void
 keccak4_ad(
-  const Eurydice_arr_e9 *data,
+  const Eurydice_arr_cd *data,
   Eurydice_mut_borrow_slice_u8 out0,
   Eurydice_mut_borrow_slice_u8 out1,
   Eurydice_mut_borrow_slice_u8 out2,
@@ -2040,7 +2040,7 @@ libcrux_sha3_avx2_x4_shake256(
 )
 {
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_e9 lvalue = { .data = { input0, input1, input2, input3 } };
+  Eurydice_arr_cd lvalue = { .data = { input0, input1, input2, input3 } };
   keccak4_ad(&lvalue, out0, out1, out2, out3);
 }
 
@@ -2058,7 +2058,7 @@ with const generics
 - RATE= 168
 */
 static KRML_MUSTINLINE void
-load_block_3a(Eurydice_arr_05 *state, const Eurydice_arr_e9 *blocks, size_t offset)
+load_block_3a(Eurydice_arr_05 *state, const Eurydice_arr_cd *blocks, size_t offset)
 {
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)32U; i++)
   {
@@ -2195,9 +2195,9 @@ with const generics
 - DELIMITER= 31
 */
 static KRML_MUSTINLINE void
-load_last_c6(Eurydice_arr_05 *state, const Eurydice_arr_e9 *blocks, size_t start, size_t len)
+load_last_c6(Eurydice_arr_05 *state, const Eurydice_arr_cd *blocks, size_t start, size_t len)
 {
-  Eurydice_arr_a6
+  Eurydice_arr_b3
   buffers =
     { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
   KRML_MAYBE_FOR4(i,
@@ -2215,7 +2215,7 @@ load_last_c6(Eurydice_arr_05 *state, const Eurydice_arr_e9 *blocks, size_t start
     size_t uu____1 = (size_t)168U - (size_t)1U;
     buffers.data[uu____0].data[uu____1] = (uint32_t)buffers.data[uu____0].data[uu____1] | 128U;);
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_e9
+  Eurydice_arr_cd
   lvalue =
     {
       .data = {
@@ -2238,7 +2238,7 @@ with const generics
 - DELIMITER= 31
 */
 static void
-load_last_8f_c6(Eurydice_arr_05 *self, const Eurydice_arr_e9 *input, size_t start, size_t len)
+load_last_8f_c6(Eurydice_arr_05 *self, const Eurydice_arr_cd *input, size_t start, size_t len)
 {
   load_last_c6(self, input, start, len);
 }
@@ -2257,7 +2257,7 @@ with const generics
 static KRML_MUSTINLINE void
 absorb_final_80_fb0(
   Eurydice_arr_05 *self,
-  const Eurydice_arr_e9 *last,
+  const Eurydice_arr_cd *last,
   size_t start,
   size_t len
 )
@@ -2280,8 +2280,8 @@ libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
 {
   Eurydice_arr_05 *uu____0 = s;
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_e9 lvalue = { .data = { data0, data1, data2, data3 } };
-  const Eurydice_arr_e9 *uu____1 = &lvalue;
+  Eurydice_arr_cd lvalue = { .data = { data0, data1, data2, data3 } };
+  const Eurydice_arr_cd *uu____1 = &lvalue;
   absorb_final_80_fb0(uu____0, uu____1, (size_t)0U, Eurydice_slice_len(data0, uint8_t));
 }
 
@@ -2634,8 +2634,8 @@ libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
 {
   Eurydice_arr_05 *uu____0 = s;
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_e9 lvalue = { .data = { data0, data1, data2, data3 } };
-  const Eurydice_arr_e9 *uu____1 = &lvalue;
+  Eurydice_arr_cd lvalue = { .data = { data0, data1, data2, data3 } };
+  const Eurydice_arr_cd *uu____1 = &lvalue;
   absorb_final_80_fb(uu____0, uu____1, (size_t)0U, Eurydice_slice_len(data0, uint8_t));
 }
 

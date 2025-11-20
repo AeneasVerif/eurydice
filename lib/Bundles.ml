@@ -410,10 +410,23 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
     | Some _ -> o1
     | None -> o2
   in
+  let reverse_type_map =
+    let map = Hashtbl.create 41 in
+    Hashtbl.iter
+      (fun node (_, monomorphized_lid) ->
+        assert (snd3 node <> [] || thd3 node <> []);
+        Hashtbl.add map monomorphized_lid (fold_tapp node))
+      Krml.MonomorphizationState.state;
+    map
+  in
   let uses monomorphizations_using t =
     begin
-      object
+      object (self)
         inherit [_] reduce as super
+
+        method private visit_through_map lid =
+          Option.bind (Hashtbl.find_opt reverse_type_map lid) (self#visit_typ ())
+
         method zero = None
 
         method plus o1 o2 =
@@ -424,10 +437,11 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
 
         method! visit_TQualified _ lid' =
           find_map "monomorphizations_using" (matches lid') monomorphizations_using
+          ||| self#visit_through_map lid'
 
         method! visit_TApp _ lid' ts =
           find_map "monomorphizations_using" (matches lid') monomorphizations_using
-          ||| super#visit_TApp () lid' ts
+          ||| self#visit_through_map lid' ||| super#visit_TApp () lid' ts
       end
     end
       #visit_typ
@@ -481,27 +495,26 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
     Krml.MonomorphizationState.generated_lids;
   (* Review the type monomorphization state. *)
   Hashtbl.iter
-    (fun (generic_lid, ts, _) (_, monomorphized_lid, normalized) ->
+    (fun (generic_lid, ts, _) (_, monomorphized_lid) ->
       (* Krml.KPrint.bprintf "generic=%a, monomorphized=%a\n" plid generic_lid plid monomorphized_lid; *)
-      if not normalized then
-        match
-          List.find_map
-            (fun {
-                   name;
-                   inline_static;
-                   monomorphizations_of;
-                   monomorphizations_using;
-                   monomorphizations_exact;
-                   _;
-                 } ->
-              find_map "monomorphizations_exact" (matches monomorphized_lid) monomorphizations_exact
-              ||| List.find_map (uses monomorphizations_using) ts
-              ||| find_map "monomorphizations_of" (matches generic_lid) monomorphizations_of
-              |> Option.map (fun vis -> name, inline_static, vis))
-            config
-        with
-        | Some name -> Hashtbl.add target_of_lid monomorphized_lid name
-        | None -> ())
+      match
+        List.find_map
+          (fun {
+                 name;
+                 inline_static;
+                 monomorphizations_of;
+                 monomorphizations_using;
+                 monomorphizations_exact;
+                 _;
+               } ->
+            find_map "monomorphizations_exact" (matches monomorphized_lid) monomorphizations_exact
+            ||| List.find_map (uses monomorphizations_using) ts
+            ||| find_map "monomorphizations_of" (matches generic_lid) monomorphizations_of
+            |> Option.map (fun vis -> name, inline_static, vis))
+          config
+      with
+      | Some name -> Hashtbl.add target_of_lid monomorphized_lid name
+      | None -> ())
     Krml.MonomorphizationState.state;
   (* Debug *)
   Hashtbl.iter

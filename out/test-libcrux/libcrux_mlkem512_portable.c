@@ -71,7 +71,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static tuple_17
+static tuple_50
 encapsulate_35(const Eurydice_arr_30 *public_key, const Eurydice_arr_60 *randomness)
 {
   return libcrux_ml_kem_ind_cca_encapsulate_ca0(public_key, randomness);
@@ -84,7 +84,7 @@ encapsulate_35(const Eurydice_arr_30 *public_key, const Eurydice_arr_60 *randomn
  The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
  bytes of `randomness`.
 */
-tuple_17
+tuple_50
 libcrux_ml_kem_mlkem512_portable_encapsulate(
   const Eurydice_arr_30 *public_key,
   Eurydice_arr_60 randomness
@@ -107,7 +107,7 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 192
 */
 static libcrux_ml_kem_types_MlKemKeyPair_3e
-generate_keypair_9c(const Eurydice_arr_06 *randomness)
+generate_keypair_9c(const Eurydice_arr_060 *randomness)
 {
   return libcrux_ml_kem_ind_cca_generate_keypair_150(randomness);
 }
@@ -116,7 +116,7 @@ generate_keypair_9c(const Eurydice_arr_06 *randomness)
  Generate ML-KEM 512 Key Pair
 */
 libcrux_ml_kem_types_MlKemKeyPair_3e
-libcrux_ml_kem_mlkem512_portable_generate_key_pair(Eurydice_arr_06 randomness)
+libcrux_ml_kem_mlkem512_portable_generate_key_pair(Eurydice_arr_060 randomness)
 {
   return generate_keypair_9c(&randomness);
 }
@@ -268,7 +268,7 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static KRML_MUSTINLINE tuple_17
+static KRML_MUSTINLINE tuple_50
 encapsulate_350(
   const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 *public_key,
   const Eurydice_arr_60 *randomness
@@ -284,7 +284,7 @@ encapsulate_350(
  The input is a reference to an unpacked public key of type [`MlKem512PublicKeyUnpacked`],
  the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
 */
-tuple_17
+tuple_50
 libcrux_ml_kem_mlkem512_portable_unpacked_encapsulate(
   const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 *public_key,
   Eurydice_arr_60 randomness
@@ -308,7 +308,7 @@ with const generics
 */
 static KRML_MUSTINLINE void
 generate_keypair_9c0(
-  Eurydice_arr_06 randomness,
+  Eurydice_arr_060 randomness,
   libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *out
 )
 {
@@ -320,7 +320,7 @@ generate_keypair_9c0(
 */
 void
 libcrux_ml_kem_mlkem512_portable_unpacked_generate_key_pair_mut(
-  Eurydice_arr_06 randomness,
+  Eurydice_arr_060 randomness,
   libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *key_pair
 )
 {
@@ -331,7 +331,7 @@ libcrux_ml_kem_mlkem512_portable_unpacked_generate_key_pair_mut(
  Generate ML-KEM 512 Key Pair in "unpacked" form.
 */
 libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
-libcrux_ml_kem_mlkem512_portable_unpacked_generate_key_pair(Eurydice_arr_06 randomness)
+libcrux_ml_kem_mlkem512_portable_unpacked_generate_key_pair(Eurydice_arr_060 randomness)
 {
   libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
   key_pair = libcrux_ml_kem_ind_cca_unpacked_default_7b_a0();
