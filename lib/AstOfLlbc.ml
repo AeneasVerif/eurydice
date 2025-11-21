@@ -255,6 +255,47 @@ module RustNames = struct
   ]
   [@ocamlformat "disable"]
 
+  let known_builtins_no_const =
+    [
+    (* slices *)
+    parse_pattern "SliceIndexShared<'_, @T>", Builtin.slice_index_mut;
+    parse_pattern "SliceIndexMut<'_, @T>", Builtin.slice_index_mut;
+
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::Range<usize>, [@]>", builtin_of_function Builtin.slice_subslice_func_mut;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@]>", builtin_of_function Builtin.slice_subslice_func_mut;
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@]>", builtin_of_function Builtin.slice_subslice_to_func_mut;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@]>", builtin_of_function Builtin.slice_subslice_to_func_mut;
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@]>", builtin_of_function Builtin.slice_subslice_from_func_mut;
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@]>", builtin_of_function Builtin.slice_subslice_from_func_mut;
+
+    (* arrays *)
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::Range<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_func_mut;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_func_mut;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_to_func_mut;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_to_func_mut;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_from_func_mut;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_from_func_mut;
+
+    (* slices <-> arrays *)
+    parse_pattern "ArrayToSliceShared<'_, @T, @N>", builtin_of_function Builtin.array_to_slice_func_mut;
+    parse_pattern "ArrayToSliceMut<'_, @T, @N>", builtin_of_function Builtin.array_to_slice_func_mut;
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ mut [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], &'_ [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ mut [@T], &'_ mut [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
+
+    (* bitwise & arithmetic operations *)
+    parse_pattern "core::ops::bit::BitAnd<&'_ u8, u8>::bitand", Builtin.bitand_pv_u8;
+    parse_pattern "core::ops::bit::Shr<&'_ u8, i32>::shr", Builtin.shr_pv_u8;
+
+    (* misc *)
+    parse_pattern "core::cmp::Ord<u32>::min", Builtin.min_u32;
+
+    (* boxes *)
+    parse_pattern "alloc::boxed::{alloc::boxed::Box<@T>}::new<@>", Builtin.box_new;
+  ]
+  [@ocamlformat "disable"]
+
   let from_u16 = parse_pattern "core::convert::From<u16, @U>::from"
   let from_u32 = parse_pattern "core::convert::From<u32, @U>::from"
   let from_u64 = parse_pattern "core::convert::From<u64, @U>::from"
@@ -350,18 +391,30 @@ let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
   | TUInt C.U128 -> Builtin.uint128_t
   | _ -> K.TInt (width_of_integer_type (Charon.TypesUtils.literal_as_integer ty))
 
-let const_of_ref_kind = function
-  | C.RMut -> false
-  | C.RShared -> true
+let const_of_ref_kind kind =
+  if !Options.no_const then
+    false
+  else
+    match kind with
+    | C.RMut -> false
+    | C.RShared -> true
 
-let const_of_borrow_kind = function
-  | C.BShared -> true
-  | C.BShallow -> true
-  | _ -> false
+let const_of_borrow_kind bk =
+  if !Options.no_const then
+    false
+  else
+    match bk with
+    | C.BShared -> true
+    | C.BShallow -> true
+    | _ -> false
 
-let const_of_tbuf = function
-  | K.TBuf (_, const) -> const
-  | _ -> failwith "not a tbuf"
+let const_of_tbuf b =
+  if !Options.no_const then
+    false
+  else
+    match b with
+    | K.TBuf (_, const) -> const
+    | _ -> failwith "not a tbuf"
 
 (* e: Eurydice_dst<t> *)
 let mk_dst_deref _env t e =
@@ -1426,6 +1479,12 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
     let ret_type, arg_types = Krml.Helpers.flatten_arrow typ in
     let ts = { K.n = n_type_args; K.n_cgs = List.length cg_args } in
     K.EQualified name, { ts; arg_types; ret_type; cg_types = cg_args; is_known_builtin = true }
+  in
+  let known_builtins =
+    if !Options.no_const then
+      known_builtins_no_const
+    else
+      known_builtins
   in
   match List.find_opt (fun (p, _) -> matches p) known_builtins with
   | Some (_, b) -> builtin b
