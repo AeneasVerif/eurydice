@@ -10019,7 +10019,7 @@ static KRML_MUSTINLINE Eurydice_arr_d3 sample_from_xof_b3(const Eurydice_arr_f9 
 {
   Eurydice_arr_fb sampled_coefficients = { .data = { 0U } };
   Eurydice_arr_d6 out = { .data = { { .data = { 0U } }, { .data = { 0U } } } };
-  Eurydice_arr_730
+  Eurydice_arr_73
   xof_state = libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_fd(seeds);
   Eurydice_arr_31
   randomness0 =

@@ -6221,9 +6221,9 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_init_a
 with const generics
 - K= 2
 */
-static inline Eurydice_arr_730 shake128_init_absorb_final_fd(const Eurydice_arr_f9 *input)
+static inline Eurydice_arr_73 shake128_init_absorb_final_fd(const Eurydice_arr_f9 *input)
 {
-  Eurydice_arr_730 shake128_state;
+  Eurydice_arr_73 shake128_state;
   Eurydice_arr_26 repeat_expression[2U];
   KRML_MAYBE_FOR2(i,
     (size_t)0U,
@@ -6249,7 +6249,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_init_a
 with const generics
 - K= 2
 */
-Eurydice_arr_730
+Eurydice_arr_73
 libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_fd(
   const Eurydice_arr_f9 *input
 )
@@ -6262,7 +6262,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeez
 with const generics
 - K= 2
 */
-static inline Eurydice_arr_31 shake128_squeeze_first_three_blocks_fd(Eurydice_arr_730 *st)
+static inline Eurydice_arr_31 shake128_squeeze_first_three_blocks_fd(Eurydice_arr_73 *st)
 {
   Eurydice_arr_31 out = { .data = { { .data = { 0U } }, { .data = { 0U } } } };
   KRML_MAYBE_FOR2(i,
@@ -6285,7 +6285,7 @@ with const generics
 */
 Eurydice_arr_31
 libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_4a_fd(
-  Eurydice_arr_730 *self
+  Eurydice_arr_73 *self
 )
 {
   return shake128_squeeze_first_three_blocks_fd(self);
@@ -6397,7 +6397,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeez
 with const generics
 - K= 2
 */
-static inline Eurydice_arr_dc0 shake128_squeeze_next_block_fd(Eurydice_arr_730 *st)
+static inline Eurydice_arr_dc0 shake128_squeeze_next_block_fd(Eurydice_arr_73 *st)
 {
   Eurydice_arr_dc0 out = { .data = { { .data = { 0U } }, { .data = { 0U } } } };
   KRML_MAYBE_FOR2(i,
@@ -6419,9 +6419,7 @@ with const generics
 - K= 2
 */
 Eurydice_arr_dc0
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_4a_fd(
-  Eurydice_arr_730 *self
-)
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_4a_fd(Eurydice_arr_73 *self)
 {
   return shake128_squeeze_next_block_fd(self);
 }
@@ -6554,7 +6552,7 @@ static KRML_MUSTINLINE Eurydice_arr_3d0 sample_from_xof_2b0(const Eurydice_arr_f
 {
   Eurydice_arr_fb sampled_coefficients = { .data = { 0U } };
   Eurydice_arr_d6 out = { .data = { { .data = { 0U } }, { .data = { 0U } } } };
-  Eurydice_arr_730
+  Eurydice_arr_73
   xof_state = libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_fd(seeds);
   Eurydice_arr_31
   randomness0 =
