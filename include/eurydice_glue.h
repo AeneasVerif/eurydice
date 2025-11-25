@@ -129,8 +129,10 @@ typedef struct Eurydice_mut_borrow_slice_i16_s {
 #define Eurydice_array_eq(sz, a1, a2, t)                                       \
   (memcmp((a1)->data, (a2)->data, sz * sizeof(t)) == 0)
 // core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>
-#define Eurydice_array_eq_slice(sz, a1, s2, t, _)                              \
+#define Eurydice_array_eq_slice_shared(sz, a1, s2, t, _)                       \
   (memcmp((a1)->data, (s2)->ptr, sz * sizeof(t)) == 0)
+#define Eurydice_array_eq_slice_mut(sz, a1, s2, t, _)                          \
+  Eurydice_array_eq_slice_shared(sz, a1, s2, t, _)
 
 // DEPRECATED -- should no longer be generated
 #define core_array_equality__core__cmp__PartialEq__Array_U__N___for__Array_T__N___eq( \

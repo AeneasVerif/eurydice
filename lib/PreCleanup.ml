@@ -26,10 +26,14 @@ let remove_array_eq =
                 with_type TBool
                   (EApp (Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) array_eq [ t ]), [ a1; a2 ]))
             | "{core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>}" ->
+                let hd =
+                  if !Options.no_const then
+                    Builtin.array_eq_slice_mut
+                  else
+                    Builtin.array_eq_slice_shared
+                in
                 with_type TBool
-                  (EApp
-                     ( Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) array_eq_slice_shared [ t ]),
-                       [ a1; a2 ] ))
+                  (EApp (Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) hd [ t ]), [ a1; a2 ]))
             | _ -> failwith ("unknown array eq impl: " ^ impl)
           else
             failwith "TODO: non-byteeq array comparison"

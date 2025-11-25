@@ -105,7 +105,7 @@ with types uint64_t
 with const generics
 - N= 1
 */
-const uint64_t *libcrux_sha3_traits_get_ij_04(const Eurydice_arr_26 *arr, size_t i, size_t j);
+uint64_t *libcrux_sha3_traits_get_ij_04(Eurydice_arr_26 *arr, size_t i, size_t j);
 
 /**
 A monomorphic instance of libcrux_sha3.traits.set_ij
@@ -123,7 +123,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_block_f8(
   Eurydice_arr_26 *state,
-  Eurydice_borrow_slice_u8 blocks,
+  Eurydice_mut_borrow_slice_u8 blocks,
   size_t start
 );
 
@@ -138,7 +138,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_block_a1_f8(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *input,
+  Eurydice_arr_f9 *input,
   size_t start
 );
 
@@ -151,9 +151,7 @@ with types uint64_t
 with const generics
 - N= 1
 */
-const
-uint64_t
-*libcrux_sha3_generic_keccak_index_c2_04(const Eurydice_arr_26 *self, size_t_x2 index);
+uint64_t *libcrux_sha3_generic_keccak_index_c2_04(Eurydice_arr_26 *self, size_t_x2 index);
 
 /**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0, TraitClause@1]}
@@ -886,7 +884,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_block_80_c6(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *blocks,
+  Eurydice_arr_f9 *blocks,
   size_t start
 );
 
@@ -899,7 +897,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_96(
   Eurydice_arr_26 *state,
-  Eurydice_borrow_slice_u8 blocks,
+  Eurydice_mut_borrow_slice_u8 blocks,
   size_t start,
   size_t len
 );
@@ -916,7 +914,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_a1_96(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *input,
+  Eurydice_arr_f9 *input,
   size_t start,
   size_t len
 );
@@ -935,7 +933,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_final_80_9e(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *last,
+  Eurydice_arr_f9 *last,
   size_t start,
   size_t len
 );
@@ -947,7 +945,7 @@ with const generics
 */
 void
 libcrux_sha3_simd_portable_store_block_f8(
-  const Eurydice_arr_26 *s,
+  Eurydice_arr_26 *s,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start,
   size_t len
@@ -963,7 +961,7 @@ with const generics
 */
 void
 libcrux_sha3_simd_portable_squeeze_13_f8(
-  const Eurydice_arr_26 *self,
+  Eurydice_arr_26 *self,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start,
   size_t len
@@ -977,7 +975,7 @@ with const generics
 */
 void
 libcrux_sha3_generic_keccak_portable_keccak1_96(
-  Eurydice_borrow_slice_u8 data,
+  Eurydice_mut_borrow_slice_u8 data,
   Eurydice_mut_borrow_slice_u8 out
 );
 
@@ -987,7 +985,7 @@ libcrux_sha3_generic_keccak_portable_keccak1_96(
 void
 libcrux_sha3_portable_sha512(
   Eurydice_mut_borrow_slice_u8 digest,
-  Eurydice_borrow_slice_u8 data
+  Eurydice_mut_borrow_slice_u8 data
 );
 
 /**
@@ -998,7 +996,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_block_5b(
   Eurydice_arr_26 *state,
-  Eurydice_borrow_slice_u8 blocks,
+  Eurydice_mut_borrow_slice_u8 blocks,
   size_t start
 );
 
@@ -1013,7 +1011,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_block_a1_5b(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *input,
+  Eurydice_arr_f9 *input,
   size_t start
 );
 
@@ -1030,7 +1028,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_block_80_c60(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *blocks,
+  Eurydice_arr_f9 *blocks,
   size_t start
 );
 
@@ -1043,7 +1041,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_ad(
   Eurydice_arr_26 *state,
-  Eurydice_borrow_slice_u8 blocks,
+  Eurydice_mut_borrow_slice_u8 blocks,
   size_t start,
   size_t len
 );
@@ -1060,7 +1058,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_a1_ad(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *input,
+  Eurydice_arr_f9 *input,
   size_t start,
   size_t len
 );
@@ -1079,7 +1077,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_final_80_9e0(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *last,
+  Eurydice_arr_f9 *last,
   size_t start,
   size_t len
 );
@@ -1091,7 +1089,7 @@ with const generics
 */
 void
 libcrux_sha3_simd_portable_store_block_5b(
-  const Eurydice_arr_26 *s,
+  Eurydice_arr_26 *s,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start,
   size_t len
@@ -1107,7 +1105,7 @@ with const generics
 */
 void
 libcrux_sha3_simd_portable_squeeze_13_5b(
-  const Eurydice_arr_26 *self,
+  Eurydice_arr_26 *self,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start,
   size_t len
@@ -1121,7 +1119,7 @@ with const generics
 */
 void
 libcrux_sha3_generic_keccak_portable_keccak1_ad(
-  Eurydice_borrow_slice_u8 data,
+  Eurydice_mut_borrow_slice_u8 data,
   Eurydice_mut_borrow_slice_u8 out
 );
 
@@ -1131,7 +1129,7 @@ libcrux_sha3_generic_keccak_portable_keccak1_ad(
 void
 libcrux_sha3_portable_sha256(
   Eurydice_mut_borrow_slice_u8 digest,
-  Eurydice_borrow_slice_u8 data
+  Eurydice_mut_borrow_slice_u8 data
 );
 
 /**
@@ -1143,7 +1141,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_ad0(
   Eurydice_arr_26 *state,
-  Eurydice_borrow_slice_u8 blocks,
+  Eurydice_mut_borrow_slice_u8 blocks,
   size_t start,
   size_t len
 );
@@ -1160,7 +1158,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_a1_ad0(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *input,
+  Eurydice_arr_f9 *input,
   size_t start,
   size_t len
 );
@@ -1179,7 +1177,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_final_80_9e1(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *last,
+  Eurydice_arr_f9 *last,
   size_t start,
   size_t len
 );
@@ -1192,7 +1190,7 @@ with const generics
 */
 void
 libcrux_sha3_generic_keccak_portable_keccak1_ad0(
-  Eurydice_borrow_slice_u8 data,
+  Eurydice_mut_borrow_slice_u8 data,
   Eurydice_mut_borrow_slice_u8 out
 );
 
@@ -1202,7 +1200,7 @@ libcrux_sha3_generic_keccak_portable_keccak1_ad0(
 void
 libcrux_sha3_portable_shake256(
   Eurydice_mut_borrow_slice_u8 digest,
-  Eurydice_borrow_slice_u8 data
+  Eurydice_mut_borrow_slice_u8 data
 );
 
 typedef libcrux_sha3_generic_keccak_KeccakState_17 libcrux_sha3_portable_KeccakState;
@@ -1220,7 +1218,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_block_3a(
   Eurydice_arr_26 *state,
-  Eurydice_borrow_slice_u8 blocks,
+  Eurydice_mut_borrow_slice_u8 blocks,
   size_t start
 );
 
@@ -1233,7 +1231,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_c6(
   Eurydice_arr_26 *state,
-  Eurydice_borrow_slice_u8 blocks,
+  Eurydice_mut_borrow_slice_u8 blocks,
   size_t start,
   size_t len
 );
@@ -1250,7 +1248,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_a1_c6(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *input,
+  Eurydice_arr_f9 *input,
   size_t start,
   size_t len
 );
@@ -1269,7 +1267,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_final_80_9e2(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *last,
+  Eurydice_arr_f9 *last,
   size_t start,
   size_t len
 );
@@ -1280,7 +1278,7 @@ libcrux_sha3_generic_keccak_absorb_final_80_9e2(
 void
 libcrux_sha3_portable_incremental_shake128_absorb_final(
   Eurydice_arr_26 *s,
-  Eurydice_borrow_slice_u8 data0
+  Eurydice_mut_borrow_slice_u8 data0
 );
 
 /**
@@ -1290,7 +1288,7 @@ with const generics
 */
 void
 libcrux_sha3_simd_portable_store_block_3a(
-  const Eurydice_arr_26 *s,
+  Eurydice_arr_26 *s,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start,
   size_t len
@@ -1306,7 +1304,7 @@ with const generics
 */
 void
 libcrux_sha3_simd_portable_squeeze_13_3a(
-  const Eurydice_arr_26 *self,
+  Eurydice_arr_26 *self,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start,
   size_t len
@@ -1387,7 +1385,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_block_2c(
   Eurydice_arr_26 *state,
-  Eurydice_borrow_slice_u8 blocks,
+  Eurydice_mut_borrow_slice_u8 blocks,
   size_t start
 );
 
@@ -1402,7 +1400,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_block_a1_2c(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *input,
+  Eurydice_arr_f9 *input,
   size_t start
 );
 
@@ -1419,7 +1417,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_block_80_c61(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *blocks,
+  Eurydice_arr_f9 *blocks,
   size_t start
 );
 
@@ -1432,7 +1430,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_1e(
   Eurydice_arr_26 *state,
-  Eurydice_borrow_slice_u8 blocks,
+  Eurydice_mut_borrow_slice_u8 blocks,
   size_t start,
   size_t len
 );
@@ -1449,7 +1447,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_a1_1e(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *input,
+  Eurydice_arr_f9 *input,
   size_t start,
   size_t len
 );
@@ -1468,7 +1466,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_final_80_9e3(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *last,
+  Eurydice_arr_f9 *last,
   size_t start,
   size_t len
 );
@@ -1480,7 +1478,7 @@ with const generics
 */
 void
 libcrux_sha3_simd_portable_store_block_2c(
-  const Eurydice_arr_26 *s,
+  Eurydice_arr_26 *s,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start,
   size_t len
@@ -1496,7 +1494,7 @@ with const generics
 */
 void
 libcrux_sha3_simd_portable_squeeze_13_2c(
-  const Eurydice_arr_26 *self,
+  Eurydice_arr_26 *self,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start,
   size_t len
@@ -1510,7 +1508,7 @@ with const generics
 */
 void
 libcrux_sha3_generic_keccak_portable_keccak1_1e(
-  Eurydice_borrow_slice_u8 data,
+  Eurydice_mut_borrow_slice_u8 data,
   Eurydice_mut_borrow_slice_u8 out
 );
 
@@ -1520,7 +1518,7 @@ libcrux_sha3_generic_keccak_portable_keccak1_1e(
 void
 libcrux_sha3_portable_sha224(
   Eurydice_mut_borrow_slice_u8 digest,
-  Eurydice_borrow_slice_u8 data
+  Eurydice_mut_borrow_slice_u8 data
 );
 
 /**
@@ -1531,7 +1529,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_block_7a(
   Eurydice_arr_26 *state,
-  Eurydice_borrow_slice_u8 blocks,
+  Eurydice_mut_borrow_slice_u8 blocks,
   size_t start
 );
 
@@ -1546,7 +1544,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_block_a1_7a(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *input,
+  Eurydice_arr_f9 *input,
   size_t start
 );
 
@@ -1563,7 +1561,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_block_80_c62(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *blocks,
+  Eurydice_arr_f9 *blocks,
   size_t start
 );
 
@@ -1576,7 +1574,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_7c(
   Eurydice_arr_26 *state,
-  Eurydice_borrow_slice_u8 blocks,
+  Eurydice_mut_borrow_slice_u8 blocks,
   size_t start,
   size_t len
 );
@@ -1593,7 +1591,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_a1_7c(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *input,
+  Eurydice_arr_f9 *input,
   size_t start,
   size_t len
 );
@@ -1612,7 +1610,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_final_80_9e4(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *last,
+  Eurydice_arr_f9 *last,
   size_t start,
   size_t len
 );
@@ -1624,7 +1622,7 @@ with const generics
 */
 void
 libcrux_sha3_simd_portable_store_block_7a(
-  const Eurydice_arr_26 *s,
+  Eurydice_arr_26 *s,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start,
   size_t len
@@ -1640,7 +1638,7 @@ with const generics
 */
 void
 libcrux_sha3_simd_portable_squeeze_13_7a(
-  const Eurydice_arr_26 *self,
+  Eurydice_arr_26 *self,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start,
   size_t len
@@ -1654,7 +1652,7 @@ with const generics
 */
 void
 libcrux_sha3_generic_keccak_portable_keccak1_7c(
-  Eurydice_borrow_slice_u8 data,
+  Eurydice_mut_borrow_slice_u8 data,
   Eurydice_mut_borrow_slice_u8 out
 );
 
@@ -1664,7 +1662,7 @@ libcrux_sha3_generic_keccak_portable_keccak1_7c(
 void
 libcrux_sha3_portable_sha384(
   Eurydice_mut_borrow_slice_u8 digest,
-  Eurydice_borrow_slice_u8 data
+  Eurydice_mut_borrow_slice_u8 data
 );
 
 /**
@@ -1674,45 +1672,57 @@ libcrux_sha3_portable_sha384(
  - `digest.len() == 28`
 */
 void
-libcrux_sha3_sha224_ema(Eurydice_mut_borrow_slice_u8 digest, Eurydice_borrow_slice_u8 payload);
+libcrux_sha3_sha224_ema(
+  Eurydice_mut_borrow_slice_u8 digest,
+  Eurydice_mut_borrow_slice_u8 payload
+);
 
 /**
  SHA3 224
 */
-Eurydice_arr_f1 libcrux_sha3_sha224(Eurydice_borrow_slice_u8 data);
+Eurydice_arr_f1 libcrux_sha3_sha224(Eurydice_mut_borrow_slice_u8 data);
 
 /**
  SHA3 256
 */
 void
-libcrux_sha3_sha256_ema(Eurydice_mut_borrow_slice_u8 digest, Eurydice_borrow_slice_u8 payload);
+libcrux_sha3_sha256_ema(
+  Eurydice_mut_borrow_slice_u8 digest,
+  Eurydice_mut_borrow_slice_u8 payload
+);
 
 /**
  SHA3 256
 */
-Eurydice_arr_60 libcrux_sha3_sha256(Eurydice_borrow_slice_u8 data);
+Eurydice_arr_60 libcrux_sha3_sha256(Eurydice_mut_borrow_slice_u8 data);
 
 /**
  SHA3 384
 */
 void
-libcrux_sha3_sha384_ema(Eurydice_mut_borrow_slice_u8 digest, Eurydice_borrow_slice_u8 payload);
+libcrux_sha3_sha384_ema(
+  Eurydice_mut_borrow_slice_u8 digest,
+  Eurydice_mut_borrow_slice_u8 payload
+);
 
 /**
  SHA3 384
 */
-Eurydice_arr_5f libcrux_sha3_sha384(Eurydice_borrow_slice_u8 data);
+Eurydice_arr_5f libcrux_sha3_sha384(Eurydice_mut_borrow_slice_u8 data);
 
 /**
  SHA3 512
 */
 void
-libcrux_sha3_sha512_ema(Eurydice_mut_borrow_slice_u8 digest, Eurydice_borrow_slice_u8 payload);
+libcrux_sha3_sha512_ema(
+  Eurydice_mut_borrow_slice_u8 digest,
+  Eurydice_mut_borrow_slice_u8 payload
+);
 
 /**
  SHA3 512
 */
-Eurydice_arr_060 libcrux_sha3_sha512(Eurydice_borrow_slice_u8 data);
+Eurydice_arr_06 libcrux_sha3_sha512(Eurydice_mut_borrow_slice_u8 data);
 
 /**
 This function found in impl {libcrux_sha3::traits::Absorb<1usize> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
@@ -1725,7 +1735,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_block_a1_3a(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *input,
+  Eurydice_arr_f9 *input,
   size_t start
 );
 
@@ -1742,7 +1752,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_block_80_c63(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_06 *blocks,
+  Eurydice_arr_f9 *blocks,
   size_t start
 );
 
@@ -1754,7 +1764,7 @@ with const generics
 */
 void
 libcrux_sha3_generic_keccak_portable_keccak1_c6(
-  Eurydice_borrow_slice_u8 data,
+  Eurydice_mut_borrow_slice_u8 data,
   Eurydice_mut_borrow_slice_u8 out
 );
 
@@ -1764,7 +1774,7 @@ libcrux_sha3_generic_keccak_portable_keccak1_c6(
 void
 libcrux_sha3_portable_shake128(
   Eurydice_mut_borrow_slice_u8 digest,
-  Eurydice_borrow_slice_u8 data
+  Eurydice_mut_borrow_slice_u8 data
 );
 
 /**
@@ -1773,7 +1783,7 @@ libcrux_sha3_portable_shake128(
  Writes `out.len()` bytes.
 */
 void
-libcrux_sha3_shake128_ema(Eurydice_mut_borrow_slice_u8 out, Eurydice_borrow_slice_u8 data);
+libcrux_sha3_shake128_ema(Eurydice_mut_borrow_slice_u8 out, Eurydice_mut_borrow_slice_u8 data);
 
 /**
  SHAKE 256
@@ -1781,7 +1791,7 @@ libcrux_sha3_shake128_ema(Eurydice_mut_borrow_slice_u8 out, Eurydice_borrow_slic
  Writes `out.len()` bytes.
 */
 void
-libcrux_sha3_shake256_ema(Eurydice_mut_borrow_slice_u8 out, Eurydice_borrow_slice_u8 data);
+libcrux_sha3_shake256_ema(Eurydice_mut_borrow_slice_u8 out, Eurydice_mut_borrow_slice_u8 data);
 
 /**
 A monomorphic instance of libcrux_sha3.generic_keccak.xof.KeccakXofState
@@ -1850,7 +1860,7 @@ libcrux_sha3_portable_incremental_shake128_squeeze_first_five_blocks(
 void
 libcrux_sha3_portable_incremental_shake256_absorb_final(
   Eurydice_arr_26 *s,
-  Eurydice_borrow_slice_u8 data
+  Eurydice_mut_borrow_slice_u8 data
 );
 
 /**
@@ -1868,7 +1878,7 @@ with const generics
 */
 void
 libcrux_sha3_generic_keccak_portable_squeeze_first_block_b4_5b(
-  const Eurydice_arr_26 *self,
+  Eurydice_arr_26 *self,
   Eurydice_mut_borrow_slice_u8 out
 );
 
