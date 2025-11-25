@@ -1925,10 +1925,10 @@ shake128_squeeze_first_three_blocks_e0(Eurydice_arr_05 *st)
   Eurydice_arr_b0 out2 = { .data = { 0U } };
   Eurydice_arr_b0 out3 = { .data = { 0U } };
   libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(st,
-    Eurydice_array_to_slice_mut_850(&out0),
-    Eurydice_array_to_slice_mut_850(&out1),
-    Eurydice_array_to_slice_mut_850(&out2),
-    Eurydice_array_to_slice_mut_850(&out3));
+    Eurydice_array_to_slice_mut_85(&out0),
+    Eurydice_array_to_slice_mut_85(&out1),
+    Eurydice_array_to_slice_mut_85(&out2),
+    Eurydice_array_to_slice_mut_85(&out3));
   out.data[0U] = out0;
   out.data[1U] = out1;
   out.data[2U] = out2;
@@ -2299,32 +2299,6 @@ static KRML_MUSTINLINE Eurydice_arr_9d sample_from_xof_6c1(Eurydice_arr_c3 *seed
 }
 
 /**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types libcrux_ml_kem_polynomial_PolynomialRingElement_f6, size_t
-
-*/
-typedef struct dst_ref_mut_fb_s
-{
-  Eurydice_arr_51 *ptr;
-  size_t meta;
-}
-dst_ref_mut_fb;
-
-/**
-A monomorphic instance of Eurydice.array_to_slice_mut
-with types libcrux_ml_kem_polynomial_PolynomialRingElement libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-- N= 3
-*/
-static dst_ref_mut_fb array_to_slice_mut_cf3(Eurydice_arr_9d *a)
-{
-  dst_ref_mut_fb lit;
-  lit.ptr = a->data;
-  lit.meta = (size_t)3U;
-  return lit;
-}
-
-/**
 A monomorphic instance of libcrux_ml_kem.matrix.sample_matrix_A
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash
 with const generics
@@ -2358,8 +2332,10 @@ sample_matrix_A_6c1(Eurydice_arr_7d *A_transpose, Eurydice_arr_48 *seed, bool tr
       seeds.data[j].data[32U] = (uint8_t)i1;
       seeds.data[j].data[33U] = (uint8_t)j;);
     Eurydice_arr_9d sampled = sample_from_xof_6c1(&seeds);
-    for (size_t i = (size_t)0U; i < array_to_slice_mut_cf3(&sampled).meta; i++)
-    {
+    KRML_MAYBE_FOR3(i,
+      (size_t)0U,
+      (size_t)3U,
+      (size_t)1U,
       size_t j = i;
       Eurydice_arr_51 sample = sampled.data[j];
       if (transpose)
@@ -2369,8 +2345,7 @@ sample_matrix_A_6c1(Eurydice_arr_7d *A_transpose, Eurydice_arr_48 *seed, bool tr
       else
       {
         A_transpose->data[i1].data[j] = sample;
-      }
-    });
+      }););
 }
 
 /**
@@ -2556,8 +2531,10 @@ with const generics
 static KRML_MUSTINLINE void
 serialize_vector_ab(Eurydice_arr_9d *key, Eurydice_mut_borrow_slice_u8 out)
 {
-  for (size_t i = (size_t)0U; i < array_to_slice_mut_cf3(key).meta; i++)
-  {
+  KRML_MAYBE_FOR3(i,
+    (size_t)0U,
+    (size_t)3U,
+    (size_t)1U,
     size_t i0 = i;
     Eurydice_arr_51 re = key->data[i0];
     Eurydice_mut_borrow_slice_u8
@@ -2571,8 +2548,7 @@ serialize_vector_ab(Eurydice_arr_9d *key, Eurydice_mut_borrow_slice_u8 out)
         ));
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_cc lvalue = serialize_uncompressed_ring_element_84(&re);
-    Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_mut_fe(&lvalue), uint8_t);
-  }
+    Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_mut_fe(&lvalue), uint8_t););
 }
 
 /**
@@ -2926,8 +2902,10 @@ sample_matrix_A_b31(Eurydice_arr_7d *A_transpose, Eurydice_arr_48 *seed, bool tr
       seeds.data[j].data[32U] = (uint8_t)i1;
       seeds.data[j].data[33U] = (uint8_t)j;);
     Eurydice_arr_9d sampled = sample_from_xof_b31(&seeds);
-    for (size_t i = (size_t)0U; i < array_to_slice_mut_cf3(&sampled).meta; i++)
-    {
+    KRML_MAYBE_FOR3(i,
+      (size_t)0U,
+      (size_t)3U,
+      (size_t)1U,
       size_t j = i;
       Eurydice_arr_51 sample = sampled.data[j];
       if (transpose)
@@ -2937,8 +2915,7 @@ sample_matrix_A_b31(Eurydice_arr_7d *A_transpose, Eurydice_arr_48 *seed, bool tr
       else
       {
         A_transpose->data[i1].data[j] = sample;
-      }
-    });
+      }););
 }
 
 /**
@@ -3579,32 +3556,6 @@ static Eurydice_arr_51 call_mut_73_221(void **_)
 }
 
 /**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types Eurydice_arr_9d, size_t
-
-*/
-typedef struct dst_ref_mut_c8_s
-{
-  Eurydice_arr_9d *ptr;
-  size_t meta;
-}
-dst_ref_mut_c8;
-
-/**
-A monomorphic instance of Eurydice.array_to_slice_mut
-with types Eurydice_arr libcrux_ml_kem_polynomial_PolynomialRingElement libcrux_ml_kem_vector_avx2_SIMD256Vector[[$3size_t]]
-with const generics
-- N= 3
-*/
-static dst_ref_mut_c8 array_to_slice_mut_b50(Eurydice_arr_7d *a)
-{
-  dst_ref_mut_c8 lit;
-  lit.ptr = a->data;
-  lit.meta = (size_t)3U;
-  return lit;
-}
-
-/**
  Given two `KyberPolynomialRingElement`s in their NTT representations,
  compute their product. Given two polynomials in the NTT domain `f^` and `ĵ`,
  the `iᵗʰ` coefficient of the product `k̂` is determined by the calculation:
@@ -3671,32 +3622,6 @@ ntt_multiply_d6_84(Eurydice_arr_51 *self, Eurydice_arr_51 *rhs)
 }
 
 /**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, size_t
-
-*/
-typedef struct dst_ref_mut_4b_s
-{
-  __m256i *ptr;
-  size_t meta;
-}
-dst_ref_mut_4b;
-
-/**
-A monomorphic instance of Eurydice.array_to_slice_mut
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-- N= 16
-*/
-static dst_ref_mut_4b array_to_slice_mut_85(Eurydice_arr_51 *a)
-{
-  dst_ref_mut_4b lit;
-  lit.ptr = a->data;
-  lit.meta = (size_t)16U;
-  return lit;
-}
-
-/**
  Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
  sum of their constituent coefficients.
 */
@@ -3709,11 +3634,12 @@ with const generics
 static KRML_MUSTINLINE void
 add_to_ring_element_ab(Eurydice_arr_51 *myself, Eurydice_arr_51 *rhs)
 {
-  for (size_t i = (size_t)0U; i < array_to_slice_mut_85(myself).meta; i++)
-  {
+  KRML_MAYBE_FOR16(i,
+    (size_t)0U,
+    (size_t)16U,
+    (size_t)1U,
     size_t i0 = i;
-    myself->data[i0] = libcrux_ml_kem_vector_avx2_add_f5(myself->data[i0], &rhs->data[i0]);
-  }
+    myself->data[i0] = libcrux_ml_kem_vector_avx2_add_f5(myself->data[i0], &rhs->data[i0]););
 }
 
 /**
@@ -3795,21 +3721,23 @@ compute_As_plus_e_ab(
   Eurydice_arr_9d *error_as_ntt
 )
 {
-  for (size_t i = (size_t)0U; i < array_to_slice_mut_b50(matrix_A).meta; i++)
-  {
+  KRML_MAYBE_FOR3(i,
+    (size_t)0U,
+    (size_t)3U,
+    (size_t)1U,
     size_t i0 = i;
     Eurydice_arr_9d *row = &matrix_A->data[i0];
     Eurydice_arr_51 uu____0 = ZERO_d6_84();
     t_as_ntt->data[i0] = uu____0;
-    for (size_t i1 = (size_t)0U; i1 < array_to_slice_mut_cf3(row).meta; i1++)
-    {
+    KRML_MAYBE_FOR3(i1,
+      (size_t)0U,
+      (size_t)3U,
+      (size_t)1U,
       size_t j = i1;
       Eurydice_arr_51 *matrix_element = &row->data[j];
       Eurydice_arr_51 product = ntt_multiply_d6_84(matrix_element, &s_as_ntt->data[j]);
-      add_to_ring_element_d6_ab(&t_as_ntt->data[i0], &product);
-    }
-    add_standard_error_reduce_d6_84(&t_as_ntt->data[i0], &error_as_ntt->data[i0]);
-  }
+      add_to_ring_element_d6_ab(&t_as_ntt->data[i0], &product););
+    add_standard_error_reduce_d6_84(&t_as_ntt->data[i0], &error_as_ntt->data[i0]););
 }
 
 /**
@@ -4394,20 +4322,22 @@ compute_vector_u_ab(
     void *lvalue = (void *)0U;
     arr_struct.data[i] = call_mut_a8_ab(&lvalue););
   Eurydice_arr_9d result = arr_struct;
-  for (size_t i0 = (size_t)0U; i0 < array_to_slice_mut_b50(a_as_ntt).meta; i0++)
-  {
+  KRML_MAYBE_FOR3(i0,
+    (size_t)0U,
+    (size_t)3U,
+    (size_t)1U,
     size_t i1 = i0;
     Eurydice_arr_9d *row = &a_as_ntt->data[i1];
-    for (size_t i = (size_t)0U; i < array_to_slice_mut_cf3(row).meta; i++)
-    {
+    KRML_MAYBE_FOR3(i,
+      (size_t)0U,
+      (size_t)3U,
+      (size_t)1U,
       size_t j = i;
       Eurydice_arr_51 *a_element = &row->data[j];
       Eurydice_arr_51 product = ntt_multiply_d6_84(a_element, &r_as_ntt->data[j]);
-      add_to_ring_element_d6_ab(&result.data[i1], &product);
-    }
+      add_to_ring_element_d6_ab(&result.data[i1], &product););
     invert_ntt_montgomery_ab(&result.data[i1]);
-    add_error_reduce_d6_84(&result.data[i1], &error_1->data[i1]);
-  }
+    add_error_reduce_d6_84(&result.data[i1], &error_1->data[i1]););
   return result;
 }
 
@@ -4588,8 +4518,10 @@ with const generics
 static KRML_MUSTINLINE void
 compress_then_serialize_u_8c(Eurydice_arr_9d input, Eurydice_mut_borrow_slice_u8 out)
 {
-  for (size_t i = (size_t)0U; i < array_to_slice_mut_cf3(&input).meta; i++)
-  {
+  KRML_MAYBE_FOR3(i,
+    (size_t)0U,
+    (size_t)3U,
+    (size_t)1U,
     size_t i0 = i;
     Eurydice_arr_51 re = input.data[i0];
     Eurydice_mut_borrow_slice_u8
@@ -4603,8 +4535,7 @@ compress_then_serialize_u_8c(Eurydice_arr_9d input, Eurydice_mut_borrow_slice_u8
         ));
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_b7 lvalue = compress_then_serialize_ring_element_u_a4(&re);
-    Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_mut_d3(&lvalue), uint8_t);
-  }
+    Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_mut_d3(&lvalue), uint8_t););
 }
 
 /**
@@ -5322,7 +5253,7 @@ deserialize_then_decompress_u_ed(Eurydice_arr_2c *ciphertext)
   (size_t
     i = (size_t)0U;
     i <
-      Eurydice_array_to_slice_mut_42(ciphertext).meta /
+      (size_t)1088U /
         (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)10U / (size_t)8U);
     i++)
   {
@@ -6374,10 +6305,10 @@ shake128_squeeze_first_three_blocks_ac(Eurydice_arr_05 *st)
   Eurydice_arr_b0 out2 = { .data = { 0U } };
   Eurydice_arr_b0 out3 = { .data = { 0U } };
   libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(st,
-    Eurydice_array_to_slice_mut_850(&out0),
-    Eurydice_array_to_slice_mut_850(&out1),
-    Eurydice_array_to_slice_mut_850(&out2),
-    Eurydice_array_to_slice_mut_850(&out3));
+    Eurydice_array_to_slice_mut_85(&out0),
+    Eurydice_array_to_slice_mut_85(&out1),
+    Eurydice_array_to_slice_mut_85(&out2),
+    Eurydice_array_to_slice_mut_85(&out3));
   out.data[0U] = out0;
   out.data[1U] = out1;
   out.data[2U] = out2;
@@ -6695,20 +6626,6 @@ static KRML_MUSTINLINE Eurydice_arr_c5 sample_from_xof_6c0(Eurydice_arr_c50 *see
 }
 
 /**
-A monomorphic instance of Eurydice.array_to_slice_mut
-with types libcrux_ml_kem_polynomial_PolynomialRingElement libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-- N= 4
-*/
-static dst_ref_mut_fb array_to_slice_mut_cf2(Eurydice_arr_c5 *a)
-{
-  dst_ref_mut_fb lit;
-  lit.ptr = a->data;
-  lit.meta = (size_t)4U;
-  return lit;
-}
-
-/**
 A monomorphic instance of libcrux_ml_kem.matrix.sample_matrix_A
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash
 with const generics
@@ -6742,8 +6659,10 @@ sample_matrix_A_6c0(Eurydice_arr_43 *A_transpose, Eurydice_arr_48 *seed, bool tr
       seeds.data[j].data[32U] = (uint8_t)i1;
       seeds.data[j].data[33U] = (uint8_t)j;);
     Eurydice_arr_c5 sampled = sample_from_xof_6c0(&seeds);
-    for (size_t i = (size_t)0U; i < array_to_slice_mut_cf2(&sampled).meta; i++)
-    {
+    KRML_MAYBE_FOR4(i,
+      (size_t)0U,
+      (size_t)4U,
+      (size_t)1U,
       size_t j = i;
       Eurydice_arr_51 sample = sampled.data[j];
       if (transpose)
@@ -6753,8 +6672,7 @@ sample_matrix_A_6c0(Eurydice_arr_43 *A_transpose, Eurydice_arr_48 *seed, bool tr
       else
       {
         A_transpose->data[i1].data[j] = sample;
-      }
-    });
+      }););
 }
 
 /**
@@ -6819,8 +6737,10 @@ with const generics
 static KRML_MUSTINLINE void
 serialize_vector_42(Eurydice_arr_c5 *key, Eurydice_mut_borrow_slice_u8 out)
 {
-  for (size_t i = (size_t)0U; i < array_to_slice_mut_cf2(key).meta; i++)
-  {
+  KRML_MAYBE_FOR4(i,
+    (size_t)0U,
+    (size_t)4U,
+    (size_t)1U,
     size_t i0 = i;
     Eurydice_arr_51 re = key->data[i0];
     Eurydice_mut_borrow_slice_u8
@@ -6834,8 +6754,7 @@ serialize_vector_42(Eurydice_arr_c5 *key, Eurydice_mut_borrow_slice_u8 out)
         ));
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_cc lvalue = serialize_uncompressed_ring_element_84(&re);
-    Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_mut_fe(&lvalue), uint8_t);
-  }
+    Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_mut_fe(&lvalue), uint8_t););
 }
 
 /**
@@ -7163,8 +7082,10 @@ sample_matrix_A_b30(Eurydice_arr_43 *A_transpose, Eurydice_arr_48 *seed, bool tr
       seeds.data[j].data[32U] = (uint8_t)i1;
       seeds.data[j].data[33U] = (uint8_t)j;);
     Eurydice_arr_c5 sampled = sample_from_xof_b30(&seeds);
-    for (size_t i = (size_t)0U; i < array_to_slice_mut_cf2(&sampled).meta; i++)
-    {
+    KRML_MAYBE_FOR4(i,
+      (size_t)0U,
+      (size_t)4U,
+      (size_t)1U,
       size_t j = i;
       Eurydice_arr_51 sample = sampled.data[j];
       if (transpose)
@@ -7174,8 +7095,7 @@ sample_matrix_A_b30(Eurydice_arr_43 *A_transpose, Eurydice_arr_48 *seed, bool tr
       else
       {
         A_transpose->data[i1].data[j] = sample;
-      }
-    });
+      }););
 }
 
 /**
@@ -7484,32 +7404,6 @@ static Eurydice_arr_51 call_mut_73_220(void **_)
 }
 
 /**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types Eurydice_arr_c5, size_t
-
-*/
-typedef struct dst_ref_mut_df_s
-{
-  Eurydice_arr_c5 *ptr;
-  size_t meta;
-}
-dst_ref_mut_df;
-
-/**
-A monomorphic instance of Eurydice.array_to_slice_mut
-with types Eurydice_arr libcrux_ml_kem_polynomial_PolynomialRingElement libcrux_ml_kem_vector_avx2_SIMD256Vector[[$4size_t]]
-with const generics
-- N= 4
-*/
-static dst_ref_mut_df array_to_slice_mut_7c(Eurydice_arr_43 *a)
-{
-  dst_ref_mut_df lit;
-  lit.ptr = a->data;
-  lit.meta = (size_t)4U;
-  return lit;
-}
-
-/**
  Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
  sum of their constituent coefficients.
 */
@@ -7522,11 +7416,12 @@ with const generics
 static KRML_MUSTINLINE void
 add_to_ring_element_42(Eurydice_arr_51 *myself, Eurydice_arr_51 *rhs)
 {
-  for (size_t i = (size_t)0U; i < array_to_slice_mut_85(myself).meta; i++)
-  {
+  KRML_MAYBE_FOR16(i,
+    (size_t)0U,
+    (size_t)16U,
+    (size_t)1U,
     size_t i0 = i;
-    myself->data[i0] = libcrux_ml_kem_vector_avx2_add_f5(myself->data[i0], &rhs->data[i0]);
-  }
+    myself->data[i0] = libcrux_ml_kem_vector_avx2_add_f5(myself->data[i0], &rhs->data[i0]););
 }
 
 /**
@@ -7561,21 +7456,23 @@ compute_As_plus_e_42(
   Eurydice_arr_c5 *error_as_ntt
 )
 {
-  for (size_t i = (size_t)0U; i < array_to_slice_mut_7c(matrix_A).meta; i++)
-  {
+  KRML_MAYBE_FOR4(i,
+    (size_t)0U,
+    (size_t)4U,
+    (size_t)1U,
     size_t i0 = i;
     Eurydice_arr_c5 *row = &matrix_A->data[i0];
     Eurydice_arr_51 uu____0 = ZERO_d6_84();
     t_as_ntt->data[i0] = uu____0;
-    for (size_t i1 = (size_t)0U; i1 < array_to_slice_mut_cf2(row).meta; i1++)
-    {
+    KRML_MAYBE_FOR4(i1,
+      (size_t)0U,
+      (size_t)4U,
+      (size_t)1U,
       size_t j = i1;
       Eurydice_arr_51 *matrix_element = &row->data[j];
       Eurydice_arr_51 product = ntt_multiply_d6_84(matrix_element, &s_as_ntt->data[j]);
-      add_to_ring_element_d6_42(&t_as_ntt->data[i0], &product);
-    }
-    add_standard_error_reduce_d6_84(&t_as_ntt->data[i0], &error_as_ntt->data[i0]);
-  }
+      add_to_ring_element_d6_42(&t_as_ntt->data[i0], &product););
+    add_standard_error_reduce_d6_84(&t_as_ntt->data[i0], &error_as_ntt->data[i0]););
 }
 
 /**
@@ -7982,20 +7879,22 @@ compute_vector_u_42(
     void *lvalue = (void *)0U;
     arr_struct.data[i] = call_mut_a8_42(&lvalue););
   Eurydice_arr_c5 result = arr_struct;
-  for (size_t i0 = (size_t)0U; i0 < array_to_slice_mut_7c(a_as_ntt).meta; i0++)
-  {
+  KRML_MAYBE_FOR4(i0,
+    (size_t)0U,
+    (size_t)4U,
+    (size_t)1U,
     size_t i1 = i0;
     Eurydice_arr_c5 *row = &a_as_ntt->data[i1];
-    for (size_t i = (size_t)0U; i < array_to_slice_mut_cf2(row).meta; i++)
-    {
+    KRML_MAYBE_FOR4(i,
+      (size_t)0U,
+      (size_t)4U,
+      (size_t)1U,
       size_t j = i;
       Eurydice_arr_51 *a_element = &row->data[j];
       Eurydice_arr_51 product = ntt_multiply_d6_84(a_element, &r_as_ntt->data[j]);
-      add_to_ring_element_d6_42(&result.data[i1], &product);
-    }
+      add_to_ring_element_d6_42(&result.data[i1], &product););
     invert_ntt_montgomery_42(&result.data[i1]);
-    add_error_reduce_d6_84(&result.data[i1], &error_1->data[i1]);
-  }
+    add_error_reduce_d6_84(&result.data[i1], &error_1->data[i1]););
   return result;
 }
 
@@ -8056,8 +7955,10 @@ with const generics
 static KRML_MUSTINLINE void
 compress_then_serialize_u_c9(Eurydice_arr_c5 input, Eurydice_mut_borrow_slice_u8 out)
 {
-  for (size_t i = (size_t)0U; i < array_to_slice_mut_cf2(&input).meta; i++)
-  {
+  KRML_MAYBE_FOR4(i,
+    (size_t)0U,
+    (size_t)4U,
+    (size_t)1U,
     size_t i0 = i;
     Eurydice_arr_51 re = input.data[i0];
     Eurydice_mut_borrow_slice_u8
@@ -8071,8 +7972,7 @@ compress_then_serialize_u_c9(Eurydice_arr_c5 input, Eurydice_mut_borrow_slice_u8
         ));
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_790 lvalue = compress_then_serialize_ring_element_u_6f(&re);
-    Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_mut_89(&lvalue), uint8_t);
-  }
+    Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_mut_89(&lvalue), uint8_t););
 }
 
 /**
@@ -8403,7 +8303,7 @@ deserialize_then_decompress_u_1e(Eurydice_arr_00 *ciphertext)
   (size_t
     i = (size_t)0U;
     i <
-      Eurydice_array_to_slice_mut_4e(ciphertext).meta /
+      (size_t)1568U /
         (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)11U / (size_t)8U);
     i++)
   {
@@ -9238,10 +9138,10 @@ shake128_squeeze_first_three_blocks_fd(Eurydice_arr_05 *st)
   Eurydice_arr_b0 out2 = { .data = { 0U } };
   Eurydice_arr_b0 out3 = { .data = { 0U } };
   libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(st,
-    Eurydice_array_to_slice_mut_850(&out0),
-    Eurydice_array_to_slice_mut_850(&out1),
-    Eurydice_array_to_slice_mut_850(&out2),
-    Eurydice_array_to_slice_mut_850(&out3));
+    Eurydice_array_to_slice_mut_85(&out0),
+    Eurydice_array_to_slice_mut_85(&out1),
+    Eurydice_array_to_slice_mut_85(&out2),
+    Eurydice_array_to_slice_mut_85(&out3));
   out.data[0U] = out0;
   out.data[1U] = out1;
   return out;
@@ -9552,20 +9452,6 @@ static KRML_MUSTINLINE Eurydice_arr_d3 sample_from_xof_6c(Eurydice_arr_f90 *seed
 }
 
 /**
-A monomorphic instance of Eurydice.array_to_slice_mut
-with types libcrux_ml_kem_polynomial_PolynomialRingElement libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-- N= 2
-*/
-static dst_ref_mut_fb array_to_slice_mut_cf(Eurydice_arr_d3 *a)
-{
-  dst_ref_mut_fb lit;
-  lit.ptr = a->data;
-  lit.meta = (size_t)2U;
-  return lit;
-}
-
-/**
 A monomorphic instance of libcrux_ml_kem.matrix.sample_matrix_A
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash
 with const generics
@@ -9599,8 +9485,10 @@ sample_matrix_A_6c(Eurydice_arr_9a *A_transpose, Eurydice_arr_48 *seed, bool tra
       seeds.data[j].data[32U] = (uint8_t)i1;
       seeds.data[j].data[33U] = (uint8_t)j;);
     Eurydice_arr_d3 sampled = sample_from_xof_6c(&seeds);
-    for (size_t i = (size_t)0U; i < array_to_slice_mut_cf(&sampled).meta; i++)
-    {
+    KRML_MAYBE_FOR2(i,
+      (size_t)0U,
+      (size_t)2U,
+      (size_t)1U,
       size_t j = i;
       Eurydice_arr_51 sample = sampled.data[j];
       if (transpose)
@@ -9610,8 +9498,7 @@ sample_matrix_A_6c(Eurydice_arr_9a *A_transpose, Eurydice_arr_48 *seed, bool tra
       else
       {
         A_transpose->data[i1].data[j] = sample;
-      }
-    });
+      }););
 }
 
 /**
@@ -9676,8 +9563,10 @@ with const generics
 static KRML_MUSTINLINE void
 serialize_vector_89(Eurydice_arr_d3 *key, Eurydice_mut_borrow_slice_u8 out)
 {
-  for (size_t i = (size_t)0U; i < array_to_slice_mut_cf(key).meta; i++)
-  {
+  KRML_MAYBE_FOR2(i,
+    (size_t)0U,
+    (size_t)2U,
+    (size_t)1U,
     size_t i0 = i;
     Eurydice_arr_51 re = key->data[i0];
     Eurydice_mut_borrow_slice_u8
@@ -9691,8 +9580,7 @@ serialize_vector_89(Eurydice_arr_d3 *key, Eurydice_mut_borrow_slice_u8 out)
         ));
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_cc lvalue = serialize_uncompressed_ring_element_84(&re);
-    Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_mut_fe(&lvalue), uint8_t);
-  }
+    Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_mut_fe(&lvalue), uint8_t););
 }
 
 /**
@@ -10018,8 +9906,10 @@ sample_matrix_A_b3(Eurydice_arr_9a *A_transpose, Eurydice_arr_48 *seed, bool tra
       seeds.data[j].data[32U] = (uint8_t)i1;
       seeds.data[j].data[33U] = (uint8_t)j;);
     Eurydice_arr_d3 sampled = sample_from_xof_b3(&seeds);
-    for (size_t i = (size_t)0U; i < array_to_slice_mut_cf(&sampled).meta; i++)
-    {
+    KRML_MAYBE_FOR2(i,
+      (size_t)0U,
+      (size_t)2U,
+      (size_t)1U,
       size_t j = i;
       Eurydice_arr_51 sample = sampled.data[j];
       if (transpose)
@@ -10029,8 +9919,7 @@ sample_matrix_A_b3(Eurydice_arr_9a *A_transpose, Eurydice_arr_48 *seed, bool tra
       else
       {
         A_transpose->data[i1].data[j] = sample;
-      }
-    });
+      }););
 }
 
 /**
@@ -10346,32 +10235,6 @@ static Eurydice_arr_51 call_mut_73_22(void **_)
 }
 
 /**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types Eurydice_arr_d3, size_t
-
-*/
-typedef struct dst_ref_mut_08_s
-{
-  Eurydice_arr_d3 *ptr;
-  size_t meta;
-}
-dst_ref_mut_08;
-
-/**
-A monomorphic instance of Eurydice.array_to_slice_mut
-with types Eurydice_arr libcrux_ml_kem_polynomial_PolynomialRingElement libcrux_ml_kem_vector_avx2_SIMD256Vector[[$2size_t]]
-with const generics
-- N= 2
-*/
-static dst_ref_mut_08 array_to_slice_mut_f4(Eurydice_arr_9a *a)
-{
-  dst_ref_mut_08 lit;
-  lit.ptr = a->data;
-  lit.meta = (size_t)2U;
-  return lit;
-}
-
-/**
  Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
  sum of their constituent coefficients.
 */
@@ -10384,11 +10247,12 @@ with const generics
 static KRML_MUSTINLINE void
 add_to_ring_element_89(Eurydice_arr_51 *myself, Eurydice_arr_51 *rhs)
 {
-  for (size_t i = (size_t)0U; i < array_to_slice_mut_85(myself).meta; i++)
-  {
+  KRML_MAYBE_FOR16(i,
+    (size_t)0U,
+    (size_t)16U,
+    (size_t)1U,
     size_t i0 = i;
-    myself->data[i0] = libcrux_ml_kem_vector_avx2_add_f5(myself->data[i0], &rhs->data[i0]);
-  }
+    myself->data[i0] = libcrux_ml_kem_vector_avx2_add_f5(myself->data[i0], &rhs->data[i0]););
 }
 
 /**
@@ -10423,21 +10287,23 @@ compute_As_plus_e_89(
   Eurydice_arr_d3 *error_as_ntt
 )
 {
-  for (size_t i = (size_t)0U; i < array_to_slice_mut_f4(matrix_A).meta; i++)
-  {
+  KRML_MAYBE_FOR2(i,
+    (size_t)0U,
+    (size_t)2U,
+    (size_t)1U,
     size_t i0 = i;
     Eurydice_arr_d3 *row = &matrix_A->data[i0];
     Eurydice_arr_51 uu____0 = ZERO_d6_84();
     t_as_ntt->data[i0] = uu____0;
-    for (size_t i1 = (size_t)0U; i1 < array_to_slice_mut_cf(row).meta; i1++)
-    {
+    KRML_MAYBE_FOR2(i1,
+      (size_t)0U,
+      (size_t)2U,
+      (size_t)1U,
       size_t j = i1;
       Eurydice_arr_51 *matrix_element = &row->data[j];
       Eurydice_arr_51 product = ntt_multiply_d6_84(matrix_element, &s_as_ntt->data[j]);
-      add_to_ring_element_d6_89(&t_as_ntt->data[i0], &product);
-    }
-    add_standard_error_reduce_d6_84(&t_as_ntt->data[i0], &error_as_ntt->data[i0]);
-  }
+      add_to_ring_element_d6_89(&t_as_ntt->data[i0], &product););
+    add_standard_error_reduce_d6_84(&t_as_ntt->data[i0], &error_as_ntt->data[i0]););
 }
 
 /**
@@ -10884,20 +10750,22 @@ compute_vector_u_89(
     void *lvalue = (void *)0U;
     arr_struct.data[i] = call_mut_a8_89(&lvalue););
   Eurydice_arr_d3 result = arr_struct;
-  for (size_t i0 = (size_t)0U; i0 < array_to_slice_mut_f4(a_as_ntt).meta; i0++)
-  {
+  KRML_MAYBE_FOR2(i0,
+    (size_t)0U,
+    (size_t)2U,
+    (size_t)1U,
     size_t i1 = i0;
     Eurydice_arr_d3 *row = &a_as_ntt->data[i1];
-    for (size_t i = (size_t)0U; i < array_to_slice_mut_cf(row).meta; i++)
-    {
+    KRML_MAYBE_FOR2(i,
+      (size_t)0U,
+      (size_t)2U,
+      (size_t)1U,
       size_t j = i;
       Eurydice_arr_51 *a_element = &row->data[j];
       Eurydice_arr_51 product = ntt_multiply_d6_84(a_element, &r_as_ntt->data[j]);
-      add_to_ring_element_d6_89(&result.data[i1], &product);
-    }
+      add_to_ring_element_d6_89(&result.data[i1], &product););
     invert_ntt_montgomery_89(&result.data[i1]);
-    add_error_reduce_d6_84(&result.data[i1], &error_1->data[i1]);
-  }
+    add_error_reduce_d6_84(&result.data[i1], &error_1->data[i1]););
   return result;
 }
 
@@ -10916,8 +10784,10 @@ with const generics
 static KRML_MUSTINLINE void
 compress_then_serialize_u_2d(Eurydice_arr_d3 input, Eurydice_mut_borrow_slice_u8 out)
 {
-  for (size_t i = (size_t)0U; i < array_to_slice_mut_cf(&input).meta; i++)
-  {
+  KRML_MAYBE_FOR2(i,
+    (size_t)0U,
+    (size_t)2U,
+    (size_t)1U,
     size_t i0 = i;
     Eurydice_arr_51 re = input.data[i0];
     Eurydice_mut_borrow_slice_u8
@@ -10931,8 +10801,7 @@ compress_then_serialize_u_2d(Eurydice_arr_d3 input, Eurydice_mut_borrow_slice_u8
         ));
     /* original Rust expression is not an lvalue in C */
     Eurydice_arr_b7 lvalue = compress_then_serialize_ring_element_u_a4(&re);
-    Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_mut_d3(&lvalue), uint8_t);
-  }
+    Eurydice_slice_copy(uu____0, Eurydice_array_to_slice_mut_d3(&lvalue), uint8_t););
 }
 
 /**
@@ -11228,7 +11097,7 @@ deserialize_then_decompress_u_ba(Eurydice_arr_56 *ciphertext)
   (size_t
     i = (size_t)0U;
     i <
-      Eurydice_array_to_slice_mut_ee(ciphertext).meta /
+      (size_t)768U /
         (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)10U / (size_t)8U);
     i++)
   {

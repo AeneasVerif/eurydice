@@ -1179,7 +1179,7 @@ with types uint8_t
 with const generics
 - N= 504
 */
-Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_850(Eurydice_arr_b0 *a);
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_85(Eurydice_arr_b0 *a);
 
 /**
 A monomorphic instance of Eurydice.arr

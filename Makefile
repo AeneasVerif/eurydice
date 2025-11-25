@@ -199,3 +199,6 @@ format-apply:
 .PHONY: clean-llbc
 clean-llbc:
 	rm test/*.llbc || true
+
+debug-ppx-%: lib/%
+	dune describe pp $<
