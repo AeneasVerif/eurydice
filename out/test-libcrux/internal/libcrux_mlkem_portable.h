@@ -579,7 +579,7 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_init_a
 with const generics
 - K= 2
 */
-Eurydice_arr_730
+Eurydice_arr_73
 libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_fd(
   const Eurydice_arr_f9 *input
 );
@@ -594,7 +594,7 @@ with const generics
 */
 Eurydice_arr_31
 libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_4a_fd(
-  Eurydice_arr_730 *self
+  Eurydice_arr_73 *self
 );
 
 /**
@@ -606,9 +606,7 @@ with const generics
 - K= 2
 */
 Eurydice_arr_dc0
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_4a_fd(
-  Eurydice_arr_730 *self
-);
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_4a_fd(Eurydice_arr_73 *self);
 
 /**
  Generate an unpacked key from a serialized key.

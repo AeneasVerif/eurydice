@@ -1927,7 +1927,7 @@ with types libcrux_sha3_portable_KeccakState
 with const generics
 - $2size_t
 */
-typedef struct Eurydice_arr_730_s { Eurydice_arr_26 data[2U]; } Eurydice_arr_730;
+typedef struct Eurydice_arr_73_s { Eurydice_arr_26 data[2U]; } Eurydice_arr_73;
 
 #if defined(__cplusplus)
 }
