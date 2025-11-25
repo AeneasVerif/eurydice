@@ -1076,6 +1076,14 @@ let bonus_cleanups =
       | [ "core"; "slice"; "{@Slice<T>}" ], "split_at_mut" -> [ "Eurydice" ], "slice_split_at_mut"
       | _ -> lid
 
+    (* { f = e; ... }.f ~~> e
+
+     scheduled late because we need all the let-inlining *)
+    method! visit_EField env e f =
+      match e.node with
+      | EFlat fields -> (List.assoc (Some f) fields).node
+      | _ -> EField (self#visit_expr env e, f)
+
     method! visit_ELet ((bs, _) as env) b e1 e2 =
       match e1.node, e1.typ, e2.node with
       (* let x; x := e; return x  -->  x*)
@@ -1119,6 +1127,23 @@ let bonus_cleanups =
               self#visit_expr env (DeBruijn.subst Helpers.eunit 0 e3);
             ]
       | _ -> super#visit_ELet env b e1 e2
+  end
+
+let cosmetic =
+  object (_self)
+    inherit [_] map as super
+
+    method! visit_expr _ e =
+      match e with
+      | [%cremepat {| core::slice::?impl::len<?>(?e) |}] when impl = "{@Slice<T>}" ->
+          with_type (TInt SizeT) (EField (e, "meta"))
+      | [%cremepat {| Eurydice::slice_index_mut<?t>(?s, ?i) |}] ->
+          with_type e.typ
+            (EBufRead (with_type (TBuf (t, false)) (EField (super#visit_expr_w () s, "ptr")), i))
+      | [%cremepat {| Eurydice::slice_index_shared<?t>(?s, ?i) |}] ->
+          with_type e.typ
+            (EBufRead (with_type (TBuf (t, true)) (EField (super#visit_expr_w () s, "ptr")), i))
+      | _ -> super#visit_expr ((), e.typ) e
   end
 
 (* This is a potentially tricky phase because if it's too aggressive, it'll

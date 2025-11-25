@@ -83,13 +83,13 @@ void floating_points_main(void)
   const_float64_t__x2 uu____1 = { .fst = arr2.data, .snd = &lvalue1 };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  size_t lvalue2 = Eurydice_slice_len(array_to_slice_shared_de(&arr), float32_t);
+  size_t lvalue2 = array_to_slice_shared_de(&arr).meta;
   /* original Rust expression is not an lvalue in C */
   size_t lvalue3 = (size_t)100U;
   const_size_t__x2 uu____2 = { .fst = &lvalue2, .snd = &lvalue3 };
   EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  size_t lvalue4 = Eurydice_slice_len(array_to_slice_shared_51(&arr2), float64_t);
+  size_t lvalue4 = array_to_slice_shared_51(&arr2).meta;
   /* original Rust expression is not an lvalue in C */
   size_t lvalue = (size_t)100U;
   const_size_t__x2 uu____3 = { .fst = &lvalue4, .snd = &lvalue };

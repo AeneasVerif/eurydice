@@ -115,18 +115,6 @@ libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_4a_ac(
 );
 
 /**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types libcrux_ml_kem_polynomial_PolynomialRingElement_1d, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_b0_s
-{
-  const Eurydice_arr_b9 *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_b0;
-
-/**
  Generate an unpacked key from a serialized key.
 */
 /**
@@ -305,30 +293,6 @@ with const generics
 */
 libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
 libcrux_ml_kem_ind_cca_unpacked_default_7b_d0(void);
-
-/**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types Eurydice_arr_cf, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_16_s
-{
-  const Eurydice_arr_cf *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_16;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_f3_s
-{
-  const Eurydice_arr_e2 *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_f3;
 
 /**
  Generate Unpacked Keys
@@ -789,18 +753,6 @@ with const generics
 */
 libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
 libcrux_ml_kem_ind_cca_unpacked_default_7b_a0(void);
-
-/**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types Eurydice_arr_3d0, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_d9_s
-{
-  const Eurydice_arr_3d0 *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_d9;
 
 /**
  Generate Unpacked Keys
@@ -1288,18 +1240,6 @@ with const generics
 */
 libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
 libcrux_ml_kem_ind_cca_unpacked_default_7b_1b(void);
-
-/**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types Eurydice_arr_1d, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_66_s
-{
-  const Eurydice_arr_1d *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_66;
 
 /**
  Generate Unpacked Keys

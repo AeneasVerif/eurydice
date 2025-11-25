@@ -36,10 +36,8 @@ This function found in impl {traits::ToInt for &0 (@Slice<traits::Foo>)}
 */
 uint32_t traits_to_int_88(const Eurydice_dst_ref_shared_e2 *self)
 {
-  uint32_t
-  uu____0 = traits_to_int_ac(&Eurydice_slice_index_shared(self[0U], (size_t)0U, traits_Foo));
-  return
-    uu____0 * traits_to_int_ac(&Eurydice_slice_index_shared(self[0U], (size_t)1U, traits_Foo));
+  uint32_t uu____0 = traits_to_int_ac(&self->ptr[0U]);
+  return uu____0 * traits_to_int_ac(&self->ptr[1U]);
 }
 
 /**

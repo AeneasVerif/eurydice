@@ -1987,7 +1987,7 @@ keccak4_ad(
 )
 {
   Eurydice_arr_05 s = new_80_a6();
-  size_t data_len = Eurydice_slice_len(data->data[0U], uint8_t);
+  size_t data_len = data->data->meta;
   for (size_t i = (size_t)0U; i < data_len / (size_t)136U; i++)
   {
     size_t i0 = i;
@@ -1995,12 +1995,7 @@ keccak4_ad(
   }
   size_t rem = data_len % (size_t)136U;
   absorb_final_80_fb(&s, data, data_len - rem, rem);
-  size_t
-  outlen =
-    Eurydice_slice_len((
-        KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = out0.ptr, .meta = out0.meta }
-      ),
-      uint8_t);
+  size_t outlen = out0.meta;
   size_t blocks = outlen / (size_t)136U;
   size_t last = outlen - outlen % (size_t)136U;
   if (blocks == (size_t)0U)
@@ -2278,11 +2273,9 @@ libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
   Eurydice_borrow_slice_u8 data3
 )
 {
-  Eurydice_arr_05 *uu____0 = s;
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_cd lvalue = { .data = { data0, data1, data2, data3 } };
-  const Eurydice_arr_cd *uu____1 = &lvalue;
-  absorb_final_80_fb0(uu____0, uu____1, (size_t)0U, Eurydice_slice_len(data0, uint8_t));
+  absorb_final_80_fb0(s, &lvalue, (size_t)0U, data0.meta);
 }
 
 /**
@@ -2632,11 +2625,9 @@ libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
   Eurydice_borrow_slice_u8 data3
 )
 {
-  Eurydice_arr_05 *uu____0 = s;
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_cd lvalue = { .data = { data0, data1, data2, data3 } };
-  const Eurydice_arr_cd *uu____1 = &lvalue;
-  absorb_final_80_fb(uu____0, uu____1, (size_t)0U, Eurydice_slice_len(data0, uint8_t));
+  absorb_final_80_fb(s, &lvalue, (size_t)0U, data0.meta);
 }
 
 /**
@@ -2671,7 +2662,7 @@ libcrux_sha3_avx2_x4_incremental_shake256_squeeze_first_block(
   Eurydice_mut_borrow_slice_u8 out3
 )
 {
-  squeeze_first_block_81_5b(s, out0, out1, out2, out3);
+  squeeze_first_block_81_5b(&s[0U], out0, out1, out2, out3);
 }
 
 /**
