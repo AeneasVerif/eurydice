@@ -23,12 +23,8 @@ array_to_subslice_shared_36(const Eurydice_arr_60 *a, core_ops_range_Range_08 r)
 uint8_t array_fun(Eurydice_dst_ref_shared_10 x)
 {
   return
-    Eurydice_slice_index_shared(array_to_subslice_shared_36(&Eurydice_slice_index_shared(x,
-          (size_t)0U,
-          Eurydice_arr_60),
-        (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)1U })),
-      (size_t)0U,
-      uint8_t);
+    array_to_subslice_shared_36(&x.ptr[0U],
+      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)1U })).ptr[0U];
 }
 
 Eurydice_arr_60 array_init(void)

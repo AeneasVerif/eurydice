@@ -51,12 +51,7 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
   uint32_t nBitsInAccumulator = 0U;
   EURYDICE_ASSERT(nBitsPerCoefficient > 0U, "panic!");
   EURYDICE_ASSERT(nBitsPerCoefficient <= 12U, "panic!");
-  EURYDICE_ASSERT((uint64_t)Eurydice_slice_len((
-        KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = dst.ptr, .meta = dst.meta }
-      ),
-      uint8_t)
-    == 256ULL * (uint64_t)nBitsPerCoefficient / 8ULL,
-    "panic!");
+  EURYDICE_ASSERT((uint64_t)dst.meta == 256ULL * (uint64_t)nBitsPerCoefficient / 8ULL, "panic!");
   for (size_t i = (size_t)0U; i < (size_t)256U; i++)
   {
     size_t i0 = i;

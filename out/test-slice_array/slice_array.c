@@ -39,7 +39,7 @@ void slice_array_f1(void)
       (size_t)2U,
       Eurydice_array_u8x4,
       Eurydice_dst_ref_mut_75_x2).fst;
-  Eurydice_slice_index_mut(y0, (size_t)0U, Eurydice_array_u8x4).data[0U] = 1U;
+  y0.ptr->data[0U] = 1U;
   uint8_t actual = x.data->data[0U];
   uint8_t expected = 1U;
   const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
@@ -57,13 +57,7 @@ void slice_array_f2(void)
       (size_t)2U,
       Eurydice_array_u8x4,
       Eurydice_dst_ref_mut_75_x2).fst;
-  Eurydice_array_u8x4
-  z =
-    Eurydice_slice_index_shared((
-        KRML_CLITERAL(Eurydice_dst_ref_shared_75){ .ptr = y0.ptr, .meta = y0.meta }
-      ),
-      (size_t)0U,
-      Eurydice_array_u8x4);
+  Eurydice_array_u8x4 z = y0.ptr[0U];
   z.data[0U] = 1U;
   uint8_t actual = x.data->data[0U];
   uint8_t expected = 0U;
@@ -205,7 +199,7 @@ void slice_array_f4_ac(void)
       (size_t)2U,
       Eurydice_array_u8x4,
       Eurydice_dst_ref_mut_75_x2).fst;
-  Eurydice_slice_index_mut(y0, (size_t)0U, Eurydice_array_u8x4).data[0U] = 1U;
+  y0.ptr->data[0U] = 1U;
   uint8_t actual = x.data->data[0U];
   uint8_t expected = 1U;
   const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
