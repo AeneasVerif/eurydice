@@ -65,6 +65,7 @@ let rec token lexbuf =
   (* | "_" -> locate lexbuf UNDERSCORE *)
   | "::" -> locate lexbuf COLONCOLON
   | ":" -> locate lexbuf COLON
+  | "\"" -> string (Buffer.create 16) lexbuf
   | "\n" ->
       incr lines;
       cur_line := fst (loc lexbuf);
@@ -74,4 +75,15 @@ let rec token lexbuf =
   | any ->
       let l = Utf8.lexeme lexbuf in
       failwith (Printf.sprintf "unhandled token: %s, len=%d" l (String.length l))
+  | _ -> assert false
+
+and string b lexbuf =
+  match%sedlex lexbuf with
+  | "\\\"" ->
+      Buffer.add_string b "\"";
+      string b lexbuf
+  | "\"" -> locate lexbuf (STRING (Buffer.contents b))
+  | any ->
+      Buffer.add_string b (Utf8.lexeme lexbuf);
+      string b lexbuf
   | _ -> assert false

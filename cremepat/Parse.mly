@@ -3,7 +3,7 @@
 %}
 
 %token<int>     INT
-%token<string>  UIDENT LIDENT UVAR UVARLIST
+%token<string>  UIDENT LIDENT UVAR UVARLIST STRING
 %token          EOF COMMA EQUALS LBRACK RBRACK LBRACKHASH LANGLE RANGLE LCURLY RCURLY
 %token          COLON COLONCOLON AMP LPAREN RPAREN LPARENHASH SEMI
 %token          MATCH TRUE FALSE LET WHILE BREAK ARROW ABORT
@@ -40,6 +40,8 @@ ident:
 path_item:
 | i = ident
   { Name i }
+| s = STRING
+  { Name s }
 | p = UVAR
   { if p = "" then Wild else Var p }
 | _p = UVARLIST
