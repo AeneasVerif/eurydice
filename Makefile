@@ -131,9 +131,11 @@ custom-test-for: test-for
 # libcrux tests
 
 custom-test-libcrux-no-const: test/libcrux.llbc
-	mkdir -p out/test-libcrux-noconst
+	mkdir -p out/test-libcrux-no-const
 	$(EURYDICE) --config test/libcrux/c.yaml -funroll-loops 16 \
-	  $< --keep-going --output out/test-libcrux-noconst --no-const
+	  $< --keep-going --output out/test-libcrux-no-const --no-const
+	$(SED) -i 's/  KaRaMeL version: .*//' out/test-libcrux-no-const/**/*.{c,h} # This changes on every commit
+	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-libcrux-no-const/**/*.{c,h} # This changes between local and CI
 
 test-libcrux: test/libcrux.llbc
 	mkdir -p out/test-libcrux
