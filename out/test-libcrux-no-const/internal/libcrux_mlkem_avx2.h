@@ -70,18 +70,6 @@ typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63_s
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63;
 
 /**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types libcrux_ml_kem_polynomial_PolynomialRingElement_f6, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_fb_s
-{
-  Eurydice_arr_51 *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_mut_fb;
-
-/**
  Generate an unpacked key from a serialized key.
 */
 /**
@@ -270,30 +258,6 @@ with const generics
 */
 libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked
 libcrux_ml_kem_ind_cca_unpacked_default_7b_ab(void);
-
-/**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types Eurydice_arr_9d, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_c8_s
-{
-  Eurydice_arr_9d *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_mut_c8;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_4b_s
-{
-  __m256i *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_mut_4b;
 
 /**
  Generate Unpacked Keys
@@ -699,18 +663,6 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked
 libcrux_ml_kem_ind_cca_unpacked_default_7b_42(void);
 
 /**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types Eurydice_arr_c5, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_df_s
-{
-  Eurydice_arr_c5 *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_mut_df;
-
-/**
  Generate Unpacked Keys
 */
 /**
@@ -1112,18 +1064,6 @@ with const generics
 */
 libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked
 libcrux_ml_kem_ind_cca_unpacked_default_7b_89(void);
-
-/**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types Eurydice_arr_d3, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_08_s
-{
-  Eurydice_arr_d3 *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_mut_08;
 
 /**
  Generate Unpacked Keys
