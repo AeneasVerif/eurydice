@@ -8,7 +8,7 @@
 #ifndef more_primitive_types_H
 #define more_primitive_types_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

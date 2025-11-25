@@ -8,7 +8,7 @@
 #ifndef dst_H
 #define dst_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

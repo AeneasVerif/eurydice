@@ -8,7 +8,7 @@
 #ifndef result_H
 #define result_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 

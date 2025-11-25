@@ -8,7 +8,7 @@
 #ifndef recursion_H
 #define recursion_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

@@ -8,7 +8,7 @@
 #ifndef floating_points_H
 #define floating_points_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

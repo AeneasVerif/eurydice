@@ -8,7 +8,7 @@
 #ifndef closure_fn_cast_H
 #define closure_fn_cast_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

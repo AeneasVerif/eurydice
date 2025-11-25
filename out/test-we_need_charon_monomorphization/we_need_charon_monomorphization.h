@@ -8,7 +8,7 @@
 #ifndef we_need_charon_monomorphization_H
 #define we_need_charon_monomorphization_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

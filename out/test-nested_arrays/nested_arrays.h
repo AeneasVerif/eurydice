@@ -8,7 +8,7 @@
 #ifndef nested_arrays_H
 #define nested_arrays_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

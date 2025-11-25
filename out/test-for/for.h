@@ -8,7 +8,7 @@
 #ifndef for_H
 #define for_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)
