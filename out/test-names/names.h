@@ -43,6 +43,15 @@ typedef struct names_Foo0_s
 }
 names_Foo0;
 
+typedef struct names_Type_s
+{
+  int32_t switch0;
+  int32_t class0;
+}
+names_Type;
+
+void names_f(uint32_t r_struct);
+
 void names_main(void);
 
 #if defined(__cplusplus)

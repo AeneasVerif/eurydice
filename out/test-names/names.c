@@ -7,6 +7,11 @@
 
 #include "names.h"
 
+void names_f(uint32_t r_struct)
+{
+
+}
+
 void names_main(void)
 {
 

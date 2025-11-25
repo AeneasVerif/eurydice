@@ -16,7 +16,7 @@ const_uint32_t__x2;
 
 void issue_k630_main(void)
 {
-  Eurydice_arr_10 v;
+  Eurydice_arr_35 v;
   Eurydice_arr_a5 repeat_expression0[5U];
   KRML_MAYBE_FOR5(i,
     (size_t)0U,

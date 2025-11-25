@@ -42,20 +42,20 @@ A monomorphic instance of core.option.as_ref_cd
 with types Eurydice_arr uint8_t[[$16size_t]]
 
 */
-inline core_option_Option_e9 core_option_as_ref_cd_ca(const core_option_Option_62 *self)
+inline core_option_Option_e3 core_option_as_ref_cd_ca(const core_option_Option_bc *self)
 {
   if (!(self->tag == core_option_None))
   {
     const Eurydice_arr_88 *x = &self->f0;
-    return (KRML_CLITERAL(core_option_Option_e9){ .tag = core_option_Some, .f0 = x });
+    return (KRML_CLITERAL(core_option_Option_e3){ .tag = core_option_Some, .f0 = x });
   }
-  return (KRML_CLITERAL(core_option_Option_e9){ .tag = core_option_None });
+  return (KRML_CLITERAL(core_option_Option_e3){ .tag = core_option_None });
 }
 
 /**
 This function found in impl {option::S}
 */
-core_option_Option_e9 option_option_ref_b6(const core_option_Option_62 *self)
+core_option_Option_e3 option_option_ref_b6(const core_option_Option_bc *self)
 {
   return core_option_as_ref_cd_ca(self);
 }

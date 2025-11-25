@@ -81,17 +81,17 @@ core_option_Option_08;
 
 /**
 A monomorphic instance of K.
-with types size_t, core_option_Option size_t
+with types size_t, core_option_Option_08
 
 */
-typedef struct tuple_04_s
+typedef struct tuple_d1_s
 {
   size_t fst;
   core_option_Option_08 snd;
 }
-tuple_04;
+tuple_d1;
 
-extern tuple_04
+extern tuple_d1
 core_iter_range__core__iter__range__Step_for_i32__steps_between(
   const int32_t *x0,
   const int32_t *x1

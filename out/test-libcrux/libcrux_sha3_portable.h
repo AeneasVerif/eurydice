@@ -15,7 +15,6 @@
 extern "C" {
 #endif
 
-#include "libcrux_sha3_internal.h"
 #include "libcrux_core.h"
 
 /**
@@ -139,7 +138,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_block_a1_f8(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *input,
+  const Eurydice_arr_06 *input,
   size_t start
 );
 
@@ -887,7 +886,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_block_80_c6(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *blocks,
+  const Eurydice_arr_06 *blocks,
   size_t start
 );
 
@@ -917,7 +916,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_a1_96(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *input,
+  const Eurydice_arr_06 *input,
   size_t start,
   size_t len
 );
@@ -936,7 +935,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_final_80_9e(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *last,
+  const Eurydice_arr_06 *last,
   size_t start,
   size_t len
 );
@@ -1014,7 +1013,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_block_a1_5b(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *input,
+  const Eurydice_arr_06 *input,
   size_t start
 );
 
@@ -1031,7 +1030,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_block_80_c60(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *blocks,
+  const Eurydice_arr_06 *blocks,
   size_t start
 );
 
@@ -1061,7 +1060,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_a1_ad(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *input,
+  const Eurydice_arr_06 *input,
   size_t start,
   size_t len
 );
@@ -1080,7 +1079,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_final_80_9e0(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *last,
+  const Eurydice_arr_06 *last,
   size_t start,
   size_t len
 );
@@ -1161,7 +1160,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_a1_ad0(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *input,
+  const Eurydice_arr_06 *input,
   size_t start,
   size_t len
 );
@@ -1180,7 +1179,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_final_80_9e1(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *last,
+  const Eurydice_arr_06 *last,
   size_t start,
   size_t len
 );
@@ -1251,7 +1250,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_a1_c6(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *input,
+  const Eurydice_arr_06 *input,
   size_t start,
   size_t len
 );
@@ -1270,7 +1269,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_final_80_9e2(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *last,
+  const Eurydice_arr_06 *last,
   size_t start,
   size_t len
 );
@@ -1360,6 +1359,21 @@ libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
   Eurydice_mut_borrow_slice_u8 out0
 );
 
+#define libcrux_sha3_Algorithm_Sha224 1
+#define libcrux_sha3_Algorithm_Sha256 2
+#define libcrux_sha3_Algorithm_Sha384 3
+#define libcrux_sha3_Algorithm_Sha512 4
+
+typedef uint8_t libcrux_sha3_Algorithm;
+
+#define LIBCRUX_SHA3_SHA3_224_DIGEST_SIZE ((size_t)28U)
+
+#define LIBCRUX_SHA3_SHA3_256_DIGEST_SIZE ((size_t)32U)
+
+#define LIBCRUX_SHA3_SHA3_384_DIGEST_SIZE ((size_t)48U)
+
+#define LIBCRUX_SHA3_SHA3_512_DIGEST_SIZE ((size_t)64U)
+
 /**
  Returns the output size of a digest.
 */
@@ -1388,7 +1402,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_block_a1_2c(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *input,
+  const Eurydice_arr_06 *input,
   size_t start
 );
 
@@ -1405,7 +1419,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_block_80_c61(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *blocks,
+  const Eurydice_arr_06 *blocks,
   size_t start
 );
 
@@ -1435,7 +1449,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_a1_1e(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *input,
+  const Eurydice_arr_06 *input,
   size_t start,
   size_t len
 );
@@ -1454,7 +1468,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_final_80_9e3(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *last,
+  const Eurydice_arr_06 *last,
   size_t start,
   size_t len
 );
@@ -1532,7 +1546,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_block_a1_7a(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *input,
+  const Eurydice_arr_06 *input,
   size_t start
 );
 
@@ -1549,7 +1563,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_block_80_c62(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *blocks,
+  const Eurydice_arr_06 *blocks,
   size_t start
 );
 
@@ -1579,7 +1593,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_last_a1_7c(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *input,
+  const Eurydice_arr_06 *input,
   size_t start,
   size_t len
 );
@@ -1598,7 +1612,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_final_80_9e4(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *last,
+  const Eurydice_arr_06 *last,
   size_t start,
   size_t len
 );
@@ -1665,7 +1679,7 @@ libcrux_sha3_sha224_ema(Eurydice_mut_borrow_slice_u8 digest, Eurydice_borrow_sli
 /**
  SHA3 224
 */
-libcrux_sha3_Sha3_224Digest libcrux_sha3_sha224(Eurydice_borrow_slice_u8 data);
+Eurydice_arr_f1 libcrux_sha3_sha224(Eurydice_borrow_slice_u8 data);
 
 /**
  SHA3 256
@@ -1687,7 +1701,7 @@ libcrux_sha3_sha384_ema(Eurydice_mut_borrow_slice_u8 digest, Eurydice_borrow_sli
 /**
  SHA3 384
 */
-libcrux_sha3_Sha3_384Digest libcrux_sha3_sha384(Eurydice_borrow_slice_u8 data);
+Eurydice_arr_5f libcrux_sha3_sha384(Eurydice_borrow_slice_u8 data);
 
 /**
  SHA3 512
@@ -1698,7 +1712,7 @@ libcrux_sha3_sha512_ema(Eurydice_mut_borrow_slice_u8 digest, Eurydice_borrow_sli
 /**
  SHA3 512
 */
-libcrux_sha3_Sha3_512Digest libcrux_sha3_sha512(Eurydice_borrow_slice_u8 data);
+Eurydice_arr_060 libcrux_sha3_sha512(Eurydice_borrow_slice_u8 data);
 
 /**
 This function found in impl {libcrux_sha3::traits::Absorb<1usize> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
@@ -1711,7 +1725,7 @@ with const generics
 void
 libcrux_sha3_simd_portable_load_block_a1_3a(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *input,
+  const Eurydice_arr_06 *input,
   size_t start
 );
 
@@ -1728,7 +1742,7 @@ with const generics
 void
 libcrux_sha3_generic_keccak_absorb_block_80_c63(
   Eurydice_arr_26 *self,
-  const Eurydice_arr_8e *blocks,
+  const Eurydice_arr_06 *blocks,
   size_t start
 );
 
@@ -1768,6 +1782,44 @@ libcrux_sha3_shake128_ema(Eurydice_mut_borrow_slice_u8 out, Eurydice_borrow_slic
 */
 void
 libcrux_sha3_shake256_ema(Eurydice_mut_borrow_slice_u8 out, Eurydice_borrow_slice_u8 data);
+
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.xof.KeccakXofState
+with types uint64_t
+with const generics
+- $1size_t
+- $168size_t
+*/
+typedef struct libcrux_sha3_generic_keccak_xof_KeccakXofState_97_s
+{
+  Eurydice_arr_26 inner;
+  Eurydice_arr_3a buf;
+  size_t buf_len;
+  bool sponge;
+}
+libcrux_sha3_generic_keccak_xof_KeccakXofState_97;
+
+typedef libcrux_sha3_generic_keccak_xof_KeccakXofState_97
+libcrux_sha3_portable_incremental_Shake128Xof;
+
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.xof.KeccakXofState
+with types uint64_t
+with const generics
+- $1size_t
+- $136size_t
+*/
+typedef struct libcrux_sha3_generic_keccak_xof_KeccakXofState_e2_s
+{
+  Eurydice_arr_26 inner;
+  Eurydice_arr_3e buf;
+  size_t buf_len;
+  bool sponge;
+}
+libcrux_sha3_generic_keccak_xof_KeccakXofState_e2;
+
+typedef libcrux_sha3_generic_keccak_xof_KeccakXofState_e2
+libcrux_sha3_portable_incremental_Shake256Xof;
 
 /**
 This function found in impl {libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
@@ -1875,45 +1927,7 @@ with types libcrux_sha3_portable_KeccakState
 with const generics
 - $2size_t
 */
-typedef struct Eurydice_arr_73_s { Eurydice_arr_26 data[2U]; } Eurydice_arr_73;
-
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.KeccakXofState
-with types uint64_t
-with const generics
-- $1size_t
-- $136size_t
-*/
-typedef struct libcrux_sha3_generic_keccak_xof_KeccakXofState_e2_s
-{
-  Eurydice_arr_26 inner;
-  Eurydice_arr_c4 buf;
-  size_t buf_len;
-  bool sponge;
-}
-libcrux_sha3_generic_keccak_xof_KeccakXofState_e2;
-
-typedef libcrux_sha3_generic_keccak_xof_KeccakXofState_e2
-libcrux_sha3_portable_incremental_Shake256Xof;
-
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.xof.KeccakXofState
-with types uint64_t
-with const generics
-- $1size_t
-- $168size_t
-*/
-typedef struct libcrux_sha3_generic_keccak_xof_KeccakXofState_97_s
-{
-  Eurydice_arr_26 inner;
-  Eurydice_arr_75 buf;
-  size_t buf_len;
-  bool sponge;
-}
-libcrux_sha3_generic_keccak_xof_KeccakXofState_97;
-
-typedef libcrux_sha3_generic_keccak_xof_KeccakXofState_97
-libcrux_sha3_portable_incremental_Shake128Xof;
+typedef struct Eurydice_arr_730_s { Eurydice_arr_26 data[2U]; } Eurydice_arr_730;
 
 #if defined(__cplusplus)
 }

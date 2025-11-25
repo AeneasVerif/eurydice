@@ -20,7 +20,7 @@ array_to_subslice_shared_36(const Eurydice_arr_60 *a, core_ops_range_Range_08 r)
     (KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = a->data + r.start, .meta = r.end - r.start });
 }
 
-uint8_t array_fun(Eurydice_dst_ref_shared_fc x)
+uint8_t array_fun(Eurydice_dst_ref_shared_10 x)
 {
   return
     Eurydice_slice_index_shared(array_to_subslice_shared_36(&Eurydice_slice_index_shared(x,
@@ -272,9 +272,9 @@ A monomorphic instance of array.nested_from_fn
 with const generics
 - K= 4
 */
-Eurydice_arr_11 array_nested_from_fn_ac(void)
+Eurydice_arr_c6 array_nested_from_fn_ac(void)
 {
-  Eurydice_arr_11 arr_struct;
+  Eurydice_arr_c6 arr_struct;
   KRML_MAYBE_FOR4(i,
     (size_t)0U,
     (size_t)4U,
@@ -352,7 +352,7 @@ void array_main(void)
   const_uint16_t__x2 uu____4 = { .fst = a1.data, .snd = &lvalue1 };
   EURYDICE_ASSERT(uu____4.fst[0U] == uu____4.snd[0U], "panic!");
   /* XXX5 */
-  Eurydice_arr_11 a2 = array_nested_from_fn_ac();
+  Eurydice_arr_c6 a2 = array_nested_from_fn_ac();
   /* original Rust expression is not an lvalue in C */
   size_t lvalue2 = (size_t)6U;
   const_size_t__x2 uu____5 = { .fst = &a2.data[3U].data[3U], .snd = &lvalue2 };
