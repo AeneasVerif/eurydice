@@ -300,7 +300,7 @@ let array_eq_slice const =
     cg_args = [ TInt SizeT ];
     arg_names = [ "arr"; "slice" ];
   }
-
+(* Unlike other builtins in this file, comparing an array for equality with a slice has a single implementation in Rust. It should, by default, take a const pointer to the slice, on the basis that the callee does not modify its argument. However, when `--no-const` is passed as an option, we pick a variant that takes a mutable slice so as to avoid generating const slice types. *)
 let array_eq_slice_shared = array_eq_slice true
 let array_eq_slice_mut = array_eq_slice false
 
