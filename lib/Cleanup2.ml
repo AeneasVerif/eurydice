@@ -1169,6 +1169,8 @@ let check_addrof =
              || Krml.KString.starts_with (snd lid) "op_Bang_Star__" (* case 4, case 3 *) ->
           EAddrOf e
       | _ ->
+          (* Recursively do for the internal expression first *)
+          let e = self#visit_expr_w () e in
           if Krml.Structs.will_be_lvalue e then
             EAddrOf e
           else
@@ -1179,8 +1181,6 @@ let check_addrof =
                 Krml.Ast.meta = [ CommentBefore "original Rust expression is not an lvalue in C" ];
               }
             in
-            (* Recursively do for the internal expression *)
-            let e = self#visit_expr_w () e in
             ELet (b, e, with_type t (EAddrOf (with_type e.typ (EBound 0))))
   end
 
