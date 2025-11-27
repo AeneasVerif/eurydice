@@ -1767,7 +1767,7 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
   | Move p -> expression_of_place env p
   | Constant { kind = CLiteral l; _ } -> expression_of_literal env l
   | Constant { kind = CVar var; _ } -> expression_of_cg_var_id env (C.expect_free_var var)
-  | Constant { kind = CFnPtr fn_ptr; _ } ->
+  | Constant { kind = CFnDef fn_ptr; _ } ->
       let e, _, _ = expression_of_fn_ptr env fn_ptr in
       e
   | Constant { kind = CTraitConst (({ C.kind; _ } as trait_ref), name); _ } -> begin
