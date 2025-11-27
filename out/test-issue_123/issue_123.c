@@ -7,10 +7,16 @@
 
 #include "issue_123.h"
 
-int32_t issue_123_fun(issue_123_E e)
+typedef struct const_int32_t__x2_s const_int32_t__x2;
+
+typedef struct const_ptrdiff_t__x2_s const_ptrdiff_t__x2;
+
+typedef struct const_int32_t__x2_s
 {
-  return (int32_t)(ptrdiff_t)e;
+  const int32_t *fst;
+  const int32_t *snd;
 }
+const_int32_t__x2;
 
 typedef struct const_ptrdiff_t__x2_s
 {
@@ -19,12 +25,10 @@ typedef struct const_ptrdiff_t__x2_s
 }
 const_ptrdiff_t__x2;
 
-typedef struct const_int32_t__x2_s
+int32_t issue_123_fun(issue_123_E e)
 {
-  const int32_t *fst;
-  const int32_t *snd;
+  return (int32_t)(ptrdiff_t)e;
 }
-const_int32_t__x2;
 
 void issue_123_main(void)
 {

@@ -15,39 +15,24 @@
 extern "C" {
 #endif
 
-extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t *x0);
+typedef struct core_option_Option_08_s core_option_Option_08;
 
-#define core_cmp_Ordering_Less -1
-#define core_cmp_Ordering_Equal 0
-#define core_cmp_Ordering_Greater 1
+typedef struct core_option_Option_77_s core_option_Option_77;
 
-typedef int8_t core_cmp_Ordering;
+typedef struct tuple_d1_s tuple_d1;
 
-extern bool
-core_cmp_impls__core__cmp__PartialEq_usize__for_usize__eq(const size_t *x0, const size_t *x1);
+typedef struct core_ops_range_Range_08_s core_ops_range_Range_08;
 
 #define core_option_None 0
 #define core_option_Some 1
 
 typedef uint8_t core_option_Option_77_tags;
 
-/**
-A monomorphic instance of core.option.Option
-with types core_cmp_Ordering
+#define core_cmp_Ordering_Less -1
+#define core_cmp_Ordering_Equal 0
+#define core_cmp_Ordering_Greater 1
 
-*/
-typedef struct core_option_Option_77_s
-{
-  core_option_Option_77_tags tag;
-  core_cmp_Ordering f0;
-}
-core_option_Option_77;
-
-extern core_option_Option_77
-core_cmp_impls__core__cmp__PartialOrd_usize__for_usize__partial_cmp(
-  const size_t *x0,
-  const size_t *x1
-);
+typedef int8_t core_cmp_Ordering;
 
 /**
 A monomorphic instance of core.option.Option
@@ -61,12 +46,6 @@ typedef struct core_option_Option_08_s
 }
 core_option_Option_08;
 
-extern core_option_Option_08
-core_iter_range__core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
-
-extern core_option_Option_08
-core_iter_range__core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
-
 /**
 A monomorphic instance of K.
 with types size_t, core_option_Option_08
@@ -79,11 +58,17 @@ typedef struct tuple_d1_s
 }
 tuple_d1;
 
-extern tuple_d1
-core_iter_range__core__iter__range__Step_for_usize__steps_between(
-  const size_t *x0,
-  const size_t *x1
-);
+/**
+A monomorphic instance of core.option.Option
+with types core_cmp_Ordering
+
+*/
+typedef struct core_option_Option_77_s
+{
+  core_option_Option_77_tags tag;
+  core_cmp_Ordering f0;
+}
+core_option_Option_77;
 
 /**
 A monomorphic instance of core.ops.range.Range
@@ -96,6 +81,29 @@ typedef struct core_ops_range_Range_08_s
   size_t end;
 }
 core_ops_range_Range_08;
+
+extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t *x0);
+
+extern bool
+core_cmp_impls__core__cmp__PartialEq_usize__for_usize__eq(const size_t *x0, const size_t *x1);
+
+extern core_option_Option_77
+core_cmp_impls__core__cmp__PartialOrd_usize__for_usize__partial_cmp(
+  const size_t *x0,
+  const size_t *x1
+);
+
+extern core_option_Option_08
+core_iter_range__core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
+
+extern core_option_Option_08
+core_iter_range__core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
+
+extern tuple_d1
+core_iter_range__core__iter__range__Step_for_usize__steps_between(
+  const size_t *x0,
+  const size_t *x1
+);
 
 void traits2_main(void);
 

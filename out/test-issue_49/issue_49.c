@@ -7,10 +7,7 @@
 
 #include "issue_49.h"
 
-size_t issue_49_f(size_t a, size_t b)
-{
-  return core_cmp_impls__core__cmp__Ord_for_usize__min(a, b);
-}
+typedef struct const_size_t__x2_s const_size_t__x2;
 
 typedef struct const_size_t__x2_s
 {
@@ -18,6 +15,11 @@ typedef struct const_size_t__x2_s
   const size_t *snd;
 }
 const_size_t__x2;
+
+size_t issue_49_f(size_t a, size_t b)
+{
+  return core_cmp_impls__core__cmp__Ord_for_usize__min(a, b);
+}
 
 void issue_49_main(void)
 {

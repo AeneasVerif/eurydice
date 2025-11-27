@@ -15,6 +15,12 @@
 extern "C" {
 #endif
 
+typedef struct issue_96_MyStruct2_s issue_96_MyStruct2;
+
+typedef struct Eurydice_arr_3f_s Eurydice_arr_3f;
+
+typedef Eurydice_arr_3f issue_96_MyStruct;
+
 /**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
@@ -22,8 +28,6 @@ with const generics
 - $5size_t
 */
 typedef struct Eurydice_arr_3f_s { uint8_t data[5U]; } Eurydice_arr_3f;
-
-typedef Eurydice_arr_3f issue_96_MyStruct;
 
 typedef struct issue_96_MyStruct2_s
 {

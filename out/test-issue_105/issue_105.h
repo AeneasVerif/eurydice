@@ -15,6 +15,72 @@
 extern "C" {
 #endif
 
+typedef struct core_ops_control_flow_ControlFlow_19_s core_ops_control_flow_ControlFlow_19;
+
+typedef struct core_result_Result_8f_s core_result_Result_8f;
+
+typedef struct core_result_Result_1d_s core_result_Result_1d;
+
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t core_result_Result_1d_tags;
+
+#define core_ops_control_flow_Continue 0
+#define core_ops_control_flow_Break 1
+
+typedef uint8_t core_ops_control_flow_ControlFlow_19_tags;
+
+
+
+typedef uint8_t core_convert_Infallible;
+
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
+
+/**
+A monomorphic instance of core.result.Result
+with types core_convert_Infallible, uint8_t
+
+*/
+typedef struct core_result_Result_8f_s
+{
+  core_result_Result_1d_tags tag;
+  union {
+    core_convert_Infallible case_Ok;
+    uint8_t case_Err;
+  }
+  val;
+}
+core_result_Result_8f;
+
+/**
+A monomorphic instance of core.ops.control_flow.ControlFlow
+with types core_result_Result_8f, ()
+
+*/
+typedef struct core_ops_control_flow_ControlFlow_19_s
+{
+  core_ops_control_flow_ControlFlow_19_tags tag;
+  core_result_Result_8f f0;
+}
+core_ops_control_flow_ControlFlow_19;
+
+/**
+A monomorphic instance of core.result.Result
+with types (), uint8_t
+
+*/
+typedef struct core_result_Result_1d_s
+{
+  core_result_Result_1d_tags tag;
+  uint8_t f0;
+}
+core_result_Result_1d;
+
 /**
 This function found in impl {core::cmp::PartialEq<()> for ()}
 */
@@ -35,67 +101,7 @@ This function found in impl {core::cmp::PartialEq<u8> for u8}
 */
 bool core_cmp_impls_ne_c3(const uint8_t *self, const uint8_t *other);
 
-
-
-typedef uint8_t core_convert_Infallible;
-
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
-
-#define core_result_Ok 0
-#define core_result_Err 1
-
-typedef uint8_t core_result_Result_1d_tags;
-
-/**
-A monomorphic instance of core.result.Result
-with types (), uint8_t
-
-*/
-typedef struct core_result_Result_1d_s
-{
-  core_result_Result_1d_tags tag;
-  uint8_t f0;
-}
-core_result_Result_1d;
-
 core_result_Result_1d issue_105_inner(void);
-
-/**
-A monomorphic instance of core.result.Result
-with types core_convert_Infallible, uint8_t
-
-*/
-typedef struct core_result_Result_8f_s
-{
-  core_result_Result_1d_tags tag;
-  union {
-    core_convert_Infallible case_Ok;
-    uint8_t case_Err;
-  }
-  val;
-}
-core_result_Result_8f;
-
-#define core_ops_control_flow_Continue 0
-#define core_ops_control_flow_Break 1
-
-typedef uint8_t core_ops_control_flow_ControlFlow_19_tags;
-
-/**
-A monomorphic instance of core.ops.control_flow.ControlFlow
-with types core_result_Result_8f, ()
-
-*/
-typedef struct core_ops_control_flow_ControlFlow_19_s
-{
-  core_ops_control_flow_ControlFlow_19_tags tag;
-  core_result_Result_8f f0;
-}
-core_ops_control_flow_ControlFlow_19;
 
 /**
 This function found in impl {core::ops::try_trait::Try<T, core::result::Result<core::convert::Infallible, E>[core::marker::Sized<core::convert::Infallible>, TraitClause@1]> for core::result::Result<T, E>[TraitClause@0, TraitClause@1]}

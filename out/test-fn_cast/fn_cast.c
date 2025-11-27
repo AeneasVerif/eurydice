@@ -7,6 +7,15 @@
 
 #include "fn_cast.h"
 
+typedef struct const_int32_t__x2_s const_int32_t__x2;
+
+typedef struct const_int32_t__x2_s
+{
+  const int32_t *fst;
+  const int32_t *snd;
+}
+const_int32_t__x2;
+
 /**
 A monomorphic instance of fn_cast.applies
 with types int32_t, int32_t
@@ -26,13 +35,6 @@ const int32_t *fn_cast_id_ref_a8(const int32_t *x)
 {
   return x;
 }
-
-typedef struct const_int32_t__x2_s
-{
-  const int32_t *fst;
-  const int32_t *snd;
-}
-const_int32_t__x2;
 
 void fn_cast_main(void)
 {

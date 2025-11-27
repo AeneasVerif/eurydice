@@ -15,17 +15,17 @@
 extern "C" {
 #endif
 
-static inline uint32_t core_num__u32__count_ones(uint32_t x0);
-
-#define CORE_NUM__U32__MAX (~0U)
-
-#define CORE_NUM__U32__BITS (core_num__u32__count_ones(CORE_NUM__U32__MAX))
-
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2
 
 typedef uint8_t core_panicking_AssertKind;
+
+static inline uint32_t core_num__u32__count_ones(uint32_t x0);
+
+#define CORE_NUM__U32__MAX (~0U)
+
+#define CORE_NUM__U32__BITS (core_num__u32__count_ones(CORE_NUM__U32__MAX))
 
 void core_num_main(void);
 

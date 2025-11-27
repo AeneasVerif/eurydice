@@ -7,6 +7,24 @@
 
 #include "fn_higher_order.h"
 
+typedef struct const_int32_t__x2_s const_int32_t__x2;
+
+typedef struct const_size_t__x2_s const_size_t__x2;
+
+typedef struct const_int32_t__x2_s
+{
+  const int32_t *fst;
+  const int32_t *snd;
+}
+const_int32_t__x2;
+
+typedef struct const_size_t__x2_s
+{
+  const size_t *fst;
+  const size_t *snd;
+}
+const_size_t__x2;
+
 int32_t fn_higher_order_empty_ptr(int32_t (*f)(void))
 {
   return f();
@@ -94,20 +112,6 @@ int32_t fn_higher_order_id_a8(int32_t r)
 {
   return r;
 }
-
-typedef struct const_size_t__x2_s
-{
-  const size_t *fst;
-  const size_t *snd;
-}
-const_size_t__x2;
-
-typedef struct const_int32_t__x2_s
-{
-  const int32_t *fst;
-  const int32_t *snd;
-}
-const_int32_t__x2;
 
 void fn_higher_order_use_compose_cg(void)
 {

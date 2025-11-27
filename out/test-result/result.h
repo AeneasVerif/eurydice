@@ -15,6 +15,8 @@
 extern "C" {
 #endif
 
+typedef struct result_S_s result_S;
+
 #define result_S1 0
 #define result_S2 1
 

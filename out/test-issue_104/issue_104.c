@@ -7,6 +7,15 @@
 
 #include "issue_104.h"
 
+typedef struct const_uint8_t__x2_s const_uint8_t__x2;
+
+typedef struct const_uint8_t__x2_s
+{
+  const uint8_t *fst;
+  const uint8_t *snd;
+}
+const_uint8_t__x2;
+
 /**
 A monomorphic instance of issue_104.sth
 with types issue_104_S
@@ -22,13 +31,6 @@ uint8_t issue_104_call(void)
 {
   return issue_104_sth_50();
 }
-
-typedef struct const_uint8_t__x2_s
-{
-  const uint8_t *fst;
-  const uint8_t *snd;
-}
-const_uint8_t__x2;
 
 void issue_104_main(void)
 {

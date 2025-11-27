@@ -20,14 +20,24 @@ extern "C" {
 #include "libcrux_sha3_avx2.h"
 #include "libcrux_core.h"
 
-Eurydice_arr_06 libcrux_ml_kem_hash_functions_avx2_G(Eurydice_mut_borrow_slice_u8 input);
-
-Eurydice_arr_60 libcrux_ml_kem_hash_functions_avx2_H(Eurydice_mut_borrow_slice_u8 input);
+typedef struct core_core_arch_x86___m128i_x2_s core_core_arch_x86___m128i_x2;
 
 typedef libcrux_sha3_avx2_x4_incremental_KeccakState
 libcrux_ml_kem_hash_functions_avx2_Simd256Hash;
 
 typedef __m256i libcrux_ml_kem_vector_avx2_SIMD256Vector;
+
+typedef struct core_core_arch_x86___m128i_x2_s
+{
+  __m128i fst;
+  __m128i snd;
+}
+core_core_arch_x86___m128i_x2;
+
+libcrux_sha3_Sha3_512Digest
+libcrux_ml_kem_hash_functions_avx2_G(Eurydice_mut_borrow_slice_u8 input);
+
+Eurydice_arr_60 libcrux_ml_kem_hash_functions_avx2_H(Eurydice_mut_borrow_slice_u8 input);
 
 __m256i libcrux_ml_kem_vector_avx2_vec_zero(void);
 
@@ -407,13 +417,6 @@ __m256i libcrux_ml_kem_vector_avx2_serialize_deserialize_5(Eurydice_mut_borrow_s
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
 __m256i libcrux_ml_kem_vector_avx2_deserialize_5_f5(Eurydice_mut_borrow_slice_u8 bytes);
-
-typedef struct core_core_arch_x86___m128i_x2_s
-{
-  __m128i fst;
-  __m128i snd;
-}
-core_core_arch_x86___m128i_x2;
 
 core_core_arch_x86___m128i_x2
 libcrux_ml_kem_vector_avx2_serialize_serialize_10_serialize_10_vec(__m256i vector);

@@ -7,13 +7,16 @@
 
 #include "partial_eq.h"
 
-/**
-This function found in impl {core::cmp::PartialEq<partial_eq::Enum> for partial_eq::Enum}
-*/
-inline bool partial_eq_eq_31(const partial_eq_Enum *self, const partial_eq_Enum *other)
+typedef struct const_const_partial_eq_Enum___x2_s const_const_partial_eq_Enum___x2;
+
+typedef struct const_partial_eq_Enum__x2_s const_partial_eq_Enum__x2;
+
+typedef struct const_const_partial_eq_Enum___x2_s
 {
-  return true;
+  const partial_eq_Enum *const *fst;
+  const partial_eq_Enum *const *snd;
 }
+const_const_partial_eq_Enum___x2;
 
 typedef struct const_partial_eq_Enum__x2_s
 {
@@ -22,12 +25,13 @@ typedef struct const_partial_eq_Enum__x2_s
 }
 const_partial_eq_Enum__x2;
 
-typedef struct const_const_partial_eq_Enum___x2_s
+/**
+This function found in impl {core::cmp::PartialEq<partial_eq::Enum> for partial_eq::Enum}
+*/
+inline bool partial_eq_eq_31(const partial_eq_Enum *self, const partial_eq_Enum *other)
 {
-  const partial_eq_Enum *const *fst;
-  const partial_eq_Enum *const *snd;
+  return true;
 }
-const_const_partial_eq_Enum___x2;
 
 void partial_eq_main(void)
 {

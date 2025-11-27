@@ -17,6 +17,14 @@ extern "C" {
 
 #include "libcrux_core.h"
 
+typedef libcrux_ml_kem_types_MlKemKeyPair_3e libcrux_ml_kem_mlkem512_MlKem512KeyPair;
+
+typedef Eurydice_arr_56 libcrux_ml_kem_mlkem512_MlKem512Ciphertext;
+
+typedef Eurydice_arr_30 libcrux_ml_kem_mlkem512_MlKem512PublicKey;
+
+typedef Eurydice_arr_7f libcrux_ml_kem_mlkem512_MlKem512PrivateKey;
+
 #define LIBCRUX_ML_KEM_MLKEM512_VECTOR_U_COMPRESSION_FACTOR ((size_t)10U)
 
 #define LIBCRUX_ML_KEM_MLKEM512_C1_BLOCK_SIZE (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * LIBCRUX_ML_KEM_MLKEM512_VECTOR_U_COMPRESSION_FACTOR / (size_t)8U)
@@ -46,14 +54,6 @@ extern "C" {
 #define LIBCRUX_ML_KEM_MLKEM512_ETA2_RANDOMNESS_SIZE (LIBCRUX_ML_KEM_MLKEM512_ETA2 * (size_t)64U)
 
 #define LIBCRUX_ML_KEM_MLKEM512_IMPLICIT_REJECTION_HASH_INPUT_SIZE (LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE + LIBCRUX_ML_KEM_MLKEM512_CPA_PKE_CIPHERTEXT_SIZE)
-
-typedef Eurydice_arr_56 libcrux_ml_kem_mlkem512_MlKem512Ciphertext;
-
-typedef libcrux_ml_kem_types_MlKemKeyPair_3e libcrux_ml_kem_mlkem512_MlKem512KeyPair;
-
-typedef Eurydice_arr_7f libcrux_ml_kem_mlkem512_MlKem512PrivateKey;
-
-typedef Eurydice_arr_30 libcrux_ml_kem_mlkem512_MlKem512PublicKey;
 
 #define LIBCRUX_ML_KEM_MLKEM512_RANKED_BYTES_PER_RING_ELEMENT (LIBCRUX_ML_KEM_MLKEM512_RANK * LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT / (size_t)8U)
 

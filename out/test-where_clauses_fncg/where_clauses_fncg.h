@@ -15,13 +15,45 @@
 extern "C" {
 #endif
 
-static inline uint64_t core_convert_num__core__convert__From_u8__for_u64__from(uint8_t x0);
+typedef struct Eurydice_arr_5a_s Eurydice_arr_5a;
+
+typedef struct Eurydice_arr_c5_s Eurydice_arr_c5;
+
+typedef struct Eurydice_arr_8b_s Eurydice_arr_8b;
+
+typedef struct Eurydice_arr_48_s Eurydice_arr_48;
+
+typedef struct Eurydice_arr_fb_s Eurydice_arr_fb;
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2
 
 typedef uint8_t core_panicking_AssertKind;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_array_u8x8
+with const generics
+- $4size_t
+*/
+typedef struct Eurydice_arr_5a_s { Eurydice_array_u8x8 data[4U]; } Eurydice_arr_5a;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $12size_t
+*/
+typedef struct Eurydice_arr_48_s { uint8_t data[12U]; } Eurydice_arr_48;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr_48
+with const generics
+- $4size_t
+*/
+typedef struct Eurydice_arr_c5_s { Eurydice_arr_48 data[4U]; } Eurydice_arr_c5;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -33,11 +65,13 @@ typedef struct Eurydice_arr_8b_s { Eurydice_array_u8x4 data[8U]; } Eurydice_arr_
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_array_u8x8
+with types Eurydice_array_u8x4
 with const generics
-- $4size_t
+- $12size_t
 */
-typedef struct Eurydice_arr_5a_s { Eurydice_array_u8x8 data[4U]; } Eurydice_arr_5a;
+typedef struct Eurydice_arr_fb_s { Eurydice_array_u8x4 data[12U]; } Eurydice_arr_fb;
+
+static inline uint64_t core_convert_num__core__convert__From_u8__for_u64__from(uint8_t x0);
 
 /**
 This function found in impl {where_clauses_fncg::Foo<K> for u64}
@@ -59,30 +93,6 @@ with const generics
 - M= 10
 */
 uint64_t where_clauses_fncg_f_43(void);
-
-/**
-A monomorphic instance of Eurydice.arr
-with types Eurydice_array_u8x4
-with const generics
-- $12size_t
-*/
-typedef struct Eurydice_arr_fb_s { Eurydice_array_u8x4 data[12U]; } Eurydice_arr_fb;
-
-/**
-A monomorphic instance of Eurydice.arr
-with types uint8_t
-with const generics
-- $12size_t
-*/
-typedef struct Eurydice_arr_48_s { uint8_t data[12U]; } Eurydice_arr_48;
-
-/**
-A monomorphic instance of Eurydice.arr
-with types Eurydice_arr_48
-with const generics
-- $4size_t
-*/
-typedef struct Eurydice_arr_c5_s { Eurydice_arr_48 data[4U]; } Eurydice_arr_c5;
 
 /**
 This function found in impl {where_clauses_fncg::Foo<K> for u64}
