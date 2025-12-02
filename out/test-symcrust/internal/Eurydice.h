@@ -8,7 +8,7 @@
 #ifndef internal_Eurydice_H
 #define internal_Eurydice_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

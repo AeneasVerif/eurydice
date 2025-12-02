@@ -8,7 +8,7 @@
 #ifndef more_str_H
 #define more_str_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

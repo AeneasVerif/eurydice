@@ -8,7 +8,7 @@
 #ifndef repeat_H
 #define repeat_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

@@ -8,7 +8,7 @@
 #ifndef internal_libcrux_mlkem_avx2_H
 #define internal_libcrux_mlkem_avx2_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

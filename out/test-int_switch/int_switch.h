@@ -8,7 +8,7 @@
 #ifndef int_switch_H
 #define int_switch_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

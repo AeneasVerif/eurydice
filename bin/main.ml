@@ -18,6 +18,7 @@ Supported options:|}
       Krml.Options.backtrace := true
   in
   let funroll_loops = ref 16 in
+  let default_include = ref true in
   let spec =
     [
       "--log", Arg.Set_string O.log_level, " log level, use * for everything";
@@ -36,6 +37,7 @@ Supported options:|}
       ( "-fc++17-compat",
         Arg.Set Krml.Options.cxx17_compat,
         " instead of generating C11/C++20 code (default), generate C++17-only code" );
+      "--no-default-include", Arg.Clear default_include, " do not insert #include \"eurydice.h\"";
     ]
   in
   let spec = Arg.align spec in
@@ -84,7 +86,8 @@ Supported options:|}
       allow_tapps := true;
       minimal := true;
       curly_braces := true;
-      add_very_early_include := [ All, "\"eurydice_glue.h\"" ];
+      if !default_include then
+        add_very_early_include := [ All, "\"eurydice.h\"" ];
       parentheses := true;
       no_shadow := true;
       extern_c := true;

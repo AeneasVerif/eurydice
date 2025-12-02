@@ -1135,11 +1135,14 @@ let cosmetic =
 
     method! visit_expr _ e =
       match e with
-      | [%cremepat {| core::slice::?impl::len<?>(Eurydice::array_to_slice_shared[#?n]<?>(?)) |}]
-        when impl = "{@Slice<T>}" -> n
-      | [%cremepat {| core::slice::?impl::len<?>(Eurydice::array_to_slice_mut[#?n]<?>(?)) |}]
-        when impl = "{@Slice<T>}" -> n
-      | [%cremepat {| core::slice::?impl::len<?>(?e) |}] when impl = "{@Slice<T>}" ->
+      | [%cremepat
+          {|
+          core::slice::"{@Slice<T>}"::len<?>(Eurydice::array_to_slice_shared[#?n]<?>(?))
+      |}]
+        -> n
+      | [%cremepat
+          {| core::slice::"{@Slice<T>}"::len<?>(Eurydice::array_to_slice_mut[#?n]<?>(?)) |}] -> n
+      | [%cremepat {| core::slice::"{@Slice<T>}"::len<?>(?e) |}] ->
           with_type (TInt SizeT) (EField (e, "meta"))
       | [%cremepat {| Eurydice::slice_index_mut<?t>(?s, ?i) |}] ->
           with_type e.typ

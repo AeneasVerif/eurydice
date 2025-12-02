@@ -8,7 +8,7 @@
 #ifndef issue_37_H
 #define issue_37_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

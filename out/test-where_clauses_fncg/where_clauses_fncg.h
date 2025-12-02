@@ -8,7 +8,7 @@
 #ifndef where_clauses_fncg_H
 #define where_clauses_fncg_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

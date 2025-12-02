@@ -8,7 +8,7 @@
 #ifndef castunsize_H
 #define castunsize_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

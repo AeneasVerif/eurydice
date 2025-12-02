@@ -1,5 +1,5 @@
 #include "__NAME__.h"
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 int main() {
   __NAME___main();

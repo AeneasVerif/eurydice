@@ -8,7 +8,7 @@
 #ifndef traits3_H
 #define traits3_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

@@ -8,7 +8,7 @@
 #ifndef symcrust_H
 #define symcrust_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

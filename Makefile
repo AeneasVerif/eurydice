@@ -186,7 +186,7 @@ nix-magic:
 update-charon-pin:
 	nix-shell -p jq --run ./scripts/update-charon-pin.sh
 
-FORMAT_FILE=include/eurydice_glue.h
+FORMAT_FILE=include/eurydice.h
 
 .PHONY: format-check
 format-check:

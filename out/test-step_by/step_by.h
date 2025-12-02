@@ -8,7 +8,7 @@
 #ifndef step_by_H
 #define step_by_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

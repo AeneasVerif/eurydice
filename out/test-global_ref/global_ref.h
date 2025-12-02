@@ -8,7 +8,7 @@
 #ifndef global_ref_H
 #define global_ref_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)
