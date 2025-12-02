@@ -7,6 +7,15 @@
 
 #include "where_clauses_closures.h"
 
+typedef struct const_size_t__x2_s const_size_t__x2;
+
+typedef struct const_size_t__x2_s
+{
+  const size_t *fst;
+  const size_t *snd;
+}
+const_size_t__x2;
+
 /**
 This function found in impl {where_clauses_closures::Ops<1usize> for usize}
 */
@@ -72,13 +81,6 @@ size_t_x2 where_clauses_closures_test_e3(void)
   size_t y = where_clauses_closures_zero_38();
   return (KRML_CLITERAL(size_t_x2){ .fst = x.data[0U], .snd = y });
 }
-
-typedef struct const_size_t__x2_s
-{
-  const size_t *fst;
-  const size_t *snd;
-}
-const_size_t__x2;
 
 void where_clauses_closures_main(void)
 {

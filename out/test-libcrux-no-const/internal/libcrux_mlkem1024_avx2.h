@@ -55,7 +55,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_encapsulate(
 */
 void
 libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair_mut(
-  Eurydice_arr_06 randomness,
+  libcrux_sha3_Sha3_512Digest randomness,
   libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
 );
 
@@ -63,7 +63,9 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair_mut(
  Generate ML-KEM 1024 Key Pair in "unpacked" form.
 */
 libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked
-libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair(Eurydice_arr_06 randomness);
+libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair(
+  libcrux_sha3_Sha3_512Digest randomness
+);
 
 /**
  Create a new, empty unpacked key.

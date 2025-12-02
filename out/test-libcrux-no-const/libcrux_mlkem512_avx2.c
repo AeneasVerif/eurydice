@@ -151,7 +151,7 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 192
 */
 static libcrux_ml_kem_types_MlKemKeyPair_3e
-generate_keypair_avx2_9c(Eurydice_arr_06 *randomness)
+generate_keypair_avx2_9c(libcrux_sha3_Sha3_512Digest *randomness)
 {
   return libcrux_ml_kem_ind_cca_generate_keypair_bb(randomness);
 }
@@ -166,7 +166,8 @@ with const generics
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 */
-static libcrux_ml_kem_types_MlKemKeyPair_3e generate_keypair_9c(Eurydice_arr_06 *randomness)
+static libcrux_ml_kem_types_MlKemKeyPair_3e
+generate_keypair_9c(libcrux_sha3_Sha3_512Digest *randomness)
 {
   return generate_keypair_avx2_9c(randomness);
 }
@@ -175,7 +176,7 @@ static libcrux_ml_kem_types_MlKemKeyPair_3e generate_keypair_9c(Eurydice_arr_06 
  Generate ML-KEM 512 Key Pair
 */
 libcrux_ml_kem_types_MlKemKeyPair_3e
-libcrux_ml_kem_mlkem512_avx2_generate_key_pair(Eurydice_arr_06 randomness)
+libcrux_ml_kem_mlkem512_avx2_generate_key_pair(libcrux_sha3_Sha3_512Digest randomness)
 {
   return generate_keypair_9c(&randomness);
 }
@@ -435,7 +436,7 @@ with const generics
 */
 static void
 generate_keypair_avx2_9c0(
-  Eurydice_arr_06 randomness,
+  libcrux_sha3_Sha3_512Digest randomness,
   libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked *out
 )
 {
@@ -457,7 +458,7 @@ with const generics
 */
 static void
 generate_keypair_9c0(
-  Eurydice_arr_06 randomness,
+  libcrux_sha3_Sha3_512Digest randomness,
   libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked *out
 )
 {
@@ -469,7 +470,7 @@ generate_keypair_9c0(
 */
 void
 libcrux_ml_kem_mlkem512_avx2_unpacked_generate_key_pair_mut(
-  Eurydice_arr_06 randomness,
+  libcrux_sha3_Sha3_512Digest randomness,
   libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked *key_pair
 )
 {
@@ -480,7 +481,7 @@ libcrux_ml_kem_mlkem512_avx2_unpacked_generate_key_pair_mut(
  Generate ML-KEM 512 Key Pair in "unpacked" form.
 */
 libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked
-libcrux_ml_kem_mlkem512_avx2_unpacked_generate_key_pair(Eurydice_arr_06 randomness)
+libcrux_ml_kem_mlkem512_avx2_unpacked_generate_key_pair(libcrux_sha3_Sha3_512Digest randomness)
 {
   libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked
   key_pair = libcrux_ml_kem_ind_cca_unpacked_default_7b_89();

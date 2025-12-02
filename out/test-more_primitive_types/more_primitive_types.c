@@ -7,6 +7,16 @@
 
 #include "more_primitive_types.h"
 
+typedef struct arr_fd_s arr_fd;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $6size_t
+*/
+typedef struct arr_fd_s { uint8_t data[6U]; } arr_fd;
+
 int32_t more_primitive_types_int128_operations(more_primitive_types_MorePrimitiveTypes *p)
 {
   Eurydice_Int128_int128_t uu____0 = p->int128;
@@ -103,14 +113,6 @@ int32_t more_primitive_types_match_i128(const more_primitive_types_MorePrimitive
   }
   return (int32_t)3;
 }
-
-/**
-A monomorphic instance of Eurydice.arr
-with types uint8_t
-with const generics
-- $6size_t
-*/
-typedef struct arr_fd_s { uint8_t data[6U]; } arr_fd;
 
 void more_primitive_types_use_more_primitive_types(void)
 {

@@ -15,6 +15,16 @@
 extern "C" {
 #endif
 
+typedef struct lvalue_Struct_s lvalue_Struct;
+
+typedef struct lvalue_ThreeWays_s lvalue_ThreeWays;
+
+#define lvalue_Middle 0
+#define lvalue_Left 1
+#define lvalue_Right 2
+
+typedef uint8_t lvalue_ThreeWays_tags;
+
 #define lvalue_A 0
 #define lvalue_B 1
 #define lvalue_C 2
@@ -31,12 +41,6 @@ typedef struct lvalue_Struct_s
   val;
 }
 lvalue_Struct;
-
-#define lvalue_Middle 0
-#define lvalue_Left 1
-#define lvalue_Right 2
-
-typedef uint8_t lvalue_ThreeWays_tags;
 
 typedef struct lvalue_ThreeWays_s
 {

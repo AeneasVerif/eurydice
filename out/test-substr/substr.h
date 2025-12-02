@@ -17,6 +17,8 @@ extern "C" {
 
 #include "substr_stubs.h"
 
+typedef struct Eurydice_dst_ref_shared_65_s Eurydice_dst_ref_shared_65;
+
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
 with types Eurydice_c_char_t, size_t

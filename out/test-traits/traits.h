@@ -15,27 +15,16 @@
 extern "C" {
 #endif
 
-/**
-A monomorphic instance of core.ops.range.Range
-with types size_t
+typedef struct Eurydice_dst_ref_shared_e2_s Eurydice_dst_ref_shared_e2;
 
-*/
-typedef struct core_ops_range_Range_08_s
-{
-  size_t start;
-  size_t end;
-}
-core_ops_range_Range_08;
+typedef struct core_ops_range_Range_08_s core_ops_range_Range_08;
+
+typedef struct Eurydice_arr_e2_s Eurydice_arr_e2;
 
 #define traits_Foo_Foo1 0
 #define traits_Foo_Foo2 1
 
 typedef uint8_t traits_Foo;
-
-/**
-This function found in impl {traits::ToInt for traits::Foo}
-*/
-uint32_t traits_to_int_ac(const traits_Foo *self);
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
@@ -50,17 +39,34 @@ typedef struct Eurydice_dst_ref_shared_e2_s
 Eurydice_dst_ref_shared_e2;
 
 /**
-This function found in impl {traits::ToInt for &0 (@Slice<traits::Foo>)}
-*/
-uint32_t traits_to_int_88(const Eurydice_dst_ref_shared_e2 *self);
-
-/**
 A monomorphic instance of Eurydice.arr
 with types traits_Foo
 with const generics
 - $2size_t
 */
 typedef struct Eurydice_arr_e2_s { traits_Foo data[2U]; } Eurydice_arr_e2;
+
+/**
+A monomorphic instance of core.ops.range.Range
+with types size_t
+
+*/
+typedef struct core_ops_range_Range_08_s
+{
+  size_t start;
+  size_t end;
+}
+core_ops_range_Range_08;
+
+/**
+This function found in impl {traits::ToInt for traits::Foo}
+*/
+uint32_t traits_to_int_ac(const traits_Foo *self);
+
+/**
+This function found in impl {traits::ToInt for &0 (@Slice<traits::Foo>)}
+*/
+uint32_t traits_to_int_88(const Eurydice_dst_ref_shared_e2 *self);
 
 void traits_main(void);
 

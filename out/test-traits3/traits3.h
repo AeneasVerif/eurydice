@@ -15,6 +15,10 @@
 extern "C" {
 #endif
 
+typedef struct uint64_t_x2_s uint64_t_x2;
+
+typedef uint64_t_x2 traits3_uint64x2_t;
+
 typedef struct uint64_t_x2_s
 {
   uint64_t fst;
@@ -38,8 +42,6 @@ void traits3_keccak_cc(void);
 void traits3_keccakx2(void);
 
 void traits3_main(void);
-
-typedef uint64_t_x2 traits3_uint64x2_t;
 
 #if defined(__cplusplus)
 }

@@ -7,6 +7,8 @@
 
 #include "step_by.h"
 
+typedef struct const_int32_t__x2_s const_int32_t__x2;
+
 typedef struct const_int32_t__x2_s
 {
   const int32_t *fst;

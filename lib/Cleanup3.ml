@@ -144,3 +144,158 @@ let also_skip_prefix_for_external_types (scope_env, _) =
         if actual <> fst target then
           KPrint.bprintf "Warning! The skip_prefix options generate name conflicts\n"
   end
+
+(** The function to reorder the type declarations & definitions based on their dependencies To
+    resolve potential cyclic dependencies, the following strategies are used:
+    - All types are forward-declared first, to resolve shallow dependencies, e.g., the pointer types
+    - For complete dependencies, i.e., a type definition requires the complete (sized) definition of
+      another type, we make a topological sort of the type definitions. As Rust will not have cyclic
+      complete dependencies, this should always succeed. This function assumes the uniqueness of
+      each type definition (non-forward). *)
+let resolve_typ_dependencies files =
+  (* Classify each definition into three categories: 
+     type definitions (non-forward / abbrev), abbreviations, and others *)
+  let filter_partition_decls decls =
+    let folder (type_defs, abbrev, forward, other_decls) = function
+      | DType (_, _, _, _, Abbrev _) as d -> type_defs, d :: abbrev, forward, other_decls
+      | DType (_, _, _, _, Forward _) as d -> type_defs, abbrev, d :: forward, other_decls
+      | DType (lid, _, _, _, _) as d -> (lid, d) :: type_defs, abbrev, forward, other_decls
+      | d -> type_defs, abbrev, forward, d :: other_decls
+    in
+    let defs, a, b, c = List.fold_left folder ([], [], [], []) decls in
+    (* Assumes the uniqueness of type definitions, should be guaranteed by the previous procedures *)
+    let defs = Hashtbl.of_seq (List.to_seq defs) in
+    (* Do not forget to maintain the original order of the definitions *)
+    defs, List.rev a, List.rev b, List.rev c
+  in
+  let remove_defined_forwards type_defs forward_decls =
+    List.filter
+      (function
+        | DType (lid, _, _, _, Forward _) -> not (Hashtbl.mem type_defs lid)
+        | _ -> assert false)
+      forward_decls
+  in
+  let gen_forward_decls type_defs =
+    Hashtbl.to_seq type_defs
+    |> Seq.filter_map (fun (_, decl) ->
+           match decl with
+           (* Do not generate forward declarations for enums, as they will be turned to `uint8_t`
+              This conflicts with the `struct` declaration *)
+           | DType (_, _, _, _, Enum _) -> None
+           | DType (lid, params, size, align, kind) ->
+               let forward =
+                 match kind with
+                 | Union _ -> Common.FUnion
+                 | Flat _ | Variant _ -> Common.FStruct
+                 | _ -> assert false
+               in
+               Some (DType (lid, params, size, align, Forward forward))
+           | _ -> assert false)
+    |> List.of_seq
+  in
+  let topological_sort graph =
+    let stack = ref [] in
+    let rec visit key =
+      (* If the stuff is not found, it means it is not within the dependency-resolution scope *)
+      match Hashtbl.find_opt graph key with
+      | None -> ()
+      | Some (state, deps, content) -> (
+          match !state with
+          | `Done -> ()
+          | `Visiting -> failwith "Cyclic type definitions detected"
+          | `ToDo ->
+              state := `Visiting;
+              List.iter visit deps;
+              state := `Done;
+              stack := content :: !stack)
+    in
+    Hashtbl.iter (fun key _ -> visit key) graph;
+    List.rev !stack
+  in
+  let rec typ_deps_in_typ typ =
+    match typ with
+    | TQualified lid -> [ lid ]
+    | TArray (t, _) | TCgArray (t, _) -> typ_deps_in_typ t
+    | TTuple types -> List.flatten (List.map typ_deps_in_typ types)
+    | TAnonymous typ_def -> typ_def_kind_deps typ_def
+    (* A pointer is not a complete dependency, i.e., it does not need to know the type size *)
+    | TBuf _
+    (* Likewise, a TArrow means a function pointer type *)
+    | TArrow _
+    (* Non-monomorphized generic external clearly do not participate in type dependencies
+       Besides, its type arguments are not counted as dependencies *)
+    | TApp _
+    (* Likewise, if there is unresolved [TCgApp], it means its head must be external generic type *)
+    | TCgApp _ -> []
+    | TBound _ | TPoly _ ->
+        failwith
+          "Non-monomorphized types should have been removed before type dependency resolution!"
+    | TBool | TUnit | TAny | TInt _ -> []
+  and typ_def_kind_deps kind =
+    match kind with
+    | Flat fields -> List.flatten (List.map (fun (_, (typ, _)) -> typ_deps_in_typ typ) fields)
+    | Variant branches ->
+        List.flatten
+          (List.map
+             (fun (_, fields) ->
+               List.flatten (List.map (fun (_, (typ, _)) -> typ_deps_in_typ typ) fields))
+             branches)
+    | Enum _ -> []
+    | Union cases -> List.flatten (List.map (fun (_, typ) -> typ_deps_in_typ typ) cases)
+    | Abbrev _ | Forward _ -> assert false
+  in
+  let partition_enums decls =
+    let is_enum = function
+      | DType (_, _, _, _, Enum _) -> true
+      | _ -> false
+    in
+    List.partition is_enum decls
+  in
+  let topological_sort_type_defs type_defs =
+    let typ_def_deps = function
+      | DType (_, _, _, _, kind) -> typ_def_kind_deps kind
+      | _ -> assert false
+    in
+    let get_dependencies decl = List.sort_uniq compare (typ_def_deps decl) in
+    let graph =
+      Hashtbl.to_seq type_defs
+      |> Seq.map (fun (lid, decl) -> lid, (ref `ToDo, get_dependencies decl, decl))
+      |> Hashtbl.of_seq
+    in
+    topological_sort graph
+  in
+  (* In the abbrev case, all possible names are dependencies *)
+  let abbrev_typ_deps typ =
+    (object
+       inherit [_] Krml.Ast.reduce
+       method private zero = []
+       method private plus = ( @ )
+       method! visit_TQualified () lid = [ lid ]
+    end)
+      #visit_typ
+      () typ
+    |> List.sort_uniq compare
+  in
+  let resolve_abbrev_dependencies abbrev_decls =
+    let graph =
+      Hashtbl.of_seq
+        (List.to_seq abbrev_decls
+        |> Seq.map (fun decl ->
+               match decl with
+               | DType (lid, _, _, _, Abbrev typ) ->
+                   let deps = abbrev_typ_deps typ in
+                   lid, (ref `ToDo, deps, decl)
+               | _ -> assert false))
+    in
+    topological_sort graph
+  in
+  let resolve_typ_dependencies decls =
+    let type_defs, abbrev_decls, forward_decls, other_decls = filter_partition_decls decls in
+    let additional_forward_decls = remove_defined_forwards type_defs forward_decls in
+    let forward_decls = gen_forward_decls type_defs in
+    let sorted_type_defs = topological_sort_type_defs type_defs in
+    let enums, non_enums = partition_enums sorted_type_defs in
+    let abbrev_decls = resolve_abbrev_dependencies abbrev_decls in
+    forward_decls @ additional_forward_decls @ enums @ abbrev_decls @ non_enums @ other_decls
+  in
+  List.map (fun (name, decls) -> name, resolve_typ_dependencies decls) files

@@ -7,6 +7,15 @@
 
 #include "dst.h"
 
+typedef struct const_uint32_t__x2_s const_uint32_t__x2;
+
+typedef struct const_uint32_t__x2_s
+{
+  const uint32_t *fst;
+  const uint32_t *snd;
+}
+const_uint32_t__x2;
+
 Eurydice_dst_ref_mut_15 dst_alloc(void)
 {
   return
@@ -46,13 +55,6 @@ Eurydice_dst_ref_mut_1b dst_alloc3(void)
       }
     );
 }
-
-typedef struct const_uint32_t__x2_s
-{
-  const uint32_t *fst;
-  const uint32_t *snd;
-}
-const_uint32_t__x2;
 
 void dst_check_regular_field(Eurydice_dst_ref_mut_15 x)
 {

@@ -15,6 +15,10 @@
 extern "C" {
 #endif
 
+typedef struct Eurydice_arr_a0_s Eurydice_arr_a0;
+
+typedef struct Eurydice_arr_f1_s Eurydice_arr_f1;
+
 /**
 A monomorphic instance of Eurydice.arr
 with types uint8_t

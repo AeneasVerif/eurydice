@@ -394,6 +394,8 @@ Supported options:|}
             ds ))
       files
   in
+
+  let files = Eurydice.Cleanup3.resolve_typ_dependencies files in
   let files = AstToCStar.mk_files files c_name_map Idents.LidSet.empty macros in
 
   (* Uncomment to debug C* AST *)

@@ -15,9 +15,20 @@
 extern "C" {
 #endif
 
-extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(const uint8_t *x0);
+typedef struct core_option_Option_08_s core_option_Option_08;
 
-extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t *x0);
+typedef struct core_option_Option_77_s core_option_Option_77;
+
+typedef struct tuple_d1_s tuple_d1;
+
+typedef struct core_ops_range_Range_08_s core_ops_range_Range_08;
+
+typedef struct Eurydice_arr_bc_s Eurydice_arr_bc;
+
+#define core_option_None 0
+#define core_option_Some 1
+
+typedef uint8_t core_option_Option_77_tags;
 
 #define core_cmp_Ordering_Less -1
 #define core_cmp_Ordering_Equal 0
@@ -25,10 +36,29 @@ extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t
 
 typedef int8_t core_cmp_Ordering;
 
-#define core_option_None 0
-#define core_option_Some 1
+/**
+A monomorphic instance of core.option.Option
+with types size_t
 
-typedef uint8_t core_option_Option_77_tags;
+*/
+typedef struct core_option_Option_08_s
+{
+  core_option_Option_77_tags tag;
+  size_t f0;
+}
+core_option_Option_08;
+
+/**
+A monomorphic instance of K.
+with types size_t, core_option_Option_08
+
+*/
+typedef struct tuple_d1_s
+{
+  size_t fst;
+  core_option_Option_08 snd;
+}
+tuple_d1;
 
 /**
 A monomorphic instance of core.option.Option
@@ -41,6 +71,30 @@ typedef struct core_option_Option_77_s
   core_cmp_Ordering f0;
 }
 core_option_Option_77;
+
+/**
+A monomorphic instance of core.ops.range.Range
+with types size_t
+
+*/
+typedef struct core_ops_range_Range_08_s
+{
+  size_t start;
+  size_t end;
+}
+core_ops_range_Range_08;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types uint16_t
+with const generics
+- $256size_t
+*/
+typedef struct Eurydice_arr_bc_s { uint16_t data[256U]; } Eurydice_arr_bc;
+
+extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(const uint8_t *x0);
+
+extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t *x0);
 
 extern core_cmp_Ordering
 core_cmp_impls__core__cmp__Ord_for_u32__cmp(const uint32_t *x0, const uint32_t *x1);
@@ -69,35 +123,11 @@ static inline uint32_t core_convert_num__core__convert__From_u16__for_u32__from(
 
 static inline uint64_t core_convert_num__core__convert__From_u32__for_u64__from(uint32_t x0);
 
-/**
-A monomorphic instance of core.option.Option
-with types size_t
-
-*/
-typedef struct core_option_Option_08_s
-{
-  core_option_Option_77_tags tag;
-  size_t f0;
-}
-core_option_Option_08;
-
 extern core_option_Option_08
 core_iter_range__core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
 
 extern core_option_Option_08
 core_iter_range__core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
-
-/**
-A monomorphic instance of K.
-with types size_t, core_option_Option_08
-
-*/
-typedef struct tuple_d1_s
-{
-  size_t fst;
-  core_option_Option_08 snd;
-}
-tuple_d1;
 
 extern tuple_d1
 core_iter_range__core__iter__range__Step_for_usize__steps_between(
@@ -106,26 +136,6 @@ core_iter_range__core__iter__range__Step_for_usize__steps_between(
 );
 
 static inline Eurydice_array_u8x4 core_num__u32__to_le_bytes(uint32_t x0);
-
-/**
-A monomorphic instance of core.ops.range.Range
-with types size_t
-
-*/
-typedef struct core_ops_range_Range_08_s
-{
-  size_t start;
-  size_t end;
-}
-core_ops_range_Range_08;
-
-/**
-A monomorphic instance of Eurydice.arr
-with types uint16_t
-with const generics
-- $256size_t
-*/
-typedef struct Eurydice_arr_bc_s { uint16_t data[256U]; } Eurydice_arr_bc;
 
 void
 symcrust_SymCrustMlKemPolyElementCompressAndEncode(

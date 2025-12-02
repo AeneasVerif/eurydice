@@ -7,6 +7,24 @@
 
 #include "where_clauses_simple.h"
 
+typedef struct const_uint64_t__x2_s const_uint64_t__x2;
+
+typedef struct const_size_t__x2_s const_size_t__x2;
+
+typedef struct const_uint64_t__x2_s
+{
+  const uint64_t *fst;
+  const uint64_t *snd;
+}
+const_uint64_t__x2;
+
+typedef struct const_size_t__x2_s
+{
+  const size_t *fst;
+  const size_t *snd;
+}
+const_size_t__x2;
+
 /**
 This function found in impl {where_clauses_simple::Ops<K> for usize}
 */
@@ -45,13 +63,6 @@ size_t where_clauses_simple_fn_k_71(void)
   return where_clauses_simple_add_81_e0((KRML_CLITERAL(Eurydice_arr_7f){ .data = { 0U } }), x);
 }
 
-typedef struct const_size_t__x2_s
-{
-  const size_t *fst;
-  const size_t *snd;
-}
-const_size_t__x2;
-
 void where_clauses_simple_k_calls_k(void)
 {
   size_t r = where_clauses_simple_fn_k_71();
@@ -87,13 +98,6 @@ uint64_t where_clauses_simple_fn_k_e4(void)
   uint64_t x = where_clauses_simple_of_u16_19(0U);
   return where_clauses_simple_add_19((KRML_CLITERAL(Eurydice_arr_2e){ .data = { 0U } }), x);
 }
-
-typedef struct const_uint64_t__x2_s
-{
-  const uint64_t *fst;
-  const uint64_t *snd;
-}
-const_uint64_t__x2;
 
 void where_clauses_simple_k_calls_one(void)
 {

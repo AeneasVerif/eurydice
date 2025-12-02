@@ -7,6 +7,42 @@
 
 #include "array.h"
 
+typedef struct const_uint32_t__x2_s const_uint32_t__x2;
+
+typedef struct const_uint16_t__x2_s const_uint16_t__x2;
+
+typedef struct const_size_t__x2_s const_size_t__x2;
+
+typedef struct const_bool__x2_s const_bool__x2;
+
+typedef struct const_uint32_t__x2_s
+{
+  const uint32_t *fst;
+  const uint32_t *snd;
+}
+const_uint32_t__x2;
+
+typedef struct const_uint16_t__x2_s
+{
+  const uint16_t *fst;
+  const uint16_t *snd;
+}
+const_uint16_t__x2;
+
+typedef struct const_size_t__x2_s
+{
+  const size_t *fst;
+  const size_t *snd;
+}
+const_size_t__x2;
+
+typedef struct const_bool__x2_s
+{
+  const bool *fst;
+  const bool *snd;
+}
+const_bool__x2;
+
 /**
 A monomorphic instance of Eurydice.array_to_subslice_shared
 with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
@@ -290,34 +326,6 @@ bool array_const_eq_fd(Eurydice_arr_b2 x, Eurydice_arr_b2 y)
 {
   return Eurydice_array_eq((size_t)2U, &x, &y, uint32_t);
 }
-
-typedef struct const_uint32_t__x2_s
-{
-  const uint32_t *fst;
-  const uint32_t *snd;
-}
-const_uint32_t__x2;
-
-typedef struct const_uint16_t__x2_s
-{
-  const uint16_t *fst;
-  const uint16_t *snd;
-}
-const_uint16_t__x2;
-
-typedef struct const_size_t__x2_s
-{
-  const size_t *fst;
-  const size_t *snd;
-}
-const_size_t__x2;
-
-typedef struct const_bool__x2_s
-{
-  const bool *fst;
-  const bool *snd;
-}
-const_bool__x2;
 
 void array_main(void)
 {

@@ -15,10 +15,23 @@
 extern "C" {
 #endif
 
+typedef struct names_Type_s names_Type;
+
+typedef struct names_Baz_s names_Baz;
+
+typedef struct names_Foo0_s names_Foo0;
+
 #define names_Foo 0
 #define names_Bar 1
 
 typedef uint8_t names_Baz_tags;
+
+typedef struct names_Type_s
+{
+  int32_t switch0;
+  int32_t class0;
+}
+names_Type;
 
 typedef struct names_Baz_s
 {
@@ -42,13 +55,6 @@ typedef struct names_Foo0_s
   uint32_t y;
 }
 names_Foo0;
-
-typedef struct names_Type_s
-{
-  int32_t switch0;
-  int32_t class0;
-}
-names_Type;
 
 void names_f(uint32_t r_struct);
 

@@ -15,6 +15,8 @@
 extern "C" {
 #endif
 
+typedef struct core_option_Option_77_s core_option_Option_77;
+
 #define core_cmp_Ordering_Less -1
 #define core_cmp_Ordering_Equal 0
 #define core_cmp_Ordering_Greater 1
@@ -25,6 +27,12 @@ typedef int8_t core_cmp_Ordering;
 #define core_option_Some 1
 
 typedef uint8_t core_option_Option_77_tags;
+
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
 
 /**
 A monomorphic instance of core.option.Option
@@ -51,12 +59,6 @@ core_cmp_impls__core__cmp__PartialOrd_usize__for_usize__partial_cmp(
   const size_t *x0,
   const size_t *x1
 );
-
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
 
 size_t issue_49_f(size_t a, size_t b);
 

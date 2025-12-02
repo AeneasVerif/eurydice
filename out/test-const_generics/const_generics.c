@@ -7,6 +7,24 @@
 
 #include "const_generics.h"
 
+typedef struct const_uint32_t__x2_s const_uint32_t__x2;
+
+typedef struct const_bool__x2_s const_bool__x2;
+
+typedef struct const_uint32_t__x2_s
+{
+  const uint32_t *fst;
+  const uint32_t *snd;
+}
+const_uint32_t__x2;
+
+typedef struct const_bool__x2_s
+{
+  const bool *fst;
+  const bool *snd;
+}
+const_bool__x2;
+
 /**
 A monomorphic instance of Eurydice.array_to_subslice_to_mut
 with types uint8_t, core_ops_range_RangeTo size_t, Eurydice_derefed_slice uint8_t
@@ -113,13 +131,6 @@ const_generics_Pair_4e const_generics_mk_pairs_e0(uint32_t x, uint64_t y)
   return (KRML_CLITERAL(const_generics_Pair_4e){ .left = p1.left, .right = p2.right });
 }
 
-typedef struct const_uint32_t__x2_s
-{
-  const uint32_t *fst;
-  const uint32_t *snd;
-}
-const_uint32_t__x2;
-
 void const_generics_main1(void)
 {
   const_generics_Pair_4e uu____0 = const_generics_mk_pairs_e0(0U, 0ULL);
@@ -222,13 +233,6 @@ bool const_generics_g_70(uint32_t x, size_t y)
   }
   return uu____0;
 }
-
-typedef struct const_bool__x2_s
-{
-  const bool *fst;
-  const bool *snd;
-}
-const_bool__x2;
 
 void const_generics_main3(void)
 {

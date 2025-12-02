@@ -7,6 +7,17 @@
 
 #include "substr.h"
 
+typedef struct Option_53_s Option_53;
+
+typedef struct dst_ref_mut_65_s dst_ref_mut_65;
+
+typedef struct Option_02_s Option_02;
+
+#define None 0
+#define Some 1
+
+typedef uint8_t Option_02_tags;
+
 /**
 A monomorphic instance of Eurydice.dst_ref_mut
 with types Eurydice_c_char_t, size_t
@@ -19,10 +30,17 @@ typedef struct dst_ref_mut_65_s
 }
 dst_ref_mut_65;
 
-#define None 0
-#define Some 1
+/**
+A monomorphic instance of core.option.Option
+with types Eurydice_dst_ref_mut_65
 
-typedef uint8_t Option_02_tags;
+*/
+typedef struct Option_53_s
+{
+  Option_02_tags tag;
+  dst_ref_mut_65 f0;
+}
+Option_53;
 
 /**
 A monomorphic instance of core.option.Option
@@ -41,18 +59,6 @@ core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__
   size_t x0,
   Eurydice_dst_ref_shared_65 x1
 );
-
-/**
-A monomorphic instance of core.option.Option
-with types Eurydice_dst_ref_mut_65
-
-*/
-typedef struct Option_53_s
-{
-  Option_02_tags tag;
-  dst_ref_mut_65 f0;
-}
-Option_53;
 
 extern Option_53
 core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize__core__marker__Sized_usize____get_mut(

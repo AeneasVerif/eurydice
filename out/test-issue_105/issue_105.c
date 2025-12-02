@@ -7,6 +7,15 @@
 
 #include "issue_105.h"
 
+typedef struct const_core_result_Result_1d__x2_s const_core_result_Result_1d__x2;
+
+typedef struct const_core_result_Result_1d__x2_s
+{
+  const core_result_Result_1d *fst;
+  const core_result_Result_1d *snd;
+}
+const_core_result_Result_1d__x2;
+
 /**
 This function found in impl {core::cmp::PartialEq<()> for ()}
 */
@@ -144,13 +153,6 @@ core_result_eq_0b_74(const core_result_Result_1d *self, const core_result_Result
   }
   return uu____0;
 }
-
-typedef struct const_core_result_Result_1d__x2_s
-{
-  const core_result_Result_1d *fst;
-  const core_result_Result_1d *snd;
-}
-const_core_result_Result_1d__x2;
 
 void issue_105_main(void)
 {

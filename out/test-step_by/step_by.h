@@ -15,7 +15,18 @@
 extern "C" {
 #endif
 
-extern int32_t core_clone_impls__core__clone__Clone_for_i32__clone(const int32_t *x0);
+typedef struct core_option_Option_08_s core_option_Option_08;
+
+typedef struct core_option_Option_9e_s core_option_Option_9e;
+
+typedef struct core_option_Option_77_s core_option_Option_77;
+
+typedef struct tuple_d1_s tuple_d1;
+
+#define core_option_None 0
+#define core_option_Some 1
+
+typedef uint8_t core_option_Option_77_tags;
 
 #define core_cmp_Ordering_Less -1
 #define core_cmp_Ordering_Equal 0
@@ -23,49 +34,11 @@ extern int32_t core_clone_impls__core__clone__Clone_for_i32__clone(const int32_t
 
 typedef int8_t core_cmp_Ordering;
 
-extern bool
-core_cmp_impls__core__cmp__PartialEq_i32__for_i32__eq(const int32_t *x0, const int32_t *x1);
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
 
-#define core_option_None 0
-#define core_option_Some 1
-
-typedef uint8_t core_option_Option_77_tags;
-
-/**
-A monomorphic instance of core.option.Option
-with types core_cmp_Ordering
-
-*/
-typedef struct core_option_Option_77_s
-{
-  core_option_Option_77_tags tag;
-  core_cmp_Ordering f0;
-}
-core_option_Option_77;
-
-extern core_option_Option_77
-core_cmp_impls__core__cmp__PartialOrd_i32__for_i32__partial_cmp(
-  const int32_t *x0,
-  const int32_t *x1
-);
-
-/**
-A monomorphic instance of core.option.Option
-with types int32_t
-
-*/
-typedef struct core_option_Option_9e_s
-{
-  core_option_Option_77_tags tag;
-  int32_t f0;
-}
-core_option_Option_9e;
-
-extern core_option_Option_9e
-core_iter_range__core__iter__range__Step_for_i32__backward_checked(int32_t x0, size_t x1);
-
-extern core_option_Option_9e
-core_iter_range__core__iter__range__Step_for_i32__forward_checked(int32_t x0, size_t x1);
+typedef uint8_t core_panicking_AssertKind;
 
 /**
 A monomorphic instance of core.option.Option
@@ -80,6 +53,18 @@ typedef struct core_option_Option_08_s
 core_option_Option_08;
 
 /**
+A monomorphic instance of core.option.Option
+with types int32_t
+
+*/
+typedef struct core_option_Option_9e_s
+{
+  core_option_Option_77_tags tag;
+  int32_t f0;
+}
+core_option_Option_9e;
+
+/**
 A monomorphic instance of K.
 with types size_t, core_option_Option_08
 
@@ -91,17 +76,40 @@ typedef struct tuple_d1_s
 }
 tuple_d1;
 
+/**
+A monomorphic instance of core.option.Option
+with types core_cmp_Ordering
+
+*/
+typedef struct core_option_Option_77_s
+{
+  core_option_Option_77_tags tag;
+  core_cmp_Ordering f0;
+}
+core_option_Option_77;
+
+extern int32_t core_clone_impls__core__clone__Clone_for_i32__clone(const int32_t *x0);
+
+extern bool
+core_cmp_impls__core__cmp__PartialEq_i32__for_i32__eq(const int32_t *x0, const int32_t *x1);
+
+extern core_option_Option_77
+core_cmp_impls__core__cmp__PartialOrd_i32__for_i32__partial_cmp(
+  const int32_t *x0,
+  const int32_t *x1
+);
+
+extern core_option_Option_9e
+core_iter_range__core__iter__range__Step_for_i32__backward_checked(int32_t x0, size_t x1);
+
+extern core_option_Option_9e
+core_iter_range__core__iter__range__Step_for_i32__forward_checked(int32_t x0, size_t x1);
+
 extern tuple_d1
 core_iter_range__core__iter__range__Step_for_i32__steps_between(
   const int32_t *x0,
   const int32_t *x1
 );
-
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
 
 void step_by_bar(void);
 

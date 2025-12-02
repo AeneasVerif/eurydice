@@ -15,6 +15,20 @@
 extern "C" {
 #endif
 
+typedef struct Eurydice_arr_e4_s Eurydice_arr_e4;
+
+typedef struct closure_f_closure_closure_s closure_f_closure_closure;
+
+typedef struct Eurydice_arr_6a_s Eurydice_arr_6a;
+
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
+
+typedef const Eurydice_arr_e4 *closure_f_closure;
+
 /**
 A monomorphic instance of Eurydice.arr
 with types size_t
@@ -23,14 +37,20 @@ with const generics
 */
 typedef struct Eurydice_arr_e4_s { size_t data[1U]; } Eurydice_arr_e4;
 
-typedef const Eurydice_arr_e4 *closure_f_closure;
-
 typedef struct closure_f_closure_closure_s
 {
   const Eurydice_arr_e4 *fst;
   const size_t *snd;
 }
 closure_f_closure_closure;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr_e4
+with const generics
+- $1size_t
+*/
+typedef struct Eurydice_arr_6a_s { Eurydice_arr_e4 data[1U]; } Eurydice_arr_6a;
 
 /**
 This function found in impl {core::ops::function::FnMut<(usize), usize> for closure::f::closure::closure<0, 1>}
@@ -52,21 +72,7 @@ This function found in impl {core::ops::function::FnOnce<(usize), @Array<usize, 
 */
 Eurydice_arr_e4 closure_f_call_once_71(const Eurydice_arr_e4 *_, size_t _0);
 
-/**
-A monomorphic instance of Eurydice.arr
-with types Eurydice_arr_e4
-with const generics
-- $1size_t
-*/
-typedef struct Eurydice_arr_6a_s { Eurydice_arr_e4 data[1U]; } Eurydice_arr_6a;
-
 Eurydice_arr_6a closure_f(void);
-
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
 
 void closure_main(void);
 

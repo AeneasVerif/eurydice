@@ -7,6 +7,8 @@
 
 #include "more_dst.h"
 
+typedef struct const_uint32_t__x2_s const_uint32_t__x2;
+
 typedef struct const_uint32_t__x2_s
 {
   const uint32_t *fst;

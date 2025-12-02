@@ -7,6 +7,15 @@
 
 #include "closure.h"
 
+typedef struct const_size_t__x2_s const_size_t__x2;
+
+typedef struct const_size_t__x2_s
+{
+  const size_t *fst;
+  const size_t *snd;
+}
+const_size_t__x2;
+
 /**
 This function found in impl {core::ops::function::FnMut<(usize), usize> for closure::f::closure::closure<0, 1>}
 */
@@ -59,13 +68,6 @@ Eurydice_arr_6a closure_f(void)
   Eurydice_arr_6a a = arr_struct;
   return a;
 }
-
-typedef struct const_size_t__x2_s
-{
-  const size_t *fst;
-  const size_t *snd;
-}
-const_size_t__x2;
 
 void closure_main(void)
 {

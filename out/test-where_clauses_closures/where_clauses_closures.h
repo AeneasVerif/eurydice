@@ -15,13 +15,32 @@
 extern "C" {
 #endif
 
-extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t *x0);
+typedef struct Eurydice_arr_e4_s Eurydice_arr_e4;
+
+typedef struct size_t_x2_s size_t_x2;
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2
 
 typedef uint8_t core_panicking_AssertKind;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types size_t
+with const generics
+- $1size_t
+*/
+typedef struct Eurydice_arr_e4_s { size_t data[1U]; } Eurydice_arr_e4;
+
+typedef struct size_t_x2_s
+{
+  size_t fst;
+  size_t snd;
+}
+size_t_x2;
+
+extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t *x0);
 
 /**
 This function found in impl {where_clauses_closures::Ops<1usize> for usize}
@@ -54,21 +73,6 @@ with const generics
 - K= 1
 */
 size_t where_clauses_closures_test_call_once_79_e3(size_t _);
-
-typedef struct size_t_x2_s
-{
-  size_t fst;
-  size_t snd;
-}
-size_t_x2;
-
-/**
-A monomorphic instance of Eurydice.arr
-with types size_t
-with const generics
-- $1size_t
-*/
-typedef struct Eurydice_arr_e4_s { size_t data[1U]; } Eurydice_arr_e4;
 
 /**
 A monomorphic instance of where_clauses_closures.test
