@@ -2129,13 +2129,13 @@ let lesser t1 t2 =
 
 (* A `fn` pointer, which does not have trait bounds, and cannot be partially applied. This is a
    much simplified version of expression_of_fn_ptr. *)
-let expression_of_fn_op_move (env : env) ({ func; args; dest } : C.call) =
+let expression_of_fn_op_dynamic (env : env) ({ func; args; dest } : C.call) =
   let fHd =
     match func with
-    | C.FnOpMove place -> expression_of_place env place
+    | C.FnOpDynamic op -> expression_of_operand env op
     | _otw ->
         failwith @@ "Internal error: the given call is not to `FnOpMove`."
-        ^ "The function `expression_of_fn_op_move` handles only call to `FnOpMove`."
+        ^ "The function `expression_of_fn_op_dynamic` handles only call to `FnOpMove`."
   in
   let lhs = expression_of_place env dest in
   let args = List.map (expression_of_operand env) args in
@@ -2350,7 +2350,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
         | _ -> rhs
       in
       Krml.Helpers.with_unit K.(EAssign (dest, rhs))
-  | Call ({ func = FnOpMove _; _ } as call) -> expression_of_fn_op_move env call
+  | Call ({ func = FnOpDynamic _; _ } as call) -> expression_of_fn_op_dynamic env call
   | Abort _ -> with_any (K.EAbort (None, Some "panic!"))
   | Return ->
       let e = expression_of_var_id env ret_var in
