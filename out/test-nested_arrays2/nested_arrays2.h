@@ -25,13 +25,13 @@ typedef struct Eurydice_arr_f1_s { uint8_t data[1U]; } Eurydice_arr_f1;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr uint8_t[[$1size_t]]
+with types Eurydice_arr_f1
 with const generics
 - $1size_t
 */
-typedef struct Eurydice_arr_81_s { Eurydice_arr_f1 data[1U]; } Eurydice_arr_81;
+typedef struct Eurydice_arr_a0_s { Eurydice_arr_f1 data[1U]; } Eurydice_arr_a0;
 
-#define NESTED_ARRAYS2_TABLE ((KRML_CLITERAL(Eurydice_arr_81){ .data = { { .data = { 1U } } } }))
+#define NESTED_ARRAYS2_TABLE ((KRML_CLITERAL(Eurydice_arr_a0){ .data = { { .data = { 1U } } } }))
 
 void nested_arrays2_main(void);
 

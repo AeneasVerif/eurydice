@@ -38,6 +38,12 @@ let dst_ref_mut_decl =
       Flat [ Some "ptr", (TBuf (TBound 1, false), false); Some "meta", (TBound 0, false) ] )
 
 let mk_dst_ref ~const (t : K.typ) (meta : K.typ) : K.typ =
+  let const =
+    if !Options.no_const then
+      false
+    else
+      const
+  in
   K.TApp
     ( (if const then
          dst_ref_shared
@@ -297,17 +303,27 @@ let array_eq =
     arg_names = [ "arr"; "arr2" ];
   }
 
-let array_eq_slice_shared =
+let array_eq_slice const =
   {
-    name = [ "Eurydice" ], "array_eq_slice";
+    name = [ "Eurydice" ], "array_eq_slice" ^ suffix_of_const const;
     typ =
       Krml.Helpers.fold_arrow
-        [ TBuf (mk_arr (TBound 0) (CgVar 0), true); TBuf (mk_slice ~const:true (TBound 0), true) ]
+        [ TBuf (mk_arr (TBound 0) (CgVar 0), true); TBuf (mk_slice ~const (TBound 0), true) ]
         TBool;
     n_type_args = 1;
     cg_args = [ TInt SizeT ];
     arg_names = [ "arr"; "slice" ];
   }
+
+(* Unlike other builtins in this file, comparing an array for 
+   equality with a slice has a single implementation in Rust. 
+   It should, by default, take a const pointer to the slice, 
+   on the basis that the callee does not modify its argument. 
+   However, when `--no-const` is passed as an option, we pick a 
+   variant that takes a mutable slice so as to avoid generating 
+   const slice types. *)
+let array_eq_slice_shared = array_eq_slice true
+let array_eq_slice_mut = array_eq_slice false
 
 let slice_eq const =
   {
@@ -909,6 +925,7 @@ let builtin_funcs =
     opaque;
     array_repeat;
     array_eq;
+    array_eq_slice_mut;
     array_eq_slice_shared;
     slice_eq_shared;
     slice_eq_mut;

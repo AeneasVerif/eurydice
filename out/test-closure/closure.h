@@ -54,13 +54,13 @@ Eurydice_arr_e4 closure_f_call_once_71(const Eurydice_arr_e4 *_, size_t _0);
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr size_t[[$1size_t]]
+with types Eurydice_arr_e4
 with const generics
 - $1size_t
 */
-typedef struct Eurydice_arr_81_s { Eurydice_arr_e4 data[1U]; } Eurydice_arr_81;
+typedef struct Eurydice_arr_6a_s { Eurydice_arr_e4 data[1U]; } Eurydice_arr_6a;
 
-Eurydice_arr_81 closure_f(void);
+Eurydice_arr_6a closure_f(void);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1

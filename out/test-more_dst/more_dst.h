@@ -28,19 +28,29 @@ typedef struct more_dst_T1_s
 }
 more_dst_T1;
 
-typedef struct more_dst_T2_s
+/**
+A monomorphic instance of more_dst.S
+with types more_dst_T1
+
+*/
+typedef struct more_dst_S_30_s
 {
   uint32_t foo;
   more_dst_T1 data;
 }
-more_dst_T2;
+more_dst_S_30;
 
-typedef struct more_dst_T3_s
+/**
+A monomorphic instance of more_dst.S
+with types more_dst_S_30
+
+*/
+typedef struct more_dst_S_57_s
 {
   uint32_t foo;
-  more_dst_T2 data;
+  more_dst_S_30 data;
 }
-more_dst_T3;
+more_dst_S_57;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -50,38 +60,53 @@ with const generics
 */
 typedef struct Eurydice_arr_0d_s { uint32_t data[4U]; } Eurydice_arr_0d;
 
-typedef struct more_dst_TS1_s
+/**
+A monomorphic instance of more_dst.S
+with types Eurydice_arr_0d
+
+*/
+typedef struct more_dst_S_f9_s
 {
   uint32_t foo;
   Eurydice_arr_0d data;
 }
-more_dst_TS1;
+more_dst_S_f9;
 
-typedef struct more_dst_TS2_s
+/**
+A monomorphic instance of more_dst.S
+with types more_dst_S_f9
+
+*/
+typedef struct more_dst_S_5b_s
 {
   uint32_t foo;
-  more_dst_TS1 data;
+  more_dst_S_f9 data;
 }
-more_dst_TS2;
+more_dst_S_5b;
 
-typedef struct more_dst_TS3_s
+/**
+A monomorphic instance of more_dst.S
+with types more_dst_S_5b
+
+*/
+typedef struct more_dst_S_bc_s
 {
   uint32_t foo;
-  more_dst_TS2 data;
+  more_dst_S_5b data;
 }
-more_dst_TS3;
+more_dst_S_bc;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
-with types more_dst_S Eurydice_derefed_slice uint32_t, size_t
+with types more_dst_T1, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_90_s
+typedef struct Eurydice_dst_ref_shared_d3_s
 {
   const more_dst_T1 *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_90;
+Eurydice_dst_ref_shared_d3;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
@@ -97,27 +122,27 @@ Eurydice_dst_ref_shared_3c;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
-with types more_dst_S more_dst_S Eurydice_derefed_slice uint32_t, size_t
+with types more_dst_S_30, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_5e_s
+typedef struct Eurydice_dst_ref_shared_6d_s
 {
-  const more_dst_T2 *ptr;
+  const more_dst_S_30 *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_5e;
+Eurydice_dst_ref_shared_6d;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
-with types more_dst_S more_dst_S more_dst_S Eurydice_derefed_slice uint32_t, size_t
+with types more_dst_S_57, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_5e0_s
+typedef struct Eurydice_dst_ref_shared_a2_s
 {
-  const more_dst_T3 *ptr;
+  const more_dst_S_57 *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_5e0;
+Eurydice_dst_ref_shared_a2;
 
 void more_dst_main(void);
 

@@ -7,34 +7,6 @@
 
 #include "floating_points.h"
 
-/**
-A monomorphic instance of Eurydice.array_to_slice_shared
-with types float32_t
-with const generics
-- N= 100
-*/
-static Eurydice_dst_ref_shared_0f array_to_slice_shared_de(const Eurydice_arr_d5 *a)
-{
-  Eurydice_dst_ref_shared_0f lit;
-  lit.ptr = a->data;
-  lit.meta = (size_t)100U;
-  return lit;
-}
-
-/**
-A monomorphic instance of Eurydice.array_to_slice_shared
-with types float64_t
-with const generics
-- N= 100
-*/
-static Eurydice_dst_ref_shared_51 array_to_slice_shared_51(const Eurydice_arr_22 *a)
-{
-  Eurydice_dst_ref_shared_51 lit;
-  lit.ptr = a->data;
-  lit.meta = (size_t)100U;
-  return lit;
-}
-
 typedef struct const_float32_t__x2_s
 {
   const float32_t *fst;
@@ -83,13 +55,13 @@ void floating_points_main(void)
   const_float64_t__x2 uu____1 = { .fst = arr2.data, .snd = &lvalue1 };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  size_t lvalue2 = Eurydice_slice_len(array_to_slice_shared_de(&arr), float32_t);
+  size_t lvalue2 = (size_t)100U;
   /* original Rust expression is not an lvalue in C */
   size_t lvalue3 = (size_t)100U;
   const_size_t__x2 uu____2 = { .fst = &lvalue2, .snd = &lvalue3 };
   EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  size_t lvalue4 = Eurydice_slice_len(array_to_slice_shared_51(&arr2), float64_t);
+  size_t lvalue4 = (size_t)100U;
   /* original Rust expression is not an lvalue in C */
   size_t lvalue = (size_t)100U;
   const_size_t__x2 uu____3 = { .fst = &lvalue4, .snd = &lvalue };

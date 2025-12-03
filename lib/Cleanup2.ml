@@ -1076,6 +1076,14 @@ let bonus_cleanups =
       | [ "core"; "slice"; "{@Slice<T>}" ], "split_at_mut" -> [ "Eurydice" ], "slice_split_at_mut"
       | _ -> lid
 
+    (* { f = e; ... }.f ~~> e
+
+     scheduled late because we need all the let-inlining *)
+    method! visit_EField env e f =
+      match e.node with
+      | EFlat fields -> (List.assoc (Some f) fields).node
+      | _ -> EField (self#visit_expr env e, f)
+
     method! visit_ELet ((bs, _) as env) b e1 e2 =
       match e1.node, e1.typ, e2.node with
       (* let x; x := e; return x  -->  x*)
@@ -1121,6 +1129,27 @@ let bonus_cleanups =
       | _ -> super#visit_ELet env b e1 e2
   end
 
+let cosmetic =
+  object (_self)
+    inherit [_] map as super
+
+    method! visit_expr _ e =
+      match e with
+      | [%cremepat {| core::slice::?impl::len<?>(Eurydice::array_to_slice_shared[#?n]<?>(?)) |}]
+        when impl = "{@Slice<T>}" -> n
+      | [%cremepat {| core::slice::?impl::len<?>(Eurydice::array_to_slice_mut[#?n]<?>(?)) |}]
+        when impl = "{@Slice<T>}" -> n
+      | [%cremepat {| core::slice::?impl::len<?>(?e) |}] when impl = "{@Slice<T>}" ->
+          with_type (TInt SizeT) (EField (e, "meta"))
+      | [%cremepat {| Eurydice::slice_index_mut<?t>(?s, ?i) |}] ->
+          with_type e.typ
+            (EBufRead (with_type (TBuf (t, false)) (EField (super#visit_expr_w () s, "ptr")), i))
+      | [%cremepat {| Eurydice::slice_index_shared<?t>(?s, ?i) |}] ->
+          with_type e.typ
+            (EBufRead (with_type (TBuf (t, true)) (EField (super#visit_expr_w () s, "ptr")), i))
+      | _ -> super#visit_expr ((), e.typ) e
+  end
+
 (* This is a potentially tricky phase because if it's too aggressive, it'll
    generate a copy -- for instance, f(&x[3]) is not the same as let tmp = x[3];
    f(&tmp). Such cases might be hidden behind macros! (Like
@@ -1140,6 +1169,8 @@ let check_addrof =
              || Krml.KString.starts_with (snd lid) "op_Bang_Star__" (* case 4, case 3 *) ->
           EAddrOf e
       | _ ->
+          (* Recursively do for the internal expression first *)
+          let e = self#visit_expr_w () e in
           if Krml.Structs.will_be_lvalue e then
             EAddrOf e
           else
@@ -1150,8 +1181,6 @@ let check_addrof =
                 Krml.Ast.meta = [ CommentBefore "original Rust expression is not an lvalue in C" ];
               }
             in
-            (* Recursively do for the internal expression *)
-            let e = self#visit_expr_w () e in
             ELet (b, e, with_type t (EAddrOf (with_type e.typ (EBound 0))))
   end
 

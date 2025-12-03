@@ -48,7 +48,7 @@ build: check-karamel check-charon
 CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
 CXXFLAGS	:= -std=c++17
 
-test: $(addprefix test-,$(TEST_DIRS)) custom-test-array custom-test-for testxx-result check-charon check-libcrux test-libcrux
+test: $(addprefix test-,$(TEST_DIRS)) custom-test-libcrux-no-const custom-test-array custom-test-for testxx-result check-charon check-libcrux test-libcrux
 
 clean-and-test:
 	$(MAKE) clean-llbc
@@ -130,6 +130,13 @@ custom-test-for: test-for
 
 # libcrux tests
 
+custom-test-libcrux-no-const: test/libcrux.llbc
+	mkdir -p out/test-libcrux-no-const
+	$(EURYDICE) --config test/libcrux/c.yaml -funroll-loops 16 \
+	  $< --keep-going --output out/test-libcrux-no-const --no-const
+	$(SED) -i 's/  KaRaMeL version: .*//' out/test-libcrux-no-const/**/*.{c,h} # This changes on every commit
+	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-libcrux-no-const/**/*.{c,h} # This changes between local and CI
+
 test-libcrux: test/libcrux.llbc
 	mkdir -p out/test-libcrux
 	$(EURYDICE) --config test/libcrux/c.yaml -funroll-loops 16 \
@@ -192,3 +199,6 @@ format-apply:
 .PHONY: clean-llbc
 clean-llbc:
 	rm test/*.llbc || true
+
+debug-ppx-%: lib/%
+	dune describe pp $<

@@ -36,24 +36,29 @@ with const generics
 */
 typedef struct Eurydice_arr_6f_s { uint32_t data[3U]; } Eurydice_arr_6f;
 
-typedef struct dst_T3_s
+/**
+A monomorphic instance of dst.S
+with types Eurydice_derefed_slice Eurydice_arr_6f
+
+*/
+typedef struct dst_S_ba_s
 {
   uint32_t foo;
   Eurydice_arr_6f my_data[];
 }
-dst_T3;
+dst_S_ba;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_mut
-with types dst_S Eurydice_derefed_slice uint32_t, size_t
+with types dst_T, size_t
 
 */
-typedef struct Eurydice_dst_ref_mut_ed_s
+typedef struct Eurydice_dst_ref_mut_15_s
 {
   dst_T *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_mut_ed;
+Eurydice_dst_ref_mut_15;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -65,67 +70,67 @@ typedef struct Eurydice_arr_0d_s { uint32_t data[4U]; } Eurydice_arr_0d;
 
 /**
 A monomorphic instance of dst.S
-with types Eurydice_arr uint32_t[[$4size_t]]
+with types Eurydice_arr_0d
 
 */
-typedef struct dst_S_64_s
+typedef struct dst_S_f9_s
 {
   uint32_t foo;
   Eurydice_arr_0d my_data;
 }
-dst_S_64;
+dst_S_f9;
 
-Eurydice_dst_ref_mut_ed dst_alloc(void);
+Eurydice_dst_ref_mut_15 dst_alloc(void);
 
 /**
 A monomorphic instance of Eurydice.dst_ref_mut
-with types dst_S Eurydice_derefed_slice Eurydice_arr uint32_t[[$3size_t]], size_t
+with types dst_S_ba, size_t
 
 */
-typedef struct Eurydice_dst_ref_mut_fd_s
+typedef struct Eurydice_dst_ref_mut_1b_s
 {
-  dst_T3 *ptr;
+  dst_S_ba *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_mut_fd;
+Eurydice_dst_ref_mut_1b;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr uint32_t[[$3size_t]]
+with types Eurydice_arr_6f
 with const generics
 - $4size_t
 */
-typedef struct Eurydice_arr_58_s { Eurydice_arr_6f data[4U]; } Eurydice_arr_58;
+typedef struct Eurydice_arr_d6_s { Eurydice_arr_6f data[4U]; } Eurydice_arr_d6;
 
 /**
 A monomorphic instance of dst.S
-with types Eurydice_arr Eurydice_arr uint32_t[[$3size_t]][[$4size_t]]
+with types Eurydice_arr_d6
 
 */
-typedef struct dst_S_9c_s
+typedef struct dst_S_e4_s
 {
   uint32_t foo;
-  Eurydice_arr_58 my_data;
+  Eurydice_arr_d6 my_data;
 }
-dst_S_9c;
+dst_S_e4;
 
-Eurydice_dst_ref_mut_fd dst_alloc3(void);
+Eurydice_dst_ref_mut_1b dst_alloc3(void);
 
-void dst_check_regular_field(Eurydice_dst_ref_mut_ed x);
+void dst_check_regular_field(Eurydice_dst_ref_mut_15 x);
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
-with types dst_S Eurydice_derefed_slice uint32_t, size_t
+with types dst_T, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_ed_s
+typedef struct Eurydice_dst_ref_shared_15_s
 {
   const dst_T *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_ed;
+Eurydice_dst_ref_shared_15;
 
-void dst_check_regular_field_ref(Eurydice_dst_ref_shared_ed x);
+void dst_check_regular_field_ref(Eurydice_dst_ref_shared_15 x);
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
@@ -139,35 +144,35 @@ typedef struct Eurydice_dst_ref_shared_3c_s
 }
 Eurydice_dst_ref_shared_3c;
 
-void dst_check_var_field(Eurydice_dst_ref_mut_ed x);
+void dst_check_var_field(Eurydice_dst_ref_mut_15 x);
 
-void dst_check_var_field_ref(Eurydice_dst_ref_shared_ed x);
+void dst_check_var_field_ref(Eurydice_dst_ref_shared_15 x);
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
-with types dst_S Eurydice_derefed_slice Eurydice_arr uint32_t[[$3size_t]], size_t
+with types dst_S_ba, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_fd_s
+typedef struct Eurydice_dst_ref_shared_1b_s
 {
-  const dst_T3 *ptr;
+  const dst_S_ba *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_fd;
+Eurydice_dst_ref_shared_1b;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
-with types Eurydice_arr uint32_t[[$3size_t]], size_t
+with types Eurydice_arr_6f, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_51_s
+typedef struct Eurydice_dst_ref_shared_61_s
 {
   const Eurydice_arr_6f *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_51;
+Eurydice_dst_ref_shared_61;
 
-void dst_check_var_field_ref3(Eurydice_dst_ref_shared_fd x);
+void dst_check_var_field_ref3(Eurydice_dst_ref_shared_1b x);
 
 void dst_main3(void);
 
@@ -185,29 +190,29 @@ dst_T2_be;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_mut
-with types dst_T2 Eurydice_derefed_slice uint32_t, size_t
+with types dst_T2_be, size_t
 
 */
-typedef struct Eurydice_dst_ref_mut_96_s
+typedef struct Eurydice_dst_ref_mut_53_s
 {
   dst_T2_be *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_mut_96;
+Eurydice_dst_ref_mut_53;
 
 /**
 A monomorphic instance of dst.T2
-with types Eurydice_arr uint32_t[[$4size_t]]
+with types Eurydice_arr_0d
 
 */
-typedef struct dst_T2_64_s
+typedef struct dst_T2_f9_s
 {
   size_t header;
   Eurydice_arr_0d my_data;
 }
-dst_T2_64;
+dst_T2_f9;
 
-Eurydice_dst_ref_mut_96 dst_mk(void);
+Eurydice_dst_ref_mut_53 dst_mk(void);
 
 /**
 A monomorphic instance of Eurydice.dst_ref_mut

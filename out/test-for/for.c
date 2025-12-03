@@ -23,6 +23,6 @@ uint8_t for_other(Eurydice_borrow_slice_u8 input)
     }
     return 6U;
   }
-  return Eurydice_slice_index_shared(input, (size_t)0U, uint8_t);
+  return input.ptr[0U];
 }
 

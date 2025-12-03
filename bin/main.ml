@@ -30,6 +30,7 @@ Supported options:|}
       ( "--keep-going",
         Arg.Set O.keep_going,
         " keep going even though extracting some definitions might fail" );
+      "--no-const", Arg.Set O.no_const, " do not introduce the const keyword for pointers";
       "-fcomments", Arg.Set O.comments, " keep inline comments";
       "-funroll-loops", Arg.Set_int funroll_loops, " unrool loops up to N";
       ( "-fc++17-compat",
@@ -175,6 +176,8 @@ Supported options:|}
       ]
   in
 
+  if !O.no_const then
+    Printf.printf "⚠️  Not using 'const' for pointer types\n";
   Printf.printf "1️⃣ LLBC ➡️  AST\n";
   Eurydice.Logging.log "Phase0" "%a" pfiles files;
   let files = Eurydice.PreCleanup.precleanup files in
@@ -210,6 +213,7 @@ Supported options:|}
     fail __FILE__ __LINE__;
 
   Printf.printf "3️⃣ Monomorphization, datatypes\n";
+  let files = Eurydice.Cleanup2.cosmetic#visit_files () files in
   let files = Eurydice.Cleanup2.resugar_loops#visit_files () files in
   let files = Eurydice.Cleanup1.remove_terminal_returns#visit_files true files in
   let files = Eurydice.Cleanup1.remove_terminal_continues#visit_files false files in

@@ -22,21 +22,21 @@ dst_ref_mut_65;
 #define None 0
 #define Some 1
 
-typedef uint8_t Option_d2_tags;
+typedef uint8_t Option_02_tags;
 
 /**
 A monomorphic instance of core.option.Option
-with types Eurydice_dst_ref_shared Eurydice_c_char_t size_t
+with types Eurydice_dst_ref_shared_65
 
 */
-typedef struct Option_d2_s
+typedef struct Option_02_s
 {
-  Option_d2_tags tag;
+  Option_02_tags tag;
   Eurydice_dst_ref_shared_65 f0;
 }
-Option_d2;
+Option_02;
 
-extern Option_d2
+extern Option_02
 core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize__core__marker__Sized_usize____get(
   size_t x0,
   Eurydice_dst_ref_shared_65 x1
@@ -44,17 +44,17 @@ core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__
 
 /**
 A monomorphic instance of core.option.Option
-with types Eurydice_dst_ref_mut Eurydice_c_char_t size_t
+with types Eurydice_dst_ref_mut_65
 
 */
-typedef struct Option_e6_s
+typedef struct Option_53_s
 {
-  Option_d2_tags tag;
+  Option_02_tags tag;
   dst_ref_mut_65 f0;
 }
-Option_e6;
+Option_53;
 
-extern Option_e6
+extern Option_53
 core_str_traits__core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize__core__marker__Sized_usize____get_mut(
   size_t x0,
   dst_ref_mut_65 x1
