@@ -42,6 +42,9 @@ typedef struct Eurydice_mut_borrow_slice_i16_s {
   (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.ptr =)(ptr_)->data,                   \
                         EURYDICE_CFIELD(.meta =) len_})
 
+#define core_array___Array_T__N___as_mut_slice(len_, ptr_, t, ret_t) \
+  core_array___Array_T__N___as_slice(len_, ptr_, t, ret_t)
+
 #define core_array__core__clone__Clone_for__Array_T__N___clone(                \
     len, src, elem_type, _ret_t)                                               \
   (*(src))
