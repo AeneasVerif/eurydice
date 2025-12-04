@@ -184,10 +184,10 @@ static inline void core_ops_arith__i32__add_assign(int32_t *x0, int32_t *x1) {
   *x0 = *x0 + *x1;
 }
 
-static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) {
+static inline uint8_t Eurydice_bitand_pv_u8(const uint8_t *p, uint8_t v) {
   return (*p) & v;
 }
-static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
+static inline uint8_t Eurydice_shr_pv_u8(const uint8_t *p, int32_t v) {
   return (*p) >> v;
 }
 static inline uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
@@ -195,13 +195,13 @@ static inline uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
 }
 
 static inline uint8_t
-core_ops_bit__core__ops__bit__BitAnd_u8__u8__for___a__u8___bitand(uint8_t *x0,
+core_ops_bit__core__ops__bit__BitAnd_u8__u8__for__0__u8___bitand(const uint8_t *x0,
                                                                   uint8_t x1) {
   return Eurydice_bitand_pv_u8(x0, x1);
 }
 
 static inline uint8_t
-core_ops_bit__core__ops__bit__Shr_i32__u8__for___a__u8___shr(uint8_t *x0,
+core_ops_bit__core__ops__bit__Shr_i32__u8__for__0__u8___shr(const uint8_t *x0,
                                                              int32_t x1) {
   return Eurydice_shr_pv_u8(x0, x1);
 }
