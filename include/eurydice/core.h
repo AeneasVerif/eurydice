@@ -176,6 +176,10 @@ static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1) {
   return (x0 << x1) | (x0 >> ((-x1) & 63));
 }
 
+static inline uint32_t core_num__u32__rotate_left(uint32_t x0, uint32_t x1) {
+  return (x0 << x1) | (x0 >> ((-x1) & 31));
+}
+
 static inline void core_ops_arith__i32__add_assign(int32_t *x0, int32_t *x1) {
   *x0 = *x0 + *x1;
 }
