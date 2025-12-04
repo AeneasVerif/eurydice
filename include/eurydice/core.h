@@ -213,6 +213,10 @@ core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__N
   return *x0;
 }
 
+#define core_option__core__option__Option_T__TraitClause_0___is_some(X, _0, \
+                                                                     _1)    \
+  ((X)->tag == 1)
+
 #if defined(__cplusplus) && !defined(KRML_CXX17_COMPAT)
 }
 #endif
