@@ -1516,7 +1516,9 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
      and the method-generic arguments (i.e. fn f<U: ...>). The method appears as
      a top-level function that receives all the arguments for T and U (types,
      const generics, trait references), and when we synthesize a call node, we
-     do behave accordingly and provide arguments for both T and U. *)
+     do behave accordingly and provide arguments for both T and U.
+
+     20251208: the code makes it look like it's U and T in this order *)
   let type_args, const_generic_args, trait_refs =
     let generics =
       match kind with
@@ -1547,24 +1549,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   L.log "Calls" "%s--> is_known_builtin?: %b" depth is_known_builtin;
 
   (* Translate effective type and cg arguments. *)
-  let const_generic_args =
-    match f, type_args with
-    | ( EQualified lid,
-        [
-          _;
-          TRef
-            ( _,
-              TAdt
-                { id = TBuiltin TArray; generics = { types = [ _ ]; const_generics = [ cg ]; _ } },
-              _ );
-          _;
-        ] )
-      when lid = Builtin.slice_to_ref_array.name ->
-        (* Special case, we *do* need to retain the length, which would disappear if we simply did
-           typ_of_ty (owing to array decay rules). *)
-        [ expression_of_const_generic env cg ]
-    | _ -> List.map (expression_of_const_generic env) const_generic_args
-  in
+  let const_generic_args = List.map (expression_of_const_generic env) const_generic_args in
   let type_args = List.map (typ_of_ty env) type_args in
 
   (* Handling trait implementations for generic trait bounds in the callee. We

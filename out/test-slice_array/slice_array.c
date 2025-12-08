@@ -160,8 +160,7 @@ void slice_array_f3(void)
   const
   Eurydice_array_u8x4
   *y2 =
-    unwrap_26_16(Eurydice_slice_to_ref_array2((size_t)4U,
-        uu____0,
+    unwrap_26_16(Eurydice_slice_to_ref_array2(uu____0,
         &arr1,
         Eurydice_borrow_slice_u8,
         const Eurydice_array_u8x4 *,
@@ -233,8 +232,7 @@ void slice_array_f5_ac(void)
   const
   Eurydice_array_u8x4
   *y2 =
-    unwrap_26_16(Eurydice_slice_to_ref_array2((size_t)4U,
-        uu____0,
+    unwrap_26_16(Eurydice_slice_to_ref_array2(uu____0,
         &arr,
         Eurydice_borrow_slice_u8,
         const Eurydice_array_u8x4 *,

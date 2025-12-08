@@ -385,7 +385,7 @@ let slice_to_ref_array =
     name = [ "Eurydice" ], "slice_to_ref_array";
     typ = Krml.Helpers.fold_arrow [ TBound 2 ] (mk_result (TBound 1) (TBound 0));
     n_type_args = 3;
-    cg_args = [ TInt SizeT ];
+    cg_args = [];
     arg_names = [ "s" ];
   }
 
@@ -394,7 +394,7 @@ let slice_to_ref_array2 =
     name = [ "Eurydice" ], "slice_to_ref_array2";
     typ = Krml.Helpers.fold_arrow [ TBound 2; TBound 1 ] (mk_result (TBound 1) (TBound 0));
     n_type_args = 3;
-    cg_args = [ TInt SizeT ];
+    cg_args = [];
     arg_names = [ "s" ];
   }
 

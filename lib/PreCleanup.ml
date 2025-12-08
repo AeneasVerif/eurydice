@@ -112,6 +112,7 @@ let expand_slice_to_array =
             },
             [ slice ] )
         when lid = Builtin.slice_to_ref_array.name ->
+          assert (cgs = []);
           (* allocate a Arr<T,C>, do memcpy and let the C macro do the choose and define the return
              or error value *)
           let const = constness_of_slice_type slice_t in
@@ -120,7 +121,7 @@ let expand_slice_to_array =
           let slice_to_ref_array2 =
             with_type
               (Krml.DeBruijn.subst_tn ts Builtin.slice_to_ref_array2.typ)
-              (ETApp (slice_to_ref_array2, List.map (Krml.DeBruijn.lift 1) cgs, [], ts))
+              (ETApp (slice_to_ref_array2, [], [], ts))
           in
           let arr = with_type arr_t (EBound 0) in
           let arr_ref = with_type arr_ref_t (EAddrOf arr) in

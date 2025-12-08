@@ -169,9 +169,8 @@ typedef struct Eurydice_mut_borrow_slice_i16_s {
 // destination array, since arrays are not values in C.
 // N.B.: see note in karamel/lib/Inlining.ml if you change this.
 
-#define Eurydice_slice_to_ref_array2(len_, src, arr_ptr, t_ptr, t_arr, t_err,  \
-                                     t_res)                                    \
-  (src.meta >= len_                                                            \
+#define Eurydice_slice_to_ref_array2(src, arr_ptr, t_ptr, t_arr, t_err, t_res) \
+  (src.meta >= (sizeof(arr_ptr.data) / sizeof(arr_ptr.data[0]))                \
        ? ((t_res){.tag = core_result_Ok, .val = {.case_Ok = arr_ptr}})         \
        : ((t_res){.tag = core_result_Err, .val = {.case_Err = 0}}))
 
