@@ -13,3 +13,4 @@ eurydice
 .charon_version
 
 test/libcrux/build
+test/libcrux/.cache
