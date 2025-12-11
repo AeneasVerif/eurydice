@@ -173,10 +173,12 @@ static inline size_t core_num__usize__wrapping_mul(size_t x, size_t y) {
 }
 
 static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1) {
+  assert(x1 < 64);
   return (x0 << x1) | (x0 >> ((-x1) & 63));
 }
 
 static inline uint32_t core_num__u32__rotate_left(uint32_t x0, uint32_t x1) {
+  assert(x1 < 32);
   return (x0 << x1) | (x0 >> ((-x1) & 31));
 }
 
