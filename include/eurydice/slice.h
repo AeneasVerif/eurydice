@@ -2,6 +2,7 @@
 
 #include <inttypes.h>
 #include <stdlib.h>
+#include <string.h>
 
 // SLICES, ARRAYS, ETC.
 
@@ -42,6 +43,9 @@ typedef struct Eurydice_mut_borrow_slice_i16_s {
   (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.ptr =)(ptr_)->data,                   \
                         EURYDICE_CFIELD(.meta =) len_})
 
+#define core_array___Array_T__N___as_mut_slice(len_, ptr_, t, ret_t) \
+  core_array___Array_T__N___as_slice(len_, ptr_, t, ret_t)
+
 #define core_array__core__clone__Clone_for__Array_T__N___clone(                \
     len, src, elem_type, _ret_t)                                               \
   (*(src))
@@ -58,6 +62,10 @@ typedef struct Eurydice_mut_borrow_slice_i16_s {
   (memcmp((a1)->data, (s2)->ptr, sz * sizeof(t)) == 0)
 #define Eurydice_array_eq_slice_mut(sz, a1, s2, t, _)                          \
   Eurydice_array_eq_slice_shared(sz, a1, s2, t, _)
+
+#define Eurydice_slice_eq_shared(s1, s2, t, _) \
+  ((s1)->meta == (s2)->meta &&                 \
+   memcmp((s1)->ptr, (s2)->ptr, (s1)->meta * sizeof(t)) == 0)
 
 // DEPRECATED -- should no longer be generated
 #define core_array_equality__core__cmp__PartialEq__Array_U__N___for__Array_T__N___eq( \

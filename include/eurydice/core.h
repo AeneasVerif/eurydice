@@ -173,17 +173,23 @@ static inline size_t core_num__usize__wrapping_mul(size_t x, size_t y) {
 }
 
 static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1) {
+  assert(x1 < 64);
   return (x0 << x1) | (x0 >> ((-x1) & 63));
+}
+
+static inline uint32_t core_num__u32__rotate_left(uint32_t x0, uint32_t x1) {
+  assert(x1 < 32);
+  return (x0 << x1) | (x0 >> ((-x1) & 31));
 }
 
 static inline void core_ops_arith__i32__add_assign(int32_t *x0, int32_t *x1) {
   *x0 = *x0 + *x1;
 }
 
-static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) {
+static inline uint8_t Eurydice_bitand_pv_u8(const uint8_t *p, uint8_t v) {
   return (*p) & v;
 }
-static inline uint8_t Eurydice_shr_pv_u8(uint8_t *p, int32_t v) {
+static inline uint8_t Eurydice_shr_pv_u8(const uint8_t *p, int32_t v) {
   return (*p) >> v;
 }
 static inline uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
@@ -191,13 +197,13 @@ static inline uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
 }
 
 static inline uint8_t
-core_ops_bit__core__ops__bit__BitAnd_u8__u8__for___a__u8___bitand(uint8_t *x0,
+core_ops_bit__core__ops__bit__BitAnd_u8__u8__for__0__u8___bitand(const uint8_t *x0,
                                                                   uint8_t x1) {
   return Eurydice_bitand_pv_u8(x0, x1);
 }
 
 static inline uint8_t
-core_ops_bit__core__ops__bit__Shr_i32__u8__for___a__u8___shr(uint8_t *x0,
+core_ops_bit__core__ops__bit__Shr_i32__u8__for__0__u8___shr(const uint8_t *x0,
                                                              int32_t x1) {
   return Eurydice_shr_pv_u8(x0, x1);
 }
@@ -208,6 +214,10 @@ core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__N
     core_num_nonzero_private_NonZeroUsizeInner *x0) {
   return *x0;
 }
+
+#define core_option__core__option__Option_T__TraitClause_0___is_some(X, _0, \
+                                                                     _1)    \
+  ((X)->tag == 1)
 
 #if defined(__cplusplus) && !defined(KRML_CXX17_COMPAT)
 }
