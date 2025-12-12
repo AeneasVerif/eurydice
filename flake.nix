@@ -48,6 +48,7 @@
         , mold-wrapped
         , ninja
         , gnugrep
+        , charon
         , charon-ml
         , krml
         , symlinkJoin
@@ -64,6 +65,10 @@
             nativeBuildInputs = [ gnugrep ] ++ (with ocamlPackages; [ menhir ]);
 
             propagatedBuildInputs = [ krml charon-ml ocamlPackages.terminal ocamlPackages.yaml ] ++ (with ocamlPackages; [ menhirLib ]);
+
+            postInstall = ''
+              ln -s ${charon}/bin/charon $out/bin/charon
+            '';
 
             passthru = {
               tests = clangStdenv.mkDerivation rec {
@@ -141,7 +146,7 @@
     rec {
       packages = {
         default = pkgs.callPackage package {
-          inherit charon-ml krml craneLib;
+          inherit charon charon-ml krml craneLib;
           version = self.rev or "dirty";
         };
         inherit charon karamel;
