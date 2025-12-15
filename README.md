@@ -38,8 +38,11 @@ the [Zulip](https://aeneas-verif.zulipchat.com/).
 # Install
 
 We recommend using Nix to easily ensure you are running the right versions of the tools and
-libraries. Our CI uses the `flake.lock` and `flake.nix` files, meaning that you are always
-guaranteed a successful build if you use Nix.
+libraries. With nix, you can run:
+```bash
+$ nix run 'github:aeneasverif/eurydice#charon' -- [CHARON_OPTIONS]
+$ nix run 'github:aeneasverif/eurydice' -- [EURYDICE_OPTIONS] <llbc_file>
+```
 
 Alternatively, you can do a local setup as follows.
 
