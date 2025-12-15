@@ -610,7 +610,7 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
         (List.length const_generics)
   | TTraitType _ -> failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
   | TFnPtr fn_sig ->
-      let ts, t = fn_sig.binder_value in
+      let { C.inputs = ts; output = t; _ } = fn_sig.binder_value in
       let typs = List.map (typ_of_ty env) ts in
       let typs =
         match typs with
@@ -1338,7 +1338,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
                           method_params.const_generics;
                     }
                   in
-                  { signature with generics = method_params })
+                  { C.item_binder_params = method_params; item_binder_value = signature })
               in
               L.log "TraitClauses" "%s computed method signature %s::%s:\n%s" depth name item_name
                 (Charon.PrintGAst.fun_sig_to_string env.format_env "" " " method_sig);
@@ -1363,9 +1363,11 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
       end)
     trait_clauses
 
-and lookup_signature env depth signature : lookup_result =
-  let { C.generics = { types = type_params; const_generics; trait_clauses; _ }; inputs; output; _ }
-      =
+and lookup_signature env depth (signature : C.bound_fun_sig) : lookup_result =
+  let {
+    C.item_binder_params = { types = type_params; const_generics; trait_clauses; _ };
+    item_binder_value = { C.inputs; output; _ };
+  } =
     signature
   in
   L.log "Calls" "%s# Lookup Signature\n%s--> args: %s, ret: %s\n" depth depth
@@ -1449,10 +1451,10 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
   | Some (_, b) -> builtin b
   | None -> (
       let lookup_result_of_fun_id fun_id =
-        let { C.item_meta; signature; _ } = env.get_nth_function fun_id in
-        let lid = lid_of_name env item_meta.name in
+        let decl = env.get_nth_function fun_id in
+        let lid = lid_of_name env decl.C.item_meta.name in
         L.log "Calls" "%s--> name: %a" depth plid lid;
-        K.EQualified lid, lookup_signature env depth signature
+        K.EQualified lid, lookup_signature env depth (C.bound_fun_sig_of_decl decl)
       in
 
       match f.kind with
@@ -2568,8 +2570,8 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
       match decl with
       | None -> None
       | Some decl -> (
-          let { C.def_id; signature; body; item_meta; src; _ } = decl in
-          let env = { env with generic_params = signature.generics } in
+          let { C.def_id; generics; signature; body; item_meta; src; _ } = decl in
+          let env = { env with generic_params = generics } in
           L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
             (if body = None then
                "opaque "
@@ -2587,14 +2589,14 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
               None
           | None, _ ->
               (* Opaque function *)
-              let { K.n_cgs; n }, t = typ_of_signature env signature in
+              let { K.n_cgs; n }, t = typ_of_signature env (C.bound_fun_sig_of_decl decl) in
               Some (K.DExternal (None, [], n_cgs, n, name, t, []))
           | Some { locals; body; _ }, _ ->
               if Option.is_some decl.is_global_initializer then
                 None
               else
-                let env = push_cg_binders env signature.C.generics.const_generics in
-                let env = push_type_binders env signature.C.generics.types in
+                let env = push_cg_binders env generics.const_generics in
+                let env = push_type_binders env generics.types in
 
                 L.log "AstOfLlbc" "ty of locals: %s"
                   (String.concat " ++ "
@@ -2646,9 +2648,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
                    type_binders = <<all type binders>>
                    binders = <<all cg binders>>
                 *)
-                let clause_binders =
-                  mk_clause_binders_and_args env signature.C.generics.trait_clauses
-                in
+                let clause_binders = mk_clause_binders_and_args env generics.trait_clauses in
                 debug_trait_clause_mapping env clause_binders;
                 (* Now we turn it into:
                    binders = <<all cg binders>> ++ <<all clause binders>> ++ <<regular function args>>
@@ -2660,7 +2660,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
                   List.map
                     (fun (arg : C.const_generic_param) ->
                       Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty))
-                    signature.C.generics.const_generics
+                    generics.const_generics
                   @ List.map
                       (function
                         | TraitClauseMethod { pretty_name; _ }, t
@@ -2693,8 +2693,8 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
                    binders but also on the clause binders... This is ok because even though the
                    clause binders are not in env.cg_binders, well, types don't refer to clause
                    binders, so we won't have translation errors. *)
-                let n_cg = List.length signature.C.generics.const_generics in
-                let n = List.length signature.C.generics.types in
+                let n_cg = List.length generics.const_generics in
+                let n = List.length generics.types in
                 Some
                   (K.DFunction
                      ( None,
