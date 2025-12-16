@@ -229,7 +229,7 @@ let get_128_op (kind, op) : K.expr = expr_of_builtin @@ Op128Map.find (kind, op)
 let sizeof =
   {
     name = [ "Eurydice" ], "sizeof";
-    typ = Krml.Helpers.fold_arrow [] (TInt SizeT);
+    typ = Krml.Helpers.fold_arrow [ TUnit ] (TInt SizeT);
     n_type_args = 1;
     cg_args = [];
     arg_names = [];
@@ -240,11 +240,25 @@ let sizeof =
 let alignof =
   {
     name = [ "Eurydice" ], "alignof";
-    typ = Krml.Helpers.fold_arrow [] (TInt SizeT);
+    typ = Krml.Helpers.fold_arrow [ TUnit ] (TInt SizeT);
     n_type_args = 1;
     cg_args = [];
     arg_names = [];
   }
+
+let opaque =
+  {
+    name = [ "Eurydice" ], "opaque";
+    typ = Krml.Helpers.fold_arrow [ TBuf (c_char_t, false) ] (TBound 0);
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [ "reason" ];
+  }
+
+let opaque_with_reason ret_t reason =
+  let app_typ = Krml.Helpers.fold_arrow [ TBuf (c_char_t, false) ] ret_t in
+  let opaque = K.with_type app_typ (K.ETApp (expr_of_builtin opaque, [], [], [ ret_t ])) in
+  K.with_type ret_t (K.EApp (opaque, [ K.with_type (TBuf (c_char_t, false)) (K.EString reason) ]))
 
 let suffix_of_const const =
   if const then
@@ -908,6 +922,7 @@ let builtin_funcs =
   [
     sizeof;
     alignof;
+    opaque;
     array_repeat;
     array_eq;
     array_eq_slice_mut;

@@ -28,7 +28,7 @@ extern void *const *const *global_ref_C_VAL_local_2;
 
 #define GLOBAL_REF_C_VAL (&global_ref_C_VAL_local_2)
 
-extern const int32_t *const *const *const global_ref_S_VAL;
+extern const int32_t *const *const *global_ref_S_VAL;
 
 void global_ref_main(void);
 
