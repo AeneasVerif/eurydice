@@ -8,7 +8,7 @@
 #ifndef const_generics_H
 #define const_generics_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

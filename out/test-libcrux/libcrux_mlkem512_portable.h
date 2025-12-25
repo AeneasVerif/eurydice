@@ -8,7 +8,7 @@
 #ifndef libcrux_mlkem512_portable_H
 #define libcrux_mlkem512_portable_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

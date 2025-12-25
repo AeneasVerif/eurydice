@@ -8,7 +8,7 @@
 #ifndef where_clauses_closures_H
 #define where_clauses_closures_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

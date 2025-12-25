@@ -8,7 +8,7 @@
 #ifndef array2d_H
 #define array2d_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

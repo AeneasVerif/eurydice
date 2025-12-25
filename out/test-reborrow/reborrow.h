@@ -8,7 +8,7 @@
 #ifndef reborrow_H
 #define reborrow_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

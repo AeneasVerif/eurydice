@@ -8,7 +8,7 @@
 #ifndef lvalue_H
 #define lvalue_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

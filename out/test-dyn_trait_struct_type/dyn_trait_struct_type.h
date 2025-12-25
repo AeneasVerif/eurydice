@@ -8,7 +8,7 @@
 #ifndef dyn_trait_struct_type_H
 #define dyn_trait_struct_type_H
 
-#include "eurydice_glue.h"
+#include "eurydice.h"
 
 
 #if defined(__cplusplus)

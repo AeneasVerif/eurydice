@@ -10,7 +10,7 @@ if [ $# -ne 1 ]; then
   usage
 fi
 
-format_file="${FORMAT_FILE:-include/eurydice_glue.h}"
+format_file="${FORMAT_FILE:-include/eurydice.h}"
 
 case "$1" in
   check)
