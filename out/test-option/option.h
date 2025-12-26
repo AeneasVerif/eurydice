@@ -15,6 +15,21 @@
 extern "C" {
 #endif
 
+typedef struct core_option_Option_bc_s core_option_Option_bc;
+
+typedef struct Eurydice_arr_88_s Eurydice_arr_88;
+
+typedef struct core_option_Option_e3_s core_option_Option_e3;
+
+#define core_option_None 0
+#define core_option_Some 1
+
+typedef uint8_t core_option_Option_bc_tags;
+
+typedef Eurydice_arr_88 option_Val;
+
+typedef core_option_Option_bc option_S;
+
 /**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
@@ -22,11 +37,6 @@ with const generics
 - $16size_t
 */
 typedef struct Eurydice_arr_88_s { uint8_t data[16U]; } Eurydice_arr_88;
-
-#define core_option_None 0
-#define core_option_Some 1
-
-typedef uint8_t core_option_Option_bc_tags;
 
 /**
 A monomorphic instance of core.option.Option
@@ -40,12 +50,6 @@ typedef struct core_option_Option_bc_s
 }
 core_option_Option_bc;
 
-typedef core_option_Option_bc option_S;
-
-typedef Eurydice_arr_88 option_Val;
-
-void option_main(void);
-
 /**
 A monomorphic instance of core.option.Option
 with types const Eurydice_arr_88*
@@ -57,6 +61,8 @@ typedef struct core_option_Option_e3_s
   const Eurydice_arr_88 *f0;
 }
 core_option_Option_e3;
+
+void option_main(void);
 
 /**
  Converts from `&Option<T>` to `Option<&T>`.

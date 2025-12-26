@@ -7,6 +7,15 @@
 
 #include "global_ref.h"
 
+typedef struct const_____x2_s const_____x2;
+
+typedef struct const_____x2_s
+{
+  void *const *fst;
+  void *const *snd;
+}
+const_____x2;
+
 static void *C_VAL_local_0 = (void *)0U;
 
 static void *const *C_VAL_local_1 = &C_VAL_local_0;
@@ -20,13 +29,6 @@ static const int32_t *S_VAL_local_1 = &S_VAL_local_0;
 static const int32_t *const *S_VAL_local_2 = &S_VAL_local_1;
 
 const int32_t *const *const *const global_ref_S_VAL = &S_VAL_local_2;
-
-typedef struct const_____x2_s
-{
-  void *const *fst;
-  void *const *snd;
-}
-const_____x2;
 
 void global_ref_main(void)
 {

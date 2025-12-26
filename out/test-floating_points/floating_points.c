@@ -7,12 +7,18 @@
 
 #include "floating_points.h"
 
-typedef struct const_float32_t__x2_s
+typedef struct const_size_t__x2_s const_size_t__x2;
+
+typedef struct const_float64_t__x2_s const_float64_t__x2;
+
+typedef struct const_float32_t__x2_s const_float32_t__x2;
+
+typedef struct const_size_t__x2_s
 {
-  const float32_t *fst;
-  const float32_t *snd;
+  const size_t *fst;
+  const size_t *snd;
 }
-const_float32_t__x2;
+const_size_t__x2;
 
 typedef struct const_float64_t__x2_s
 {
@@ -21,12 +27,12 @@ typedef struct const_float64_t__x2_s
 }
 const_float64_t__x2;
 
-typedef struct const_size_t__x2_s
+typedef struct const_float32_t__x2_s
 {
-  const size_t *fst;
-  const size_t *snd;
+  const float32_t *fst;
+  const float32_t *snd;
 }
-const_size_t__x2;
+const_float32_t__x2;
 
 void floating_points_main(void)
 {

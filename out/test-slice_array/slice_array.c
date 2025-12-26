@@ -7,6 +7,15 @@
 
 #include "slice_array.h"
 
+typedef struct const_uint8_t__x2_s const_uint8_t__x2;
+
+typedef struct const_uint8_t__x2_s
+{
+  const uint8_t *fst;
+  const uint8_t *snd;
+}
+const_uint8_t__x2;
+
 /**
 A monomorphic instance of Eurydice.array_to_slice_mut
 with types Eurydice_arr uint8_t[[$4size_t]]
@@ -20,13 +29,6 @@ static Eurydice_dst_ref_mut_75 array_to_slice_mut_4f(Eurydice_arr_44 *a)
   lit.meta = (size_t)4U;
   return lit;
 }
-
-typedef struct const_uint8_t__x2_s
-{
-  const uint8_t *fst;
-  const uint8_t *snd;
-}
-const_uint8_t__x2;
 
 void slice_array_f1(void)
 {

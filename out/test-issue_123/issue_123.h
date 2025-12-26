@@ -15,41 +15,41 @@
 extern "C" {
 #endif
 
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
+#define issue_123_E3_C1 255
 
-typedef uint8_t core_panicking_AssertKind;
+typedef uint8_t issue_123_E3;
 
 #define issue_123_E_One 1
 #define issue_123_E_Five 5
 
 typedef uint8_t issue_123_E;
 
-#define issue_123_E1_C1 4294967295
-#define issue_123_E1_C2 -4294967295
-#define issue_123_E1_C3 268435455
+#define issue_123_Gamma2_V95_232 95232
+#define issue_123_Gamma2_V261_888 261888
 
-typedef int64_t issue_123_E1;
+typedef uint32_t issue_123_Gamma2;
 
 #define issue_123_E2_C1 255
 #define issue_123_E2_C2 -1
 
 typedef int16_t issue_123_E2;
 
-#define issue_123_E3_C1 255
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
 
-typedef uint8_t issue_123_E3;
+typedef uint8_t core_panicking_AssertKind;
 
 #define issue_123_E4_C1 127
 #define issue_123_E4_C2 -126
 
 typedef int8_t issue_123_E4;
 
-#define issue_123_Gamma2_V95_232 95232
-#define issue_123_Gamma2_V261_888 261888
+#define issue_123_E1_C1 4294967295
+#define issue_123_E1_C2 -4294967295
+#define issue_123_E1_C3 268435455
 
-typedef uint32_t issue_123_Gamma2;
+typedef int64_t issue_123_E1;
 
 int32_t issue_123_fun(issue_123_E e);
 

@@ -1759,7 +1759,7 @@ with const generics
 - N= 64
 */
 Eurydice_mut_borrow_slice_u8
-Eurydice_array_to_subslice_from_mut_8c0(Eurydice_arr_06 *a, size_t r)
+Eurydice_array_to_subslice_from_mut_8c0(libcrux_sha3_Sha3_512Digest *a, size_t r)
 {
   return
     (KRML_CLITERAL(Eurydice_mut_borrow_slice_u8){ .ptr = a->data + r, .meta = (size_t)64U - r });
@@ -1772,7 +1772,7 @@ with const generics
 - N= 64
 */
 Eurydice_mut_borrow_slice_u8
-Eurydice_array_to_subslice_mut_368(Eurydice_arr_06 *a, core_ops_range_Range_08 r)
+Eurydice_array_to_subslice_mut_368(libcrux_sha3_Sha3_512Digest *a, core_ops_range_Range_08 r)
 {
   return
     (
@@ -1791,9 +1791,10 @@ A monomorphic instance of libcrux_ml_kem.utils.into_padded_array
 with const generics
 - LEN= 64
 */
-Eurydice_arr_06 libcrux_ml_kem_utils_into_padded_array_24(Eurydice_mut_borrow_slice_u8 slice)
+libcrux_sha3_Sha3_512Digest
+libcrux_ml_kem_utils_into_padded_array_24(Eurydice_mut_borrow_slice_u8 slice)
 {
-  Eurydice_arr_06 out = { .data = { 0U } };
+  libcrux_sha3_Sha3_512Digest out = { .data = { 0U } };
   Eurydice_slice_copy(Eurydice_array_to_subslice_mut_368(&out,
       (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = slice.meta })),
     slice,
@@ -2229,7 +2230,7 @@ with types uint8_t
 with const generics
 - N= 64
 */
-Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_d8(Eurydice_arr_06 *a)
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_d8(libcrux_sha3_Sha3_512Digest *a)
 {
   Eurydice_mut_borrow_slice_u8 lit;
   lit.ptr = a->data;
@@ -2243,7 +2244,7 @@ with types uint8_t
 with const generics
 - N= 48
 */
-Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_95(Eurydice_arr_5f *a)
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_95(libcrux_sha3_Sha3_384Digest *a)
 {
   Eurydice_mut_borrow_slice_u8 lit;
   lit.ptr = a->data;
@@ -2271,7 +2272,7 @@ with types uint8_t
 with const generics
 - N= 28
 */
-Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_c0(Eurydice_arr_f1 *a)
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_c0(libcrux_sha3_Sha3_224Digest *a)
 {
   Eurydice_mut_borrow_slice_u8 lit;
   lit.ptr = a->data;

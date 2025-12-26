@@ -15,11 +15,20 @@
 extern "C" {
 #endif
 
+typedef struct collision_Direction_s collision_Direction;
+
+typedef struct collision_Either_s collision_Either;
+
 #define collision_Left 0
 #define collision_Middle 1
 #define collision_Right 2
 
 typedef uint8_t collision_Direction_tags;
+
+#define collision_Left0 0
+#define collision_Right0 1
+
+typedef uint8_t collision_Either_tags;
 
 typedef struct collision_Direction_s
 {
@@ -31,11 +40,6 @@ typedef struct collision_Direction_s
   val;
 }
 collision_Direction;
-
-#define collision_Left0 0
-#define collision_Right0 1
-
-typedef uint8_t collision_Either_tags;
 
 typedef struct collision_Either_s
 {

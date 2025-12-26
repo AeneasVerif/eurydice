@@ -17,28 +17,59 @@ extern "C" {
 
 #include "libcrux_core.h"
 
-Eurydice_arr_06 libcrux_ml_kem_hash_functions_portable_G(Eurydice_mut_borrow_slice_u8 input);
+typedef struct uint8_t_x4_s uint8_t_x4;
 
-Eurydice_arr_60 libcrux_ml_kem_hash_functions_portable_H(Eurydice_mut_borrow_slice_u8 input);
+typedef struct uint8_t_x5_s uint8_t_x5;
 
-#define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR ((size_t)16U)
+typedef struct int16_t_x2_s int16_t_x2;
 
-#define LIBCRUX_ML_KEM_VECTOR_TRAITS_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS ((int16_t)1353)
+typedef struct uint8_t_x3_s uint8_t_x3;
 
-#define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS ((int16_t)3329)
+typedef struct uint8_t_x11_s uint8_t_x11;
 
-#define LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R (62209U)
+typedef struct int16_t_x8_s int16_t_x8;
+
+typedef int16_t libcrux_ml_kem_vector_portable_vector_type_FieldElement;
 
 typedef Eurydice_arr_e2 libcrux_ml_kem_vector_portable_vector_type_PortableVector;
 
-Eurydice_arr_e2
-libcrux_ml_kem_vector_portable_vector_type_from_i16_array(Eurydice_mut_borrow_slice_i16 array);
+typedef int16_t libcrux_ml_kem_vector_portable_arithmetic_MontgomeryFieldElement;
 
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_e2
-libcrux_ml_kem_vector_portable_from_i16_array_b8(Eurydice_mut_borrow_slice_i16 array);
+typedef int16_t libcrux_ml_kem_vector_portable_arithmetic_FieldElementTimesMontgomeryR;
+
+typedef struct uint8_t_x4_s
+{
+  uint8_t fst;
+  uint8_t snd;
+  uint8_t thd;
+  uint8_t f3;
+}
+uint8_t_x4;
+
+typedef struct int16_t_x2_s
+{
+  int16_t fst;
+  int16_t snd;
+}
+int16_t_x2;
+
+typedef struct uint8_t_x5_s
+{
+  uint8_t fst;
+  uint8_t snd;
+  uint8_t thd;
+  uint8_t f3;
+  uint8_t f4;
+}
+uint8_t_x5;
+
+typedef struct uint8_t_x3_s
+{
+  uint8_t fst;
+  uint8_t snd;
+  uint8_t thd;
+}
+uint8_t_x3;
 
 typedef struct uint8_t_x11_s
 {
@@ -56,18 +87,6 @@ typedef struct uint8_t_x11_s
 }
 uint8_t_x11;
 
-uint8_t_x11
-libcrux_ml_kem_vector_portable_serialize_serialize_11_int(Eurydice_mut_borrow_slice_i16 v);
-
-Eurydice_arr_f3 libcrux_ml_kem_vector_portable_serialize_serialize_11(Eurydice_arr_e2 v);
-
-Eurydice_arr_f3 libcrux_ml_kem_vector_portable_serialize_11(Eurydice_arr_e2 a);
-
-/**
-This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-Eurydice_arr_f3 libcrux_ml_kem_vector_portable_serialize_11_b8(Eurydice_arr_e2 a);
-
 typedef struct int16_t_x8_s
 {
   int16_t fst;
@@ -80,6 +99,40 @@ typedef struct int16_t_x8_s
   int16_t f7;
 }
 int16_t_x8;
+
+libcrux_sha3_Sha3_512Digest
+libcrux_ml_kem_hash_functions_portable_G(Eurydice_mut_borrow_slice_u8 input);
+
+Eurydice_arr_60 libcrux_ml_kem_hash_functions_portable_H(Eurydice_mut_borrow_slice_u8 input);
+
+#define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR ((size_t)16U)
+
+#define LIBCRUX_ML_KEM_VECTOR_TRAITS_MONTGOMERY_R_SQUARED_MOD_FIELD_MODULUS ((int16_t)1353)
+
+#define LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS ((int16_t)3329)
+
+#define LIBCRUX_ML_KEM_VECTOR_TRAITS_INVERSE_OF_MODULUS_MOD_MONTGOMERY_R (62209U)
+
+Eurydice_arr_e2
+libcrux_ml_kem_vector_portable_vector_type_from_i16_array(Eurydice_mut_borrow_slice_i16 array);
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_e2
+libcrux_ml_kem_vector_portable_from_i16_array_b8(Eurydice_mut_borrow_slice_i16 array);
+
+uint8_t_x11
+libcrux_ml_kem_vector_portable_serialize_serialize_11_int(Eurydice_mut_borrow_slice_i16 v);
+
+Eurydice_arr_f3 libcrux_ml_kem_vector_portable_serialize_serialize_11(Eurydice_arr_e2 v);
+
+Eurydice_arr_f3 libcrux_ml_kem_vector_portable_serialize_11(Eurydice_arr_e2 a);
+
+/**
+This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+Eurydice_arr_f3 libcrux_ml_kem_vector_portable_serialize_11_b8(Eurydice_arr_e2 a);
 
 int16_t_x8
 libcrux_ml_kem_vector_portable_serialize_deserialize_11_int(Eurydice_mut_borrow_slice_u8 bytes);
@@ -502,15 +555,6 @@ This function found in impl {libcrux_ml_kem::vector::traits::Operations for libc
 Eurydice_arr_e2
 libcrux_ml_kem_vector_portable_deserialize_1_b8(Eurydice_mut_borrow_slice_u8 a);
 
-typedef struct uint8_t_x4_s
-{
-  uint8_t fst;
-  uint8_t snd;
-  uint8_t thd;
-  uint8_t f3;
-}
-uint8_t_x4;
-
 uint8_t_x4
 libcrux_ml_kem_vector_portable_serialize_serialize_4_int(Eurydice_mut_borrow_slice_i16 v);
 
@@ -536,16 +580,6 @@ This function found in impl {libcrux_ml_kem::vector::traits::Operations for libc
 */
 Eurydice_arr_e2
 libcrux_ml_kem_vector_portable_deserialize_4_b8(Eurydice_mut_borrow_slice_u8 a);
-
-typedef struct uint8_t_x5_s
-{
-  uint8_t fst;
-  uint8_t snd;
-  uint8_t thd;
-  uint8_t f3;
-  uint8_t f4;
-}
-uint8_t_x5;
 
 uint8_t_x5
 libcrux_ml_kem_vector_portable_serialize_serialize_5_int(Eurydice_mut_borrow_slice_i16 v);
@@ -599,14 +633,6 @@ This function found in impl {libcrux_ml_kem::vector::traits::Operations for libc
 Eurydice_arr_e2
 libcrux_ml_kem_vector_portable_deserialize_10_b8(Eurydice_mut_borrow_slice_u8 a);
 
-typedef struct uint8_t_x3_s
-{
-  uint8_t fst;
-  uint8_t snd;
-  uint8_t thd;
-}
-uint8_t_x3;
-
 uint8_t_x3
 libcrux_ml_kem_vector_portable_serialize_serialize_12_int(Eurydice_mut_borrow_slice_i16 v);
 
@@ -618,13 +644,6 @@ Eurydice_arr_6d libcrux_ml_kem_vector_portable_serialize_12(Eurydice_arr_e2 a);
 This function found in impl {libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::portable::vector_type::PortableVector}
 */
 Eurydice_arr_6d libcrux_ml_kem_vector_portable_serialize_12_b8(Eurydice_arr_e2 a);
-
-typedef struct int16_t_x2_s
-{
-  int16_t fst;
-  int16_t snd;
-}
-int16_t_x2;
 
 int16_t_x2
 libcrux_ml_kem_vector_portable_serialize_deserialize_12_int(Eurydice_mut_borrow_slice_u8 bytes);
@@ -654,12 +673,6 @@ libcrux_ml_kem_vector_portable_rej_sample_b8(
   Eurydice_mut_borrow_slice_u8 a,
   Eurydice_mut_borrow_slice_i16 out
 );
-
-typedef int16_t libcrux_ml_kem_vector_portable_arithmetic_FieldElementTimesMontgomeryR;
-
-typedef int16_t libcrux_ml_kem_vector_portable_arithmetic_MontgomeryFieldElement;
-
-typedef int16_t libcrux_ml_kem_vector_portable_vector_type_FieldElement;
 
 /**
 This function found in impl {core::clone::Clone for libcrux_ml_kem::vector::portable::vector_type::PortableVector}

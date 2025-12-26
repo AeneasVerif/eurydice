@@ -15,6 +15,70 @@
 extern "C" {
 #endif
 
+typedef struct Eurydice_arr_2e_s Eurydice_arr_2e;
+
+typedef struct Eurydice_arr_c6_s Eurydice_arr_c6;
+
+typedef struct array_Foo_s array_Foo;
+
+typedef struct Eurydice_arr_79_s Eurydice_arr_79;
+
+typedef struct Eurydice_arr_33_s Eurydice_arr_33;
+
+typedef struct Eurydice_arr_a5_s Eurydice_arr_a5;
+
+typedef struct Eurydice_arr_b2_s Eurydice_arr_b2;
+
+typedef struct Eurydice_arr_60_s Eurydice_arr_60;
+
+typedef struct core_ops_range_Range_08_s core_ops_range_Range_08;
+
+typedef struct Eurydice_dst_ref_shared_10_s Eurydice_dst_ref_shared_10;
+
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
+
+/**
+A monomorphic instance of array.nested_from_fn.closure.closure
+with const generics
+- $4size_t
+*/
+typedef const size_t *array_nested_from_fn_closure_closure_44;
+
+/**
+A monomorphic instance of array.mk_incr2.closure
+with const generics
+- $10size_t
+*/
+typedef const uint32_t *array_mk_incr2_closure_40;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types size_t
+with const generics
+- $4size_t
+*/
+typedef struct Eurydice_arr_33_s { size_t data[4U]; } Eurydice_arr_33;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr_33
+with const generics
+- $4size_t
+*/
+typedef struct Eurydice_arr_c6_s { Eurydice_arr_33 data[4U]; } Eurydice_arr_c6;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types uint16_t
+with const generics
+- $1size_t
+*/
+typedef struct Eurydice_arr_2e_s { uint16_t data[1U]; } Eurydice_arr_2e;
+
 /**
 A monomorphic instance of Eurydice.arr
 with types uint32_t
@@ -30,8 +94,21 @@ typedef struct array_Foo_s
 }
 array_Foo;
 
-extern bool
-core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(const uint32_t *x0, const uint32_t *x1);
+/**
+A monomorphic instance of Eurydice.arr
+with types uint32_t
+with const generics
+- $10size_t
+*/
+typedef struct Eurydice_arr_79_s { uint32_t data[10U]; } Eurydice_arr_79;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types uint32_t
+with const generics
+- $1size_t
+*/
+typedef struct Eurydice_arr_a5_s { uint32_t data[1U]; } Eurydice_arr_a5;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -65,15 +142,12 @@ typedef struct Eurydice_dst_ref_shared_10_s
 }
 Eurydice_dst_ref_shared_10;
 
+extern bool
+core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(const uint32_t *x0, const uint32_t *x1);
+
 uint8_t array_fun(Eurydice_dst_ref_shared_10 x);
 
 Eurydice_arr_60 array_init(void);
-
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
 
 array_Foo array_mk_foo(void);
 
@@ -104,26 +178,11 @@ with const generics
 uint32_t array_mk_incr_call_once_b7_95(size_t _);
 
 /**
-A monomorphic instance of Eurydice.arr
-with types uint32_t
-with const generics
-- $10size_t
-*/
-typedef struct Eurydice_arr_79_s { uint32_t data[10U]; } Eurydice_arr_79;
-
-/**
 A monomorphic instance of array.mk_incr
 with const generics
 - K= 10
 */
 Eurydice_arr_79 array_mk_incr_95(void);
-
-/**
-A monomorphic instance of array.mk_incr2.closure
-with const generics
-- $10size_t
-*/
-typedef const uint32_t *array_mk_incr2_closure_40;
 
 /**
 This function found in impl {core::ops::function::FnMut<(usize), u32> for array::mk_incr2::closure<0, K>}
@@ -173,34 +232,11 @@ with const generics
 uint16_t array_plus_one_call_once_36_74(uint32_t _);
 
 /**
-A monomorphic instance of Eurydice.arr
-with types uint16_t
-with const generics
-- $1size_t
-*/
-typedef struct Eurydice_arr_2e_s { uint16_t data[1U]; } Eurydice_arr_2e;
-
-/**
-A monomorphic instance of Eurydice.arr
-with types uint32_t
-with const generics
-- $1size_t
-*/
-typedef struct Eurydice_arr_a5_s { uint32_t data[1U]; } Eurydice_arr_a5;
-
-/**
 A monomorphic instance of array.plus_one
 with const generics
 - K= 1
 */
 Eurydice_arr_2e array_plus_one_74(Eurydice_arr_a5 x);
-
-/**
-A monomorphic instance of array.nested_from_fn.closure.closure
-with const generics
-- $4size_t
-*/
-typedef const size_t *array_nested_from_fn_closure_closure_44;
 
 /**
 This function found in impl {core::ops::function::FnMut<(usize), usize> for array::nested_from_fn::closure::closure<0, K>}
@@ -223,14 +259,6 @@ with const generics
 size_t array_nested_from_fn_closure_call_once_4d_ac(const size_t *_, size_t _0);
 
 /**
-A monomorphic instance of Eurydice.arr
-with types size_t
-with const generics
-- $4size_t
-*/
-typedef struct Eurydice_arr_33_s { size_t data[4U]; } Eurydice_arr_33;
-
-/**
 This function found in impl {core::ops::function::FnMut<(usize), @Array<usize, K>> for array::nested_from_fn::closure<K>}
 */
 /**
@@ -249,14 +277,6 @@ with const generics
 - K= 4
 */
 Eurydice_arr_33 array_nested_from_fn_call_once_f6_ac(size_t _);
-
-/**
-A monomorphic instance of Eurydice.arr
-with types Eurydice_arr_33
-with const generics
-- $4size_t
-*/
-typedef struct Eurydice_arr_c6_s { Eurydice_arr_33 data[4U]; } Eurydice_arr_c6;
 
 /**
 A monomorphic instance of array.nested_from_fn

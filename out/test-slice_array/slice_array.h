@@ -15,18 +15,22 @@
 extern "C" {
 #endif
 
+typedef struct Eurydice_dst_ref_mut_75_x2_s Eurydice_dst_ref_mut_75_x2;
+
+typedef struct Eurydice_dst_ref_shared_75_s Eurydice_dst_ref_shared_75;
+
+typedef struct Eurydice_dst_ref_mut_75_s Eurydice_dst_ref_mut_75;
+
+typedef struct Eurydice_arr_44_s Eurydice_arr_44;
+
+typedef struct core_result_Result_c7_s core_result_Result_c7;
+
+typedef struct core_result_Result_90_s core_result_Result_90;
+
 #define core_result_Ok 0
 #define core_result_Err 1
 
 typedef uint8_t core_result_Result_10;
-
-extern core_result_Result_10
-core_array__core__fmt__Debug_for_core__array__TryFromSliceError__fmt(
-  const core_array_TryFromSliceError *x0,
-  core_fmt_Formatter *x1
-);
-
-extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(const uint8_t *x0);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -46,22 +50,12 @@ typedef struct Eurydice_dst_ref_mut_75_s
 }
 Eurydice_dst_ref_mut_75;
 
-/**
-A monomorphic instance of Eurydice.arr
-with types Eurydice_array_u8x4
-with const generics
-- $4size_t
-*/
-typedef struct Eurydice_arr_44_s { Eurydice_array_u8x4 data[4U]; } Eurydice_arr_44;
-
 typedef struct Eurydice_dst_ref_mut_75_x2_s
 {
   Eurydice_dst_ref_mut_75 fst;
   Eurydice_dst_ref_mut_75 snd;
 }
 Eurydice_dst_ref_mut_75_x2;
-
-void slice_array_f1(void);
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
@@ -74,8 +68,6 @@ typedef struct Eurydice_dst_ref_shared_75_s
   size_t meta;
 }
 Eurydice_dst_ref_shared_75;
-
-void slice_array_f2(void);
 
 /**
 A monomorphic instance of core.result.Result
@@ -94,6 +86,14 @@ typedef struct core_result_Result_c7_s
 core_result_Result_c7;
 
 /**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_array_u8x4
+with const generics
+- $4size_t
+*/
+typedef struct Eurydice_arr_44_s { Eurydice_array_u8x4 data[4U]; } Eurydice_arr_44;
+
+/**
 A monomorphic instance of core.result.Result
 with types const Eurydice_array_u8x4*, core_array_TryFromSliceError
 
@@ -108,6 +108,18 @@ typedef struct core_result_Result_90_s
   val;
 }
 core_result_Result_90;
+
+extern core_result_Result_10
+core_array__core__fmt__Debug_for_core__array__TryFromSliceError__fmt(
+  const core_array_TryFromSliceError *x0,
+  core_fmt_Formatter *x1
+);
+
+extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(const uint8_t *x0);
+
+void slice_array_f1(void);
+
+void slice_array_f2(void);
 
 void slice_array_f3(void);
 
