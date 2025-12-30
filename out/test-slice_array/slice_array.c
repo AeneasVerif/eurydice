@@ -226,7 +226,7 @@ void slice_array_f5_ac(void)
   /* original Rust expression is not an lvalue in C */
   Eurydice_array_u8x4 lvalue = { .data = { 0U } };
   Eurydice_borrow_slice_u8
-  x2 = core_array___Array_T__N___as_slice((size_t)4U, &lvalue, uint8_t, Eurydice_borrow_slice_u8);
+  x2 = core_array___T__N___as_slice((size_t)4U, &lvalue, uint8_t, Eurydice_borrow_slice_u8);
   Eurydice_borrow_slice_u8 uu____0 = x2;
   Eurydice_array_u8x4 arr;
   memcpy(arr.data, uu____0.ptr, (size_t)4U * sizeof (uint8_t));

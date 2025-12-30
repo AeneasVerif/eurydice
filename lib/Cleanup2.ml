@@ -1070,10 +1070,10 @@ let bonus_cleanups =
 
     method! visit_lident _ lid =
       match lid with
-      | [ "core"; "slice"; "{@Slice<T>}" ], "len" -> [ "Eurydice" ], "slice_len"
-      | [ "core"; "slice"; "{@Slice<T>}" ], "copy_from_slice" -> [ "Eurydice" ], "slice_copy"
-      | [ "core"; "slice"; "{@Slice<T>}" ], "split_at" -> [ "Eurydice" ], "slice_split_at"
-      | [ "core"; "slice"; "{@Slice<T>}" ], "split_at_mut" -> [ "Eurydice" ], "slice_split_at_mut"
+      | [ "core"; "slice"; "{[T]}" ], "len" -> [ "Eurydice" ], "slice_len"
+      | [ "core"; "slice"; "{[T]}" ], "copy_from_slice" -> [ "Eurydice" ], "slice_copy"
+      | [ "core"; "slice"; "{[T]}" ], "split_at" -> [ "Eurydice" ], "slice_split_at"
+      | [ "core"; "slice"; "{[T]}" ], "split_at_mut" -> [ "Eurydice" ], "slice_split_at_mut"
       | _ -> lid
 
     (* { f = e; ... }.f ~~> e
@@ -1136,10 +1136,10 @@ let cosmetic =
     method! visit_expr _ e =
       match e with
       | [%cremepat {| core::slice::?impl::len<?>(Eurydice::array_to_slice_shared[#?n]<?>(?)) |}]
-        when impl = "{@Slice<T>}" -> n
+        when impl = "{[T]}" -> n
       | [%cremepat {| core::slice::?impl::len<?>(Eurydice::array_to_slice_mut[#?n]<?>(?)) |}]
-        when impl = "{@Slice<T>}" -> n
-      | [%cremepat {| core::slice::?impl::len<?>(?e) |}] when impl = "{@Slice<T>}" ->
+        when impl = "{[T]}" -> n
+      | [%cremepat {| core::slice::?impl::len<?>(?e) |}] when impl = "{[T]}" ->
           with_type (TInt SizeT) (EField (e, "meta"))
       | [%cremepat {| Eurydice::slice_index_mut<?t>(?s, ?i) |}] ->
           with_type e.typ

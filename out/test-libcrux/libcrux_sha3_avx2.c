@@ -214,7 +214,7 @@ load_block_5b(Eurydice_arr_05 *state, const Eurydice_arr_cd *blocks, size_t offs
     uint8_t);
   __m256i
   u =
-    mm256_loadu_si256_u8(core_array___Array_T__N___as_slice((size_t)32U,
+    mm256_loadu_si256_u8(core_array___T__N___as_slice((size_t)32U,
         &u8s,
         uint8_t,
         Eurydice_borrow_slice_u8));
@@ -266,7 +266,7 @@ load_block_5b(Eurydice_arr_05 *state, const Eurydice_arr_cd *blocks, size_t offs
       uint8_t);
     __m256i
     u0 =
-      mm256_loadu_si256_u8(core_array___Array_T__N___as_slice((size_t)32U,
+      mm256_loadu_si256_u8(core_array___T__N___as_slice((size_t)32U,
           &u8s0,
           uint8_t,
           Eurydice_borrow_slice_u8));
@@ -2121,7 +2121,7 @@ load_block_3a(Eurydice_arr_05 *state, const Eurydice_arr_cd *blocks, size_t offs
     uint8_t);
   __m256i
   u =
-    mm256_loadu_si256_u8(core_array___Array_T__N___as_slice((size_t)32U,
+    mm256_loadu_si256_u8(core_array___T__N___as_slice((size_t)32U,
         &u8s,
         uint8_t,
         Eurydice_borrow_slice_u8));
@@ -2173,7 +2173,7 @@ load_block_3a(Eurydice_arr_05 *state, const Eurydice_arr_cd *blocks, size_t offs
       uint8_t);
     __m256i
     u0 =
-      mm256_loadu_si256_u8(core_array___Array_T__N___as_slice((size_t)32U,
+      mm256_loadu_si256_u8(core_array___T__N___as_slice((size_t)32U,
           &u8s0,
           uint8_t,
           Eurydice_borrow_slice_u8));
