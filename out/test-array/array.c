@@ -227,14 +227,14 @@ size_t array_nested_from_fn_closure_call_once_4d_ac(const size_t *_, size_t _0)
 }
 
 /**
-This function found in impl {core::ops::function::FnMut<(usize), @Array<usize, K>> for array::nested_from_fn::closure<K>}
+This function found in impl {core::ops::function::FnMut<(usize), [usize; K]> for array::nested_from_fn::closure<K>}
 */
 /**
-A monomorphic instance of array.nested_from_fn.call_mut_af
+A monomorphic instance of array.nested_from_fn.call_mut_6c
 with const generics
 - K= 4
 */
-Eurydice_arr_33 array_nested_from_fn_call_mut_af_ac(void **_, size_t tupled_args)
+Eurydice_arr_33 array_nested_from_fn_call_mut_6c_ac(void **_, size_t tupled_args)
 {
   size_t j = tupled_args;
   Eurydice_arr_33 arr_struct;
@@ -249,18 +249,18 @@ Eurydice_arr_33 array_nested_from_fn_call_mut_af_ac(void **_, size_t tupled_args
 }
 
 /**
-This function found in impl {core::ops::function::FnOnce<(usize), @Array<usize, K>> for array::nested_from_fn::closure<K>}
+This function found in impl {core::ops::function::FnOnce<(usize), [usize; K]> for array::nested_from_fn::closure<K>}
 */
 /**
-A monomorphic instance of array.nested_from_fn.call_once_f6
+A monomorphic instance of array.nested_from_fn.call_once_d9
 with const generics
 - K= 4
 */
-Eurydice_arr_33 array_nested_from_fn_call_once_f6_ac(size_t _)
+Eurydice_arr_33 array_nested_from_fn_call_once_d9_ac(size_t _)
 {
   /* original Rust expression is not an lvalue in C */
   void *lvalue = (void *)0U;
-  return array_nested_from_fn_call_mut_af_ac(&lvalue, _);
+  return array_nested_from_fn_call_mut_6c_ac(&lvalue, _);
 }
 
 /**
@@ -277,7 +277,7 @@ Eurydice_arr_c6 array_nested_from_fn_ac(void)
     (size_t)1U,
     /* original Rust expression is not an lvalue in C */
     void *lvalue = (void *)0U;
-    arr_struct.data[i] = array_nested_from_fn_call_mut_af_ac(&lvalue, i););
+    arr_struct.data[i] = array_nested_from_fn_call_mut_6c_ac(&lvalue, i););
   return arr_struct;
 }
 

@@ -32,9 +32,9 @@ uint32_t traits_to_int_ac(const traits_Foo *self)
 }
 
 /**
-This function found in impl {traits::ToInt for &0 (@Slice<traits::Foo>)}
+This function found in impl {traits::ToInt for &0 ([traits::Foo])}
 */
-uint32_t traits_to_int_88(const Eurydice_dst_ref_shared_e2 *self)
+uint32_t traits_to_int_0f(const Eurydice_dst_ref_shared_e2 *self)
 {
   uint32_t uu____0 = traits_to_int_ac(&self->ptr[0U]);
   return uu____0 * traits_to_int_ac(&self->ptr[1U]);
@@ -63,7 +63,7 @@ void traits_main(void)
   lvalue =
     array_to_subslice_shared_91(&foos,
       (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)2U }));
-  if (!(traits_to_int_88(&lvalue) != 2U))
+  if (!(traits_to_int_0f(&lvalue) != 2U))
   {
     return;
   }

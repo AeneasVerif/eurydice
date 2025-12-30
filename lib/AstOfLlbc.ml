@@ -512,9 +512,11 @@ and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
           (* For tuple, the type of metadata is the last element *)
           | last :: _ -> metadata_typ_of_ty env last
         end
-      | C.TBuiltin C.TBox | C.TBuiltin C.TArray -> None
-      | C.TBuiltin C.TSlice | C.TBuiltin C.TStr -> Some Krml.Helpers.usize
+      | C.TBuiltin C.TBox -> None
+      | C.TBuiltin C.TStr -> Some Krml.Helpers.usize
     end
+  | C.TArray _ -> None
+  | C.TSlice _ -> Some Krml.Helpers.usize
   | C.TVar _ ->
       (* TEMPORARY:  this needs to be enabled once the monomorphization PR lands -- 
     for now, there are still polymorphic type definitions of the form type 
@@ -559,8 +561,7 @@ and ptr_typ_of_ty (env : env) ~const (ty : Charon.Types.ty) : K.typ =
   (* Handle special cases first *)
   match ty with
   (* Special case to handle slice : &[T] *)
-  | TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
-      Builtin.mk_slice ~const (typ_of_ty env t)
+  | TSlice t -> Builtin.mk_slice ~const (typ_of_ty env t)
   (* Special case to handle &str *)
   | TAdt { id = TBuiltin TStr; _ } -> Builtin.str_t ~const
   (* Special case to handle DynTrait *)
@@ -598,9 +599,8 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
         | [ t ] -> typ_of_ty env t (* charon issue #205 *)
         | _ -> TTuple (List.map (typ_of_ty env) args)
       end
-  | TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } } ->
-      typ_of_struct_arr env t cg
-  | TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
+  | TArray (t, cg) -> typ_of_struct_arr env t cg
+  | TSlice t ->
       (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
       TApp (Builtin.derefed_slice, [ typ_of_ty env t ])
   | TAdt { id = TBuiltin TStr; generics = { types = []; _ } } -> Builtin.deref_str_t
@@ -886,8 +886,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       match pe, sub_place, sub_place.ty with
       (* slices simply cannot be dereferenced into places which have unknown size.
          They are supposed to be reborrowed again directly after the deref which is handled in expression_of_rvalue *)
-      | C.Deref, _, TRef (_, TAdt { id = TBuiltin TSlice; _ }, _)
-      | C.Deref, _, TRawPtr (TAdt { id = TBuiltin TSlice; _ }, _) -> assert false
+      | C.Deref, _, TRef (_, TSlice _, _) | C.Deref, _, TRawPtr (TSlice _, _) -> assert false
       | ( C.Deref,
           _,
           (TRawPtr _ | TRef _ | TAdt { id = TBuiltin TBox; generics = { types = [ _ ]; _ } }) ) ->
@@ -1551,16 +1550,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   (* Translate effective type and cg arguments. *)
   let const_generic_args =
     match f, type_args with
-    | ( EQualified lid,
-        [
-          _;
-          TRef
-            ( _,
-              TAdt
-                { id = TBuiltin TArray; generics = { types = [ _ ]; const_generics = [ cg ]; _ } },
-              _ );
-          _;
-        ] )
+    | EQualified lid, [ _; TRef (_, TArray (_, cg), _); _ ]
       when lid = Builtin.slice_to_ref_array.name ->
         (* Special case, we *do* need to retain the length, which would disappear if we simply did
            typ_of_ty (owing to array decay rules). *)
@@ -2339,7 +2329,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
         in
         match fn_ptr.kind, fn_ptr.generics.types @ extra_types with
         | ( FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })),
-            [ TAdt { id = TBuiltin TSlice; _ } ] ) ->
+            [ TSlice _ ] ) ->
             (* Will decay. See comment above maybe_addrof *)
             rhs
         | ( FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })),

@@ -43,14 +43,14 @@ This function found in impl {core::ops::function::FnOnce<(usize), usize> for clo
 size_t closure_f_closure_call_once_b7(closure_f_closure_closure _, size_t _0);
 
 /**
-This function found in impl {core::ops::function::FnMut<(usize), @Array<usize, 1usize>> for closure::f::closure<0>}
+This function found in impl {core::ops::function::FnMut<(usize), [usize; 1usize]> for closure::f::closure<0>}
 */
-Eurydice_arr_e4 closure_f_call_mut_59(const Eurydice_arr_e4 **_, size_t tupled_args);
+Eurydice_arr_e4 closure_f_call_mut_82(const Eurydice_arr_e4 **_, size_t tupled_args);
 
 /**
-This function found in impl {core::ops::function::FnOnce<(usize), @Array<usize, 1usize>> for closure::f::closure<0>}
+This function found in impl {core::ops::function::FnOnce<(usize), [usize; 1usize]> for closure::f::closure<0>}
 */
-Eurydice_arr_e4 closure_f_call_once_71(const Eurydice_arr_e4 *_, size_t _0);
+Eurydice_arr_e4 closure_f_call_once_86(const Eurydice_arr_e4 *_, size_t _0);
 
 /**
 A monomorphic instance of Eurydice.arr

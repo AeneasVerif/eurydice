@@ -50,9 +50,9 @@ typedef struct Eurydice_dst_ref_shared_e2_s
 Eurydice_dst_ref_shared_e2;
 
 /**
-This function found in impl {traits::ToInt for &0 (@Slice<traits::Foo>)}
+This function found in impl {traits::ToInt for &0 ([traits::Foo])}
 */
-uint32_t traits_to_int_88(const Eurydice_dst_ref_shared_e2 *self);
+uint32_t traits_to_int_0f(const Eurydice_dst_ref_shared_e2 *self);
 
 /**
 A monomorphic instance of Eurydice.arr

@@ -57,7 +57,7 @@ clean-and-test:
 .PRECIOUS: %.llbc
 %.llbc: %.rs .charon_version
 	# --mir elaborated --add-drop-bounds 
-	$(CHARON) rustc --preset=eurydice --dest-file "$@" $(CHARON_EXTRA) -- $<
+	$(CHARON) rustc --preset=eurydice --dest-file "$@" $(CHARON_EXTRA) -- -Aunused $<
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
@@ -155,11 +155,12 @@ test/libcrux.llbc:
 	RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $(CHARON) cargo --preset eurydice \
 	  --include 'libcrux_sha3' \
 	  --include 'libcrux_secrets' \
+	  --rustc-arg='-Aunused' \
 	  --start-from libcrux_ml_kem --start-from libcrux_sha3 \
 	  --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
 	  --dest-file $$PWD/$@ -- \
 	  --manifest-path $(LIBCRUX_HOME)/libcrux-ml-kem/Cargo.toml \
-	  --target=x86_64-apple-darwin 
+	  --target=x86_64-apple-darwin
 	@# Commit the `Cargo.lock` so that the nix CI can use it
 	cp $(LIBCRUX_HOME)/Cargo.lock libcrux-Cargo.lock
 
