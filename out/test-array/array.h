@@ -231,24 +231,24 @@ with const generics
 typedef struct Eurydice_arr_33_s { size_t data[4U]; } Eurydice_arr_33;
 
 /**
-This function found in impl {core::ops::function::FnMut<(usize), @Array<usize, K>> for array::nested_from_fn::closure<K>}
+This function found in impl {core::ops::function::FnMut<(usize), [usize; K]> for array::nested_from_fn::closure<K>}
 */
 /**
-A monomorphic instance of array.nested_from_fn.call_mut_af
+A monomorphic instance of array.nested_from_fn.call_mut_6c
 with const generics
 - K= 4
 */
-Eurydice_arr_33 array_nested_from_fn_call_mut_af_ac(void **_, size_t tupled_args);
+Eurydice_arr_33 array_nested_from_fn_call_mut_6c_ac(void **_, size_t tupled_args);
 
 /**
-This function found in impl {core::ops::function::FnOnce<(usize), @Array<usize, K>> for array::nested_from_fn::closure<K>}
+This function found in impl {core::ops::function::FnOnce<(usize), [usize; K]> for array::nested_from_fn::closure<K>}
 */
 /**
-A monomorphic instance of array.nested_from_fn.call_once_f6
+A monomorphic instance of array.nested_from_fn.call_once_d9
 with const generics
 - K= 4
 */
-Eurydice_arr_33 array_nested_from_fn_call_once_f6_ac(size_t _);
+Eurydice_arr_33 array_nested_from_fn_call_once_d9_ac(size_t _);
 
 /**
 A monomorphic instance of Eurydice.arr

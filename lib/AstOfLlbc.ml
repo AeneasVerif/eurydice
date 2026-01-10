@@ -512,9 +512,11 @@ and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
           (* For tuple, the type of metadata is the last element *)
           | last :: _ -> metadata_typ_of_ty env last
         end
-      | C.TBuiltin C.TBox | C.TBuiltin C.TArray -> None
-      | C.TBuiltin C.TSlice | C.TBuiltin C.TStr -> Some Krml.Helpers.usize
+      | C.TBuiltin C.TBox -> None
+      | C.TBuiltin C.TStr -> Some Krml.Helpers.usize
     end
+  | C.TArray _ -> None
+  | C.TSlice _ -> Some Krml.Helpers.usize
   | C.TVar _ ->
       (* TEMPORARY:  this needs to be enabled once the monomorphization PR lands -- 
     for now, there are still polymorphic type definitions of the form type 
@@ -559,8 +561,7 @@ and ptr_typ_of_ty (env : env) ~const (ty : Charon.Types.ty) : K.typ =
   (* Handle special cases first *)
   match ty with
   (* Special case to handle slice : &[T] *)
-  | TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
-      Builtin.mk_slice ~const (typ_of_ty env t)
+  | TSlice t -> Builtin.mk_slice ~const (typ_of_ty env t)
   (* Special case to handle &str *)
   | TAdt { id = TBuiltin TStr; _ } -> Builtin.str_t ~const
   (* Special case to handle DynTrait *)
@@ -599,9 +600,8 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
         | [ t ] -> typ_of_ty env t (* charon issue #205 *)
         | _ -> TTuple (List.map (typ_of_ty env) args)
       end
-  | TAdt { id = TBuiltin TArray; generics = { types = [ t ]; const_generics = [ cg ]; _ } } ->
-      typ_of_struct_arr env t cg
-  | TAdt { id = TBuiltin TSlice; generics = { types = [ t ]; _ } } ->
+  | TArray (t, cg) -> typ_of_struct_arr env t cg
+  | TSlice t ->
       (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
       TApp (Builtin.derefed_slice, [ typ_of_ty env t ])
   | TAdt { id = TBuiltin TStr; generics = { types = []; _ } } -> Builtin.deref_str_t
@@ -611,7 +611,7 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
         (List.length const_generics)
   | TTraitType _ -> failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
   | TFnPtr fn_sig ->
-      let ts, t = fn_sig.binder_value in
+      let { C.inputs = ts; output = t; _ } = fn_sig.binder_value in
       let typs = List.map (typ_of_ty env) ts in
       let typs =
         match typs with
@@ -887,8 +887,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
       match pe, sub_place, sub_place.ty with
       (* slices simply cannot be dereferenced into places which have unknown size.
          They are supposed to be reborrowed again directly after the deref which is handled in expression_of_rvalue *)
-      | C.Deref, _, TRef (_, TAdt { id = TBuiltin TSlice; _ }, _)
-      | C.Deref, _, TRawPtr (TAdt { id = TBuiltin TSlice; _ }, _) -> assert false
+      | C.Deref, _, TRef (_, TSlice _, _) | C.Deref, _, TRawPtr (TSlice _, _) -> assert false
       | ( C.Deref,
           _,
           (TRawPtr _ | TRef _ | TAdt { id = TBuiltin TBox; generics = { types = [ _ ]; _ } }) ) ->
@@ -1339,7 +1338,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
                           method_params.const_generics;
                     }
                   in
-                  { signature with generics = method_params })
+                  { C.item_binder_params = method_params; item_binder_value = signature })
               in
               L.log "TraitClauses" "%s computed method signature %s::%s:\n%s" depth name item_name
                 (Charon.PrintGAst.fun_sig_to_string env.format_env "" " " method_sig);
@@ -1364,9 +1363,11 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
       end)
     trait_clauses
 
-and lookup_signature env depth signature : lookup_result =
-  let { C.generics = { types = type_params; const_generics; trait_clauses; _ }; inputs; output; _ }
-      =
+and lookup_signature env depth (signature : C.bound_fun_sig) : lookup_result =
+  let {
+    C.item_binder_params = { types = type_params; const_generics; trait_clauses; _ };
+    item_binder_value = { C.inputs; output; _ };
+  } =
     signature
   in
   L.log "Calls" "%s# Lookup Signature\n%s--> args: %s, ret: %s\n" depth depth
@@ -1450,10 +1451,10 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
   | Some (_, b) -> builtin b
   | None -> (
       let lookup_result_of_fun_id fun_id =
-        let { C.item_meta; signature; _ } = env.get_nth_function fun_id in
-        let lid = lid_of_name env item_meta.name in
+        let decl = env.get_nth_function fun_id in
+        let lid = lid_of_name env decl.C.item_meta.name in
         L.log "Calls" "%s--> name: %a" depth plid lid;
-        K.EQualified lid, lookup_signature env depth signature
+        K.EQualified lid, lookup_signature env depth (C.bound_fun_sig_of_decl decl)
       in
 
       match f.kind with
@@ -1550,16 +1551,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   (* Translate effective type and cg arguments. *)
   let const_generic_args =
     match f, type_args with
-    | ( EQualified lid,
-        [
-          _;
-          TRef
-            ( _,
-              TAdt
-                { id = TBuiltin TArray; generics = { types = [ _ ]; const_generics = [ cg ]; _ } },
-              _ );
-          _;
-        ] )
+    | EQualified lid, [ _; TRef (_, TArray (_, cg), _); _ ]
       when lid = Builtin.slice_to_ref_array.name ->
         (* Special case, we *do* need to retain the length, which would disappear if we simply did
            typ_of_ty (owing to array decay rules). *)
@@ -2386,7 +2378,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
         in
         match fn_ptr.kind, fn_ptr.generics.types @ extra_types with
         | ( FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })),
-            [ TAdt { id = TBuiltin TSlice; _ } ] ) ->
+            [ TSlice _ ] ) ->
             (* Will decay. See comment above maybe_addrof *)
             rhs
         | ( FunId (FBuiltin (Index { is_array = false; mutability = _; is_range = false })),
@@ -2617,8 +2609,8 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
       match decl with
       | None -> None
       | Some decl -> (
-          let { C.def_id; signature; body; item_meta; src; _ } = decl in
-          let env = { env with generic_params = signature.generics } in
+          let { C.def_id; generics; signature; body; item_meta; src; _ } = decl in
+          let env = { env with generic_params = generics } in
           L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
             (if body = None then
                "opaque "
@@ -2636,14 +2628,14 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
               None
           | None, _ ->
               (* Opaque function *)
-              let { K.n_cgs; n }, t = typ_of_signature env signature in
+              let { K.n_cgs; n }, t = typ_of_signature env (C.bound_fun_sig_of_decl decl) in
               Some (K.DExternal (None, [], n_cgs, n, name, t, []))
           | Some { locals; body; _ }, _ ->
               if Option.is_some decl.is_global_initializer then
                 None
               else
-                let env = push_cg_binders env signature.C.generics.const_generics in
-                let env = push_type_binders env signature.C.generics.types in
+                let env = push_cg_binders env generics.const_generics in
+                let env = push_type_binders env generics.types in
 
                 L.log "AstOfLlbc" "ty of locals: %s"
                   (String.concat " ++ "
@@ -2695,9 +2687,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
                    type_binders = <<all type binders>>
                    binders = <<all cg binders>>
                 *)
-                let clause_binders =
-                  mk_clause_binders_and_args env signature.C.generics.trait_clauses
-                in
+                let clause_binders = mk_clause_binders_and_args env generics.trait_clauses in
                 debug_trait_clause_mapping env clause_binders;
                 (* Now we turn it into:
                    binders = <<all cg binders>> ++ <<all clause binders>> ++ <<regular function args>>
@@ -2709,7 +2699,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
                   List.map
                     (fun (arg : C.const_generic_param) ->
                       Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty))
-                    signature.C.generics.const_generics
+                    generics.const_generics
                   @ List.map
                       (function
                         | TraitClauseMethod { pretty_name; _ }, t
@@ -2742,8 +2732,8 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
                    binders but also on the clause binders... This is ok because even though the
                    clause binders are not in env.cg_binders, well, types don't refer to clause
                    binders, so we won't have translation errors. *)
-                let n_cg = List.length signature.C.generics.const_generics in
-                let n = List.length signature.C.generics.types in
+                let n_cg = List.length generics.const_generics in
+                let n = List.length generics.types in
                 Some
                   (K.DFunction
                      ( None,

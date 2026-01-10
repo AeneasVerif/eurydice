@@ -115,12 +115,12 @@ typedef struct Eurydice_mut_borrow_slice_i16_s {
 #define Eurydice_slice_copy(dst, src, t)                                       \
   memcpy(dst.ptr, src.ptr, dst.meta * sizeof(t))
 
-#define core_array___Array_T__N___as_slice(len_, ptr_, t, ret_t)               \
+#define core_array___T__N___as_slice(len_, ptr_, t, ret_t)                     \
   (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.ptr =)(ptr_)->data,                   \
                         EURYDICE_CFIELD(.meta =) len_})
 
-#define core_array__core__clone__Clone_for__Array_T__N___clone(                \
-    len, src, elem_type, _ret_t)                                               \
+#define core_array__core__clone__Clone_for__T__N___clone(len, src, elem_type,  \
+                                                         _ret_t)               \
   (*(src))
 #define TryFromSliceError uint8_t
 #define core_array_TryFromSliceError uint8_t

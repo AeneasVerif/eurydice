@@ -22,10 +22,10 @@ let remove_array_eq =
           if is_flat t then
             let diff = n_binders - n_cgs in
             match impl with
-            | "{core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>}" ->
+            | "{core::cmp::PartialEq<[U; N]> for [T; N]}" ->
                 with_type TBool
                   (EApp (Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) array_eq [ t ]), [ a1; a2 ]))
-            | "{core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>}" ->
+            | "{core::cmp::PartialEq<&0 ([U])> for [T; N]}" ->
                 let hd =
                   if !Options.no_const then
                     Builtin.array_eq_slice_mut
