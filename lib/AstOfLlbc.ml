@@ -1227,7 +1227,9 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
          the trait, we must substitute them with the given generics. We should
          in principle substitute everything but we currently don't. This will
          likely be a source of bugs. *)
-      let subst = Charon.Substitute.make_subst_from_generics trait_decl.generics trait_generics in
+      let subst =
+        Charon.Substitute.make_subst_from_generics trait_decl.generics trait_generics Self
+      in
       let substitute_visitor = Charon.Substitute.st_substitute_visitor in
 
       let name = string_of_name env trait_decl.item_meta.name in
@@ -1615,7 +1617,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                     trait_impl.methods
                 @ build_trait_ref_mapping ("  " ^ depth)
                     (let subst =
-                       Charon.Substitute.make_subst_from_generics trait_impl.generics _generics
+                       Charon.Substitute.make_subst_from_generics trait_impl.generics _generics Self
                      in
                      (*_generics.trait_refs*)
                      List.map
