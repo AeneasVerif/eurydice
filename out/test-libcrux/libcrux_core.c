@@ -2809,36 +2809,6 @@ Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_7d(const Eurydice_arr_a0
 }
 
 /**
-A monomorphic instance of Eurydice.array_to_subslice_mut
-with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
-with const generics
-- N= 72
-*/
-Eurydice_mut_borrow_slice_u8
-Eurydice_array_to_subslice_mut_36(Eurydice_arr_a0 *a, core_ops_range_Range_08 r)
-{
-  return
-    (
-      KRML_CLITERAL(Eurydice_mut_borrow_slice_u8){
-        .ptr = a->data + r.start,
-        .meta = r.end - r.start
-      }
-    );
-}
-
-/**
-A monomorphic instance of Eurydice.slice_subslice_shared
-with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
-
-*/
-Eurydice_borrow_slice_u8
-Eurydice_slice_subslice_shared_7e(Eurydice_borrow_slice_u8 s, core_ops_range_Range_08 r)
-{
-  return
-    (KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = s.ptr + r.start, .meta = r.end - r.start });
-}
-
-/**
 This function found in impl {core::result::Result<T, E>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -2857,5 +2827,35 @@ Eurydice_array_u8x8 core_result_unwrap_26_ab(core_result_Result_8e self)
     KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "unwrap not Ok");
     KRML_HOST_EXIT(255U);
   }
+}
+
+/**
+A monomorphic instance of Eurydice.slice_subslice_shared
+with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
+
+*/
+Eurydice_borrow_slice_u8
+Eurydice_slice_subslice_shared_7e(Eurydice_borrow_slice_u8 s, core_ops_range_Range_08 r)
+{
+  return
+    (KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = s.ptr + r.start, .meta = r.end - r.start });
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_subslice_mut
+with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
+with const generics
+- N= 72
+*/
+Eurydice_mut_borrow_slice_u8
+Eurydice_array_to_subslice_mut_36(Eurydice_arr_a0 *a, core_ops_range_Range_08 r)
+{
+  return
+    (
+      KRML_CLITERAL(Eurydice_mut_borrow_slice_u8){
+        .ptr = a->data + r.start,
+        .meta = r.end - r.start
+      }
+    );
 }
 

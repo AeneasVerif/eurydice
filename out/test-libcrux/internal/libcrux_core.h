@@ -17,6 +17,23 @@ extern "C" {
 
 #include "../libcrux_core.h"
 
+#define core_option_None 0
+#define core_option_Some 1
+
+typedef uint8_t core_option_Option_08_tags;
+
+/**
+A monomorphic instance of core.option.Option
+with types size_t
+
+*/
+typedef struct core_option_Option_08_s
+{
+  core_option_Option_08_tags tag;
+  size_t f0;
+}
+core_option_Option_08;
+
 static inline uint64_t core_num__u64__from_le_bytes(Eurydice_array_u8x8 x0);
 
 static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1);
@@ -2018,23 +2035,6 @@ with const generics
 Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_7d(const Eurydice_arr_a0 *a);
 
 /**
-A monomorphic instance of Eurydice.array_to_subslice_mut
-with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
-with const generics
-- N= 72
-*/
-Eurydice_mut_borrow_slice_u8
-Eurydice_array_to_subslice_mut_36(Eurydice_arr_a0 *a, core_ops_range_Range_08 r);
-
-/**
-A monomorphic instance of Eurydice.slice_subslice_shared
-with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
-
-*/
-Eurydice_borrow_slice_u8
-Eurydice_slice_subslice_shared_7e(Eurydice_borrow_slice_u8 s, core_ops_range_Range_08 r);
-
-/**
 A monomorphic instance of core.result.Result
 with types Eurydice_array_u8x8, core_array_TryFromSliceError
 
@@ -2059,6 +2059,23 @@ with types Eurydice_arr uint8_t[[$8size_t]], core_array_TryFromSliceError
 
 */
 Eurydice_array_u8x8 core_result_unwrap_26_ab(core_result_Result_8e self);
+
+/**
+A monomorphic instance of Eurydice.slice_subslice_shared
+with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
+
+*/
+Eurydice_borrow_slice_u8
+Eurydice_slice_subslice_shared_7e(Eurydice_borrow_slice_u8 s, core_ops_range_Range_08 r);
+
+/**
+A monomorphic instance of Eurydice.array_to_subslice_mut
+with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
+with const generics
+- N= 72
+*/
+Eurydice_mut_borrow_slice_u8
+Eurydice_array_to_subslice_mut_36(Eurydice_arr_a0 *a, core_ops_range_Range_08 r);
 
 /**
 A monomorphic instance of K.
