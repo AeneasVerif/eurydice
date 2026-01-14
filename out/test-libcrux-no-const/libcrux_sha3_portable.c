@@ -1582,7 +1582,7 @@ KRML_MUSTINLINE void libcrux_sha3_generic_keccak_chi_80_04(Eurydice_arr_26 *self
         core_option_Option_08);
     if (uu____0.tag == core_option_None)
     {
-      return;
+      break;
     }
     else
     {
@@ -1601,10 +1601,11 @@ KRML_MUSTINLINE void libcrux_sha3_generic_keccak_chi_80_04(Eurydice_arr_26 *self
               (KRML_CLITERAL(size_t_x2){ .fst = i0, .snd = (j + (size_t)2U) % (size_t)5U }))[0U],
             libcrux_sha3_generic_keccak_index_c2_04(&old,
               (KRML_CLITERAL(size_t_x2){ .fst = i0, .snd = (j + (size_t)1U) % (size_t)5U }))[0U])););
+      continue;
     }
+    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+    KRML_HOST_EXIT(255U);
   }
-  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-  KRML_HOST_EXIT(255U);
 }
 
 /**
