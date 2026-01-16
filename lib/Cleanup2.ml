@@ -627,13 +627,17 @@ let resugar_loops =
       let open Krml.Helpers in
       let w = match t1 with TInt w -> w | _ -> assert false in
       let e_some_i = with_type (Builtin.mk_option t1) (ECons ("Some", [with_type t1 (EBound 0)])) in
-      with_type e.typ @@ ESequence (with_type TUnit (EFor (fresh_binder ~mut:true "i" t1,
-        e_start,
-        mk_lt w (Krml.DeBruijn.lift 1 e_end),
-        (* XXX seems like the increment is always size_t here ?! *)
-        mk_incr_e w (with_type t1 (ECast (e_increment, t1))),
-        self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body))) ::
-        List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest)
+      with_type e.typ @@
+        ESequence (
+          with_type TUnit (EFor (
+            fresh_binder ~mut:true "i" t1,
+            e_start,
+            mk_lt w (Krml.DeBruijn.lift 1 e_end),
+            (* XXX seems like the increment is always size_t here ?! *)
+            mk_incr_e w (with_type t1 (ECast (e_increment, t1))),
+            self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body)
+          )) :: List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest
+      )
 
     | [%cremepat {|
       let iter =
@@ -654,13 +658,17 @@ let resugar_loops =
     |}] ->
       let open Krml.Helpers in
       let w = match t1 with TInt w -> w | _ -> assert false in
-      with_type e.typ @@ ESequence (with_type TUnit (EFor (fresh_binder ~mut:true "i" t1,
-        e_start,
-        mk_lt w (Krml.DeBruijn.lift 1 e_end),
-        (* XXX seems like the increment is always size_t here ?! *)
-        mk_incr_e w (with_type t1 (ECast (e_increment, t1))),
-        self#visit_expr env e_body)) ::
-        List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest)
+      with_type e.typ @@
+        ESequence (
+          with_type TUnit (EFor (
+            fresh_binder ~mut:true "i" t1,
+            e_start,
+            mk_lt w (Krml.DeBruijn.lift 1 e_end),
+            (* XXX seems like the increment is always size_t here ?! *)
+            mk_incr_e w (with_type t1 (ECast (e_increment, t1))),
+            self#visit_expr env e_body
+          )) :: List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest
+      )
 
     (* Terminal position (step-by for-loop) *)
     | [%cremepat {|
@@ -683,12 +691,15 @@ let resugar_loops =
       let open Krml.Helpers in
       let w = match t1 with TInt w -> w | _ -> assert false in
       let e_some_i = with_type (Builtin.mk_option t1) (ECons ("Some", [with_type t1 (EBound 0)])) in
-      with_type e.typ @@ EFor (fresh_binder ~mut:true "i" t1,
-        e_start,
-        mk_lt w (Krml.DeBruijn.lift 1 e_end),
-        (* XXX seems like the increment is always size_t here ?! *)
-        mk_incr_e w (with_type t1 (ECast (e_increment, t1))),
-        self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body))
+      with_type e.typ @@
+        EFor (
+          fresh_binder ~mut:true "i" t1,
+          e_start,
+          mk_lt w (Krml.DeBruijn.lift 1 e_end),
+          (* XXX seems like the increment is always size_t here ?! *)
+          mk_incr_e w (with_type t1 (ECast (e_increment, t1))),
+          self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body)
+      )
 
     | [%cremepat {|
       let iter =
@@ -708,12 +719,15 @@ let resugar_loops =
     |}] ->
       let open Krml.Helpers in
       let w = match t1 with TInt w -> w | _ -> assert false in
-      with_type e.typ @@ EFor (fresh_binder ~mut:true "i" t1,
-        e_start,
-        mk_lt w (Krml.DeBruijn.lift 1 e_end),
-        (* XXX seems like the increment is always size_t here ?! *)
-        mk_incr_e w (with_type t1 (ECast (e_increment, t1))),
-        self#visit_expr env e_body)
+      with_type e.typ @@
+        EFor (
+          fresh_binder ~mut:true "i" t1,
+          e_start,
+          mk_lt w (Krml.DeBruijn.lift 1 e_end),
+          (* XXX seems like the increment is always size_t here ?! *)
+          mk_incr_e w (with_type t1 (ECast (e_increment, t1))),
+          self#visit_expr env e_body
+      )
 
     (* Terminal position (regular range for-loop) *)
     | [%cremepat {|
