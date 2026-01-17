@@ -190,22 +190,19 @@ libcrux_sha3_simd_portable_load_block_f8(
       }
       return;
     }
-    else
-    {
-      size_t i = uu____0.f0;
-      size_t offset = start + (size_t)8U * i;
-      Eurydice_array_u8x8 arr;
-      memcpy(arr.data,
-        Eurydice_slice_subslice_shared_7e(blocks,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = offset, .end = offset + (size_t)8U })).ptr,
-        (size_t)8U * sizeof (uint8_t));
-      Eurydice_array_u8x8
-      uu____1 =
-        core_result_unwrap_26_ab((
-            KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-          ));
-      state_flat.data[i] = core_num__u64__from_le_bytes(uu____1);
-    }
+    size_t i = uu____0.f0;
+    size_t offset = start + (size_t)8U * i;
+    Eurydice_array_u8x8 arr;
+    memcpy(arr.data,
+      Eurydice_slice_subslice_shared_7e(blocks,
+        (KRML_CLITERAL(core_ops_range_Range_08){ .start = offset, .end = offset + (size_t)8U })).ptr,
+      (size_t)8U * sizeof (uint8_t));
+    Eurydice_array_u8x8
+    uu____1 =
+      core_result_unwrap_26_ab((
+          KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
+        ));
+    state_flat.data[i] = core_num__u64__from_le_bytes(uu____1);
   }
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
   KRML_HOST_EXIT(255U);
@@ -1568,47 +1565,25 @@ with const generics
 KRML_MUSTINLINE void libcrux_sha3_generic_keccak_chi_80_04(Eurydice_arr_26 *self)
 {
   Eurydice_arr_26 old = self[0U];
-  core_ops_range_Range_08
-  iter =
-    core_iter_traits_collect__core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter((
-        KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)5U }
-      ),
-      core_ops_range_Range_08,
-      size_t,
-      core_ops_range_Range_08);
-  while (true)
-  {
-    core_option_Option_08
-    uu____0 =
-      core_iter_range__core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___next(&iter,
-        size_t,
-        core_option_Option_08);
-    if (uu____0.tag == core_option_None)
-    {
-      break;
-    }
-    else
-    {
-      size_t i0 = uu____0.f0;
-      KRML_MAYBE_FOR5(i,
-        (size_t)0U,
-        (size_t)5U,
-        (size_t)1U,
-        size_t j = i;
-        libcrux_sha3_generic_keccak_set_80_04(self,
-          i0,
-          j,
-          libcrux_sha3_simd_portable_and_not_xor_d2(libcrux_sha3_generic_keccak_index_c2_04(self,
-              (KRML_CLITERAL(size_t_x2){ .fst = i0, .snd = j }))[0U],
-            libcrux_sha3_generic_keccak_index_c2_04(&old,
-              (KRML_CLITERAL(size_t_x2){ .fst = i0, .snd = (j + (size_t)2U) % (size_t)5U }))[0U],
-            libcrux_sha3_generic_keccak_index_c2_04(&old,
-              (KRML_CLITERAL(size_t_x2){ .fst = i0, .snd = (j + (size_t)1U) % (size_t)5U }))[0U])););
-      continue;
-    }
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-    KRML_HOST_EXIT(255U);
-  }
+  KRML_MAYBE_FOR5(i0,
+    (size_t)0U,
+    (size_t)5U,
+    (size_t)1U,
+    size_t i1 = i0;
+    KRML_MAYBE_FOR5(i,
+      (size_t)0U,
+      (size_t)5U,
+      (size_t)1U,
+      size_t j = i;
+      libcrux_sha3_generic_keccak_set_80_04(self,
+        i1,
+        j,
+        libcrux_sha3_simd_portable_and_not_xor_d2(libcrux_sha3_generic_keccak_index_c2_04(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = i1, .snd = j }))[0U],
+          libcrux_sha3_generic_keccak_index_c2_04(&old,
+            (KRML_CLITERAL(size_t_x2){ .fst = i1, .snd = (j + (size_t)2U) % (size_t)5U }))[0U],
+          libcrux_sha3_generic_keccak_index_c2_04(&old,
+            (KRML_CLITERAL(size_t_x2){ .fst = i1, .snd = (j + (size_t)1U) % (size_t)5U }))[0U]));););
 }
 
 /**
@@ -1833,7 +1808,6 @@ libcrux_sha3_generic_keccak_portable_keccak1_96(
       if (blocks == (size_t)0U)
       {
         libcrux_sha3_simd_portable_squeeze_13_f8(&s, out, (size_t)0U, outlen);
-        return;
       }
       else
       {
@@ -1849,16 +1823,13 @@ libcrux_sha3_generic_keccak_portable_keccak1_96(
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
           libcrux_sha3_simd_portable_squeeze_13_f8(&s, out, last, outlen - last);
         }
-        return;
       }
+      return;
     }
-    else
-    {
-      size_t i = uu____0.f0;
-      /* original Rust expression is not an lvalue in C */
-      Eurydice_arr_06 lvalue = { .data = { data } };
-      libcrux_sha3_generic_keccak_absorb_block_80_c6(&s, &lvalue, i * (size_t)72U);
-    }
+    size_t i = uu____0.f0;
+    /* original Rust expression is not an lvalue in C */
+    Eurydice_arr_06 lvalue = { .data = { data } };
+    libcrux_sha3_generic_keccak_absorb_block_80_c6(&s, &lvalue, i * (size_t)72U);
   }
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
   KRML_HOST_EXIT(255U);
@@ -1920,22 +1891,19 @@ libcrux_sha3_simd_portable_load_block_5b(
       }
       return;
     }
-    else
-    {
-      size_t i = uu____0.f0;
-      size_t offset = start + (size_t)8U * i;
-      Eurydice_array_u8x8 arr;
-      memcpy(arr.data,
-        Eurydice_slice_subslice_shared_7e(blocks,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = offset, .end = offset + (size_t)8U })).ptr,
-        (size_t)8U * sizeof (uint8_t));
-      Eurydice_array_u8x8
-      uu____1 =
-        core_result_unwrap_26_ab((
-            KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-          ));
-      state_flat.data[i] = core_num__u64__from_le_bytes(uu____1);
-    }
+    size_t i = uu____0.f0;
+    size_t offset = start + (size_t)8U * i;
+    Eurydice_array_u8x8 arr;
+    memcpy(arr.data,
+      Eurydice_slice_subslice_shared_7e(blocks,
+        (KRML_CLITERAL(core_ops_range_Range_08){ .start = offset, .end = offset + (size_t)8U })).ptr,
+      (size_t)8U * sizeof (uint8_t));
+    Eurydice_array_u8x8
+    uu____1 =
+      core_result_unwrap_26_ab((
+          KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
+        ));
+    state_flat.data[i] = core_num__u64__from_le_bytes(uu____1);
   }
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
   KRML_HOST_EXIT(255U);
@@ -2173,7 +2141,6 @@ libcrux_sha3_generic_keccak_portable_keccak1_ad(
       if (blocks == (size_t)0U)
       {
         libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, (size_t)0U, outlen);
-        return;
       }
       else
       {
@@ -2189,16 +2156,13 @@ libcrux_sha3_generic_keccak_portable_keccak1_ad(
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
           libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, last, outlen - last);
         }
-        return;
       }
+      return;
     }
-    else
-    {
-      size_t i = uu____0.f0;
-      /* original Rust expression is not an lvalue in C */
-      Eurydice_arr_06 lvalue = { .data = { data } };
-      libcrux_sha3_generic_keccak_absorb_block_80_c60(&s, &lvalue, i * (size_t)136U);
-    }
+    size_t i = uu____0.f0;
+    /* original Rust expression is not an lvalue in C */
+    Eurydice_arr_06 lvalue = { .data = { data } };
+    libcrux_sha3_generic_keccak_absorb_block_80_c60(&s, &lvalue, i * (size_t)136U);
   }
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
   KRML_HOST_EXIT(255U);
@@ -2331,7 +2295,6 @@ libcrux_sha3_generic_keccak_portable_keccak1_ad0(
       if (blocks == (size_t)0U)
       {
         libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, (size_t)0U, outlen);
-        return;
       }
       else
       {
@@ -2347,16 +2310,13 @@ libcrux_sha3_generic_keccak_portable_keccak1_ad0(
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
           libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, last, outlen - last);
         }
-        return;
       }
+      return;
     }
-    else
-    {
-      size_t i = uu____0.f0;
-      /* original Rust expression is not an lvalue in C */
-      Eurydice_arr_06 lvalue = { .data = { data } };
-      libcrux_sha3_generic_keccak_absorb_block_80_c60(&s, &lvalue, i * (size_t)136U);
-    }
+    size_t i = uu____0.f0;
+    /* original Rust expression is not an lvalue in C */
+    Eurydice_arr_06 lvalue = { .data = { data } };
+    libcrux_sha3_generic_keccak_absorb_block_80_c60(&s, &lvalue, i * (size_t)136U);
   }
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
   KRML_HOST_EXIT(255U);
@@ -2426,22 +2386,19 @@ libcrux_sha3_simd_portable_load_block_3a(
       }
       return;
     }
-    else
-    {
-      size_t i = uu____0.f0;
-      size_t offset = start + (size_t)8U * i;
-      Eurydice_array_u8x8 arr;
-      memcpy(arr.data,
-        Eurydice_slice_subslice_shared_7e(blocks,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = offset, .end = offset + (size_t)8U })).ptr,
-        (size_t)8U * sizeof (uint8_t));
-      Eurydice_array_u8x8
-      uu____1 =
-        core_result_unwrap_26_ab((
-            KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-          ));
-      state_flat.data[i] = core_num__u64__from_le_bytes(uu____1);
-    }
+    size_t i = uu____0.f0;
+    size_t offset = start + (size_t)8U * i;
+    Eurydice_array_u8x8 arr;
+    memcpy(arr.data,
+      Eurydice_slice_subslice_shared_7e(blocks,
+        (KRML_CLITERAL(core_ops_range_Range_08){ .start = offset, .end = offset + (size_t)8U })).ptr,
+      (size_t)8U * sizeof (uint8_t));
+    Eurydice_array_u8x8
+    uu____1 =
+      core_result_unwrap_26_ab((
+          KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
+        ));
+    state_flat.data[i] = core_num__u64__from_le_bytes(uu____1);
   }
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
   KRML_HOST_EXIT(255U);
@@ -2750,22 +2707,19 @@ libcrux_sha3_simd_portable_load_block_2c(
       }
       return;
     }
-    else
-    {
-      size_t i = uu____0.f0;
-      size_t offset = start + (size_t)8U * i;
-      Eurydice_array_u8x8 arr;
-      memcpy(arr.data,
-        Eurydice_slice_subslice_shared_7e(blocks,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = offset, .end = offset + (size_t)8U })).ptr,
-        (size_t)8U * sizeof (uint8_t));
-      Eurydice_array_u8x8
-      uu____1 =
-        core_result_unwrap_26_ab((
-            KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-          ));
-      state_flat.data[i] = core_num__u64__from_le_bytes(uu____1);
-    }
+    size_t i = uu____0.f0;
+    size_t offset = start + (size_t)8U * i;
+    Eurydice_array_u8x8 arr;
+    memcpy(arr.data,
+      Eurydice_slice_subslice_shared_7e(blocks,
+        (KRML_CLITERAL(core_ops_range_Range_08){ .start = offset, .end = offset + (size_t)8U })).ptr,
+      (size_t)8U * sizeof (uint8_t));
+    Eurydice_array_u8x8
+    uu____1 =
+      core_result_unwrap_26_ab((
+          KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
+        ));
+    state_flat.data[i] = core_num__u64__from_le_bytes(uu____1);
   }
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
   KRML_HOST_EXIT(255U);
@@ -3003,7 +2957,6 @@ libcrux_sha3_generic_keccak_portable_keccak1_1e(
       if (blocks == (size_t)0U)
       {
         libcrux_sha3_simd_portable_squeeze_13_2c(&s, out, (size_t)0U, outlen);
-        return;
       }
       else
       {
@@ -3019,16 +2972,13 @@ libcrux_sha3_generic_keccak_portable_keccak1_1e(
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
           libcrux_sha3_simd_portable_squeeze_13_2c(&s, out, last, outlen - last);
         }
-        return;
       }
+      return;
     }
-    else
-    {
-      size_t i = uu____0.f0;
-      /* original Rust expression is not an lvalue in C */
-      Eurydice_arr_06 lvalue = { .data = { data } };
-      libcrux_sha3_generic_keccak_absorb_block_80_c61(&s, &lvalue, i * (size_t)144U);
-    }
+    size_t i = uu____0.f0;
+    /* original Rust expression is not an lvalue in C */
+    Eurydice_arr_06 lvalue = { .data = { data } };
+    libcrux_sha3_generic_keccak_absorb_block_80_c61(&s, &lvalue, i * (size_t)144U);
   }
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
   KRML_HOST_EXIT(255U);
@@ -3090,22 +3040,19 @@ libcrux_sha3_simd_portable_load_block_7a(
       }
       return;
     }
-    else
-    {
-      size_t i = uu____0.f0;
-      size_t offset = start + (size_t)8U * i;
-      Eurydice_array_u8x8 arr;
-      memcpy(arr.data,
-        Eurydice_slice_subslice_shared_7e(blocks,
-          (KRML_CLITERAL(core_ops_range_Range_08){ .start = offset, .end = offset + (size_t)8U })).ptr,
-        (size_t)8U * sizeof (uint8_t));
-      Eurydice_array_u8x8
-      uu____1 =
-        core_result_unwrap_26_ab((
-            KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-          ));
-      state_flat.data[i] = core_num__u64__from_le_bytes(uu____1);
-    }
+    size_t i = uu____0.f0;
+    size_t offset = start + (size_t)8U * i;
+    Eurydice_array_u8x8 arr;
+    memcpy(arr.data,
+      Eurydice_slice_subslice_shared_7e(blocks,
+        (KRML_CLITERAL(core_ops_range_Range_08){ .start = offset, .end = offset + (size_t)8U })).ptr,
+      (size_t)8U * sizeof (uint8_t));
+    Eurydice_array_u8x8
+    uu____1 =
+      core_result_unwrap_26_ab((
+          KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
+        ));
+    state_flat.data[i] = core_num__u64__from_le_bytes(uu____1);
   }
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
   KRML_HOST_EXIT(255U);
@@ -3343,7 +3290,6 @@ libcrux_sha3_generic_keccak_portable_keccak1_7c(
       if (blocks == (size_t)0U)
       {
         libcrux_sha3_simd_portable_squeeze_13_7a(&s, out, (size_t)0U, outlen);
-        return;
       }
       else
       {
@@ -3359,16 +3305,13 @@ libcrux_sha3_generic_keccak_portable_keccak1_7c(
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
           libcrux_sha3_simd_portable_squeeze_13_7a(&s, out, last, outlen - last);
         }
-        return;
       }
+      return;
     }
-    else
-    {
-      size_t i = uu____0.f0;
-      /* original Rust expression is not an lvalue in C */
-      Eurydice_arr_06 lvalue = { .data = { data } };
-      libcrux_sha3_generic_keccak_absorb_block_80_c62(&s, &lvalue, i * (size_t)104U);
-    }
+    size_t i = uu____0.f0;
+    /* original Rust expression is not an lvalue in C */
+    Eurydice_arr_06 lvalue = { .data = { data } };
+    libcrux_sha3_generic_keccak_absorb_block_80_c62(&s, &lvalue, i * (size_t)104U);
   }
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
   KRML_HOST_EXIT(255U);
@@ -3548,7 +3491,6 @@ libcrux_sha3_generic_keccak_portable_keccak1_c6(
       if (blocks == (size_t)0U)
       {
         libcrux_sha3_simd_portable_squeeze_13_3a(&s, out, (size_t)0U, outlen);
-        return;
       }
       else
       {
@@ -3564,16 +3506,13 @@ libcrux_sha3_generic_keccak_portable_keccak1_c6(
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
           libcrux_sha3_simd_portable_squeeze_13_3a(&s, out, last, outlen - last);
         }
-        return;
       }
+      return;
     }
-    else
-    {
-      size_t i = uu____0.f0;
-      /* original Rust expression is not an lvalue in C */
-      Eurydice_arr_06 lvalue = { .data = { data } };
-      libcrux_sha3_generic_keccak_absorb_block_80_c63(&s, &lvalue, i * (size_t)168U);
-    }
+    size_t i = uu____0.f0;
+    /* original Rust expression is not an lvalue in C */
+    Eurydice_arr_06 lvalue = { .data = { data } };
+    libcrux_sha3_generic_keccak_absorb_block_80_c63(&s, &lvalue, i * (size_t)168U);
   }
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
   KRML_HOST_EXIT(255U);
