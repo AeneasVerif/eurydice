@@ -1641,46 +1641,24 @@ with const generics
 static KRML_MUSTINLINE void chi_80_a6(Eurydice_arr_05 *self)
 {
   Eurydice_arr_05 old = self[0U];
-  core_ops_range_Range_08
-  iter =
-    core_iter_traits_collect__core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter((
-        KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)5U }
-      ),
-      core_ops_range_Range_08,
-      size_t,
-      core_ops_range_Range_08);
-  while (true)
-  {
-    core_option_Option_08
-    uu____0 =
-      core_iter_range__core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___next(&iter,
-        size_t,
-        core_option_Option_08);
-    if (uu____0.tag == core_option_None)
-    {
-      break;
-    }
-    else
-    {
-      size_t i0 = uu____0.f0;
-      KRML_MAYBE_FOR5(i,
-        (size_t)0U,
-        (size_t)5U,
-        (size_t)1U,
-        size_t j = i;
-        set_80_a6(self,
-          i0,
-          j,
-          and_not_xor_b0(index_c2_a6(self, (KRML_CLITERAL(size_t_x2){ .fst = i0, .snd = j }))[0U],
-            index_c2_a6(&old,
-              (KRML_CLITERAL(size_t_x2){ .fst = i0, .snd = (j + (size_t)2U) % (size_t)5U }))[0U],
-            index_c2_a6(&old,
-              (KRML_CLITERAL(size_t_x2){ .fst = i0, .snd = (j + (size_t)1U) % (size_t)5U }))[0U])););
-      continue;
-    }
-    KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-    KRML_HOST_EXIT(255U);
-  }
+  KRML_MAYBE_FOR5(i0,
+    (size_t)0U,
+    (size_t)5U,
+    (size_t)1U,
+    size_t i1 = i0;
+    KRML_MAYBE_FOR5(i,
+      (size_t)0U,
+      (size_t)5U,
+      (size_t)1U,
+      size_t j = i;
+      set_80_a6(self,
+        i1,
+        j,
+        and_not_xor_b0(index_c2_a6(self, (KRML_CLITERAL(size_t_x2){ .fst = i1, .snd = j }))[0U],
+          index_c2_a6(&old,
+            (KRML_CLITERAL(size_t_x2){ .fst = i1, .snd = (j + (size_t)2U) % (size_t)5U }))[0U],
+          index_c2_a6(&old,
+            (KRML_CLITERAL(size_t_x2){ .fst = i1, .snd = (j + (size_t)1U) % (size_t)5U }))[0U]));););
 }
 
 /**
@@ -1898,85 +1876,78 @@ store_block_5b(
               )),
             uint8_t);
         }
-        return;
       }
-      else
-      {
-        return;
-      }
+      return;
     }
-    else
-    {
-      size_t i = uu____0.f0;
-      size_t i0 = (size_t)4U * i / (size_t)5U;
-      size_t j0 = (size_t)4U * i % (size_t)5U;
-      size_t i1 = ((size_t)4U * i + (size_t)1U) / (size_t)5U;
-      size_t j1 = ((size_t)4U * i + (size_t)1U) % (size_t)5U;
-      size_t i2 = ((size_t)4U * i + (size_t)2U) / (size_t)5U;
-      size_t j2 = ((size_t)4U * i + (size_t)2U) % (size_t)5U;
-      size_t i3 = ((size_t)4U * i + (size_t)3U) / (size_t)5U;
-      size_t j3 = ((size_t)4U * i + (size_t)3U) % (size_t)5U;
-      __m256i
-      v0l =
-        mm256_permute2x128_si256((int32_t)32,
-          get_ij_a6(s, i0, j0)[0U],
-          get_ij_a6(s, i2, j2)[0U],
-          __m256i);
-      __m256i
-      v1h =
-        mm256_permute2x128_si256((int32_t)32,
-          get_ij_a6(s, i1, j1)[0U],
-          get_ij_a6(s, i3, j3)[0U],
-          __m256i);
-      __m256i
-      v2l =
-        mm256_permute2x128_si256((int32_t)49,
-          get_ij_a6(s, i0, j0)[0U],
-          get_ij_a6(s, i2, j2)[0U],
-          __m256i);
-      __m256i
-      v3h =
-        mm256_permute2x128_si256((int32_t)49,
-          get_ij_a6(s, i1, j1)[0U],
-          get_ij_a6(s, i3, j3)[0U],
-          __m256i);
-      __m256i v0 = mm256_unpacklo_epi64(v0l, v1h);
-      __m256i v1 = mm256_unpackhi_epi64(v0l, v1h);
-      __m256i v2 = mm256_unpacklo_epi64(v2l, v3h);
-      __m256i v3 = mm256_unpackhi_epi64(v2l, v3h);
-      mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_7e(out0,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start + (size_t)32U * i,
-              .end = start + (size_t)32U * (i + (size_t)1U)
-            }
-          )),
-        v0);
-      mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_7e(out1,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start + (size_t)32U * i,
-              .end = start + (size_t)32U * (i + (size_t)1U)
-            }
-          )),
-        v1);
-      mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_7e(out2,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start + (size_t)32U * i,
-              .end = start + (size_t)32U * (i + (size_t)1U)
-            }
-          )),
-        v2);
-      mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_7e(out3,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start + (size_t)32U * i,
-              .end = start + (size_t)32U * (i + (size_t)1U)
-            }
-          )),
-        v3);
-    }
+    size_t i = uu____0.f0;
+    size_t i0 = (size_t)4U * i / (size_t)5U;
+    size_t j0 = (size_t)4U * i % (size_t)5U;
+    size_t i1 = ((size_t)4U * i + (size_t)1U) / (size_t)5U;
+    size_t j1 = ((size_t)4U * i + (size_t)1U) % (size_t)5U;
+    size_t i2 = ((size_t)4U * i + (size_t)2U) / (size_t)5U;
+    size_t j2 = ((size_t)4U * i + (size_t)2U) % (size_t)5U;
+    size_t i3 = ((size_t)4U * i + (size_t)3U) / (size_t)5U;
+    size_t j3 = ((size_t)4U * i + (size_t)3U) % (size_t)5U;
+    __m256i
+    v0l =
+      mm256_permute2x128_si256((int32_t)32,
+        get_ij_a6(s, i0, j0)[0U],
+        get_ij_a6(s, i2, j2)[0U],
+        __m256i);
+    __m256i
+    v1h =
+      mm256_permute2x128_si256((int32_t)32,
+        get_ij_a6(s, i1, j1)[0U],
+        get_ij_a6(s, i3, j3)[0U],
+        __m256i);
+    __m256i
+    v2l =
+      mm256_permute2x128_si256((int32_t)49,
+        get_ij_a6(s, i0, j0)[0U],
+        get_ij_a6(s, i2, j2)[0U],
+        __m256i);
+    __m256i
+    v3h =
+      mm256_permute2x128_si256((int32_t)49,
+        get_ij_a6(s, i1, j1)[0U],
+        get_ij_a6(s, i3, j3)[0U],
+        __m256i);
+    __m256i v0 = mm256_unpacklo_epi64(v0l, v1h);
+    __m256i v1 = mm256_unpackhi_epi64(v0l, v1h);
+    __m256i v2 = mm256_unpacklo_epi64(v2l, v3h);
+    __m256i v3 = mm256_unpackhi_epi64(v2l, v3h);
+    mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_7e(out0,
+        (
+          KRML_CLITERAL(core_ops_range_Range_08){
+            .start = start + (size_t)32U * i,
+            .end = start + (size_t)32U * (i + (size_t)1U)
+          }
+        )),
+      v0);
+    mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_7e(out1,
+        (
+          KRML_CLITERAL(core_ops_range_Range_08){
+            .start = start + (size_t)32U * i,
+            .end = start + (size_t)32U * (i + (size_t)1U)
+          }
+        )),
+      v1);
+    mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_7e(out2,
+        (
+          KRML_CLITERAL(core_ops_range_Range_08){
+            .start = start + (size_t)32U * i,
+            .end = start + (size_t)32U * (i + (size_t)1U)
+          }
+        )),
+      v2);
+    mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_7e(out3,
+        (
+          KRML_CLITERAL(core_ops_range_Range_08){
+            .start = start + (size_t)32U * i,
+            .end = start + (size_t)32U * (i + (size_t)1U)
+          }
+        )),
+      v3);
   }
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
   KRML_HOST_EXIT(255U);
@@ -2079,7 +2050,6 @@ keccak4_ad(
       if (blocks == (size_t)0U)
       {
         squeeze4_17_5b(&s, out0, out1, out2, out3, (size_t)0U, outlen);
-        return;
       }
       else
       {
@@ -2095,14 +2065,11 @@ keccak4_ad(
           keccakf1600_80_a6(&s);
           squeeze4_17_5b(&s, out0, out1, out2, out3, last, outlen - last);
         }
-        return;
       }
+      return;
     }
-    else
-    {
-      size_t i = uu____0.f0;
-      absorb_block_80_97(&s, data, i * (size_t)136U);
-    }
+    size_t i = uu____0.f0;
+    absorb_block_80_97(&s, data, i * (size_t)136U);
   }
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
   KRML_HOST_EXIT(255U);
@@ -2518,85 +2485,78 @@ store_block_3a(
               )),
             uint8_t);
         }
-        return;
       }
-      else
-      {
-        return;
-      }
+      return;
     }
-    else
-    {
-      size_t i = uu____0.f0;
-      size_t i0 = (size_t)4U * i / (size_t)5U;
-      size_t j0 = (size_t)4U * i % (size_t)5U;
-      size_t i1 = ((size_t)4U * i + (size_t)1U) / (size_t)5U;
-      size_t j1 = ((size_t)4U * i + (size_t)1U) % (size_t)5U;
-      size_t i2 = ((size_t)4U * i + (size_t)2U) / (size_t)5U;
-      size_t j2 = ((size_t)4U * i + (size_t)2U) % (size_t)5U;
-      size_t i3 = ((size_t)4U * i + (size_t)3U) / (size_t)5U;
-      size_t j3 = ((size_t)4U * i + (size_t)3U) % (size_t)5U;
-      __m256i
-      v0l =
-        mm256_permute2x128_si256((int32_t)32,
-          get_ij_a6(s, i0, j0)[0U],
-          get_ij_a6(s, i2, j2)[0U],
-          __m256i);
-      __m256i
-      v1h =
-        mm256_permute2x128_si256((int32_t)32,
-          get_ij_a6(s, i1, j1)[0U],
-          get_ij_a6(s, i3, j3)[0U],
-          __m256i);
-      __m256i
-      v2l =
-        mm256_permute2x128_si256((int32_t)49,
-          get_ij_a6(s, i0, j0)[0U],
-          get_ij_a6(s, i2, j2)[0U],
-          __m256i);
-      __m256i
-      v3h =
-        mm256_permute2x128_si256((int32_t)49,
-          get_ij_a6(s, i1, j1)[0U],
-          get_ij_a6(s, i3, j3)[0U],
-          __m256i);
-      __m256i v0 = mm256_unpacklo_epi64(v0l, v1h);
-      __m256i v1 = mm256_unpackhi_epi64(v0l, v1h);
-      __m256i v2 = mm256_unpacklo_epi64(v2l, v3h);
-      __m256i v3 = mm256_unpackhi_epi64(v2l, v3h);
-      mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_7e(out0,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start + (size_t)32U * i,
-              .end = start + (size_t)32U * (i + (size_t)1U)
-            }
-          )),
-        v0);
-      mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_7e(out1,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start + (size_t)32U * i,
-              .end = start + (size_t)32U * (i + (size_t)1U)
-            }
-          )),
-        v1);
-      mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_7e(out2,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start + (size_t)32U * i,
-              .end = start + (size_t)32U * (i + (size_t)1U)
-            }
-          )),
-        v2);
-      mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_7e(out3,
-          (
-            KRML_CLITERAL(core_ops_range_Range_08){
-              .start = start + (size_t)32U * i,
-              .end = start + (size_t)32U * (i + (size_t)1U)
-            }
-          )),
-        v3);
-    }
+    size_t i = uu____0.f0;
+    size_t i0 = (size_t)4U * i / (size_t)5U;
+    size_t j0 = (size_t)4U * i % (size_t)5U;
+    size_t i1 = ((size_t)4U * i + (size_t)1U) / (size_t)5U;
+    size_t j1 = ((size_t)4U * i + (size_t)1U) % (size_t)5U;
+    size_t i2 = ((size_t)4U * i + (size_t)2U) / (size_t)5U;
+    size_t j2 = ((size_t)4U * i + (size_t)2U) % (size_t)5U;
+    size_t i3 = ((size_t)4U * i + (size_t)3U) / (size_t)5U;
+    size_t j3 = ((size_t)4U * i + (size_t)3U) % (size_t)5U;
+    __m256i
+    v0l =
+      mm256_permute2x128_si256((int32_t)32,
+        get_ij_a6(s, i0, j0)[0U],
+        get_ij_a6(s, i2, j2)[0U],
+        __m256i);
+    __m256i
+    v1h =
+      mm256_permute2x128_si256((int32_t)32,
+        get_ij_a6(s, i1, j1)[0U],
+        get_ij_a6(s, i3, j3)[0U],
+        __m256i);
+    __m256i
+    v2l =
+      mm256_permute2x128_si256((int32_t)49,
+        get_ij_a6(s, i0, j0)[0U],
+        get_ij_a6(s, i2, j2)[0U],
+        __m256i);
+    __m256i
+    v3h =
+      mm256_permute2x128_si256((int32_t)49,
+        get_ij_a6(s, i1, j1)[0U],
+        get_ij_a6(s, i3, j3)[0U],
+        __m256i);
+    __m256i v0 = mm256_unpacklo_epi64(v0l, v1h);
+    __m256i v1 = mm256_unpackhi_epi64(v0l, v1h);
+    __m256i v2 = mm256_unpacklo_epi64(v2l, v3h);
+    __m256i v3 = mm256_unpackhi_epi64(v2l, v3h);
+    mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_7e(out0,
+        (
+          KRML_CLITERAL(core_ops_range_Range_08){
+            .start = start + (size_t)32U * i,
+            .end = start + (size_t)32U * (i + (size_t)1U)
+          }
+        )),
+      v0);
+    mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_7e(out1,
+        (
+          KRML_CLITERAL(core_ops_range_Range_08){
+            .start = start + (size_t)32U * i,
+            .end = start + (size_t)32U * (i + (size_t)1U)
+          }
+        )),
+      v1);
+    mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_7e(out2,
+        (
+          KRML_CLITERAL(core_ops_range_Range_08){
+            .start = start + (size_t)32U * i,
+            .end = start + (size_t)32U * (i + (size_t)1U)
+          }
+        )),
+      v2);
+    mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_7e(out3,
+        (
+          KRML_CLITERAL(core_ops_range_Range_08){
+            .start = start + (size_t)32U * i,
+            .end = start + (size_t)32U * (i + (size_t)1U)
+          }
+        )),
+      v3);
   }
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
   KRML_HOST_EXIT(255U);

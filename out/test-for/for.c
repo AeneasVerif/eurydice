@@ -17,11 +17,10 @@ uint8_t for_other(Eurydice_borrow_slice_u8 input)
   for (int32_t i = (int32_t)0; i < (int32_t)5; i++)
   {
     int32_t i0 = i;
-    if (!(i0 == (int32_t)2))
+    if (i0 == (int32_t)2)
     {
-      continue;
+      return 6U;
     }
-    return 6U;
   }
   return input.ptr[0U];
 }
