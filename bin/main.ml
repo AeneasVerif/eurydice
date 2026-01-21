@@ -207,7 +207,7 @@ Supported options:|}
   in
   let files = Eurydice.Cleanup1.cleanup files in
 
-  Eurydice.Logging.log "Phase2" "%a" pfiles files;
+  Eurydice.Logging.log "Phase2" "Phase 2 start:\n%a" pfiles files;
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
     fail __FILE__ __LINE__;
@@ -217,7 +217,7 @@ Supported options:|}
   let files = Eurydice.Cleanup2.resugar_loops#visit_files () files in
   let files = Eurydice.Cleanup1.remove_terminal_returns#visit_files true files in
   let files = Eurydice.Cleanup1.remove_terminal_continues#visit_files false files in
-  Eurydice.Logging.log "Phase2.1" "%a" pfiles files;
+  Eurydice.Logging.log "Phase2.1" "Phase 2.1:\n%a" pfiles files;
   (* Sanity check for the big rewriting above. *)
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
@@ -230,8 +230,9 @@ Supported options:|}
   (* Following the krml order of phases here *)
   let files = Krml.Inlining.inline_type_abbrevs files in
   let files = Krml.Monomorphization.functions files in
-  Eurydice.Logging.log "Phase2.12" "%a" pfiles files;
+  Eurydice.Logging.log "Phase2.12" "2.12%a" pfiles files;
   let files = Krml.Simplify.optimize_lets files in
+  Eurydice.Logging.log "Phase2.12" "2.121%a" pfiles files;
   let files = Krml.DataTypes.simplify files in
   (* Must happen now, before Monomorphization.datatypes, because otherwise
      MonomorphizationState.state gets filled with lids that later on get eliminated on the basis
@@ -240,7 +241,7 @@ Supported options:|}
   let files = Krml.Monomorphization.datatypes files in
   (* Cannot use remove_unit_buffers as it is technically incorrect *)
   let files = Krml.DataTypes.remove_unit_fields#visit_files () files in
-  Eurydice.Logging.log "Phase2.13" "%a" pfiles files;
+  Eurydice.Logging.log "Phase2.13" "2.13%a" pfiles files;
   let files = Krml.Inlining.inline files in
   let files =
     match config with
@@ -295,15 +296,16 @@ Supported options:|}
   (* These two need to come before... *)
   let files = Krml.Inlining.cross_call_analysis files in
   let files = Krml.Simplify.remove_unused files in
-  Eurydice.Logging.log "Phase2.7" "%a" pfiles files;
+  Eurydice.Logging.log "Phase2.7" "2.7%a" pfiles files;
+  let files = Eurydice.Cleanup2.aggressive_inlining_lets_global#visit_files () files in
   (* This chunk which reuses key elements of simplify2 *)
   let files = Eurydice.Cleanup2.check_addrof#visit_files () files in
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
   let files = Eurydice.Cleanup2.hoist#visit_files [] files in
   let files = Eurydice.Cleanup2.fixup_hoist#visit_files () files in
-  Eurydice.Logging.log "Phase2.75" "%a" pfiles files;
+  Eurydice.Logging.log "Phase2.75" "2.75%a" pfiles files;
   let files = Eurydice.Cleanup2.globalize_global_locals files in
-  Eurydice.Logging.log "Phase2.8" "%a" pfiles files;
+  Eurydice.Logging.log "Phase2.8" "2.8%a" pfiles files;
   let files = Eurydice.Cleanup2.reconstruct_for_loops#visit_files () files in
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
