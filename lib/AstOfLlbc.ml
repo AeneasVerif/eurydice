@@ -18,7 +18,7 @@ module C = struct
       object
         inherit [_] map_ty
         method! visit_TVar _ v = TypeVarId.nth ts (expect_free_var v)
-        method! visit_CgVar _ v = ConstGenericVarId.nth cgs (expect_free_var v)
+        method! visit_CVar _ v = ConstGenericVarId.nth cgs (expect_free_var v)
         method visit_'r _ x = x
       end
     end
@@ -329,17 +329,17 @@ let constant_of_scalar_value sv =
   let w = width_of_integer_type (Charon.Scalars.get_ty sv) in
   w, Z.to_string (Charon.Scalars.get_val sv)
 
-let assert_cg_scalar = function
-  | C.CgValue (VScalar n) -> n
-  | cg -> failwith ("Unsupported: non-constant const generic: " ^ C.show_const_generic cg)
+let assert_cg_scalar : C.constant_expr -> C.scalar_value = function
+  | { kind = C.CLiteral (VScalar n); _ } -> n
+  | cg -> failwith ("Unsupported: non-constant const generic: " ^ C.show_constant_expr cg)
 
-let cg_of_const_generic env cg =
-  match cg with
-  | C.CgVar var -> K.CgVar (fst (lookup_cg_in_types env (C.expect_free_var var)))
-  | C.CgValue (VScalar sv) -> CgConst (constant_of_scalar_value sv)
+let cg_of_const_generic env (cg : C.constant_expr) =
+  match cg.kind with
+  | C.CVar var -> K.CgVar (fst (lookup_cg_in_types env (C.expect_free_var var)))
+  | C.CLiteral (VScalar sv) -> CgConst (constant_of_scalar_value sv)
   | _ ->
       failwith
-        ("cg_of_const_generic: " ^ Charon.PrintTypes.const_generic_to_string env.format_env cg)
+        ("cg_of_const_generic: " ^ Charon.PrintTypes.constant_expr_to_string env.format_env cg)
 
 let float_width float_ty : K.width =
   match float_ty with
@@ -518,8 +518,8 @@ and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
   | C.TArray _ -> None
   | C.TSlice _ -> Some Krml.Helpers.usize
   | C.TVar _ ->
-      (* TEMPORARY:  this needs to be enabled once the monomorphization PR lands -- 
-    for now, there are still polymorphic type definitions of the form type 
+      (* TEMPORARY:  this needs to be enabled once the monomorphization PR lands --
+    for now, there are still polymorphic type definitions of the form type
     Foo<T: ?Sized> = ... in the AST (those will be monomorphized away, eventually) *)
       let _var_is_sized (clause : C.trait_param) =
         let trait = clause.trait.binder_value in
@@ -605,7 +605,7 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       TApp (Builtin.derefed_slice, [ typ_of_ty env t ])
   | TAdt { id = TBuiltin TStr; generics = { types = []; _ } } -> Builtin.deref_str_t
   | TAdt { id = TBuiltin f; generics = { types = args; const_generics; _ } } ->
-      List.iter (fun x -> print_endline (C.show_const_generic x)) const_generics;
+      List.iter (fun x -> print_endline (C.show_constant_expr x)) const_generics;
       fail "TODO: Adt/Builtin %s (%d) %d " (C.show_builtin_ty f) (List.length args)
         (List.length const_generics)
   | TTraitType _ -> failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
@@ -636,15 +636,15 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
          monomorphised LLBC."
   | TError _ -> failwith "Found type error in charon's output"
 
-and typ_of_struct_arr (env : env) (t : C.ty) (cg : C.const_generic) : K.typ =
+and typ_of_struct_arr (env : env) (t : C.ty) (cg : C.constant_expr) : K.typ =
   let typ_t = typ_of_ty env t in
   let cg = cg_of_const_generic env cg in
   Builtin.mk_arr typ_t cg
 
-let maybe_cg_array (env : env) (t : C.ty) (cg : C.const_generic) =
-  match cg with
-  | CgValue _ -> K.TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))
-  | CgVar var ->
+let maybe_cg_array (env : env) (t : C.ty) (cg : C.constant_expr) =
+  match cg.kind with
+  | CLiteral _ -> K.TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))
+  | CVar var ->
       let id, cg_t = lookup_cg_in_types env (C.expect_free_var var) in
       assert (cg_t = K.TInt SizeT);
       K.TCgArray (typ_of_ty env t, id)
@@ -681,8 +681,8 @@ let lookup_with_original_type env v1 =
 let push_cg_binder env (t : C.const_generic_param) =
   {
     env with
-    cg_binders = (t.index, typ_of_literal_ty env t.ty) :: env.cg_binders;
-    binders = (ConstGenericVar t.index, typ_of_literal_ty env t.ty) :: env.binders;
+    cg_binders = (t.index, typ_of_ty env t.ty) :: env.cg_binders;
+    binders = (ConstGenericVar t.index, typ_of_ty env t.ty) :: env.binders;
   }
 
 let push_cg_binders env (ts : C.const_generic_param list) = List.fold_left push_cg_binder env ts
@@ -833,11 +833,12 @@ let expression_of_literal (_env : env) (l : C.literal) : K.expr =
       let w = float_width float_ty in
       K.(with_type (TInt w) (EConstant (w, float_value)))
 
-let expression_of_const_generic env cg =
-  match cg with
-  | C.CgGlobal _ -> failwith "TODO: CgGLobal"
-  | C.CgVar var -> expression_of_cg_var_id env (C.expect_free_var var)
-  | C.CgValue l -> expression_of_literal env l
+let expression_of_const_generic env (cg : C.constant_expr) =
+  match cg.kind with
+  | C.CGlobal _ -> failwith "TODO: CgGLobal"
+  | C.CVar var -> expression_of_cg_var_id env (C.expect_free_var var)
+  | C.CLiteral l -> expression_of_literal env l
+  | _ -> failwith "TODO: CgExpr"
 
 let has_unresolved_generic (ty : K.typ) : bool =
   (object
@@ -1252,7 +1253,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
           depth name
           (C.TraitClauseId.to_int clause_id)
           (String.concat " ++ " (List.map C.show_ty trait_generics.C.types))
-          (String.concat " ++ " (List.map C.show_const_generic trait_generics.C.const_generics))
+          (String.concat " ++ " (List.map C.show_constant_expr trait_generics.C.const_generics))
           (List.length trait_decl.C.methods);
 
         (* 1. Associated constants *)
@@ -1385,8 +1386,7 @@ and lookup_signature env depth (signature : C.bound_fun_sig) : lookup_result =
 
   {
     ts = { n = List.length type_params; n_cgs = List.length const_generics };
-    cg_types =
-      List.map (fun (v : C.const_generic_param) -> typ_of_literal_ty env v.ty) const_generics;
+    cg_types = List.map (fun (v : C.const_generic_param) -> typ_of_ty env v.ty) const_generics;
     arg_types =
       (clause_ts
       @ List.map (typ_of_ty env) inputs
@@ -1926,7 +1926,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   | UnaryOp (Cast (CastUnsize (ty_from, ty_to, meta) as ck), e) ->
       (* DSTs: we support going from &T<S1> to &T<S2> where S1 is sized,  S2 is
          unsized and &T<S2> becomes a fat pointer. The base case is from &T<[U;N]>
-         to T<[U]>. See test/more_dst.rs for user-defined DST case. We build this 
+         to T<[U]>. See test/more_dst.rs for user-defined DST case. We build this
          coercion by hand, and slightly violate C's strict aliasing rules. *)
       let t_from = typ_of_ty env ty_from and t_to = typ_of_ty env ty_to in
       let e = expression_of_operand env e in
@@ -2250,7 +2250,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
          Since [T;N] is translated into arr$T$N, we need to first dereference
          the e1 to get the struct, and then take its field "data" to get the
          array
-          
+
          We construct dest := &( *e1).data[e2]
          *)
       let e1 = expression_of_operand env e1 in
@@ -2651,7 +2651,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
                 let arg_binders =
                   List.map
                     (fun (arg : C.const_generic_param) ->
-                      Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_literal_ty env arg.ty))
+                      Krml.Helpers.fresh_binder ~mut:true arg.name (typ_of_ty env arg.ty))
                     generics.const_generics
                   @ List.map
                       (function
@@ -2843,7 +2843,7 @@ let impl_obligation (ob: decl_obligation) : K.decl =
     match ob with ObliArray (lid, t_array) ->
       L.log "AstOfLlbc" "append new decl of struct: %a" plid lid;
       K.DType (lid, [], 1, 1, Flat [(Some "data",(t_array,true))])
-     
+
 let impl_obligations (obpairs : (decl_obligation * unit) list) : K.decl list =
   List.map impl_obligation (List.map fst obpairs)
   *)
