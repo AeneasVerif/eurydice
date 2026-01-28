@@ -11,9 +11,9 @@
 #include "internal/libcrux_core.h"
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
-KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_zero_d2(void)
+KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_zero_3f(void)
 {
   return 0ULL;
 }
@@ -31,10 +31,10 @@ libcrux_sha3_simd_portable__veor5q_u64(
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor5_d2(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e)
+libcrux_sha3_simd_portable_xor5_3f(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e)
 {
   return libcrux_sha3_simd_portable__veor5q_u64(a, b, c, d, e);
 }
@@ -56,10 +56,10 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vrax1q_u64(uint64_t a, uint
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_rotate_left1_and_xor_3f(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vrax1q_u64(a, b);
 }
@@ -71,10 +71,10 @@ libcrux_sha3_simd_portable__vbcaxq_u64(uint64_t a, uint64_t b, uint64_t c)
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_and_not_xor_d2(uint64_t a, uint64_t b, uint64_t c)
+libcrux_sha3_simd_portable_and_not_xor_3f(uint64_t a, uint64_t b, uint64_t c)
 {
   return libcrux_sha3_simd_portable__vbcaxq_u64(a, b, c);
 }
@@ -85,17 +85,17 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__veorq_n_u64(uint64_t a, uin
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
-KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_xor_constant_d2(uint64_t a, uint64_t c)
+KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_xor_constant_3f(uint64_t a, uint64_t c)
 {
   return libcrux_sha3_simd_portable__veorq_n_u64(a, c);
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
-KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_xor_d2(uint64_t a, uint64_t b)
+KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_xor_3f(uint64_t a, uint64_t b)
 {
   return a ^ b;
 }
@@ -115,7 +115,7 @@ KRML_MUSTINLINE Eurydice_arr_26 libcrux_sha3_generic_keccak_new_80_04(void)
   uint64_t repeat_expression[25U];
   for (size_t i = (size_t)0U; i < (size_t)25U; i++)
   {
-    repeat_expression[i] = libcrux_sha3_simd_portable_zero_d2();
+    repeat_expression[i] = libcrux_sha3_simd_portable_zero_3f();
   }
   memcpy(lit.data, repeat_expression, (size_t)25U * sizeof (uint64_t));
   return lit;
@@ -237,16 +237,16 @@ libcrux_sha3_simd_portable_load_last_96(
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::Absorb<1usize> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::traits::Absorb<(1usize : usize)> for libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.load_last_a1
+A monomorphic instance of libcrux_sha3.simd.portable.load_last_ef
 with const generics
 - RATE= 72
 - DELIMITER= 6
 */
 void
-libcrux_sha3_simd_portable_load_last_a1_96(
+libcrux_sha3_simd_portable_load_last_ef_96(
   Eurydice_arr_26 *self,
   const Eurydice_arr_06 *input,
   size_t start,
@@ -287,7 +287,7 @@ KRML_MUSTINLINE Eurydice_arr_a5 libcrux_sha3_generic_keccak_theta_80_04(Eurydice
   c =
     {
       .data = {
-        libcrux_sha3_simd_portable_xor5_d2(libcrux_sha3_generic_keccak_index_c2_04(self,
+        libcrux_sha3_simd_portable_xor5_3f(libcrux_sha3_generic_keccak_index_c2_04(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)0U }))[0U],
           libcrux_sha3_generic_keccak_index_c2_04(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)0U }))[0U],
@@ -297,7 +297,7 @@ KRML_MUSTINLINE Eurydice_arr_a5 libcrux_sha3_generic_keccak_theta_80_04(Eurydice
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)0U }))[0U],
           libcrux_sha3_generic_keccak_index_c2_04(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)0U }))[0U]),
-        libcrux_sha3_simd_portable_xor5_d2(libcrux_sha3_generic_keccak_index_c2_04(self,
+        libcrux_sha3_simd_portable_xor5_3f(libcrux_sha3_generic_keccak_index_c2_04(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)1U }))[0U],
           libcrux_sha3_generic_keccak_index_c2_04(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)1U }))[0U],
@@ -307,7 +307,7 @@ KRML_MUSTINLINE Eurydice_arr_a5 libcrux_sha3_generic_keccak_theta_80_04(Eurydice
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)1U }))[0U],
           libcrux_sha3_generic_keccak_index_c2_04(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)1U }))[0U]),
-        libcrux_sha3_simd_portable_xor5_d2(libcrux_sha3_generic_keccak_index_c2_04(self,
+        libcrux_sha3_simd_portable_xor5_3f(libcrux_sha3_generic_keccak_index_c2_04(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)2U }))[0U],
           libcrux_sha3_generic_keccak_index_c2_04(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)2U }))[0U],
@@ -317,7 +317,7 @@ KRML_MUSTINLINE Eurydice_arr_a5 libcrux_sha3_generic_keccak_theta_80_04(Eurydice
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)2U }))[0U],
           libcrux_sha3_generic_keccak_index_c2_04(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)2U }))[0U]),
-        libcrux_sha3_simd_portable_xor5_d2(libcrux_sha3_generic_keccak_index_c2_04(self,
+        libcrux_sha3_simd_portable_xor5_3f(libcrux_sha3_generic_keccak_index_c2_04(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)3U }))[0U],
           libcrux_sha3_generic_keccak_index_c2_04(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)3U }))[0U],
@@ -327,7 +327,7 @@ KRML_MUSTINLINE Eurydice_arr_a5 libcrux_sha3_generic_keccak_theta_80_04(Eurydice
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)3U }))[0U],
           libcrux_sha3_generic_keccak_index_c2_04(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)3U }))[0U]),
-        libcrux_sha3_simd_portable_xor5_d2(libcrux_sha3_generic_keccak_index_c2_04(self,
+        libcrux_sha3_simd_portable_xor5_3f(libcrux_sha3_generic_keccak_index_c2_04(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)4U }))[0U],
           libcrux_sha3_generic_keccak_index_c2_04(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)4U }))[0U],
@@ -343,19 +343,19 @@ KRML_MUSTINLINE Eurydice_arr_a5 libcrux_sha3_generic_keccak_theta_80_04(Eurydice
     (
       KRML_CLITERAL(Eurydice_arr_a5){
         .data = {
-          libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(c.data[((size_t)0U + (size_t)4U) %
+          libcrux_sha3_simd_portable_rotate_left1_and_xor_3f(c.data[((size_t)0U + (size_t)4U) %
               (size_t)5U],
             c.data[((size_t)0U + (size_t)1U) % (size_t)5U]),
-          libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(c.data[((size_t)1U + (size_t)4U) %
+          libcrux_sha3_simd_portable_rotate_left1_and_xor_3f(c.data[((size_t)1U + (size_t)4U) %
               (size_t)5U],
             c.data[((size_t)1U + (size_t)1U) % (size_t)5U]),
-          libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(c.data[((size_t)2U + (size_t)4U) %
+          libcrux_sha3_simd_portable_rotate_left1_and_xor_3f(c.data[((size_t)2U + (size_t)4U) %
               (size_t)5U],
             c.data[((size_t)2U + (size_t)1U) % (size_t)5U]),
-          libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(c.data[((size_t)3U + (size_t)4U) %
+          libcrux_sha3_simd_portable_rotate_left1_and_xor_3f(c.data[((size_t)3U + (size_t)4U) %
               (size_t)5U],
             c.data[((size_t)3U + (size_t)1U) % (size_t)5U]),
-          libcrux_sha3_simd_portable_rotate_left1_and_xor_d2(c.data[((size_t)4U + (size_t)4U) %
+          libcrux_sha3_simd_portable_rotate_left1_and_xor_3f(c.data[((size_t)4U + (size_t)4U) %
               (size_t)5U],
             c.data[((size_t)4U + (size_t)1U) % (size_t)5U])
         }
@@ -401,16 +401,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_02(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 36
 - RIGHT= 28
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_02(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_02(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_02(a, b);
 }
@@ -438,16 +438,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_ac(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 3
 - RIGHT= 61
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_ac(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_ac(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_ac(a, b);
 }
@@ -475,16 +475,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_020(uint64_t a, u
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 41
 - RIGHT= 23
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_020(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_020(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_020(a, b);
 }
@@ -512,16 +512,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_a9(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 18
 - RIGHT= 46
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_a9(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_a9(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_a9(a, b);
 }
@@ -538,16 +538,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_76(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 1
 - RIGHT= 63
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_76(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_76(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_76(a, b);
 }
@@ -575,16 +575,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_58(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 44
 - RIGHT= 20
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_58(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_58(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_58(a, b);
 }
@@ -612,16 +612,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_e0(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 10
 - RIGHT= 54
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_e0(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_e0(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_e0(a, b);
 }
@@ -649,16 +649,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_63(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 45
 - RIGHT= 19
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_63(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_63(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_63(a, b);
 }
@@ -686,16 +686,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_6a(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 2
 - RIGHT= 62
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_6a(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_6a(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_6a(a, b);
 }
@@ -723,16 +723,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_ab(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 62
 - RIGHT= 2
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_ab(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_ab(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_ab(a, b);
 }
@@ -760,16 +760,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_5b(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 6
 - RIGHT= 58
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_5b(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_5b(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_5b(a, b);
 }
@@ -797,16 +797,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_6f(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 43
 - RIGHT= 21
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_6f(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_6f(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_6f(a, b);
 }
@@ -834,16 +834,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_62(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 15
 - RIGHT= 49
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_62(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_62(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_62(a, b);
 }
@@ -871,16 +871,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_23(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 61
 - RIGHT= 3
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_23(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_23(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_23(a, b);
 }
@@ -908,16 +908,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_37(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 28
 - RIGHT= 36
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_37(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_37(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_37(a, b);
 }
@@ -945,16 +945,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_bb(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 55
 - RIGHT= 9
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_bb(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_bb(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_bb(a, b);
 }
@@ -982,16 +982,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_b9(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 25
 - RIGHT= 39
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_b9(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_b9(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_b9(a, b);
 }
@@ -1019,16 +1019,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_54(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 21
 - RIGHT= 43
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_54(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_54(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_54(a, b);
 }
@@ -1056,16 +1056,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_4c(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 56
 - RIGHT= 8
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_4c(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_4c(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_4c(a, b);
 }
@@ -1093,16 +1093,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_ce(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 27
 - RIGHT= 37
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_ce(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_ce(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_ce(a, b);
 }
@@ -1130,16 +1130,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_77(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 20
 - RIGHT= 44
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_77(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_77(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_77(a, b);
 }
@@ -1167,16 +1167,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_25(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 39
 - RIGHT= 25
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_25(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_25(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_25(a, b);
 }
@@ -1204,16 +1204,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_af(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 8
 - RIGHT= 56
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_af(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_af(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_af(a, b);
 }
@@ -1241,16 +1241,16 @@ KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vxarq_u64_fd(uint64_t a, ui
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::KeccakItem<1usize> for u64}
+This function found in impl {libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_d2
+A monomorphic instance of libcrux_sha3.simd.portable.xor_and_rotate_3f
 with const generics
 - LEFT= 14
 - RIGHT= 50
 */
 KRML_MUSTINLINE uint64_t
-libcrux_sha3_simd_portable_xor_and_rotate_d2_fd(uint64_t a, uint64_t b)
+libcrux_sha3_simd_portable_xor_and_rotate_3f_fd(uint64_t a, uint64_t b)
 {
   return libcrux_sha3_simd_portable__vxarq_u64_fd(a, b);
 }
@@ -1270,151 +1270,151 @@ libcrux_sha3_generic_keccak_rho_80_04(Eurydice_arr_26 *self, Eurydice_arr_a5 t)
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)0U,
     (size_t)0U,
-    libcrux_sha3_simd_portable_xor_d2(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_3f(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)0U }))[0U],
       t.data[0U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)1U,
     (size_t)0U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_02(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_02(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)0U }))[0U],
       t.data[0U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)2U,
     (size_t)0U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_ac(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_ac(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)0U }))[0U],
       t.data[0U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)3U,
     (size_t)0U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_020(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_020(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)0U }))[0U],
       t.data[0U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)4U,
     (size_t)0U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_a9(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_a9(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)0U }))[0U],
       t.data[0U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)0U,
     (size_t)1U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_76(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_76(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)1U }))[0U],
       t.data[1U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)1U,
     (size_t)1U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_58(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_58(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)1U }))[0U],
       t.data[1U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)2U,
     (size_t)1U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_e0(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_e0(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)1U }))[0U],
       t.data[1U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)3U,
     (size_t)1U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_63(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_63(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)1U }))[0U],
       t.data[1U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)4U,
     (size_t)1U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_6a(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_6a(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)1U }))[0U],
       t.data[1U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)0U,
     (size_t)2U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_ab(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_ab(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)2U }))[0U],
       t.data[2U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)1U,
     (size_t)2U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_5b(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_5b(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)2U }))[0U],
       t.data[2U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)2U,
     (size_t)2U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_6f(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_6f(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)2U }))[0U],
       t.data[2U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)3U,
     (size_t)2U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_62(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_62(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)2U }))[0U],
       t.data[2U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)4U,
     (size_t)2U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_23(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_23(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)2U }))[0U],
       t.data[2U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)0U,
     (size_t)3U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_37(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_37(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)3U }))[0U],
       t.data[3U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)1U,
     (size_t)3U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_bb(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_bb(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)3U }))[0U],
       t.data[3U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)2U,
     (size_t)3U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_b9(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_b9(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)3U }))[0U],
       t.data[3U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)3U,
     (size_t)3U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_54(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_54(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)3U }))[0U],
       t.data[3U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)4U,
     (size_t)3U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_4c(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_4c(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)3U }))[0U],
       t.data[3U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)0U,
     (size_t)4U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_ce(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_ce(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)4U }))[0U],
       t.data[4U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)1U,
     (size_t)4U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_77(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_77(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)4U }))[0U],
       t.data[4U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)2U,
     (size_t)4U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_25(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_25(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)4U }))[0U],
       t.data[4U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)3U,
     (size_t)4U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_af(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_af(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)4U }))[0U],
       t.data[4U]));
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)4U,
     (size_t)4U,
-    libcrux_sha3_simd_portable_xor_and_rotate_d2_fd(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_and_rotate_3f_fd(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)4U }))[0U],
       t.data[4U]));
 }
@@ -1578,7 +1578,7 @@ KRML_MUSTINLINE void libcrux_sha3_generic_keccak_chi_80_04(Eurydice_arr_26 *self
       libcrux_sha3_generic_keccak_set_80_04(self,
         i1,
         j,
-        libcrux_sha3_simd_portable_and_not_xor_d2(libcrux_sha3_generic_keccak_index_c2_04(self,
+        libcrux_sha3_simd_portable_and_not_xor_3f(libcrux_sha3_generic_keccak_index_c2_04(self,
             (KRML_CLITERAL(size_t_x2){ .fst = i1, .snd = j }))[0U],
           libcrux_sha3_generic_keccak_index_c2_04(&old,
             (KRML_CLITERAL(size_t_x2){ .fst = i1, .snd = (j + (size_t)2U) % (size_t)5U }))[0U],
@@ -1600,7 +1600,7 @@ KRML_MUSTINLINE void libcrux_sha3_generic_keccak_iota_80_04(Eurydice_arr_26 *sel
   libcrux_sha3_generic_keccak_set_80_04(self,
     (size_t)0U,
     (size_t)0U,
-    libcrux_sha3_simd_portable_xor_constant_d2(libcrux_sha3_generic_keccak_index_c2_04(self,
+    libcrux_sha3_simd_portable_xor_constant_3f(libcrux_sha3_generic_keccak_index_c2_04(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)0U }))[0U],
       LIBCRUX_SHA3_GENERIC_KECCAK_CONSTANTS_ROUNDCONSTANTS.data[i]));
 }
@@ -1646,7 +1646,7 @@ libcrux_sha3_generic_keccak_absorb_final_80_9e(
   size_t len
 )
 {
-  libcrux_sha3_simd_portable_load_last_a1_96(self, last, start, len);
+  libcrux_sha3_simd_portable_load_last_ef_96(self, last, start, len);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
 }
 
@@ -1710,15 +1710,15 @@ libcrux_sha3_simd_portable_store_block_f8(
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::Squeeze1<u64> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::traits::Squeeze1<u64> for libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.squeeze_13
+A monomorphic instance of libcrux_sha3.simd.portable.squeeze_ac
 with const generics
 - RATE= 72
 */
 void
-libcrux_sha3_simd_portable_squeeze_13_f8(
+libcrux_sha3_simd_portable_squeeze_ac_f8(
   const Eurydice_arr_26 *self,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start,
@@ -1729,15 +1729,15 @@ libcrux_sha3_simd_portable_squeeze_13_f8(
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::Absorb<1usize> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::traits::Absorb<(1usize : usize)> for libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.load_block_a1
+A monomorphic instance of libcrux_sha3.simd.portable.load_block_ef
 with const generics
 - RATE= 72
 */
 void
-libcrux_sha3_simd_portable_load_block_a1_f8(
+libcrux_sha3_simd_portable_load_block_ef_f8(
   Eurydice_arr_26 *self,
   const Eurydice_arr_06 *input,
   size_t start
@@ -1763,7 +1763,7 @@ libcrux_sha3_generic_keccak_absorb_block_80_c6(
   size_t start
 )
 {
-  libcrux_sha3_simd_portable_load_block_a1_f8(self, blocks, start);
+  libcrux_sha3_simd_portable_load_block_ef_f8(self, blocks, start);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
 }
 
@@ -1807,21 +1807,21 @@ libcrux_sha3_generic_keccak_portable_keccak1_96(
       size_t last = outlen - outlen % (size_t)72U;
       if (blocks == (size_t)0U)
       {
-        libcrux_sha3_simd_portable_squeeze_13_f8(&s, out, (size_t)0U, outlen);
+        libcrux_sha3_simd_portable_squeeze_ac_f8(&s, out, (size_t)0U, outlen);
       }
       else
       {
-        libcrux_sha3_simd_portable_squeeze_13_f8(&s, out, (size_t)0U, (size_t)72U);
+        libcrux_sha3_simd_portable_squeeze_ac_f8(&s, out, (size_t)0U, (size_t)72U);
         for (size_t i = (size_t)1U; i < blocks; i++)
         {
           size_t i0 = i;
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
-          libcrux_sha3_simd_portable_squeeze_13_f8(&s, out, i0 * (size_t)72U, (size_t)72U);
+          libcrux_sha3_simd_portable_squeeze_ac_f8(&s, out, i0 * (size_t)72U, (size_t)72U);
         }
         if (last < outlen)
         {
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
-          libcrux_sha3_simd_portable_squeeze_13_f8(&s, out, last, outlen - last);
+          libcrux_sha3_simd_portable_squeeze_ac_f8(&s, out, last, outlen - last);
         }
       }
       return;
@@ -1938,16 +1938,16 @@ libcrux_sha3_simd_portable_load_last_ad(
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::Absorb<1usize> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::traits::Absorb<(1usize : usize)> for libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.load_last_a1
+A monomorphic instance of libcrux_sha3.simd.portable.load_last_ef
 with const generics
 - RATE= 136
 - DELIMITER= 6
 */
 void
-libcrux_sha3_simd_portable_load_last_a1_ad(
+libcrux_sha3_simd_portable_load_last_ef_ad(
   Eurydice_arr_26 *self,
   const Eurydice_arr_06 *input,
   size_t start,
@@ -1976,7 +1976,7 @@ libcrux_sha3_generic_keccak_absorb_final_80_9e0(
   size_t len
 )
 {
-  libcrux_sha3_simd_portable_load_last_a1_ad(self, last, start, len);
+  libcrux_sha3_simd_portable_load_last_ef_ad(self, last, start, len);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
 }
 
@@ -2040,15 +2040,15 @@ libcrux_sha3_simd_portable_store_block_5b(
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::Squeeze1<u64> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::traits::Squeeze1<u64> for libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.squeeze_13
+A monomorphic instance of libcrux_sha3.simd.portable.squeeze_ac
 with const generics
 - RATE= 136
 */
 void
-libcrux_sha3_simd_portable_squeeze_13_5b(
+libcrux_sha3_simd_portable_squeeze_ac_5b(
   const Eurydice_arr_26 *self,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start,
@@ -2059,15 +2059,15 @@ libcrux_sha3_simd_portable_squeeze_13_5b(
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::Absorb<1usize> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::traits::Absorb<(1usize : usize)> for libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.load_block_a1
+A monomorphic instance of libcrux_sha3.simd.portable.load_block_ef
 with const generics
 - RATE= 136
 */
 void
-libcrux_sha3_simd_portable_load_block_a1_5b(
+libcrux_sha3_simd_portable_load_block_ef_5b(
   Eurydice_arr_26 *self,
   const Eurydice_arr_06 *input,
   size_t start
@@ -2093,7 +2093,7 @@ libcrux_sha3_generic_keccak_absorb_block_80_c60(
   size_t start
 )
 {
-  libcrux_sha3_simd_portable_load_block_a1_5b(self, blocks, start);
+  libcrux_sha3_simd_portable_load_block_ef_5b(self, blocks, start);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
 }
 
@@ -2140,21 +2140,21 @@ libcrux_sha3_generic_keccak_portable_keccak1_ad(
       size_t last = outlen - outlen % (size_t)136U;
       if (blocks == (size_t)0U)
       {
-        libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, (size_t)0U, outlen);
+        libcrux_sha3_simd_portable_squeeze_ac_5b(&s, out, (size_t)0U, outlen);
       }
       else
       {
-        libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, (size_t)0U, (size_t)136U);
+        libcrux_sha3_simd_portable_squeeze_ac_5b(&s, out, (size_t)0U, (size_t)136U);
         for (size_t i = (size_t)1U; i < blocks; i++)
         {
           size_t i0 = i;
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
-          libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, i0 * (size_t)136U, (size_t)136U);
+          libcrux_sha3_simd_portable_squeeze_ac_5b(&s, out, i0 * (size_t)136U, (size_t)136U);
         }
         if (last < outlen)
         {
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
-          libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, last, outlen - last);
+          libcrux_sha3_simd_portable_squeeze_ac_5b(&s, out, last, outlen - last);
         }
       }
       return;
@@ -2209,16 +2209,16 @@ libcrux_sha3_simd_portable_load_last_ad0(
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::Absorb<1usize> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::traits::Absorb<(1usize : usize)> for libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.load_last_a1
+A monomorphic instance of libcrux_sha3.simd.portable.load_last_ef
 with const generics
 - RATE= 136
 - DELIMITER= 31
 */
 void
-libcrux_sha3_simd_portable_load_last_a1_ad0(
+libcrux_sha3_simd_portable_load_last_ef_ad0(
   Eurydice_arr_26 *self,
   const Eurydice_arr_06 *input,
   size_t start,
@@ -2247,7 +2247,7 @@ libcrux_sha3_generic_keccak_absorb_final_80_9e1(
   size_t len
 )
 {
-  libcrux_sha3_simd_portable_load_last_a1_ad0(self, last, start, len);
+  libcrux_sha3_simd_portable_load_last_ef_ad0(self, last, start, len);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
 }
 
@@ -2294,21 +2294,21 @@ libcrux_sha3_generic_keccak_portable_keccak1_ad0(
       size_t last = outlen - outlen % (size_t)136U;
       if (blocks == (size_t)0U)
       {
-        libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, (size_t)0U, outlen);
+        libcrux_sha3_simd_portable_squeeze_ac_5b(&s, out, (size_t)0U, outlen);
       }
       else
       {
-        libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, (size_t)0U, (size_t)136U);
+        libcrux_sha3_simd_portable_squeeze_ac_5b(&s, out, (size_t)0U, (size_t)136U);
         for (size_t i = (size_t)1U; i < blocks; i++)
         {
           size_t i0 = i;
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
-          libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, i0 * (size_t)136U, (size_t)136U);
+          libcrux_sha3_simd_portable_squeeze_ac_5b(&s, out, i0 * (size_t)136U, (size_t)136U);
         }
         if (last < outlen)
         {
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
-          libcrux_sha3_simd_portable_squeeze_13_5b(&s, out, last, outlen - last);
+          libcrux_sha3_simd_portable_squeeze_ac_5b(&s, out, last, outlen - last);
         }
       }
       return;
@@ -2433,16 +2433,16 @@ libcrux_sha3_simd_portable_load_last_c6(
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::Absorb<1usize> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::traits::Absorb<(1usize : usize)> for libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.load_last_a1
+A monomorphic instance of libcrux_sha3.simd.portable.load_last_ef
 with const generics
 - RATE= 168
 - DELIMITER= 31
 */
 void
-libcrux_sha3_simd_portable_load_last_a1_c6(
+libcrux_sha3_simd_portable_load_last_ef_c6(
   Eurydice_arr_26 *self,
   const Eurydice_arr_06 *input,
   size_t start,
@@ -2471,7 +2471,7 @@ libcrux_sha3_generic_keccak_absorb_final_80_9e2(
   size_t len
 )
 {
-  libcrux_sha3_simd_portable_load_last_a1_c6(self, last, start, len);
+  libcrux_sha3_simd_portable_load_last_ef_c6(self, last, start, len);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
 }
 
@@ -2549,15 +2549,15 @@ libcrux_sha3_simd_portable_store_block_3a(
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::Squeeze1<u64> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::traits::Squeeze1<u64> for libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.squeeze_13
+A monomorphic instance of libcrux_sha3.simd.portable.squeeze_ac
 with const generics
 - RATE= 168
 */
 void
-libcrux_sha3_simd_portable_squeeze_13_3a(
+libcrux_sha3_simd_portable_squeeze_ac_3a(
   const Eurydice_arr_26 *self,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start,
@@ -2568,24 +2568,24 @@ libcrux_sha3_simd_portable_squeeze_13_3a(
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.generic_keccak.portable.squeeze_first_three_blocks_b4
+A monomorphic instance of libcrux_sha3.generic_keccak.portable.squeeze_first_three_blocks_61
 with const generics
 - RATE= 168
 */
 KRML_MUSTINLINE void
-libcrux_sha3_generic_keccak_portable_squeeze_first_three_blocks_b4_3a(
+libcrux_sha3_generic_keccak_portable_squeeze_first_three_blocks_61_3a(
   Eurydice_arr_26 *self,
   Eurydice_mut_borrow_slice_u8 out
 )
 {
-  libcrux_sha3_simd_portable_squeeze_13_3a(self, out, (size_t)0U, (size_t)168U);
+  libcrux_sha3_simd_portable_squeeze_ac_3a(self, out, (size_t)0U, (size_t)168U);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
-  libcrux_sha3_simd_portable_squeeze_13_3a(self, out, (size_t)168U, (size_t)168U);
+  libcrux_sha3_simd_portable_squeeze_ac_3a(self, out, (size_t)168U, (size_t)168U);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
-  libcrux_sha3_simd_portable_squeeze_13_3a(self, out, (size_t)2U * (size_t)168U, (size_t)168U);
+  libcrux_sha3_simd_portable_squeeze_ac_3a(self, out, (size_t)2U * (size_t)168U, (size_t)168U);
 }
 
 /**
@@ -2597,26 +2597,26 @@ libcrux_sha3_portable_incremental_shake128_squeeze_first_three_blocks(
   Eurydice_mut_borrow_slice_u8 out0
 )
 {
-  libcrux_sha3_generic_keccak_portable_squeeze_first_three_blocks_b4_3a(s, out0);
+  libcrux_sha3_generic_keccak_portable_squeeze_first_three_blocks_61_3a(s, out0);
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.generic_keccak.portable.squeeze_next_block_b4
+A monomorphic instance of libcrux_sha3.generic_keccak.portable.squeeze_next_block_61
 with const generics
 - RATE= 168
 */
 KRML_MUSTINLINE void
-libcrux_sha3_generic_keccak_portable_squeeze_next_block_b4_3a(
+libcrux_sha3_generic_keccak_portable_squeeze_next_block_61_3a(
   Eurydice_arr_26 *self,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start
 )
 {
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
-  libcrux_sha3_simd_portable_squeeze_13_3a(self, out, start, (size_t)168U);
+  libcrux_sha3_simd_portable_squeeze_ac_3a(self, out, start, (size_t)168U);
 }
 
 /**
@@ -2628,7 +2628,7 @@ libcrux_sha3_portable_incremental_shake128_squeeze_next_block(
   Eurydice_mut_borrow_slice_u8 out0
 )
 {
-  libcrux_sha3_generic_keccak_portable_squeeze_next_block_b4_3a(s, out0, (size_t)0U);
+  libcrux_sha3_generic_keccak_portable_squeeze_next_block_61_3a(s, out0, (size_t)0U);
 }
 
 /**
@@ -2754,16 +2754,16 @@ libcrux_sha3_simd_portable_load_last_1e(
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::Absorb<1usize> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::traits::Absorb<(1usize : usize)> for libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.load_last_a1
+A monomorphic instance of libcrux_sha3.simd.portable.load_last_ef
 with const generics
 - RATE= 144
 - DELIMITER= 6
 */
 void
-libcrux_sha3_simd_portable_load_last_a1_1e(
+libcrux_sha3_simd_portable_load_last_ef_1e(
   Eurydice_arr_26 *self,
   const Eurydice_arr_06 *input,
   size_t start,
@@ -2792,7 +2792,7 @@ libcrux_sha3_generic_keccak_absorb_final_80_9e3(
   size_t len
 )
 {
-  libcrux_sha3_simd_portable_load_last_a1_1e(self, last, start, len);
+  libcrux_sha3_simd_portable_load_last_ef_1e(self, last, start, len);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
 }
 
@@ -2856,15 +2856,15 @@ libcrux_sha3_simd_portable_store_block_2c(
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::Squeeze1<u64> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::traits::Squeeze1<u64> for libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.squeeze_13
+A monomorphic instance of libcrux_sha3.simd.portable.squeeze_ac
 with const generics
 - RATE= 144
 */
 void
-libcrux_sha3_simd_portable_squeeze_13_2c(
+libcrux_sha3_simd_portable_squeeze_ac_2c(
   const Eurydice_arr_26 *self,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start,
@@ -2875,15 +2875,15 @@ libcrux_sha3_simd_portable_squeeze_13_2c(
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::Absorb<1usize> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::traits::Absorb<(1usize : usize)> for libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.load_block_a1
+A monomorphic instance of libcrux_sha3.simd.portable.load_block_ef
 with const generics
 - RATE= 144
 */
 void
-libcrux_sha3_simd_portable_load_block_a1_2c(
+libcrux_sha3_simd_portable_load_block_ef_2c(
   Eurydice_arr_26 *self,
   const Eurydice_arr_06 *input,
   size_t start
@@ -2909,7 +2909,7 @@ libcrux_sha3_generic_keccak_absorb_block_80_c61(
   size_t start
 )
 {
-  libcrux_sha3_simd_portable_load_block_a1_2c(self, blocks, start);
+  libcrux_sha3_simd_portable_load_block_ef_2c(self, blocks, start);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
 }
 
@@ -2956,21 +2956,21 @@ libcrux_sha3_generic_keccak_portable_keccak1_1e(
       size_t last = outlen - outlen % (size_t)144U;
       if (blocks == (size_t)0U)
       {
-        libcrux_sha3_simd_portable_squeeze_13_2c(&s, out, (size_t)0U, outlen);
+        libcrux_sha3_simd_portable_squeeze_ac_2c(&s, out, (size_t)0U, outlen);
       }
       else
       {
-        libcrux_sha3_simd_portable_squeeze_13_2c(&s, out, (size_t)0U, (size_t)144U);
+        libcrux_sha3_simd_portable_squeeze_ac_2c(&s, out, (size_t)0U, (size_t)144U);
         for (size_t i = (size_t)1U; i < blocks; i++)
         {
           size_t i0 = i;
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
-          libcrux_sha3_simd_portable_squeeze_13_2c(&s, out, i0 * (size_t)144U, (size_t)144U);
+          libcrux_sha3_simd_portable_squeeze_ac_2c(&s, out, i0 * (size_t)144U, (size_t)144U);
         }
         if (last < outlen)
         {
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
-          libcrux_sha3_simd_portable_squeeze_13_2c(&s, out, last, outlen - last);
+          libcrux_sha3_simd_portable_squeeze_ac_2c(&s, out, last, outlen - last);
         }
       }
       return;
@@ -3087,16 +3087,16 @@ libcrux_sha3_simd_portable_load_last_7c(
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::Absorb<1usize> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::traits::Absorb<(1usize : usize)> for libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.load_last_a1
+A monomorphic instance of libcrux_sha3.simd.portable.load_last_ef
 with const generics
 - RATE= 104
 - DELIMITER= 6
 */
 void
-libcrux_sha3_simd_portable_load_last_a1_7c(
+libcrux_sha3_simd_portable_load_last_ef_7c(
   Eurydice_arr_26 *self,
   const Eurydice_arr_06 *input,
   size_t start,
@@ -3125,7 +3125,7 @@ libcrux_sha3_generic_keccak_absorb_final_80_9e4(
   size_t len
 )
 {
-  libcrux_sha3_simd_portable_load_last_a1_7c(self, last, start, len);
+  libcrux_sha3_simd_portable_load_last_ef_7c(self, last, start, len);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
 }
 
@@ -3189,15 +3189,15 @@ libcrux_sha3_simd_portable_store_block_7a(
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::Squeeze1<u64> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::traits::Squeeze1<u64> for libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.squeeze_13
+A monomorphic instance of libcrux_sha3.simd.portable.squeeze_ac
 with const generics
 - RATE= 104
 */
 void
-libcrux_sha3_simd_portable_squeeze_13_7a(
+libcrux_sha3_simd_portable_squeeze_ac_7a(
   const Eurydice_arr_26 *self,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start,
@@ -3208,15 +3208,15 @@ libcrux_sha3_simd_portable_squeeze_13_7a(
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::Absorb<1usize> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::traits::Absorb<(1usize : usize)> for libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.load_block_a1
+A monomorphic instance of libcrux_sha3.simd.portable.load_block_ef
 with const generics
 - RATE= 104
 */
 void
-libcrux_sha3_simd_portable_load_block_a1_7a(
+libcrux_sha3_simd_portable_load_block_ef_7a(
   Eurydice_arr_26 *self,
   const Eurydice_arr_06 *input,
   size_t start
@@ -3242,7 +3242,7 @@ libcrux_sha3_generic_keccak_absorb_block_80_c62(
   size_t start
 )
 {
-  libcrux_sha3_simd_portable_load_block_a1_7a(self, blocks, start);
+  libcrux_sha3_simd_portable_load_block_ef_7a(self, blocks, start);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
 }
 
@@ -3289,21 +3289,21 @@ libcrux_sha3_generic_keccak_portable_keccak1_7c(
       size_t last = outlen - outlen % (size_t)104U;
       if (blocks == (size_t)0U)
       {
-        libcrux_sha3_simd_portable_squeeze_13_7a(&s, out, (size_t)0U, outlen);
+        libcrux_sha3_simd_portable_squeeze_ac_7a(&s, out, (size_t)0U, outlen);
       }
       else
       {
-        libcrux_sha3_simd_portable_squeeze_13_7a(&s, out, (size_t)0U, (size_t)104U);
+        libcrux_sha3_simd_portable_squeeze_ac_7a(&s, out, (size_t)0U, (size_t)104U);
         for (size_t i = (size_t)1U; i < blocks; i++)
         {
           size_t i0 = i;
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
-          libcrux_sha3_simd_portable_squeeze_13_7a(&s, out, i0 * (size_t)104U, (size_t)104U);
+          libcrux_sha3_simd_portable_squeeze_ac_7a(&s, out, i0 * (size_t)104U, (size_t)104U);
         }
         if (last < outlen)
         {
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
-          libcrux_sha3_simd_portable_squeeze_13_7a(&s, out, last, outlen - last);
+          libcrux_sha3_simd_portable_squeeze_ac_7a(&s, out, last, outlen - last);
         }
       }
       return;
@@ -3409,15 +3409,15 @@ Eurydice_arr_060 libcrux_sha3_sha512(Eurydice_borrow_slice_u8 data)
 }
 
 /**
-This function found in impl {libcrux_sha3::traits::Absorb<1usize> for libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::traits::Absorb<(1usize : usize)> for libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.simd.portable.load_block_a1
+A monomorphic instance of libcrux_sha3.simd.portable.load_block_ef
 with const generics
 - RATE= 168
 */
 void
-libcrux_sha3_simd_portable_load_block_a1_3a(
+libcrux_sha3_simd_portable_load_block_ef_3a(
   Eurydice_arr_26 *self,
   const Eurydice_arr_06 *input,
   size_t start
@@ -3443,7 +3443,7 @@ libcrux_sha3_generic_keccak_absorb_block_80_c63(
   size_t start
 )
 {
-  libcrux_sha3_simd_portable_load_block_a1_3a(self, blocks, start);
+  libcrux_sha3_simd_portable_load_block_ef_3a(self, blocks, start);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
 }
 
@@ -3490,21 +3490,21 @@ libcrux_sha3_generic_keccak_portable_keccak1_c6(
       size_t last = outlen - outlen % (size_t)168U;
       if (blocks == (size_t)0U)
       {
-        libcrux_sha3_simd_portable_squeeze_13_3a(&s, out, (size_t)0U, outlen);
+        libcrux_sha3_simd_portable_squeeze_ac_3a(&s, out, (size_t)0U, outlen);
       }
       else
       {
-        libcrux_sha3_simd_portable_squeeze_13_3a(&s, out, (size_t)0U, (size_t)168U);
+        libcrux_sha3_simd_portable_squeeze_ac_3a(&s, out, (size_t)0U, (size_t)168U);
         for (size_t i = (size_t)1U; i < blocks; i++)
         {
           size_t i0 = i;
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
-          libcrux_sha3_simd_portable_squeeze_13_3a(&s, out, i0 * (size_t)168U, (size_t)168U);
+          libcrux_sha3_simd_portable_squeeze_ac_3a(&s, out, i0 * (size_t)168U, (size_t)168U);
         }
         if (last < outlen)
         {
           libcrux_sha3_generic_keccak_keccakf1600_80_04(&s);
-          libcrux_sha3_simd_portable_squeeze_13_3a(&s, out, last, outlen - last);
+          libcrux_sha3_simd_portable_squeeze_ac_3a(&s, out, last, outlen - last);
         }
       }
       return;
@@ -3551,28 +3551,28 @@ void libcrux_sha3_shake256_ema(Eurydice_mut_borrow_slice_u8 out, Eurydice_borrow
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.generic_keccak.portable.squeeze_first_five_blocks_b4
+A monomorphic instance of libcrux_sha3.generic_keccak.portable.squeeze_first_five_blocks_61
 with const generics
 - RATE= 168
 */
 KRML_MUSTINLINE void
-libcrux_sha3_generic_keccak_portable_squeeze_first_five_blocks_b4_3a(
+libcrux_sha3_generic_keccak_portable_squeeze_first_five_blocks_61_3a(
   Eurydice_arr_26 *self,
   Eurydice_mut_borrow_slice_u8 out
 )
 {
-  libcrux_sha3_simd_portable_squeeze_13_3a(self, out, (size_t)0U, (size_t)168U);
+  libcrux_sha3_simd_portable_squeeze_ac_3a(self, out, (size_t)0U, (size_t)168U);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
-  libcrux_sha3_simd_portable_squeeze_13_3a(self, out, (size_t)168U, (size_t)168U);
+  libcrux_sha3_simd_portable_squeeze_ac_3a(self, out, (size_t)168U, (size_t)168U);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
-  libcrux_sha3_simd_portable_squeeze_13_3a(self, out, (size_t)2U * (size_t)168U, (size_t)168U);
+  libcrux_sha3_simd_portable_squeeze_ac_3a(self, out, (size_t)2U * (size_t)168U, (size_t)168U);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
-  libcrux_sha3_simd_portable_squeeze_13_3a(self, out, (size_t)3U * (size_t)168U, (size_t)168U);
+  libcrux_sha3_simd_portable_squeeze_ac_3a(self, out, (size_t)3U * (size_t)168U, (size_t)168U);
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
-  libcrux_sha3_simd_portable_squeeze_13_3a(self, out, (size_t)4U * (size_t)168U, (size_t)168U);
+  libcrux_sha3_simd_portable_squeeze_ac_3a(self, out, (size_t)4U * (size_t)168U, (size_t)168U);
 }
 
 /**
@@ -3584,7 +3584,7 @@ libcrux_sha3_portable_incremental_shake128_squeeze_first_five_blocks(
   Eurydice_mut_borrow_slice_u8 out0
 )
 {
-  libcrux_sha3_generic_keccak_portable_squeeze_first_five_blocks_b4_3a(s, out0);
+  libcrux_sha3_generic_keccak_portable_squeeze_first_five_blocks_61_3a(s, out0);
 }
 
 /**
@@ -3610,20 +3610,20 @@ KRML_MUSTINLINE Eurydice_arr_26 libcrux_sha3_portable_incremental_shake256_init(
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.generic_keccak.portable.squeeze_first_block_b4
+A monomorphic instance of libcrux_sha3.generic_keccak.portable.squeeze_first_block_61
 with const generics
 - RATE= 136
 */
 KRML_MUSTINLINE void
-libcrux_sha3_generic_keccak_portable_squeeze_first_block_b4_5b(
+libcrux_sha3_generic_keccak_portable_squeeze_first_block_61_5b(
   const Eurydice_arr_26 *self,
   Eurydice_mut_borrow_slice_u8 out
 )
 {
-  libcrux_sha3_simd_portable_squeeze_13_5b(self, out, (size_t)0U, (size_t)136U);
+  libcrux_sha3_simd_portable_squeeze_ac_5b(self, out, (size_t)0U, (size_t)136U);
 }
 
 /**
@@ -3635,26 +3635,26 @@ libcrux_sha3_portable_incremental_shake256_squeeze_first_block(
   Eurydice_mut_borrow_slice_u8 out
 )
 {
-  libcrux_sha3_generic_keccak_portable_squeeze_first_block_b4_5b(&s[0U], out);
+  libcrux_sha3_generic_keccak_portable_squeeze_first_block_61_5b(&s[0U], out);
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<u64, 1usize>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<1usize> for u64}]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState<u64, (1usize : usize)>[core::marker::Sized<u64>, libcrux_sha3::simd::portable::{libcrux_sha3::traits::KeccakItem<(1usize : usize)> for u64}]}
 */
 /**
-A monomorphic instance of libcrux_sha3.generic_keccak.portable.squeeze_next_block_b4
+A monomorphic instance of libcrux_sha3.generic_keccak.portable.squeeze_next_block_61
 with const generics
 - RATE= 136
 */
 KRML_MUSTINLINE void
-libcrux_sha3_generic_keccak_portable_squeeze_next_block_b4_5b(
+libcrux_sha3_generic_keccak_portable_squeeze_next_block_61_5b(
   Eurydice_arr_26 *self,
   Eurydice_mut_borrow_slice_u8 out,
   size_t start
 )
 {
   libcrux_sha3_generic_keccak_keccakf1600_80_04(self);
-  libcrux_sha3_simd_portable_squeeze_13_5b(self, out, start, (size_t)136U);
+  libcrux_sha3_simd_portable_squeeze_ac_5b(self, out, start, (size_t)136U);
 }
 
 /**
@@ -3666,6 +3666,6 @@ libcrux_sha3_portable_incremental_shake256_squeeze_next_block(
   Eurydice_mut_borrow_slice_u8 out
 )
 {
-  libcrux_sha3_generic_keccak_portable_squeeze_next_block_b4_5b(s, out, (size_t)0U);
+  libcrux_sha3_generic_keccak_portable_squeeze_next_block_61_5b(s, out, (size_t)0U);
 }
 

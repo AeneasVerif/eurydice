@@ -2246,15 +2246,15 @@ static KRML_MUSTINLINE Eurydice_arr_51 from_i16_array_d6_84(Eurydice_mut_borrow_
 }
 
 /**
-This function found in impl {core::ops::function::FnMut<([i16; 272usize]), libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0, TraitClause@2]> for libcrux_ml_kem::sampling::sample_from_xof::closure<Vector, Hasher, K>[TraitClause@0, TraitClause@1, TraitClause@2, TraitClause@3]}
+This function found in impl {core::ops::function::FnMut<([i16; (272usize : usize)]), libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0, TraitClause@2]> for libcrux_ml_kem::sampling::sample_from_xof::closure<Vector, Hasher, K>[TraitClause@0, TraitClause@1, TraitClause@2, TraitClause@3]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof.call_mut_0a
+A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof.call_mut_d5
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash
 with const generics
 - K= 3
 */
-static Eurydice_arr_51 call_mut_0a_6c1(Eurydice_arr_a00 tupled_args)
+static Eurydice_arr_51 call_mut_d5_6c1(Eurydice_arr_a00 tupled_args)
 {
   Eurydice_arr_a00 s = tupled_args;
   return
@@ -2294,7 +2294,7 @@ static KRML_MUSTINLINE Eurydice_arr_9d sample_from_xof_6c1(Eurydice_arr_c3 *seed
     (size_t)0U,
     (size_t)3U,
     (size_t)1U,
-    arr_mapped_str.data[i] = call_mut_0a_6c1(out.data[i]););
+    arr_mapped_str.data[i] = call_mut_d5_6c1(out.data[i]););
   return arr_mapped_str;
 }
 
@@ -2811,15 +2811,15 @@ deserialize_vector_ab(Eurydice_mut_borrow_slice_u8 secret_key, Eurydice_arr_9d *
 }
 
 /**
-This function found in impl {core::ops::function::FnMut<([i16; 272usize]), libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0, TraitClause@2]> for libcrux_ml_kem::sampling::sample_from_xof::closure<Vector, Hasher, K>[TraitClause@0, TraitClause@1, TraitClause@2, TraitClause@3]}
+This function found in impl {core::ops::function::FnMut<([i16; (272usize : usize)]), libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0, TraitClause@2]> for libcrux_ml_kem::sampling::sample_from_xof::closure<Vector, Hasher, K>[TraitClause@0, TraitClause@1, TraitClause@2, TraitClause@3]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof.call_mut_0a
+A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof.call_mut_d5
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_portable_PortableHash[[$3size_t]]
 with const generics
 - K= 3
 */
-static Eurydice_arr_51 call_mut_0a_b31(Eurydice_arr_a00 tupled_args)
+static Eurydice_arr_51 call_mut_d5_b31(Eurydice_arr_a00 tupled_args)
 {
   Eurydice_arr_a00 s = tupled_args;
   return
@@ -2864,7 +2864,7 @@ static KRML_MUSTINLINE Eurydice_arr_9d sample_from_xof_b31(Eurydice_arr_c3 *seed
     (size_t)0U,
     (size_t)3U,
     (size_t)1U,
-    arr_mapped_str.data[i] = call_mut_0a_b31(out.data[i]););
+    arr_mapped_str.data[i] = call_mut_d5_b31(out.data[i]););
   return arr_mapped_str;
 }
 
@@ -6572,15 +6572,15 @@ sample_from_uniform_distribution_next_780(
 }
 
 /**
-This function found in impl {core::ops::function::FnMut<([i16; 272usize]), libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0, TraitClause@2]> for libcrux_ml_kem::sampling::sample_from_xof::closure<Vector, Hasher, K>[TraitClause@0, TraitClause@1, TraitClause@2, TraitClause@3]}
+This function found in impl {core::ops::function::FnMut<([i16; (272usize : usize)]), libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0, TraitClause@2]> for libcrux_ml_kem::sampling::sample_from_xof::closure<Vector, Hasher, K>[TraitClause@0, TraitClause@1, TraitClause@2, TraitClause@3]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof.call_mut_0a
+A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof.call_mut_d5
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash
 with const generics
 - K= 4
 */
-static Eurydice_arr_51 call_mut_0a_6c0(Eurydice_arr_a00 tupled_args)
+static Eurydice_arr_51 call_mut_d5_6c0(Eurydice_arr_a00 tupled_args)
 {
   Eurydice_arr_a00 s = tupled_args;
   return
@@ -6621,7 +6621,7 @@ static KRML_MUSTINLINE Eurydice_arr_c5 sample_from_xof_6c0(Eurydice_arr_c50 *see
     (size_t)0U,
     (size_t)4U,
     (size_t)1U,
-    arr_mapped_str.data[i] = call_mut_0a_6c0(out.data[i]););
+    arr_mapped_str.data[i] = call_mut_d5_6c0(out.data[i]););
   return arr_mapped_str;
 }
 
@@ -6990,15 +6990,15 @@ deserialize_vector_42(Eurydice_mut_borrow_slice_u8 secret_key, Eurydice_arr_c5 *
 }
 
 /**
-This function found in impl {core::ops::function::FnMut<([i16; 272usize]), libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0, TraitClause@2]> for libcrux_ml_kem::sampling::sample_from_xof::closure<Vector, Hasher, K>[TraitClause@0, TraitClause@1, TraitClause@2, TraitClause@3]}
+This function found in impl {core::ops::function::FnMut<([i16; (272usize : usize)]), libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0, TraitClause@2]> for libcrux_ml_kem::sampling::sample_from_xof::closure<Vector, Hasher, K>[TraitClause@0, TraitClause@1, TraitClause@2, TraitClause@3]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof.call_mut_0a
+A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof.call_mut_d5
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_portable_PortableHash[[$4size_t]]
 with const generics
 - K= 4
 */
-static Eurydice_arr_51 call_mut_0a_b30(Eurydice_arr_a00 tupled_args)
+static Eurydice_arr_51 call_mut_d5_b30(Eurydice_arr_a00 tupled_args)
 {
   Eurydice_arr_a00 s = tupled_args;
   return
@@ -7044,7 +7044,7 @@ static KRML_MUSTINLINE Eurydice_arr_c5 sample_from_xof_b30(Eurydice_arr_c50 *see
     (size_t)0U,
     (size_t)4U,
     (size_t)1U,
-    arr_mapped_str.data[i] = call_mut_0a_b30(out.data[i]););
+    arr_mapped_str.data[i] = call_mut_d5_b30(out.data[i]););
   return arr_mapped_str;
 }
 
@@ -9400,15 +9400,15 @@ sample_from_uniform_distribution_next_290(
 }
 
 /**
-This function found in impl {core::ops::function::FnMut<([i16; 272usize]), libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0, TraitClause@2]> for libcrux_ml_kem::sampling::sample_from_xof::closure<Vector, Hasher, K>[TraitClause@0, TraitClause@1, TraitClause@2, TraitClause@3]}
+This function found in impl {core::ops::function::FnMut<([i16; (272usize : usize)]), libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0, TraitClause@2]> for libcrux_ml_kem::sampling::sample_from_xof::closure<Vector, Hasher, K>[TraitClause@0, TraitClause@1, TraitClause@2, TraitClause@3]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof.call_mut_0a
+A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof.call_mut_d5
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_avx2_Simd256Hash
 with const generics
 - K= 2
 */
-static Eurydice_arr_51 call_mut_0a_6c(Eurydice_arr_a00 tupled_args)
+static Eurydice_arr_51 call_mut_d5_6c(Eurydice_arr_a00 tupled_args)
 {
   Eurydice_arr_a00 s = tupled_args;
   return
@@ -9447,7 +9447,7 @@ static KRML_MUSTINLINE Eurydice_arr_d3 sample_from_xof_6c(Eurydice_arr_f90 *seed
     (size_t)0U,
     (size_t)2U,
     (size_t)1U,
-    arr_mapped_str.data[i] = call_mut_0a_6c(out.data[i]););
+    arr_mapped_str.data[i] = call_mut_d5_6c(out.data[i]););
   return arr_mapped_str;
 }
 
@@ -9816,15 +9816,15 @@ deserialize_vector_89(Eurydice_mut_borrow_slice_u8 secret_key, Eurydice_arr_d3 *
 }
 
 /**
-This function found in impl {core::ops::function::FnMut<([i16; 272usize]), libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0, TraitClause@2]> for libcrux_ml_kem::sampling::sample_from_xof::closure<Vector, Hasher, K>[TraitClause@0, TraitClause@1, TraitClause@2, TraitClause@3]}
+This function found in impl {core::ops::function::FnMut<([i16; (272usize : usize)]), libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0, TraitClause@2]> for libcrux_ml_kem::sampling::sample_from_xof::closure<Vector, Hasher, K>[TraitClause@0, TraitClause@1, TraitClause@2, TraitClause@3]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof.call_mut_0a
+A monomorphic instance of libcrux_ml_kem.sampling.sample_from_xof.call_mut_d5
 with types libcrux_ml_kem_vector_avx2_SIMD256Vector, libcrux_ml_kem_hash_functions_portable_PortableHash[[$2size_t]]
 with const generics
 - K= 2
 */
-static Eurydice_arr_51 call_mut_0a_b3(Eurydice_arr_a00 tupled_args)
+static Eurydice_arr_51 call_mut_d5_b3(Eurydice_arr_a00 tupled_args)
 {
   Eurydice_arr_a00 s = tupled_args;
   return
@@ -9868,7 +9868,7 @@ static KRML_MUSTINLINE Eurydice_arr_d3 sample_from_xof_b3(Eurydice_arr_f90 *seed
     (size_t)0U,
     (size_t)2U,
     (size_t)1U,
-    arr_mapped_str.data[i] = call_mut_0a_b3(out.data[i]););
+    arr_mapped_str.data[i] = call_mut_d5_b3(out.data[i]););
   return arr_mapped_str;
 }
 
