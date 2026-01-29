@@ -283,8 +283,8 @@ libcrux_ml_kem_vector_portable_vector_type_from_bytes(Eurydice_mut_borrow_slice_
   {
     size_t i0 = i;
     elements.data[i0] =
-      libcrux_secrets_int_as_i16_59(array.ptr[(size_t)2U * i0 + (size_t)1U]) << 8U |
-        libcrux_secrets_int_as_i16_59(array.ptr[(size_t)2U * i0]);
+      libcrux_secrets_int_as_i16_59(array.ptr[(size_t)2U * i0]) << 8U |
+        libcrux_secrets_int_as_i16_59(array.ptr[(size_t)2U * i0 + (size_t)1U]);
   }
   return elements;
 }
@@ -308,8 +308,8 @@ libcrux_ml_kem_vector_portable_vector_type_to_bytes(
   for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++)
   {
     size_t i0 = i;
-    bytes.ptr[(size_t)2U * i0 + (size_t)1U] = libcrux_secrets_int_as_u8_f5(x.data[i0] >> 8U);
-    bytes.ptr[(size_t)2U * i0] = libcrux_secrets_int_as_u8_f5(x.data[i0]);
+    bytes.ptr[(size_t)2U * i0] = libcrux_secrets_int_as_u8_f5(x.data[i0] >> 8U);
+    bytes.ptr[(size_t)2U * i0 + (size_t)1U] = libcrux_secrets_int_as_u8_f5(x.data[i0]);
   }
 }
 
