@@ -50,7 +50,7 @@ typedef struct names_Type_s
 }
 names_Type;
 
-void names_f(uint32_t r_struct);
+void names_f(uint32_t struct0);
 
 void names_main(void);
 
