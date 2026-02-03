@@ -231,30 +231,6 @@ with const generics
 typedef struct Eurydice_arr_3d_s { uint8_t data[136U]; } Eurydice_arr_3d;
 
 /**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types int32_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_fc_s
-{
-  int32_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_mut_fc;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types int32_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_fc_s
-{
-  const int32_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_fc;
-
-/**
 A monomorphic instance of Eurydice.arr
 with types Eurydice_arr_3d
 with const generics
