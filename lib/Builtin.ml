@@ -447,7 +447,6 @@ let slice_index const =
 let slice_index_shared = slice_index true
 let slice_index_mut = slice_index false
 
-
 (* The three entries below do not need a shared/mut variant because of the way the &mut[T] vs &[T]
    is passed as an argument to the type application *)
 

@@ -638,6 +638,7 @@ let binder_of_let e_let =
 
 let typ_of_let e_let = e_let |> node_of_with_type |> binder_of_let |> typ_of_with_type
 
+(*tobe fixed*
 let resugar_loops =
   object(self)
   inherit [_] map as super
@@ -1101,6 +1102,371 @@ let resugar_loops =
 
     | _ ->
       super#visit_expr env e
+end
+[@ocamlformat "disable"]
+*)
+
+let resugar_loops =
+  object(self)
+  inherit [_] map as super
+
+  method! visit_expr ((), _ as env) e =
+    let open Krml.Helpers in
+    let step_by = match e with
+      (* Non-terminal position (step-by for-loop) *)
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter<
+            core::iter::adapters::step_by::StepBy<core::ops::range::Range<?..>>,
+            ?..
+          >(core::iter::range::?::step_by<?..>(
+            { start: ?e_start, end: ?e_end },
+            ?e_increment
+          ));
+        while true {
+          let x = core::iter::adapters::step_by::?::next<?, ?t1>(&iter);
+          match x {
+            None -> break,
+            Some ? -> ?e_body
+          }
+        };
+        ?rest..
+      |}] -> 
+        let e_some_i = with_type (Builtin.mk_option t1) (ECons ("Some", [with_type t1 (EBound 0)])) in
+        let e_body = Krml.DeBruijn.subst e_some_i 0 e_body in
+        Some (t1, e_start, e_end, e_increment, [e_body], rest)
+
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter<
+            core::iter::adapters::step_by::StepBy<core::ops::range::Range<?..>>,
+            ?..
+          >(core::iter::range::?::step_by<?..>(
+            { start: ?e_start, end: ?e_end },
+            ?e_increment
+          ));
+        while true {
+          let x = core::iter::adapters::step_by::?::next<?, ?t1>(&iter);
+          match x {
+            None -> break,
+            Some ? -> ?e_body
+          };
+          ?loop_rest..
+        };
+        ?rest..
+      |}] -> 
+        let e_some_i = with_type (Builtin.mk_option t1) (ECons ("Some", [with_type t1 (EBound 0)])) in
+        let e_body = List.map (Krml.DeBruijn.subst e_some_i 0) (e_body :: loop_rest) in
+        Some (t1, e_start, e_end, e_increment, e_body, rest)
+
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter<
+            core::iter::adapters::step_by::StepBy<core::ops::range::Range<?..>>,
+            ?..
+          >(core::iter::range::?::step_by<?..>(
+            { start: ?e_start, end: ?e_end },
+            ?e_increment
+          ));
+        while true {
+          match (core::iter::adapters::step_by::?::next<?, ?t1>(&iter)) {
+            None -> break,
+            Some ? -> ?e_body
+          }
+        };
+        ?rest..
+      |}] -> Some (t1, e_start, e_end, e_increment, [e_body], rest)
+
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter<
+            core::iter::adapters::step_by::StepBy<core::ops::range::Range<?..>>,
+            ?..
+          >(core::iter::range::?::step_by<?..>(
+            { start: ?e_start, end: ?e_end },
+            ?e_increment
+          ));
+        while true {
+          match (core::iter::adapters::step_by::?::next<?, ?t1>(&iter)) {
+            None -> break,
+            Some ? -> ?e_body
+          };
+          ?loop_rest..
+        };
+        ?rest..
+      |}] -> Some (t1, e_start, e_end, e_increment, e_body :: loop_rest, rest)
+
+      (* Terminal position (step-by for-loop) *)
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter<
+            core::iter::adapters::step_by::StepBy<core::ops::range::Range<?..>>,
+            ?..
+          >(core::iter::range::?::step_by<?..>(
+            { start: ?e_start, end: ?e_end },
+            ?e_increment
+          ));
+        while true {
+          let x = core::iter::adapters::step_by::?::next<?, ?t1>(&iter);
+          match x {
+            None -> break,
+            Some ? -> ?e_body
+          }
+        }
+      |}] ->
+        let e_some_i = with_type (Builtin.mk_option t1) (ECons ("Some", [with_type t1 (EBound 0)])) in
+        let e_body = Krml.DeBruijn.subst e_some_i 0 e_body in
+        Some (t1, e_start, e_end, e_increment, [e_body], [])
+
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter<
+            core::iter::adapters::step_by::StepBy<core::ops::range::Range<?..>>,
+            ?..
+          >(core::iter::range::?::step_by<?..>(
+            { start: ?e_start, end: ?e_end },
+            ?e_increment
+          ));
+        while true {
+          let x = core::iter::adapters::step_by::?::next<?, ?t1>(&iter);
+          match x {
+            None -> break,
+            Some ? -> ?e_body
+          };
+          ?loop_rest..
+        }
+      |}] ->
+        let e_some_i = with_type (Builtin.mk_option t1) (ECons ("Some", [with_type t1 (EBound 0)])) in
+        let e_body = List.map (Krml.DeBruijn.subst e_some_i 0) (e_body :: loop_rest) in
+        Some (t1, e_start, e_end, e_increment, e_body, [])
+
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter<
+            core::iter::adapters::step_by::StepBy<core::ops::range::Range<?..>>,
+            ?..
+          >(core::iter::range::?::step_by<?..>(
+            { start: ?e_start, end: ?e_end },
+            ?e_increment
+          ));
+        while true {
+          match (core::iter::adapters::step_by::?::next<?, ?t1>(&iter)) {
+            None -> break,
+            Some ? -> ?e_body
+          }
+        }
+      |}] -> Some (t1, e_start, e_end, e_increment, [e_body], [])
+
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter<
+            core::iter::adapters::step_by::StepBy<core::ops::range::Range<?..>>,
+            ?..
+          >(core::iter::range::?::step_by<?..>(
+            { start: ?e_start, end: ?e_end },
+            ?e_increment
+          ));
+        while true {
+          match (core::iter::adapters::step_by::?::next<?, ?t1>(&iter)) {
+            None -> break,
+            Some ? -> ?e_body
+          };
+          ?loop_rest..
+        }
+      |}] -> Some (t1, e_start, e_end, e_increment, e_body :: loop_rest, [])
+
+      | _ -> None
+    in
+
+    let range_iter = match e with
+      (* Terminal position (regular range for-loop) *)
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter
+            <core::ops::range::Range<?..>, ?..>
+            ({ start: ?e_start, end: ?e_end });
+        while true {
+          let x = core::iter::range::?::next<?t1>(&iter);
+          match x {
+            None -> break,
+            Some ? -> ?e_body
+          }
+        }
+      |}] ->
+        let e_some_i = with_type (Builtin.mk_option t1) (ECons ("Some", [with_type t1 (EBound 0)])) in
+        let e_body = Krml.DeBruijn.subst e_some_i 0 e_body in
+        Some (t1, e_start, e_end, [e_body], [])
+
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter
+            <core::ops::range::Range<?..>, ?..>
+            ({ start: ?e_start, end: ?e_end });
+        while true {
+          let x = core::iter::range::?::next<?t1>(&iter);
+          match x {
+            None -> break,
+            Some ? -> ?e_body
+          };
+          ?loop_rest..
+        }
+      |}] ->
+        let e_some_i = with_type (Builtin.mk_option t1) (ECons ("Some", [with_type t1 (EBound 0)])) in
+        let e_body = List.map (Krml.DeBruijn.subst e_some_i 0) (e_body :: loop_rest) in
+        Some (t1, e_start, e_end, e_body, [])
+
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter
+            <core::ops::range::Range<?..>, ?..>
+            ({ start: ?e_start, end: ?e_end });
+        while true {
+          match (core::iter::range::?::next<?t1>(&iter)) {
+            None -> break,
+            Some ? -> ?e_body
+          }
+        }
+      |}] -> Some (t1, e_start, e_end, [e_body], [])
+
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter
+            <core::ops::range::Range<?..>, ?..>
+            ({ start: ?e_start, end: ?e_end });
+        while true {
+          match (core::iter::range::?::next<?t1>(&iter)) {
+            None -> break,
+            Some ? -> ?e_body
+          };
+          ?loop_rest..
+        }
+      |}] -> Some (t1, e_start, e_end, e_body :: loop_rest, [])
+
+      (* Non-terminal position (regular range for-loop) *)
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter
+            <core::ops::range::Range<?>, ?..>
+            ({ start: ?e_start, end: ?e_end });
+        while true {
+          let x = core::iter::range::?::next<?t1>(&iter);
+          match x {
+            None -> break,
+            Some ? -> ?e_body
+          }
+        };
+        ?rest..
+      |}] ->
+        let e_some_i = with_type (Builtin.mk_option t1) (ECons ("Some", [with_type t1 (EBound 0)])) in
+        let e_body = Krml.DeBruijn.subst e_some_i 0 e_body in
+        Some (t1, e_start, e_end, [e_body], rest)
+
+      (* Non-terminal position (regular range for-loop) *)
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter
+            <core::ops::range::Range<?>, ?..>
+            ({ start: ?e_start, end: ?e_end });
+        while true {
+          let x = core::iter::range::?::next<?t1>(&iter);
+          match x {
+            None -> break,
+            Some ? -> ?e_body
+          };
+          ?loop_rest..
+        };
+        ?rest..
+      |}] ->
+        let e_some_i = with_type (Builtin.mk_option t1) (ECons ("Some", [with_type t1 (EBound 0)])) in
+        let e_body = List.map (Krml.DeBruijn.subst e_some_i 0) (e_body :: loop_rest) in
+        Some (t1, e_start, e_end, e_body, rest)
+
+      (* Special variant that appears in external crates -- TODO: do we need variants of all other
+         patterns? *)
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter
+            <core::ops::range::Range<?>, ?..>
+            ({ start: ?e_start, end: ?e_end });
+        while true {
+          let x = core::iter::range::?::next<?t1>(&iter);
+          match x {
+            None -> ?e2,
+            Some ? -> ?e_body
+          };
+          abort
+        }
+      |}] when ends_with_return e2 && ends_with_continue e_body
+      (* && x does not appear in e2 *) ->
+        let e_some_i = with_type (Builtin.mk_option t1) (ECons ("Some", [with_type t1 (EBound 0)])) in
+        let e_body = Krml.DeBruijn.subst e_some_i 0 e_body in
+        Some (t1, e_start, e_end, [e_body], [])
+
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter
+            <core::ops::range::Range<?>, ?..>
+            ({ start: ?e_start, end: ?e_end });
+        while true {
+          match (core::iter::range::?::next<?t1>(&iter)) {
+            None -> break,
+            Some ? -> ?e_body
+          }
+        };
+        ?rest..
+      |}] -> Some (t1, e_start, e_end, [e_body], rest)
+
+      | [%cremepat {|
+        let iter =
+          core::iter::traits::collect::?::into_iter
+            <core::ops::range::Range<?>, ?..>
+            ({ start: ?e_start, end: ?e_end });
+        while true {
+          match (core::iter::range::?::next<?t1>(&iter)) {
+            None -> break,
+            Some ? -> ?e_body
+          };
+          ?loop_rest..
+        };
+        ?rest..
+      |}] -> Some (t1, e_start, e_end, e_body :: loop_rest, rest)
+
+      | _ -> None
+    in
+
+    match step_by with
+    | Some (t1, e_start, e_end, e_increment, e_body, rest) -> 
+      let w = match t1 with TInt w -> w | _ -> assert false in
+      with_type e.typ @@
+        ESequence (
+          with_type TUnit (EFor (
+            fresh_binder ~mut:true "i" t1,
+            e_start,
+            mk_lt w (Krml.DeBruijn.lift 1 e_end),
+            (* XXX seems like the increment is always size_t here ?! *)
+            mk_incr_e w (with_type t1 (ECast (e_increment, t1))),
+            with_type TUnit (ESequence (
+              List.map (self#visit_expr env) e_body
+            ))
+          )) :: List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest
+      )
+    | None -> begin match range_iter with
+      | Some (t1, e_start, e_end, e_body, rest) -> 
+        let w = match t1 with TInt w -> w | _ -> assert false in
+        with_type e.typ @@ ESequence (
+          with_type TUnit (EFor (
+            fresh_binder ~mut:true "i" t1,
+            e_start,
+            mk_lt w (Krml.DeBruijn.lift 1 e_end),
+            mk_incr w,
+            with_type TUnit (ESequence (
+              List.map (self#visit_expr env) e_body
+            ))
+          )) :: List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest
+        )
+      | None -> super#visit_expr env e
+    end
+
 end
 [@ocamlformat "disable"]
 

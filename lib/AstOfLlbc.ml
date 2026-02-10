@@ -442,6 +442,7 @@ let lookup_with_original_type env v1 =
 let lookup env v1 =
   let i, (_, t) = findi (fun (v2, _) -> is_var v2 v1) env.binders in
   i, t
+
 let lookup_cg_in_expressions (env : env) (v1 : C.const_generic_var_id) =
   let i, (_, t) = findi (fun (v2, _) -> v2 = ConstGenericVar v1) env.binders in
   i, t

@@ -21,7 +21,7 @@ let remove_array_eq =
           assert (t = u);
           if is_flat t then
             let diff = n_binders - n_cgs in
-(*
+            (*
             let pattern_array_eq =
               Str.regexp {|\{core::cmp::PartialEq::<@Array<.*, .*>, @Array<.*, .*>>\}|}
             in
