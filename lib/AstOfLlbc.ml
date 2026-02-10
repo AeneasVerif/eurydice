@@ -242,6 +242,7 @@ module RustNames = struct
     parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", builtin_of_function Builtin.(array_to_subslice_from_func_mut || array_to_subslice_from_func_shared);
     parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_from_func_mut;
 
+    (*
     (* arrays: mono *)
     parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I>}::index<'_, @, core::ops::range::Range<usize>, @>", Builtin.array_to_subslice_mono;
     parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut<'_, @, core::ops::range::Range<usize>, @>", Builtin.array_to_subslice_mono;
@@ -249,6 +250,7 @@ module RustNames = struct
     parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, @>", Builtin.array_to_subslice_to_mono;
     parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I>}::index<'_, @, core::ops::range::RangeFrom<usize>, @>", Builtin.array_to_subslice_from_mono;
     parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, @>", Builtin.array_to_subslice_from_mono;
+    *)
 
     (* slices <-> arrays *)
 
@@ -1588,10 +1590,9 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result * C.tr
         let decl = env.get_nth_function fun_id in
         let lid = lid_of_name env decl.C.item_meta.name in
         L.log "Calls" "%s--> name: %a" depth plid lid;
-        let trait_refs = trait_refs_c_name item_meta.name in
+        let trait_refs = trait_refs_c_name decl.C.item_meta.name in
         K.EQualified lid, lookup_signature env depth (C.bound_fun_sig_of_decl decl), trait_refs
       in
-
       match f.kind with
       | FunId (FRegular f) -> lookup_result_of_fun_id f
       | FunId (FBuiltin f) -> fail "unknown builtin function: %s" (C.show_builtin_fun_id f)
@@ -1762,7 +1763,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                 trait_impl.methods
             @ build_trait_ref_mapping ("  " ^ depth)
                 (let subst =
-                   Charon.Substitute.make_subst_from_generics trait_impl.generics _generics
+                   Charon.Substitute.make_subst_from_generics trait_impl.generics _generics Self
                  in
                  (*_generics.trait_refs*)
                  List.map
