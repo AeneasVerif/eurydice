@@ -38,29 +38,53 @@ typedef struct Eurydice_arr_0d_s { uint32_t data[4U]; } Eurydice_arr_0d;
 
 /**
 A monomorphic instance of castunsize.S
-with types Eurydice_arr uint32_t[[$4size_t]]
+with types Eurydice_arr_0d
 
 */
-typedef struct castunsize_S_64_s
+typedef struct castunsize_S_f9_s
 {
   uint32_t foo;
   Eurydice_arr_0d my_data;
 }
-castunsize_S_64;
+castunsize_S_f9;
 
 /**
-A monomorphic instance of Eurydice.dst
-with types castunsize_S Eurydice_derefed_slice uint32_t
+A monomorphic instance of Eurydice.dst_ref_shared
+with types castunsize_T, size_t
 
 */
-typedef struct Eurydice_dst_da_s
+typedef struct Eurydice_dst_ref_shared_88_s
 {
-  castunsize_T *ptr;
-  size_t len;
+  const castunsize_T *ptr;
+  size_t meta;
 }
-Eurydice_dst_da;
+Eurydice_dst_ref_shared_88;
+
+/**
+A monomorphic instance of Eurydice.dst_ref_shared
+with types uint32_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_shared_3c_s
+{
+  const uint32_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_shared_3c;
 
 void castunsize_main1(void);
+
+/**
+A monomorphic instance of Eurydice.dst_ref_mut
+with types uint32_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_mut_3c_s
+{
+  uint32_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_mut_3c;
 
 void castunsize_main3(void);
 
@@ -74,15 +98,15 @@ typedef struct Eurydice_arr_88_s { uint32_t data[5U]; } Eurydice_arr_88;
 
 /**
 A monomorphic instance of castunsize.S
-with types Eurydice_arr uint32_t[[$5size_t]]
+with types Eurydice_arr_88
 
 */
-typedef struct castunsize_S_dd_s
+typedef struct castunsize_S_bc_s
 {
   uint32_t foo;
   Eurydice_arr_88 my_data;
 }
-castunsize_S_dd;
+castunsize_S_bc;
 
 /**
 A monomorphic instance of castunsize.main2

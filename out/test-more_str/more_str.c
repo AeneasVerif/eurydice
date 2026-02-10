@@ -7,29 +7,27 @@
 
 #include "more_str.h"
 
-#include "Eurydice.h"
-
-void more_str_use_str(Eurydice_str s)
+void more_str_use_str(Eurydice_dst_ref_shared_65 s)
 {
   EURYDICE_ASSERT(core_str__str__len(s) > (size_t)2U, "panic!");
 }
 
 void more_str_main(void)
 {
-  Eurydice_str eng = { .data = "Hello, world!", .len = (size_t)13U };
-  Eurydice_str
-  chn = { .data = "\\u{4f60}\\u{597d}\\u{ff0c}\\u{4e16}\\u{754c}\\u{ff01}", .len = (size_t)18U };
-  Eurydice_str
+  Eurydice_dst_ref_shared_65 eng = { .ptr = "Hello, world!", .meta = (size_t)13U };
+  Eurydice_dst_ref_shared_65
+  chn = { .ptr = "\\u{4f60}\\u{597d}\\u{ff0c}\\u{4e16}\\u{754c}\\u{ff01}", .meta = (size_t)18U };
+  Eurydice_dst_ref_shared_65
   jpn =
     {
-      .data = "\\u{3053}\\u{3093}\\u{306b}\\u{3061}\\u{306f}\\u{4e16}\\u{754c}\\u{ff01}",
-      .len = (size_t)24U
+      .ptr = "\\u{3053}\\u{3093}\\u{306b}\\u{3061}\\u{306f}\\u{4e16}\\u{754c}\\u{ff01}",
+      .meta = (size_t)24U
     };
-  Eurydice_str
+  Eurydice_dst_ref_shared_65
   mix =
     {
-      .data = "Hello, \\u{4f60}\\u{597d}\\u{ff0c}\\u{3053}\\u{3093}\\u{306b}\\u{3061}\\u{306f}\\u{4e16}\\u{754c}\\u{ff01}123Hi",
-      .len = (size_t)45U
+      .ptr = "Hello, \\u{4f60}\\u{597d}\\u{ff0c}\\u{3053}\\u{3093}\\u{306b}\\u{3061}\\u{306f}\\u{4e16}\\u{754c}\\u{ff01}123Hi",
+      .meta = (size_t)45U
     };
   more_str_use_str(eng);
   more_str_use_str(chn);

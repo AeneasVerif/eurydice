@@ -7,47 +7,48 @@
 
 #include "castunsize.h"
 
-typedef struct _uint32_t__x2_s
+typedef struct const_uint32_t__x2_s
 {
-  uint32_t *fst;
-  uint32_t *snd;
+  const uint32_t *fst;
+  const uint32_t *snd;
 }
-_uint32_t__x2;
+const_uint32_t__x2;
 
 void castunsize_main1(void)
 {
-  castunsize_S_64 x = { .foo = 0U, .my_data = { .data = { 0U } } };
-  Eurydice_dst_da x0 = { .ptr = (castunsize_T *)&x, .len = (size_t)4U };
+  castunsize_S_f9 x = { .foo = 0U, .my_data = { .data = { 0U } } };
+  Eurydice_dst_ref_shared_88 x0 = { .ptr = (const castunsize_T *)&x, .meta = (size_t)4U };
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
-  _uint32_t__x2
-  uu____0 =
-    {
-      .fst = &Eurydice_slice_index(Eurydice_slice_of_dst(&x0.ptr->my_data,
-          x0.len,
-          uint32_t,
-          Eurydice_slice),
-        (size_t)3U,
-        uint32_t,
-        uint32_t *),
-      .snd = &lvalue
-    };
+  const_uint32_t__x2
+  uu____0 = { .fst = &((const uint32_t *)x0.ptr->my_data)[3U], .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_mut
+with types uint32_t
+with const generics
+- N= 4
+*/
+static Eurydice_dst_ref_mut_3c array_to_slice_mut_ad(Eurydice_arr_0d *a)
+{
+  Eurydice_dst_ref_mut_3c lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)4U;
+  return lit;
 }
 
 void castunsize_main3(void)
 {
-  Eurydice_slice
+  Eurydice_dst_ref_mut_3c
   x =
-    Eurydice_array_to_slice((size_t)4U,
-      Eurydice_box_new((KRML_CLITERAL(Eurydice_arr_0d){ .data = { 0U } }),
+    array_to_slice_mut_ad(Eurydice_box_new((KRML_CLITERAL(Eurydice_arr_0d){ .data = { 0U } }),
         Eurydice_arr_0d,
-        Eurydice_arr_0d *),
-      uint32_t);
+        Eurydice_arr_0d *));
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
-  _uint32_t__x2
-  uu____0 = { .fst = &Eurydice_slice_index(x, (size_t)3U, uint32_t, uint32_t *), .snd = &lvalue };
+  const_uint32_t__x2 uu____0 = { .fst = &x.ptr[3U], .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
@@ -58,23 +59,27 @@ with const generics
 */
 void castunsize_main2_c9(void)
 {
-  castunsize_S_dd x = { .foo = 0U, .my_data = { .data = { 0U } } };
-  Eurydice_dst_da x0 = { .ptr = (castunsize_T *)&x, .len = (size_t)5U };
+  castunsize_S_bc x = { .foo = 0U, .my_data = { .data = { 0U } } };
+  Eurydice_dst_ref_shared_88 x0 = { .ptr = (const castunsize_T *)&x, .meta = (size_t)5U };
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
-  _uint32_t__x2
-  uu____0 =
-    {
-      .fst = &Eurydice_slice_index(Eurydice_slice_of_dst(&x0.ptr->my_data,
-          x0.len,
-          uint32_t,
-          Eurydice_slice),
-        (size_t)3U,
-        uint32_t,
-        uint32_t *),
-      .snd = &lvalue
-    };
+  const_uint32_t__x2
+  uu____0 = { .fst = &((const uint32_t *)x0.ptr->my_data)[3U], .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_mut
+with types uint32_t
+with const generics
+- N= 5
+*/
+static Eurydice_dst_ref_mut_3c array_to_slice_mut_ff(Eurydice_arr_88 *a)
+{
+  Eurydice_dst_ref_mut_3c lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)5U;
+  return lit;
 }
 
 /**
@@ -84,17 +89,14 @@ with const generics
 */
 void castunsize_main4_c9(void)
 {
-  Eurydice_slice
+  Eurydice_dst_ref_mut_3c
   x =
-    Eurydice_array_to_slice((size_t)5U,
-      Eurydice_box_new((KRML_CLITERAL(Eurydice_arr_88){ .data = { 0U } }),
+    array_to_slice_mut_ff(Eurydice_box_new((KRML_CLITERAL(Eurydice_arr_88){ .data = { 0U } }),
         Eurydice_arr_88,
-        Eurydice_arr_88 *),
-      uint32_t);
+        Eurydice_arr_88 *));
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
-  _uint32_t__x2
-  uu____0 = { .fst = &Eurydice_slice_index(x, (size_t)3U, uint32_t, uint32_t *), .snd = &lvalue };
+  const_uint32_t__x2 uu____0 = { .fst = &x.ptr[3U], .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 

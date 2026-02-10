@@ -26,19 +26,30 @@ with const generics
 typedef struct Eurydice_arr_05_s { __m256i data[25U]; } Eurydice_arr_05;
 
 /**
+A monomorphic instance of libcrux_sha3.generic_keccak.KeccakState
+with types core_core_arch_x86___m256i
+with const generics
+- $4size_t
+*/
+typedef Eurydice_arr_05 libcrux_sha3_generic_keccak_KeccakState_55;
+
+/**
  Perform 4 SHAKE256 operations in parallel
 */
 void
 libcrux_sha3_avx2_x4_shake256(
-  Eurydice_slice input0,
-  Eurydice_slice input1,
-  Eurydice_slice input2,
-  Eurydice_slice input3,
-  Eurydice_slice out0,
-  Eurydice_slice out1,
-  Eurydice_slice out2,
-  Eurydice_slice out3
+  Eurydice_borrow_slice_u8 input0,
+  Eurydice_borrow_slice_u8 input1,
+  Eurydice_borrow_slice_u8 input2,
+  Eurydice_borrow_slice_u8 input3,
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
 );
+
+typedef libcrux_sha3_generic_keccak_KeccakState_55
+libcrux_sha3_avx2_x4_incremental_KeccakState;
 
 /**
  Initialise the [`KeccakState`].
@@ -51,10 +62,10 @@ Eurydice_arr_05 libcrux_sha3_avx2_x4_incremental_init(void);
 void
 libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
   Eurydice_arr_05 *s,
-  Eurydice_slice data0,
-  Eurydice_slice data1,
-  Eurydice_slice data2,
-  Eurydice_slice data3
+  Eurydice_borrow_slice_u8 data0,
+  Eurydice_borrow_slice_u8 data1,
+  Eurydice_borrow_slice_u8 data2,
+  Eurydice_borrow_slice_u8 data3
 );
 
 /**
@@ -63,10 +74,10 @@ libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
 void
 libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
   Eurydice_arr_05 *s,
-  Eurydice_slice out0,
-  Eurydice_slice out1,
-  Eurydice_slice out2,
-  Eurydice_slice out3
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
 );
 
 /**
@@ -75,10 +86,10 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
 void
 libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
   Eurydice_arr_05 *s,
-  Eurydice_slice out0,
-  Eurydice_slice out1,
-  Eurydice_slice out2,
-  Eurydice_slice out3
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
 );
 
 /**
@@ -87,10 +98,10 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
 void
 libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_five_blocks(
   Eurydice_arr_05 *s,
-  Eurydice_slice out0,
-  Eurydice_slice out1,
-  Eurydice_slice out2,
-  Eurydice_slice out3
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
 );
 
 /**
@@ -99,10 +110,10 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_five_blocks(
 void
 libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
   Eurydice_arr_05 *s,
-  Eurydice_slice data0,
-  Eurydice_slice data1,
-  Eurydice_slice data2,
-  Eurydice_slice data3
+  Eurydice_borrow_slice_u8 data0,
+  Eurydice_borrow_slice_u8 data1,
+  Eurydice_borrow_slice_u8 data2,
+  Eurydice_borrow_slice_u8 data3
 );
 
 /**
@@ -111,10 +122,10 @@ libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
 void
 libcrux_sha3_avx2_x4_incremental_shake256_squeeze_first_block(
   Eurydice_arr_05 *s,
-  Eurydice_slice out0,
-  Eurydice_slice out1,
-  Eurydice_slice out2,
-  Eurydice_slice out3
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
 );
 
 /**
@@ -123,10 +134,10 @@ libcrux_sha3_avx2_x4_incremental_shake256_squeeze_first_block(
 void
 libcrux_sha3_avx2_x4_incremental_shake256_squeeze_next_block(
   Eurydice_arr_05 *s,
-  Eurydice_slice out0,
-  Eurydice_slice out1,
-  Eurydice_slice out2,
-  Eurydice_slice out3
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
 );
 
 #if defined(__cplusplus)

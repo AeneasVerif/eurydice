@@ -14,4 +14,3 @@ core_cmp_impls__core__cmp__PartialEq________partial_eq__Enum________partial_eq__
   partial_eq_Enum **x1
 ) {
   return partial_eq_eq_aa(*x0, *x1);
-}

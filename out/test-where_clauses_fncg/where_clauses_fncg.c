@@ -16,7 +16,7 @@ with const generics
 - K= 8
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_16_7b(Eurydice_arr_cb x, Eurydice_arr_1c _)
+uint64_t where_clauses_fncg_bar_16_7b(Eurydice_arr_8b x, Eurydice_arr_5a _)
 {
   return (uint64_t)x.data->data[0U];
 }
@@ -33,7 +33,7 @@ uint64_t where_clauses_fncg_f_43(void)
 {
   return
     where_clauses_fncg_bar_16_7b((
-        KRML_CLITERAL(Eurydice_arr_cb){
+        KRML_CLITERAL(Eurydice_arr_8b){
           .data = {
             { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } },
             { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }
@@ -41,7 +41,7 @@ uint64_t where_clauses_fncg_f_43(void)
         }
       ),
       (
-        KRML_CLITERAL(Eurydice_arr_1c){
+        KRML_CLITERAL(Eurydice_arr_5a){
           .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } }
         }
       ));
@@ -56,7 +56,7 @@ with const generics
 - K= 12
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_16_fa(Eurydice_arr_91 x, Eurydice_arr_b1 _)
+uint64_t where_clauses_fncg_bar_16_fa(Eurydice_arr_fb x, Eurydice_arr_c5 _)
 {
   return (uint64_t)x.data->data[0U];
 }
@@ -74,7 +74,7 @@ uint64_t where_clauses_fncg_method_foo_db_7c(void)
 {
   return
     where_clauses_fncg_bar_16_fa((
-        KRML_CLITERAL(Eurydice_arr_91){
+        KRML_CLITERAL(Eurydice_arr_fb){
           .data = {
             { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } },
             { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } },
@@ -83,7 +83,7 @@ uint64_t where_clauses_fncg_method_foo_db_7c(void)
         }
       ),
       (
-        KRML_CLITERAL(Eurydice_arr_b1){
+        KRML_CLITERAL(Eurydice_arr_c5){
           .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } }
         }
       ));
@@ -100,24 +100,24 @@ uint64_t where_clauses_fncg_g_ec(void)
   return where_clauses_fncg_method_foo_db_7c();
 }
 
-typedef struct _uint64_t__x2_s
+typedef struct const_uint64_t__x2_s
 {
-  uint64_t *fst;
-  uint64_t *snd;
+  const uint64_t *fst;
+  const uint64_t *snd;
 }
-_uint64_t__x2;
+const_uint64_t__x2;
 
 void where_clauses_fncg_main(void)
 {
   uint64_t r = where_clauses_fncg_f_43();
   /* original Rust expression is not an lvalue in C */
   uint64_t lvalue0 = 0ULL;
-  _uint64_t__x2 uu____0 = { .fst = &r, .snd = &lvalue0 };
+  const_uint64_t__x2 uu____0 = { .fst = &r, .snd = &lvalue0 };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
   uint64_t r0 = where_clauses_fncg_g_ec();
   /* original Rust expression is not an lvalue in C */
   uint64_t lvalue = 0ULL;
-  _uint64_t__x2 uu____1 = { .fst = &r0, .snd = &lvalue };
+  const_uint64_t__x2 uu____1 = { .fst = &r0, .snd = &lvalue };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 

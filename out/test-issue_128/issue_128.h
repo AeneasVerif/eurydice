@@ -20,11 +20,11 @@ extern "C" {
 
 typedef uint8_t issue_128_E;
 
-void issue_128_fun_a(Eurydice_slice _x);
+void issue_128_fun_a(Eurydice_borrow_slice_u8 _x);
 
-void issue_128_fun_b(Eurydice_slice _x);
+void issue_128_fun_b(Eurydice_borrow_slice_u8 _x);
 
-void issue_128_use_enum(issue_128_E e, Eurydice_slice x);
+void issue_128_use_enum(issue_128_E e, Eurydice_borrow_slice_u8 x);
 
 /**
 A monomorphic instance of Eurydice.arr

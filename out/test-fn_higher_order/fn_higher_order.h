@@ -15,11 +15,17 @@
 extern "C" {
 #endif
 
+<<<<<<< HEAD
 #include "Eurydice.h"
 
 extern int32_t core_clone_impls__core__clone__Clone___i32___clone(int32_t *x0);
 
 extern size_t core_clone_impls__core__clone__Clone___usize___clone(size_t *x0);
+=======
+extern int32_t core_clone_impls__core__clone__Clone_for_i32__clone(const int32_t *x0);
+
+extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t *x0);
+>>>>>>> main
 
 #define core_cmp_Ordering_Less -1
 #define core_cmp_Ordering_Equal 0
@@ -27,7 +33,12 @@ extern size_t core_clone_impls__core__clone__Clone___usize___clone(size_t *x0);
 
 typedef int8_t core_cmp_Ordering;
 
+<<<<<<< HEAD
 extern bool core_cmp_impls__core__cmp__PartialEq___usize__usize___eq(size_t *x0, size_t *x1);
+=======
+extern bool
+core_cmp_impls__core__cmp__PartialEq_usize__for_usize__eq(const size_t *x0, const size_t *x1);
+>>>>>>> main
 
 #define core_option_Option_None 0
 #define core_option_Option_Some 1
@@ -41,8 +52,16 @@ typedef struct core_option_Option__core__cmp__Ordering__s
 }
 core_option_Option__core__cmp__Ordering_;
 
+<<<<<<< HEAD
 extern core_option_Option__core__cmp__Ordering_
 core_cmp_impls__core__cmp__PartialOrd___usize__usize___partial_cmp(size_t *x0, size_t *x1);
+=======
+extern core_option_Option_77
+core_cmp_impls__core__cmp__PartialOrd_usize__for_usize__partial_cmp(
+  const size_t *x0,
+  const size_t *x1
+);
+>>>>>>> main
 
 typedef struct core_option_Option__usize__s
 {
@@ -59,18 +78,35 @@ core_iter_range__core__iter__range__Step___usize___forward_checked(size_t x0, si
 
 /**
 A monomorphic instance of K.
+<<<<<<< HEAD
 with types size_t, core_option_Option_<usize>
 
 */
 typedef struct tuple_f6_s
+=======
+with types size_t, core_option_Option_08
+
+*/
+typedef struct tuple_d1_s
+>>>>>>> main
 {
   size_t fst;
   core_option_Option__usize_ snd;
 }
+<<<<<<< HEAD
 tuple_f6;
 
 extern tuple_f6
 core_iter_range__core__iter__range__Step___usize___steps_between(size_t *x0, size_t *x1);
+=======
+tuple_d1;
+
+extern tuple_d1
+core_iter_range__core__iter__range__Step_for_usize__steps_between(
+  const size_t *x0,
+  const size_t *x1
+);
+>>>>>>> main
 
 extern core_option_Option__usize_
 core_iter_range__core__iter__traits__iterator__Iterator___core__ops__range__Range___usize____next__usize_(
@@ -97,7 +133,7 @@ with const generics
 */
 typedef struct Eurydice_arr_8d_s { int32_t data[3U]; } Eurydice_arr_8d;
 
-int32_t fn_higher_order_more_sum_lst(Eurydice_arr_8d *l);
+int32_t fn_higher_order_more_sum_lst(const Eurydice_arr_8d *l);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -114,10 +150,14 @@ fn_higher_order_compose_cg_apply__usize__usize__usize__5usize_(
   size_t (*f)(size_t *x0),
 =======
 fn_higher_order_compose_cg_apply_fd(
+<<<<<<< HEAD
   size_t (*f)(Eurydice_arr_99 *x0),
 >>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
+=======
+  size_t (*f)(const Eurydice_arr_99 *x0),
+>>>>>>> main
   size_t (*g)(size_t x0),
-  Eurydice_arr_99 *arg
+  const Eurydice_arr_99 *arg
 );
 
 <<<<<<< HEAD
@@ -128,8 +168,12 @@ A monomorphic instance of fn_higher_order.sum_lst
 with const generics
 - N= 5
 */
+<<<<<<< HEAD
 size_t fn_higher_order_sum_lst_c9(Eurydice_arr_99 *lst);
 >>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
+=======
+size_t fn_higher_order_sum_lst_c9(const Eurydice_arr_99 *lst);
+>>>>>>> main
 
 int32_t fn_higher_order_id__i32_(int32_t r);
 
@@ -139,10 +183,14 @@ fn_higher_order_compose_cg_apply__i32__i32__i32__3usize_(
   int32_t (*f)(int32_t *x0),
 =======
 fn_higher_order_compose_cg_apply_82(
+<<<<<<< HEAD
   int32_t (*f)(Eurydice_arr_8d *x0),
 >>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
+=======
+  int32_t (*f)(const Eurydice_arr_8d *x0),
+>>>>>>> main
   int32_t (*g)(int32_t x0),
-  Eurydice_arr_8d *arg
+  const Eurydice_arr_8d *arg
 );
 
 void fn_higher_order_use_compose_cg(void);

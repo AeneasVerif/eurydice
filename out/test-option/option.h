@@ -26,21 +26,21 @@ typedef struct Eurydice_arr_88_s { uint8_t data[16U]; } Eurydice_arr_88;
 #define core_option_None 0
 #define core_option_Some 1
 
-typedef uint8_t core_option_Option_62_tags;
+typedef uint8_t core_option_Option_bc_tags;
 
 /**
 A monomorphic instance of core.option.Option
-with types Eurydice_arr uint8_t[[$16size_t]]
+with types Eurydice_arr_88
 
 */
-typedef struct core_option_Option_62_s
+typedef struct core_option_Option_bc_s
 {
-  core_option_Option_62_tags tag;
+  core_option_Option_bc_tags tag;
   Eurydice_arr_88 f0;
 }
-core_option_Option_62;
+core_option_Option_bc;
 
-typedef core_option_Option_62 option_S;
+typedef core_option_Option_bc option_S;
 
 typedef Eurydice_arr_88 option_Val;
 
@@ -48,15 +48,15 @@ void option_main(void);
 
 /**
 A monomorphic instance of core.option.Option
-with types  Eurydice_arr uint8_t[[$16size_t]]*
+with types const Eurydice_arr_88*
 
 */
-typedef struct core_option_Option_18_s
+typedef struct core_option_Option_e3_s
 {
-  core_option_Option_62_tags tag;
-  Eurydice_arr_88 *f0;
+  core_option_Option_bc_tags tag;
+  const Eurydice_arr_88 *f0;
 }
-core_option_Option_18;
+core_option_Option_e3;
 
 /**
  Converts from `&Option<T>` to `Option<&T>`.
@@ -88,12 +88,12 @@ A monomorphic instance of core.option.as_ref_cd
 with types Eurydice_arr uint8_t[[$16size_t]]
 
 */
-core_option_Option_18 core_option_as_ref_cd_ca(core_option_Option_62 *self);
+core_option_Option_e3 core_option_as_ref_cd_ca(const core_option_Option_bc *self);
 
 /**
 This function found in impl {option::S}
 */
-core_option_Option_18 option_option_ref_b6(core_option_Option_62 *self);
+core_option_Option_e3 option_option_ref_b6(const core_option_Option_bc *self);
 
 #if defined(__cplusplus)
 }

@@ -31,8 +31,8 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024PublicKeyUnpacked;
 */
 Eurydice_arr_60
 libcrux_ml_kem_mlkem1024_avx2_unpacked_decapsulate(
-  libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *private_key,
-  Eurydice_arr_00 *ciphertext
+  const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *private_key,
+  const Eurydice_arr_00 *ciphertext
 );
 
 /**
@@ -44,9 +44,9 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_decapsulate(
  TODO: The F* prefix opens required modules, it should go away when the following issue is resolved:
  <https://github.com/hacspec/hax/issues/770>
 */
-tuple_2b
+tuple_4d
 libcrux_ml_kem_mlkem1024_avx2_unpacked_encapsulate(
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_39 *public_key,
+  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_39 *public_key,
   Eurydice_arr_60 randomness
 );
 
@@ -55,7 +55,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_encapsulate(
 */
 void
 libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair_mut(
-  libcrux_sha3_Sha3_512Digest randomness,
+  Eurydice_arr_060 randomness,
   libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
 );
 
@@ -63,9 +63,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair_mut(
  Generate ML-KEM 1024 Key Pair in "unpacked" form.
 */
 libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked
-libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair(
-  libcrux_sha3_Sha3_512Digest randomness
-);
+libcrux_ml_kem_mlkem1024_avx2_unpacked_generate_key_pair(Eurydice_arr_060 randomness);
 
 /**
  Create a new, empty unpacked key.
@@ -84,7 +82,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_init_public_key(void);
 */
 void
 libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_from_private_mut(
-  Eurydice_arr_17 *private_key,
+  const Eurydice_arr_17 *private_key,
   libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
 );
 
@@ -93,7 +91,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_from_private_mut(
 */
 Eurydice_arr_17
 libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_private_key(
-  libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
+  const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
 );
 
 /**
@@ -101,7 +99,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_private_key(
 */
 void
 libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_private_key_mut(
-  libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair,
+  const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair,
   Eurydice_arr_17 *serialized
 );
 
@@ -110,7 +108,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_private_key_mut(
 */
 Eurydice_arr_00
 libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_public_key(
-  libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
+  const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair
 );
 
 /**
@@ -118,7 +116,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_public_key(
 */
 void
 libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_public_key_mut(
-  libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair,
+  const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *key_pair,
   Eurydice_arr_00 *serialized
 );
 
@@ -127,7 +125,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_key_pair_serialized_public_key_mut(
 */
 void
 libcrux_ml_kem_mlkem1024_avx2_unpacked_serialized_public_key(
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_39 *public_key,
+  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_39 *public_key,
   Eurydice_arr_00 *serialized
 );
 
@@ -136,7 +134,7 @@ libcrux_ml_kem_mlkem1024_avx2_unpacked_serialized_public_key(
 */
 void
 libcrux_ml_kem_mlkem1024_avx2_unpacked_unpacked_public_key(
-  Eurydice_arr_00 *public_key,
+  const Eurydice_arr_00 *public_key,
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_39 *unpacked_public_key
 );
 

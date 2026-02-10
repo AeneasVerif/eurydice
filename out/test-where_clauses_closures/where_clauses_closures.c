@@ -35,19 +35,19 @@ size_t_x2 where_clauses_closures_test__usize__1usize_(void)
 >>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 }
 
-typedef struct _size_t__x2_s
+typedef struct const_size_t__x2_s
 {
-  size_t *fst;
-  size_t *snd;
+  const size_t *fst;
+  const size_t *snd;
 }
-_size_t__x2;
+const_size_t__x2;
 
 void where_clauses_closures_main(void)
 {
   size_t_x2 uu____0 = where_clauses_closures_test__usize__1usize_();
   size_t x = uu____0.fst;
   size_t y = uu____0.snd;
-  _size_t__x2 uu____1 = { .fst = &x, .snd = &y };
+  const_size_t__x2 uu____1 = { .fst = &x, .snd = &y };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 

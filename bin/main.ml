@@ -13,7 +13,9 @@ Supported options:|}
   in
   let module O = Eurydice.Options in
   let debug s =
-    Krml.Options.debug_modules := Krml.KString.split_on_char ',' s @ !Krml.Options.debug_modules
+    Krml.Options.debug_modules := Krml.KString.split_on_char ',' s @ !Krml.Options.debug_modules;
+    if List.mem "backtrace" !Krml.Options.debug_modules then
+      Krml.Options.backtrace := true
   in
   let funroll_loops = ref 16 in
   let spec =
@@ -28,6 +30,7 @@ Supported options:|}
       ( "--keep-going",
         Arg.Set O.keep_going,
         " keep going even though extracting some definitions might fail" );
+      "--no-const", Arg.Set O.no_const, " do not introduce the const keyword for pointers";
       "-fcomments", Arg.Set O.comments, " keep inline comments";
       "-funroll-loops", Arg.Set_int funroll_loops, " unrool loops up to N";
       ( "-fc++17-compat",
@@ -95,23 +98,14 @@ Supported options:|}
         ];
       Warn.parse_warn_error (!warn_error ^ "+8"));
     Monomorphization.NameGen.short_names := true;
+    Monomorphization.NameGen.distinguished := Eurydice.Cleanup3.distinguished_names;
     AstToCStar.no_return_type_lids :=
       [
-        [ "Eurydice" ], "slice_index";
-        [ "Eurydice" ], "slice_subslice";
-        [ "Eurydice" ], "slice_subslice3";
-        [ "Eurydice" ], "slice_subslice_to";
-        [ "Eurydice" ], "slice_subslice_from";
-        [ "Eurydice" ], "array_to_slice";
-        [ "Eurydice" ], "array_to_subslice";
-        [ "Eurydice" ], "array_to_subslice3";
-        [ "Eurydice" ], "array_to_subslice_to";
-        [ "Eurydice" ], "array_to_subslice_from";
-        [ "Eurydice" ], "array_repeat";
+        [ "Eurydice" ], "slice_index_shared";
+        [ "Eurydice" ], "slice_index_mut";
         [ "Eurydice" ], "slice_len";
         [ "Eurydice" ], "slice_copy";
         [ "Eurydice" ], "array_eq";
-        [ "Eurydice" ], "slice_to_array2";
       ]);
 
   (* Some logic for more precisely tracking readonly functions, so as to remove
@@ -140,18 +134,21 @@ Supported options:|}
            | "libcrux_intrinsics" :: _, _ -> ret_t <> TUnit
            | [ "Eurydice" ], "vec_len"
            | [ "Eurydice" ], "vec_index"
-           | [ "Eurydice" ], "slice_index"
+           | [ "Eurydice" ], "slice_index_shared"
+           | [ "Eurydice" ], "slice_index_mut"
            | [ "Eurydice" ], "slice_len"
            | [ "Eurydice" ], "slice_to_ref_array"
-           | [ "Eurydice" ], "slice_subslice"
-           | [ "Eurydice" ], "slice_subslice2"
-           | [ "Eurydice" ], "slice_subslice3"
-           | [ "Eurydice" ], "slice_subslice_from"
-           | [ "Eurydice" ], "slice_of_dst"
-           | [ "Eurydice" ], "array_to_slice"
-           | [ "Eurydice" ], "array_to_subslice"
-           | [ "Eurydice" ], "array_to_subslice2"
-           | [ "Eurydice" ], "array_to_subslice3"
+           | [ "Eurydice" ], "slice_to_ref_array2"
+           | [ "Eurydice" ], "slice_subslice_shared"
+           | [ "Eurydice" ], "slice_subslice_mut"
+           | [ "Eurydice" ], "slice_subslice_to_shared"
+           | [ "Eurydice" ], "slice_subslice_to_mut"
+           | [ "Eurydice" ], "slice_subslice_from_shared"
+           | [ "Eurydice" ], "slice_subslice_from_mut"
+           | [ "Eurydice" ], "array_to_slice_shared"
+           | [ "Eurydice" ], "array_to_slice_mut"
+           | [ "Eurydice" ], "array_to_subslice_shared"
+           | [ "Eurydice" ], "array_to_subslice_mut"
            | [ "Eurydice" ], "array_repeat"
            | [ "core"; "mem" ], "size_of"
            | "core" :: "slice" :: _, "as_mut_ptr"
@@ -179,6 +176,8 @@ Supported options:|}
       ]
   in
 
+  if !O.no_const then
+    Printf.printf "⚠️  Not using 'const' for pointer types\n";
   Printf.printf "1️⃣ LLBC ➡️  AST\n";
   Eurydice.Logging.log "Phase0" "%a" pfiles files;
   let files = Eurydice.PreCleanup.precleanup files in
@@ -214,6 +213,7 @@ Supported options:|}
     fail __FILE__ __LINE__;
 
   Printf.printf "3️⃣ Monomorphization, datatypes\n";
+  let files = Eurydice.Cleanup2.cosmetic#visit_files () files in
   let files = Eurydice.Cleanup2.resugar_loops#visit_files () files in
   let files = Eurydice.Cleanup1.remove_terminal_returns#visit_files true files in
   let files = Eurydice.Cleanup1.remove_terminal_continues#visit_files false files in
@@ -222,6 +222,7 @@ Supported options:|}
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
     fail __FILE__ __LINE__;
+  Eurydice.Logging.log "Phase2.11" "%a" pfiles files;
   let files = Eurydice.Cleanup2.improve_names files in
   let files = Eurydice.Cleanup2.recognize_asserts#visit_files () files in
   (* Temporary workaround until Aeneas supports nested loops *)
@@ -270,7 +271,6 @@ Supported options:|}
   Eurydice.Logging.log "Phase2.25" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_array_repeats#visit_files false files in
   Eurydice.Logging.log "Phase2.26" "%a" pfiles files;
-  let files = Eurydice.Cleanup2.rewrite_slice_to_array#visit_files () files in
   let ((map, _, _) as map3), files = Krml.DataTypes.everything files in
   Eurydice.Cleanup2.fixup_monomorphization_map map;
   let files = Eurydice.Cleanup2.remove_discriminant_reads map3 files in
@@ -278,7 +278,6 @@ Supported options:|}
   let files = Eurydice.Cleanup2.remove_trivial_ite#visit_files () files in
   Eurydice.Logging.log "Phase2.4" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_into#visit_files () files in
-  let files = Krml.Structs.pass_by_ref files in
   Eurydice.Logging.log "Phase2.5" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_literals files in
   (* Eurydice does something more involved than krml and performs a conservative
@@ -319,6 +318,7 @@ Supported options:|}
   let files, macros = Eurydice.Cleanup2.build_macros files in
 
   Eurydice.Logging.log "Phase3" "%a" pfiles files;
+  (* debug "checker"; *)
   let errors, files = Krml.Checker.check_everything ~warn:true files in
   if errors then
     fail __FILE__ __LINE__;
@@ -326,7 +326,6 @@ Supported options:|}
   let scope_env = Krml.Simplify.allocate_c_env files in
   Eurydice.Cleanup3.(also_skip_prefix_for_external_types scope_env)#visit_files () files;
   let files = Eurydice.Cleanup3.decay_cg_externals#visit_files (scope_env, false) files in
-  let files = Eurydice.Cleanup3.add_extra_type_to_slice_index#visit_files () files in
   let files = Eurydice.Cleanup3.remove_builtin_decls files in
   Eurydice.Logging.log "Phase3.1" "%a" pfiles files;
   let c_name_map = Krml.GlobalNames.mapping (fst scope_env) in
@@ -401,11 +400,12 @@ Supported options:|}
   let files = AstToCStar.mk_files files c_name_map Idents.LidSet.empty macros in
 
   (* Uncomment to debug C* AST *)
-  (* List.iter (fun (f, p) -> *)
-  (*   print_endline f; *)
-  (*   print_endline (CStar.show_program p ); *)
-  (*   print_endline "" *)
-  (* ) files; *)
+  (* List.iter *)
+  (*   (fun (f, p) -> *)
+  (*     print_endline f; *)
+  (*     print_endline (CStar.show_program p); *)
+  (*     print_endline "") *)
+  (*   files; *)
   let headers = CStarToC11.mk_headers c_name_map files in
   let deps = CStarToC11.drop_empty_headers deps headers in
   let internal_headers =

@@ -8,6 +8,7 @@
 #include "nested_arrays.h"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "Eurydice.h"
 
 const uint32_t nested_arrays_ZERO[8U] = { 0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U };
@@ -15,19 +16,22 @@ const uint32_t nested_arrays_ZERO[8U] = { 0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U };
 =======
 >>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 typedef struct _uint32_t__x2_s
+=======
+typedef struct const_uint32_t__x2_s
+>>>>>>> main
 {
-  uint32_t *fst;
-  uint32_t *snd;
+  const uint32_t *fst;
+  const uint32_t *snd;
 }
-_uint32_t__x2;
+const_uint32_t__x2;
 
 void nested_arrays_main(void)
 {
-  Eurydice_arr_0c keys;
-  Eurydice_arr_99 repeat_expression0[3U];
+  Eurydice_arr_06 keys;
+  Eurydice_arr_3d repeat_expression0[3U];
   for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++)
   {
-    Eurydice_arr_99 lit;
+    Eurydice_arr_3d lit;
     nested_arrays_Key repeat_expression[3U];
     for (size_t i = (size_t)0U; i < (size_t)3U; i++)
     {
@@ -37,6 +41,7 @@ void nested_arrays_main(void)
     repeat_expression0[i0] = lit;
   }
 <<<<<<< HEAD
+<<<<<<< HEAD
   core_ops_range_Range__usize_
   iter0 =
     core_iter_traits_collect__core__iter__traits__collect__IntoIterator___core__ops__range__Range___usize____into_iter__core__ops__range__Range___usize__((
@@ -45,6 +50,9 @@ void nested_arrays_main(void)
   while (true)
 =======
   memcpy(keys.data, repeat_expression0, (size_t)3U * sizeof (Eurydice_arr_99));
+=======
+  memcpy(keys.data, repeat_expression0, (size_t)3U * sizeof (Eurydice_arr_3d));
+>>>>>>> main
   for (size_t i0 = (size_t)0U; i0 < (size_t)3U; i0++)
 >>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
   {
@@ -107,7 +115,7 @@ void nested_arrays_main(void)
         size_t k = i;
         uint32_t actual = keys.data[i1].data[j].data[k];
         uint32_t expected = (uint32_t)k;
-        _uint32_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
+        const_uint32_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
         EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 >>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
       }
@@ -115,12 +123,12 @@ void nested_arrays_main(void)
   }
 }
 
-Eurydice_arr_70 nested_arrays_test(void)
+Eurydice_arr_dd nested_arrays_test(void)
 {
   Eurydice_arr_88 out0 = { .data = { 0U } };
   Eurydice_arr_88 out1 = { .data = { 0U } };
   Eurydice_arr_88 out2 = { .data = { 0U } };
   Eurydice_arr_88 out3 = { .data = { 0U } };
-  return (KRML_CLITERAL(Eurydice_arr_70){ .data = { out0, out1, out2, out3 } });
+  return (KRML_CLITERAL(Eurydice_arr_dd){ .data = { out0, out1, out2, out3 } });
 }
 

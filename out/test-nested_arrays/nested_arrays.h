@@ -15,9 +15,13 @@
 extern "C" {
 #endif
 
+<<<<<<< HEAD
 #include "Eurydice.h"
 
 extern size_t core_clone_impls__core__clone__Clone___usize___clone(size_t *x0);
+=======
+extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t *x0);
+>>>>>>> main
 
 #define core_cmp_Ordering_Less -1
 #define core_cmp_Ordering_Equal 0
@@ -25,7 +29,12 @@ extern size_t core_clone_impls__core__clone__Clone___usize___clone(size_t *x0);
 
 typedef int8_t core_cmp_Ordering;
 
+<<<<<<< HEAD
 extern bool core_cmp_impls__core__cmp__PartialEq___usize__usize___eq(size_t *x0, size_t *x1);
+=======
+extern bool
+core_cmp_impls__core__cmp__PartialEq_usize__for_usize__eq(const size_t *x0, const size_t *x1);
+>>>>>>> main
 
 #define core_option_Option_None 0
 #define core_option_Option_Some 1
@@ -39,8 +48,16 @@ typedef struct core_option_Option__core__cmp__Ordering__s
 }
 core_option_Option__core__cmp__Ordering_;
 
+<<<<<<< HEAD
 extern core_option_Option__core__cmp__Ordering_
 core_cmp_impls__core__cmp__PartialOrd___usize__usize___partial_cmp(size_t *x0, size_t *x1);
+=======
+extern core_option_Option_77
+core_cmp_impls__core__cmp__PartialOrd_usize__for_usize__partial_cmp(
+  const size_t *x0,
+  const size_t *x1
+);
+>>>>>>> main
 
 typedef struct core_option_Option__usize__s
 {
@@ -57,18 +74,35 @@ core_iter_range__core__iter__range__Step___usize___forward_checked(size_t x0, si
 
 /**
 A monomorphic instance of K.
+<<<<<<< HEAD
 with types size_t, core_option_Option_<usize>
 
 */
 typedef struct tuple_f6_s
+=======
+with types size_t, core_option_Option_08
+
+*/
+typedef struct tuple_d1_s
+>>>>>>> main
 {
   size_t fst;
   core_option_Option__usize_ snd;
 }
+<<<<<<< HEAD
 tuple_f6;
 
 extern tuple_f6
 core_iter_range__core__iter__range__Step___usize___steps_between(size_t *x0, size_t *x1);
+=======
+tuple_d1;
+
+extern tuple_d1
+core_iter_range__core__iter__range__Step_for_usize__steps_between(
+  const size_t *x0,
+  const size_t *x1
+);
+>>>>>>> main
 
 extern core_option_Option__usize_
 core_iter_range__core__iter__traits__iterator__Iterator___core__ops__range__Range___usize____next__usize_(
@@ -90,19 +124,19 @@ typedef struct nested_arrays_Key_s { uint32_t data[8U]; } nested_arrays_Key;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr uint32_t[[$8size_t]]
+with types nested_arrays_Key
 with const generics
 - $3size_t
 */
-typedef struct Eurydice_arr_99_s { nested_arrays_Key data[3U]; } Eurydice_arr_99;
+typedef struct Eurydice_arr_3d_s { nested_arrays_Key data[3U]; } Eurydice_arr_3d;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr Eurydice_arr uint32_t[[$8size_t]][[$3size_t]]
+with types Eurydice_arr_3d
 with const generics
 - $3size_t
 */
-typedef struct Eurydice_arr_0c_s { Eurydice_arr_99 data[3U]; } Eurydice_arr_0c;
+typedef struct Eurydice_arr_06_s { Eurydice_arr_3d data[3U]; } Eurydice_arr_06;
 
 void nested_arrays_main(void);
 
@@ -116,13 +150,13 @@ typedef struct Eurydice_arr_88_s { uint8_t data[200U]; } Eurydice_arr_88;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr uint8_t[[$200size_t]]
+with types Eurydice_arr_88
 with const generics
 - $4size_t
 */
-typedef struct Eurydice_arr_70_s { Eurydice_arr_88 data[4U]; } Eurydice_arr_70;
+typedef struct Eurydice_arr_dd_s { Eurydice_arr_88 data[4U]; } Eurydice_arr_dd;
 
-Eurydice_arr_70 nested_arrays_test(void);
+Eurydice_arr_dd nested_arrays_test(void);
 
 #if defined(__cplusplus)
 }

@@ -7,26 +7,26 @@
 
 #include "floating_points.h"
 
-typedef struct _float32_t__x2_s
+typedef struct const_float32_t__x2_s
 {
-  float32_t *fst;
-  float32_t *snd;
+  const float32_t *fst;
+  const float32_t *snd;
 }
-_float32_t__x2;
+const_float32_t__x2;
 
-typedef struct _float64_t__x2_s
+typedef struct const_float64_t__x2_s
 {
-  float64_t *fst;
-  float64_t *snd;
+  const float64_t *fst;
+  const float64_t *snd;
 }
-_float64_t__x2;
+const_float64_t__x2;
 
-typedef struct _size_t__x2_s
+typedef struct const_size_t__x2_s
 {
-  size_t *fst;
-  size_t *snd;
+  const size_t *fst;
+  const size_t *snd;
 }
-_size_t__x2;
+const_size_t__x2;
 
 void floating_points_main(void)
 {
@@ -48,27 +48,23 @@ void floating_points_main(void)
   memcpy(arr2.data, repeat_expression, (size_t)100U * sizeof (float64_t));
   /* original Rust expression is not an lvalue in C */
   float32_t lvalue0 = (float32_t)1;
-  _float32_t__x2 uu____0 = { .fst = arr.data, .snd = &lvalue0 };
+  const_float32_t__x2 uu____0 = { .fst = arr.data, .snd = &lvalue0 };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
   float64_t lvalue1 = (float64_t)1;
-  _float64_t__x2 uu____1 = { .fst = arr2.data, .snd = &lvalue1 };
+  const_float64_t__x2 uu____1 = { .fst = arr2.data, .snd = &lvalue1 };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  size_t
-  lvalue2 = Eurydice_slice_len(Eurydice_array_to_slice((size_t)100U, &arr, float32_t), float32_t);
+  size_t lvalue2 = (size_t)100U;
   /* original Rust expression is not an lvalue in C */
   size_t lvalue3 = (size_t)100U;
-  _size_t__x2 uu____2 = { .fst = &lvalue2, .snd = &lvalue3 };
+  const_size_t__x2 uu____2 = { .fst = &lvalue2, .snd = &lvalue3 };
   EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  size_t
-  lvalue4 =
-    Eurydice_slice_len(Eurydice_array_to_slice((size_t)100U, &arr2, float64_t),
-      float64_t);
+  size_t lvalue4 = (size_t)100U;
   /* original Rust expression is not an lvalue in C */
   size_t lvalue = (size_t)100U;
-  _size_t__x2 uu____3 = { .fst = &lvalue4, .snd = &lvalue };
+  const_size_t__x2 uu____3 = { .fst = &lvalue4, .snd = &lvalue };
   EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
 }
 

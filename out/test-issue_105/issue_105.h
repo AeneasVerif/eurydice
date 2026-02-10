@@ -18,22 +18,22 @@ extern "C" {
 /**
 This function found in impl {core::cmp::PartialEq<()> for ()}
 */
-bool core_cmp_impls_eq_cf(void **self, void **_other);
+bool core_cmp_impls_eq_cf(void *const *self, void *const *_other);
 
 /**
 This function found in impl {core::cmp::PartialEq<()> for ()}
 */
-bool core_cmp_impls_ne_cf(void **self, void **_other);
+bool core_cmp_impls_ne_cf(void *const *self, void *const *_other);
 
 /**
 This function found in impl {core::cmp::PartialEq<u8> for u8}
 */
-bool core_cmp_impls_eq_c3(uint8_t *self, uint8_t *other);
+bool core_cmp_impls_eq_c3(const uint8_t *self, const uint8_t *other);
 
 /**
 This function found in impl {core::cmp::PartialEq<u8> for u8}
 */
-bool core_cmp_impls_ne_c3(uint8_t *self, uint8_t *other);
+bool core_cmp_impls_ne_c3(const uint8_t *self, const uint8_t *other);
 
 
 
@@ -83,19 +83,19 @@ core_result_Result_8f;
 #define core_ops_control_flow_Continue 0
 #define core_ops_control_flow_Break 1
 
-typedef uint8_t core_ops_control_flow_ControlFlow_6f_tags;
+typedef uint8_t core_ops_control_flow_ControlFlow_19_tags;
 
 /**
 A monomorphic instance of core.ops.control_flow.ControlFlow
-with types core_result_Result core_convert_Infallible uint8_t, ()
+with types core_result_Result_8f, ()
 
 */
-typedef struct core_ops_control_flow_ControlFlow_6f_s
+typedef struct core_ops_control_flow_ControlFlow_19_s
 {
-  core_ops_control_flow_ControlFlow_6f_tags tag;
+  core_ops_control_flow_ControlFlow_19_tags tag;
   core_result_Result_8f f0;
 }
-core_ops_control_flow_ControlFlow_6f;
+core_ops_control_flow_ControlFlow_19;
 
 /**
 This function found in impl {core::ops::try_trait::Try<T, core::result::Result<core::convert::Infallible, E>[core::marker::Sized<core::convert::Infallible>, TraitClause@1]> for core::result::Result<T, E>[TraitClause@0, TraitClause@1]}
@@ -105,7 +105,7 @@ A monomorphic instance of core.result.branch_71
 with types (), uint8_t
 
 */
-core_ops_control_flow_ControlFlow_6f core_result_branch_71_e9(core_result_Result_1d self);
+core_ops_control_flow_ControlFlow_19 core_result_branch_71_e9(core_result_Result_1d self);
 
 /**
  Returns the argument unchanged.
@@ -145,7 +145,8 @@ with types (), uint8_t
 with const generics
 
 */
-bool core_result_eq_0b_c6(core_result_Result_1d *self, core_result_Result_1d *other);
+bool
+core_result_eq_0b_74(const core_result_Result_1d *self, const core_result_Result_1d *other);
 
 void issue_105_main(void);
 

@@ -15,7 +15,17 @@
 extern "C" {
 #endif
 
+<<<<<<< HEAD
 extern size_t core_clone_impls__core__clone__Clone___usize___clone(size_t *x0);
+=======
+extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t *x0);
+
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
+>>>>>>> main
 
 /**
 This function found in impl {where_clauses_closures::Ops::<usize, 1usize>}

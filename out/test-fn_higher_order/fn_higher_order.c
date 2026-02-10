@@ -15,6 +15,7 @@ int32_t fn_higher_order_empty_ptr(int32_t (*f)(void))
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 size_t fn_higher_order_sum_lst__5usize_(size_t *lst)
 {
   size_t sum = (size_t)0U;
@@ -46,6 +47,9 @@ size_t fn_higher_order_id__usize_(size_t r)
   return r;
 =======
 int32_t fn_higher_order_more_sum_lst(Eurydice_arr_8d *l)
+=======
+int32_t fn_higher_order_more_sum_lst(const Eurydice_arr_8d *l)
+>>>>>>> main
 {
   int32_t sum = (int32_t)0;
   KRML_MAYBE_FOR3(i,
@@ -64,10 +68,14 @@ fn_higher_order_compose_cg_apply__usize__usize__usize__5usize_(
   size_t (*f)(size_t *x0),
 =======
 fn_higher_order_compose_cg_apply_fd(
+<<<<<<< HEAD
   size_t (*f)(Eurydice_arr_99 *x0),
 >>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
+=======
+  size_t (*f)(const Eurydice_arr_99 *x0),
+>>>>>>> main
   size_t (*g)(size_t x0),
-  Eurydice_arr_99 *arg
+  const Eurydice_arr_99 *arg
 )
 {
   size_t (*uu____0)(size_t x0) = g;
@@ -105,7 +113,7 @@ A monomorphic instance of fn_higher_order.sum_lst
 with const generics
 - N= 5
 */
-size_t fn_higher_order_sum_lst_c9(Eurydice_arr_99 *lst)
+size_t fn_higher_order_sum_lst_c9(const Eurydice_arr_99 *lst)
 {
   size_t sum = (size_t)0U;
   KRML_MAYBE_FOR5(i,
@@ -129,29 +137,47 @@ fn_higher_order_compose_cg_apply__i32__i32__i32__3usize_(
   int32_t (*f)(int32_t *x0),
 =======
 fn_higher_order_compose_cg_apply_82(
+<<<<<<< HEAD
   int32_t (*f)(Eurydice_arr_8d *x0),
 >>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
+=======
+  int32_t (*f)(const Eurydice_arr_8d *x0),
+>>>>>>> main
   int32_t (*g)(int32_t x0),
-  Eurydice_arr_8d *arg
+  const Eurydice_arr_8d *arg
 )
 {
   int32_t (*uu____0)(int32_t x0) = g;
   return uu____0(f(arg));
 }
 
+<<<<<<< HEAD
 typedef struct _size_t__x2_s
-{
-  size_t *fst;
-  size_t *snd;
-}
-_size_t__x2;
+=======
+/**
+A monomorphic instance of fn_higher_order.id
+with types int32_t
 
-typedef struct _int32_t__x2_s
+*/
+int32_t fn_higher_order_id_a8(int32_t r)
 {
-  int32_t *fst;
-  int32_t *snd;
+  return r;
 }
-_int32_t__x2;
+
+typedef struct const_size_t__x2_s
+>>>>>>> main
+{
+  const size_t *fst;
+  const size_t *snd;
+}
+const_size_t__x2;
+
+typedef struct const_int32_t__x2_s
+{
+  const int32_t *fst;
+  const int32_t *snd;
+}
+const_int32_t__x2;
 
 void fn_higher_order_use_compose_cg(void)
 {
@@ -184,11 +210,11 @@ void fn_higher_order_use_compose_cg(void)
 >>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
   /* original Rust expression is not an lvalue in C */
   size_t lvalue = (size_t)20U;
-  _size_t__x2 uu____0 = { .fst = &x, .snd = &lvalue };
+  const_size_t__x2 uu____0 = { .fst = &x, .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
   int32_t lvalue2 = (int32_t)33;
-  _int32_t__x2 uu____1 = { .fst = &y, .snd = &lvalue2 };
+  const_int32_t__x2 uu____1 = { .fst = &y, .snd = &lvalue2 };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 

@@ -48,7 +48,7 @@ build: check-karamel check-charon
 CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
 CXXFLAGS	:= -std=c++17
 
-test: $(addprefix test-,$(TEST_DIRS)) custom-test-array testxx-result check-charon check-libcrux test-libcrux
+test: $(addprefix test-,$(TEST_DIRS)) custom-test-libcrux-no-const custom-test-array custom-test-for testxx-result check-charon check-libcrux test-libcrux
 
 clean-and-test:
 	$(MAKE) clean-llbc
@@ -57,7 +57,8 @@ clean-and-test:
 .PRECIOUS: %.llbc
 %.llbc: %.rs .charon_version
 	# --mir elaborated --add-drop-bounds 
-	$(CHARON) rustc --monomorphize --preset=eurydice --dest-file "$@" $(CHARON_EXTRA) -- $<
+
+	$(CHARON) rustc --monomorphize --preset=eurydice --dest-file "$@" $(CHARON_EXTRA) -- -Aunused $<
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
@@ -89,6 +90,11 @@ test/println.llbc: CHARON_EXTRA = \
 test/option.llbc: CHARON_EXTRA = \
   --include=core::option::*
 
+test/lvalue.llbc: CHARON_EXTRA = \
+  --mir elaborated
+
+test-substr: EXTRA_C = -I../../test ../../test/substr_impl.c
+test-substr: EXTRA = --config test/substr.yaml
 test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c
 test-nested_arrays: EXTRA = -funroll-loops 0
 test-array: EXTRA = -fcomments
@@ -96,6 +102,7 @@ test-symcrust: CFLAGS += -Wno-unused-function
 test-more_str: EXTRA_C = ../../test/core_str_lib.c
 test-more_primitive_types: EXTRA = --config test/more_primitive_types.yaml
 test-global_ref: EXTRA_C = ../../test/core_cmp_lib.c
+test-lvalue: CFLAGS += -Wno-unused-but-set-variable
 
 
 test-%: test/%.llbc out/test-%/main.c | all
@@ -122,7 +129,17 @@ custom-test-array: test-array
 	grep -q XXX2 out/test-array/array.c && \
 	true
 
+custom-test-for: test-for
+	! grep -q while out/test-for/for.c
+
 # libcrux tests
+
+custom-test-libcrux-no-const: test/libcrux.llbc
+	mkdir -p out/test-libcrux-no-const
+	$(EURYDICE) --config test/libcrux/c.yaml -funroll-loops 16 \
+	  $< --keep-going --output out/test-libcrux-no-const --no-const
+	$(SED) -i 's/  KaRaMeL version: .*//' out/test-libcrux-no-const/**/*.{c,h} # This changes on every commit
+	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-libcrux-no-const/**/*.{c,h} # This changes between local and CI
 
 test-libcrux: test/libcrux.llbc
 	mkdir -p out/test-libcrux
@@ -142,11 +159,12 @@ test/libcrux.llbc:
 	RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $(CHARON) cargo --preset eurydice \
 	  --include 'libcrux_sha3' \
 	  --include 'libcrux_secrets' \
+	  --rustc-arg='-Aunused' \
 	  --start-from libcrux_ml_kem --start-from libcrux_sha3 \
 	  --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
 	  --dest-file $$PWD/$@ -- \
 	  --manifest-path $(LIBCRUX_HOME)/libcrux-ml-kem/Cargo.toml \
-	  --target=x86_64-apple-darwin 
+	  --target=x86_64-apple-darwin
 	@# Commit the `Cargo.lock` so that the nix CI can use it
 	cp $(LIBCRUX_HOME)/Cargo.lock libcrux-Cargo.lock
 
@@ -186,3 +204,6 @@ format-apply:
 .PHONY: clean-llbc
 clean-llbc:
 	rm test/*.llbc || true
+
+debug-ppx-%: lib/%
+	dune describe pp $<

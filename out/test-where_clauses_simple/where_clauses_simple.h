@@ -15,9 +15,15 @@
 extern "C" {
 #endif
 
+<<<<<<< HEAD
 extern uint64_t core_clone_impls__core__clone__Clone___u64___clone(uint64_t *x0);
 
 extern size_t core_clone_impls__core__clone__Clone___usize___clone(size_t *x0);
+=======
+extern uint64_t core_clone_impls__core__clone__Clone_for_u64__clone(const uint64_t *x0);
+
+extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t *x0);
+>>>>>>> main
 
 static inline uint64_t core_convert_num__core__convert__From___u64__u16___from(uint16_t x0);
 

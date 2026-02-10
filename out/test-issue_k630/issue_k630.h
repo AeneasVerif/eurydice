@@ -33,11 +33,11 @@ typedef struct Eurydice_arr_a5_s { uint32_t data[1U]; } Eurydice_arr_a5;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr uint32_t[[$1size_t]]
+with types Eurydice_arr_a5
 with const generics
 - $5size_t
 */
-typedef struct Eurydice_arr_10_s { Eurydice_arr_a5 data[5U]; } Eurydice_arr_10;
+typedef struct Eurydice_arr_35_s { Eurydice_arr_a5 data[5U]; } Eurydice_arr_35;
 
 >>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 void issue_k630_main(void);

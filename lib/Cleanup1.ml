@@ -50,7 +50,7 @@ let remove_assignments =
           self#peel_lets to_close e2
       | _ ->
           let e = Krml.Simplify.sequence_to_let#visit_expr_w () e in
-          (* Krml.(KPrint.bprintf "after peeling:\n%a" PrintAst.Ops.ppexpr e); *)
+          (* Krml.(KPrint.bprintf "after peeling:\n%a\n\n" PrintAst.Ops.ppexpr e); *)
           self#visit_expr_w to_close e
 
     method! visit_DFunction (to_close : remove_env) cc flags n_cgs n t name bs e =
@@ -201,7 +201,7 @@ let remove_assignments =
               in
               let not_yet_closed = AtomMap.remove atom not_yet_closed in
               (* Krml.(KPrint.bprintf "rebuilt: %a\n" PrintAst.Ops.pexpr (with_type TUnit (ELet (b, e_rhs, e2)))); *)
-              let e2 = self#visit_expr_w not_yet_closed (close_binder b e2) in
+              let e2 = recurse_or_close not_yet_closed (close_binder b e2) in
               ELet (b, e_rhs, e2))
       | EIfThenElse (e, e', e'') ->
           assert (is_sequence b.node.meta);
@@ -292,21 +292,6 @@ let remove_assignments =
               ELet (b, self#visit_expr_w not_yet_closed e1, recurse_or_close not_yet_closed e2))
   end
 
-let remove_units =
-  object (self)
-    inherit [_] map as super
-
-    method! visit_EAssign env e1 e2 =
-      if e1.typ = TUnit && Krml.Helpers.is_readonly_c_expression e2 then
-        EUnit
-      else if e1.typ = TUnit && Krml.Helpers.is_readonly_c_expression e1 then
-        (* Unit nodes have been initialized at declaration-time by
-           remove_assignments above. So, e1 := e2 can safely become e2. *)
-        (self#visit_expr env e2).node
-      else
-        super#visit_EAssign env e1 e2
-  end
-
 let remove_terminal_returns =
   object (self)
     inherit [_] map
@@ -326,7 +311,17 @@ let remove_terminal_returns =
             self#visit_expr_w env e )
 
     method! visit_ELet (terminal, _) b e1 e2 =
-      ELet (b, self#visit_expr_w false e1, self#visit_expr_w terminal e2)
+      (* let _ = x := e in
+         return x                 ~~~>      return e
+      *)
+      match e1.node, e2.node with
+      | EAssign ({ node = EBound i; _ }, e1), EReturn { node = EBound j; _ } when j = i + 1 ->
+          (* This early optimization is important to avoid superfluous variable
+             declarations for the return value of the function -- these
+             interfere with pattern-matches such as resugar_loops. See
+             test/for.rs *)
+          self#visit_EReturn (terminal, e2.typ) e1
+      | _ -> ELet (b, self#visit_expr_w false e1, self#visit_expr_w terminal e2)
 
     method! visit_EWhile _ e1 e2 = EWhile (self#visit_expr_w false e1, self#visit_expr_w false e2)
 
@@ -439,42 +434,82 @@ let unsigned_overflow_is_ok_in_c =
 (* PPrint.(Krml.Print.(print (Krml.PrintAst.print_files files ^^ hardline))); *)
 
 let remove_slice_eq =
-  object
+  object (self)
     inherit [_] map as super
+
+    method private do_it ~const eq t u s1 s2 =
+      assert (t = u);
+      let slice_eq =
+        if const then
+          Builtin.slice_eq_shared
+        else
+          Builtin.slice_eq_mut
+      in
+      match flatten_tapp t with
+      | lid, [ t ], [] when lid = Builtin.derefed_slice ->
+          let rec is_flat = function
+            | TArray (t, _) -> is_flat t
+            | TInt _ | TBool | TUnit -> true
+            | _ -> false
+          in
+          if not (is_flat t) then
+            failwith "TODO: slice eq at non-flat types";
+          with_type TBool (EApp (Builtin.expr_of_builtin_t slice_eq [ t ], [ s1; s2 ]))
+      | _ ->
+          let deref e = with_type (H.assert_tbuf e.typ) (EBufRead (e, H.zero_usize)) in
+          with_type TBool (EApp (List.hd eq, [ deref s1; deref s2 ]))
 
     method! visit_expr _ e =
       match e with
       | [%cremepat {| core::cmp::impls::?impl::eq(#?eq..)<?t,?u>(?s1, ?s2) |}] -> begin
           match impl with
-          | "{core::cmp::PartialEq<&0 mut (B)> for &1 mut (A)}"
-          | "{core::cmp::PartialEq<&0 (B)> for &1 (A)}" ->
-              assert (t = u);
-              begin
-                match flatten_tapp t with
-                | lid, [ t ], [] when lid = Builtin.derefed_slice ->
-                    let rec is_flat = function
-                      | TArray (t, _) -> is_flat t
-                      | TInt _ | TBool | TUnit -> true
-                      | _ -> false
-                    in
-                    if not (is_flat t) then
-                      failwith "TODO: slice eq at non-flat types";
-                    with_type TBool (EApp (Builtin.(expr_of_builtin_t slice_eq [ t ]), [ s1; s2 ]))
-                | _ ->
-                    let deref e = with_type (H.assert_tbuf e.typ) (EBufRead (e, H.zero_usize)) in
-                    with_type TBool (EApp (List.hd eq, [ deref s1; deref s2 ]))
-              end
+          | "{core::cmp::PartialEq<&0 mut (B)> for &1 mut (A)}" ->
+              self#do_it ~const:false eq t u s1 s2
+          | "{core::cmp::PartialEq<&0 (B)> for &1 (A)}" -> self#do_it ~const:true eq t u s1 s2
           | _ -> failwith "unknown eq impl in core::cmp::impls"
         end
       | _ -> super#visit_expr ((), e.typ) e
+  end
+
+let remove_units =
+  object (self)
+    inherit [_] map as super
+
+    (* Every local variable at type unit is suitably initialized *)
+    method! visit_ELet env b e1 e2 =
+      if b.typ = TUnit && e1.node = EAny then
+        ELet (b, Krml.Helpers.eunit, self#visit_expr_w () e2)
+      else
+        super#visit_ELet env b e1 e2
+
+    (* Assigning into a local variable of type unit is meaningless and the rhs can be used instead
+       -- no uninitialized variables issues, because of ELet above. *)
+    method! visit_EAssign env e1 e2 =
+      match e1.node with
+      | EBound _ when e1.typ = TUnit -> (self#visit_expr_w () e2).node
+      | _ -> super#visit_EAssign env e1 e2
+
+    (* Returning a local variable of type unit is equivalent to returning a unit *)
+    method! visit_EReturn env e =
+      match e.node with
+      | EBound _ when e.typ = TUnit -> EReturn Krml.Helpers.eunit
+      | _ -> super#visit_EReturn env e
+
+    method! visit_ESequence _env es =
+      let es = List.filter (fun x -> x.node <> EUnit) (List.map (self#visit_expr_w ()) es) in
+      match es with
+      | [] -> EUnit
+      | [ e ] -> e.node
+      | _ -> ESequence es
   end
 
 let cleanup files =
   let files = remove_units#visit_files () files in
   let files = remove_assignments#visit_files AtomMap.empty files in
   let files = unsigned_overflow_is_ok_in_c#visit_files () files in
-  let files = Krml.Simplify.optimize_lets files in
   let files = remove_terminal_returns#visit_files true files in
+  let files = Krml.Simplify.optimize_lets files in
+  (* Krml.(PPrint.(Print.(print (PrintAst.print_files files ^^ hardline)))); *)
   let files = remove_terminal_continues#visit_files false files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
   let files = remove_slice_eq#visit_files () files in

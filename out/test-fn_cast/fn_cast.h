@@ -17,7 +17,25 @@ extern "C" {
 
 int32_t *fn_cast_id_ref__i32_(int32_t *x);
 
+<<<<<<< HEAD
 int32_t *fn_cast_applies__i32__i32_(int32_t *(*f)(int32_t *x0), int32_t *arg);
+=======
+typedef uint8_t core_panicking_AssertKind;
+
+/**
+A monomorphic instance of fn_cast.applies
+with types int32_t, int32_t
+
+*/
+const int32_t *fn_cast_applies_99(const int32_t *(*f)(const int32_t *x0), const int32_t *arg);
+
+/**
+A monomorphic instance of fn_cast.id_ref
+with types int32_t
+
+*/
+const int32_t *fn_cast_id_ref_a8(const int32_t *x);
+>>>>>>> main
 
 void fn_cast_main(void);
 

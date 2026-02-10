@@ -7,12 +7,14 @@
 
 #include "traits.h"
 
-#include "Eurydice.h"
-
 /**
 This function found in impl {traits::ToInt::<traits::Foo>}
 */
+<<<<<<< HEAD
 uint32_t traits_to_int_32(traits_Foo *self)
+=======
+uint32_t traits_to_int_ac(const traits_Foo *self)
+>>>>>>> main
 {
   switch (self[0U])
   {
@@ -34,6 +36,7 @@ uint32_t traits_to_int_32(traits_Foo *self)
 }
 
 /**
+<<<<<<< HEAD
 This function found in impl {traits::ToInt::<&'_ (@Slice<traits::Foo>)>}
 */
 uint32_t traits_to_int______95(Eurydice_slice *self)
@@ -44,12 +47,36 @@ uint32_t traits_to_int______95(Eurydice_slice *self)
   return
     uu____0 *
       traits_to_int_32(&Eurydice_slice_index(self[0U], (size_t)1U, traits_Foo, traits_Foo *));
+=======
+This function found in impl {traits::ToInt for &0 ([traits::Foo])}
+*/
+uint32_t traits_to_int_0f(const Eurydice_dst_ref_shared_e2 *self)
+{
+  uint32_t uu____0 = traits_to_int_ac(&self->ptr[0U]);
+  return uu____0 * traits_to_int_ac(&self->ptr[1U]);
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_subslice_shared
+with types traits_Foo, core_ops_range_Range size_t, Eurydice_derefed_slice traits_Foo
+with const generics
+- N= 2
+*/
+static Eurydice_dst_ref_shared_e2
+array_to_subslice_shared_91(const Eurydice_arr_e2 *a, core_ops_range_Range_08 r)
+{
+  return
+    (
+      KRML_CLITERAL(Eurydice_dst_ref_shared_e2){ .ptr = a->data + r.start, .meta = r.end - r.start }
+    );
+>>>>>>> main
 }
 
 void traits_main(void)
 {
   Eurydice_arr_e2 foos = { .data = { traits_Foo_Foo1, traits_Foo_Foo2 } };
   /* original Rust expression is not an lvalue in C */
+<<<<<<< HEAD
   Eurydice_slice
 <<<<<<< HEAD
   lvalue =
@@ -64,6 +91,13 @@ void traits_main(void)
   lvalue = Eurydice_array_to_subslice3(&foos, (size_t)0U, (size_t)2U, traits_Foo *);
   if (!(traits_to_int_88(&lvalue) != 2U))
 >>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
+=======
+  Eurydice_dst_ref_shared_e2
+  lvalue =
+    array_to_subslice_shared_91(&foos,
+      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)2U }));
+  if (!(traits_to_int_0f(&lvalue) != 2U))
+>>>>>>> main
   {
     return;
   }

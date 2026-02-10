@@ -15,17 +15,20 @@
 extern "C" {
 #endif
 
-#include "Eurydice.h"
+extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(const uint8_t *x0);
 
-extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(uint8_t *x0);
-
-extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(size_t *x0);
+extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t *x0);
 
 #define core_cmp_Ordering_Less -1
 #define core_cmp_Ordering_Equal 0
 #define core_cmp_Ordering_Greater 1
 
 typedef int8_t core_cmp_Ordering;
+
+extern uint32_t core_cmp_impls__core__cmp__Ord_for_u32__min(uint32_t x0, uint32_t x1);
+
+extern bool
+core_cmp_impls__core__cmp__PartialEq_usize__for_usize__eq(const size_t *x0, const size_t *x1);
 
 #define core_option_None 0
 #define core_option_Some 1
@@ -44,20 +47,11 @@ typedef struct core_option_Option_77_s
 }
 core_option_Option_77;
 
-extern core_cmp_Ordering
-core_cmp_impls__core__cmp__Ord_for_u32__cmp(uint32_t *x0, uint32_t *x1);
-
-extern uint32_t core_cmp_impls__core__cmp__Ord_for_u32__min(uint32_t x0, uint32_t x1);
-
-extern bool core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(uint32_t *x0, uint32_t *x1);
-
-extern bool core_cmp_impls__core__cmp__PartialEq_usize__for_usize__eq(size_t *x0, size_t *x1);
-
 extern core_option_Option_77
-core_cmp_impls__core__cmp__PartialOrd_u32__for_u32__partial_cmp(uint32_t *x0, uint32_t *x1);
-
-extern core_option_Option_77
-core_cmp_impls__core__cmp__PartialOrd_usize__for_usize__partial_cmp(size_t *x0, size_t *x1);
+core_cmp_impls__core__cmp__PartialOrd_usize__for_usize__partial_cmp(
+  const size_t *x0,
+  const size_t *x1
+);
 
 static inline uint32_t core_convert_num__core__convert__From_u16__for_u32__from(uint16_t x0);
 
@@ -83,20 +77,35 @@ core_iter_range__core__iter__range__Step_for_usize__forward_checked(size_t x0, s
 
 /**
 A monomorphic instance of K.
-with types size_t, core_option_Option size_t
+with types size_t, core_option_Option_08
 
 */
-typedef struct tuple_04_s
+typedef struct tuple_d1_s
 {
   size_t fst;
   core_option_Option_08 snd;
 }
-tuple_04;
+tuple_d1;
 
-extern tuple_04
-core_iter_range__core__iter__range__Step_for_usize__steps_between(size_t *x0, size_t *x1);
+extern tuple_d1
+core_iter_range__core__iter__range__Step_for_usize__steps_between(
+  const size_t *x0,
+  const size_t *x1
+);
 
-static inline Eurydice_arr_e9 core_num__u32__to_le_bytes(uint32_t x0);
+static inline Eurydice_array_u8x4 core_num__u32__to_le_bytes(uint32_t x0);
+
+/**
+A monomorphic instance of core.ops.range.Range
+with types size_t
+
+*/
+typedef struct core_ops_range_Range_08_s
+{
+  size_t start;
+  size_t end;
+}
+core_ops_range_Range_08;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -108,9 +117,9 @@ typedef struct Eurydice_arr_bc_s { uint16_t data[256U]; } Eurydice_arr_bc;
 
 void
 symcrust_SymCrustMlKemPolyElementCompressAndEncode(
-  Eurydice_arr_bc *coeffs,
+  const Eurydice_arr_bc *coeffs,
   uint32_t nBitsPerCoefficient,
-  Eurydice_slice dst
+  Eurydice_mut_borrow_slice_u8 dst
 );
 
 void symcrust_main(void);
