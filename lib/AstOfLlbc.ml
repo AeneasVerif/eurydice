@@ -2193,7 +2193,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
         (*       [ p ]))) *)
         | _ -> Krml.Helpers.eunit
       end
-  | Assert a -> expression_of_assertion env a
+  | Assert (a, _on_failure) -> expression_of_assertion env a
   | Call
       {
         func =
