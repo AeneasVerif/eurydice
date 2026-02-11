@@ -31,8 +31,6 @@ typedef struct Eurydice_dst_ref_mut_05_s
 }
 Eurydice_dst_ref_mut_05;
 
-typedef struct core_marker_MetaSized__vtable__s core_marker_MetaSized__vtable_;
-
 typedef struct core_marker_MetaSized__vtable__s
 {
   size_t size;
@@ -74,10 +72,6 @@ typedef struct Eurydice_dst_ref_shared_06_s
   dyn_trait_struct_type_Trait__vtable_ *meta;
 }
 Eurydice_dst_ref_shared_06;
-
-typedef struct dyn_trait_struct_type_Trait__vtable__s dyn_trait_struct_type_Trait__vtable_;
-
-typedef struct dyn_trait_struct_type_Trait__vtable__s dyn_trait_struct_type_Trait__vtable_;
 
 typedef struct dyn_trait_struct_type_Trait__vtable__s
 {
