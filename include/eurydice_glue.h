@@ -58,9 +58,11 @@ using std::type_identity_t;
 
 // SIZEOF, ALIGNOF
 
-#define Eurydice_sizeof(t) sizeof(t)
+#define Eurydice_sizeof(t, _) sizeof(t)
 
-#define Eurydice_alignof(t) alignof(t)
+#define Eurydice_alignof(t, _) _Alignof(t)
+
+#define Eurydice_opaque(reason, t, _) (t)0
 
 // SLICES, ARRAYS, ETC.
 
