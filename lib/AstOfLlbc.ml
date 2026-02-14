@@ -2177,7 +2177,10 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
   | SetDiscriminant (_, _) -> failwith "C.SetDiscriminant"
   | StorageLive _ -> Krml.Helpers.eunit
   | StorageDead _ -> Krml.Helpers.eunit
-  | Deinit p | Drop (p, _, _) ->
+  | PlaceMention p ->
+      let p = expression_of_place env p in
+      K.(with_type TUnit (EIgnore p))
+  | Drop (p, _, _) ->
       let _ = expression_of_place env p in
       begin
         match p.ty with
