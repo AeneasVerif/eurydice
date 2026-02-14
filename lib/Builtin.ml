@@ -246,6 +246,75 @@ let alignof =
     arg_names = [];
   }
 
+(*
+(* The version of `array_to_subslice` for monomorphic LLBC.
+   Core changes: there is no assoc-ty for the generics `Self::Output`
+   Also, its argument is a monomorphized `Range::<usize>` instead of a generic one.
+   The same as below for `array_to_subslice_to` and `array_to_subslice_from`.
+*)
+let array_to_subslice_mono =
+  {
+    name = [ "Eurydice" ], "array_to_subslice_mono";
+    typ =
+      Krml.Helpers.fold_arrow
+        [ TBuf (TBound 1, false); TQualified ([ "core"; "ops"; "range"; "Range" ], "<usize>") ]
+        (mk_slice (TBound 1));
+    n_type_args = 2;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "a"; "r" ];
+  }
+
+let array_to_subslice_to =
+  {
+    name = [ "Eurydice" ], "array_to_subslice_to";
+    typ =
+      Krml.Helpers.fold_arrow
+        [ TBuf (mk_arr (TBound 2) (CgVar 0), false); mk_range_to (TInt SizeT) ]
+        (mk_slice (TBound 2));
+    n_type_args = 3;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "a"; "r" ];
+  }
+
+(* The version of `array_to_subslice_to` for monomorphic LLBC. *)
+let array_to_subslice_to_mono =
+  {
+    name = [ "Eurydice" ], "array_to_subslice_to_mono";
+    typ =
+      Krml.Helpers.fold_arrow
+        [ TBuf (TBound 1, false); TQualified ([ "core"; "ops"; "range"; "RangeTo" ], "<usize>") ]
+        (mk_slice (TBound 1));
+    n_type_args = 2;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "a"; "r" ];
+  }
+
+let array_to_subslice_from =
+  {
+    name = [ "Eurydice" ], "array_to_subslice_from";
+    typ =
+      Krml.Helpers.fold_arrow
+        [ TBuf (mk_arr (TBound 2) (CgVar 0), false); mk_range_from (TInt SizeT) ]
+        (mk_slice (TBound 2));
+    n_type_args = 3;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "a"; "r" ];
+  }
+
+(* The version of `array_to_subslice_from` for monomorphic LLBC. *)
+let array_to_subslice_from_mono =
+  {
+    name = [ "Eurydice" ], "array_to_subslice_from_mono";
+    typ =
+      Krml.Helpers.fold_arrow
+        [ TBuf (TBound 1, false); TQualified ([ "core"; "ops"; "range"; "RangeFrom" ], "<usize>") ]
+        (mk_slice (TBound 1));
+    n_type_args = 2;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "a"; "r" ];
+  }
+*)
+
 let suffix_of_const const =
   if const then
     "_shared"
@@ -275,6 +344,18 @@ let discriminant =
     n_type_args = 2;
     cg_args = [];
     arg_names = [ "adt" ];
+  }
+
+let iterator : K.lident = [ "core"; "iter"; "traits"; "iterator" ], "Iterator"
+let mk_iterator t = K.TApp (iterator, [ t ])
+
+let array_into_iter =
+  {
+    name = [ "Eurydice" ], "array_into_iter";
+    typ = Krml.Helpers.fold_arrow [ TCgArray (TBound 0, 0) ] (mk_iterator (TCgArray (TBound 0, 0)));
+    n_type_args = 1;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "arr" ];
   }
 
 let array_eq =
@@ -906,6 +987,9 @@ let null_mut =
 
 let builtin_funcs =
   [
+    (*array_to_subslice_mono;
+    array_to_subslice_to_mono;
+    array_to_subslice_from_mono;*)
     sizeof;
     alignof;
     array_repeat;

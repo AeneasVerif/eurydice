@@ -15,9 +15,17 @@
 extern "C" {
 #endif
 
+<<<<<<< HEAD
+#include "Eurydice.h"
+
+extern int32_t core_clone_impls__core__clone__Clone___i32___clone(int32_t *x0);
+
+extern size_t core_clone_impls__core__clone__Clone___usize___clone(size_t *x0);
+=======
 extern int32_t core_clone_impls__core__clone__Clone_for_i32__clone(const int32_t *x0);
 
 extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t *x0);
+>>>>>>> main
 
 #define core_cmp_Ordering_Less -1
 #define core_cmp_Ordering_Equal 0
@@ -25,60 +33,72 @@ extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t
 
 typedef int8_t core_cmp_Ordering;
 
+<<<<<<< HEAD
+extern bool core_cmp_impls__core__cmp__PartialEq___usize__usize___eq(size_t *x0, size_t *x1);
+=======
 extern bool
 core_cmp_impls__core__cmp__PartialEq_usize__for_usize__eq(const size_t *x0, const size_t *x1);
+>>>>>>> main
 
-#define core_option_None 0
-#define core_option_Some 1
+#define core_option_Option_None 0
+#define core_option_Option_Some 1
 
-typedef uint8_t core_option_Option_77_tags;
+typedef uint8_t core_option_Option__core__cmp__Ordering__tags;
 
-/**
-A monomorphic instance of core.option.Option
-with types core_cmp_Ordering
-
-*/
-typedef struct core_option_Option_77_s
+typedef struct core_option_Option__core__cmp__Ordering__s
 {
-  core_option_Option_77_tags tag;
+  core_option_Option__core__cmp__Ordering__tags tag;
   core_cmp_Ordering f0;
 }
-core_option_Option_77;
+core_option_Option__core__cmp__Ordering_;
 
+<<<<<<< HEAD
+extern core_option_Option__core__cmp__Ordering_
+core_cmp_impls__core__cmp__PartialOrd___usize__usize___partial_cmp(size_t *x0, size_t *x1);
+=======
 extern core_option_Option_77
 core_cmp_impls__core__cmp__PartialOrd_usize__for_usize__partial_cmp(
   const size_t *x0,
   const size_t *x1
 );
+>>>>>>> main
 
-/**
-A monomorphic instance of core.option.Option
-with types size_t
-
-*/
-typedef struct core_option_Option_08_s
+typedef struct core_option_Option__usize__s
 {
-  core_option_Option_77_tags tag;
+  core_option_Option__core__cmp__Ordering__tags tag;
   size_t f0;
 }
-core_option_Option_08;
+core_option_Option__usize_;
 
-extern core_option_Option_08
-core_iter_range__core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
+extern core_option_Option__usize_
+core_iter_range__core__iter__range__Step___usize___backward_checked(size_t x0, size_t x1);
 
-extern core_option_Option_08
-core_iter_range__core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
+extern core_option_Option__usize_
+core_iter_range__core__iter__range__Step___usize___forward_checked(size_t x0, size_t x1);
 
 /**
 A monomorphic instance of K.
+<<<<<<< HEAD
+with types size_t, core_option_Option_<usize>
+
+*/
+typedef struct tuple_f6_s
+=======
 with types size_t, core_option_Option_08
 
 */
 typedef struct tuple_d1_s
+>>>>>>> main
 {
   size_t fst;
-  core_option_Option_08 snd;
+  core_option_Option__usize_ snd;
 }
+<<<<<<< HEAD
+tuple_f6;
+
+extern tuple_f6
+core_iter_range__core__iter__range__Step___usize___steps_between(size_t *x0, size_t *x1);
+=======
 tuple_d1;
 
 extern tuple_d1
@@ -86,15 +106,25 @@ core_iter_range__core__iter__range__Step_for_usize__steps_between(
   const size_t *x0,
   const size_t *x1
 );
+>>>>>>> main
 
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
+extern core_option_Option__usize_
+core_iter_range__core__iter__traits__iterator__Iterator___core__ops__range__Range___usize____next__usize_(
+  core_ops_range_Range__usize_ *x0
+);
 
-typedef uint8_t core_panicking_AssertKind;
+extern core_ops_range_Range__usize_
+core_iter_traits_collect__core__iter__traits__collect__IntoIterator___core__ops__range__Range___usize____into_iter__core__ops__range__Range___usize__(
+  core_ops_range_Range__usize_ x0
+);
 
 int32_t fn_higher_order_empty_ptr(int32_t (*f)(void));
 
+<<<<<<< HEAD
+size_t fn_higher_order_sum_lst__5usize_(size_t *lst);
+
+size_t fn_higher_order_id__usize_(size_t r);
+=======
 /**
 A monomorphic instance of Eurydice.arr
 with types int32_t
@@ -112,53 +142,56 @@ with const generics
 - $5size_t
 */
 typedef struct Eurydice_arr_99_s { size_t data[5U]; } Eurydice_arr_99;
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
 
-/**
-A monomorphic instance of fn_higher_order.compose_cg_apply
-with types size_t, size_t, size_t
-with const generics
-- N= 5
-*/
 size_t
+<<<<<<< HEAD
+fn_higher_order_compose_cg_apply__usize__usize__usize__5usize_(
+  size_t (*f)(size_t *x0),
+=======
 fn_higher_order_compose_cg_apply_fd(
+<<<<<<< HEAD
+  size_t (*f)(Eurydice_arr_99 *x0),
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
+=======
   size_t (*f)(const Eurydice_arr_99 *x0),
+>>>>>>> main
   size_t (*g)(size_t x0),
   const Eurydice_arr_99 *arg
 );
 
+<<<<<<< HEAD
+int32_t fn_higher_order_more_sum_lst(int32_t *l);
+=======
 /**
 A monomorphic instance of fn_higher_order.sum_lst
 with const generics
 - N= 5
 */
+<<<<<<< HEAD
+size_t fn_higher_order_sum_lst_c9(Eurydice_arr_99 *lst);
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
+=======
 size_t fn_higher_order_sum_lst_c9(const Eurydice_arr_99 *lst);
+>>>>>>> main
 
-/**
-A monomorphic instance of fn_higher_order.id
-with types size_t
+int32_t fn_higher_order_id__i32_(int32_t r);
 
-*/
-size_t fn_higher_order_id_37(size_t r);
-
-/**
-A monomorphic instance of fn_higher_order.compose_cg_apply
-with types int32_t, int32_t, int32_t
-with const generics
-- N= 3
-*/
 int32_t
+<<<<<<< HEAD
+fn_higher_order_compose_cg_apply__i32__i32__i32__3usize_(
+  int32_t (*f)(int32_t *x0),
+=======
 fn_higher_order_compose_cg_apply_82(
+<<<<<<< HEAD
+  int32_t (*f)(Eurydice_arr_8d *x0),
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
+=======
   int32_t (*f)(const Eurydice_arr_8d *x0),
+>>>>>>> main
   int32_t (*g)(int32_t x0),
   const Eurydice_arr_8d *arg
 );
-
-/**
-A monomorphic instance of fn_higher_order.id
-with types int32_t
-
-*/
-int32_t fn_higher_order_id_a8(int32_t r);
 
 void fn_higher_order_use_compose_cg(void);
 
