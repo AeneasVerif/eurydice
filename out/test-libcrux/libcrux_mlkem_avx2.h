@@ -498,6 +498,8 @@ libcrux_ml_kem_vector_avx2_rej_sample_f5(
   Eurydice_mut_borrow_slice_i16 output
 );
 
+#define LIBCRUX_ML_KEM_VECTOR_AVX2_NTT_NTT_MULTIPLY_PERMUTE_WITH ((int32_t)216)
+
 /**
 This function found in impl {core::clone::Clone for libcrux_ml_kem::vector::avx2::SIMD256Vector}
 */
