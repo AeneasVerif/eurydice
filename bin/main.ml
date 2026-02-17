@@ -239,7 +239,9 @@ Supported options:|}
   let files = Krml.DataTypes.remove_empty_structs files in
   let files = Krml.Monomorphization.datatypes files in
   (* Cannot use remove_unit_buffers as it is technically incorrect *)
-  let files = Krml.DataTypes.remove_unit_fields#visit_files () files in
+  let tbl = Hashtbl.create 41 in
+  let files = (Krml.DataTypes.build_unit_field_table tbl)#visit_files () files in
+  let files = (Krml.DataTypes.remove_unit_fields tbl)#visit_files () files in
   Eurydice.Logging.log "Phase2.13" "%a" pfiles files;
   let files = Krml.Inlining.inline files in
   let files =
