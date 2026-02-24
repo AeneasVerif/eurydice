@@ -2399,6 +2399,9 @@ libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_fb1(
 }
 
 /**
+ Get the serialized public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -2583,6 +2586,9 @@ serialize_public_key_mut_ed(
 }
 
 /**
+ Get the serialized public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -2603,6 +2609,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_ed(
     serialized);
 }
 
+/**
+ Get the serialized public key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -2641,6 +2650,9 @@ serialize_public_key_ed(Eurydice_arr_9d *t_as_ntt, Eurydice_mut_borrow_slice_u8 
 }
 
 /**
+ Get the serialized public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -2658,6 +2670,9 @@ serialized_dd_ed(libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_63 *self
         Eurydice_array_to_slice_mut_6e(&self->ind_cpa_public_key.seed_for_A)));
 }
 
+/**
+ Get the serialized public key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -2703,6 +2718,9 @@ serialize_unpacked_secret_key_ed(
 }
 
 /**
+ Get the serialized private key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -2732,6 +2750,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_8c(
     serialized);
 }
 
+/**
+ Get the serialized private key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -3642,6 +3663,10 @@ add_to_ring_element_ab(Eurydice_arr_51 *myself, Eurydice_arr_51 *rhs)
     myself->data[i0] = libcrux_ml_kem_vector_avx2_add_f5(myself->data[i0], &rhs->data[i0]););
 }
 
+/**
+ Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
+ sum of their constituent coefficients.
+*/
 /**
 This function found in impl {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0, TraitClause@1]}
 */
@@ -6789,6 +6814,9 @@ serialize_public_key_mut_78(
 }
 
 /**
+ Get the serialized public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -6809,6 +6837,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_78(
     serialized);
 }
 
+/**
+ Get the serialized public key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -6847,6 +6878,9 @@ serialize_public_key_78(Eurydice_arr_c5 *t_as_ntt, Eurydice_mut_borrow_slice_u8 
 }
 
 /**
+ Get the serialized public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -6864,6 +6898,9 @@ serialized_dd_78(libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_39 *self
         Eurydice_array_to_slice_mut_6e(&self->ind_cpa_public_key.seed_for_A)));
 }
 
+/**
+ Get the serialized public key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -6909,6 +6946,9 @@ serialize_unpacked_secret_key_1e(
 }
 
 /**
+ Get the serialized private key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -6938,6 +6978,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_c9(
     serialized);
 }
 
+/**
+ Get the serialized private key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -7424,6 +7467,10 @@ add_to_ring_element_42(Eurydice_arr_51 *myself, Eurydice_arr_51 *rhs)
     myself->data[i0] = libcrux_ml_kem_vector_avx2_add_f5(myself->data[i0], &rhs->data[i0]););
 }
 
+/**
+ Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
+ sum of their constituent coefficients.
+*/
 /**
 This function found in impl {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0, TraitClause@1]}
 */
@@ -9615,6 +9662,9 @@ serialize_public_key_mut_29(
 }
 
 /**
+ Get the serialized public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -9635,6 +9685,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_29(
     serialized);
 }
 
+/**
+ Get the serialized public key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -9673,6 +9726,9 @@ serialize_public_key_29(Eurydice_arr_d3 *t_as_ntt, Eurydice_mut_borrow_slice_u8 
 }
 
 /**
+ Get the serialized public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -9690,6 +9746,9 @@ serialized_dd_29(libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94 *self
         Eurydice_array_to_slice_mut_6e(&self->ind_cpa_public_key.seed_for_A)));
 }
 
+/**
+ Get the serialized public key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -9735,6 +9794,9 @@ serialize_unpacked_secret_key_ba(
 }
 
 /**
+ Get the serialized private key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -9764,6 +9826,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_2d(
     serialized);
 }
 
+/**
+ Get the serialized private key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -10255,6 +10320,10 @@ add_to_ring_element_89(Eurydice_arr_51 *myself, Eurydice_arr_51 *rhs)
     myself->data[i0] = libcrux_ml_kem_vector_avx2_add_f5(myself->data[i0], &rhs->data[i0]););
 }
 
+/**
+ Given two polynomial ring elements `lhs` and `rhs`, compute the pointwise
+ sum of their constituent coefficients.
+*/
 /**
 This function found in impl {libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[TraitClause@0, TraitClause@1]}
 */

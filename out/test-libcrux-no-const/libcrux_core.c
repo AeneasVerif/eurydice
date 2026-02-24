@@ -409,6 +409,9 @@ Eurydice_arr_00 libcrux_ml_kem_types_from_51_af(Eurydice_arr_00 value)
 }
 
 /**
+ Create a new [`MlKemKeyPair`] from the secret and public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::types::MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>}
 */
 /**
@@ -482,6 +485,9 @@ Eurydice_arr_00 libcrux_ml_kem_types_from_19_af(Eurydice_arr_00 value)
 }
 
 /**
+ A reference to the raw byte slice.
+*/
+/**
 This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
 */
 /**
@@ -494,6 +500,9 @@ Eurydice_arr_00 *libcrux_ml_kem_types_as_slice_e6_af(Eurydice_arr_00 *self)
   return self;
 }
 
+/**
+ A reference to the raw byte slice.
+*/
 /**
 This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
@@ -783,6 +792,9 @@ Eurydice_arr_74 libcrux_ml_kem_types_from_51_d0(Eurydice_arr_74 value)
 }
 
 /**
+ Create a new [`MlKemKeyPair`] from the secret and public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::types::MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>}
 */
 /**
@@ -887,6 +899,9 @@ Eurydice_arr_2c libcrux_ml_kem_types_from_19_80(Eurydice_arr_2c value)
 }
 
 /**
+ A reference to the raw byte slice.
+*/
+/**
 This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
 */
 /**
@@ -913,6 +928,9 @@ Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_45(Eurydice_arr_74 *a)
   return lit;
 }
 
+/**
+ A reference to the raw byte slice.
+*/
 /**
 This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
@@ -1205,6 +1223,9 @@ Eurydice_arr_30 libcrux_ml_kem_types_from_51_4d(Eurydice_arr_30 value)
 }
 
 /**
+ Create a new [`MlKemKeyPair`] from the secret and public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::types::MlKemKeyPair<PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE>}
 */
 /**
@@ -1331,6 +1352,9 @@ Eurydice_arr_56 libcrux_ml_kem_types_from_19_d0(Eurydice_arr_56 value)
 }
 
 /**
+ A reference to the raw byte slice.
+*/
+/**
 This function found in impl {libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
 */
 /**
@@ -1343,6 +1367,9 @@ Eurydice_arr_30 *libcrux_ml_kem_types_as_slice_e6_4d(Eurydice_arr_30 *self)
   return self;
 }
 
+/**
+ A reference to the raw byte slice.
+*/
 /**
 This function found in impl {libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */

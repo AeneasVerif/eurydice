@@ -107,6 +107,9 @@ typedef struct libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked_s
 libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked;
 
 /**
+ Get the serialized public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -136,6 +139,9 @@ libcrux_ml_kem_ind_cca_unpacked_clone_d7_ab(
 );
 
 /**
+ Get the serialized public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -151,6 +157,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_ed(
   Eurydice_arr_74 *serialized
 );
 
+/**
+ Get the serialized public key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -168,6 +177,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_ed(
 );
 
 /**
+ Get the serialized public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -182,6 +194,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_11_ed(
   const libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *self
 );
 
+/**
+ Get the serialized private key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -200,6 +215,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_8c(
   Eurydice_arr_ea *serialized
 );
 
+/**
+ Get the serialized private key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -539,6 +557,9 @@ typedef struct libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked_s
 libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked;
 
 /**
+ Get the serialized public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -554,6 +575,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_78(
   Eurydice_arr_00 *serialized
 );
 
+/**
+ Get the serialized public key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -571,6 +595,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_78(
 );
 
 /**
+ Get the serialized public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -585,6 +612,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_11_78(
   const libcrux_ml_kem_mlkem1024_avx2_unpacked_MlKem1024KeyPairUnpacked *self
 );
 
+/**
+ Get the serialized private key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -603,6 +633,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_c9(
   Eurydice_arr_17 *serialized
 );
 
+/**
+ Get the serialized private key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -942,6 +975,9 @@ typedef struct libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked_s
 libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked;
 
 /**
+ Get the serialized public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -957,6 +993,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_29(
   Eurydice_arr_30 *serialized
 );
 
+/**
+ Get the serialized public key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -974,6 +1013,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_29(
 );
 
 /**
+ Get the serialized public key.
+*/
+/**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -988,6 +1030,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_11_29(
   const libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked *self
 );
 
+/**
+ Get the serialized private key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
@@ -1006,6 +1051,9 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_2d(
   Eurydice_arr_7f *serialized
 );
 
+/**
+ Get the serialized private key.
+*/
 /**
 This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
 */
