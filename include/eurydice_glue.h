@@ -254,6 +254,17 @@ core_convert_num__core__convert__From_u16__for_usize__from(uint16_t x) {
   return x;
 }
 
+// for monoed where-clauses_simple
+static inline uint64_t
+core_convert_num__core__convert__From___u64__u16___from(uint16_t x) {
+  return x;
+}
+
+static inline size_t
+core_convert_num__core__convert__From___usize__u16___from(uint16_t x) {
+  return x;
+}
+
 static inline uint32_t core_num__u8__count_ones(uint8_t x0) {
 #ifdef _MSC_VER
   return __popcnt(x0);
@@ -414,6 +425,7 @@ typedef void Eurydice_c_void_t;
 // This is temporary. Ultimately we want to be able to extract all of this.
 
 typedef void *core_fmt_Formatter;
+typedef void *core_fmt_Formatter_____;
 #define core_fmt_rt__core__fmt__rt__Argument__a___new_display(x1, x2, x3, x4)  \
   NULL
 

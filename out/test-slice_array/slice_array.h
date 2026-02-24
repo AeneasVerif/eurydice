@@ -15,6 +15,11 @@
 extern "C" {
 #endif
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+typedef struct Eurydice_slice_uint8_t_4size_t__x2_s
+=======
+=======
 #define core_result_Ok 0
 #define core_result_Err 1
 
@@ -28,6 +33,7 @@ core_array__core__fmt__Debug_for_core__array__TryFromSliceError__fmt(
 
 extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(const uint8_t *x0);
 
+>>>>>>> main
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2
@@ -54,7 +60,12 @@ with const generics
 */
 typedef struct Eurydice_arr_44_s { Eurydice_array_u8x4 data[4U]; } Eurydice_arr_44;
 
+<<<<<<< HEAD
+typedef struct Eurydice_slice_Eurydice_arr_uint8_t___4size_t___x2_s
+>>>>>>> 3d7a1f48969c69a2ca824c933a6b0159a355cef3
+=======
 typedef struct Eurydice_dst_ref_mut_75_x2_s
+>>>>>>> main
 {
   Eurydice_dst_ref_mut_75 fst;
   Eurydice_dst_ref_mut_75 snd;

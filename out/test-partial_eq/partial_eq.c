@@ -8,9 +8,13 @@
 #include "partial_eq.h"
 
 /**
-This function found in impl {core::cmp::PartialEq<partial_eq::Enum> for partial_eq::Enum}
+This function found in impl {core::cmp::PartialEq::<partial_eq::Enum, partial_eq::Enum>}
 */
+<<<<<<< HEAD
+inline bool partial_eq_eq_aa(partial_eq_Enum *self, partial_eq_Enum *other)
+=======
 inline bool partial_eq_eq_31(const partial_eq_Enum *self, const partial_eq_Enum *other)
+>>>>>>> main
 {
   return true;
 }
@@ -32,11 +36,23 @@ const_const_partial_eq_Enum___x2;
 void partial_eq_main(void)
 {
   partial_eq_Enum expected = partial_eq_Enum_A;
+<<<<<<< HEAD
+  _partial_eq_Enum__x2 uu____0 = { .fst = &expected, .snd = &expected };
+  EURYDICE_ASSERT(partial_eq_eq_aa(uu____0.fst, uu____0.snd), "panic!");
+=======
   const_partial_eq_Enum__x2 uu____0 = { .fst = &expected, .snd = &expected };
   EURYDICE_ASSERT(partial_eq_eq_31(uu____0.fst, uu____0.snd), "panic!");
+>>>>>>> main
   /* original Rust expression is not an lvalue in C */
   const partial_eq_Enum *lvalue0 = &expected;
   /* original Rust expression is not an lvalue in C */
+<<<<<<< HEAD
+  partial_eq_Enum *lvalue = &expected;
+  __partial_eq_Enum___x2 uu____1 = { .fst = &lvalue0, .snd = &lvalue };
+  EURYDICE_ASSERT(core_cmp_impls__core__cmp__PartialEq________partial_eq__Enum________partial_eq__Enum____eq__________partial_eq__Enum__partial_eq__Enum_(uu____1.fst,
+      uu____1.snd),
+    "panic!");
+=======
   const partial_eq_Enum *lvalue = &expected;
   const_const_partial_eq_Enum___x2 uu____1 = { .fst = &lvalue0, .snd = &lvalue };
   EURYDICE_ASSERT(partial_eq_eq_31(uu____1.fst[0U], uu____1.snd[0U]), "panic!");
@@ -51,5 +67,6 @@ partial_eq_fmt_29(const partial_eq_Enum *self, core_fmt_Formatter *f)
   return
     core_fmt__core__fmt__Formatter__a___write_str(f,
       (KRML_CLITERAL(Eurydice_dst_ref_shared_65){ .ptr = "A", .meta = (size_t)1U }));
+>>>>>>> main
 }
 

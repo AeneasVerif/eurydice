@@ -15,6 +15,8 @@
 extern "C" {
 #endif
 
+<<<<<<< HEAD
+=======
 extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t *x0);
 
 #define core_cmp_Ordering_Less -1
@@ -97,6 +99,7 @@ typedef struct core_ops_range_Range_08_s
 }
 core_ops_range_Range_08;
 
+>>>>>>> main
 void traits2_main(void);
 
 #if defined(__cplusplus)

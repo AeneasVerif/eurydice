@@ -15,6 +15,8 @@
 extern "C" {
 #endif
 
+<<<<<<< HEAD
+=======
 #define names_Foo 0
 #define names_Bar 1
 
@@ -52,6 +54,7 @@ names_Type;
 
 void names_f(uint32_t struct0);
 
+>>>>>>> main
 void names_main(void);
 
 #if defined(__cplusplus)

@@ -5,8 +5,8 @@
 
  */
 
-#ifndef raw_pointers_H
-#define raw_pointers_H
+#ifndef Eurydice_H
+#define Eurydice_H
 
 #include "eurydice_glue.h"
 
@@ -15,11 +15,16 @@
 extern "C" {
 #endif
 
-void raw_pointers_main(void);
+typedef struct core_ops_range_Range__usize__s
+{
+  size_t start;
+  size_t end;
+}
+core_ops_range_Range__usize_;
 
 #if defined(__cplusplus)
 }
 #endif
 
-#define raw_pointers_H_DEFINED
-#endif /* raw_pointers_H */
+#define Eurydice_H_DEFINED
+#endif /* Eurydice_H */
