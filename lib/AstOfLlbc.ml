@@ -2630,6 +2630,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
                       C.index = Charon.Expressions.LocalId.of_int max_int;
                       name = None;
                       local_ty = t_unit;
+                      span = decl.item_meta.span;
                     }
                   in
                   if args = [] then
