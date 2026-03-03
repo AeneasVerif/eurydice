@@ -638,7 +638,6 @@ let binder_of_let e_let =
 
 let typ_of_let e_let = e_let |> node_of_with_type |> binder_of_let |> typ_of_with_type
 
-(*tobe fixed*
 let resugar_loops =
   object(self)
   inherit [_] map as super
@@ -963,22 +962,8 @@ let resugar_loops =
         };
         ?rest..
       |}] -> Some (t1, e_start, e_end, e_body :: loop_rest, rest)
-
-      | _ -> None
-    in
-
-    match step_by with
-    | Some (t1, e_start, e_end, e_increment, e_body, rest) -> 
-      let w = match t1 with TInt w -> w | _ -> assert false in
-      with_type e.typ @@ ESequence (with_type TUnit (EFor (fresh_binder ~mut:true "i" t1,
-        e_start,
-        mk_lt w (Krml.DeBruijn.lift 1 e_end),
-        mk_incr w,
-        self#visit_expr env e_body)
-      ) :: List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest)
-
-    (* Terminal position (regular range for-loop) *)
-    | [%cremepat {|
+      
+      | [%cremepat {|
       let iter =
         core::iter::traits::collect::?::into_iter::?range_name
           ({ start: ?e_start, end: ?e_end });
@@ -995,13 +980,10 @@ let resugar_loops =
       let t1 = TInt w in
       let t_op = e |> rest_of_let |> body_of_while |> typ_of_let in 
       let e_some_i = with_type t_op (ECons ("Some", [with_type t1 (EBound 0)])) in
-      with_type e.typ @@ EFor (fresh_binder ~mut:true "i" t1,
-        e_start,
-        mk_lt w (Krml.DeBruijn.lift 1 e_end),
-        mk_incr w,
-        self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body))
+      let e_body_sub = Krml.DeBruijn.subst e_some_i 0 e_body in 
+      Some (t1, e_start, e_end, [e_body_sub], [])
 
-    | [%cremepat {|
+      | [%cremepat {|
       let iter =
         core::iter::traits::collect::?::into_iter::?range_name
           ({ start: ?e_start, end: ?e_end });
@@ -1015,13 +997,9 @@ let resugar_loops =
       let open Krml.Helpers in
       let w = width_of_int_name t1_name in
       let t1 = TInt w in
-      with_type e.typ @@ EFor (fresh_binder ~mut:true "i" t1,
-        e_start,
-        mk_lt w (Krml.DeBruijn.lift 1 e_end),
-        mk_incr w,
-        self#visit_expr env e_body)
+      Some (t1, e_start, e_end, [e_body], [])
 
-    (* Non-terminal position (regular range for-loop) *)
+      (* Non-terminal position (regular range for-loop) *)
     | [%cremepat {|
       let iter =
         core::iter::traits::collect::?::into_iter::?range_name
@@ -1040,12 +1018,9 @@ let resugar_loops =
       let t1 = TInt w in
       let t_op = e |> rest_of_let |> body_of_while |> typ_of_let in
       let e_some_i = with_type t_op (ECons ("Some", [with_type t1 (EBound 0)])) in
-      with_type e.typ @@ ESequence (with_type TUnit (EFor (fresh_binder ~mut:true "i" t1,
-        e_start,
-        mk_lt w (Krml.DeBruijn.lift 1 e_end),
-        mk_incr w,
-        self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body))
-      ) :: List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest)
+      let e_body_sub = Krml.DeBruijn.subst e_some_i 0 e_body in
+      let rest_sub = List.map (fun e -> (Krml.DeBruijn.subst eunit 0 e)) rest in
+      Some (t1, e_start, e_end, [e_body_sub], rest_sub)
 
     (* Special variant that appears in external crates -- TODO: do we need variants of all other
        patterns? *)
@@ -1056,27 +1031,21 @@ let resugar_loops =
       while true {
         let x = core::iter::range::?::next::?t1_name(&iter);
         match x {
-          None -> ?e2,
+          None -> ?e_rest,
           Some ? -> ?e_body
         };
         abort
       }
-    |}] when Krml.KString.starts_with range_name "<core::ops::range::Range::" && ends_with_return e2 && ends_with_continue e_body
+    |}] when Krml.KString.starts_with range_name "<core::ops::range::Range::" && ends_with_return e_rest && ends_with_continue e_body
     (* && x does not appear in e2 *) ->
       let open Krml.Helpers in
       let w = width_of_int_name t1_name in
       let t1 = TInt w in
       let t_op = e |> rest_of_let |> body_of_while |> typ_of_let in
       let e_some_i = with_type t_op (ECons ("Some", [with_type t1 (EBound 0)])) in
-      with_type e.typ @@ ESequence [
-        with_type TUnit (EFor (fresh_binder ~mut:true "i" t1,
-          e_start,
-          mk_lt w (Krml.DeBruijn.lift 1 e_end),
-          mk_incr w,
-          self#visit_expr env (Krml.DeBruijn.subst e_some_i 0 e_body))
-        );
-        self#visit_expr env (Krml.DeBruijn.(subst eunit 0 (subst eunit 0 e2)))
-      ]
+      let e_body_sub = Krml.DeBruijn.subst e_some_i 0 e_body in
+      let e_rest_sub = Krml.DeBruijn.(subst eunit 0 (subst eunit 0 e_rest)) in
+      Some (t1, e_start, e_end, [e_body_sub], [e_rest_sub])
 
     | [%cremepat {|
       let iter =
@@ -1093,18 +1062,47 @@ let resugar_loops =
       let open Krml.Helpers in
       let w = width_of_int_name t1_name in
       let t1 = TInt w in
-      with_type e.typ @@ ESequence (with_type TUnit (EFor (fresh_binder ~mut:true "i" t1,
-        e_start,
-        mk_lt w (Krml.DeBruijn.lift 1 e_end),
-        mk_incr w,
-        self#visit_expr env e_body)
-      ) :: List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest)
+      let rest_sub = List.map (fun e -> (Krml.DeBruijn.subst eunit 0 e)) rest in
+      Some (t1, e_start, e_end, [e_body], rest_sub)
 
-    | _ ->
-      super#visit_expr env e
+      | _ -> None
+    in
+
+    match step_by with
+    | Some (t1, e_start, e_end, e_increment, e_body, rest) -> 
+      let w = match t1 with TInt w -> w | _ -> assert false in
+      with_type e.typ @@
+        ESequence (
+          with_type TUnit (EFor (
+            fresh_binder ~mut:true "i" t1,
+            e_start,
+            mk_lt w (Krml.DeBruijn.lift 1 e_end),
+            (* XXX seems like the increment is always size_t here ?! *)
+            mk_incr_e w (with_type t1 (ECast (e_increment, t1))),
+            with_type TUnit (ESequence (
+              List.map (self#visit_expr env) e_body
+            ))
+          )) :: List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest
+      )
+    | None -> begin match range_iter with
+      | Some (t1, e_start, e_end, e_body, rest) -> 
+        let w = match t1 with TInt w -> w | _ -> assert false in
+        with_type e.typ @@ ESequence (
+          with_type TUnit (EFor (
+            fresh_binder ~mut:true "i" t1,
+            e_start,
+            mk_lt w (Krml.DeBruijn.lift 1 e_end),
+            mk_incr w,
+            with_type TUnit (ESequence (
+              List.map (self#visit_expr env) e_body
+            ))
+          )) :: List.map (fun e -> self#visit_expr env (Krml.DeBruijn.subst eunit 0 e)) rest
+        )
+      | None -> super#visit_expr env e
+    end
+
 end
 [@ocamlformat "disable"]
-*)
 
 let resugar_loops =
   object(self)
