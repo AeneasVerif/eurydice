@@ -14,56 +14,48 @@ let remove_array_eq =
       match AstOfLlbc.re_polymorphize e with
       | [%cremepat {| core::array::equality::?impl::eq[#?n](#?..)<?t,?u>(?a1, ?a2) |}] ->
           let rec is_flat = function
-            | TArray (t, _) -> is_flat t
+            | TCgApp (TApp (lid, [ t ]), _) -> lid = Builtin.arr && is_flat t
             | TInt _ | TBool | TUnit -> true
             | _ -> false
           in
           assert (t = u);
           if is_flat t then
             let diff = n_binders - n_cgs in
-            (*
             let pattern_array_eq =
-              Str.regexp {|\{core::cmp::PartialEq::<@Array<.*, .*>, @Array<.*, .*>>\}|}
+              Str.regexp {|\{core::cmp::PartialEq::<\[.*;.*\], \[.*;.*\]>\}|}
             in
             let matches_array_eq_slice =
-              Str.regexp {|\{core::cmp::PartialEq::<&.* @Slice<,*>, @Array<.*, .*)>>\}|}
+              Str.regexp {|\{core::cmp::PartialEq::<&.* \[.*\], \[.*;.*\]>\}|}
             in
             (*todo: this pattern is not tested yet*)
             let matches_array_eq s =
               match s with
-              | "{core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>}" ->
-                  true (* non-monomorphized LLBC *)
-              | _ -> ( try Str.string_match pattern_array_eq s 0 with Not_found -> false)
+              | "{core::cmp::PartialEq<[U; N]> for [T; N]}" -> true (* non-monomorphized LLBC *)
+              | _ -> (
+                  try Str.string_match pattern_array_eq s 0
+                  with Not_found ->
+                    let _ = print_string s in
+                    false)
             in
             let matches_array_eq_slice s =
               match s with
-              | "{core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>}" -> true
+              | "{core::cmp::PartialEq<&0 ([U])> for [T; N]}" -> true
               | _ -> ( try Str.string_match matches_array_eq_slice s 0 with Not_found -> false)
             in
             if matches_array_eq impl then
               with_type TBool
                 (EApp (Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) array_eq [ t ]), [ a1; a2 ]))
             else if matches_array_eq_slice impl then
+              let hd =
+                if !Options.no_const then
+                  Builtin.array_eq_slice_mut
+                else
+                  Builtin.array_eq_slice_shared
+              in
               with_type TBool
-                (EApp
-                   (Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) array_eq_slice [ t ]), [ a1; a2 ]))
+                (EApp (Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) hd [ t ]), [ a1; a2 ]))
             else
               failwith ("unknown array eq impl: " ^ impl)
-*)
-            match impl with
-            | "{core::cmp::PartialEq<[U; N]> for [T; N]}" ->
-                with_type TBool
-                  (EApp (Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) array_eq [ t ]), [ a1; a2 ]))
-            | "{core::cmp::PartialEq<&0 ([U])> for [T; N]}" ->
-                let hd =
-                  if !Options.no_const then
-                    Builtin.array_eq_slice_mut
-                  else
-                    Builtin.array_eq_slice_shared
-                in
-                with_type TBool
-                  (EApp (Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) hd [ t ]), [ a1; a2 ]))
-            | _ -> failwith ("unknown array eq impl: " ^ impl)
           else
             failwith "TODO: non-byteeq array comparison"
       | _ -> super#visit_expr (env, e.typ) e
