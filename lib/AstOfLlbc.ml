@@ -191,6 +191,7 @@ module RustNames = struct
       map_vars_to_vars = false;
       match_with_trait_decl_refs = true;
       (* use_trait_decl_refs = true; *)
+      (* match_mono = true; *)
     }
 
   let vec = parse_pattern "alloc::vec::Vec<@>"
@@ -241,13 +242,32 @@ module RustNames = struct
     parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", builtin_of_function Builtin.(array_to_subslice_from_func_mut || array_to_subslice_from_func_shared);
     parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_from_func_mut;
 
+    (*
+    (* arrays: mono *)
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I>}::index<'_, @, core::ops::range::Range<usize>, @>", Builtin.array_to_subslice_mono;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut<'_, @, core::ops::range::Range<usize>, @>", Builtin.array_to_subslice_mono;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I>}::index<'_, @, core::ops::range::RangeTo<usize>, @>", Builtin.array_to_subslice_to_mono;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, @>", Builtin.array_to_subslice_to_mono;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I>}::index<'_, @, core::ops::range::RangeFrom<usize>, @>", Builtin.array_to_subslice_from_mono;
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, @>", Builtin.array_to_subslice_from_mono;
+    *)
+
     (* slices <-> arrays *)
+
     parse_pattern "ArrayToSliceShared<'_, @T, @N>", builtin_of_function Builtin.(array_to_slice_func_mut || array_to_slice_func_shared);
     parse_pattern "ArrayToSliceMut<'_, @T, @N>", builtin_of_function Builtin.array_to_slice_func_mut;
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ mut [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ [@T], &'_ [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
     parse_pattern "core::convert::{core::convert::TryInto<@T, @U, @Clause2_Error>}::try_into<&'_ mut [@T], &'_ mut [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
+
+    (* slices <-> arrays: mono *)
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U>}::try_into<&'_ [@T], [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_array;
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U>}::try_into<&'_ [@T], &'_ [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
+    parse_pattern "core::convert::{core::convert::TryInto<@T, @U>}::try_into<&'_ mut [@T], &'_ mut [@T; @], core::array::TryFromSliceError>", Builtin.slice_to_ref_array;
+
+    (* iterators XXX are any of these used? *)
+    parse_pattern "core::iter::traits::collect::IntoIterator<[@; @]>::into_iter", Builtin.array_into_iter;
 
     (* bitwise & arithmetic operations *)
     parse_pattern "core::ops::bit::BitAnd<&'_ u8, u8>::bitand", Builtin.bitand_pv_u8;
@@ -300,10 +320,6 @@ let string_of_fn_ptr env fn_ptr = string_of_pattern (pattern_of_fn_ptr env fn_pt
 
 (** Translation of types *)
 
-let lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
-  let prefix, name = Krml.KList.split_at_last name in
-  List.map (string_of_path_elem env) prefix, string_of_path_elem env name
-
 let width_of_integer_type (t : Charon.Types.integer_type) : K.width =
   match t with
   | Signed Isize -> PtrdiffT
@@ -320,10 +336,6 @@ let width_of_integer_type (t : Charon.Types.integer_type) : K.width =
   | Unsigned U64 -> UInt64
   | Unsigned U128 ->
       failwith "Internal error: `u128` should not be handled in `width_of_integer_type`."
-
-let lid_of_type_decl_id (env : env) (id : C.type_decl_id) =
-  let { C.item_meta; _ } = env.get_nth_type id in
-  lid_of_name env item_meta.name
 
 let constant_of_scalar_value sv =
   let w = width_of_integer_type (Charon.Scalars.get_ty sv) in
@@ -406,6 +418,193 @@ let lookup_field env typ_id field_id =
   let i = C.FieldId.to_int field_id in
   let field = List.nth fields i in
   ensure_named i field.field_name
+
+let is_var v2 v1 =
+  match v2 with
+  | Var (v2, _) -> v2 = v1
+  | _ -> false
+
+let assert_var = function
+  | Var (v2, ty) -> v2, ty
+  | _ -> assert false
+
+let assert_trait_clause_method = function
+  | TraitClauseMethod { clause_id; item_name; ts; _ } -> clause_id, item_name, ts
+  | _ -> assert false
+
+(* Regular binders *)
+
+let lookup_with_original_type env v1 =
+  let i, (v, t) = findi (fun (v2, _) -> is_var v2 v1) env.binders in
+  let _, ty = assert_var v in
+  i, t, ty
+
+let lookup env v1 =
+  let i, (_, t) = findi (fun (v2, _) -> is_var v2 v1) env.binders in
+  i, t
+
+let lookup_cg_in_expressions (env : env) (v1 : C.const_generic_var_id) =
+  let i, (_, t) = findi (fun (v2, _) -> v2 = ConstGenericVar v1) env.binders in
+  i, t
+
+let expression_of_cg_var_id env v =
+  let i, t = lookup_cg_in_expressions env v in
+  K.(with_type t (EBound i))
+
+let expression_of_var_id (env : env) (v : C.local_id) : K.expr =
+  let i, t = lookup env v in
+  K.(with_type t (EBound i))
+
+(** Assume here the maximum length is 128-bit -- will throw away the larger if larger. This is a
+    helper function to split a 128-bit integer into two 64-bit integers and is not assumed to be
+    used in other contexts. Returns the **expr** pair (high64bits, low64bits) *)
+let split_128bit (value : Z.t) =
+  let mask128 = Z.sub (Z.shift_left Z.one 128) Z.one in
+  let mask64 = Z.sub (Z.shift_left Z.one 64) Z.one in
+  (* Always truncate to 128 bits using bitwise AND *)
+  let value = Z.logand value mask128 in
+  (* Extract low 64 bits *)
+  let low64 = Z.logand mask64 value in
+  (* Shift right without sign extension (use logical shift) *)
+  let high64 = Z.shift_right value 64 in
+  let to_expr_u64bits v =
+    let print_Z z = Z.format "%#x" z in
+    K.with_type (K.TInt UInt64) @@ K.EConstant (UInt64, print_Z v)
+  in
+  to_expr_u64bits high64, to_expr_u64bits low64
+
+let expression_of_int128_t (value : Z.t) =
+  let i128_max = Z.sub (Z.shift_left Z.one 127) Z.one in
+  if value > i128_max then
+    failwith "value is larger than the maximum value of i128";
+  let i128_min = Z.neg (Z.shift_left Z.one 127) in
+  if value < i128_min then
+    failwith "value is smaller than the minimum value of i128";
+  let high64, low64 = split_128bit value in
+  K.(with_type Builtin.int128_t (EApp (Builtin.(get_128_op ("i", "from_bits")), [ high64; low64 ])))
+
+let expression_of_uint128_t (value : Z.t) =
+  let u128_max = Z.sub (Z.shift_left Z.one 128) Z.one in
+  if value > u128_max then
+    failwith "value is larger than the maximum value of u128";
+  let high64, low64 = split_128bit value in
+  K.(
+    with_type Builtin.uint128_t (EApp (Builtin.(get_128_op ("u", "from_bits")), [ high64; low64 ])))
+
+let expression_of_scalar_value sv : K.expr =
+  let int_ty = Charon.Scalars.get_ty sv in
+  let value = Charon.Scalars.get_val sv in
+  match int_ty with
+  | C.Signed C.I128 -> expression_of_int128_t value
+  | C.Unsigned C.U128 -> expression_of_uint128_t value
+  | _ ->
+      let w = width_of_integer_type int_ty in
+      K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
+
+let expression_of_literal (_env : env) (l : C.literal) : K.expr =
+  match l with
+  | VScalar sv -> expression_of_scalar_value sv
+  | VBool b -> K.(with_type TBool (EBool b))
+  | VStr s ->
+      let ascii = Utf8.ascii_of_utf8_str s in
+      let len = String.length s in
+      K.(
+        with_type (Builtin.str_t ~const:true)
+          (EFlat
+             [
+               Some "ptr", with_type Krml.Checker.c_string (EString ascii);
+               Some "meta", with_type Krml.Helpers.usize (EConstant (SizeT, string_of_int len));
+             ]))
+  | VChar c -> K.(with_type Builtin.char_t (EConstant (UInt32, string_of_int @@ Uchar.to_int c)))
+  | VByteStr lst ->
+      let str = List.map (Printf.sprintf "%#x") lst |> String.concat "" in
+      K.(with_type Krml.Checker.c_string (EString str))
+  | VFloat { C.float_ty; float_value } ->
+      let w = float_width float_ty in
+      K.(with_type (TInt w) (EConstant (w, float_value)))
+
+let expression_of_const_generic env (cg : C.constant_expr) =
+  match cg.kind with
+  | C.CGlobal _ -> failwith "TODO: CgGLobal"
+  | C.CVar var -> expression_of_cg_var_id env (C.expect_free_var var)
+  | C.CLiteral l -> expression_of_literal env l
+  | _ -> failwith "TODO: CgExpr"
+
+let has_unresolved_generic (ty : K.typ) : bool =
+  (object
+     inherit [_] Krml.Ast.reduce
+     method zero = false
+     method plus = ( || )
+     method! visit_TBound _ _ = true
+  end)
+    #visit_typ
+    false ty
+
+(* name::<A, B, C, N> -> (name, [N], [A, B, C]) *)
+let lid_full_generic = Hashtbl.create 41
+
+(* Given the result type, const generics, and type arguments, return the original type such that
+   After applying the const generics and type arguments, we get the result type.
+*)
+let ty_re_polymorphize res_ty cgs ty_args =
+  let n_cgs = List.length cgs in
+  let n = List.length ty_args in
+  if n = 0 && n_cgs = 0 then
+    res_ty
+  else
+    match res_ty with
+    | K.TPoly (ts, t) ->
+        (* If already polymorphic, conservatively widen the scheme by
+           prepending new binders. This is a best–effort reconstruction. *)
+        K.TPoly ({ K.n = ts.n + n; n_cgs = ts.n_cgs + n_cgs }, t)
+    | _ -> K.TPoly ({ K.n; n_cgs }, res_ty)
+
+(* From monomorphized codes `name::<A, B, C>` to the original generic expression.
+   Work by turning the `EQualified` into `ETApp` with the appropriate type
+   Or, if no generics, leave as is.
+*)
+let re_polymorphize expr =
+  (object
+     inherit [_] Krml.Ast.map
+
+     method! visit_EQualified ((), ty) full_name =
+       try
+         let name, cgs, ts, fn_ptrs = Hashtbl.find lid_full_generic full_name in
+         if cgs = [] && ts = [] then
+           EQualified full_name
+         else
+           ETApp (K.with_type (ty_re_polymorphize ty cgs ts) (K.EQualified name), cgs, fn_ptrs, ts)
+       with Not_found -> EQualified full_name
+  end)
+    #visit_expr_w
+    () expr
+
+(* get the charon name without the last PeMonomorphized, used for match blocklist *)
+let pure_c_name (name : C.name) =
+  let pre, last = Krml.KList.split_at_last name in
+  match last with
+  | PeInstantiated _args -> pre
+  | _ -> name
+
+(* get the trait_refs from mono. charon name, used in lookup_fun *)
+let trait_refs_c_name (name : C.name) : C.trait_ref list =
+  let _pre, last = Krml.KList.split_at_last name in
+  match last with
+  | PeInstantiated args -> args.binder_value.trait_refs
+  | _ -> []
+
+let pure_lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
+  let prefix, name = Krml.KList.split_at_last name in
+  List.map (string_of_path_elem env) prefix, string_of_path_elem env name
+
+let update_lid_full_generic_fnptrs (full_name : K.lident) (fn_ptrs : K.expr list) =
+  L.log "AstOfLlbc" "[re-poly] trying to update the fn_ptrs of %a to %a" plid full_name pexprs
+    fn_ptrs;
+  try
+    let name, cgs, ts, _ = Hashtbl.find lid_full_generic full_name in
+    L.log "AstOfLlbc" "[re-poly] updated the fn_ptrs of %a to %a" plid full_name pexprs fn_ptrs;
+    Hashtbl.replace lid_full_generic full_name (name, cgs, ts, fn_ptrs)
+  with Not_found -> failwith "update_lid_full_generic_fnptrs: not found"
 
 let mk_expr_arr_struct (expr_array : K.expr) = K.EFlat [ Some "data", expr_array ]
 
@@ -574,6 +773,31 @@ and ptr_typ_of_ty (env : env) ~const (ty : Charon.Types.ty) : K.typ =
       | None -> K.TBuf (typ, const)
       | Some meta -> Builtin.mk_dst_ref ~const typ meta)
 
+and insert_lid_full_generic (env : env) (full_name : K.lident) (name : Charon.Types.name) =
+  let item_name, generic =
+    let pre, last = Krml.KList.split_at_last name in
+    match last with
+    | PeInstantiated args -> pure_lid_of_name env pre, (args.binder_value : C.generic_args)
+    | _ -> full_name, { C.types = []; regions = []; const_generics = []; trait_refs = [] }
+  in
+  let cgs, tys =
+    ( List.map (expression_of_const_generic env) generic.const_generics,
+      List.map (typ_of_ty env) generic.types )
+  in
+  if not (Hashtbl.mem lid_full_generic full_name) then
+    L.log "AstOfLlbc" "mono name : %a\n repolyed name : %a with cgs %a and tys %a " plid full_name
+      plid item_name pexprs cgs ptyps tys;
+  Hashtbl.add lid_full_generic full_name (item_name, cgs, tys, [])
+
+and lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
+  let lid = pure_lid_of_name env name in
+  insert_lid_full_generic env lid name;
+  lid
+
+and lid_of_type_decl_id (env : env) (id : C.type_decl_id) =
+  let { C.item_meta; _ } = env.get_nth_type id in
+  lid_of_name env item_meta.name
+
 and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   match ty with
   | TVar var -> K.TBound (lookup_typ env (C.expect_free_var var))
@@ -652,30 +876,6 @@ let maybe_cg_array (env : env) (t : C.ty) (cg : C.constant_expr) =
 
 (* Environment: expressions *)
 
-let is_var v2 v1 =
-  match v2 with
-  | Var (v2, _) -> v2 = v1
-  | _ -> false
-
-let assert_var = function
-  | Var (v2, ty) -> v2, ty
-  | _ -> assert false
-
-let assert_trait_clause_method = function
-  | TraitClauseMethod { clause_id; item_name; ts; _ } -> clause_id, item_name, ts
-  | _ -> assert false
-
-(* Regular binders *)
-
-let lookup env v1 =
-  let i, (_, t) = findi (fun (v2, _) -> is_var v2 v1) env.binders in
-  i, t
-
-let lookup_with_original_type env v1 =
-  let i, (v, t) = findi (fun (v2, _) -> is_var v2 v1) env.binders in
-  let _, ty = assert_var v in
-  i, t, ty
-
 (* Const generic binders *)
 
 let push_cg_binder env (t : C.const_generic_param) =
@@ -752,103 +952,6 @@ let rec with_locals (env : env) (t : K.typ) (locals : C.local list) (k : env -> 
       let env = push_binder env l in
       let b = binder_of_var env l in
       K.(with_type t (ELet (b, Krml.Helpers.any, with_locals env t locals k)))
-
-let lookup_cg_in_expressions (env : env) (v1 : C.const_generic_var_id) =
-  let i, (_, t) = findi (fun (v2, _) -> v2 = ConstGenericVar v1) env.binders in
-  i, t
-
-let expression_of_cg_var_id env v =
-  let i, t = lookup_cg_in_expressions env v in
-  K.(with_type t (EBound i))
-
-let expression_of_var_id (env : env) (v : C.local_id) : K.expr =
-  let i, t = lookup env v in
-  K.(with_type t (EBound i))
-
-(** Assume here the maximum length is 128-bit -- will throw away the larger if larger. This is a
-    helper function to split a 128-bit integer into two 64-bit integers and is not assumed to be
-    used in other contexts. Returns the **expr** pair (high64bits, low64bits) *)
-let split_128bit (value : Z.t) =
-  let mask128 = Z.sub (Z.shift_left Z.one 128) Z.one in
-  let mask64 = Z.sub (Z.shift_left Z.one 64) Z.one in
-  (* Always truncate to 128 bits using bitwise AND *)
-  let value = Z.logand value mask128 in
-  (* Extract low 64 bits *)
-  let low64 = Z.logand mask64 value in
-  (* Shift right without sign extension (use logical shift) *)
-  let high64 = Z.shift_right value 64 in
-  let to_expr_u64bits v =
-    let print_Z z = Z.format "%#x" z in
-    K.with_type (K.TInt UInt64) @@ K.EConstant (UInt64, print_Z v)
-  in
-  to_expr_u64bits high64, to_expr_u64bits low64
-
-let expression_of_int128_t (value : Z.t) =
-  let i128_max = Z.sub (Z.shift_left Z.one 127) Z.one in
-  if value > i128_max then
-    failwith "value is larger than the maximum value of i128";
-  let i128_min = Z.neg (Z.shift_left Z.one 127) in
-  if value < i128_min then
-    failwith "value is smaller than the minimum value of i128";
-  let high64, low64 = split_128bit value in
-  K.(with_type Builtin.int128_t (EApp (Builtin.(get_128_op ("i", "from_bits")), [ high64; low64 ])))
-
-let expression_of_uint128_t (value : Z.t) =
-  let u128_max = Z.sub (Z.shift_left Z.one 128) Z.one in
-  if value > u128_max then
-    failwith "value is larger than the maximum value of u128";
-  let high64, low64 = split_128bit value in
-  K.(
-    with_type Builtin.uint128_t (EApp (Builtin.(get_128_op ("u", "from_bits")), [ high64; low64 ])))
-
-let expression_of_scalar_value sv : K.expr =
-  let int_ty = Charon.Scalars.get_ty sv in
-  let value = Charon.Scalars.get_val sv in
-  match int_ty with
-  | C.Signed C.I128 -> expression_of_int128_t value
-  | C.Unsigned C.U128 -> expression_of_uint128_t value
-  | _ ->
-      let w = width_of_integer_type int_ty in
-      K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
-
-let expression_of_literal (_env : env) (l : C.literal) : K.expr =
-  match l with
-  | VScalar sv -> expression_of_scalar_value sv
-  | VBool b -> K.(with_type TBool (EBool b))
-  | VStr s ->
-      let ascii = Utf8.ascii_of_utf8_str s in
-      let len = String.length s in
-      K.(
-        with_type (Builtin.str_t ~const:true)
-          (EFlat
-             [
-               Some "ptr", with_type Krml.Checker.c_string (EString ascii);
-               Some "meta", with_type Krml.Helpers.usize (EConstant (SizeT, string_of_int len));
-             ]))
-  | VChar c -> K.(with_type Builtin.char_t (EConstant (UInt32, string_of_int @@ Uchar.to_int c)))
-  | VByteStr lst ->
-      let str = List.map (Printf.sprintf "%#x") lst |> String.concat "" in
-      K.(with_type Krml.Checker.c_string (EString str))
-  | VFloat { C.float_ty; float_value } ->
-      let w = float_width float_ty in
-      K.(with_type (TInt w) (EConstant (w, float_value)))
-
-let expression_of_const_generic env (cg : C.constant_expr) =
-  match cg.kind with
-  | C.CGlobal _ -> failwith "TODO: CgGLobal"
-  | C.CVar var -> expression_of_cg_var_id env (C.expect_free_var var)
-  | C.CLiteral l -> expression_of_literal env l
-  | _ -> failwith "TODO: CgExpr"
-
-let has_unresolved_generic (ty : K.typ) : bool =
-  (object
-     inherit [_] Krml.Ast.reduce
-     method zero = false
-     method plus = ( || )
-     method! visit_TBound _ _ = true
-  end)
-    #visit_typ
-    false ty
 
 let rec expression_of_place (env : env) (p : C.place) : K.expr =
   (* We construct a target expression. Callers may still use the original type to tell arrays
@@ -1435,13 +1538,44 @@ and debug_trait_clause_mapping env (mapping : (var_id * K.typ) list) =
 
 (** Compiling function instantiations into krml application nodes. *)
 
+(* Helper for getting monomorphized generic arguments from a name *)
+let try_get_mono_from_name (name : C.name) =
+  match List.rev name with
+  | PeInstantiated generics :: _ -> Some generics
+  | _ -> None
+
+(* Only get monomorphized generics for known *Eurydice* builtins *)
+let try_get_mono_generics is_known_builtin (env : env) (f : C.fn_ptr) =
+  if not is_known_builtin then
+    None
+  else
+    let get_from_fid fid =
+      let fun_decl = env.get_nth_function fid in
+      try_get_mono_from_name fun_decl.item_meta.name
+    in
+    match f.kind with
+    | FunId (FRegular fid) -> get_from_fid fid
+    (* Builtins are always generic *)
+    | FunId (FBuiltin _) -> None
+    | TraitMethod (_, _, fid) -> get_from_fid fid
+
 (* First step: produce an expression for the un-instantiated function reference, along with all the
    type information required to build a proper instantiation. The function reference is an expression
    that is either a reference to a variable in scope (trait methods), or to a top-level qualified
    name, which encompasses both externally-defined function (builtins), or regular functions. *)
-let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
+let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result * C.trait_ref list =
   let open RustNames in
-  let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p f in
+  let pat = pattern_of_fn_ptr env f in
+  L.log "Calls" "%sLooking up function: %s" depth
+    (Charon.PrintTypes.fn_ptr_to_string env.format_env f);
+  L.log "Calls" "%sfn-ptr-pattern: %s" depth (string_of_pattern pat);
+  let matches (p : Charon.NameMatcher.pattern) =
+    L.log "Calls" "%smatching against pattern: %s" depth
+      (Charon.NameMatcher.pattern_to_string { Charon.NameMatcher.tgt = TkPattern } p);
+    let ret = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p f in
+    L.log "Calls" "%smatch result: %b" depth ret;
+    ret
+  in
   let builtin b =
     let { Builtin.name; typ; n_type_args; cg_args; _ } = b in
     let ret_type, arg_types = Krml.Helpers.flatten_arrow typ in
@@ -1449,15 +1583,17 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
     K.EQualified name, { ts; arg_types; ret_type; cg_types = cg_args; is_known_builtin = true }
   in
   match List.find_opt (fun (p, _) -> matches p) (known_builtins !Options.no_const) with
-  | Some (_, b) -> builtin b
+  | Some (_, b) ->
+      let hd, res = builtin b in
+      hd, res, []
   | None -> (
       let lookup_result_of_fun_id fun_id =
         let decl = env.get_nth_function fun_id in
         let lid = lid_of_name env decl.C.item_meta.name in
         L.log "Calls" "%s--> name: %a" depth plid lid;
-        K.EQualified lid, lookup_signature env depth (C.bound_fun_sig_of_decl decl)
+        let trait_refs = trait_refs_c_name decl.C.item_meta.name in
+        K.EQualified lid, lookup_signature env depth (C.bound_fun_sig_of_decl decl), trait_refs
       in
-
       match f.kind with
       | FunId (FRegular f) -> lookup_result_of_fun_id f
       | FunId (FBuiltin f) -> fail "unknown builtin function: %s" (C.show_builtin_fun_id f)
@@ -1483,7 +1619,10 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
               in
               let ret_type, arg_types = Krml.Helpers.flatten_arrow t in
               let cg_types, arg_types = Krml.KList.split sig_info.n_cgs arg_types in
-              EBound f, { ts = sig_info; cg_types; arg_types; ret_type; is_known_builtin = false }
+              ( EBound f,
+                { ts = sig_info; cg_types; arg_types; ret_type; is_known_builtin = false },
+                [] )
+              (* todo: check whether trait_refs is needed here *)
           | _ ->
               fail "Error looking trait ref: %s %s%!"
                 (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref)
@@ -1498,13 +1637,23 @@ let fn_ptr_is_opaque env (fn_ptr : C.fn_ptr) =
    contains type application, const generic applications, and application of trait methods to
    implement the dictionary-passing style. *)
 let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
-  let {
-    C.generics = { types = type_args; const_generics = const_generic_args; trait_refs; _ };
-    kind;
-    _;
-  } : C.fn_ptr =
-    fn_ptr
+  let { C.generics; kind; _ } : C.fn_ptr = fn_ptr in
+
+  (* The function itself, along with information about its *signature*. *)
+  let ( f,
+        { ts; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_known_builtin },
+        trait_refs_mono ) =
+    lookup_fun env depth fn_ptr
   in
+
+  let generics =
+    match try_get_mono_generics is_known_builtin env fn_ptr with
+    | None -> generics
+    (* Essentially, there might still be (late-bound) region arguments in the original generics
+     But we don't care about them (the regions), so just ignore them. *)
+    | Some generics -> generics.binder_value
+  in
+  let { C.types = type_args; const_generics = const_generic_args; trait_refs; _ } = generics in
 
   (* We handle any kind of fn_ptr, whether it's a concrete function call, a
      concrete trait implementation method call, or an abstract trait method call
@@ -1523,9 +1672,14 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   let type_args, const_generic_args, trait_refs =
     let generics =
       match kind with
-      | TraitMethod ({ kind = TraitImpl { generics; _ }; _ }, _, _) ->
+      | TraitMethod ({ kind = TraitImpl { generics; id }; _ }, _, _) -> begin
           L.log "Calls" "%s--> this is a trait method" depth;
-          generics
+          let trait_impl = env.get_nth_trait_impl id in
+          match try_get_mono_from_name trait_impl.item_meta.name with
+          (* The same applies here: ignoring potential region arguments *)
+          | Some generics when is_known_builtin -> generics.binder_value
+          | _ -> generics
+        end
       | _ -> C.empty_generic_args
     in
     ( generics.types @ type_args,
@@ -1542,12 +1696,12 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   L.log "Calls" "%s--> type_args: %s" depth
     (String.concat ", " (List.map (Charon.PrintTypes.ty_to_string env.format_env) type_args));
 
-  (* The function itself, along with information about its *signature*. *)
-  let f, { ts; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_known_builtin } =
-    lookup_fun env depth fn_ptr
-  in
   L.log "Calls" "%s--> %d inputs: %a" depth (List.length inputs) ptyps inputs;
   L.log "Calls" "%s--> is_known_builtin?: %b" depth is_known_builtin;
+  L.log "Calls" "%s--> [MONO] trait from mono name: %s\n" depth
+    (String.concat " ++ "
+       (List.map (Charon.PrintTypes.trait_ref_to_string env.format_env) trait_refs));
+  L.log "Calls" "%s--> [MONO] end of trait refs" depth;
 
   (* Translate effective type and cg arguments. *)
   let const_generic_args =
@@ -1564,6 +1718,92 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   (* Handling trait implementations for generic trait bounds in the callee. We
      synthesize krml expressions that correspond to each one of the trait methods
      that the callee expects. Order matters here. *)
+
+  (* MUST have the same structure as mk_clause_binders_and_args *)
+  let rec build_trait_ref_mapping depth (trait_refs : C.trait_ref list) =
+    List.concat_map
+      (fun (trait_ref : C.trait_ref) ->
+        let cname =
+          pure_c_name
+            (env.get_nth_trait_decl trait_ref.trait_decl_ref.binder_value.id).item_meta.name
+        in
+        let name = string_of_name env cname in
+        L.log "Calls" "%s--> trait_ref %s: %s\n" depth name (C.show_trait_ref trait_ref);
+
+        match trait_ref.kind with
+        | _ when List.mem name blocklisted_trait_decls ->
+            (* Trait not supported -- don't synthesize arguments *)
+            []
+        | TraitImpl { id = impl_id; generics = _generics } ->
+            (* Call-site has resolved trait clauses into a concrete trait implementation. *)
+            let trait_impl : C.trait_impl = env.get_nth_trait_impl impl_id in
+
+            (* This must be in agreement, and in the same order as mk_clause_binders_and_args *)
+            List.map
+              (fun ((_item_name, { C.id; generics }) : _ * C.global_decl_ref) ->
+                if
+                  not
+                    (generics.types = [] && generics.const_generics = [] && generics.trait_refs = [])
+                then
+                  failwith "TODO: polymorphic globals";
+                let global = env.get_nth_global id in
+                K.with_type (typ_of_ty env global.ty)
+                  (K.EQualified (lid_of_name env global.item_meta.name)))
+              trait_impl.consts
+            @ List.map
+                (fun ((item_name, bound_fn) : _ * C.fun_decl_ref C.binder) ->
+                  let fun_decl_id = bound_fn.C.binder_value.C.id in
+                  let fn_ptr : C.fn_ptr =
+                    {
+                      kind = TraitMethod (trait_ref, item_name, fun_decl_id);
+                      generics = Charon.TypesUtils.empty_generic_args;
+                    }
+                  in
+                  let fn_ptr = fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr) in
+                  fn_ptr)
+                trait_impl.methods
+            @ build_trait_ref_mapping ("  " ^ depth)
+                (let subst =
+                   Charon.Substitute.make_subst_from_generics trait_impl.generics _generics Self
+                 in
+                 (*_generics.trait_refs*)
+                 List.map
+                   (Charon.Substitute.st_substitute_visitor#visit_trait_ref subst)
+                   trait_impl.implied_trait_refs)
+        | Clause _ as clause_id ->
+            (* Caller it itself polymorphic and refers to one of its own clauses to synthesize
+              the clause arguments at call-site. We must pass whatever is relevant for this
+              clause, *transitively* (this means all the reachable parents). *)
+            let rec relevant = function
+              | C.ParentClause (tref', _) -> relevant tref'.kind
+              | clause_id' -> clause_id = clause_id'
+            in
+            List.rev
+              (Krml.KList.filter_mapi
+                 (fun i (var, t) ->
+                   match var with
+                   | TraitClauseMethod { clause_id = clause_id'; _ }
+                   | TraitClauseConstant { clause_id = clause_id'; _ }
+                     when relevant clause_id' -> Some K.(with_type t (EBound i))
+                   | _ -> None)
+                 env.binders)
+        | ParentClause (tref, clause_id) ->
+            let decl_id = tref.trait_decl_ref.binder_value.id in
+            let trait_decl = env.get_nth_trait_decl decl_id in
+            let name = string_of_name env trait_decl.item_meta.name in
+            let clause_id = C.TraitClauseId.to_int clause_id in
+            let parent_clause = List.nth trait_decl.implied_clauses clause_id in
+            let parent_clause_decl = env.get_nth_trait_decl parent_clause.trait.binder_value.id in
+            let parent_name = string_of_name env parent_clause_decl.item_meta.name in
+            Krml.KPrint.bprintf "looking up parent clause #%d of decl=%s = %s\n" clause_id name
+              parent_name;
+            if List.mem parent_name blocklisted_trait_decls then
+              []
+            else
+              failwith "Don't know how to resolve trait_ref above (1)"
+        | _ -> failwith "Don't know how to resolve trait_ref above (2)")
+      trait_refs
+  in
   let fn_ptrs : K.expr list =
     if is_known_builtin then
       (* If this is a known builtin implementation, we do not materialize trait methods, on the
@@ -1667,6 +1907,23 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
       build_trait_ref_mapping depth trait_refs
   in
   L.log "Calls" "%s--> trait method impls: %d" depth (List.length fn_ptrs);
+  let fn_ptrs_mono : K.expr list =
+    if is_known_builtin then
+      (* If this is a known builtin implementation, we do not materialize trait methods, on the
+         basis that this is likely something from the standard library that exercises more features
+         that we can support, and that since we hand-write it, we don't need this level of precision
+         anyhow. *)
+      []
+    else
+      build_trait_ref_mapping depth trait_refs_mono
+  in
+  (* update the fn_ptrs_mono in the table *)
+  begin
+    if fn_ptrs_mono <> [] then
+      match f with
+      | EQualified full_name -> update_lid_full_generic_fnptrs full_name fn_ptrs_mono
+      | _ -> ()
+  end;
 
   (* This needs to match what is done in the FunGroup case (i.e. when we extract
      a definition). There are two behaviors depending on whether the function is

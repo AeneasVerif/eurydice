@@ -15,12 +15,6 @@
 extern "C" {
 #endif
 
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
-
 void reborrow_main(void);
 
 #if defined(__cplusplus)
