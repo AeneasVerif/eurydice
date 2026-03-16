@@ -2352,8 +2352,12 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
   | Return ->
       let e = expression_of_var_id env ret_var in
       K.(with_type TAny (EReturn e))
-  | Break _ -> K.(with_type TAny EBreak)
-  | Continue _ -> K.(with_type TAny EContinue)
+  | Break n ->
+      assert (n = 0);
+      K.(with_type TAny EBreak)
+  | Continue n ->
+      assert (n = 0);
+      K.(with_type TAny EContinue)
   | Nop -> Krml.Helpers.eunit
   | Switch (If (op, s1, s2)) ->
       let e1 = expression_of_block env ret_var s1 in
