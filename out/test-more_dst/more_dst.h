@@ -42,6 +42,12 @@ typedef struct more_dst_T3_s
 }
 more_dst_T3;
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint32_t
+with const generics
+- $4size_t
+*/
 typedef struct Eurydice_arr_0d_s { uint32_t data[4U]; } Eurydice_arr_0d;
 
 typedef struct more_dst_TS1_s

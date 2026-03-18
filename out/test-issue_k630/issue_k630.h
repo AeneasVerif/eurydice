@@ -21,6 +21,12 @@ extern "C" {
 
 typedef uint8_t core_panicking_AssertKind;
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint32_t
+with const generics
+- $1size_t
+*/
 typedef struct Eurydice_arr_a5_s { uint32_t data[1U]; } Eurydice_arr_a5;
 
 /**

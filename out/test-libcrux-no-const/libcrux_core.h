@@ -31,6 +31,12 @@ with const generics
 */
 typedef struct Eurydice_arr_17_s { uint8_t data[3168U]; } Eurydice_arr_17;
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $1568size_t
+*/
 typedef struct Eurydice_arr_00_s { uint8_t data[1568U]; } Eurydice_arr_00;
 
 typedef struct libcrux_ml_kem_mlkem1024_MlKem1024KeyPair_s
@@ -40,6 +46,11 @@ typedef struct libcrux_ml_kem_mlkem1024_MlKem1024KeyPair_s
 }
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair;
 
+/**
+A monomorphic instance of n-tuple
+with types libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext, Eurydice_arr_60
+
+*/
 typedef struct tuple_4d_s
 {
   Eurydice_arr_00 fst;
@@ -55,6 +66,12 @@ with const generics
 */
 typedef struct Eurydice_arr_ea_s { uint8_t data[2400U]; } Eurydice_arr_ea;
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $1184size_t
+*/
 typedef struct Eurydice_arr_74_s { uint8_t data[1184U]; } Eurydice_arr_74;
 
 typedef struct libcrux_ml_kem_mlkem768_MlKem768KeyPair_s
@@ -72,6 +89,11 @@ with const generics
 */
 typedef struct Eurydice_arr_2c_s { uint8_t data[1088U]; } Eurydice_arr_2c;
 
+/**
+A monomorphic instance of n-tuple
+with types libcrux_ml_kem_mlkem768_MlKem768Ciphertext, Eurydice_arr_60
+
+*/
 typedef struct tuple_7f_s
 {
   Eurydice_arr_2c fst;
@@ -95,6 +117,12 @@ with const generics
 */
 typedef struct Eurydice_arr_7f_s { uint8_t data[1632U]; } Eurydice_arr_7f;
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $800size_t
+*/
 typedef struct Eurydice_arr_30_s { uint8_t data[800U]; } Eurydice_arr_30;
 
 /**
@@ -118,8 +146,19 @@ with const generics
 */
 typedef struct Eurydice_arr_6d_s { uint8_t data[24U]; } Eurydice_arr_6d;
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $768size_t
+*/
 typedef struct Eurydice_arr_56_s { uint8_t data[768U]; } Eurydice_arr_56;
 
+/**
+A monomorphic instance of n-tuple
+with types libcrux_ml_kem_types_MlKemCiphertext_1a, Eurydice_arr_60
+
+*/
 typedef struct tuple_50_s
 {
   Eurydice_arr_56 fst;
@@ -159,6 +198,12 @@ with const generics
 */
 typedef struct Eurydice_arr_06_s { uint8_t data[64U]; } Eurydice_arr_06;
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $16size_t
+*/
 typedef struct Eurydice_arr_88_s { uint8_t data[16U]; } Eurydice_arr_88;
 
 /**

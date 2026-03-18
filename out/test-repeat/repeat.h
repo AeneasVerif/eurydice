@@ -35,6 +35,12 @@ typedef struct Eurydice_arr_27_s { Eurydice_arr_a5 data[1U]; } Eurydice_arr_27;
 
 #define REPEAT_C2 ((KRML_CLITERAL(Eurydice_arr_27){ .data = { { .data = { 0U } } } }))
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $16size_t
+*/
 typedef struct Eurydice_arr_88_s { uint8_t data[16U]; } Eurydice_arr_88;
 
 /**

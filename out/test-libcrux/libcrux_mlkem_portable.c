@@ -3836,6 +3836,11 @@ encaps_prepare_03(Eurydice_borrow_slice_u8 randomness, Eurydice_borrow_slice_u8 
   return G_4a_ac(Eurydice_array_to_slice_shared_d8(&to_hash));
 }
 
+/**
+A monomorphic instance of n-tuple
+with types Eurydice_arr_cf, libcrux_ml_kem_polynomial_PolynomialRingElement_1d
+
+*/
 typedef struct tuple_77_s
 {
   Eurydice_arr_cf fst;
@@ -7330,6 +7335,11 @@ encaps_prepare_10(Eurydice_borrow_slice_u8 randomness, Eurydice_borrow_slice_u8 
   return G_4a_fd(Eurydice_array_to_slice_shared_d8(&to_hash));
 }
 
+/**
+A monomorphic instance of n-tuple
+with types Eurydice_arr_3d0, libcrux_ml_kem_polynomial_PolynomialRingElement_1d
+
+*/
 typedef struct tuple_ba_s
 {
   Eurydice_arr_3d0 fst;
@@ -10167,6 +10177,11 @@ encaps_prepare_9c(Eurydice_borrow_slice_u8 randomness, Eurydice_borrow_slice_u8 
   return G_4a_e0(Eurydice_array_to_slice_shared_d8(&to_hash));
 }
 
+/**
+A monomorphic instance of n-tuple
+with types Eurydice_arr_1d, libcrux_ml_kem_polynomial_PolynomialRingElement_1d
+
+*/
 typedef struct tuple_ac_s
 {
   Eurydice_arr_1d fst;

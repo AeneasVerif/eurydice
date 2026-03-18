@@ -22,6 +22,11 @@ extern "C" {
 
 typedef uint8_t core_option_Option_08_tags;
 
+/**
+A monomorphic instance of core.option.Option
+with types size_t
+
+*/
 typedef struct core_option_Option_08_s
 {
   core_option_Option_08_tags tag;
@@ -242,6 +247,12 @@ with const generics
 */
 Eurydice_arr_17 libcrux_ml_kem_types_from_b2_39(Eurydice_arr_17 value);
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $1536size_t
+*/
 typedef struct Eurydice_arr_38_s { uint8_t data[1536U]; } Eurydice_arr_38;
 
 /**
@@ -625,6 +636,12 @@ with const generics
 */
 Eurydice_arr_ea libcrux_ml_kem_types_from_b2_28(Eurydice_arr_ea value);
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $1152size_t
+*/
 typedef struct Eurydice_arr_600_s { uint8_t data[1152U]; } Eurydice_arr_600;
 
 /**

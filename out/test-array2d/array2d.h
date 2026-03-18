@@ -21,6 +21,12 @@ core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(const uint32_t *x0, const 
 extern bool
 core_cmp_impls__core__cmp__PartialEq_u32__for_u32__ne(const uint32_t *x0, const uint32_t *x1);
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint32_t
+with const generics
+- $2size_t
+*/
 typedef struct Eurydice_arr_b2_s { uint32_t data[2U]; } Eurydice_arr_b2;
 
 /**

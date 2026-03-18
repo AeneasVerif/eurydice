@@ -68,6 +68,12 @@ with const generics
 */
 typedef struct Eurydice_arr_fb_s { Eurydice_array_u8x4 data[12U]; } Eurydice_arr_fb;
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $12size_t
+*/
 typedef struct Eurydice_arr_48_s { uint8_t data[12U]; } Eurydice_arr_48;
 
 /**

@@ -28,6 +28,12 @@ typedef struct dst_T_s
 }
 dst_T;
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint32_t
+with const generics
+- $3size_t
+*/
 typedef struct Eurydice_arr_6f_s { uint32_t data[3U]; } Eurydice_arr_6f;
 
 typedef struct dst_T3_s
@@ -49,6 +55,12 @@ typedef struct Eurydice_dst_ref_mut_15_s
 }
 Eurydice_dst_ref_mut_15;
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint32_t
+with const generics
+- $4size_t
+*/
 typedef struct Eurydice_arr_0d_s { uint32_t data[4U]; } Eurydice_arr_0d;
 
 /**
@@ -77,6 +89,12 @@ typedef struct Eurydice_dst_ref_mut_20_s
 }
 Eurydice_dst_ref_mut_20;
 
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr_6f
+with const generics
+- $4size_t
+*/
 typedef struct Eurydice_arr_d6_s { Eurydice_arr_6f data[4U]; } Eurydice_arr_d6;
 
 /**
@@ -195,6 +213,11 @@ Eurydice_dst_ref_mut_3c;
 
 void dst_main4(void);
 
+/**
+A monomorphic instance of dst.T2
+with types Eurydice_derefed_slice uint32_t
+
+*/
 typedef struct dst_T2_be_s
 {
   size_t header;

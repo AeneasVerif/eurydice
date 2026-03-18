@@ -67,6 +67,11 @@ core_iter_range__core__iter__range__Step_for_usize__backward_checked(size_t x0, 
 extern core_option_Option_08
 core_iter_range__core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
 
+/**
+A monomorphic instance of n-tuple
+with types size_t, core_option_Option_08
+
+*/
 typedef struct tuple_d1_s
 {
   size_t fst;
@@ -90,6 +95,12 @@ typedef struct nested_arrays_Key_s { uint32_t data[8U]; } nested_arrays_Key;
 
 #define NESTED_ARRAYS_ZERO ((KRML_CLITERAL(nested_arrays_Key){ .data = { 0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U } }))
 
+/**
+A monomorphic instance of Eurydice.arr
+with types nested_arrays_Key
+with const generics
+- $3size_t
+*/
 typedef struct Eurydice_arr_3d_s { nested_arrays_Key data[3U]; } Eurydice_arr_3d;
 
 /**
@@ -102,6 +113,12 @@ typedef struct Eurydice_arr_06_s { Eurydice_arr_3d data[3U]; } Eurydice_arr_06;
 
 void nested_arrays_main(void);
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $200size_t
+*/
 typedef struct Eurydice_arr_88_s { uint8_t data[200U]; } Eurydice_arr_88;
 
 /**

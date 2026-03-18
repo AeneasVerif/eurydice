@@ -64,6 +64,11 @@ core_result_Result_1d;
 
 core_result_Result_1d issue_105_inner(void);
 
+/**
+A monomorphic instance of core.result.Result
+with types core_convert_Infallible, uint8_t
+
+*/
 typedef struct core_result_Result_8f_s
 {
   core_result_Result_1d_tags tag;

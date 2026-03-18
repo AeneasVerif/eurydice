@@ -26,6 +26,12 @@ typedef struct closure_f_closure_closure_s
 }
 closure_f_closure_closure;
 
+/**
+A monomorphic instance of Eurydice.arr
+with types size_t
+with const generics
+- $1size_t
+*/
 typedef struct Eurydice_arr_e4_s { size_t data[1U]; } Eurydice_arr_e4;
 
 /**
