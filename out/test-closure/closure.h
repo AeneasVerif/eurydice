@@ -15,13 +15,7 @@
 extern "C" {
 #endif
 
-/**
-A monomorphic instance of Eurydice.arr
-with types size_t
-with const generics
-- $1size_t
-*/
-typedef struct Eurydice_arr_e4_s { size_t data[1U]; } Eurydice_arr_e4;
+typedef struct Eurydice_arr_e4_s Eurydice_arr_e4;
 
 typedef const Eurydice_arr_e4 *closure_f_closure;
 
@@ -31,6 +25,8 @@ typedef struct closure_f_closure_closure_s
   const size_t *snd;
 }
 closure_f_closure_closure;
+
+typedef struct Eurydice_arr_e4_s { size_t data[1U]; } Eurydice_arr_e4;
 
 /**
 This function found in impl {core::ops::function::FnMut<(usize), usize> for closure::f::closure::closure<0, 1>}

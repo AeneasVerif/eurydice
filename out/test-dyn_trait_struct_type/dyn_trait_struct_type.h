@@ -17,8 +17,6 @@ extern "C" {
 
 typedef struct core_marker_MetaSized__vtable__s core_marker_MetaSized__vtable_;
 
-typedef struct core_marker_MetaSized__vtable__s core_marker_MetaSized__vtable_;
-
 /**
 A monomorphic instance of Eurydice.dst_ref_mut
 with types Eurydice_c_void_t,  core_marker_MetaSized_{vtable}*
@@ -43,8 +41,6 @@ void dyn_trait_struct_type_main(void);
 
 typedef struct dyn_trait_struct_type_Trait__vtable__s dyn_trait_struct_type_Trait__vtable_;
 
-typedef struct dyn_trait_struct_type_Trait__vtable__s dyn_trait_struct_type_Trait__vtable_;
-
 /**
 A monomorphic instance of Eurydice.dst_ref_mut
 with types Eurydice_c_void_t,  dyn_trait_struct_type_Trait_{vtable}*
@@ -56,10 +52,6 @@ typedef struct Eurydice_dst_ref_mut_06_s
   dyn_trait_struct_type_Trait__vtable_ *meta;
 }
 Eurydice_dst_ref_mut_06;
-
-typedef struct dyn_trait_struct_type_Trait__vtable__s dyn_trait_struct_type_Trait__vtable_;
-
-typedef struct dyn_trait_struct_type_Trait__vtable__s dyn_trait_struct_type_Trait__vtable_;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared

@@ -22,11 +22,6 @@ extern "C" {
 
 typedef uint8_t core_option_Option_08_tags;
 
-/**
-A monomorphic instance of core.option.Option
-with types size_t
-
-*/
 typedef struct core_option_Option_08_s
 {
   core_option_Option_08_tags tag;
@@ -247,12 +242,6 @@ with const generics
 */
 Eurydice_arr_17 libcrux_ml_kem_types_from_b2_39(Eurydice_arr_17 value);
 
-/**
-A monomorphic instance of Eurydice.arr
-with types uint8_t
-with const generics
-- $1536size_t
-*/
 typedef struct Eurydice_arr_38_s { uint8_t data[1536U]; } Eurydice_arr_38;
 
 /**
@@ -636,12 +625,6 @@ with const generics
 */
 Eurydice_arr_ea libcrux_ml_kem_types_from_b2_28(Eurydice_arr_ea value);
 
-/**
-A monomorphic instance of Eurydice.arr
-with types uint8_t
-with const generics
-- $1152size_t
-*/
 typedef struct Eurydice_arr_600_s { uint8_t data[1152U]; } Eurydice_arr_600;
 
 /**
@@ -2104,41 +2087,26 @@ with const generics
 Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_36(Eurydice_arr_a0 *a, core_ops_range_Range_08 r);
 
-/**
-A monomorphic instance of K.
-with types Eurydice_arr_600, Eurydice_arr_74
-
-*/
-typedef struct tuple_af_s
+typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair768_s
 {
   Eurydice_arr_600 fst;
   Eurydice_arr_74 snd;
 }
-tuple_af;
+libcrux_ml_kem_utils_extraction_helper_Keypair768;
 
-/**
-A monomorphic instance of K.
-with types Eurydice_arr_56, Eurydice_arr_30
-
-*/
-typedef struct tuple_0c_s
+typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair512_s
 {
   Eurydice_arr_56 fst;
   Eurydice_arr_30 snd;
 }
-tuple_0c;
+libcrux_ml_kem_utils_extraction_helper_Keypair512;
 
-/**
-A monomorphic instance of K.
-with types Eurydice_arr_38, Eurydice_arr_00
-
-*/
-typedef struct tuple_ad_s
+typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair1024_s
 {
   Eurydice_arr_38 fst;
   Eurydice_arr_00 snd;
 }
-tuple_ad;
+libcrux_ml_kem_utils_extraction_helper_Keypair1024;
 
 #if defined(__cplusplus)
 }

@@ -67,11 +67,6 @@ core_iter_range__core__iter__range__Step_for_i32__backward_checked(int32_t x0, s
 extern core_option_Option_9e
 core_iter_range__core__iter__range__Step_for_i32__forward_checked(int32_t x0, size_t x1);
 
-/**
-A monomorphic instance of core.option.Option
-with types size_t
-
-*/
 typedef struct core_option_Option_08_s
 {
   core_option_Option_77_tags tag;
@@ -79,11 +74,6 @@ typedef struct core_option_Option_08_s
 }
 core_option_Option_08;
 
-/**
-A monomorphic instance of K.
-with types size_t, core_option_Option_08
-
-*/
 typedef struct tuple_d1_s
 {
   size_t fst;

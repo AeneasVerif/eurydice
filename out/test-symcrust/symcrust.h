@@ -75,11 +75,6 @@ core_iter_range__core__iter__range__Step_for_usize__backward_checked(size_t x0, 
 extern core_option_Option_08
 core_iter_range__core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
 
-/**
-A monomorphic instance of K.
-with types size_t, core_option_Option_08
-
-*/
 typedef struct tuple_d1_s
 {
   size_t fst;

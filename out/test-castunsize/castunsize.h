@@ -28,12 +28,6 @@ castunsize_T;
 
 typedef uint8_t core_panicking_AssertKind;
 
-/**
-A monomorphic instance of Eurydice.arr
-with types uint32_t
-with const generics
-- $4size_t
-*/
 typedef struct Eurydice_arr_0d_s { uint32_t data[4U]; } Eurydice_arr_0d;
 
 /**
@@ -88,12 +82,6 @@ Eurydice_dst_ref_mut_3c;
 
 void castunsize_main3(void);
 
-/**
-A monomorphic instance of Eurydice.arr
-with types uint32_t
-with const generics
-- $5size_t
-*/
 typedef struct Eurydice_arr_88_s { uint32_t data[5U]; } Eurydice_arr_88;
 
 /**
