@@ -28,29 +28,19 @@ typedef struct more_dst_T1_s
 }
 more_dst_T1;
 
-/**
-A monomorphic instance of more_dst.S
-with types more_dst_T1
-
-*/
-typedef struct more_dst_S_30_s
+typedef struct more_dst_T2_s
 {
   uint32_t foo;
   more_dst_T1 data;
 }
-more_dst_S_30;
+more_dst_T2;
 
-/**
-A monomorphic instance of more_dst.S
-with types more_dst_S_30
-
-*/
-typedef struct more_dst_S_57_s
+typedef struct more_dst_T3_s
 {
   uint32_t foo;
-  more_dst_S_30 data;
+  more_dst_T2 data;
 }
-more_dst_S_57;
+more_dst_T3;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -60,41 +50,26 @@ with const generics
 */
 typedef struct Eurydice_arr_0d_s { uint32_t data[4U]; } Eurydice_arr_0d;
 
-/**
-A monomorphic instance of more_dst.S
-with types Eurydice_arr_0d
-
-*/
-typedef struct more_dst_S_f9_s
+typedef struct more_dst_TS1_s
 {
   uint32_t foo;
   Eurydice_arr_0d data;
 }
-more_dst_S_f9;
+more_dst_TS1;
 
-/**
-A monomorphic instance of more_dst.S
-with types more_dst_S_f9
-
-*/
-typedef struct more_dst_S_5b_s
+typedef struct more_dst_TS2_s
 {
   uint32_t foo;
-  more_dst_S_f9 data;
+  more_dst_TS1 data;
 }
-more_dst_S_5b;
+more_dst_TS2;
 
-/**
-A monomorphic instance of more_dst.S
-with types more_dst_S_5b
-
-*/
-typedef struct more_dst_S_bc_s
+typedef struct more_dst_TS3_s
 {
   uint32_t foo;
-  more_dst_S_5b data;
+  more_dst_TS2 data;
 }
-more_dst_S_bc;
+more_dst_TS3;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
@@ -122,27 +97,27 @@ Eurydice_dst_ref_shared_3c;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
-with types more_dst_S_30, size_t
+with types more_dst_T2, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_6d_s
+typedef struct Eurydice_dst_ref_shared_48_s
 {
-  const more_dst_S_30 *ptr;
+  const more_dst_T2 *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_6d;
+Eurydice_dst_ref_shared_48;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
-with types more_dst_S_57, size_t
+with types more_dst_T3, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_a2_s
+typedef struct Eurydice_dst_ref_shared_31_s
 {
-  const more_dst_S_57 *ptr;
+  const more_dst_T3 *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_a2;
+Eurydice_dst_ref_shared_31;
 
 void more_dst_main(void);
 

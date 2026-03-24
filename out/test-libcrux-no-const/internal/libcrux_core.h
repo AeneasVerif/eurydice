@@ -1873,41 +1873,26 @@ with const generics
 Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_36(Eurydice_arr_a0 *a, core_ops_range_Range_08 r);
 
-/**
-A monomorphic instance of K.
-with types Eurydice_arr_600, Eurydice_arr_74
-
-*/
-typedef struct tuple_af_s
+typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair768_s
 {
   Eurydice_arr_600 fst;
   Eurydice_arr_74 snd;
 }
-tuple_af;
+libcrux_ml_kem_utils_extraction_helper_Keypair768;
 
-/**
-A monomorphic instance of K.
-with types Eurydice_arr_56, Eurydice_arr_30
-
-*/
-typedef struct tuple_0c_s
+typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair512_s
 {
   Eurydice_arr_56 fst;
   Eurydice_arr_30 snd;
 }
-tuple_0c;
+libcrux_ml_kem_utils_extraction_helper_Keypair512;
 
-/**
-A monomorphic instance of K.
-with types Eurydice_arr_38, Eurydice_arr_00
-
-*/
-typedef struct tuple_ad_s
+typedef struct libcrux_ml_kem_utils_extraction_helper_Keypair1024_s
 {
   Eurydice_arr_38 fst;
   Eurydice_arr_00 snd;
 }
-tuple_ad;
+libcrux_ml_kem_utils_extraction_helper_Keypair1024;
 
 #if defined(__cplusplus)
 }

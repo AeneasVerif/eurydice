@@ -80,7 +80,7 @@ typedef struct core_option_Option_08_s
 core_option_Option_08;
 
 /**
-A monomorphic instance of K.
+A monomorphic instance of n-tuple
 with types size_t, core_option_Option_08
 
 */

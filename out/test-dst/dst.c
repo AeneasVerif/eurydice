@@ -22,12 +22,12 @@ Eurydice_dst_ref_mut_15 dst_alloc(void)
     );
 }
 
-Eurydice_dst_ref_mut_1b dst_alloc3(void)
+Eurydice_dst_ref_mut_20 dst_alloc3(void)
 {
   return
     (
-      KRML_CLITERAL(Eurydice_dst_ref_mut_1b){
-        .ptr = (dst_S_ba *)Eurydice_box_new((
+      KRML_CLITERAL(Eurydice_dst_ref_mut_20){
+        .ptr = (dst_T3 *)Eurydice_box_new((
             KRML_CLITERAL(dst_S_e4){
               .foo = 0U,
               .my_data = {
@@ -88,7 +88,7 @@ void dst_check_var_field_ref(Eurydice_dst_ref_shared_15 x)
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
-void dst_check_var_field_ref3(Eurydice_dst_ref_shared_1b x)
+void dst_check_var_field_ref3(Eurydice_dst_ref_shared_20 x)
 {
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
@@ -99,10 +99,10 @@ void dst_check_var_field_ref3(Eurydice_dst_ref_shared_1b x)
 
 void dst_main3(void)
 {
-  Eurydice_dst_ref_mut_1b x = dst_alloc3();
-  const Eurydice_dst_ref_mut_1b *uu____0 = &x;
+  Eurydice_dst_ref_mut_20 x = dst_alloc3();
+  const Eurydice_dst_ref_mut_20 *uu____0 = &x;
   dst_check_var_field_ref3((
-      KRML_CLITERAL(Eurydice_dst_ref_shared_1b){ .ptr = uu____0->ptr, .meta = uu____0->meta }
+      KRML_CLITERAL(Eurydice_dst_ref_shared_20){ .ptr = uu____0->ptr, .meta = uu____0->meta }
     ));
 }
 

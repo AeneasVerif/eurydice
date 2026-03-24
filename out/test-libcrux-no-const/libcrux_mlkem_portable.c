@@ -2563,7 +2563,7 @@ with const generics
 - PRIVATE_KEY_SIZE= 1536
 - PUBLIC_KEY_SIZE= 1568
 */
-static tuple_ad
+static libcrux_ml_kem_utils_extraction_helper_Keypair1024
 serialize_unpacked_secret_key_00(
   libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_af *public_key,
   Eurydice_arr_cf *private_key
@@ -2575,7 +2575,13 @@ serialize_unpacked_secret_key_00(
       Eurydice_array_to_slice_mut_6e(&public_key->seed_for_A));
   Eurydice_arr_38 secret_key_serialized = { .data = { 0U } };
   serialize_vector_d0(private_key, Eurydice_array_to_slice_mut_c9(&secret_key_serialized));
-  return (KRML_CLITERAL(tuple_ad){ .fst = secret_key_serialized, .snd = public_key_serialized });
+  return
+    (
+      KRML_CLITERAL(libcrux_ml_kem_utils_extraction_helper_Keypair1024){
+        .fst = secret_key_serialized,
+        .snd = public_key_serialized
+      }
+    );
 }
 
 /**
@@ -2657,7 +2663,7 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_2f(
   Eurydice_arr_17 *serialized
 )
 {
-  tuple_ad
+  libcrux_ml_kem_utils_extraction_helper_Keypair1024
   uu____0 =
     serialize_unpacked_secret_key_00(&self->public_key.ind_cpa_public_key,
       &self->private_key.ind_cpa_private_key);
@@ -3839,7 +3845,7 @@ encaps_prepare_03(
 }
 
 /**
-A monomorphic instance of K.
+A monomorphic instance of n-tuple
 with types Eurydice_arr_cf, libcrux_ml_kem_polynomial_PolynomialRingElement_1d
 
 */
@@ -5536,7 +5542,7 @@ with const generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static KRML_MUSTINLINE tuple_ad
+static KRML_MUSTINLINE libcrux_ml_kem_utils_extraction_helper_Keypair1024
 generate_keypair_ea1(Eurydice_mut_borrow_slice_u8 key_generation_seed)
 {
   Eurydice_arr_cf private_key = default_70_d0();
@@ -5602,7 +5608,8 @@ libcrux_ml_kem_ind_cca_generate_keypair_151(Eurydice_arr_06 *randomness)
   implicit_rejection_value =
     Eurydice_array_to_subslice_from_mut_8c0(randomness,
       LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE);
-  tuple_ad uu____0 = generate_keypair_ea1(ind_cpa_keypair_randomness);
+  libcrux_ml_kem_utils_extraction_helper_Keypair1024
+  uu____0 = generate_keypair_ea1(ind_cpa_keypair_randomness);
   Eurydice_arr_38 ind_cpa_private_key = uu____0.fst;
   Eurydice_arr_00 public_key = uu____0.snd;
   Eurydice_arr_17
@@ -6554,7 +6561,7 @@ with const generics
 - PRIVATE_KEY_SIZE= 768
 - PUBLIC_KEY_SIZE= 800
 */
-static tuple_0c
+static libcrux_ml_kem_utils_extraction_helper_Keypair512
 serialize_unpacked_secret_key_86(
   libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_d4 *public_key,
   Eurydice_arr_3d0 *private_key
@@ -6566,7 +6573,13 @@ serialize_unpacked_secret_key_86(
       Eurydice_array_to_slice_mut_6e(&public_key->seed_for_A));
   Eurydice_arr_56 secret_key_serialized = { .data = { 0U } };
   serialize_vector_a0(private_key, Eurydice_array_to_slice_mut_ee(&secret_key_serialized));
-  return (KRML_CLITERAL(tuple_0c){ .fst = secret_key_serialized, .snd = public_key_serialized });
+  return
+    (
+      KRML_CLITERAL(libcrux_ml_kem_utils_extraction_helper_Keypair512){
+        .fst = secret_key_serialized,
+        .snd = public_key_serialized
+      }
+    );
 }
 
 /**
@@ -6648,7 +6661,7 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_6d(
   Eurydice_arr_7f *serialized
 )
 {
-  tuple_0c
+  libcrux_ml_kem_utils_extraction_helper_Keypair512
   uu____0 =
     serialize_unpacked_secret_key_86(&self->public_key.ind_cpa_public_key,
       &self->private_key.ind_cpa_private_key);
@@ -7333,7 +7346,7 @@ encaps_prepare_10(
 }
 
 /**
-A monomorphic instance of K.
+A monomorphic instance of n-tuple
 with types Eurydice_arr_3d0, libcrux_ml_kem_polynomial_PolynomialRingElement_1d
 
 */
@@ -8297,7 +8310,7 @@ with const generics
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 */
-static KRML_MUSTINLINE tuple_0c
+static KRML_MUSTINLINE libcrux_ml_kem_utils_extraction_helper_Keypair512
 generate_keypair_ea0(Eurydice_mut_borrow_slice_u8 key_generation_seed)
 {
   Eurydice_arr_3d0 private_key = default_70_a0();
@@ -8363,7 +8376,8 @@ libcrux_ml_kem_ind_cca_generate_keypair_150(Eurydice_arr_06 *randomness)
   implicit_rejection_value =
     Eurydice_array_to_subslice_from_mut_8c0(randomness,
       LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE);
-  tuple_0c uu____0 = generate_keypair_ea0(ind_cpa_keypair_randomness);
+  libcrux_ml_kem_utils_extraction_helper_Keypair512
+  uu____0 = generate_keypair_ea0(ind_cpa_keypair_randomness);
   Eurydice_arr_56 ind_cpa_private_key = uu____0.fst;
   Eurydice_arr_30 public_key = uu____0.snd;
   Eurydice_arr_7f
@@ -9401,7 +9415,7 @@ with const generics
 - PRIVATE_KEY_SIZE= 1152
 - PUBLIC_KEY_SIZE= 1184
 */
-static tuple_af
+static libcrux_ml_kem_utils_extraction_helper_Keypair768
 serialize_unpacked_secret_key_6c(
   libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0 *public_key,
   Eurydice_arr_1d *private_key
@@ -9413,7 +9427,13 @@ serialize_unpacked_secret_key_6c(
       Eurydice_array_to_slice_mut_6e(&public_key->seed_for_A));
   Eurydice_arr_600 secret_key_serialized = { .data = { 0U } };
   serialize_vector_1b(private_key, Eurydice_array_to_slice_mut_06(&secret_key_serialized));
-  return (KRML_CLITERAL(tuple_af){ .fst = secret_key_serialized, .snd = public_key_serialized });
+  return
+    (
+      KRML_CLITERAL(libcrux_ml_kem_utils_extraction_helper_Keypair768){
+        .fst = secret_key_serialized,
+        .snd = public_key_serialized
+      }
+    );
 }
 
 /**
@@ -9495,7 +9515,7 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_43(
   Eurydice_arr_ea *serialized
 )
 {
-  tuple_af
+  libcrux_ml_kem_utils_extraction_helper_Keypair768
   uu____0 =
     serialize_unpacked_secret_key_6c(&self->public_key.ind_cpa_public_key,
       &self->private_key.ind_cpa_private_key);
@@ -10168,7 +10188,7 @@ encaps_prepare_9c(
 }
 
 /**
-A monomorphic instance of K.
+A monomorphic instance of n-tuple
 with types Eurydice_arr_1d, libcrux_ml_kem_polynomial_PolynomialRingElement_1d
 
 */
@@ -11024,7 +11044,7 @@ with const generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static KRML_MUSTINLINE tuple_af
+static KRML_MUSTINLINE libcrux_ml_kem_utils_extraction_helper_Keypair768
 generate_keypair_ea(Eurydice_mut_borrow_slice_u8 key_generation_seed)
 {
   Eurydice_arr_1d private_key = default_70_1b();
@@ -11090,7 +11110,8 @@ libcrux_ml_kem_ind_cca_generate_keypair_15(Eurydice_arr_06 *randomness)
   implicit_rejection_value =
     Eurydice_array_to_subslice_from_mut_8c0(randomness,
       LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE);
-  tuple_af uu____0 = generate_keypair_ea(ind_cpa_keypair_randomness);
+  libcrux_ml_kem_utils_extraction_helper_Keypair768
+  uu____0 = generate_keypair_ea(ind_cpa_keypair_randomness);
   Eurydice_arr_600 ind_cpa_private_key = uu____0.fst;
   Eurydice_arr_74 public_key = uu____0.snd;
   Eurydice_arr_ea
