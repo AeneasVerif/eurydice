@@ -136,7 +136,7 @@ uint64_t where_clauses_simple_fn_1_e5(void);
 void where_clauses_simple_one_calls_one(void);
 
 /**
-A monomorphic instance of K.
+A monomorphic instance of n-tuple
 with types uint64_t, size_t
 
 */
@@ -156,7 +156,7 @@ with const generics
 tuple_65 where_clauses_simple_double_f1(uint64_t x, size_t y);
 
 /**
-A monomorphic instance of K.
+A monomorphic instance of n-tuple
 with types size_t, uint64_t
 
 */

@@ -36,17 +36,12 @@ with const generics
 */
 typedef struct Eurydice_arr_6f_s { uint32_t data[3U]; } Eurydice_arr_6f;
 
-/**
-A monomorphic instance of dst.S
-with types Eurydice_derefed_slice Eurydice_arr_6f
-
-*/
-typedef struct dst_S_ba_s
+typedef struct dst_T3_s
 {
   uint32_t foo;
   Eurydice_arr_6f my_data[];
 }
-dst_S_ba;
+dst_T3;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_mut
@@ -84,15 +79,15 @@ Eurydice_dst_ref_mut_15 dst_alloc(void);
 
 /**
 A monomorphic instance of Eurydice.dst_ref_mut
-with types dst_S_ba, size_t
+with types dst_T3, size_t
 
 */
-typedef struct Eurydice_dst_ref_mut_1b_s
+typedef struct Eurydice_dst_ref_mut_20_s
 {
-  dst_S_ba *ptr;
+  dst_T3 *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_mut_1b;
+Eurydice_dst_ref_mut_20;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -114,7 +109,7 @@ typedef struct dst_S_e4_s
 }
 dst_S_e4;
 
-Eurydice_dst_ref_mut_1b dst_alloc3(void);
+Eurydice_dst_ref_mut_20 dst_alloc3(void);
 
 void dst_check_regular_field(Eurydice_dst_ref_mut_15 x);
 
@@ -150,15 +145,15 @@ void dst_check_var_field_ref(Eurydice_dst_ref_shared_15 x);
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
-with types dst_S_ba, size_t
+with types dst_T3, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_1b_s
+typedef struct Eurydice_dst_ref_shared_20_s
 {
-  const dst_S_ba *ptr;
+  const dst_T3 *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_1b;
+Eurydice_dst_ref_shared_20;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
@@ -172,21 +167,11 @@ typedef struct Eurydice_dst_ref_shared_61_s
 }
 Eurydice_dst_ref_shared_61;
 
-void dst_check_var_field_ref3(Eurydice_dst_ref_shared_1b x);
+void dst_check_var_field_ref3(Eurydice_dst_ref_shared_20 x);
 
 void dst_main3(void);
 
-/**
-A monomorphic instance of dst.T2
-with types Eurydice_derefed_slice uint32_t
-
-*/
-typedef struct dst_T2_be_s
-{
-  size_t header;
-  uint32_t my_data[];
-}
-dst_T2_be;
+typedef struct dst_T2_be_s dst_T2_be;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_mut
@@ -227,6 +212,18 @@ typedef struct Eurydice_dst_ref_mut_3c_s
 Eurydice_dst_ref_mut_3c;
 
 void dst_main4(void);
+
+/**
+A monomorphic instance of dst.T2
+with types Eurydice_derefed_slice uint32_t
+
+*/
+typedef struct dst_T2_be_s
+{
+  size_t header;
+  uint32_t my_data[];
+}
+dst_T2_be;
 
 void dst_main(void);
 

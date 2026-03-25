@@ -47,7 +47,7 @@ typedef struct libcrux_ml_kem_mlkem1024_MlKem1024KeyPair_s
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair;
 
 /**
-A monomorphic instance of K.
+A monomorphic instance of n-tuple
 with types libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext, Eurydice_arr_60
 
 */
@@ -90,7 +90,7 @@ with const generics
 typedef struct Eurydice_arr_2c_s { uint8_t data[1088U]; } Eurydice_arr_2c;
 
 /**
-A monomorphic instance of K.
+A monomorphic instance of n-tuple
 with types libcrux_ml_kem_mlkem768_MlKem768Ciphertext, Eurydice_arr_60
 
 */
@@ -155,7 +155,7 @@ with const generics
 typedef struct Eurydice_arr_56_s { uint8_t data[768U]; } Eurydice_arr_56;
 
 /**
-A monomorphic instance of K.
+A monomorphic instance of n-tuple
 with types libcrux_ml_kem_types_MlKemCiphertext_1a, Eurydice_arr_60
 
 */

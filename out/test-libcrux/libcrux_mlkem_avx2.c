@@ -1008,7 +1008,7 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_4(__m256i vector)
   mm_storeu_bytes_si128(Eurydice_array_to_slice_mut_46(&serialized), combined0);
   Eurydice_array_u8x8 arr;
   memcpy(arr.data,
-    Eurydice_array_to_subslice_shared_361(&serialized,
+    Eurydice_array_to_subslice_shared_360(&serialized,
       (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)8U })).ptr,
     (size_t)8U * sizeof (uint8_t));
   return
@@ -1177,7 +1177,7 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_5(__m256i vector)
     upper_8);
   Eurydice_arr_77 arr;
   memcpy(arr.data,
-    Eurydice_array_to_subslice_shared_360(&serialized,
+    Eurydice_array_to_subslice_shared_36(&serialized,
       (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)10U })).ptr,
     (size_t)10U * sizeof (uint8_t));
   return
@@ -1373,7 +1373,7 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_10(__m256i vector)
     upper_8);
   Eurydice_arr_dc arr;
   memcpy(arr.data,
-    Eurydice_array_to_subslice_shared_360(&serialized,
+    Eurydice_array_to_subslice_shared_36(&serialized,
       (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)20U })).ptr,
     (size_t)20U * sizeof (uint8_t));
   return
@@ -1606,7 +1606,7 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_12(__m256i vector)
     upper_8);
   Eurydice_arr_6d arr;
   memcpy(arr.data,
-    Eurydice_array_to_subslice_shared_360(&serialized,
+    Eurydice_array_to_subslice_shared_36(&serialized,
       (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)24U })).ptr,
     (size_t)24U * sizeof (uint8_t));
   return
@@ -2016,7 +2016,7 @@ sample_from_uniform_distribution_next_ed(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_shared_363(&randomness->data[i1],
+          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_shared_362(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_08){
                   .start = r * (size_t)24U,
@@ -2154,7 +2154,7 @@ sample_from_uniform_distribution_next_ed0(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_shared_364(&randomness->data[i1],
+          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_shared_363(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_08){
                   .start = r * (size_t)24U,
@@ -2380,7 +2380,7 @@ libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_fb1(
 )
 {
   Eurydice_borrow_slice_u8
-  uu____0 = Eurydice_array_to_subslice_to_shared_6e0(public_key, (size_t)1152U);
+  uu____0 = Eurydice_array_to_subslice_to_shared_6e1(public_key, (size_t)1152U);
   deserialize_ring_elements_reduced_ab(uu____0,
     &unpacked_public_key->ind_cpa_public_key.t_as_ntt);
   unpacked_public_key->ind_cpa_public_key.seed_for_A =
@@ -2704,7 +2704,7 @@ with const generics
 - PRIVATE_KEY_SIZE= 1152
 - PUBLIC_KEY_SIZE= 1184
 */
-static tuple_af
+static libcrux_ml_kem_utils_extraction_helper_Keypair768
 serialize_unpacked_secret_key_ed(
   const libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_63 *public_key,
   const Eurydice_arr_9d *private_key
@@ -2716,7 +2716,13 @@ serialize_unpacked_secret_key_ed(
       Eurydice_array_to_slice_shared_6e(&public_key->seed_for_A));
   Eurydice_arr_600 secret_key_serialized = { .data = { 0U } };
   serialize_vector_ab(private_key, Eurydice_array_to_slice_mut_06(&secret_key_serialized));
-  return (KRML_CLITERAL(tuple_af){ .fst = secret_key_serialized, .snd = public_key_serialized });
+  return
+    (
+      KRML_CLITERAL(libcrux_ml_kem_utils_extraction_helper_Keypair768){
+        .fst = secret_key_serialized,
+        .snd = public_key_serialized
+      }
+    );
 }
 
 /**
@@ -2740,7 +2746,7 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_8c(
   Eurydice_arr_ea *serialized
 )
 {
-  tuple_af
+  libcrux_ml_kem_utils_extraction_helper_Keypair768
   uu____0 =
     serialize_unpacked_secret_key_ed(&self->public_key.ind_cpa_public_key,
       &self->private_key.ind_cpa_private_key);
@@ -3967,7 +3973,7 @@ libcrux_ml_kem_ind_cca_unpacked_generate_keypair_bb1(
 {
   Eurydice_borrow_slice_u8
   ind_cpa_keypair_randomness =
-    Eurydice_array_to_subslice_shared_365(&randomness,
+    Eurydice_array_to_subslice_shared_364(&randomness,
       (
         KRML_CLITERAL(core_ops_range_Range_08){
           .start = (size_t)0U,
@@ -4017,7 +4023,7 @@ encaps_prepare_be(Eurydice_borrow_slice_u8 randomness, Eurydice_borrow_slice_u8 
 }
 
 /**
-A monomorphic instance of K.
+A monomorphic instance of n-tuple
 with types Eurydice_arr_9d, libcrux_ml_kem_polynomial_PolynomialRingElement_f6
 
 */
@@ -4630,7 +4636,7 @@ deserialize_then_decompress_message_84(const Eurydice_arr_60 *serialized)
     size_t i0 = i;
     __m256i
     coefficient_compressed =
-      libcrux_ml_kem_vector_avx2_deserialize_1_f5(Eurydice_array_to_subslice_shared_360(serialized,
+      libcrux_ml_kem_vector_avx2_deserialize_1_f5(Eurydice_array_to_subslice_shared_36(serialized,
           (
             KRML_CLITERAL(core_ops_range_Range_08){
               .start = (size_t)2U * i0,
@@ -5284,7 +5290,7 @@ deserialize_then_decompress_u_ed(const Eurydice_arr_2c *ciphertext)
     size_t i0 = i;
     Eurydice_borrow_slice_u8
     u_bytes =
-      Eurydice_array_to_subslice_shared_367(ciphertext,
+      Eurydice_array_to_subslice_shared_366(ciphertext,
         (
           KRML_CLITERAL(core_ops_range_Range_08){
             .start = i0 *
@@ -5753,7 +5759,7 @@ bool libcrux_ml_kem_ind_cca_validate_public_key_ed(const Eurydice_arr_74 *public
 {
   Eurydice_arr_9d
   deserialized_pk =
-    deserialize_ring_elements_reduced_out_ab(Eurydice_array_to_subslice_to_shared_6e0(public_key,
+    deserialize_ring_elements_reduced_out_ab(Eurydice_array_to_subslice_to_shared_6e1(public_key,
         libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)3U)));
   Eurydice_arr_74
   public_key_serialized =
@@ -5779,7 +5785,7 @@ bool libcrux_ml_kem_ind_cca_validate_private_key_only_ae(const Eurydice_arr_ea *
 {
   Eurydice_arr_60
   t =
-    H_41_e0(Eurydice_array_to_subslice_shared_368(private_key,
+    H_41_e0(Eurydice_array_to_subslice_shared_367(private_key,
         (
           KRML_CLITERAL(core_ops_range_Range_08){
             .start = (size_t)384U * (size_t)3U,
@@ -5788,7 +5794,7 @@ bool libcrux_ml_kem_ind_cca_validate_private_key_only_ae(const Eurydice_arr_ea *
         )));
   Eurydice_borrow_slice_u8
   expected =
-    Eurydice_array_to_subslice_shared_368(private_key,
+    Eurydice_array_to_subslice_shared_367(private_key,
       (
         KRML_CLITERAL(core_ops_range_Range_08){
           .start = (size_t)768U * (size_t)3U + (size_t)32U,
@@ -5832,7 +5838,7 @@ with const generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static KRML_MUSTINLINE tuple_af
+static KRML_MUSTINLINE libcrux_ml_kem_utils_extraction_helper_Keypair768
 generate_keypair_5d1(Eurydice_borrow_slice_u8 key_generation_seed)
 {
   Eurydice_arr_9d private_key = default_70_ab();
@@ -5942,7 +5948,7 @@ libcrux_ml_kem_ind_cca_generate_keypair_bb1(const Eurydice_arr_060 *randomness)
 {
   Eurydice_borrow_slice_u8
   ind_cpa_keypair_randomness =
-    Eurydice_array_to_subslice_shared_365(randomness,
+    Eurydice_array_to_subslice_shared_364(randomness,
       (
         KRML_CLITERAL(core_ops_range_Range_08){
           .start = (size_t)0U,
@@ -5953,7 +5959,8 @@ libcrux_ml_kem_ind_cca_generate_keypair_bb1(const Eurydice_arr_060 *randomness)
   implicit_rejection_value =
     Eurydice_array_to_subslice_from_shared_8c0(randomness,
       LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE);
-  tuple_af uu____0 = generate_keypair_5d1(ind_cpa_keypair_randomness);
+  libcrux_ml_kem_utils_extraction_helper_Keypair768
+  uu____0 = generate_keypair_5d1(ind_cpa_keypair_randomness);
   Eurydice_arr_600 ind_cpa_private_key = uu____0.fst;
   Eurydice_arr_74 public_key = uu____0.snd;
   Eurydice_arr_ea
@@ -6421,7 +6428,7 @@ sample_from_uniform_distribution_next_78(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_shared_363(&randomness->data[i1],
+          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_shared_362(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_08){
                   .start = r * (size_t)24U,
@@ -6561,7 +6568,7 @@ sample_from_uniform_distribution_next_780(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_shared_364(&randomness->data[i1],
+          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_shared_363(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_08){
                   .start = r * (size_t)24U,
@@ -6731,7 +6738,7 @@ libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_fb0(
 )
 {
   Eurydice_borrow_slice_u8
-  uu____0 = Eurydice_array_to_subslice_to_shared_6e1(public_key, (size_t)1536U);
+  uu____0 = Eurydice_array_to_subslice_to_shared_6e2(public_key, (size_t)1536U);
   deserialize_ring_elements_reduced_42(uu____0,
     &unpacked_public_key->ind_cpa_public_key.t_as_ntt);
   unpacked_public_key->ind_cpa_public_key.seed_for_A =
@@ -6930,7 +6937,7 @@ with const generics
 - PRIVATE_KEY_SIZE= 1536
 - PUBLIC_KEY_SIZE= 1568
 */
-static tuple_ad
+static libcrux_ml_kem_utils_extraction_helper_Keypair1024
 serialize_unpacked_secret_key_1e(
   const libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_39 *public_key,
   const Eurydice_arr_c5 *private_key
@@ -6942,7 +6949,13 @@ serialize_unpacked_secret_key_1e(
       Eurydice_array_to_slice_shared_6e(&public_key->seed_for_A));
   Eurydice_arr_38 secret_key_serialized = { .data = { 0U } };
   serialize_vector_42(private_key, Eurydice_array_to_slice_mut_c9(&secret_key_serialized));
-  return (KRML_CLITERAL(tuple_ad){ .fst = secret_key_serialized, .snd = public_key_serialized });
+  return
+    (
+      KRML_CLITERAL(libcrux_ml_kem_utils_extraction_helper_Keypair1024){
+        .fst = secret_key_serialized,
+        .snd = public_key_serialized
+      }
+    );
 }
 
 /**
@@ -6966,7 +6979,7 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_c9(
   Eurydice_arr_17 *serialized
 )
 {
-  tuple_ad
+  libcrux_ml_kem_utils_extraction_helper_Keypair1024
   uu____0 =
     serialize_unpacked_secret_key_1e(&self->public_key.ind_cpa_public_key,
       &self->private_key.ind_cpa_private_key);
@@ -7704,7 +7717,7 @@ libcrux_ml_kem_ind_cca_unpacked_generate_keypair_bb0(
 {
   Eurydice_borrow_slice_u8
   ind_cpa_keypair_randomness =
-    Eurydice_array_to_subslice_shared_365(&randomness,
+    Eurydice_array_to_subslice_shared_364(&randomness,
       (
         KRML_CLITERAL(core_ops_range_Range_08){
           .start = (size_t)0U,
@@ -7754,7 +7767,7 @@ encaps_prepare_6a(Eurydice_borrow_slice_u8 randomness, Eurydice_borrow_slice_u8 
 }
 
 /**
-A monomorphic instance of K.
+A monomorphic instance of n-tuple
 with types Eurydice_arr_c5, libcrux_ml_kem_polynomial_PolynomialRingElement_f6
 
 */
@@ -8355,7 +8368,7 @@ deserialize_then_decompress_u_1e(const Eurydice_arr_00 *ciphertext)
     size_t i0 = i;
     Eurydice_borrow_slice_u8
     u_bytes =
-      Eurydice_array_to_subslice_shared_369(ciphertext,
+      Eurydice_array_to_subslice_shared_368(ciphertext,
         (
           KRML_CLITERAL(core_ops_range_Range_08){
             .start = i0 *
@@ -8609,7 +8622,7 @@ bool libcrux_ml_kem_ind_cca_validate_public_key_78(const Eurydice_arr_00 *public
 {
   Eurydice_arr_c5
   deserialized_pk =
-    deserialize_ring_elements_reduced_out_42(Eurydice_array_to_subslice_to_shared_6e1(public_key,
+    deserialize_ring_elements_reduced_out_42(Eurydice_array_to_subslice_to_shared_6e2(public_key,
         libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)4U)));
   Eurydice_arr_00
   public_key_serialized =
@@ -8635,7 +8648,7 @@ bool libcrux_ml_kem_ind_cca_validate_private_key_only_5e(const Eurydice_arr_17 *
 {
   Eurydice_arr_60
   t =
-    H_41_ac(Eurydice_array_to_subslice_shared_3610(private_key,
+    H_41_ac(Eurydice_array_to_subslice_shared_369(private_key,
         (
           KRML_CLITERAL(core_ops_range_Range_08){
             .start = (size_t)384U * (size_t)4U,
@@ -8644,7 +8657,7 @@ bool libcrux_ml_kem_ind_cca_validate_private_key_only_5e(const Eurydice_arr_17 *
         )));
   Eurydice_borrow_slice_u8
   expected =
-    Eurydice_array_to_subslice_shared_3610(private_key,
+    Eurydice_array_to_subslice_shared_369(private_key,
       (
         KRML_CLITERAL(core_ops_range_Range_08){
           .start = (size_t)768U * (size_t)4U + (size_t)32U,
@@ -8688,7 +8701,7 @@ with const generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static KRML_MUSTINLINE tuple_ad
+static KRML_MUSTINLINE libcrux_ml_kem_utils_extraction_helper_Keypair1024
 generate_keypair_5d0(Eurydice_borrow_slice_u8 key_generation_seed)
 {
   Eurydice_arr_c5 private_key = default_70_42();
@@ -8798,7 +8811,7 @@ libcrux_ml_kem_ind_cca_generate_keypair_bb0(const Eurydice_arr_060 *randomness)
 {
   Eurydice_borrow_slice_u8
   ind_cpa_keypair_randomness =
-    Eurydice_array_to_subslice_shared_365(randomness,
+    Eurydice_array_to_subslice_shared_364(randomness,
       (
         KRML_CLITERAL(core_ops_range_Range_08){
           .start = (size_t)0U,
@@ -8809,7 +8822,8 @@ libcrux_ml_kem_ind_cca_generate_keypair_bb0(const Eurydice_arr_060 *randomness)
   implicit_rejection_value =
     Eurydice_array_to_subslice_from_shared_8c0(randomness,
       LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE);
-  tuple_ad uu____0 = generate_keypair_5d0(ind_cpa_keypair_randomness);
+  libcrux_ml_kem_utils_extraction_helper_Keypair1024
+  uu____0 = generate_keypair_5d0(ind_cpa_keypair_randomness);
   Eurydice_arr_38 ind_cpa_private_key = uu____0.fst;
   Eurydice_arr_00 public_key = uu____0.snd;
   Eurydice_arr_17
@@ -9273,7 +9287,7 @@ sample_from_uniform_distribution_next_29(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_shared_363(&randomness->data[i1],
+          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_shared_362(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_08){
                   .start = r * (size_t)24U,
@@ -9410,7 +9424,7 @@ sample_from_uniform_distribution_next_290(
       {
         size_t
         sampled =
-          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_shared_364(&randomness->data[i1],
+          libcrux_ml_kem_vector_avx2_rej_sample_f5(Eurydice_array_to_subslice_shared_363(&randomness->data[i1],
               (
                 KRML_CLITERAL(core_ops_range_Range_08){
                   .start = r * (size_t)24U,
@@ -9578,7 +9592,7 @@ libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_fb(
 )
 {
   Eurydice_borrow_slice_u8
-  uu____0 = Eurydice_array_to_subslice_to_shared_6e(public_key, (size_t)768U);
+  uu____0 = Eurydice_array_to_subslice_to_shared_6e0(public_key, (size_t)768U);
   deserialize_ring_elements_reduced_89(uu____0,
     &unpacked_public_key->ind_cpa_public_key.t_as_ntt);
   unpacked_public_key->ind_cpa_public_key.seed_for_A =
@@ -9777,7 +9791,7 @@ with const generics
 - PRIVATE_KEY_SIZE= 768
 - PUBLIC_KEY_SIZE= 800
 */
-static tuple_0c
+static libcrux_ml_kem_utils_extraction_helper_Keypair512
 serialize_unpacked_secret_key_ba(
   const libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_94 *public_key,
   const Eurydice_arr_d3 *private_key
@@ -9789,7 +9803,13 @@ serialize_unpacked_secret_key_ba(
       Eurydice_array_to_slice_shared_6e(&public_key->seed_for_A));
   Eurydice_arr_56 secret_key_serialized = { .data = { 0U } };
   serialize_vector_89(private_key, Eurydice_array_to_slice_mut_ee(&secret_key_serialized));
-  return (KRML_CLITERAL(tuple_0c){ .fst = secret_key_serialized, .snd = public_key_serialized });
+  return
+    (
+      KRML_CLITERAL(libcrux_ml_kem_utils_extraction_helper_Keypair512){
+        .fst = secret_key_serialized,
+        .snd = public_key_serialized
+      }
+    );
 }
 
 /**
@@ -9813,7 +9833,7 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_2d(
   Eurydice_arr_7f *serialized
 )
 {
-  tuple_0c
+  libcrux_ml_kem_utils_extraction_helper_Keypair512
   uu____0 =
     serialize_unpacked_secret_key_ba(&self->public_key.ind_cpa_public_key,
       &self->private_key.ind_cpa_private_key);
@@ -10556,7 +10576,7 @@ libcrux_ml_kem_ind_cca_unpacked_generate_keypair_bb(
 {
   Eurydice_borrow_slice_u8
   ind_cpa_keypair_randomness =
-    Eurydice_array_to_subslice_shared_365(&randomness,
+    Eurydice_array_to_subslice_shared_364(&randomness,
       (
         KRML_CLITERAL(core_ops_range_Range_08){
           .start = (size_t)0U,
@@ -10606,7 +10626,7 @@ encaps_prepare_f8(Eurydice_borrow_slice_u8 randomness, Eurydice_borrow_slice_u8 
 }
 
 /**
-A monomorphic instance of K.
+A monomorphic instance of n-tuple
 with types Eurydice_arr_d3, libcrux_ml_kem_polynomial_PolynomialRingElement_f6
 
 */
@@ -11169,7 +11189,7 @@ deserialize_then_decompress_u_ba(const Eurydice_arr_56 *ciphertext)
     size_t i0 = i;
     Eurydice_borrow_slice_u8
     u_bytes =
-      Eurydice_array_to_subslice_shared_362(ciphertext,
+      Eurydice_array_to_subslice_shared_361(ciphertext,
         (
           KRML_CLITERAL(core_ops_range_Range_08){
             .start = i0 *
@@ -11423,7 +11443,7 @@ bool libcrux_ml_kem_ind_cca_validate_public_key_29(const Eurydice_arr_30 *public
 {
   Eurydice_arr_d3
   deserialized_pk =
-    deserialize_ring_elements_reduced_out_89(Eurydice_array_to_subslice_to_shared_6e(public_key,
+    deserialize_ring_elements_reduced_out_89(Eurydice_array_to_subslice_to_shared_6e0(public_key,
         libcrux_ml_kem_constants_ranked_bytes_per_ring_element((size_t)2U)));
   Eurydice_arr_30
   public_key_serialized =
@@ -11449,7 +11469,7 @@ bool libcrux_ml_kem_ind_cca_validate_private_key_only_4d(const Eurydice_arr_7f *
 {
   Eurydice_arr_60
   t =
-    H_41_fd(Eurydice_array_to_subslice_shared_366(private_key,
+    H_41_fd(Eurydice_array_to_subslice_shared_365(private_key,
         (
           KRML_CLITERAL(core_ops_range_Range_08){
             .start = (size_t)384U * (size_t)2U,
@@ -11458,7 +11478,7 @@ bool libcrux_ml_kem_ind_cca_validate_private_key_only_4d(const Eurydice_arr_7f *
         )));
   Eurydice_borrow_slice_u8
   expected =
-    Eurydice_array_to_subslice_shared_366(private_key,
+    Eurydice_array_to_subslice_shared_365(private_key,
       (
         KRML_CLITERAL(core_ops_range_Range_08){
           .start = (size_t)768U * (size_t)2U + (size_t)32U,
@@ -11502,7 +11522,7 @@ with const generics
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 */
-static KRML_MUSTINLINE tuple_0c
+static KRML_MUSTINLINE libcrux_ml_kem_utils_extraction_helper_Keypair512
 generate_keypair_5d(Eurydice_borrow_slice_u8 key_generation_seed)
 {
   Eurydice_arr_d3 private_key = default_70_89();
@@ -11612,7 +11632,7 @@ libcrux_ml_kem_ind_cca_generate_keypair_bb(const Eurydice_arr_060 *randomness)
 {
   Eurydice_borrow_slice_u8
   ind_cpa_keypair_randomness =
-    Eurydice_array_to_subslice_shared_365(randomness,
+    Eurydice_array_to_subslice_shared_364(randomness,
       (
         KRML_CLITERAL(core_ops_range_Range_08){
           .start = (size_t)0U,
@@ -11623,7 +11643,8 @@ libcrux_ml_kem_ind_cca_generate_keypair_bb(const Eurydice_arr_060 *randomness)
   implicit_rejection_value =
     Eurydice_array_to_subslice_from_shared_8c0(randomness,
       LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE);
-  tuple_0c uu____0 = generate_keypair_5d(ind_cpa_keypair_randomness);
+  libcrux_ml_kem_utils_extraction_helper_Keypair512
+  uu____0 = generate_keypair_5d(ind_cpa_keypair_randomness);
   Eurydice_arr_56 ind_cpa_private_key = uu____0.fst;
   Eurydice_arr_30 public_key = uu____0.snd;
   Eurydice_arr_7f
