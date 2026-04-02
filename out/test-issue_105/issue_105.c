@@ -28,7 +28,7 @@ This function found in impl {core::cmp::PartialEq<u8> for u8}
 */
 inline bool core_cmp_impls_eq_c3(const uint8_t *self, const uint8_t *other)
 {
-  return self[0U] == other[0U];
+  return (uint32_t)self[0U] == (uint32_t)other[0U];
 }
 
 /**
@@ -36,7 +36,7 @@ This function found in impl {core::cmp::PartialEq<u8> for u8}
 */
 inline bool core_cmp_impls_ne_c3(const uint8_t *self, const uint8_t *other)
 {
-  return self[0U] != other[0U];
+  return (uint32_t)self[0U] != (uint32_t)other[0U];
 }
 
 core_result_Result_1d issue_105_inner(void)

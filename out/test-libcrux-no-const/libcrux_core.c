@@ -61,7 +61,8 @@ select_ct(Eurydice_mut_borrow_slice_u8 lhs, Eurydice_mut_borrow_slice_u8 rhs, ui
   {
     size_t i0 = i;
     uint8_t
-    outi = ((uint32_t)lhs.ptr[i0] & (uint32_t)mask) | ((uint32_t)rhs.ptr[i0] & (uint32_t)~mask);
+    outi =
+      ((uint32_t)lhs.ptr[i0] & (uint32_t)mask) | ((uint32_t)rhs.ptr[i0] & (~(uint32_t)mask & 0xFFU));
     out.data[i0] = outi;
   }
   return out;

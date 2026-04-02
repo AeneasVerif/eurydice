@@ -37,6 +37,6 @@ void issue_104_main(void)
   /* original Rust expression is not an lvalue in C */
   uint8_t lvalue = 5U;
   const_uint8_t__x2 uu____0 = { .fst = &lvalue0, .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT((uint32_t)uu____0.fst[0U] == (uint32_t)uu____0.snd[0U], "panic!");
 }
 
