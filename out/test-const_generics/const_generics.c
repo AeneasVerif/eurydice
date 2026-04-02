@@ -87,8 +87,8 @@ void const_generics_main(void)
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_b2 lvalue = { .data = { 1U, 2U } };
   Eurydice_array_u8x8 s = const_generics_serialize_3b(array_to_slice_shared_a1(&lvalue));
-  EURYDICE_ASSERT((uint32_t)s.data[3U] == 1U, "panic!");
-  EURYDICE_ASSERT((uint32_t)s.data[7U] == 2U, "panic!");
+  EURYDICE_ASSERT(s.data[3U] == 1U, "panic!");
+  EURYDICE_ASSERT(s.data[7U] == 2U, "panic!");
 }
 
 /**

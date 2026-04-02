@@ -346,7 +346,7 @@ void array_main(void)
   /* original Rust expression is not an lvalue in C */
   uint16_t lvalue1 = 1U;
   const_uint16_t__x2 uu____4 = { .fst = a1.data, .snd = &lvalue1 };
-  EURYDICE_ASSERT((uint32_t)uu____4.fst[0U] == (uint32_t)uu____4.snd[0U], "panic!");
+  EURYDICE_ASSERT(uu____4.fst[0U] == uu____4.snd[0U], "panic!");
   /* XXX5 */
   Eurydice_arr_c6 a2 = array_nested_from_fn_ac();
   /* original Rust expression is not an lvalue in C */

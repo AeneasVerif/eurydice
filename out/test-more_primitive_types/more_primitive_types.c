@@ -126,7 +126,7 @@ void more_primitive_types_use_more_primitive_types(void)
     };
   more_primitive_types_match_u128(&p);
   more_primitive_types_match_i128(&p);
-  EURYDICE_ASSERT(p.c == (uint32_t)s->data[0U], "panic!");
+  EURYDICE_ASSERT(p.c == s->data[0U], "panic!");
 }
 
 void more_primitive_types_main(void)
