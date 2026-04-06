@@ -16,7 +16,7 @@ This function found in impl {libcrux_sha3::traits::KeccakItem<4usize> for core::
 */
 static KRML_MUSTINLINE __m256i zero_b0(void)
 {
-  return mm256_set1_epi64x((int64_t)0);
+  return mm256_set1_epi64x((int64_t)0LL);
 }
 
 static KRML_MUSTINLINE __m256i
