@@ -185,7 +185,7 @@ nix-magic:
 	nix flake update karamel charon libcrux --extra-experimental-features nix-command --extra-experimental-features flakes
 
 nix-update-%:
-	PROJECT_REMOTE=$(shell cd $* && git config --get remote.origin.url | cut -d ':' -f 2); \
+	PROJECT_REMOTE=$(shell cd $* && git config --get remote.origin.url | cut -d ':' -f 2 | sed s/.git//g); \
 	PROJECT_REV=$(shell cd $* && git rev-parse head); \
 	nix flake update $* --override-input $* "github:$$PROJECT_REMOTE/$$PROJECT_REV"
 
