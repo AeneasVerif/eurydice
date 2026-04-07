@@ -137,29 +137,29 @@ custom-test-libcrux-ml-kem-no-const: test/libcrux-ml-kem.llbc
 	$(SED) -i 's/  KaRaMeL version: .*//' out/test-libcrux-ml-kem-no-const/**/*.{c,h} # This changes on every commit
 	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-libcrux-ml-kem-no-const/**/*.{c,h} # This changes between local and CI
 
-test-libcrux-ml-kem: test/libcrux-ml-kem.llbc
-	mkdir -p out/test-libcrux-ml-kem
-	$(EURYDICE) --config test/libcrux-ml-kem/c.yaml -funroll-loops 16 \
-	  $< --keep-going --output out/test-libcrux-ml-kem
-	$(SED) -i 's/  KaRaMeL version: .*//' out/test-libcrux-ml-kem/**/*.{c,h} # This changes on every commit
-	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-libcrux-ml-kem/**/*.{c,h} # This changes between local and CI
-	cd test/libcrux-ml-kem/ && cmake $(CMAKE_FLAGS) -B build -G "Ninja Multi-Config" && cmake --build build --config Debug
-	cd test/libcrux-ml-kem/ && ./build/Debug/ml_kem_test && ./build/Debug/sha3_test
+test-libcrux-%: test/libcrux-%.llbc
+	mkdir -p out/test-libcrux-$*
+	$(EURYDICE) --config test/libcrux-$*/c.yaml -funroll-loops 16 \
+	  $< --keep-going --output out/test-libcrux-$*
+	$(SED) -i 's/  KaRaMeL version: .*//' out/test-libcrux-$*/**/*.{c,h} # This changes on every commit
+	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-libcrux-$*/**/*.{c,h} # This changes between local and CI
+	cd test/libcrux-$*/ && cmake $(CMAKE_FLAGS) -B build -G "Ninja Multi-Config" && cmake --build build --config Debug
+	cd test/libcrux-$*/ && ./build/Debug/$(subst -,_,$*)_test && ./build/Debug/sha3_test
 
 
-.PHONY: test/libcrux-ml-kem.llbc
+.PHONY: .FORCE
 
-test/libcrux-ml-kem.llbc:
+test/libcrux-%.llbc: .FORCE
 	@# Use our committed `Cargo.lock` by default.
 	cp libcrux-Cargo.lock $(LIBCRUX_HOME)/Cargo.lock
 	RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $(CHARON) cargo --preset eurydice \
 	  --include 'libcrux_sha3' \
 	  --include 'libcrux_secrets' \
 	  --rustc-arg='-Aunused' \
-	  --start-from libcrux_ml_kem --start-from libcrux_sha3 \
+	  --start-from libcrux_$(subst -,_,$*) --start-from libcrux_sha3 \
 	  --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
 	  --dest-file $$PWD/$@ -- \
-	  --manifest-path $(LIBCRUX_HOME)/libcrux-ml-kem/Cargo.toml \
+	  --manifest-path $(LIBCRUX_HOME)/libcrux-$*/Cargo.toml \
 	  --target=x86_64-apple-darwin
 	@# Commit the `Cargo.lock` so that the nix CI can use it
 	cp $(LIBCRUX_HOME)/Cargo.lock libcrux-Cargo.lock
