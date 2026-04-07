@@ -15,6 +15,8 @@
 extern "C" {
 #endif
 
+#define LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE ((size_t)32U)
+
 /**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
@@ -22,6 +24,14 @@ with const generics
 - $32size_t
 */
 typedef struct Eurydice_arr_60_s { uint8_t data[32U]; } Eurydice_arr_60;
+
+#define LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_COEFFICIENT ((size_t)12U)
+
+#define LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT ((size_t)256U)
+
+#define LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)12U)
+
+#define LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE ((size_t)32U)
 
 /**
 A monomorphic instance of Eurydice.arr

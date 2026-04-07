@@ -1,0 +1,218 @@
+files:
+  # INTRINSICS
+
+  - name: libcrux_intrinsics_neon
+    library: true
+    inline_static: true
+    api:
+      - [libcrux_intrinsics, arm64]
+
+  - name: libcrux_intrinsics_avx2
+    library: true
+    inline_static: true
+    api:
+      - [libcrux_intrinsics, avx2]
+
+  # SHA3 (no mention of libcrux_mldsa in this section, please)
+
+  # Keep the per-target seperation idea: each SHA3 variant in its own file
+  - name: libcrux_sha3_neon
+    api:
+      - [libcrux_sha3, neon, "*"]
+    private:
+      # When patterns is the only key of private, it is optional, and one may
+      # just specify a list of patterns that are understood to match patterns
+      # (not monomorphizations)
+      patterns:
+        - [libcrux_sha3, neon, "*"]
+        - [libcrux_sha3, simd, arm64, "*"]
+      monomorphizations_of:
+        - [libcrux_sha3, neon, "*"]
+        - [libcrux_sha3, simd, arm64, "*"]
+      monomorphizations_using:
+        - [libcrux_sha3, neon, "*"]
+        - [libcrux_sha3, simd, arm64, "*"]
+      monomorphizations_exact:
+        - [libcrux_sha3, generic_keccak, "KeccakState_fc"]
+    include_in_h:
+      - '"intrinsics/libcrux_intrinsics_arm64.h"'
+
+  - name: libcrux_sha3_avx2
+    api:
+      - [libcrux_sha3, avx2, "*"]
+    private:
+      patterns:
+        - [libcrux_sha3, avx2, "*"]
+        - [libcrux_sha3, simd, avx2, "*"]
+        - [libcrux_sha3, generic_keccak, simd256, "*"]
+      monomorphizations_exact:
+        - [libcrux_sha3, generic_keccak, KeccakState_55]
+        - [Eurydice, arr_05]
+        - [Eurydice, arr_c0]
+      monomorphizations_of:
+        - [libcrux_sha3, avx2, "*"]
+        - [libcrux_sha3, simd, avx2, "*"]
+        - [libcrux_sha3, generic_keccak, simd256, "*"]
+      monomorphizations_using:
+        - [libcrux_sha3, avx2, "*"]
+        - [libcrux_sha3, simd, avx2, "*"]
+        - [libcrux_sha3, generic_keccak, simd256, "*"]
+    include_in_h:
+      - '"intrinsics/libcrux_intrinsics_avx2.h"'
+
+  # Public API header for SHA3
+  - name: libcrux_sha3
+    inline_static: true
+    api:
+      exact:
+        - [libcrux_sha3, hash]
+        - [libcrux_sha3, sha224]
+        - [libcrux_sha3, sha256]
+        - [libcrux_sha3, sha384]
+        - [libcrux_sha3, sha44]
+        - [libcrux_sha3, keccakx1]
+        - [libcrux_sha3, shake128]
+        - [libcrux_sha3, shake256]
+        - [libcrux_sha3, shake128_ema]
+        - [libcrux_sha3, shake256_ema]
+        - [libcrux_sha3, sha224_ema]
+        - [libcrux_sha3, sha256_ema]
+        - [libcrux_sha3, sha384_ema]
+        - [libcrux_sha3, sha44_ema]
+        - [libcrux_sha3, portable, sha224]
+        - [libcrux_sha3, portable, sha256]
+        - [libcrux_sha3, portable, sha384]
+        - [libcrux_sha3, portable, sha44]
+        - [libcrux_sha3, portable, keccakx1]
+        - [libcrux_sha3, portable, shake128]
+        - [libcrux_sha3, portable, shake256]
+
+  # Common parts of SHA3 (this catches stuff that hasn't matched above). Must
+  # come after the (more precise) patterns above concerning platform-specific hash_functions
+  - name: libcrux_sha3_internal
+    internal:
+      patterns:
+        - [libcrux_sha3, "*"]
+      monomorphizations_of:
+        - [libcrux_sha3, "*"]
+      monomorphizations_using:
+        - [libcrux_sha3, "*"]
+    inline_static: true
+
+  # Here, we apply the same strategy that works for bundling:
+  # - start with the most specific stuff: MLDSA-XX-AVX2
+  # - move on to less specific stuff: MLDSA-AVX2 (the "leftovers", or common
+  #   parts for AVX2) -- it's easy to debug from there because if something ends
+  #   up in MLDSA-AVX2 then it can be identified and moved to one of the
+  #   individual variants
+  # - then on to portable, same deal
+  # - finish with a catch-all where everything is marked as private
+
+  # MLDSA-44
+  - name: libcrux_mldsa44_avx2
+    target: "avx2"
+    include_in_h:
+      - '"intrinsics/libcrux_intrinsics_avx2.h"'
+    api:
+      patterns:
+        - [libcrux_ml_dsa, ml_dsa_44, avx2, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_dsa, ml_dsa_44, avx2, "*"]
+
+  # MLDSA-65
+  - name: libcrux_mldsa65_avx2
+    target: "avx2"
+    include_in_h:
+      - '"intrinsics/libcrux_intrinsics_avx2.h"'
+    api:
+      patterns:
+        - [libcrux_ml_dsa, ml_dsa_65, avx2, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_dsa, ml_dsa_65, avx2, "*"]
+
+  # MLDSA-87
+  - name: libcrux_mldsa87_avx2
+    target: "avx2"
+    include_in_h:
+      - '"intrinsics/libcrux_intrinsics_avx2.h"'
+    api:
+      patterns:
+        - [libcrux_ml_dsa, ml_dsa_87, avx2, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_dsa, ml_dsa_87, avx2, "*"]
+
+  # MLDSA: AVX2 stuff shared across variants
+  - name: libcrux_mldsa_avx2
+    target: "avx2"
+    include_in_h:
+      - '"intrinsics/libcrux_intrinsics_avx2.h"'
+    api:
+      patterns:
+        - [libcrux_ml_dsa, samplex4, avx2, "*"]
+        - [libcrux_ml_dsa, simd, avx2, "*"]
+        - [libcrux_ml_dsa, hash_functions, simd256, "*"]
+        - [libcrux_ml_dsa, ml_dsa_generic, instantiations, avx2, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_dsa, samplex4, avx2, "*"]
+        - [libcrux_ml_dsa, simd, avx2, "*"]
+        - [libcrux_ml_dsa, hash_functions, simd256, "*"]
+        - [libcrux_ml_dsa, ml_dsa_generic, instantiations, avx2, "*"]
+      monomorphizations_using:
+        - [core, arch, x86, "__m256i"]
+        - [libcrux_ml_dsa, samplex4, avx2, "*"]
+        - [libcrux_ml_dsa, simd, avx2, "*"]
+        - [libcrux_ml_dsa, hash_functions, simd256, "*"]
+        - [libcrux_ml_dsa, ml_dsa_generic, instantiations, avx2, "*"]
+      monomorphizations_exact:
+        - [core_core_arch_x86___m256i_x2]
+
+  - name: libcrux_mldsa44_portable
+    api:
+      patterns:
+        - [libcrux_ml_dsa, ml_dsa_44, portable, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_dsa, ml_dsa_44, portable]
+
+  - name: libcrux_mldsa65_portable
+    api:
+      patterns:
+        - [libcrux_ml_dsa, ml_dsa_65, portable, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_dsa, ml_dsa_65, portable]
+
+  - name: libcrux_mldsa87_portable
+    api:
+      patterns:
+        - [libcrux_ml_dsa, ml_dsa_87, portable, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_dsa, ml_dsa_87, portable]
+
+  - name: libcrux_mldsa_portable
+    api:
+      patterns:
+        - [libcrux_ml_dsa, samplex4, portable, "*"]
+        - [libcrux_ml_dsa, hash_functions, portable, "*"]
+        - [libcrux_ml_dsa, ml_dsa_generic, instantiations, portable, "*"]
+      monomorphizations_of:
+        - [libcrux_ml_dsa, samplex4, portable, "*"]
+        - [libcrux_ml_dsa, hash_functions, portable, "*"]
+        - [libcrux_ml_dsa, ml_dsa_generic, instantiations, portable, "*"]
+      monomorphizations_using:
+        - [libcrux_ml_dsa, samplex4, portable, "*"]
+        - [libcrux_ml_dsa, hash_functions, portable, "*"]
+        - [libcrux_ml_dsa, ml_dsa_generic, instantiations, portable, "*"]
+
+  # MLDSA: catch-all for things that have not matched earlier
+  - name: libcrux_mldsa_core
+    private:
+      monomorphizations_of:
+        - [ "*" ]
+      patterns:
+        - [ "*" ]
+
+naming:
+  skip_prefix:
+    - [ core, core_arch, arm_shared, neon ]
+    - [ core, core_arch, x86 ]
+    - [libcrux_intrinsics, arm64]
+    - [libcrux_intrinsics, avx2]

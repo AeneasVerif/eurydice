@@ -361,28 +361,43 @@ let topological_sort decls =
   end in
   let open T in
   let graph = Hashtbl.create 41 in
+  let is_forward = function
+    | DType (_, _, _, _, Forward _) -> `Forward
+    | _ -> `Regular
+  in
   List.iter
     (fun decl ->
       let deps =
         begin
           object (self)
-            inherit [_] reduce
+            inherit [_] reduce as super
             method zero = []
             method plus = ( @ )
-            method! visit_EQualified _ lid = [ lid ]
-            method! visit_TQualified _ lid = [ lid ]
-            method! visit_TApp _ lid ts = [ lid ] @ List.concat_map (self#visit_typ ()) ts
+            method! visit_EQualified (under_ref, _) lid = [ lid, under_ref ]
+            method! visit_TQualified under_ref lid = [ lid, under_ref ]
+
+            method! visit_TApp under_ref lid ts =
+              [ lid, under_ref ] @ List.concat_map (self#visit_typ under_ref) ts
+
+            method! visit_TBuf _ t const = super#visit_TBuf true t const
           end
         end
           #visit_decl
-          () decl
+          false decl
       in
-      Hashtbl.add graph (lid_of_decl decl) (ref White, deps, decl))
+      Hashtbl.add graph (lid_of_decl decl, is_forward decl) (ref White, deps, decl))
     decls;
   let stack = ref [] in
-  let rec dfs lid =
-    if Hashtbl.mem graph lid then
-      let r, deps, decl = Hashtbl.find graph lid in
+  let rec dfs (lid, under_ref) =
+    let has_forward_decl = Hashtbl.mem graph (lid, `Forward) in
+    if Hashtbl.mem graph (lid, `Regular) || has_forward_decl then
+      let key =
+        if has_forward_decl && under_ref then
+          lid, `Forward
+        else
+          lid, `Regular
+      in
+      let r, deps, decl = Hashtbl.find graph key in
       match !r with
       | Black -> ()
       | Gray -> ()
@@ -392,17 +407,32 @@ let topological_sort decls =
           r := Black;
           stack := decl :: !stack
   in
-  List.iter (fun decl -> dfs (lid_of_decl decl)) decls;
+  List.iter (fun decl -> dfs (lid_of_decl decl, false)) decls;
   List.rev !stack
+
+module LidMap = Krml.Idents.LidMap
 
 (* Second phase of bundling, post-monomorphization. This is Eurydice-specific,
    as we oftentimes need to move definitions that have been /specialized/ using
-   e.g. a platform-specific trait into their own file. *)
+   e.g. a platform-specific trait into their own file.
+
+   Note that there may be multiple definitions per `lid`, because of forward structs. *)
 let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
   let open Krml.Ast in
   let open Krml.PrintAst.Ops in
   (* Pure sanity check *)
-  let count_decls files = List.fold_left (fun acc (_, decls) -> List.length decls + acc) 0 files in
+  let count_decls files =
+    List.fold_left
+      (fun acc (_, decls) ->
+        let add_incr lid map =
+          if LidMap.mem lid map then
+            LidMap.add lid (LidMap.find lid map + 1) map
+          else
+            LidMap.add lid 1 map
+        in
+        List.fold_left (fun acc decl -> add_incr (lid_of_decl decl) acc) acc decls)
+      LidMap.empty files
+  in
   let c0 = count_decls files in
   let target_of_lid = Hashtbl.create 41 in
   let ( ||| ) o1 o2 =
@@ -411,6 +441,7 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
     | None -> o2
   in
   let reverse_type_map =
+    (* Maps t____u (an lid) to t<u> (a type application) *)
     let map = Hashtbl.create 41 in
     Hashtbl.iter
       (fun node (_, monomorphized_lid) ->
@@ -448,6 +479,11 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
       () t
   in
   (* Review the function monomorphization state.
+
+     THOUGHTS: maybe this should just all be grouped as a single field? Do we really care about
+     catching `t<u>` but not `u<t>`? (i.e., distinguish monomorphizations *of* from
+     monomorphizations using?
+
      Semantics of `monomorphizations_using`:
        if `lid`, below, is the result of a (function) monomorphization that
        *uses* (in its arguments, `cgs`, below) an `lid'` that matches a
@@ -482,7 +518,7 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
                 | _ -> None)
               cgs
             |||
-            (* Monomorphiztation using given type name *)
+            (* Monomorphization using given type name *)
             List.find_map (uses monomorphizations_using) ts
             |||
             (* Monomorphization of a given polymorphic name *)
@@ -534,16 +570,20 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
           List.filter
             (fun decl ->
               let lid = lid_of_decl decl in
-              match Hashtbl.find_opt target_of_lid lid with
-              | None -> true
-              | Some (target, inline_static, (_, vis, _)) ->
-                  let decl = adjust vis decl in
-                  if inline_static then
-                    record_inline_static lid;
-                  if Hashtbl.mem reassigned target then
-                    Hashtbl.replace reassigned target (decl :: Hashtbl.find reassigned target)
-                  else
-                    Hashtbl.add reassigned target [ decl ];
+              match Hashtbl.find_all target_of_lid lid with
+              | exception Not_found -> true
+              | [] -> true
+              | entries ->
+                  List.iter
+                    (fun (target, inline_static, (_, vis, _)) ->
+                      let decl = adjust vis decl in
+                      if inline_static then
+                        record_inline_static lid;
+                      if Hashtbl.mem reassigned target then
+                        Hashtbl.replace reassigned target (decl :: Hashtbl.find reassigned target)
+                      else
+                        Hashtbl.add reassigned target [ decl ])
+                    (List.rev entries);
                   false)
             decls ))
       files
@@ -568,10 +608,20 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
   let files = files @ Hashtbl.fold (fun f reassigned acc -> (f, reassigned) :: acc) reassigned [] in
 
   (* A quick topological sort to make sure type declarations come *before*
-     functions that use them. *)
+     functions that use them. Note that this is incompatible with forward structs. *)
   let files = List.map (fun (f, decls) -> f, topological_sort decls) files in
-
   let c1 = count_decls files in
-  if c0 <> c1 then
-    Krml.Warn.fatal_error "Previous %d declarations, now %d\n" c0 c1;
+  ignore
+    (LidMap.merge
+       (fun lid v1 v2 ->
+         match v1, v2 with
+         | None, None -> failwith "impossible"
+         | Some v1, None -> Krml.Warn.fatal_error "lost %d declaration for %a\n" v1 plid lid
+         | None, Some v2 -> Krml.Warn.fatal_error "gained %d declaration for %a\n" v2 plid lid
+         | Some v1, Some v2 ->
+             if v1 != v2 then
+               Krml.Warn.fatal_error "mismatch on %a: %d != %d\n" plid lid v1 v2
+             else
+               None)
+       c0 c1);
   files
