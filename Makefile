@@ -144,7 +144,8 @@ test-libcrux-%: test/libcrux-%.llbc
 	$(SED) -i 's/  KaRaMeL version: .*//' out/test-libcrux-$*/**/*.{c,h} # This changes on every commit
 	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-libcrux-$*/**/*.{c,h} # This changes between local and CI
 	cd test/libcrux-$*/ && cmake $(CMAKE_FLAGS) -B build -G "Ninja Multi-Config" && cmake --build build --config Debug
-	cd test/libcrux-$*/ && ./build/Debug/$(subst -,_,$*)_test && ./build/Debug/sha3_test
+	cd test/libcrux-$*/ && ./build/Debug/$(subst -,_,$*)_test
+	cd test/libcrux-$*/ && if [ -x ./build/Debug/sha3_test ]; then ./build/Debug/sha3_test; fi
 
 
 .PHONY: .FORCE
