@@ -352,14 +352,14 @@ static inline uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
 }
 
 static inline uint8_t
-core_ops_bit__core__ops__bit__BitAnd_u8__u8__for__0__u8___bitand(const uint8_t *x0,
-                                                                  uint8_t x1) {
+core_ops_bit__core__ops__bit__BitAnd_u8__u8__for__0__u8___bitand(
+    const uint8_t *x0, uint8_t x1) {
   return Eurydice_bitand_pv_u8(x0, x1);
 }
 
 static inline uint8_t
 core_ops_bit__core__ops__bit__Shr_i32__u8__for__0__u8___shr(const uint8_t *x0,
-                                                             int32_t x1) {
+                                                            int32_t x1) {
   return Eurydice_shr_pv_u8(x0, x1);
 }
 
