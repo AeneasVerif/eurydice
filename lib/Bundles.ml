@@ -361,28 +361,43 @@ let topological_sort decls =
   end in
   let open T in
   let graph = Hashtbl.create 41 in
+  let is_forward = function
+    | DType (_, _, _, _, Forward _) -> `Forward
+    | _ -> `Regular
+  in
   List.iter
     (fun decl ->
       let deps =
         begin
           object (self)
-            inherit [_] reduce
+            inherit [_] reduce as super
             method zero = []
             method plus = ( @ )
-            method! visit_EQualified _ lid = [ lid ]
-            method! visit_TQualified _ lid = [ lid ]
-            method! visit_TApp _ lid ts = [ lid ] @ List.concat_map (self#visit_typ ()) ts
+            method! visit_EQualified (under_ref, _) lid = [ lid, under_ref ]
+            method! visit_TQualified under_ref lid = [ lid, under_ref ]
+
+            method! visit_TApp under_ref lid ts =
+              [ lid, under_ref ] @ List.concat_map (self#visit_typ under_ref) ts
+
+            method! visit_TBuf _ t const = super#visit_TBuf true t const
           end
         end
           #visit_decl
-          () decl
+          false decl
       in
-      Hashtbl.add graph (lid_of_decl decl) (ref White, deps, decl))
+      Hashtbl.add graph (lid_of_decl decl, is_forward decl) (ref White, deps, decl))
     decls;
   let stack = ref [] in
-  let rec dfs lid =
-    if Hashtbl.mem graph lid then
-      let r, deps, decl = Hashtbl.find graph lid in
+  let rec dfs (lid, under_ref) =
+    let has_forward_decl = Hashtbl.mem graph (lid, `Forward) in
+    if Hashtbl.mem graph (lid, `Regular) || has_forward_decl then
+      let key =
+        if has_forward_decl && under_ref then
+          lid, `Forward
+        else
+          lid, `Regular
+      in
+      let r, deps, decl = Hashtbl.find graph key in
       match !r with
       | Black -> ()
       | Gray -> ()
@@ -392,7 +407,7 @@ let topological_sort decls =
           r := Black;
           stack := decl :: !stack
   in
-  List.iter (fun decl -> dfs (lid_of_decl decl)) decls;
+  List.iter (fun decl -> dfs (lid_of_decl decl, false)) decls;
   List.rev !stack
 
 module LidMap = Krml.Idents.LidMap
@@ -594,7 +609,7 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
 
   (* A quick topological sort to make sure type declarations come *before*
      functions that use them. Note that this is incompatible with forward structs. *)
-  (* let files = List.map (fun (f, decls) -> f, topological_sort decls) files in *)
+  let files = List.map (fun (f, decls) -> f, topological_sort decls) files in
   let c1 = count_decls files in
   ignore
     (LidMap.merge
