@@ -333,12 +333,61 @@ static inline size_t core_num__usize__wrapping_mul(size_t x, size_t y) {
   return x * y;
 }
 
+static inline int8_t core_num__i8__wrapping_add(int8_t x, int8_t y) {
+  return (int8_t)((uint8_t)x + (uint8_t)y);
+}
+static inline int8_t core_num__i8__wrapping_sub(int8_t x, int8_t y) {
+  return (int8_t)((uint8_t)x - (uint8_t)y);
+}
+static inline int8_t core_num__i8__wrapping_mul(int8_t x, int8_t y) {
+  return (int8_t)((uint8_t)x * (uint8_t)y);
+}
+static inline int16_t core_num__i16__wrapping_add(int16_t x, int16_t y) {
+  return (int16_t)((uint16_t)x + (uint16_t)y);
+}
+static inline int16_t core_num__i16__wrapping_sub(int16_t x, int16_t y) {
+  return (int16_t)((uint16_t)x - (uint16_t)y);
+}
+static inline int16_t core_num__i16__wrapping_mul(int16_t x, int16_t y) {
+  return (int16_t)((uint16_t)x * (uint16_t)y);
+}
+static inline int32_t core_num__i32__wrapping_add(int32_t x, int32_t y) {
+  return (int32_t)((uint32_t)x + (uint32_t)y);
+}
+static inline int32_t core_num__i32__wrapping_sub(int32_t x, int32_t y) {
+  return (int32_t)((uint32_t)x - (uint32_t)y);
+}
+static inline int32_t core_num__i32__wrapping_mul(int32_t x, int32_t y) {
+  return (int32_t)((uint32_t)x * (uint32_t)y);
+}
+static inline int64_t core_num__i64__wrapping_add(int64_t x, int64_t y) {
+  return (int64_t)((uint64_t)x + (uint64_t)y);
+}
+static inline int64_t core_num__i64__wrapping_sub(int64_t x, int64_t y) {
+  return (int64_t)((uint64_t)x - (uint64_t)y);
+}
+static inline int64_t core_num__i64__wrapping_mul(int64_t x, int64_t y) {
+  return (int64_t)((uint64_t)x * (uint64_t)y);
+}
+static inline int8_t core_num__i8__wrapping_neg(int8_t x) {
+  return (int8_t)(-(uint8_t)x);
+}
+static inline int16_t core_num__i16__wrapping_neg(int16_t x) {
+  return (int16_t)(-(uint16_t)x);
+}
+static inline int32_t core_num__i32__wrapping_neg(int32_t x) {
+  return (int32_t)(-(uint32_t)x);
+}
+static inline int64_t core_num__i64__wrapping_neg(int64_t x) {
+  return (int64_t)(-(uint64_t)x);
+}
+
 static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1) {
   return (x0 << x1) | (x0 >> ((-x1) & 63));
 }
 
 static inline void core_ops_arith__i32__add_assign(int32_t *x0, int32_t *x1) {
-  *x0 = *x0 + *x1;
+  *x0 = (int32_t)((uint32_t)*x0 + (uint32_t)*x1);
 }
 
 static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) {

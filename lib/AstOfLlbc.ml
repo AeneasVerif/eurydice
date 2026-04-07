@@ -1064,6 +1064,18 @@ let op_128_of_op kind (op : K.op) : K.expr =
   in
   Builtin.get_128_op (kind, op_name)
 
+let unsigned_width_of_signed : K.width -> K.width option = function
+  | Int8 -> Some UInt8
+  | Int16 -> Some UInt16
+  | Int32 -> Some UInt32
+  | Int64 -> Some UInt64
+  | PtrdiffT -> Some SizeT
+  | _ -> None
+
+let is_signed_arith_op = function
+  | Krml.Constant.Add | Sub | Mult | Neg -> true
+  | _ -> false
+
 let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
   (* For 128-bit integers, the case is different: convert the operator & match the case here *)
   let op, ret_t =
@@ -1133,7 +1145,22 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
     | EQualified lident when is_128_bit_shift_lident lident -> modify_rest rest
     | _ -> rest
   in
-  K.(with_type ret_t (EApp (op, first :: rest)))
+  (* For signed arithmetic, wrap in unsigned casts to avoid C UB. *)
+  match op.node with
+  | EOp (arith_op, w) when is_signed_arith_op arith_op -> begin
+      match unsigned_width_of_signed w with
+      | Some uw ->
+          let u_op_t = Krml.Helpers.type_of_op arith_op uw in
+          let u_op = K.(with_type u_op_t (EOp (arith_op, uw))) in
+          let to_u e = K.(with_type (TInt uw) (ECast (e, TInt uw))) in
+          let u_args = to_u first :: List.map to_u rest in
+          let u_result = K.(with_type (TInt uw) (EApp (u_op, u_args))) in
+          K.(with_type ret_t (ECast (u_result, ret_t)))
+      | None ->
+          K.(with_type ret_t (EApp (op, first :: rest)))
+    end
+  | _ ->
+      K.(with_type ret_t (EApp (op, first :: rest)))
 
 let addrof ~const (e : K.expr) = K.(with_type (TBuf (e.typ, const)) (EAddrOf e))
 
