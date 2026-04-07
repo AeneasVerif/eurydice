@@ -60,8 +60,6 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
   Eurydice_mut_borrow_slice_u8 rhs
 );
 
-#define LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE ((size_t)32U)
-
 Eurydice_arr_60
 libcrux_ml_kem_constant_time_ops_select_shared_secret_in_constant_time(
   Eurydice_mut_borrow_slice_u8 lhs,
@@ -77,17 +75,9 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_con
   Eurydice_mut_borrow_slice_u8 rhs_s
 );
 
-#define LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_COEFFICIENT ((size_t)12U)
-
-#define LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT ((size_t)256U)
-
-#define LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)12U)
-
 #define LIBCRUX_ML_KEM_CONSTANTS_BYTES_PER_RING_ELEMENT (LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT / (size_t)8U)
 
 #define LIBCRUX_ML_KEM_CONSTANTS_CPA_PKE_KEY_GENERATION_SEED_SIZE ((size_t)32U)
-
-#define LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE ((size_t)32U)
 
 /**
  K * BITS_PER_RING_ELEMENT / 8
