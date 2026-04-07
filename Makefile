@@ -48,7 +48,7 @@ build: check-karamel check-charon
 CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
 CXXFLAGS	:= -std=c++17
 
-test: $(addprefix test-,$(TEST_DIRS)) custom-test-libcrux-no-const custom-test-array custom-test-for testxx-result check-charon check-libcrux test-libcrux
+test: $(addprefix test-,$(TEST_DIRS)) custom-test-libcrux-ml-kem-no-const custom-test-array custom-test-for testxx-result check-charon check-libcrux test-libcrux-ml-kem
 
 clean-and-test:
 	$(MAKE) clean-llbc
@@ -130,26 +130,26 @@ custom-test-for: test-for
 
 # libcrux tests
 
-custom-test-libcrux-no-const: test/libcrux.llbc
-	mkdir -p out/test-libcrux-no-const
-	$(EURYDICE) --config test/libcrux/c.yaml -funroll-loops 16 \
-	  $< --keep-going --output out/test-libcrux-no-const --no-const
-	$(SED) -i 's/  KaRaMeL version: .*//' out/test-libcrux-no-const/**/*.{c,h} # This changes on every commit
-	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-libcrux-no-const/**/*.{c,h} # This changes between local and CI
+custom-test-libcrux-ml-kem-no-const: test/libcrux-ml-kem.llbc
+	mkdir -p out/test-libcrux-ml-kem-no-const
+	$(EURYDICE) --config test/libcrux-ml-kem/c.yaml -funroll-loops 16 \
+	  $< --keep-going --output out/test-libcrux-ml-kem-no-const --no-const
+	$(SED) -i 's/  KaRaMeL version: .*//' out/test-libcrux-ml-kem-no-const/**/*.{c,h} # This changes on every commit
+	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-libcrux-ml-kem-no-const/**/*.{c,h} # This changes between local and CI
 
-test-libcrux: test/libcrux.llbc
-	mkdir -p out/test-libcrux
-	$(EURYDICE) --config test/libcrux/c.yaml -funroll-loops 16 \
-	  $< --keep-going --output out/test-libcrux
-	$(SED) -i 's/  KaRaMeL version: .*//' out/test-libcrux/**/*.{c,h} # This changes on every commit
-	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-libcrux/**/*.{c,h} # This changes between local and CI
-	cd test/libcrux/ && cmake $(CMAKE_FLAGS) -B build -G "Ninja Multi-Config" && cmake --build build --config Debug
-	cd test/libcrux/ && ./build/Debug/ml_kem_test && ./build/Debug/sha3_test
+test-libcrux-ml-kem: test/libcrux-ml-kem.llbc
+	mkdir -p out/test-libcrux-ml-kem
+	$(EURYDICE) --config test/libcrux-ml-kem/c.yaml -funroll-loops 16 \
+	  $< --keep-going --output out/test-libcrux-ml-kem
+	$(SED) -i 's/  KaRaMeL version: .*//' out/test-libcrux-ml-kem/**/*.{c,h} # This changes on every commit
+	$(SED) -i 's/  KaRaMeL invocation: .*//' out/test-libcrux-ml-kem/**/*.{c,h} # This changes between local and CI
+	cd test/libcrux-ml-kem/ && cmake $(CMAKE_FLAGS) -B build -G "Ninja Multi-Config" && cmake --build build --config Debug
+	cd test/libcrux-ml-kem/ && ./build/Debug/ml_kem_test && ./build/Debug/sha3_test
 
 
-.PHONY: test/libcrux.llbc
+.PHONY: test/libcrux-ml-kem.llbc
 
-test/libcrux.llbc:
+test/libcrux-ml-kem.llbc:
 	@# Use our committed `Cargo.lock` by default.
 	cp libcrux-Cargo.lock $(LIBCRUX_HOME)/Cargo.lock
 	RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $(CHARON) cargo --preset eurydice \
