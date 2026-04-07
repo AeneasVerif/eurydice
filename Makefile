@@ -155,6 +155,7 @@ test/libcrux-%.llbc: .FORCE
 	RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $(CHARON) cargo --preset eurydice \
 	  --include 'libcrux_sha3' \
 	  --include 'libcrux_secrets' \
+	  --include=core::option::* \
 	  --rustc-arg='-Aunused' \
 	  --start-from libcrux_$(subst -,_,$*) --start-from libcrux_sha3 \
 	  --include 'core::num::*::BITS' --include 'core::num::*::MAX' \
@@ -181,6 +182,11 @@ setup-%:
 .PHONY: nix-magic
 nix-magic:
 	nix flake update karamel charon libcrux --extra-experimental-features nix-command --extra-experimental-features flakes
+
+nix-update-%:
+	PROJECT_REMOTE=$(shell cd $* && git config --get remote.origin.url | cut -d ':' -f 2); \
+	PROJECT_REV=$(shell cd $* && git rev-parse head); \
+	nix flake update $* --override-input $* "github:$$PROJECT_REMOTE/$$PROJECT_REV"
 
 # Updates `flake.lock` with the latest commit from our local charon clone (the one that is symlinked into `lib/charon`).
 .PHONY: update-charon-pin
