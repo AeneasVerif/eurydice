@@ -18,12 +18,28 @@ extern "C" {
 #include "intrinsics/libcrux_intrinsics_avx2.h"
 
 #include "libcrux_mldsa_core.h"
+#include "libcrux_mldsa_avx2.h"
 
 /**
  Generate an ML-DSA-44 Key Pair
 */
-libcrux_ml_dsa_ml_dsa_generic_ml_dsa_44_MLDSA44KeyPair
-libcrux_ml_dsa_ml_dsa_44_avx2_generate_key_pair(Eurydice_arr_60 randomness);
+KRML_ATTRIBUTE_TARGET("avx2")
+static inline libcrux_ml_dsa_ml_dsa_generic_ml_dsa_44_MLDSA44KeyPair
+libcrux_ml_dsa_ml_dsa_44_avx2_generate_key_pair(Eurydice_arr_60 randomness)
+{
+  Eurydice_arr_18 signing_key = { .data = { 0U } };
+  Eurydice_arr_40 verification_key = { .data = { 0U } };
+  libcrux_ml_dsa_ml_dsa_generic_instantiations_avx2_ml_dsa_44_generate_key_pair(randomness,
+    Eurydice_array_to_slice_mut_59(&signing_key),
+    Eurydice_array_to_slice_mut_bb(&verification_key));
+  return
+    (
+      KRML_CLITERAL(libcrux_ml_dsa_ml_dsa_generic_ml_dsa_44_MLDSA44KeyPair){
+        .signing_key = libcrux_ml_dsa_types_new_9b_ff(signing_key),
+        .verification_key = libcrux_ml_dsa_types_new_7f_db(verification_key)
+      }
+    );
+}
 
 /**
  Generate an ML-DSA-44 Signature
@@ -32,13 +48,21 @@ libcrux_ml_dsa_ml_dsa_44_avx2_generate_key_pair(Eurydice_arr_60 randomness);
  and is a byte string of length at most 255 bytes. It
  may also be empty.
 */
-core_result_Result_48
+KRML_ATTRIBUTE_TARGET("avx2")
+static inline core_result_Result_48
 libcrux_ml_dsa_ml_dsa_44_avx2_sign(
   const Eurydice_arr_18 *signing_key,
   Eurydice_borrow_slice_u8 message,
   Eurydice_borrow_slice_u8 context,
   Eurydice_arr_60 randomness
-);
+)
+{
+  return
+    libcrux_ml_dsa_ml_dsa_generic_instantiations_avx2_ml_dsa_44_sign(libcrux_ml_dsa_types_as_ref_9b_ff(signing_key),
+      message,
+      context,
+      randomness);
+}
 
 /**
  Generate an ML-DSA-44 Signature
@@ -47,14 +71,23 @@ libcrux_ml_dsa_ml_dsa_44_avx2_sign(
  and is a byte string of length at most 255 bytes. It
  may also be empty.
 */
-core_result_Result_53
+KRML_ATTRIBUTE_TARGET("avx2")
+static inline core_result_Result_53
 libcrux_ml_dsa_ml_dsa_44_avx2_sign_mut(
   const Eurydice_arr_18 *signing_key,
   Eurydice_borrow_slice_u8 message,
   Eurydice_borrow_slice_u8 context,
   Eurydice_arr_60 randomness,
   Eurydice_arr_400 *signature
-);
+)
+{
+  return
+    libcrux_ml_dsa_ml_dsa_generic_instantiations_avx2_ml_dsa_44_sign_mut(libcrux_ml_dsa_types_as_ref_9b_ff(signing_key),
+      message,
+      context,
+      randomness,
+      signature);
+}
 
 /**
  Generate a HashML-DSA-44 Signature, with a SHAKE128 pre-hashing
@@ -63,13 +96,24 @@ libcrux_ml_dsa_ml_dsa_44_avx2_sign_mut(
  and is a byte string of length at most 255 bytes. It
  may also be empty.
 */
-core_result_Result_48
+KRML_ATTRIBUTE_TARGET("avx2")
+static inline core_result_Result_48
 libcrux_ml_dsa_ml_dsa_44_avx2_sign_pre_hashed_shake128(
   const Eurydice_arr_18 *signing_key,
   Eurydice_borrow_slice_u8 message,
   Eurydice_borrow_slice_u8 context,
   Eurydice_arr_60 randomness
-);
+)
+{
+  Eurydice_arr_60 pre_hash_buffer = { .data = { 0U } };
+  const Eurydice_arr_18 *uu____0 = libcrux_ml_dsa_types_as_ref_9b_ff(signing_key);
+  return
+    libcrux_ml_dsa_ml_dsa_generic_instantiations_avx2_ml_dsa_44_sign_pre_hashed_shake128(uu____0,
+      message,
+      context,
+      Eurydice_array_to_slice_mut_6e(&pre_hash_buffer),
+      randomness);
+}
 
 /**
  Verify an ML-DSA-44 Signature
@@ -78,13 +122,21 @@ libcrux_ml_dsa_ml_dsa_44_avx2_sign_pre_hashed_shake128(
  and is a byte string of length at most 255 bytes. It
  may also be empty.
 */
-core_result_Result_41
+KRML_ATTRIBUTE_TARGET("avx2")
+static inline core_result_Result_41
 libcrux_ml_dsa_ml_dsa_44_avx2_verify(
   const Eurydice_arr_40 *verification_key,
   Eurydice_borrow_slice_u8 message,
   Eurydice_borrow_slice_u8 context,
   const Eurydice_arr_400 *signature
-);
+)
+{
+  return
+    libcrux_ml_dsa_ml_dsa_generic_instantiations_avx2_ml_dsa_44_verify(libcrux_ml_dsa_types_as_ref_7f_db(verification_key),
+      message,
+      context,
+      libcrux_ml_dsa_types_as_ref_c5_1a(signature));
+}
 
 /**
  Verify a HashML-DSA-44 Signature, with a SHAKE128 pre-hashing
@@ -93,13 +145,27 @@ libcrux_ml_dsa_ml_dsa_44_avx2_verify(
  and is a byte string of length at most 255 bytes. It
  may also be empty.
 */
-core_result_Result_41
+KRML_ATTRIBUTE_TARGET("avx2")
+static inline core_result_Result_41
 libcrux_ml_dsa_ml_dsa_44_avx2_verify_pre_hashed_shake128(
   const Eurydice_arr_40 *verification_key,
   Eurydice_borrow_slice_u8 message,
   Eurydice_borrow_slice_u8 context,
   const Eurydice_arr_400 *signature
-);
+)
+{
+  Eurydice_arr_60 pre_hash_buffer = { .data = { 0U } };
+  const Eurydice_arr_40 *uu____0 = libcrux_ml_dsa_types_as_ref_7f_db(verification_key);
+  Eurydice_borrow_slice_u8 uu____1 = message;
+  Eurydice_borrow_slice_u8 uu____2 = context;
+  Eurydice_mut_borrow_slice_u8 uu____3 = Eurydice_array_to_slice_mut_6e(&pre_hash_buffer);
+  return
+    libcrux_ml_dsa_ml_dsa_generic_instantiations_avx2_ml_dsa_44_verify_pre_hashed_shake128(uu____0,
+      uu____1,
+      uu____2,
+      uu____3,
+      libcrux_ml_dsa_types_as_ref_c5_1a(signature));
+}
 
 #if defined(__cplusplus)
 }

@@ -45,20 +45,6 @@ include_directories(
     ${EURYDICE_ROOT}/include
     ${EURYDICE_ROOT}/karamel/include
 )
-file(GLOB SOURCES
-    ${OUT_DIR}/libcrux_mldsa44_portable.c
-    ${OUT_DIR}/libcrux_mldsa65_portable.c
-    ${OUT_DIR}/libcrux_mldsa87_portable.c
-    ${OUT_DIR}/libcrux_mldsa_core.c
-    ${OUT_DIR}/libcrux_mldsa_portable.c
-)
-file(GLOB SOURCES_vec256
-    ${OUT_DIR}/libcrux_mldsa44_avx2.c
-    ${OUT_DIR}/libcrux_mldsa65_avx2.c
-    ${OUT_DIR}/libcrux_mldsa87_avx2.c
-    ${OUT_DIR}/libcrux_mldsa_avx2.c
-    ${OUT_DIR}/libcrux_sha3_avx2.c
-)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     add_compile_options(
@@ -73,17 +59,12 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 #     add_link_options(-flto)
 # endif(${CMAKE_SYSTEM_NAME} MATCHES Linux AND CMAKE_BUILD_TYPE MATCHES "Release")
 
-add_library(ml_dsa SHARED ${SOURCES})
-add_library(ml_dsa_static STATIC ${SOURCES})
-
 # This is only for local testing and we assume avx2 on x64.
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
     message(STATUS "Detected an x64 architecture")
     add_compile_definitions(LIBCRUX_X64)
 
     add_library(ml_dsa_vec256 OBJECT ${SOURCES_vec256})
-    target_sources(ml_dsa_static PRIVATE $<TARGET_OBJECTS:ml_dsa_vec256>)
-    target_sources(ml_dsa PRIVATE $<TARGET_OBJECTS:ml_dsa_vec256>)
 
     if(NOT MSVC)
         target_compile_options(ml_dsa_vec256 PRIVATE
@@ -99,8 +80,6 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|arm64v8" AND DEFINED ENV{LIBCRU
     add_compile_definitions(LIBCRUX_AARCH64)
 
     add_library(ml_dsa_vec128 OBJECT ${SOURCES_vec128})
-    target_sources(ml_dsa_static PRIVATE $<TARGET_OBJECTS:ml_dsa_vec128>)
-    target_sources(ml_dsa PRIVATE $<TARGET_OBJECTS:ml_dsa_vec128>)
 endif()
 
 # --- Tests
@@ -130,7 +109,6 @@ add_executable(ml_dsa_test
     ${PROJECT_SOURCE_DIR}/tests/mldsa65.cc
 )
 target_link_libraries(ml_dsa_test PRIVATE
-    ml_dsa_static
     gtest_main
     nlohmann_json::nlohmann_json
 )

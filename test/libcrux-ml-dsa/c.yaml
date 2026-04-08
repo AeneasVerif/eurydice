@@ -17,6 +17,7 @@ files:
 
   # Keep the per-target seperation idea: each SHA3 variant in its own file
   - name: libcrux_sha3_neon
+    inline_static: true
     api:
       - [libcrux_sha3, neon, "*"]
     private:
@@ -38,6 +39,7 @@ files:
       - '"intrinsics/libcrux_intrinsics_arm64.h"'
 
   - name: libcrux_sha3_avx2
+    inline_static: true
     api:
       - [libcrux_sha3, avx2, "*"]
     private:
@@ -110,6 +112,7 @@ files:
 
   # MLDSA-44
   - name: libcrux_mldsa44_avx2
+    inline_static: true
     target: "avx2"
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
@@ -121,6 +124,7 @@ files:
 
   # MLDSA-65
   - name: libcrux_mldsa65_avx2
+    inline_static: true
     target: "avx2"
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
@@ -132,6 +136,7 @@ files:
 
   # MLDSA-87
   - name: libcrux_mldsa87_avx2
+    inline_static: true
     target: "avx2"
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
@@ -143,6 +148,7 @@ files:
 
   # MLDSA: AVX2 stuff shared across variants
   - name: libcrux_mldsa_avx2
+    inline_static: true
     target: "avx2"
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
@@ -167,6 +173,7 @@ files:
         - [core_core_arch_x86___m256i_x2]
 
   - name: libcrux_mldsa44_portable
+    inline_static: true
     api:
       patterns:
         - [libcrux_ml_dsa, ml_dsa_44, portable, "*"]
@@ -174,6 +181,7 @@ files:
         - [libcrux_ml_dsa, ml_dsa_44, portable]
 
   - name: libcrux_mldsa65_portable
+    inline_static: true
     api:
       patterns:
         - [libcrux_ml_dsa, ml_dsa_65, portable, "*"]
@@ -181,6 +189,7 @@ files:
         - [libcrux_ml_dsa, ml_dsa_65, portable]
 
   - name: libcrux_mldsa87_portable
+    inline_static: true
     api:
       patterns:
         - [libcrux_ml_dsa, ml_dsa_87, portable, "*"]
@@ -188,6 +197,7 @@ files:
         - [libcrux_ml_dsa, ml_dsa_87, portable]
 
   - name: libcrux_mldsa_portable
+    inline_static: true
     api:
       patterns:
         - [libcrux_ml_dsa, samplex4, portable, "*"]
@@ -204,6 +214,7 @@ files:
 
   # MLDSA: catch-all for things that have not matched earlier
   - name: libcrux_mldsa_core
+    inline_static: true
     private:
       monomorphizations_of:
         - [ "*" ]
