@@ -387,7 +387,7 @@ static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1) {
 }
 
 static inline void core_ops_arith__i32__add_assign(int32_t *x0, int32_t *x1) {
-  *x0 = (int32_t)((uint32_t)*x0 + (uint32_t)*x1);
+  *x0 = *x0 + *x1;
 }
 
 static inline uint8_t Eurydice_bitand_pv_u8(uint8_t *p, uint8_t v) {
