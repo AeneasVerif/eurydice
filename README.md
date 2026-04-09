@@ -18,6 +18,14 @@ safer and easier to verify; but for legacy environments that cannot yet take a
 dependency on the Rust toolchain, Eurydice allows generating C code as a stopgap
 measure.
 
+## Guarantee
+
+Eurydice's informal guarantee is: if the Rust program terminates without
+panicking, then the Eurydice-compiled C code computes the same result without
+undefined behavior. If the Rust program panics (e.g., on signed integer
+overflow, out-of-bounds array access), no guarantees are made about the behavior
+of the generated C code.
+
 Currently (late 2023), the flagship example for Eurydice is Kyber, a
 Post-Quantum cryptographic algorithm authored and
 verified in Rust for the general public, and [compiled to C via

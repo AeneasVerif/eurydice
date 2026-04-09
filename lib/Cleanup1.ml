@@ -428,6 +428,10 @@ let unsigned_overflow_is_ok_in_c =
       match e.node with
       | EQualified ([ "core"; "num"; t; _ ], "wrapping_add") when is_u t ->
           EApp (Krml.Helpers.mk_op Add (as_w t), es)
+      | EQualified ([ "core"; "num"; t; _ ], "wrapping_sub") when is_u t ->
+          EApp (Krml.Helpers.mk_op Sub (as_w t), es)
+      | EQualified ([ "core"; "num"; t; _ ], "wrapping_mul") when is_u t ->
+          EApp (Krml.Helpers.mk_op Mult (as_w t), es)
       | _ -> super#visit_EApp env e es
   end
 
