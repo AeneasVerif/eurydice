@@ -33,7 +33,7 @@ endif(NOT MSVC)
 set(CMAKE_COLOR_DIAGNOSTICS "ON")
 
 set(EURYDICE_ROOT "../..")
-set(OUT_DIR "../../out/test-libcrux")
+set(OUT_DIR "../../out/test-libcrux-ml-kem")
 
 # For LSP-based editors
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
