@@ -6,8 +6,8 @@
 #define HAS_INT128 1
 #endif
 
-#ifdef HAS_INT128
 #include <inttypes.h>
+#ifdef HAS_INT128
 
 typedef __int128_t Eurydice_Int128_int128_t;
 typedef __uint128_t Eurydice_Int128_uint128_t;
@@ -151,6 +151,9 @@ static inline Eurydice_Int128_uint128_t Eurydice_Int128_u128_neg(Eurydice_Int128
   return -x;
 }
 #else
+
+#include <assert.h>
+#include <stdbool.h>
 typedef struct {
   uint64_t hi;
   uint64_t lo;
