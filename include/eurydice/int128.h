@@ -2,9 +2,9 @@
 
 // New types & definitions for 128-bit integers
 
-// #if defined(__SIZEOF_INT128__)
-// #define HAS_INT128 1
-// #endif
+#if defined(__SIZEOF_INT128__)
+#define HAS_INT128 1
+#endif
 
 #ifdef HAS_INT128
 #include <inttypes.h>
@@ -177,8 +177,8 @@ static inline Eurydice_Int128_uint128_t u128_of_i128(Eurydice_Int128_int128_t x)
 #define i128_reuse_u128_impl1(f,x) i128_of_u128(f(u128_of_i128(x)))
 #define i128_reuse_u128_impl2(f,x,y) i128_of_u128(f(u128_of_i128(x),u128_of_i128(y)))
 static const Eurydice_Int128_int128_t neg_one = {
-  .hi = 0xffffffff,
-  .lo = 0xffffffff
+  .hi = 0xffffffffffffffff,
+  .lo = 0xffffffffffffffff
 };
 static inline bool Eurydice_Int128_i128_eq(Eurydice_Int128_int128_t x, Eurydice_Int128_int128_t y) {
   return x.hi == y.hi && x.lo == y.lo;
@@ -221,8 +221,8 @@ static inline Eurydice_Int128_int128_t Eurydice_Int128_i128_abs(Eurydice_Int128_
 }
 
 /* 
-  a = a_hi * 2^64 + a_low
-  b = b_hi * 2^64 + b_low
+  a = a_hi * 2^64 + a_lo
+  b = b_hi * 2^64 + b_lo
     a * b 
   = a_hi * b_hi * 2^128 + (a_hi * b_lo + b_hi * a_lo) * 2^64 + a_lo * b_lo
   res_hi = a_hi * b_lo + b_hi * a_lo + a_lo * b_lo >> 64
@@ -235,14 +235,31 @@ static inline Eurydice_Int128_uint128_t Eurydice_Int128_u128_mul(Eurydice_Int128
 
   uint64_t result_lo = a_lo * b_lo;
   /*
+    let:
     a_lo = a_lh * 2^32 + a_ll
     b_lo = b_lh * 2^32 + b_ll
-    a_lo * b_lo = a_lh * b_lh * 2^64 + (a_ll * b_lh + b_ll * a_lh) * 2^32 + a_ll * b_ll
-    carry_ll = a_lh * b_lh + (a_ll * b_lh + b_ll * a_lh) >> 32
+    a_lo * b_lo 
+    = a_lh * b_lh * 2^64 + (a_ll * b_lh + b_ll * a_lh) * 2^32 + a_ll * b_ll
+    = a_lh * b_lh * 2^64 
+      + high32bits(a_ll * b_lh + b_ll * a_lh) * 2^64 
+      + low32bits(a_ll * b_lh + b_ll * a_lh) * 2^32 
+      + a_ll * b_ll
+    carry_ll
+    = a_lo * b_lo >> 64
+    = a_lh * b_lh 
+      + (a_ll * b_lh >> 32)
+      + (b_ll * a_lh >> 32) 
+      + carryof((a_ll * b_lh << 32) + (b_ll * a_lh << 32) + (a_ll * b_ll))
+  
+    carryof((a_ll * b_lh << 32) + (b_ll * a_lh << 32) + (a_ll * b_ll))
+    = carryof((a_ll * b_lh << 32) + (b_ll * a_lh << 32) + (high32bit(a_ll * b_ll) << 32))
+    = (a_ll * b_lh) & 0xffffffff + (b_ll * a_lh) & 0xffffffff + (a_ll * b_ll >> 32) >> 32
+
+    The last part of the sum is the carry bit of ((a_ll * b_lh + b_ll * a_lh) << 32) +  a_ll * b_ll
   */
   uint64_t a_ll = a_lo & 0xffffffff, a_lh = a_lo >> 32;
   uint64_t b_ll = b_lo & 0xffffffff, b_lh = b_lo >> 32;
-  uint64_t carry_ll = a_lh * b_lh + ((a_ll * b_lh + b_ll * a_lh) >> 32);
+  uint64_t carry_ll = a_lh * b_lh + (a_ll * b_lh >> 32) + (b_ll * a_lh >> 32) + (((a_ll * b_lh & 0xffffffff) + (b_ll * a_lh & 0xffffffff) + (a_ll * b_ll >> 32)) >> 32);
   uint64_t result_hi = a_hi * b_lo + b_hi * a_lo + carry_ll;
   return (Eurydice_Int128_uint128_t){.hi = result_hi, .lo = result_lo};
 }
