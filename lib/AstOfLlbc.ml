@@ -1491,7 +1491,12 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
 
 let fn_ptr_is_opaque env (fn_ptr : C.fn_ptr) =
   match fn_ptr.kind with
-  | FunId (FRegular id) -> ( try (env.get_nth_function id).body = None with Not_found -> false)
+  | FunId (FRegular id) -> (
+      try
+        match (env.get_nth_function id).body with
+        | Body _ -> false
+        | _ -> true
+      with Not_found -> false)
   | _ -> false
 
 (* This is a very core piece of logic that transforms a Rust fn_ptr into a krml AST node that
@@ -2572,10 +2577,9 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
           let { C.def_id; generics; signature; body; item_meta; src; _ } = decl in
           let env = { env with generic_params = generics } in
           L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
-            (if body = None then
-               "opaque "
-             else
-               "")
+            (match body with
+            | Body _ -> ""
+            | _ -> "opaque ")
             (string_of_name env item_meta.name)
             (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " decl);
 
@@ -2586,11 +2590,18 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
               (* We skip those on the basis that they generate useless external prototypes, which we
                  do not really need. *)
               None
-          | None, _ ->
+          | ( ( Opaque
+              | Extern _
+              | Intrinsic _
+              | TraitMethodWithoutDefault
+              | TargetDispatch _
+              | Missing
+              | Error _ ),
+              _ ) ->
               (* Opaque function *)
               let { K.n_cgs; n }, t = typ_of_signature env (C.bound_fun_sig_of_decl decl) in
               Some (K.DExternal (None, [], n_cgs, n, name, t, []))
-          | Some { locals; body; _ }, _ ->
+          | Body { locals; body; _ }, _ ->
               if Option.is_some decl.is_global_initializer then
                 None
               else
@@ -2738,14 +2749,14 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
         (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " body);
       begin
         match body.body with
-        | Some body ->
+        | Body body ->
             let ret_var = List.hd body.locals.locals in
             let body =
               with_locals env ty body.locals.locals (fun env ->
                   expression_of_block env ret_var.index body.body)
             in
             Some (K.DGlobal (flags, lid_of_name env name, 0, ty, body))
-        | None -> Some (K.DExternal (None, [], 0, 0, lid_of_name env name, ty, []))
+        | _ -> Some (K.DExternal (None, [], 0, 0, lid_of_name env name, ty, []))
       end
   | IdTraitDecl _ | IdTraitImpl _ -> None
 
