@@ -1510,6 +1510,31 @@ let float_comments files =
     #visit_files
     () files
 
+(* We rewrite signed shifts to avoid UB in C -- signed shifts are defined in
+  Rust. *)
+let rewrite_signed_shifts files =
+  let open Krml.Constant in
+  (object (self)
+     inherit [_] map as super
+
+     method! visit_EApp env e es =
+       match e.node, es with
+       | EOp (BShiftL, w), [ e1; e2 ] when is_signed w ->
+           let unsigned_w = unsigned_of_signed w in
+           let e1 = self#visit_expr env e1 in
+           let e2 = self#visit_expr env e2 in
+           let e1_unsigned = with_type (TInt unsigned_w) (ECast (e1, TInt unsigned_w)) in
+           let op_type = H.fold_arrow [ TInt unsigned_w; e2.typ ] (TInt unsigned_w) in
+           let shift =
+             with_type (TInt unsigned_w)
+               (EApp (with_type op_type (EOp (BShiftL, unsigned_w)), [ e1_unsigned; e2 ]))
+           in
+           ECast (shift, TInt w)
+       | _ -> super#visit_EApp env e es
+  end)
+    #visit_files
+    () files
+
 (* Now that we have the allocation scheme of data types, we can eliminate the Eurydice_discriminant
    placeholder *)
 let remove_discriminant_reads (map : Krml.DataTypes.map) files =
