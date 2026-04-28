@@ -206,6 +206,7 @@ Supported options:|}
         files
   in
   let files = Eurydice.Cleanup1.cleanup files in
+  let files = Eurydice.Cleanup2.rewrite_signed_shifts files in
 
   Eurydice.Logging.log "Phase2" "%a" pfiles files;
   let errors, files = Krml.Checker.check_everything ~warn:true files in

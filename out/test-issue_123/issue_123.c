@@ -37,7 +37,7 @@ void issue_123_main(void)
   /* original Rust expression is not an lvalue in C */
   int32_t lvalue2 = issue_123_fun(issue_123_E_One);
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue = (int32_t)1;
+  int32_t lvalue = 1;
   const_int32_t__x2 uu____1 = { .fst = &lvalue2, .snd = &lvalue };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }

@@ -1510,6 +1510,56 @@ let float_comments files =
     #visit_files
     () files
 
+(* When krml is used with the F* frontend, all operations on signed integers
+   must fit in the destination type -- no overflow allowed!
+
+   When krml is used with the Rust frontend (here), overflow on signed integer
+   types is UB, except for left-shift which *is* defined (provided the places we
+   shift by do not exceed the width of the type, like in C).
+
+   We rely on the invariant that for signed integer arithmetic, every
+   subexpression may be as `int` as long as the representation is consistent
+   (i.e. the sign-extended version of the original value).
+   - add, mul, div: cannot overflow in Rust (panic)
+   - right-shift: ok (sign-extension in practice even though
+     implementation-defined)
+   - left-shift: must cast to unsigned to avoid UB, then cast back to signed to
+     clamp extra high bytes
+
+   *)
+let rewrite_signed_shifts files =
+  let open Krml.Constant in
+  (object (self)
+     inherit [_] map as super
+
+     method! visit_EApp env e es =
+       match e.node, es with
+       | EOp (BShiftL, w), [ e1; e2 ] when is_signed w ->
+           let unsigned_w = unsigned_of_signed w in
+           (* No point in casting to uint16 or uint8: this will be promoted to
+              `int` once in C, which AstToCStar defeats by casting to (uint32_t)
+              -- we simply anticipate this fact and cast straight to uint32_t. *)
+           let unsigned_w =
+             match unsigned_w with
+             | UInt8 | UInt16 -> UInt32
+             | _ -> unsigned_w
+           in
+           let e1 = self#visit_expr env e1 in
+           let e2 = self#visit_expr env e2 in
+           (* Note that in C, casting to a signed type is implementation-defined
+              (yay). We assume all implementations rely on two's complement. *)
+           let e1_unsigned = with_type (TInt unsigned_w) (ECast (e1, TInt unsigned_w)) in
+           let op_type = H.fold_arrow [ TInt unsigned_w; e2.typ ] (TInt unsigned_w) in
+           let shift =
+             with_type (TInt unsigned_w)
+               (EApp (with_type op_type (EOp (BShiftL, unsigned_w)), [ e1_unsigned; e2 ]))
+           in
+           ECast (shift, TInt w)
+       | _ -> super#visit_EApp env e es
+  end)
+    #visit_files
+    () files
+
 (* Now that we have the allocation scheme of data types, we can eliminate the Eurydice_discriminant
    placeholder *)
 let remove_discriminant_reads (map : Krml.DataTypes.map) files =

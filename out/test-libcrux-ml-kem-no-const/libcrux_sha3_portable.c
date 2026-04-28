@@ -47,7 +47,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_76(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)1);
+  return core_num__u64__rotate_left(x, (uint32_t)1);
 }
 
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable__vrax1q_u64(uint64_t a, uint64_t b)
@@ -383,7 +383,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_02(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)36);
+  return core_num__u64__rotate_left(x, (uint32_t)36);
 }
 
 /**
@@ -420,7 +420,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_ac(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)3);
+  return core_num__u64__rotate_left(x, (uint32_t)3);
 }
 
 /**
@@ -457,7 +457,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_020(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)41);
+  return core_num__u64__rotate_left(x, (uint32_t)41);
 }
 
 /**
@@ -494,7 +494,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_a9(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)18);
+  return core_num__u64__rotate_left(x, (uint32_t)18);
 }
 
 /**
@@ -601,7 +601,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_58(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)44);
+  return core_num__u64__rotate_left(x, (uint32_t)44);
 }
 
 /**
@@ -638,7 +638,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_e0(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)10);
+  return core_num__u64__rotate_left(x, (uint32_t)10);
 }
 
 /**
@@ -675,7 +675,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_63(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)45);
+  return core_num__u64__rotate_left(x, (uint32_t)45);
 }
 
 /**
@@ -712,7 +712,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_6a(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)2);
+  return core_num__u64__rotate_left(x, (uint32_t)2);
 }
 
 /**
@@ -793,7 +793,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_ab(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)62);
+  return core_num__u64__rotate_left(x, (uint32_t)62);
 }
 
 /**
@@ -830,7 +830,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_5b(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)6);
+  return core_num__u64__rotate_left(x, (uint32_t)6);
 }
 
 /**
@@ -867,7 +867,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_6f(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)43);
+  return core_num__u64__rotate_left(x, (uint32_t)43);
 }
 
 /**
@@ -904,7 +904,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_62(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)15);
+  return core_num__u64__rotate_left(x, (uint32_t)15);
 }
 
 /**
@@ -941,7 +941,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_23(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)61);
+  return core_num__u64__rotate_left(x, (uint32_t)61);
 }
 
 /**
@@ -1022,7 +1022,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_37(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)28);
+  return core_num__u64__rotate_left(x, (uint32_t)28);
 }
 
 /**
@@ -1059,7 +1059,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_bb(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)55);
+  return core_num__u64__rotate_left(x, (uint32_t)55);
 }
 
 /**
@@ -1096,7 +1096,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_b9(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)25);
+  return core_num__u64__rotate_left(x, (uint32_t)25);
 }
 
 /**
@@ -1133,7 +1133,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_54(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)21);
+  return core_num__u64__rotate_left(x, (uint32_t)21);
 }
 
 /**
@@ -1170,7 +1170,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_4c(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)56);
+  return core_num__u64__rotate_left(x, (uint32_t)56);
 }
 
 /**
@@ -1251,7 +1251,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_ce(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)27);
+  return core_num__u64__rotate_left(x, (uint32_t)27);
 }
 
 /**
@@ -1288,7 +1288,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_77(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)20);
+  return core_num__u64__rotate_left(x, (uint32_t)20);
 }
 
 /**
@@ -1325,7 +1325,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_25(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)39);
+  return core_num__u64__rotate_left(x, (uint32_t)39);
 }
 
 /**
@@ -1362,7 +1362,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_af(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)8);
+  return core_num__u64__rotate_left(x, (uint32_t)8);
 }
 
 /**
@@ -1399,7 +1399,7 @@ with const generics
 */
 KRML_MUSTINLINE uint64_t libcrux_sha3_simd_portable_rotate_left_fd(uint64_t x)
 {
-  return core_num__u64__rotate_left(x, (uint32_t)(int32_t)14);
+  return core_num__u64__rotate_left(x, (uint32_t)14);
 }
 
 /**

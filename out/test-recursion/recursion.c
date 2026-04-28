@@ -9,7 +9,7 @@
 
 bool recursion_is_odd(int32_t y)
 {
-  if (!(y < (int32_t)0))
+  if (!(y < 0))
   {
     switch (y)
     {
@@ -24,7 +24,7 @@ bool recursion_is_odd(int32_t y)
       default:
         {
           int32_t y0 = y;
-          return recursion_is_odd(y0 - (int32_t)2);
+          return recursion_is_odd(y0 - 2);
         }
     }
     return false;
@@ -34,6 +34,6 @@ bool recursion_is_odd(int32_t y)
 
 void recursion_main(void)
 {
-  EURYDICE_ASSERT(!!recursion_is_odd((int32_t)5), "assert failure");
+  EURYDICE_ASSERT(!!recursion_is_odd(5), "assert failure");
 }
 
