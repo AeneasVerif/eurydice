@@ -64,7 +64,7 @@ type env = {
   get_nth_trait_decl : C.TraitDeclId.id -> C.trait_decl;
   crate : C.crate;
   (* Needed by the name matching logic *)
-  name_ctx : C.block Charon.NameMatcher.ctx;
+  name_ctx : Charon.NameMatcher.ctx;
   generic_params : C.generic_params;
   (* We have three lists of binders, which allow us to go from a Rust variable
      to a corresponding krml AST variable; everything is in De Bruijn, so
@@ -109,7 +109,7 @@ type env = {
   type_binders : C.type_var_id list;
   binders : (var_id * K.typ) list;
   (* For printing. *)
-  format_env : Charon.PrintLlbcAst.fmt_env;
+  format_env : Charon.Print.fmt_env;
   (* For picking pretty names *)
   crate_name : string;
 }
@@ -118,7 +118,7 @@ let debug env =
   L.log "DebugEnv" "\n# Debug Env";
   List.iteri
     (fun i v ->
-      L.log "DebugEnv" "type_binders[%d]: %s\n" i (Charon.PrintTypes.type_var_id_to_pretty_string v))
+      L.log "DebugEnv" "type_binders[%d]: %s\n" i (Charon.Print.type_var_id_to_pretty_string v))
     env.type_binders
 
 (* Environment: types *)
@@ -164,7 +164,7 @@ let assert_slice (t : K.typ) =
   | _ -> fail "Not a slice: %a" ptyp t
 
 let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
-  Charon.PrintTypes.path_elem_to_string env.format_env p
+  Charon.Print.path_elem_to_string env.format_env p
 
 let string_of_name env ps = String.concat "::" (List.map (string_of_path_elem env) ps)
 
@@ -337,9 +337,7 @@ let cg_of_const_generic env (cg : C.constant_expr) =
   match cg.kind with
   | C.CVar var -> K.CgVar (fst (lookup_cg_in_types env (C.expect_free_var var)))
   | C.CLiteral (VScalar sv) -> CgConst (constant_of_scalar_value sv)
-  | _ ->
-      failwith
-        ("cg_of_const_generic: " ^ Charon.PrintTypes.constant_expr_to_string env.format_env cg)
+  | _ -> failwith ("cg_of_const_generic: " ^ Charon.Print.constant_expr_to_string env.format_env cg)
 
 let float_width float_ty : K.width =
   match float_ty with
@@ -608,7 +606,7 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       List.iter (fun x -> print_endline (C.show_constant_expr x)) const_generics;
       fail "TODO: Adt/Builtin %s (%d) %d " (C.show_builtin_ty f) (List.length args)
         (List.length const_generics)
-  | TTraitType _ -> failwith ("TODO: TraitTypes " ^ Charon.PrintTypes.ty_to_string env.format_env ty)
+  | TTraitType _ -> failwith ("TODO: TraitTypes " ^ Charon.Print.ty_to_string env.format_env ty)
   | TFnPtr fn_sig ->
       let { C.inputs = ts; output = t; _ } = fn_sig.binder_value in
       let typs = List.map (typ_of_ty env) ts in
@@ -1343,7 +1341,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
                   { C.item_binder_params = method_params; item_binder_value = signature })
               in
               L.log "TraitClauses" "%s computed method signature %s::%s:\n%s" depth name item_name
-                (Charon.PrintGAst.fun_sig_to_string env.format_env "" " " method_sig);
+                (Charon.Print.fun_sig_to_string env.format_env "" " " method_sig);
               let ts, t = typ_of_signature env method_sig in
               let t = maybe_ts ts t in
               TraitClauseMethod { item_name; pretty_name; clause_id = clause_ref.kind; ts }, t)
@@ -1373,10 +1371,10 @@ and lookup_signature env depth (signature : C.bound_fun_sig) : lookup_result =
     signature
   in
   L.log "Calls" "%s# Lookup Signature\n%s--> args: %s, ret: %s\n" depth depth
-    (String.concat " ++ " (List.map (Charon.PrintTypes.ty_to_string env.format_env) inputs))
-    (Charon.PrintTypes.ty_to_string env.format_env output);
+    (String.concat " ++ " (List.map (Charon.Print.ty_to_string env.format_env) inputs))
+    (Charon.Print.ty_to_string env.format_env output);
   L.log "Calls" "%sType parameters for this signature: %s\n" depth
-    (String.concat " ++ " (List.map Charon.PrintTypes.type_param_to_string type_params));
+    (String.concat " ++ " (List.map Charon.Print.type_param_to_string type_params));
   let env = push_cg_binders env const_generics in
   let env = push_type_binders env type_params in
 
@@ -1423,12 +1421,12 @@ and debug_trait_clause_mapping env (mapping : (var_id * K.typ) list) =
       | TraitClauseMethod { clause_id; item_name; ts; _ } ->
           L.log "TraitClauses" "@@@ method name: %s" item_name;
           L.log "TraitClauses" "%s::%s: %a has trait-level %d const generics, %d type vars\n"
-            (Charon.PrintTypes.trait_ref_kind_to_string env.format_env None clause_id)
+            (Charon.Print.trait_ref_kind_to_string env.format_env None clause_id)
             item_name ptyp t ts.K.n_cgs ts.n
       | TraitClauseConstant { clause_id; item_name; _ } ->
           L.log "TraitClauses" "@@@ method name: %s" item_name;
           L.log "TraitClauses" "%s::%s: associated constant %a\n"
-            (Charon.PrintTypes.trait_ref_kind_to_string env.format_env None clause_id)
+            (Charon.Print.trait_ref_kind_to_string env.format_env None clause_id)
             item_name ptyp t
       | _ -> ())
     mapping
@@ -1469,7 +1467,7 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
                 try List.assoc method_name trait.methods
                 with Not_found ->
                   fail "Error looking trait impl: %s %s%!"
-                    (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref)
+                    (Charon.Print.trait_ref_to_string env.format_env trait_ref)
                     method_name
               in
               lookup_result_of_fun_id f.C.binder_value.id
@@ -1486,7 +1484,7 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
               EBound f, { ts = sig_info; cg_types; arg_types; ret_type; is_known_builtin = false }
           | _ ->
               fail "Error looking trait ref: %s %s%!"
-                (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref)
+                (Charon.Print.trait_ref_to_string env.format_env trait_ref)
                 method_name))
 
 let fn_ptr_is_opaque env (fn_ptr : C.fn_ptr) =
@@ -1494,7 +1492,7 @@ let fn_ptr_is_opaque env (fn_ptr : C.fn_ptr) =
   | FunId (FRegular id) -> (
       try
         match (env.get_nth_function id).body with
-        | Body _ -> false
+        | StructuredBody _ -> false
         | _ -> true
       with Not_found -> false)
   | _ -> false
@@ -1514,8 +1512,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   (* We handle any kind of fn_ptr, whether it's a concrete function call, a
      concrete trait implementation method call, or an abstract trait method call
      (e.g. a call to T::f when T is a trait bound in scope). *)
-  L.log "Calls" "%sVisiting call: %s" depth
-    (Charon.PrintTypes.fn_ptr_to_string env.format_env fn_ptr);
+  L.log "Calls" "%sVisiting call: %s" depth (Charon.Print.fn_ptr_to_string env.format_env fn_ptr);
   L.log "Calls" "%s--> %d type_args, %d const_generics, %d trait_refs" depth (List.length type_args)
     (List.length const_generic_args) (List.length trait_refs);
 
@@ -1541,11 +1538,10 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   L.log "Calls" "%s--> %d type_args, %d const_generics, %d trait_refs" depth (List.length type_args)
     (List.length const_generic_args) (List.length trait_refs);
   L.log "Calls" "%s--> trait_refs: %s\n" depth
-    (String.concat " ++ "
-       (List.map (Charon.PrintTypes.trait_ref_to_string env.format_env) trait_refs));
+    (String.concat " ++ " (List.map (Charon.Print.trait_ref_to_string env.format_env) trait_refs));
   L.log "Calls" "%s--> pattern: %s" depth (string_of_fn_ptr env fn_ptr);
   L.log "Calls" "%s--> type_args: %s" depth
-    (String.concat ", " (List.map (Charon.PrintTypes.ty_to_string env.format_env) type_args));
+    (String.concat ", " (List.map (Charon.Print.ty_to_string env.format_env) type_args));
 
   (* The function itself, along with information about its *signature*. *)
   let f, { ts; arg_types = inputs; ret_type = output; cg_types = cg_inputs; is_known_builtin } =
@@ -1662,11 +1658,11 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                 else
                   failwith
                     ("Don't know how to resolve trait_ref above (2): "
-                    ^ Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref)
+                    ^ Charon.Print.trait_ref_to_string env.format_env trait_ref)
             | _ ->
                 failwith
                   ("Don't know how to resolve trait_ref above (2): "
-                  ^ Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref))
+                  ^ Charon.Print.trait_ref_to_string env.format_env trait_ref))
           trait_refs
       in
       build_trait_ref_mapping depth trait_refs
@@ -1729,7 +1725,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
     | t ->
         let ret, args = Krml.Helpers.flatten_arrow t in
         if List.length const_generic_args + List.length fn_ptrs > List.length args then
-          L.log "Calls" "ERROR in %s" (Charon.PrintTypes.fn_ptr_to_string env.format_env fn_ptr);
+          L.log "Calls" "ERROR in %s" (Charon.Print.fn_ptr_to_string env.format_env fn_ptr);
         let _, args =
           Krml.KList.split (List.length const_generic_args + List.length fn_ptrs) args
         in
@@ -1781,7 +1777,7 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
             try List.assoc name trait.consts
             with Not_found ->
               fail "Error looking trait impl: %s %s%!"
-                (Charon.PrintTypes.trait_ref_to_string env.format_env trait_ref)
+                (Charon.Print.trait_ref_to_string env.format_env trait_ref)
                 name
           in
           let global = env.get_nth_global global.C.id in
@@ -1789,10 +1785,10 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
             (K.EQualified (lid_of_name env global.item_meta.name))
       | _ ->
           fail "expression_of_operand Constant: %s"
-            (Charon.PrintExpressions.operand_to_string env.format_env op)
+            (Charon.Print.operand_to_string env.format_env op)
     end
   | Constant _ ->
-      fail "expression_of_operand: %s" (Charon.PrintExpressions.operand_to_string env.format_env op)
+      fail "expression_of_operand: %s" (Charon.Print.operand_to_string env.format_env op)
 
 let is_str env var_id =
   match lookup_with_original_type env var_id with
@@ -1976,7 +1972,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
             Krml.KPrint.bprintf "destruct_arr_dst_ref t_to = None? %b\n"
               (destruct_arr_dst_ref t_to = None);
             Krml.Warn.fatal_error "unknown unsize cast: `%s`\nt_to=%a\nt_from=%a"
-              (Charon.PrintExpressions.cast_kind_to_string env.format_env ck)
+              (Charon.Print.cast_kind_to_string env.format_env ck)
               ptyp t_to ptyp t_from
       end
   | UnaryOp (Cast (CastConcretize (_from_ty, to_ty)), e) -> (
@@ -1988,8 +1984,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       | None ->
           failwith
             ("unknown concretize cast: `"
-            ^ Charon.PrintExpressions.cast_kind_to_string env.format_env
-                (CastConcretize (_from_ty, to_ty))
+            ^ Charon.Print.cast_kind_to_string env.format_env (CastConcretize (_from_ty, to_ty))
             ^ "`"))
   | UnaryOp (Cast ck, e) ->
       (* Add a simpler case: identity cast is allowed *)
@@ -2005,8 +2000,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       if is_ident then
         expression_of_operand env e
       else
-        failwith
-          ("unknown cast: `" ^ Charon.PrintExpressions.cast_kind_to_string env.format_env ck ^ "`")
+        failwith ("unknown cast: `" ^ Charon.Print.cast_kind_to_string env.format_env ck ^ "`")
   (* | UnaryOp (PtrMetadata, e) ->
     let e = expression_of_operand env e in begin
     match e.typ with
@@ -2100,10 +2094,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
             K.with_type typ_arr (mk_expr_arr_struct array_expr)
       end
   | rvalue ->
-      failwith
-        ("unsupported rvalue: `"
-        ^ Charon.PrintExpressions.rvalue_to_string env.format_env rvalue
-        ^ "`")
+      failwith ("unsupported rvalue: `" ^ Charon.Print.rvalue_to_string env.format_env rvalue ^ "`")
 
 let expression_of_assertion (env : env) ({ cond; expected; _ } : C.assertion) : K.expr =
   let cond =
@@ -2442,7 +2433,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
   | _ ->
       failwith
         ("Unsupported statement: "
-        ^ Charon.PrintLlbcAst.Ast.statement_kind_to_string env.format_env "" "" s)
+        ^ Charon.Print.Llbc.statement_kind_to_string env.format_env "" "" s)
 
 and expression_of_statement (env : env) (ret_var : C.local_id) (s : C.statement) : K.expr =
   {
@@ -2502,7 +2493,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
       in
       let name = item_meta.name in
       L.log "AstOfLlbc" "Visiting type: %s\n%s" (string_of_name env name)
-        (Charon.PrintTypes.type_decl_to_string env.format_env decl);
+        (Charon.Print.type_decl_to_string env.format_env decl);
 
       assert (def_id = id);
       let name = lid_of_name env name in
@@ -2578,10 +2569,10 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
           let env = { env with generic_params = generics } in
           L.log "AstOfLlbc" "Visiting %sfunction: %s\n%s"
             (match body with
-            | Body _ -> ""
+            | StructuredBody _ -> ""
             | _ -> "opaque ")
             (string_of_name env item_meta.name)
-            (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " decl);
+            (Charon.Print.fun_decl_to_string env.format_env "  " "  " decl);
 
           assert (def_id = id);
           let name = lid_of_name env item_meta.name in
@@ -2590,18 +2581,19 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
               (* We skip those on the basis that they generate useless external prototypes, which we
                  do not really need. *)
               None
-          | ( ( Opaque
-              | Extern _
-              | Intrinsic _
-              | TraitMethodWithoutDefault
-              | TargetDispatch _
-              | Missing
-              | Error _ ),
+          | ( ( OpaqueBody
+              | ExternBody _
+              | IntrinsicBody _
+              | TraitMethodWithoutDefaultBody
+              | TargetDispatchBody _
+              | MissingBody
+              | ErrorBody _
+              | UnstructuredBody _ ),
               _ ) ->
               (* Opaque function *)
               let { K.n_cgs; n }, t = typ_of_signature env (C.bound_fun_sig_of_decl decl) in
               Some (K.DExternal (None, [], n_cgs, n, name, t, []))
-          | Body { locals; body; _ }, _ ->
+          | StructuredBody { locals; body; _ }, _ ->
               if Option.is_some decl.is_global_initializer then
                 None
               else
@@ -2612,12 +2604,12 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
                   (String.concat " ++ "
                      (List.map
                         (fun (local : C.local) ->
-                          Charon.PrintTypes.ty_to_string env.format_env local.local_ty)
+                          Charon.Print.ty_to_string env.format_env local.local_ty)
                         locals.locals));
                 L.log "AstOfLlbc" "ty of inputs: %s"
                   (String.concat " ++ "
                      (List.map
-                        (fun t -> Charon.PrintTypes.ty_to_string env.format_env t)
+                        (fun t -> Charon.Print.ty_to_string env.format_env t)
                         signature.C.inputs));
 
                 (* `locals` contains, in order: special return variable; function arguments;
@@ -2722,7 +2714,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
       let name = item_meta.name in
       let def = env.get_nth_global def_id in
       L.log "AstOfLlbc" "Visiting global: %s\n%s" (string_of_name env name)
-        (Charon.PrintLlbcAst.Ast.global_decl_to_string env.format_env "  " "  " def);
+        (Charon.Print.global_decl_to_string env.format_env "  " "  " def);
       let ty = typ_of_ty env ty in
       let flags =
         [ Krml.Common.Const "" ]
@@ -2746,10 +2738,10 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
       in
       let body = env.get_nth_function def.init in
       L.log "AstOfLlbc" "Corresponding body:%s"
-        (Charon.PrintLlbcAst.Ast.fun_decl_to_string env.format_env "  " "  " body);
+        (Charon.Print.fun_decl_to_string env.format_env "  " "  " body);
       begin
         match body.body with
-        | Body body ->
+        | StructuredBody body ->
             let ret_var = List.hd body.locals.locals in
             let body =
               with_locals env ty body.locals.locals (fun env ->
@@ -2888,36 +2880,33 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   let declarations = flatten_declarations declarations in
   seen := 0;
   total := List.length declarations;
-  let format_env = Charon.PrintLlbcAst.Crate.crate_to_fmt_env crate in
+  let format_env = Charon.Print.crate_to_fmt_env crate in
   let get_nth_function id =
     match C.FunDeclId.Map.find_opt id fun_decls with
     | Some f -> f
-    | None ->
-        fail "Function id not found: %s"
-          (Charon.PrintExpressions.fun_decl_id_to_string format_env id)
+    | None -> fail "Function id not found: %s" (Charon.Print.fun_decl_id_to_string format_env id)
   in
   let get_nth_type id =
     match C.TypeDeclId.Map.find_opt id type_decls with
     | Some ty -> ty
-    | None -> fail "Type id not found: %s" (Charon.PrintTypes.type_decl_id_to_string format_env id)
+    | None -> fail "Type id not found: %s" (Charon.Print.type_decl_id_to_string format_env id)
   in
   let get_nth_global id =
     match C.GlobalDeclId.Map.find_opt id global_decls with
     | Some g -> g
-    | None ->
-        fail "Global id not found: %s" (Charon.PrintTypes.global_decl_id_to_string format_env id)
+    | None -> fail "Global id not found: %s" (Charon.Print.global_decl_id_to_string format_env id)
   in
   let get_nth_trait_impl id =
     match C.TraitImplId.Map.find_opt id trait_impls with
     | Some impl -> impl
     | None ->
-        fail "Trait impl id not found: %s" (Charon.PrintTypes.trait_impl_id_to_string format_env id)
+        fail "Trait impl id not found: %s" (Charon.Print.trait_impl_id_to_string format_env id)
   in
   let get_nth_trait_decl id =
     match C.TraitDeclId.Map.find_opt id trait_decls with
     | Some decl -> decl
     | None ->
-        fail "Trait decl id not found: %s" (Charon.PrintTypes.trait_decl_id_to_string format_env id)
+        fail "Trait decl id not found: %s" (Charon.Print.trait_decl_id_to_string format_env id)
   in
   let name_ctx = Charon.NameMatcher.ctx_from_crate crate in
   let env =
