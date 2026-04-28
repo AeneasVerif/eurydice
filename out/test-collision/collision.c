@@ -12,24 +12,24 @@ int32_t collision_collision(collision_Either a, collision_Direction b)
   int32_t x;
   if (a.tag == collision_Left0)
   {
-    x = (int32_t)1;
+    x = 1;
   }
   else
   {
-    x = (int32_t)2;
+    x = 2;
   }
   int32_t y;
   if (b.tag == collision_Left)
   {
-    y = (int32_t)3;
+    y = 3;
   }
   else if (b.tag == collision_Middle)
   {
-    y = (int32_t)0;
+    y = 0;
   }
   else
   {
-    y = (int32_t)4;
+    y = 4;
   }
   return x + y;
 }
@@ -37,13 +37,10 @@ int32_t collision_collision(collision_Either a, collision_Direction b)
 void collision_main(void)
 {
   EURYDICE_ASSERT(collision_collision((
-        KRML_CLITERAL(collision_Either){
-          .tag = collision_Left0,
-          .val = { .case_Left = (int32_t)10 }
-        }
+        KRML_CLITERAL(collision_Either){ .tag = collision_Left0, .val = { .case_Left = 10 } }
       ),
       (KRML_CLITERAL(collision_Direction){ .tag = collision_Right, .val = { .case_Right = 20ULL } }))
-    > (int32_t)0,
+    > 0,
     "panic!");
 }
 

@@ -16,14 +16,14 @@ const_int32_t__x2;
 
 void step_by_bar(void)
 {
-  int32_t i0 = (int32_t)0;
-  for (int32_t i = (int32_t)0; i < (int32_t)24; i = i + (int32_t)(size_t)6U)
+  int32_t i0 = 0;
+  for (int32_t i = 0; i < 24; i = i + (int32_t)(size_t)6U)
   {
     int32_t j = i;
     i0 = i0 + j;
   }
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue = (int32_t)36;
+  int32_t lvalue = 36;
   const_int32_t__x2 uu____0 = { .fst = &i0, .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
@@ -31,13 +31,13 @@ void step_by_bar(void)
 void step_by_main1(void)
 {
   step_by_bar();
-  int32_t i0 = (int32_t)0;
-  for (int32_t i = (int32_t)0; i < (int32_t)24; i = i + (int32_t)(size_t)6U)
+  int32_t i0 = 0;
+  for (int32_t i = 0; i < 24; i = i + (int32_t)(size_t)6U)
   {
     int32_t j = i;
     i0 = i0 + j;
   }
-  for (int32_t i = (int32_t)0; i < (int32_t)24; i = i + (int32_t)(size_t)6U)
+  for (int32_t i = 0; i < 24; i = i + (int32_t)(size_t)6U)
   {
     int32_t j = i;
     i0 = i0 + j;
@@ -47,11 +47,11 @@ void step_by_main1(void)
 void step_by_main2(void)
 {
   step_by_main1();
-  for (int32_t i = (int32_t)0; i < (int32_t)24; i = i + (int32_t)(size_t)6U)
+  for (int32_t i = 0; i < 24; i = i + (int32_t)(size_t)6U)
   {
 
   }
-  for (int32_t i = (int32_t)0; i < (int32_t)24; i = i + (int32_t)(size_t)6U)
+  for (int32_t i = 0; i < 24; i = i + (int32_t)(size_t)6U)
   {
 
   }
@@ -60,11 +60,11 @@ void step_by_main2(void)
 void step_by_main(void)
 {
   step_by_main2();
-  for (int32_t i = (int32_t)0; i < (int32_t)24; i++)
+  for (int32_t i = 0; i < 24; i++)
   {
 
   }
-  for (int32_t i = (int32_t)0; i < (int32_t)24; i++)
+  for (int32_t i = 0; i < 24; i++)
   {
 
   }

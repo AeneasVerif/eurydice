@@ -13,7 +13,7 @@ This function found in impl {core::ops::function::Fn<(i32), i32> for closure_fn_
 int32_t closure_fn_cast_main_call_fd(void *const *_, int32_t tupled_args)
 {
   int32_t x = tupled_args;
-  return x + (int32_t)42;
+  return x + 42;
 }
 
 /**
@@ -44,6 +44,6 @@ int32_t closure_fn_cast_main_closure_as_fn(int32_t arg1)
 void closure_fn_cast_main(void)
 {
   int32_t (*f)(int32_t x0) = closure_fn_cast_main_closure_as_fn;
-  KRML_HOST_IGNORE(f((int32_t)1));
+  KRML_HOST_IGNORE(f(1));
 }
 

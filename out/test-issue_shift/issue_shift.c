@@ -37,28 +37,28 @@ const_int64_t__x2;
 
 void issue_shift_main(void)
 {
-  int32_t x = (int32_t)-1;
+  int32_t x = -1;
   int32_t y = (int32_t)((uint32_t)x << 1U);
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue0 = (int32_t)-2;
+  int32_t lvalue0 = -2;
   const_int32_t__x2 uu____0 = { .fst = &y, .snd = &lvalue0 };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
-  int8_t x0 = (int8_t)-1;
-  int8_t y0 = (int8_t)((uint32_t)(uint8_t)x0 << 1U);
+  int8_t x0 = -1;
+  int8_t y0 = (int8_t)((uint32_t)x0 << 1U);
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue1 = (int8_t)-2;
+  int8_t lvalue1 = -2;
   const_int8_t__x2 uu____1 = { .fst = &y0, .snd = &lvalue1 };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
-  int16_t x1 = (int16_t)-1;
-  int16_t y1 = (int16_t)((uint32_t)(uint16_t)x1 << 1U);
+  int16_t x1 = -1;
+  int16_t y1 = (int16_t)((uint32_t)x1 << 1U);
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue2 = (int16_t)-2;
+  int16_t lvalue2 = -2;
   const_int16_t__x2 uu____2 = { .fst = &y1, .snd = &lvalue2 };
   EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
-  int64_t x2 = (int64_t)-1LL;
+  int64_t x2 = -1LL;
   int64_t y2 = (int64_t)((uint64_t)x2 << 1U);
   /* original Rust expression is not an lvalue in C */
-  int64_t lvalue = (int64_t)-2LL;
+  int64_t lvalue = -2LL;
   const_int64_t__x2 uu____3 = { .fst = &y2, .snd = &lvalue };
   EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
 }

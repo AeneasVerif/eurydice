@@ -37,9 +37,9 @@ const_int32_t__x2;
 void fn_cast_main(void)
 {
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue0 = (int32_t)1;
+  int32_t lvalue0 = 1;
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue = (int32_t)1;
+  int32_t lvalue = 1;
   const_int32_t__x2
   uu____0 =
     {
