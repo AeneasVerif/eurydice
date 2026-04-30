@@ -38,216 +38,213 @@ const_int64_t__x2;
 void signed_wrapping_main(void)
 {
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue0 = core_num__i8__wrapping_add((int8_t)100, (int8_t)27);
+  int8_t lvalue0 = core_num__i8__wrapping_add(100, 27);
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue1 = (int8_t)127;
+  int8_t lvalue1 = 127;
   const_int8_t__x2 uu____0 = { .fst = &lvalue0, .snd = &lvalue1 };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue2 = core_num__i8__wrapping_add((int8_t)100, (int8_t)100);
+  int8_t lvalue2 = core_num__i8__wrapping_add(100, 100);
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue3 = (int8_t)-56;
+  int8_t lvalue3 = -56;
   const_int8_t__x2 uu____1 = { .fst = &lvalue2, .snd = &lvalue3 };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue4 = core_num__i8__wrapping_add((int8_t)-128, (int8_t)-1);
+  int8_t lvalue4 = core_num__i8__wrapping_add(-128, -1);
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue5 = (int8_t)127;
+  int8_t lvalue5 = 127;
   const_int8_t__x2 uu____2 = { .fst = &lvalue4, .snd = &lvalue5 };
   EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue6 = core_num__i8__wrapping_sub((int8_t)10, (int8_t)20);
+  int8_t lvalue6 = core_num__i8__wrapping_sub(10, 20);
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue7 = (int8_t)-10;
+  int8_t lvalue7 = -10;
   const_int8_t__x2 uu____3 = { .fst = &lvalue6, .snd = &lvalue7 };
   EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue8 = core_num__i8__wrapping_sub((int8_t)-128, (int8_t)1);
+  int8_t lvalue8 = core_num__i8__wrapping_sub(-128, 1);
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue9 = (int8_t)127;
+  int8_t lvalue9 = 127;
   const_int8_t__x2 uu____4 = { .fst = &lvalue8, .snd = &lvalue9 };
   EURYDICE_ASSERT(uu____4.fst[0U] == uu____4.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue10 = core_num__i8__wrapping_sub((int8_t)127, (int8_t)-1);
+  int8_t lvalue10 = core_num__i8__wrapping_sub(127, -1);
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue11 = (int8_t)-128;
+  int8_t lvalue11 = -128;
   const_int8_t__x2 uu____5 = { .fst = &lvalue10, .snd = &lvalue11 };
   EURYDICE_ASSERT(uu____5.fst[0U] == uu____5.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue12 = core_num__i8__wrapping_mul((int8_t)10, (int8_t)5);
+  int8_t lvalue12 = core_num__i8__wrapping_mul(10, 5);
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue13 = (int8_t)50;
+  int8_t lvalue13 = 50;
   const_int8_t__x2 uu____6 = { .fst = &lvalue12, .snd = &lvalue13 };
   EURYDICE_ASSERT(uu____6.fst[0U] == uu____6.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue14 = core_num__i8__wrapping_mul((int8_t)100, (int8_t)2);
+  int8_t lvalue14 = core_num__i8__wrapping_mul(100, 2);
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue15 = (int8_t)-56;
+  int8_t lvalue15 = -56;
   const_int8_t__x2 uu____7 = { .fst = &lvalue14, .snd = &lvalue15 };
   EURYDICE_ASSERT(uu____7.fst[0U] == uu____7.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue16 = core_num__i8__wrapping_mul((int8_t)-128, (int8_t)-1);
+  int8_t lvalue16 = core_num__i8__wrapping_mul(-128, -1);
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue17 = (int8_t)-128;
+  int8_t lvalue17 = -128;
   const_int8_t__x2 uu____8 = { .fst = &lvalue16, .snd = &lvalue17 };
   EURYDICE_ASSERT(uu____8.fst[0U] == uu____8.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue18 = core_num__i8__wrapping_neg((int8_t)5);
+  int8_t lvalue18 = core_num__i8__wrapping_neg(5);
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue19 = (int8_t)-5;
+  int8_t lvalue19 = -5;
   const_int8_t__x2 uu____9 = { .fst = &lvalue18, .snd = &lvalue19 };
   EURYDICE_ASSERT(uu____9.fst[0U] == uu____9.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue20 = core_num__i8__wrapping_neg((int8_t)-128);
+  int8_t lvalue20 = core_num__i8__wrapping_neg(-128);
   /* original Rust expression is not an lvalue in C */
-  int8_t lvalue21 = (int8_t)-128;
+  int8_t lvalue21 = -128;
   const_int8_t__x2 uu____10 = { .fst = &lvalue20, .snd = &lvalue21 };
   EURYDICE_ASSERT(uu____10.fst[0U] == uu____10.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue22 = core_num__i16__wrapping_add((int16_t)30000, (int16_t)2768);
+  int16_t lvalue22 = core_num__i16__wrapping_add(30000, 2768);
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue23 = (int16_t)-32768;
+  int16_t lvalue23 = -32768;
   const_int16_t__x2 uu____11 = { .fst = &lvalue22, .snd = &lvalue23 };
   EURYDICE_ASSERT(uu____11.fst[0U] == uu____11.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue24 = core_num__i16__wrapping_add((int16_t)-32768, (int16_t)-1);
+  int16_t lvalue24 = core_num__i16__wrapping_add(-32768, -1);
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue25 = (int16_t)32767;
+  int16_t lvalue25 = 32767;
   const_int16_t__x2 uu____12 = { .fst = &lvalue24, .snd = &lvalue25 };
   EURYDICE_ASSERT(uu____12.fst[0U] == uu____12.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue26 = core_num__i16__wrapping_sub((int16_t)-32768, (int16_t)1);
+  int16_t lvalue26 = core_num__i16__wrapping_sub(-32768, 1);
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue27 = (int16_t)32767;
+  int16_t lvalue27 = 32767;
   const_int16_t__x2 uu____13 = { .fst = &lvalue26, .snd = &lvalue27 };
   EURYDICE_ASSERT(uu____13.fst[0U] == uu____13.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue28 = core_num__i16__wrapping_sub((int16_t)32767, (int16_t)-1);
+  int16_t lvalue28 = core_num__i16__wrapping_sub(32767, -1);
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue29 = (int16_t)-32768;
+  int16_t lvalue29 = -32768;
   const_int16_t__x2 uu____14 = { .fst = &lvalue28, .snd = &lvalue29 };
   EURYDICE_ASSERT(uu____14.fst[0U] == uu____14.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue30 = core_num__i16__wrapping_mul((int16_t)200, (int16_t)200);
+  int16_t lvalue30 = core_num__i16__wrapping_mul(200, 200);
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue31 = (int16_t)-25536;
+  int16_t lvalue31 = -25536;
   const_int16_t__x2 uu____15 = { .fst = &lvalue30, .snd = &lvalue31 };
   EURYDICE_ASSERT(uu____15.fst[0U] == uu____15.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue32 = core_num__i16__wrapping_mul((int16_t)-32768, (int16_t)-1);
+  int16_t lvalue32 = core_num__i16__wrapping_mul(-32768, -1);
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue33 = (int16_t)-32768;
+  int16_t lvalue33 = -32768;
   const_int16_t__x2 uu____16 = { .fst = &lvalue32, .snd = &lvalue33 };
   EURYDICE_ASSERT(uu____16.fst[0U] == uu____16.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue34 = core_num__i16__wrapping_neg((int16_t)5);
+  int16_t lvalue34 = core_num__i16__wrapping_neg(5);
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue35 = (int16_t)-5;
+  int16_t lvalue35 = -5;
   const_int16_t__x2 uu____17 = { .fst = &lvalue34, .snd = &lvalue35 };
   EURYDICE_ASSERT(uu____17.fst[0U] == uu____17.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue36 = core_num__i16__wrapping_neg((int16_t)-32768);
+  int16_t lvalue36 = core_num__i16__wrapping_neg(-32768);
   /* original Rust expression is not an lvalue in C */
-  int16_t lvalue37 = (int16_t)-32768;
+  int16_t lvalue37 = -32768;
   const_int16_t__x2 uu____18 = { .fst = &lvalue36, .snd = &lvalue37 };
   EURYDICE_ASSERT(uu____18.fst[0U] == uu____18.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue38 = core_num__i32__wrapping_add((int32_t)2000000000, (int32_t)2000000000);
+  int32_t lvalue38 = core_num__i32__wrapping_add(2000000000, 2000000000);
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue39 = (int32_t)-294967296;
+  int32_t lvalue39 = -294967296;
   const_int32_t__x2 uu____19 = { .fst = &lvalue38, .snd = &lvalue39 };
   EURYDICE_ASSERT(uu____19.fst[0U] == uu____19.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue40 = core_num__i32__wrapping_add((int32_t)INT32_MIN, (int32_t)-1);
+  int32_t lvalue40 = core_num__i32__wrapping_add(INT32_MIN, -1);
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue41 = (int32_t)2147483647;
+  int32_t lvalue41 = 2147483647;
   const_int32_t__x2 uu____20 = { .fst = &lvalue40, .snd = &lvalue41 };
   EURYDICE_ASSERT(uu____20.fst[0U] == uu____20.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue42 = core_num__i32__wrapping_sub((int32_t)INT32_MIN, (int32_t)1);
+  int32_t lvalue42 = core_num__i32__wrapping_sub(INT32_MIN, 1);
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue43 = (int32_t)2147483647;
+  int32_t lvalue43 = 2147483647;
   const_int32_t__x2 uu____21 = { .fst = &lvalue42, .snd = &lvalue43 };
   EURYDICE_ASSERT(uu____21.fst[0U] == uu____21.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue44 = core_num__i32__wrapping_sub((int32_t)2147483647, (int32_t)-1);
+  int32_t lvalue44 = core_num__i32__wrapping_sub(2147483647, -1);
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue45 = (int32_t)INT32_MIN;
+  int32_t lvalue45 = INT32_MIN;
   const_int32_t__x2 uu____22 = { .fst = &lvalue44, .snd = &lvalue45 };
   EURYDICE_ASSERT(uu____22.fst[0U] == uu____22.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue46 = core_num__i32__wrapping_mul((int32_t)100000, (int32_t)100000);
+  int32_t lvalue46 = core_num__i32__wrapping_mul(100000, 100000);
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue47 = (int32_t)1410065408;
+  int32_t lvalue47 = 1410065408;
   const_int32_t__x2 uu____23 = { .fst = &lvalue46, .snd = &lvalue47 };
   EURYDICE_ASSERT(uu____23.fst[0U] == uu____23.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue48 = core_num__i32__wrapping_mul((int32_t)INT32_MIN, (int32_t)-1);
+  int32_t lvalue48 = core_num__i32__wrapping_mul(INT32_MIN, -1);
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue49 = (int32_t)INT32_MIN;
+  int32_t lvalue49 = INT32_MIN;
   const_int32_t__x2 uu____24 = { .fst = &lvalue48, .snd = &lvalue49 };
   EURYDICE_ASSERT(uu____24.fst[0U] == uu____24.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue50 = core_num__i32__wrapping_neg((int32_t)5);
+  int32_t lvalue50 = core_num__i32__wrapping_neg(5);
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue51 = (int32_t)-5;
+  int32_t lvalue51 = -5;
   const_int32_t__x2 uu____25 = { .fst = &lvalue50, .snd = &lvalue51 };
   EURYDICE_ASSERT(uu____25.fst[0U] == uu____25.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue52 = core_num__i32__wrapping_neg((int32_t)INT32_MIN);
+  int32_t lvalue52 = core_num__i32__wrapping_neg(INT32_MIN);
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue53 = (int32_t)INT32_MIN;
+  int32_t lvalue53 = INT32_MIN;
   const_int32_t__x2 uu____26 = { .fst = &lvalue52, .snd = &lvalue53 };
   EURYDICE_ASSERT(uu____26.fst[0U] == uu____26.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int64_t
-  lvalue54 =
-    core_num__i64__wrapping_add((int64_t)5000000000000000000LL,
-      (int64_t)5000000000000000000LL);
+  int64_t lvalue54 = core_num__i64__wrapping_add(5000000000000000000LL, 5000000000000000000LL);
   /* original Rust expression is not an lvalue in C */
-  int64_t lvalue55 = (int64_t)-8446744073709551616LL;
+  int64_t lvalue55 = -8446744073709551616LL;
   const_int64_t__x2 uu____27 = { .fst = &lvalue54, .snd = &lvalue55 };
   EURYDICE_ASSERT(uu____27.fst[0U] == uu____27.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int64_t lvalue56 = core_num__i64__wrapping_add((int64_t)INT64_MIN, (int64_t)-1LL);
+  int64_t lvalue56 = core_num__i64__wrapping_add(INT64_MIN, -1LL);
   /* original Rust expression is not an lvalue in C */
-  int64_t lvalue57 = (int64_t)9223372036854775807LL;
+  int64_t lvalue57 = 9223372036854775807LL;
   const_int64_t__x2 uu____28 = { .fst = &lvalue56, .snd = &lvalue57 };
   EURYDICE_ASSERT(uu____28.fst[0U] == uu____28.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int64_t lvalue58 = core_num__i64__wrapping_sub((int64_t)INT64_MIN, (int64_t)1LL);
+  int64_t lvalue58 = core_num__i64__wrapping_sub(INT64_MIN, 1LL);
   /* original Rust expression is not an lvalue in C */
-  int64_t lvalue59 = (int64_t)9223372036854775807LL;
+  int64_t lvalue59 = 9223372036854775807LL;
   const_int64_t__x2 uu____29 = { .fst = &lvalue58, .snd = &lvalue59 };
   EURYDICE_ASSERT(uu____29.fst[0U] == uu____29.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int64_t lvalue60 = core_num__i64__wrapping_sub((int64_t)9223372036854775807LL, (int64_t)-1LL);
+  int64_t lvalue60 = core_num__i64__wrapping_sub(9223372036854775807LL, -1LL);
   /* original Rust expression is not an lvalue in C */
-  int64_t lvalue61 = (int64_t)INT64_MIN;
+  int64_t lvalue61 = INT64_MIN;
   const_int64_t__x2 uu____30 = { .fst = &lvalue60, .snd = &lvalue61 };
   EURYDICE_ASSERT(uu____30.fst[0U] == uu____30.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int64_t lvalue62 = core_num__i64__wrapping_mul((int64_t)3000000000LL, (int64_t)3000000000LL);
+  int64_t lvalue62 = core_num__i64__wrapping_mul(3000000000LL, 3000000000LL);
   /* original Rust expression is not an lvalue in C */
-  int64_t lvalue63 = (int64_t)9000000000000000000LL;
+  int64_t lvalue63 = 9000000000000000000LL;
   const_int64_t__x2 uu____31 = { .fst = &lvalue62, .snd = &lvalue63 };
   EURYDICE_ASSERT(uu____31.fst[0U] == uu____31.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int64_t lvalue64 = core_num__i64__wrapping_mul((int64_t)INT64_MIN, (int64_t)-1LL);
+  int64_t lvalue64 = core_num__i64__wrapping_mul(INT64_MIN, -1LL);
   /* original Rust expression is not an lvalue in C */
-  int64_t lvalue65 = (int64_t)INT64_MIN;
+  int64_t lvalue65 = INT64_MIN;
   const_int64_t__x2 uu____32 = { .fst = &lvalue64, .snd = &lvalue65 };
   EURYDICE_ASSERT(uu____32.fst[0U] == uu____32.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int64_t lvalue66 = core_num__i64__wrapping_neg((int64_t)5LL);
+  int64_t lvalue66 = core_num__i64__wrapping_neg(5LL);
   /* original Rust expression is not an lvalue in C */
-  int64_t lvalue67 = (int64_t)-5LL;
+  int64_t lvalue67 = -5LL;
   const_int64_t__x2 uu____33 = { .fst = &lvalue66, .snd = &lvalue67 };
   EURYDICE_ASSERT(uu____33.fst[0U] == uu____33.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int64_t lvalue68 = core_num__i64__wrapping_neg((int64_t)INT64_MIN);
+  int64_t lvalue68 = core_num__i64__wrapping_neg(INT64_MIN);
   /* original Rust expression is not an lvalue in C */
-  int64_t lvalue = (int64_t)INT64_MIN;
+  int64_t lvalue = INT64_MIN;
   const_int64_t__x2 uu____34 = { .fst = &lvalue68, .snd = &lvalue };
   EURYDICE_ASSERT(uu____34.fst[0U] == uu____34.snd[0U], "panic!");
 }
