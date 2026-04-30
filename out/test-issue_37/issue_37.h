@@ -21,11 +21,11 @@ with types uint8_t
 with const generics
 - $32size_t
 */
-typedef struct Eurydice_arr_60_s { uint8_t data[32U]; } Eurydice_arr_60;
+typedef struct Eurydice_arr_ec_s { uint8_t data[32U]; } Eurydice_arr_ec;
 
-Eurydice_arr_60 issue_37_b(Eurydice_borrow_slice_u8 x);
+Eurydice_arr_ec issue_37_b(Eurydice_borrow_slice_u8 x);
 
-Eurydice_arr_60 issue_37_bb(Eurydice_borrow_slice_u8 x);
+Eurydice_arr_ec issue_37_bb(Eurydice_borrow_slice_u8 x);
 
 void issue_37_main(void);
 

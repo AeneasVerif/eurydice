@@ -32,7 +32,7 @@ with types uint8_t
 with const generics
 - $0size_t
 */
-typedef struct Eurydice_arr_51_s { uint8_t data[0U]; } Eurydice_arr_51;
+typedef struct Eurydice_arr_bb_s { uint8_t data[0U]; } Eurydice_arr_bb;
 
 void issue_128_main(void);
 

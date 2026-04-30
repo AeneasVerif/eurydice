@@ -34,43 +34,43 @@ with types uint32_t
 with const generics
 - $4size_t
 */
-typedef struct Eurydice_arr_0d_s { uint32_t data[4U]; } Eurydice_arr_0d;
+typedef struct Eurydice_arr_e5_s { uint32_t data[4U]; } Eurydice_arr_e5;
 
 /**
 A monomorphic instance of castunsize.S
-with types Eurydice_arr_0d
+with types Eurydice_arr_e5
 
 */
-typedef struct castunsize_S_f9_s
+typedef struct castunsize_S_e9_s
 {
   uint32_t foo;
-  Eurydice_arr_0d my_data;
+  Eurydice_arr_e5 my_data;
 }
-castunsize_S_f9;
+castunsize_S_e9;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
 with types castunsize_T, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_88_s
+typedef struct Eurydice_dst_ref_shared_8b_s
 {
   const castunsize_T *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_88;
+Eurydice_dst_ref_shared_8b;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
 with types uint32_t, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_3c_s
+typedef struct Eurydice_dst_ref_shared_0c_s
 {
   const uint32_t *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_3c;
+Eurydice_dst_ref_shared_0c;
 
 void castunsize_main1(void);
 
@@ -79,12 +79,12 @@ A monomorphic instance of Eurydice.dst_ref_mut
 with types uint32_t, size_t
 
 */
-typedef struct Eurydice_dst_ref_mut_3c_s
+typedef struct Eurydice_dst_ref_mut_0c_s
 {
   uint32_t *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_mut_3c;
+Eurydice_dst_ref_mut_0c;
 
 void castunsize_main3(void);
 
@@ -94,33 +94,33 @@ with types uint32_t
 with const generics
 - $5size_t
 */
-typedef struct Eurydice_arr_88_s { uint32_t data[5U]; } Eurydice_arr_88;
+typedef struct Eurydice_arr_fb_s { uint32_t data[5U]; } Eurydice_arr_fb;
 
 /**
 A monomorphic instance of castunsize.S
-with types Eurydice_arr_88
+with types Eurydice_arr_fb
 
 */
-typedef struct castunsize_S_bc_s
+typedef struct castunsize_S_b9_s
 {
   uint32_t foo;
-  Eurydice_arr_88 my_data;
+  Eurydice_arr_fb my_data;
 }
-castunsize_S_bc;
+castunsize_S_b9;
 
 /**
 A monomorphic instance of castunsize.main2
 with const generics
 - K= 5
 */
-void castunsize_main2_c9(void);
+void castunsize_main2_a5(void);
 
 /**
 A monomorphic instance of castunsize.main4
 with const generics
 - K= 5
 */
-void castunsize_main4_c9(void);
+void castunsize_main4_a5(void);
 
 void castunsize_main(void);
 

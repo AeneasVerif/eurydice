@@ -15,13 +15,13 @@
 extern "C" {
 #endif
 
-typedef struct Eurydice_arr_e4_s Eurydice_arr_e4;
+typedef struct Eurydice_arr_58_s Eurydice_arr_58;
 
-typedef const Eurydice_arr_e4 *closure_f_closure;
+typedef const Eurydice_arr_58 *closure_f_closure;
 
 typedef struct closure_f_closure_closure_s
 {
-  const Eurydice_arr_e4 *fst;
+  const Eurydice_arr_58 *fst;
   const size_t *snd;
 }
 closure_f_closure_closure;
@@ -32,7 +32,7 @@ with types size_t
 with const generics
 - $1size_t
 */
-typedef struct Eurydice_arr_e4_s { size_t data[1U]; } Eurydice_arr_e4;
+typedef struct Eurydice_arr_58_s { size_t data[1U]; } Eurydice_arr_58;
 
 /**
 This function found in impl {core::ops::function::FnMut<(usize), usize> for closure::f::closure::closure<0, 1>}
@@ -47,22 +47,22 @@ size_t closure_f_closure_call_once_b7(closure_f_closure_closure _, size_t _0);
 /**
 This function found in impl {core::ops::function::FnMut<(usize), [usize; 1usize]> for closure::f::closure<0>}
 */
-Eurydice_arr_e4 closure_f_call_mut_82(const Eurydice_arr_e4 **_, size_t tupled_args);
+Eurydice_arr_58 closure_f_call_mut_82(const Eurydice_arr_58 **_, size_t tupled_args);
 
 /**
 This function found in impl {core::ops::function::FnOnce<(usize), [usize; 1usize]> for closure::f::closure<0>}
 */
-Eurydice_arr_e4 closure_f_call_once_86(const Eurydice_arr_e4 *_, size_t _0);
+Eurydice_arr_58 closure_f_call_once_86(const Eurydice_arr_58 *_, size_t _0);
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr_e4
+with types Eurydice_arr_58
 with const generics
 - $1size_t
 */
-typedef struct Eurydice_arr_6a_s { Eurydice_arr_e4 data[1U]; } Eurydice_arr_6a;
+typedef struct Eurydice_arr_2d_s { Eurydice_arr_58 data[1U]; } Eurydice_arr_2d;
 
-Eurydice_arr_6a closure_f(void);
+Eurydice_arr_2d closure_f(void);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -79,7 +79,7 @@ closure_f_closure_closure__core__marker__Destruct_for_closure__f__closure__closu
 
 extern void
 closure_f_closure__core__marker__Destruct_for_closure__f__closure_0___drop_in_place(
-  const Eurydice_arr_e4 **x0
+  const Eurydice_arr_58 **x0
 );
 
 #if defined(__cplusplus)

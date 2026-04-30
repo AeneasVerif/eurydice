@@ -23,10 +23,10 @@ extern "C" {
  Generates an [`MlKemSharedSecret`].
  The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
 */
-Eurydice_arr_60
+Eurydice_arr_ec
 libcrux_ml_kem_mlkem512_portable_decapsulate(
-  const Eurydice_arr_7f *private_key,
-  const Eurydice_arr_56 *ciphertext
+  const Eurydice_arr_ab0 *private_key,
+  const Eurydice_arr_d2 *ciphertext
 );
 
 /**
@@ -36,17 +36,17 @@ libcrux_ml_kem_mlkem512_portable_decapsulate(
  The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
  bytes of `randomness`.
 */
-tuple_50
+tuple_ab
 libcrux_ml_kem_mlkem512_portable_encapsulate(
-  const Eurydice_arr_30 *public_key,
-  Eurydice_arr_60 randomness
+  const Eurydice_arr_03 *public_key,
+  Eurydice_arr_ec randomness
 );
 
 /**
  Generate ML-KEM 512 Key Pair
 */
-libcrux_ml_kem_types_MlKemKeyPair_3e
-libcrux_ml_kem_mlkem512_portable_generate_key_pair(Eurydice_arr_060 randomness);
+libcrux_ml_kem_types_MlKemKeyPair_0d
+libcrux_ml_kem_mlkem512_portable_generate_key_pair(Eurydice_arr_c7 randomness);
 
 /**
  Validate a private key.
@@ -55,8 +55,8 @@ libcrux_ml_kem_mlkem512_portable_generate_key_pair(Eurydice_arr_060 randomness);
 */
 bool
 libcrux_ml_kem_mlkem512_portable_validate_private_key(
-  const Eurydice_arr_7f *private_key,
-  const Eurydice_arr_56 *ciphertext
+  const Eurydice_arr_ab0 *private_key,
+  const Eurydice_arr_d2 *ciphertext
 );
 
 /**
@@ -65,14 +65,14 @@ libcrux_ml_kem_mlkem512_portable_validate_private_key(
  Returns `true` if valid, and `false` otherwise.
 */
 bool
-libcrux_ml_kem_mlkem512_portable_validate_private_key_only(const Eurydice_arr_7f *private_key);
+libcrux_ml_kem_mlkem512_portable_validate_private_key_only(const Eurydice_arr_ab0 *private_key);
 
 /**
  Validate a public key.
 
  Returns `true` if valid, and `false` otherwise.
 */
-bool libcrux_ml_kem_mlkem512_portable_validate_public_key(const Eurydice_arr_30 *public_key);
+bool libcrux_ml_kem_mlkem512_portable_validate_public_key(const Eurydice_arr_03 *public_key);
 
 #if defined(__cplusplus)
 }

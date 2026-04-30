@@ -17,7 +17,7 @@ void we_need_charon_monomorphization_use_ref_ee(const int32_t (*_t)[])
 
 }
 
-void we_need_charon_monomorphization_supply_ref(Eurydice_dst_ref_shared_fc s)
+void we_need_charon_monomorphization_supply_ref(Eurydice_dst_ref_shared_83 s)
 {
 
 }
@@ -28,9 +28,9 @@ with types int32_t
 with const generics
 - N= 3
 */
-static Eurydice_dst_ref_shared_fc array_to_slice_shared_d4(const Eurydice_arr_8d *a)
+static Eurydice_dst_ref_shared_83 array_to_slice_shared_ab(const Eurydice_arr_bf *a)
 {
-  Eurydice_dst_ref_shared_fc lit;
+  Eurydice_dst_ref_shared_83 lit;
   lit.ptr = a->data;
   lit.meta = (size_t)3U;
   return lit;
@@ -39,7 +39,7 @@ static Eurydice_dst_ref_shared_fc array_to_slice_shared_d4(const Eurydice_arr_8d
 void we_need_charon_monomorphization_main(void)
 {
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_8d lvalue = { .data = { 1, 2, 3 } };
-  we_need_charon_monomorphization_supply_ref(array_to_slice_shared_d4(&lvalue));
+  Eurydice_arr_bf lvalue = { .data = { 1, 2, 3 } };
+  we_need_charon_monomorphization_supply_ref(array_to_slice_shared_ab(&lvalue));
 }
 

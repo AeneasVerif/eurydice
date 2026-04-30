@@ -12,7 +12,7 @@ int32_t fn_higher_order_empty_ptr(int32_t (*f)(void))
   return f();
 }
 
-int32_t fn_higher_order_more_sum_lst(const Eurydice_arr_8d *l)
+int32_t fn_higher_order_more_sum_lst(const Eurydice_arr_bf *l)
 {
   int32_t sum = 0;
   KRML_MAYBE_FOR3(i,
@@ -31,10 +31,10 @@ with const generics
 - N= 5
 */
 size_t
-fn_higher_order_compose_cg_apply_fd(
-  size_t (*f)(const Eurydice_arr_99 *x0),
+fn_higher_order_compose_cg_apply_4d(
+  size_t (*f)(const Eurydice_arr_2b *x0),
   size_t (*g)(size_t x0),
-  const Eurydice_arr_99 *arg
+  const Eurydice_arr_2b *arg
 )
 {
   size_t (*uu____0)(size_t x0) = g;
@@ -46,7 +46,7 @@ A monomorphic instance of fn_higher_order.sum_lst
 with const generics
 - N= 5
 */
-size_t fn_higher_order_sum_lst_c9(const Eurydice_arr_99 *lst)
+size_t fn_higher_order_sum_lst_a5(const Eurydice_arr_2b *lst)
 {
   size_t sum = (size_t)0U;
   KRML_MAYBE_FOR5(i,
@@ -63,7 +63,7 @@ A monomorphic instance of fn_higher_order.id
 with types size_t
 
 */
-size_t fn_higher_order_id_37(size_t r)
+size_t fn_higher_order_id_60(size_t r)
 {
   return r;
 }
@@ -75,10 +75,10 @@ with const generics
 - N= 3
 */
 int32_t
-fn_higher_order_compose_cg_apply_82(
-  int32_t (*f)(const Eurydice_arr_8d *x0),
+fn_higher_order_compose_cg_apply_36(
+  int32_t (*f)(const Eurydice_arr_bf *x0),
   int32_t (*g)(int32_t x0),
-  const Eurydice_arr_8d *arg
+  const Eurydice_arr_bf *arg
 )
 {
   int32_t (*uu____0)(int32_t x0) = g;
@@ -112,18 +112,18 @@ const_int32_t__x2;
 void fn_higher_order_use_compose_cg(void)
 {
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_99
+  Eurydice_arr_2b
   lvalue0 = { .data = { (size_t)1U, (size_t)2U, (size_t)3U, (size_t)4U, (size_t)5U } };
   size_t
   x =
-    fn_higher_order_compose_cg_apply_fd(fn_higher_order_sum_lst_c9,
-      fn_higher_order_id_37,
+    fn_higher_order_compose_cg_apply_4d(fn_higher_order_sum_lst_a5,
+      fn_higher_order_id_60,
       &lvalue0);
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_8d lvalue1 = { .data = { 10, 11, 12 } };
+  Eurydice_arr_bf lvalue1 = { .data = { 10, 11, 12 } };
   int32_t
   y =
-    fn_higher_order_compose_cg_apply_82(fn_higher_order_more_sum_lst,
+    fn_higher_order_compose_cg_apply_36(fn_higher_order_more_sum_lst,
       fn_higher_order_id_a8,
       &lvalue1);
   /* original Rust expression is not an lvalue in C */

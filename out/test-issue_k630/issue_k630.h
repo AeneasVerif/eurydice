@@ -27,15 +27,15 @@ with types uint32_t
 with const generics
 - $1size_t
 */
-typedef struct Eurydice_arr_a5_s { uint32_t data[1U]; } Eurydice_arr_a5;
+typedef struct Eurydice_arr_d5_s { uint32_t data[1U]; } Eurydice_arr_d5;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr_a5
+with types Eurydice_arr_d5
 with const generics
 - $5size_t
 */
-typedef struct Eurydice_arr_35_s { Eurydice_arr_a5 data[5U]; } Eurydice_arr_35;
+typedef struct Eurydice_arr_21_s { Eurydice_arr_d5 data[5U]; } Eurydice_arr_21;
 
 void issue_k630_main(void);
 
