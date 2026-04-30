@@ -19,8 +19,8 @@ const Eurydice_arr_8d *issue_212_id_mut_16(const Eurydice_arr_8d *x)
 
 void issue_212_main(void)
 {
-  Eurydice_arr_8d arr = { .data = { (int32_t)1, (int32_t)2, (int32_t)3 } };
+  Eurydice_arr_8d arr = { .data = { 1, 2, 3 } };
   const Eurydice_arr_8d *r = issue_212_id_mut_16(&arr);
-  EURYDICE_ASSERT(r->data[0U] > (int32_t)0, "panic!");
+  EURYDICE_ASSERT(r->data[0U] > 0, "panic!");
 }
 
