@@ -51,7 +51,7 @@ int32_t more_primitive_types_match_u128(const more_primitive_types_MorePrimitive
         Eurydice_Int128_u128_from_bits(0xffffffffffffULL, 0xffffffffffffffffULL))
     )
     {
-      return (int32_t)4;
+      return 4;
     }
     else if
     (
@@ -59,14 +59,14 @@ int32_t more_primitive_types_match_u128(const more_primitive_types_MorePrimitive
         Eurydice_Int128_u128_from_bits(0xffffffffffffffffULL, 0xffffffffffffffffULL))
     )
     {
-      return (int32_t)5;
+      return 5;
     }
     else
     {
-      return (int32_t)1;
+      return 1;
     }
   }
-  return (int32_t)3;
+  return 3;
 }
 
 int32_t more_primitive_types_match_i128(const more_primitive_types_MorePrimitiveTypes *p)
@@ -86,7 +86,7 @@ int32_t more_primitive_types_match_i128(const more_primitive_types_MorePrimitive
         Eurydice_Int128_i128_from_bits(0xffffffffffffffffULL, 0x1ULL))
     )
     {
-      return (int32_t)4;
+      return 4;
     }
     else if
     (
@@ -94,14 +94,14 @@ int32_t more_primitive_types_match_i128(const more_primitive_types_MorePrimitive
         Eurydice_Int128_i128_from_bits(0xfffff00000000000ULL, 0x1ULL))
     )
     {
-      return (int32_t)5;
+      return 5;
     }
     else
     {
-      return (int32_t)1;
+      return 1;
     }
   }
-  return (int32_t)3;
+  return 3;
 }
 
 /**
@@ -136,7 +136,7 @@ void more_primitive_types_main(void)
 
 int32_t more_primitive_types_more_operations(more_primitive_types_MorePrimitiveTypes *p)
 {
-  int32_t result = (int32_t)0;
+  int32_t result = 0;
   Eurydice_Int128_int128_t uu____0 = p->int128;
   result =
     result +

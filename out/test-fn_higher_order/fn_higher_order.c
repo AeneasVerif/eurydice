@@ -14,7 +14,7 @@ int32_t fn_higher_order_empty_ptr(int32_t (*f)(void))
 
 int32_t fn_higher_order_more_sum_lst(const Eurydice_arr_8d *l)
 {
-  int32_t sum = (int32_t)0;
+  int32_t sum = 0;
   KRML_MAYBE_FOR3(i,
     (size_t)0U,
     (size_t)3U,
@@ -120,7 +120,7 @@ void fn_higher_order_use_compose_cg(void)
       fn_higher_order_id_37,
       &lvalue0);
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_8d lvalue1 = { .data = { (int32_t)10, (int32_t)11, (int32_t)12 } };
+  Eurydice_arr_8d lvalue1 = { .data = { 10, 11, 12 } };
   int32_t
   y =
     fn_higher_order_compose_cg_apply_82(fn_higher_order_more_sum_lst,
@@ -131,7 +131,7 @@ void fn_higher_order_use_compose_cg(void)
   const_size_t__x2 uu____0 = { .fst = &x, .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  int32_t lvalue2 = (int32_t)33;
+  int32_t lvalue2 = 33;
   const_int32_t__x2 uu____1 = { .fst = &y, .snd = &lvalue2 };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
