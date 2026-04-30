@@ -16,7 +16,7 @@ This function found in impl {libcrux_sha3::traits::KeccakItem<4usize> for core::
 */
 static KRML_MUSTINLINE __m256i zero_b0(void)
 {
-  return mm256_set1_epi64x((int64_t)0LL);
+  return mm256_set1_epi64x(0LL);
 }
 
 static KRML_MUSTINLINE __m256i
@@ -44,9 +44,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_76(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)1, x, __m256i),
-      mm256_srli_epi64((int32_t)63, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(1, x, __m256i), mm256_srli_epi64(63, x, __m256i));
 }
 
 static KRML_MUSTINLINE __m256i _vrax1q_u64(__m256i a, __m256i b)
@@ -172,10 +170,10 @@ load_block_5b(Eurydice_arr_05 *state, Eurydice_arr_7b *blocks, size_t offset)
     __m256i v1h = mm256_unpackhi_epi64(v00, v10);
     __m256i v2l = mm256_unpacklo_epi64(v20, v30);
     __m256i v3h = mm256_unpackhi_epi64(v20, v30);
-    __m256i v0 = mm256_permute2x128_si256((int32_t)32, v0l, v2l, __m256i);
-    __m256i v1 = mm256_permute2x128_si256((int32_t)32, v1h, v3h, __m256i);
-    __m256i v2 = mm256_permute2x128_si256((int32_t)49, v0l, v2l, __m256i);
-    __m256i v3 = mm256_permute2x128_si256((int32_t)49, v1h, v3h, __m256i);
+    __m256i v0 = mm256_permute2x128_si256(32, v0l, v2l, __m256i);
+    __m256i v1 = mm256_permute2x128_si256(32, v1h, v3h, __m256i);
+    __m256i v2 = mm256_permute2x128_si256(49, v0l, v2l, __m256i);
+    __m256i v3 = mm256_permute2x128_si256(49, v1h, v3h, __m256i);
     size_t i0 = (size_t)4U * i4 / (size_t)5U;
     size_t j0 = (size_t)4U * i4 % (size_t)5U;
     size_t i1 = ((size_t)4U * i4 + (size_t)1U) / (size_t)5U;
@@ -441,9 +439,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_02(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)36, x, __m256i),
-      mm256_srli_epi64((int32_t)28, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(36, x, __m256i), mm256_srli_epi64(28, x, __m256i));
 }
 
 /**
@@ -480,9 +476,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_ac(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)3, x, __m256i),
-      mm256_srli_epi64((int32_t)61, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(3, x, __m256i), mm256_srli_epi64(61, x, __m256i));
 }
 
 /**
@@ -519,9 +513,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_020(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)41, x, __m256i),
-      mm256_srli_epi64((int32_t)23, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(41, x, __m256i), mm256_srli_epi64(23, x, __m256i));
 }
 
 /**
@@ -558,9 +550,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_a9(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)18, x, __m256i),
-      mm256_srli_epi64((int32_t)46, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(18, x, __m256i), mm256_srli_epi64(46, x, __m256i));
 }
 
 /**
@@ -666,9 +656,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_58(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)44, x, __m256i),
-      mm256_srli_epi64((int32_t)20, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(44, x, __m256i), mm256_srli_epi64(20, x, __m256i));
 }
 
 /**
@@ -705,9 +693,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_e0(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)10, x, __m256i),
-      mm256_srli_epi64((int32_t)54, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(10, x, __m256i), mm256_srli_epi64(54, x, __m256i));
 }
 
 /**
@@ -744,9 +730,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_63(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)45, x, __m256i),
-      mm256_srli_epi64((int32_t)19, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(45, x, __m256i), mm256_srli_epi64(19, x, __m256i));
 }
 
 /**
@@ -783,9 +767,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_6a(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)2, x, __m256i),
-      mm256_srli_epi64((int32_t)62, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(2, x, __m256i), mm256_srli_epi64(62, x, __m256i));
 }
 
 /**
@@ -865,9 +847,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_ab(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)62, x, __m256i),
-      mm256_srli_epi64((int32_t)2, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(62, x, __m256i), mm256_srli_epi64(2, x, __m256i));
 }
 
 /**
@@ -904,9 +884,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_5b(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)6, x, __m256i),
-      mm256_srli_epi64((int32_t)58, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(6, x, __m256i), mm256_srli_epi64(58, x, __m256i));
 }
 
 /**
@@ -943,9 +921,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_6f(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)43, x, __m256i),
-      mm256_srli_epi64((int32_t)21, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(43, x, __m256i), mm256_srli_epi64(21, x, __m256i));
 }
 
 /**
@@ -982,9 +958,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_62(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)15, x, __m256i),
-      mm256_srli_epi64((int32_t)49, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(15, x, __m256i), mm256_srli_epi64(49, x, __m256i));
 }
 
 /**
@@ -1021,9 +995,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_23(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)61, x, __m256i),
-      mm256_srli_epi64((int32_t)3, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(61, x, __m256i), mm256_srli_epi64(3, x, __m256i));
 }
 
 /**
@@ -1103,9 +1075,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_37(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)28, x, __m256i),
-      mm256_srli_epi64((int32_t)36, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(28, x, __m256i), mm256_srli_epi64(36, x, __m256i));
 }
 
 /**
@@ -1142,9 +1112,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_bb(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)55, x, __m256i),
-      mm256_srli_epi64((int32_t)9, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(55, x, __m256i), mm256_srli_epi64(9, x, __m256i));
 }
 
 /**
@@ -1181,9 +1149,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_b9(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)25, x, __m256i),
-      mm256_srli_epi64((int32_t)39, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(25, x, __m256i), mm256_srli_epi64(39, x, __m256i));
 }
 
 /**
@@ -1220,9 +1186,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_54(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)21, x, __m256i),
-      mm256_srli_epi64((int32_t)43, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(21, x, __m256i), mm256_srli_epi64(43, x, __m256i));
 }
 
 /**
@@ -1259,9 +1223,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_4c(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)56, x, __m256i),
-      mm256_srli_epi64((int32_t)8, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(56, x, __m256i), mm256_srli_epi64(8, x, __m256i));
 }
 
 /**
@@ -1341,9 +1303,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_ce(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)27, x, __m256i),
-      mm256_srli_epi64((int32_t)37, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(27, x, __m256i), mm256_srli_epi64(37, x, __m256i));
 }
 
 /**
@@ -1380,9 +1340,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_77(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)20, x, __m256i),
-      mm256_srli_epi64((int32_t)44, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(20, x, __m256i), mm256_srli_epi64(44, x, __m256i));
 }
 
 /**
@@ -1419,9 +1377,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_25(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)39, x, __m256i),
-      mm256_srli_epi64((int32_t)25, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(39, x, __m256i), mm256_srli_epi64(25, x, __m256i));
 }
 
 /**
@@ -1458,9 +1414,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_af(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)8, x, __m256i),
-      mm256_srli_epi64((int32_t)56, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(8, x, __m256i), mm256_srli_epi64(56, x, __m256i));
 }
 
 /**
@@ -1497,9 +1451,7 @@ with const generics
 */
 static KRML_MUSTINLINE __m256i rotate_left_fd(__m256i x)
 {
-  return
-    mm256_xor_si256(mm256_slli_epi64((int32_t)14, x, __m256i),
-      mm256_srli_epi64((int32_t)50, x, __m256i));
+  return mm256_xor_si256(mm256_slli_epi64(14, x, __m256i), mm256_srli_epi64(50, x, __m256i));
 }
 
 /**
@@ -2024,29 +1976,13 @@ store_block_5b(
     size_t i3 = ((size_t)4U * i + (size_t)3U) / (size_t)5U;
     size_t j3 = ((size_t)4U * i + (size_t)3U) % (size_t)5U;
     __m256i
-    v0l =
-      mm256_permute2x128_si256((int32_t)32,
-        get_ij_a6(s, i0, j0)[0U],
-        get_ij_a6(s, i2, j2)[0U],
-        __m256i);
+    v0l = mm256_permute2x128_si256(32, get_ij_a6(s, i0, j0)[0U], get_ij_a6(s, i2, j2)[0U], __m256i);
     __m256i
-    v1h =
-      mm256_permute2x128_si256((int32_t)32,
-        get_ij_a6(s, i1, j1)[0U],
-        get_ij_a6(s, i3, j3)[0U],
-        __m256i);
+    v1h = mm256_permute2x128_si256(32, get_ij_a6(s, i1, j1)[0U], get_ij_a6(s, i3, j3)[0U], __m256i);
     __m256i
-    v2l =
-      mm256_permute2x128_si256((int32_t)49,
-        get_ij_a6(s, i0, j0)[0U],
-        get_ij_a6(s, i2, j2)[0U],
-        __m256i);
+    v2l = mm256_permute2x128_si256(49, get_ij_a6(s, i0, j0)[0U], get_ij_a6(s, i2, j2)[0U], __m256i);
     __m256i
-    v3h =
-      mm256_permute2x128_si256((int32_t)49,
-        get_ij_a6(s, i1, j1)[0U],
-        get_ij_a6(s, i3, j3)[0U],
-        __m256i);
+    v3h = mm256_permute2x128_si256(49, get_ij_a6(s, i1, j1)[0U], get_ij_a6(s, i3, j3)[0U], __m256i);
     __m256i v0 = mm256_unpacklo_epi64(v0l, v1h);
     __m256i v1 = mm256_unpackhi_epi64(v0l, v1h);
     __m256i v2 = mm256_unpacklo_epi64(v2l, v3h);
@@ -2270,10 +2206,10 @@ load_block_3a(Eurydice_arr_05 *state, Eurydice_arr_7b *blocks, size_t offset)
     __m256i v1h = mm256_unpackhi_epi64(v00, v10);
     __m256i v2l = mm256_unpacklo_epi64(v20, v30);
     __m256i v3h = mm256_unpackhi_epi64(v20, v30);
-    __m256i v0 = mm256_permute2x128_si256((int32_t)32, v0l, v2l, __m256i);
-    __m256i v1 = mm256_permute2x128_si256((int32_t)32, v1h, v3h, __m256i);
-    __m256i v2 = mm256_permute2x128_si256((int32_t)49, v0l, v2l, __m256i);
-    __m256i v3 = mm256_permute2x128_si256((int32_t)49, v1h, v3h, __m256i);
+    __m256i v0 = mm256_permute2x128_si256(32, v0l, v2l, __m256i);
+    __m256i v1 = mm256_permute2x128_si256(32, v1h, v3h, __m256i);
+    __m256i v2 = mm256_permute2x128_si256(49, v0l, v2l, __m256i);
+    __m256i v3 = mm256_permute2x128_si256(49, v1h, v3h, __m256i);
     size_t i0 = (size_t)4U * i4 / (size_t)5U;
     size_t j0 = (size_t)4U * i4 % (size_t)5U;
     size_t i1 = ((size_t)4U * i4 + (size_t)1U) / (size_t)5U;
@@ -2628,29 +2564,13 @@ store_block_3a(
     size_t i3 = ((size_t)4U * i + (size_t)3U) / (size_t)5U;
     size_t j3 = ((size_t)4U * i + (size_t)3U) % (size_t)5U;
     __m256i
-    v0l =
-      mm256_permute2x128_si256((int32_t)32,
-        get_ij_a6(s, i0, j0)[0U],
-        get_ij_a6(s, i2, j2)[0U],
-        __m256i);
+    v0l = mm256_permute2x128_si256(32, get_ij_a6(s, i0, j0)[0U], get_ij_a6(s, i2, j2)[0U], __m256i);
     __m256i
-    v1h =
-      mm256_permute2x128_si256((int32_t)32,
-        get_ij_a6(s, i1, j1)[0U],
-        get_ij_a6(s, i3, j3)[0U],
-        __m256i);
+    v1h = mm256_permute2x128_si256(32, get_ij_a6(s, i1, j1)[0U], get_ij_a6(s, i3, j3)[0U], __m256i);
     __m256i
-    v2l =
-      mm256_permute2x128_si256((int32_t)49,
-        get_ij_a6(s, i0, j0)[0U],
-        get_ij_a6(s, i2, j2)[0U],
-        __m256i);
+    v2l = mm256_permute2x128_si256(49, get_ij_a6(s, i0, j0)[0U], get_ij_a6(s, i2, j2)[0U], __m256i);
     __m256i
-    v3h =
-      mm256_permute2x128_si256((int32_t)49,
-        get_ij_a6(s, i1, j1)[0U],
-        get_ij_a6(s, i3, j3)[0U],
-        __m256i);
+    v3h = mm256_permute2x128_si256(49, get_ij_a6(s, i1, j1)[0U], get_ij_a6(s, i3, j3)[0U], __m256i);
     __m256i v0 = mm256_unpacklo_epi64(v0l, v1h);
     __m256i v1 = mm256_unpackhi_epi64(v0l, v1h);
     __m256i v2 = mm256_unpacklo_epi64(v2l, v3h);
