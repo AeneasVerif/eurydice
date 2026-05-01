@@ -332,6 +332,14 @@ load_last_8f_22(Eurydice_arr_c40 *self, const Eurydice_arr_68 *input, size_t sta
 }
 
 /**
+A monomorphic instance of Eurydice.arr
+with types core_core_arch_x86___m256i
+with const generics
+- $5size_t
+*/
+typedef struct arr_50_s { __m256i data[5U]; } arr_50;
+
+/**
 This function found in impl {core::ops::index::Index<(usize, usize), T> for libcrux_sha3::generic_keccak::KeccakState<T, N>[TraitClause@0, TraitClause@1]}
 */
 /**
@@ -354,9 +362,9 @@ with types core_core_arch_x86___m256i
 with const generics
 - N= 4
 */
-static KRML_MUSTINLINE Eurydice_arr_50 theta_80_5d(Eurydice_arr_c40 *self)
+static KRML_MUSTINLINE arr_50 theta_80_5d(Eurydice_arr_c40 *self)
 {
-  Eurydice_arr_50
+  arr_50
   c =
     {
       .data = {
@@ -394,7 +402,7 @@ static KRML_MUSTINLINE Eurydice_arr_50 theta_80_5d(Eurydice_arr_c40 *self)
     };
   return
     (
-      KRML_CLITERAL(Eurydice_arr_50){
+      KRML_CLITERAL(arr_50){
         .data = {
           rotate_left1_and_xor_b0(c.data[((size_t)0U + (size_t)4U) % (size_t)5U],
             c.data[((size_t)0U + (size_t)1U) % (size_t)5U]),
@@ -582,7 +590,7 @@ with types core_core_arch_x86___m256i
 with const generics
 - N= 4
 */
-static KRML_MUSTINLINE void rho_0_80_5d(Eurydice_arr_c40 *self, Eurydice_arr_50 t)
+static KRML_MUSTINLINE void rho_0_80_5d(Eurydice_arr_c40 *self, arr_50 t)
 {
   set_80_5d(self,
     (size_t)0U,
@@ -799,7 +807,7 @@ with types core_core_arch_x86___m256i
 with const generics
 - N= 4
 */
-static KRML_MUSTINLINE void rho_1_80_5d(Eurydice_arr_c40 *self, Eurydice_arr_50 t)
+static KRML_MUSTINLINE void rho_1_80_5d(Eurydice_arr_c40 *self, arr_50 t)
 {
   set_80_5d(self,
     (size_t)0U,
@@ -1027,7 +1035,7 @@ with types core_core_arch_x86___m256i
 with const generics
 - N= 4
 */
-static KRML_MUSTINLINE void rho_2_80_5d(Eurydice_arr_c40 *self, Eurydice_arr_50 t)
+static KRML_MUSTINLINE void rho_2_80_5d(Eurydice_arr_c40 *self, arr_50 t)
 {
   set_80_5d(self,
     (size_t)0U,
@@ -1255,7 +1263,7 @@ with types core_core_arch_x86___m256i
 with const generics
 - N= 4
 */
-static KRML_MUSTINLINE void rho_3_80_5d(Eurydice_arr_c40 *self, Eurydice_arr_50 t)
+static KRML_MUSTINLINE void rho_3_80_5d(Eurydice_arr_c40 *self, arr_50 t)
 {
   set_80_5d(self,
     (size_t)0U,
@@ -1483,7 +1491,7 @@ with types core_core_arch_x86___m256i
 with const generics
 - N= 4
 */
-static KRML_MUSTINLINE void rho_4_80_5d(Eurydice_arr_c40 *self, Eurydice_arr_50 t)
+static KRML_MUSTINLINE void rho_4_80_5d(Eurydice_arr_c40 *self, arr_50 t)
 {
   set_80_5d(self,
     (size_t)0U,
@@ -1526,7 +1534,7 @@ with types core_core_arch_x86___m256i
 with const generics
 - N= 4
 */
-static KRML_MUSTINLINE void rho_80_5d(Eurydice_arr_c40 *self, Eurydice_arr_50 t)
+static KRML_MUSTINLINE void rho_80_5d(Eurydice_arr_c40 *self, arr_50 t)
 {
   rho_0_80_5d(self, t);
   rho_1_80_5d(self, t);
@@ -1780,7 +1788,7 @@ static KRML_MUSTINLINE void keccakf1600_80_5d(Eurydice_arr_c40 *self)
   for (size_t i = (size_t)0U; i < (size_t)24U; i++)
   {
     size_t i0 = i;
-    Eurydice_arr_50 t = theta_80_5d(self);
+    arr_50 t = theta_80_5d(self);
     rho_80_5d(self, t);
     pi_80_5d(self);
     chi_80_5d(self);

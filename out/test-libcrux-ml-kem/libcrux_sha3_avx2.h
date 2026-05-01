@@ -17,8 +17,21 @@ extern "C" {
 
 #include "intrinsics/libcrux_intrinsics_avx2.h"
 
-#include "libcrux_sha3_portable.h"
-#include "libcrux_core.h"
+/**
+A monomorphic instance of Eurydice.arr
+with types core_core_arch_x86___m256i
+with const generics
+- $25size_t
+*/
+typedef struct Eurydice_arr_c40_s { __m256i data[25U]; } Eurydice_arr_c40;
+
+/**
+A monomorphic instance of libcrux_sha3.generic_keccak.KeccakState
+with types core_core_arch_x86___m256i
+with const generics
+- $4size_t
+*/
+typedef Eurydice_arr_c40 libcrux_sha3_generic_keccak_KeccakState_7d;
 
 /**
  Perform 4 SHAKE256 operations in parallel

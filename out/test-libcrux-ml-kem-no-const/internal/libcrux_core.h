@@ -1657,14 +1657,6 @@ typedef struct Eurydice_arr_9c_s { Eurydice_arr_c5 data[4U]; } Eurydice_arr_9c;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types core_core_arch_x86___m256i
-with const generics
-- $5size_t
-*/
-typedef struct Eurydice_arr_50_s { __m256i data[5U]; } Eurydice_arr_50;
-
-/**
-A monomorphic instance of Eurydice.arr
 with types Eurydice_arr_ff
 with const generics
 - $4size_t

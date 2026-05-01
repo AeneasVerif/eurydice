@@ -2039,14 +2039,6 @@ with const generics
 */
 typedef struct Eurydice_arr_e3_s { Eurydice_arr_7c data[2U]; } Eurydice_arr_e3;
 
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.KeccakState
-with types core_core_arch_x86___m256i
-with const generics
-- $4size_t
-*/
-typedef Eurydice_arr_c40 libcrux_sha3_generic_keccak_KeccakState_7d;
-
 #if defined(__cplusplus)
 }
 #endif

@@ -1880,14 +1880,6 @@ Eurydice_array_to_subslice_shared_d4(const Eurydice_arr_ec *a, core_ops_range_Ra
 
 /**
 A monomorphic instance of Eurydice.arr
-with types core_core_arch_x86___m256i
-with const generics
-- $5size_t
-*/
-typedef struct Eurydice_arr_50_s { __m256i data[5U]; } Eurydice_arr_50;
-
-/**
-A monomorphic instance of Eurydice.arr
 with types Eurydice_arr_ff
 with const generics
 - $4size_t

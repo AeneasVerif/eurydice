@@ -242,14 +242,6 @@ typedef struct Eurydice_arr_ff_s { uint8_t data[136U]; } Eurydice_arr_ff;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types core_core_arch_x86___m256i
-with const generics
-- $25size_t
-*/
-typedef struct Eurydice_arr_c40_s { __m256i data[25U]; } Eurydice_arr_c40;
-
-/**
-A monomorphic instance of Eurydice.arr
 with types Eurydice_arr_ff
 with const generics
 - $1size_t
