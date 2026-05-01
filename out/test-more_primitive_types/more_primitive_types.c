@@ -110,13 +110,13 @@ with types uint8_t
 with const generics
 - $6size_t
 */
-typedef struct arr_fd_s { uint8_t data[6U]; } arr_fd;
+typedef struct arr_d7_s { uint8_t data[6U]; } arr_d7;
 
 void more_primitive_types_use_more_primitive_types(void)
 {
   /* original Rust expression is not an lvalue in C */
-  arr_fd lvalue = { .data = { 97U, 104U, 101U, 108U, 108U, 111U } };
-  const arr_fd *s = &lvalue;
+  arr_d7 lvalue = { .data = { 97U, 104U, 101U, 108U, 108U, 111U } };
+  const arr_d7 *s = &lvalue;
   more_primitive_types_MorePrimitiveTypes
   p =
     {

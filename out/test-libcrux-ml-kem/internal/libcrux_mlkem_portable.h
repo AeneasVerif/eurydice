@@ -30,7 +30,7 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - $16size_t
 */
-typedef struct Eurydice_arr_b9_s { Eurydice_arr_e2 data[16U]; } Eurydice_arr_b9;
+typedef struct Eurydice_arr_9e_s { Eurydice_arr_d6 data[16U]; } Eurydice_arr_9e;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -38,15 +38,15 @@ with types libcrux_ml_kem_polynomial_PolynomialRingElement_1d
 with const generics
 - $4size_t
 */
-typedef struct Eurydice_arr_cf_s { Eurydice_arr_b9 data[4U]; } Eurydice_arr_cf;
+typedef struct Eurydice_arr_d20_s { Eurydice_arr_9e data[4U]; } Eurydice_arr_d20;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr_cf
+with types Eurydice_arr_d20
 with const generics
 - $4size_t
 */
-typedef struct Eurydice_arr_5c_s { Eurydice_arr_cf data[4U]; } Eurydice_arr_5c;
+typedef struct Eurydice_arr_600_s { Eurydice_arr_d20 data[4U]; } Eurydice_arr_600;
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.unpacked.IndCpaPublicKeyUnpacked
@@ -54,13 +54,13 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - $4size_t
 */
-typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_af_s
+typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_94_s
 {
-  Eurydice_arr_cf t_as_ntt;
-  Eurydice_arr_60 seed_for_A;
-  Eurydice_arr_5c A;
+  Eurydice_arr_d20 t_as_ntt;
+  Eurydice_arr_ec seed_for_A;
+  Eurydice_arr_600 A;
 }
-libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_af;
+libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_94;
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemPublicKeyUnpacked
@@ -68,12 +68,12 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - $4size_t
 */
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af_s
+typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94_s
 {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_af ind_cpa_public_key;
-  Eurydice_arr_60 public_key_hash;
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_94 ind_cpa_public_key;
+  Eurydice_arr_ec public_key_hash;
 }
-libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af;
+libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94;
 
 /**
 This function found in impl {libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
@@ -83,9 +83,9 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_init_a
 with const generics
 - K= 4
 */
-Eurydice_arr_180
-libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_ac(
-  const Eurydice_arr_c50 *input
+Eurydice_arr_4a
+libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_23(
+  const Eurydice_arr_56 *input
 );
 
 /**
@@ -96,9 +96,9 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeez
 with const generics
 - K= 4
 */
-Eurydice_arr_e0
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_4a_ac(
-  Eurydice_arr_180 *self
+Eurydice_arr_7c0
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_4a_23(
+  Eurydice_arr_4a *self
 );
 
 /**
@@ -109,10 +109,8 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeez
 with const generics
 - K= 4
 */
-Eurydice_arr_b3
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_4a_ac(
-  Eurydice_arr_180 *self
-);
+Eurydice_arr_9c
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_4a_23(Eurydice_arr_4a *self);
 
 /**
  Generate an unpacked key from a serialized key.
@@ -126,9 +124,9 @@ with const generics
 - PUBLIC_KEY_SIZE= 1568
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_30(
-  const Eurydice_arr_00 *public_key,
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af *unpacked_public_key
+libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_29(
+  const Eurydice_arr_d1 *public_key,
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94 *unpacked_public_key
 );
 
 /**
@@ -137,17 +135,17 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - $4size_t
 */
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_af_s
+typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_94_s
 {
-  Eurydice_arr_cf ind_cpa_private_key;
-  Eurydice_arr_60 implicit_rejection_value;
+  Eurydice_arr_d20 ind_cpa_private_key;
+  Eurydice_arr_ec implicit_rejection_value;
 }
-libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_af;
+libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_94;
 
 typedef struct libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked_s
 {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_af private_key;
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af public_key;
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_94 private_key;
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94 public_key;
 }
 libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked;
 
@@ -165,9 +163,9 @@ with const generics
 - PUBLIC_KEY_SIZE= 1568
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_ff(
-  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af *self,
-  Eurydice_arr_00 *serialized
+libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_1c(
+  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94 *self,
+  Eurydice_arr_d1 *serialized
 );
 
 /**
@@ -184,9 +182,9 @@ with const generics
 - PUBLIC_KEY_SIZE= 1568
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_ff(
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_1c(
   const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *self,
-  Eurydice_arr_00 *serialized
+  Eurydice_arr_d1 *serialized
 );
 
 /**
@@ -202,8 +200,8 @@ with const generics
 - K= 4
 - PUBLIC_KEY_SIZE= 1568
 */
-Eurydice_arr_00
-libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_11_ff(
+Eurydice_arr_d1
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_11_1c(
   const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *self
 );
 
@@ -218,11 +216,11 @@ with const generics
 - SERIALIZED_KEY_LEN= 3168
 */
 void
-libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_60(
+libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_4c(
   Eurydice_borrow_slice_u8 private_key,
   Eurydice_borrow_slice_u8 public_key,
   Eurydice_borrow_slice_u8 implicit_rejection_value,
-  Eurydice_arr_17 *serialized
+  Eurydice_arr_a8 *serialized
 );
 
 /**
@@ -241,9 +239,9 @@ with const generics
 - PUBLIC_KEY_SIZE= 1568
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_2f(
+libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_2e(
   const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *self,
-  Eurydice_arr_17 *serialized
+  Eurydice_arr_a8 *serialized
 );
 
 /**
@@ -261,8 +259,8 @@ with const generics
 - PRIVATE_KEY_SIZE= 3168
 - PUBLIC_KEY_SIZE= 1568
 */
-Eurydice_arr_17
-libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_2f(
+Eurydice_arr_a8
+libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_2e(
   const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *self
 );
 
@@ -280,8 +278,8 @@ with const generics
 - T_AS_NTT_ENCODED_SIZE= 1536
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_7d(
-  const Eurydice_arr_17 *private_key,
+libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_38(
+  const Eurydice_arr_a8 *private_key,
   libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *key_pair
 );
 
@@ -294,8 +292,8 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 4
 */
-libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af
-libcrux_ml_kem_ind_cca_unpacked_default_30_d0(void);
+libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94
+libcrux_ml_kem_ind_cca_unpacked_default_30_ee(void);
 
 /**
 This function found in impl {core::default::Default for libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
@@ -307,7 +305,7 @@ with const generics
 - K= 4
 */
 libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
-libcrux_ml_kem_ind_cca_unpacked_default_7b_d0(void);
+libcrux_ml_kem_ind_cca_unpacked_default_7b_ee(void);
 
 /**
  Generate Unpacked Keys
@@ -324,8 +322,8 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_generate_keypair_151(
-  Eurydice_arr_060 randomness,
+libcrux_ml_kem_ind_cca_unpacked_generate_keypair_b81(
+  Eurydice_arr_c7 randomness,
   libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *out
 );
 
@@ -347,10 +345,10 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_4d
-libcrux_ml_kem_ind_cca_unpacked_encapsulate_0c1(
-  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_af *public_key,
-  const Eurydice_arr_60 *randomness
+tuple_25
+libcrux_ml_kem_ind_cca_unpacked_encapsulate_a71(
+  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94 *public_key,
+  const Eurydice_arr_ec *randomness
 );
 
 /**
@@ -374,10 +372,10 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
-Eurydice_arr_60
-libcrux_ml_kem_ind_cca_unpacked_decapsulate_511(
+Eurydice_arr_ec
+libcrux_ml_kem_ind_cca_unpacked_decapsulate_0c1(
   const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *key_pair,
-  const Eurydice_arr_00 *ciphertext
+  const Eurydice_arr_d1 *ciphertext
 );
 
 /**
@@ -394,7 +392,7 @@ with const generics
 - K= 4
 - PUBLIC_KEY_SIZE= 1568
 */
-bool libcrux_ml_kem_ind_cca_validate_public_key_ff(const Eurydice_arr_00 *public_key);
+bool libcrux_ml_kem_ind_cca_validate_public_key_1c(const Eurydice_arr_d1 *public_key);
 
 /**
  Validate an ML-KEM private key.
@@ -408,7 +406,7 @@ with const generics
 - K= 4
 - SECRET_KEY_SIZE= 3168
 */
-bool libcrux_ml_kem_ind_cca_validate_private_key_only_60(const Eurydice_arr_17 *private_key);
+bool libcrux_ml_kem_ind_cca_validate_private_key_only_4c(const Eurydice_arr_a8 *private_key);
 
 /**
  Validate an ML-KEM private key.
@@ -426,9 +424,9 @@ with const generics
 - CIPHERTEXT_SIZE= 1568
 */
 bool
-libcrux_ml_kem_ind_cca_validate_private_key_b5(
-  const Eurydice_arr_17 *private_key,
-  const Eurydice_arr_00 *_ciphertext
+libcrux_ml_kem_ind_cca_validate_private_key_79(
+  const Eurydice_arr_a8 *private_key,
+  const Eurydice_arr_d1 *_ciphertext
 );
 
 /**
@@ -451,7 +449,7 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_151(const Eurydice_arr_060 *randomness);
+libcrux_ml_kem_ind_cca_generate_keypair_b81(const Eurydice_arr_c7 *randomness);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
@@ -471,10 +469,10 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_4d
-libcrux_ml_kem_ind_cca_encapsulate_ca1(
-  const Eurydice_arr_00 *public_key,
-  const Eurydice_arr_60 *randomness
+tuple_25
+libcrux_ml_kem_ind_cca_encapsulate_991(
+  const Eurydice_arr_d1 *public_key,
+  const Eurydice_arr_ec *randomness
 );
 
 /**
@@ -501,10 +499,10 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1600
 */
-Eurydice_arr_60
-libcrux_ml_kem_ind_cca_decapsulate_621(
-  const Eurydice_arr_17 *private_key,
-  const Eurydice_arr_00 *ciphertext
+Eurydice_arr_ec
+libcrux_ml_kem_ind_cca_decapsulate_fd1(
+  const Eurydice_arr_a8 *private_key,
+  const Eurydice_arr_d1 *ciphertext
 );
 
 /**
@@ -513,15 +511,15 @@ with types libcrux_ml_kem_polynomial_PolynomialRingElement_1d
 with const generics
 - $2size_t
 */
-typedef struct Eurydice_arr_3d0_s { Eurydice_arr_b9 data[2U]; } Eurydice_arr_3d0;
+typedef struct Eurydice_arr_1e_s { Eurydice_arr_9e data[2U]; } Eurydice_arr_1e;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr_3d0
+with types Eurydice_arr_1e
 with const generics
 - $2size_t
 */
-typedef struct Eurydice_arr_6d0_s { Eurydice_arr_3d0 data[2U]; } Eurydice_arr_6d0;
+typedef struct Eurydice_arr_df0_s { Eurydice_arr_1e data[2U]; } Eurydice_arr_df0;
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.unpacked.IndCpaPublicKeyUnpacked
@@ -529,13 +527,13 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - $2size_t
 */
-typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_d4_s
+typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_3b_s
 {
-  Eurydice_arr_3d0 t_as_ntt;
-  Eurydice_arr_60 seed_for_A;
-  Eurydice_arr_6d0 A;
+  Eurydice_arr_1e t_as_ntt;
+  Eurydice_arr_ec seed_for_A;
+  Eurydice_arr_df0 A;
 }
-libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_d4;
+libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_3b;
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemPublicKeyUnpacked
@@ -543,12 +541,12 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - $2size_t
 */
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4_s
+typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b_s
 {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_d4 ind_cpa_public_key;
-  Eurydice_arr_60 public_key_hash;
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_3b ind_cpa_public_key;
+  Eurydice_arr_ec public_key_hash;
 }
-libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4;
+libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b;
 
 /**
 This function found in impl {libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
@@ -558,9 +556,9 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_init_a
 with const generics
 - K= 2
 */
-Eurydice_arr_73
-libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_fd(
-  const Eurydice_arr_f9 *input
+Eurydice_arr_e3
+libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_af(
+  const Eurydice_arr_bf *input
 );
 
 /**
@@ -571,9 +569,9 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeez
 with const generics
 - K= 2
 */
-Eurydice_arr_31
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_4a_fd(
-  Eurydice_arr_73 *self
+Eurydice_arr_b8
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_4a_af(
+  Eurydice_arr_e3 *self
 );
 
 /**
@@ -584,8 +582,8 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeez
 with const generics
 - K= 2
 */
-Eurydice_arr_dc0
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_4a_fd(Eurydice_arr_73 *self);
+Eurydice_arr_5b0
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_4a_af(Eurydice_arr_e3 *self);
 
 /**
  Generate an unpacked key from a serialized key.
@@ -599,9 +597,9 @@ with const generics
 - PUBLIC_KEY_SIZE= 800
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_73(
-  const Eurydice_arr_30 *public_key,
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 *unpacked_public_key
+libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_e0(
+  const Eurydice_arr_03 *public_key,
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b *unpacked_public_key
 );
 
 /**
@@ -610,17 +608,17 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - $2size_t
 */
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_d4_s
+typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_3b_s
 {
-  Eurydice_arr_3d0 ind_cpa_private_key;
-  Eurydice_arr_60 implicit_rejection_value;
+  Eurydice_arr_1e ind_cpa_private_key;
+  Eurydice_arr_ec implicit_rejection_value;
 }
-libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_d4;
+libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_3b;
 
 typedef struct libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked_s
 {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_d4 private_key;
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 public_key;
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_3b private_key;
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b public_key;
 }
 libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked;
 
@@ -638,9 +636,9 @@ with const generics
 - PUBLIC_KEY_SIZE= 800
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_64(
-  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 *self,
-  Eurydice_arr_30 *serialized
+libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_53(
+  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b *self,
+  Eurydice_arr_03 *serialized
 );
 
 /**
@@ -657,9 +655,9 @@ with const generics
 - PUBLIC_KEY_SIZE= 800
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_64(
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_53(
   const libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *self,
-  Eurydice_arr_30 *serialized
+  Eurydice_arr_03 *serialized
 );
 
 /**
@@ -675,8 +673,8 @@ with const generics
 - K= 2
 - PUBLIC_KEY_SIZE= 800
 */
-Eurydice_arr_30
-libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_11_64(
+Eurydice_arr_03
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_11_53(
   const libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *self
 );
 
@@ -691,11 +689,11 @@ with const generics
 - SERIALIZED_KEY_LEN= 1632
 */
 void
-libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_30(
+libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_e2(
   Eurydice_borrow_slice_u8 private_key,
   Eurydice_borrow_slice_u8 public_key,
   Eurydice_borrow_slice_u8 implicit_rejection_value,
-  Eurydice_arr_7f *serialized
+  Eurydice_arr_ab0 *serialized
 );
 
 /**
@@ -714,9 +712,9 @@ with const generics
 - PUBLIC_KEY_SIZE= 800
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_6d(
+libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_a3(
   const libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *self,
-  Eurydice_arr_7f *serialized
+  Eurydice_arr_ab0 *serialized
 );
 
 /**
@@ -734,8 +732,8 @@ with const generics
 - PRIVATE_KEY_SIZE= 1632
 - PUBLIC_KEY_SIZE= 800
 */
-Eurydice_arr_7f
-libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_6d(
+Eurydice_arr_ab0
+libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_a3(
   const libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *self
 );
 
@@ -753,8 +751,8 @@ with const generics
 - T_AS_NTT_ENCODED_SIZE= 768
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_d1(
-  const Eurydice_arr_7f *private_key,
+libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_71(
+  const Eurydice_arr_ab0 *private_key,
   libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *key_pair
 );
 
@@ -767,8 +765,8 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 2
 */
-libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4
-libcrux_ml_kem_ind_cca_unpacked_default_30_a0(void);
+libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b
+libcrux_ml_kem_ind_cca_unpacked_default_30_66(void);
 
 /**
 This function found in impl {core::default::Default for libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
@@ -780,7 +778,7 @@ with const generics
 - K= 2
 */
 libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
-libcrux_ml_kem_ind_cca_unpacked_default_7b_a0(void);
+libcrux_ml_kem_ind_cca_unpacked_default_7b_66(void);
 
 /**
  Generate Unpacked Keys
@@ -797,8 +795,8 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 192
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_generate_keypair_150(
-  Eurydice_arr_060 randomness,
+libcrux_ml_kem_ind_cca_unpacked_generate_keypair_b80(
+  Eurydice_arr_c7 randomness,
   libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *out
 );
 
@@ -820,10 +818,10 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_50
-libcrux_ml_kem_ind_cca_unpacked_encapsulate_0c0(
-  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_d4 *public_key,
-  const Eurydice_arr_60 *randomness
+tuple_ab
+libcrux_ml_kem_ind_cca_unpacked_encapsulate_a70(
+  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b *public_key,
+  const Eurydice_arr_ec *randomness
 );
 
 /**
@@ -847,10 +845,10 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 800
 */
-Eurydice_arr_60
-libcrux_ml_kem_ind_cca_unpacked_decapsulate_510(
+Eurydice_arr_ec
+libcrux_ml_kem_ind_cca_unpacked_decapsulate_0c0(
   const libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *key_pair,
-  const Eurydice_arr_56 *ciphertext
+  const Eurydice_arr_d2 *ciphertext
 );
 
 /**
@@ -867,7 +865,7 @@ with const generics
 - K= 2
 - PUBLIC_KEY_SIZE= 800
 */
-bool libcrux_ml_kem_ind_cca_validate_public_key_64(const Eurydice_arr_30 *public_key);
+bool libcrux_ml_kem_ind_cca_validate_public_key_53(const Eurydice_arr_03 *public_key);
 
 /**
  Validate an ML-KEM private key.
@@ -881,7 +879,7 @@ with const generics
 - K= 2
 - SECRET_KEY_SIZE= 1632
 */
-bool libcrux_ml_kem_ind_cca_validate_private_key_only_30(const Eurydice_arr_7f *private_key);
+bool libcrux_ml_kem_ind_cca_validate_private_key_only_e2(const Eurydice_arr_ab0 *private_key);
 
 /**
  Validate an ML-KEM private key.
@@ -899,9 +897,9 @@ with const generics
 - CIPHERTEXT_SIZE= 768
 */
 bool
-libcrux_ml_kem_ind_cca_validate_private_key_fb(
-  const Eurydice_arr_7f *private_key,
-  const Eurydice_arr_56 *_ciphertext
+libcrux_ml_kem_ind_cca_validate_private_key_d5(
+  const Eurydice_arr_ab0 *private_key,
+  const Eurydice_arr_d2 *_ciphertext
 );
 
 /**
@@ -923,8 +921,8 @@ with const generics
 - ETA1= 3
 - ETA1_RANDOMNESS_SIZE= 192
 */
-libcrux_ml_kem_types_MlKemKeyPair_3e
-libcrux_ml_kem_ind_cca_generate_keypair_150(const Eurydice_arr_060 *randomness);
+libcrux_ml_kem_types_MlKemKeyPair_0d
+libcrux_ml_kem_ind_cca_generate_keypair_b80(const Eurydice_arr_c7 *randomness);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
@@ -944,10 +942,10 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_50
-libcrux_ml_kem_ind_cca_encapsulate_ca0(
-  const Eurydice_arr_30 *public_key,
-  const Eurydice_arr_60 *randomness
+tuple_ab
+libcrux_ml_kem_ind_cca_encapsulate_990(
+  const Eurydice_arr_03 *public_key,
+  const Eurydice_arr_ec *randomness
 );
 
 /**
@@ -974,10 +972,10 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 800
 */
-Eurydice_arr_60
-libcrux_ml_kem_ind_cca_decapsulate_620(
-  const Eurydice_arr_7f *private_key,
-  const Eurydice_arr_56 *ciphertext
+Eurydice_arr_ec
+libcrux_ml_kem_ind_cca_decapsulate_fd0(
+  const Eurydice_arr_ab0 *private_key,
+  const Eurydice_arr_d2 *ciphertext
 );
 
 /**
@@ -986,15 +984,15 @@ with types libcrux_ml_kem_polynomial_PolynomialRingElement_1d
 with const generics
 - $3size_t
 */
-typedef struct Eurydice_arr_1d_s { Eurydice_arr_b9 data[3U]; } Eurydice_arr_1d;
+typedef struct Eurydice_arr_bb_s { Eurydice_arr_9e data[3U]; } Eurydice_arr_bb;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr_1d
+with types Eurydice_arr_bb
 with const generics
 - $3size_t
 */
-typedef struct Eurydice_arr_dd_s { Eurydice_arr_1d data[3U]; } Eurydice_arr_dd;
+typedef struct Eurydice_arr_1d_s { Eurydice_arr_bb data[3U]; } Eurydice_arr_1d;
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cpa.unpacked.IndCpaPublicKeyUnpacked
@@ -1002,13 +1000,13 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - $3size_t
 */
-typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0_s
+typedef struct libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_51_s
 {
-  Eurydice_arr_1d t_as_ntt;
-  Eurydice_arr_60 seed_for_A;
-  Eurydice_arr_dd A;
+  Eurydice_arr_bb t_as_ntt;
+  Eurydice_arr_ec seed_for_A;
+  Eurydice_arr_1d A;
 }
-libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0;
+libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_51;
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.MlKemPublicKeyUnpacked
@@ -1016,12 +1014,12 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - $3size_t
 */
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0_s
+typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51_s
 {
-  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_a0 ind_cpa_public_key;
-  Eurydice_arr_60 public_key_hash;
+  libcrux_ml_kem_ind_cpa_unpacked_IndCpaPublicKeyUnpacked_51 ind_cpa_public_key;
+  Eurydice_arr_ec public_key_hash;
 }
-libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0;
+libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51;
 
 /**
 This function found in impl {libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
@@ -1031,9 +1029,9 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_init_a
 with const generics
 - K= 3
 */
-Eurydice_arr_e4
-libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_e0(
-  const Eurydice_arr_c3 *input
+Eurydice_arr_1b
+libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_78(
+  const Eurydice_arr_81 *input
 );
 
 /**
@@ -1044,9 +1042,9 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeez
 with const generics
 - K= 3
 */
-Eurydice_arr_55
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_4a_e0(
-  Eurydice_arr_e4 *self
+Eurydice_arr_7e
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_4a_78(
+  Eurydice_arr_1b *self
 );
 
 /**
@@ -1057,8 +1055,8 @@ A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeez
 with const generics
 - K= 3
 */
-Eurydice_arr_7e
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_4a_e0(Eurydice_arr_e4 *self);
+Eurydice_arr_2c
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_4a_78(Eurydice_arr_1b *self);
 
 /**
  Generate an unpacked key from a serialized key.
@@ -1072,9 +1070,9 @@ with const generics
 - PUBLIC_KEY_SIZE= 1184
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_0a(
-  const Eurydice_arr_74 *public_key,
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *unpacked_public_key
+libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_22(
+  const Eurydice_arr_5f *public_key,
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51 *unpacked_public_key
 );
 
 /**
@@ -1083,17 +1081,17 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - $3size_t
 */
-typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0_s
+typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_51_s
 {
-  Eurydice_arr_1d ind_cpa_private_key;
-  Eurydice_arr_60 implicit_rejection_value;
+  Eurydice_arr_bb ind_cpa_private_key;
+  Eurydice_arr_ec implicit_rejection_value;
 }
-libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0;
+libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_51;
 
 typedef struct libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked_s
 {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_a0 private_key;
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 public_key;
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPrivateKeyUnpacked_51 private_key;
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51 public_key;
 }
 libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked;
 
@@ -1110,8 +1108,8 @@ with const generics
 - K= 3
 */
 const
-libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
-*libcrux_ml_kem_ind_cca_unpacked_public_key_11_1b(
+libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51
+*libcrux_ml_kem_ind_cca_unpacked_public_key_11_68(
   const libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *self
 );
 
@@ -1124,9 +1122,9 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 3
 */
-libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
-libcrux_ml_kem_ind_cca_unpacked_clone_d7_1b(
-  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *self
+libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51
+libcrux_ml_kem_ind_cca_unpacked_clone_d7_68(
+  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51 *self
 );
 
 /**
@@ -1143,9 +1141,9 @@ with const generics
 - PUBLIC_KEY_SIZE= 1184
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_89(
-  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *self,
-  Eurydice_arr_74 *serialized
+libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_b6(
+  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51 *self,
+  Eurydice_arr_5f *serialized
 );
 
 /**
@@ -1162,9 +1160,9 @@ with const generics
 - PUBLIC_KEY_SIZE= 1184
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_89(
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_b6(
   const libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *self,
-  Eurydice_arr_74 *serialized
+  Eurydice_arr_5f *serialized
 );
 
 /**
@@ -1180,8 +1178,8 @@ with const generics
 - K= 3
 - PUBLIC_KEY_SIZE= 1184
 */
-Eurydice_arr_74
-libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_11_89(
+Eurydice_arr_5f
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_11_b6(
   const libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *self
 );
 
@@ -1196,11 +1194,11 @@ with const generics
 - SERIALIZED_KEY_LEN= 2400
 */
 void
-libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_d6(
+libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_52(
   Eurydice_borrow_slice_u8 private_key,
   Eurydice_borrow_slice_u8 public_key,
   Eurydice_borrow_slice_u8 implicit_rejection_value,
-  Eurydice_arr_ea *serialized
+  Eurydice_arr_7d *serialized
 );
 
 /**
@@ -1219,9 +1217,9 @@ with const generics
 - PUBLIC_KEY_SIZE= 1184
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_43(
+libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_21(
   const libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *self,
-  Eurydice_arr_ea *serialized
+  Eurydice_arr_7d *serialized
 );
 
 /**
@@ -1239,8 +1237,8 @@ with const generics
 - PRIVATE_KEY_SIZE= 2400
 - PUBLIC_KEY_SIZE= 1184
 */
-Eurydice_arr_ea
-libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_43(
+Eurydice_arr_7d
+libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_21(
   const libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *self
 );
 
@@ -1258,8 +1256,8 @@ with const generics
 - T_AS_NTT_ENCODED_SIZE= 1152
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_42(
-  const Eurydice_arr_ea *private_key,
+libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_01(
+  const Eurydice_arr_7d *private_key,
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair
 );
 
@@ -1272,8 +1270,8 @@ with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 3
 */
-libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
-libcrux_ml_kem_ind_cca_unpacked_default_30_1b(void);
+libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51
+libcrux_ml_kem_ind_cca_unpacked_default_30_68(void);
 
 /**
 This function found in impl {core::default::Default for libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
@@ -1285,7 +1283,7 @@ with const generics
 - K= 3
 */
 libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
-libcrux_ml_kem_ind_cca_unpacked_default_7b_1b(void);
+libcrux_ml_kem_ind_cca_unpacked_default_7b_68(void);
 
 /**
  Generate Unpacked Keys
@@ -1302,8 +1300,8 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_generate_keypair_15(
-  Eurydice_arr_060 randomness,
+libcrux_ml_kem_ind_cca_unpacked_generate_keypair_b8(
+  Eurydice_arr_c7 randomness,
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *out
 );
 
@@ -1325,10 +1323,10 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_7f
-libcrux_ml_kem_ind_cca_unpacked_encapsulate_0c(
-  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *public_key,
-  const Eurydice_arr_60 *randomness
+tuple_f4
+libcrux_ml_kem_ind_cca_unpacked_encapsulate_a7(
+  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51 *public_key,
+  const Eurydice_arr_ec *randomness
 );
 
 /**
@@ -1352,10 +1350,10 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-Eurydice_arr_60
-libcrux_ml_kem_ind_cca_unpacked_decapsulate_51(
+Eurydice_arr_ec
+libcrux_ml_kem_ind_cca_unpacked_decapsulate_0c(
   const libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair,
-  const Eurydice_arr_2c *ciphertext
+  const Eurydice_arr_2b *ciphertext
 );
 
 /**
@@ -1372,7 +1370,7 @@ with const generics
 - K= 3
 - PUBLIC_KEY_SIZE= 1184
 */
-bool libcrux_ml_kem_ind_cca_validate_public_key_89(const Eurydice_arr_74 *public_key);
+bool libcrux_ml_kem_ind_cca_validate_public_key_b6(const Eurydice_arr_5f *public_key);
 
 /**
  Validate an ML-KEM private key.
@@ -1386,7 +1384,7 @@ with const generics
 - K= 3
 - SECRET_KEY_SIZE= 2400
 */
-bool libcrux_ml_kem_ind_cca_validate_private_key_only_d6(const Eurydice_arr_ea *private_key);
+bool libcrux_ml_kem_ind_cca_validate_private_key_only_52(const Eurydice_arr_7d *private_key);
 
 /**
  Validate an ML-KEM private key.
@@ -1404,9 +1402,9 @@ with const generics
 - CIPHERTEXT_SIZE= 1088
 */
 bool
-libcrux_ml_kem_ind_cca_validate_private_key_37(
-  const Eurydice_arr_ea *private_key,
-  const Eurydice_arr_2c *_ciphertext
+libcrux_ml_kem_ind_cca_validate_private_key_ba(
+  const Eurydice_arr_7d *private_key,
+  const Eurydice_arr_2b *_ciphertext
 );
 
 /**
@@ -1429,7 +1427,7 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_ind_cca_generate_keypair_15(const Eurydice_arr_060 *randomness);
+libcrux_ml_kem_ind_cca_generate_keypair_b8(const Eurydice_arr_c7 *randomness);
 
 /**
 A monomorphic instance of libcrux_ml_kem.ind_cca.encapsulate
@@ -1449,10 +1447,10 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-tuple_7f
-libcrux_ml_kem_ind_cca_encapsulate_ca(
-  const Eurydice_arr_74 *public_key,
-  const Eurydice_arr_60 *randomness
+tuple_f4
+libcrux_ml_kem_ind_cca_encapsulate_99(
+  const Eurydice_arr_5f *public_key,
+  const Eurydice_arr_ec *randomness
 );
 
 /**
@@ -1479,10 +1477,10 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-Eurydice_arr_60
-libcrux_ml_kem_ind_cca_decapsulate_62(
-  const Eurydice_arr_ea *private_key,
-  const Eurydice_arr_2c *ciphertext
+Eurydice_arr_ec
+libcrux_ml_kem_ind_cca_decapsulate_fd(
+  const Eurydice_arr_7d *private_key,
+  const Eurydice_arr_2b *ciphertext
 );
 
 #if defined(__cplusplus)

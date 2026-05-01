@@ -23,10 +23,10 @@ extern "C" {
  Generates an [`MlKemSharedSecret`].
  The input is a reference to an [`MlKem768PrivateKey`] and an [`MlKem768Ciphertext`].
 */
-Eurydice_arr_60
+Eurydice_arr_ec
 libcrux_ml_kem_mlkem768_portable_decapsulate(
-  const Eurydice_arr_ea *private_key,
-  const Eurydice_arr_2c *ciphertext
+  const Eurydice_arr_7d *private_key,
+  const Eurydice_arr_2b *ciphertext
 );
 
 /**
@@ -36,17 +36,17 @@ libcrux_ml_kem_mlkem768_portable_decapsulate(
  The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
  bytes of `randomness`.
 */
-tuple_7f
+tuple_f4
 libcrux_ml_kem_mlkem768_portable_encapsulate(
-  const Eurydice_arr_74 *public_key,
-  Eurydice_arr_60 randomness
+  const Eurydice_arr_5f *public_key,
+  Eurydice_arr_ec randomness
 );
 
 /**
  Generate ML-KEM 768 Key Pair
 */
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_mlkem768_portable_generate_key_pair(Eurydice_arr_060 randomness);
+libcrux_ml_kem_mlkem768_portable_generate_key_pair(Eurydice_arr_c7 randomness);
 
 /**
  Validate a private key.
@@ -55,8 +55,8 @@ libcrux_ml_kem_mlkem768_portable_generate_key_pair(Eurydice_arr_060 randomness);
 */
 bool
 libcrux_ml_kem_mlkem768_portable_validate_private_key(
-  const Eurydice_arr_ea *private_key,
-  const Eurydice_arr_2c *ciphertext
+  const Eurydice_arr_7d *private_key,
+  const Eurydice_arr_2b *ciphertext
 );
 
 /**
@@ -65,14 +65,14 @@ libcrux_ml_kem_mlkem768_portable_validate_private_key(
  Returns `true` if valid, and `false` otherwise.
 */
 bool
-libcrux_ml_kem_mlkem768_portable_validate_private_key_only(const Eurydice_arr_ea *private_key);
+libcrux_ml_kem_mlkem768_portable_validate_private_key_only(const Eurydice_arr_7d *private_key);
 
 /**
  Validate a public key.
 
  Returns `true` if valid, and `false` otherwise.
 */
-bool libcrux_ml_kem_mlkem768_portable_validate_public_key(const Eurydice_arr_74 *public_key);
+bool libcrux_ml_kem_mlkem768_portable_validate_public_key(const Eurydice_arr_5f *public_key);
 
 #if defined(__cplusplus)
 }

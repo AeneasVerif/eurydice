@@ -33,10 +33,10 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-static Eurydice_arr_60
-decapsulate_35(Eurydice_arr_ea *private_key, Eurydice_arr_2c *ciphertext)
+static Eurydice_arr_ec
+decapsulate_19(Eurydice_arr_7d *private_key, Eurydice_arr_2b *ciphertext)
 {
-  return libcrux_ml_kem_ind_cca_decapsulate_62(private_key, ciphertext);
+  return libcrux_ml_kem_ind_cca_decapsulate_fd(private_key, ciphertext);
 }
 
 /**
@@ -45,13 +45,13 @@ decapsulate_35(Eurydice_arr_ea *private_key, Eurydice_arr_2c *ciphertext)
  Generates an [`MlKemSharedSecret`].
  The input is a reference to an [`MlKem768PrivateKey`] and an [`MlKem768Ciphertext`].
 */
-Eurydice_arr_60
+Eurydice_arr_ec
 libcrux_ml_kem_mlkem768_portable_decapsulate(
-  Eurydice_arr_ea *private_key,
-  Eurydice_arr_2c *ciphertext
+  Eurydice_arr_7d *private_key,
+  Eurydice_arr_2b *ciphertext
 )
 {
-  return decapsulate_35(private_key, ciphertext);
+  return decapsulate_19(private_key, ciphertext);
 }
 
 /**
@@ -71,9 +71,9 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static tuple_7f encapsulate_cd(Eurydice_arr_74 *public_key, Eurydice_arr_60 *randomness)
+static tuple_f4 encapsulate_26(Eurydice_arr_5f *public_key, Eurydice_arr_ec *randomness)
 {
-  return libcrux_ml_kem_ind_cca_encapsulate_ca(public_key, randomness);
+  return libcrux_ml_kem_ind_cca_encapsulate_99(public_key, randomness);
 }
 
 /**
@@ -83,13 +83,13 @@ static tuple_7f encapsulate_cd(Eurydice_arr_74 *public_key, Eurydice_arr_60 *ran
  The input is a reference to an [`MlKem768PublicKey`] and [`SHARED_SECRET_SIZE`]
  bytes of `randomness`.
 */
-tuple_7f
+tuple_f4
 libcrux_ml_kem_mlkem768_portable_encapsulate(
-  Eurydice_arr_74 *public_key,
-  Eurydice_arr_60 randomness
+  Eurydice_arr_5f *public_key,
+  Eurydice_arr_ec randomness
 )
 {
-  return encapsulate_cd(public_key, &randomness);
+  return encapsulate_26(public_key, &randomness);
 }
 
 /**
@@ -105,18 +105,18 @@ with const generics
 - ETA1= 2
 - ETA1_RANDOMNESS_SIZE= 128
 */
-static libcrux_ml_kem_mlkem768_MlKem768KeyPair generate_keypair_ce(Eurydice_arr_06 *randomness)
+static libcrux_ml_kem_mlkem768_MlKem768KeyPair generate_keypair_e9(Eurydice_arr_c7 *randomness)
 {
-  return libcrux_ml_kem_ind_cca_generate_keypair_15(randomness);
+  return libcrux_ml_kem_ind_cca_generate_keypair_b8(randomness);
 }
 
 /**
  Generate ML-KEM 768 Key Pair
 */
 libcrux_ml_kem_mlkem768_MlKem768KeyPair
-libcrux_ml_kem_mlkem768_portable_generate_key_pair(Eurydice_arr_06 randomness)
+libcrux_ml_kem_mlkem768_portable_generate_key_pair(Eurydice_arr_c7 randomness)
 {
-  return generate_keypair_ce(&randomness);
+  return generate_keypair_e9(&randomness);
 }
 
 /**
@@ -130,9 +130,9 @@ with const generics
 - CIPHERTEXT_SIZE= 1088
 */
 static KRML_MUSTINLINE bool
-validate_private_key_31(Eurydice_arr_ea *private_key, Eurydice_arr_2c *ciphertext)
+validate_private_key_d3(Eurydice_arr_7d *private_key, Eurydice_arr_2b *ciphertext)
 {
-  return libcrux_ml_kem_ind_cca_validate_private_key_37(private_key, ciphertext);
+  return libcrux_ml_kem_ind_cca_validate_private_key_ba(private_key, ciphertext);
 }
 
 /**
@@ -142,11 +142,11 @@ validate_private_key_31(Eurydice_arr_ea *private_key, Eurydice_arr_2c *ciphertex
 */
 bool
 libcrux_ml_kem_mlkem768_portable_validate_private_key(
-  Eurydice_arr_ea *private_key,
-  Eurydice_arr_2c *ciphertext
+  Eurydice_arr_7d *private_key,
+  Eurydice_arr_2b *ciphertext
 )
 {
-  return validate_private_key_31(private_key, ciphertext);
+  return validate_private_key_d3(private_key, ciphertext);
 }
 
 /**
@@ -158,9 +158,9 @@ with const generics
 - K= 3
 - SECRET_KEY_SIZE= 2400
 */
-static KRML_MUSTINLINE bool validate_private_key_only_41(Eurydice_arr_ea *private_key)
+static KRML_MUSTINLINE bool validate_private_key_only_3b(Eurydice_arr_7d *private_key)
 {
-  return libcrux_ml_kem_ind_cca_validate_private_key_only_d6(private_key);
+  return libcrux_ml_kem_ind_cca_validate_private_key_only_52(private_key);
 }
 
 /**
@@ -168,9 +168,9 @@ static KRML_MUSTINLINE bool validate_private_key_only_41(Eurydice_arr_ea *privat
 
  Returns `true` if valid, and `false` otherwise.
 */
-bool libcrux_ml_kem_mlkem768_portable_validate_private_key_only(Eurydice_arr_ea *private_key)
+bool libcrux_ml_kem_mlkem768_portable_validate_private_key_only(Eurydice_arr_7d *private_key)
 {
-  return validate_private_key_only_41(private_key);
+  return validate_private_key_only_3b(private_key);
 }
 
 /**
@@ -182,9 +182,9 @@ with const generics
 - K= 3
 - PUBLIC_KEY_SIZE= 1184
 */
-static KRML_MUSTINLINE bool validate_public_key_41(Eurydice_arr_74 *public_key)
+static KRML_MUSTINLINE bool validate_public_key_3b(Eurydice_arr_5f *public_key)
 {
-  return libcrux_ml_kem_ind_cca_validate_public_key_89(public_key);
+  return libcrux_ml_kem_ind_cca_validate_public_key_b6(public_key);
 }
 
 /**
@@ -192,9 +192,9 @@ static KRML_MUSTINLINE bool validate_public_key_41(Eurydice_arr_74 *public_key)
 
  Returns `true` if valid, and `false` otherwise.
 */
-bool libcrux_ml_kem_mlkem768_portable_validate_public_key(Eurydice_arr_74 *public_key)
+bool libcrux_ml_kem_mlkem768_portable_validate_public_key(Eurydice_arr_5f *public_key)
 {
-  return validate_public_key_41(public_key);
+  return validate_public_key_3b(public_key);
 }
 
 /**
@@ -220,13 +220,13 @@ with const generics
 - ETA2_RANDOMNESS_SIZE= 128
 - IMPLICIT_REJECTION_HASH_INPUT_SIZE= 1120
 */
-static KRML_MUSTINLINE Eurydice_arr_60
-decapsulate_350(
+static KRML_MUSTINLINE Eurydice_arr_ec
+decapsulate_190(
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair,
-  Eurydice_arr_2c *ciphertext
+  Eurydice_arr_2b *ciphertext
 )
 {
-  return libcrux_ml_kem_ind_cca_unpacked_decapsulate_51(key_pair, ciphertext);
+  return libcrux_ml_kem_ind_cca_unpacked_decapsulate_0c(key_pair, ciphertext);
 }
 
 /**
@@ -236,13 +236,13 @@ decapsulate_350(
  The input is a reference to an unpacked key pair of type [`MlKem768KeyPairUnpacked`]
  and an [`MlKem768Ciphertext`].
 */
-Eurydice_arr_60
+Eurydice_arr_ec
 libcrux_ml_kem_mlkem768_portable_unpacked_decapsulate(
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *private_key,
-  Eurydice_arr_2c *ciphertext
+  Eurydice_arr_2b *ciphertext
 )
 {
-  return decapsulate_350(private_key, ciphertext);
+  return decapsulate_190(private_key, ciphertext);
 }
 
 /**
@@ -265,13 +265,13 @@ with const generics
 - ETA2= 2
 - ETA2_RANDOMNESS_SIZE= 128
 */
-static KRML_MUSTINLINE tuple_7f
-encapsulate_cd0(
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *public_key,
-  Eurydice_arr_60 *randomness
+static KRML_MUSTINLINE tuple_f4
+encapsulate_260(
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51 *public_key,
+  Eurydice_arr_ec *randomness
 )
 {
-  return libcrux_ml_kem_ind_cca_unpacked_encapsulate_0c(public_key, randomness);
+  return libcrux_ml_kem_ind_cca_unpacked_encapsulate_a7(public_key, randomness);
 }
 
 /**
@@ -281,13 +281,13 @@ encapsulate_cd0(
  The input is a reference to an unpacked public key of type [`MlKem768PublicKeyUnpacked`],
  the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
 */
-tuple_7f
+tuple_f4
 libcrux_ml_kem_mlkem768_portable_unpacked_encapsulate(
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *public_key,
-  Eurydice_arr_60 randomness
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51 *public_key,
+  Eurydice_arr_ec randomness
 )
 {
-  return encapsulate_cd0(public_key, &randomness);
+  return encapsulate_260(public_key, &randomness);
 }
 
 /**
@@ -304,12 +304,12 @@ with const generics
 - ETA1_RANDOMNESS_SIZE= 128
 */
 static KRML_MUSTINLINE void
-generate_keypair_ce0(
-  Eurydice_arr_06 randomness,
+generate_keypair_e90(
+  Eurydice_arr_c7 randomness,
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *out
 )
 {
-  libcrux_ml_kem_ind_cca_unpacked_generate_keypair_15(randomness, out);
+  libcrux_ml_kem_ind_cca_unpacked_generate_keypair_b8(randomness, out);
 }
 
 /**
@@ -317,21 +317,21 @@ generate_keypair_ce0(
 */
 void
 libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair_mut(
-  Eurydice_arr_06 randomness,
+  Eurydice_arr_c7 randomness,
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair
 )
 {
-  generate_keypair_ce0(randomness, key_pair);
+  generate_keypair_e90(randomness, key_pair);
 }
 
 /**
  Generate ML-KEM 768 Key Pair in "unpacked" form.
 */
 libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
-libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair(Eurydice_arr_06 randomness)
+libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair(Eurydice_arr_c7 randomness)
 {
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
-  key_pair = libcrux_ml_kem_ind_cca_unpacked_default_7b_1b();
+  key_pair = libcrux_ml_kem_ind_cca_unpacked_default_7b_68();
   libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair_mut(randomness, &key_pair);
   return key_pair;
 }
@@ -342,16 +342,16 @@ libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair(Eurydice_arr_06 rand
 libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
 libcrux_ml_kem_mlkem768_portable_unpacked_init_key_pair(void)
 {
-  return libcrux_ml_kem_ind_cca_unpacked_default_7b_1b();
+  return libcrux_ml_kem_ind_cca_unpacked_default_7b_68();
 }
 
 /**
  Create a new, empty unpacked public key.
 */
-libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
+libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51
 libcrux_ml_kem_mlkem768_portable_unpacked_init_public_key(void)
 {
-  return libcrux_ml_kem_ind_cca_unpacked_default_30_1b();
+  return libcrux_ml_kem_ind_cca_unpacked_default_30_68();
 }
 
 /**
@@ -367,12 +367,12 @@ with const generics
 - T_AS_NTT_ENCODED_SIZE= 1152
 */
 static KRML_MUSTINLINE void
-keypair_from_private_key_fd(
-  Eurydice_arr_ea *private_key,
+keypair_from_private_key_71(
+  Eurydice_arr_7d *private_key,
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair
 )
 {
-  libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_42(private_key, key_pair);
+  libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_01(private_key, key_pair);
 }
 
 /**
@@ -380,22 +380,22 @@ keypair_from_private_key_fd(
 */
 void
 libcrux_ml_kem_mlkem768_portable_unpacked_key_pair_from_private_mut(
-  Eurydice_arr_ea *private_key,
+  Eurydice_arr_7d *private_key,
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair
 )
 {
-  keypair_from_private_key_fd(private_key, key_pair);
+  keypair_from_private_key_71(private_key, key_pair);
 }
 
 /**
  Get the serialized private key.
 */
-Eurydice_arr_ea
+Eurydice_arr_7d
 libcrux_ml_kem_mlkem768_portable_unpacked_key_pair_serialized_private_key(
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair
 )
 {
-  return libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_43(key_pair);
+  return libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_21(key_pair);
 }
 
 /**
@@ -404,21 +404,21 @@ libcrux_ml_kem_mlkem768_portable_unpacked_key_pair_serialized_private_key(
 void
 libcrux_ml_kem_mlkem768_portable_unpacked_key_pair_serialized_private_key_mut(
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair,
-  Eurydice_arr_ea *serialized
+  Eurydice_arr_7d *serialized
 )
 {
-  libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_43(key_pair, serialized);
+  libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_21(key_pair, serialized);
 }
 
 /**
  Get the serialized public key.
 */
-Eurydice_arr_74
+Eurydice_arr_5f
 libcrux_ml_kem_mlkem768_portable_unpacked_key_pair_serialized_public_key(
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair
 )
 {
-  return libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_11_89(key_pair);
+  return libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_11_b6(key_pair);
 }
 
 /**
@@ -427,10 +427,10 @@ libcrux_ml_kem_mlkem768_portable_unpacked_key_pair_serialized_public_key(
 void
 libcrux_ml_kem_mlkem768_portable_unpacked_key_pair_serialized_public_key_mut(
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair,
-  Eurydice_arr_74 *serialized
+  Eurydice_arr_5f *serialized
 )
 {
-  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_89(key_pair, serialized);
+  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_b6(key_pair, serialized);
 }
 
 /**
@@ -439,12 +439,12 @@ libcrux_ml_kem_mlkem768_portable_unpacked_key_pair_serialized_public_key_mut(
 void
 libcrux_ml_kem_mlkem768_portable_unpacked_public_key(
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair,
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *pk
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51 *pk
 )
 {
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51
   uu____0 =
-    libcrux_ml_kem_ind_cca_unpacked_clone_d7_1b(libcrux_ml_kem_ind_cca_unpacked_public_key_11_1b(key_pair));
+    libcrux_ml_kem_ind_cca_unpacked_clone_d7_68(libcrux_ml_kem_ind_cca_unpacked_public_key_11_68(key_pair));
   pk[0U] = uu____0;
 }
 
@@ -453,11 +453,11 @@ libcrux_ml_kem_mlkem768_portable_unpacked_public_key(
 */
 void
 libcrux_ml_kem_mlkem768_portable_unpacked_serialized_public_key(
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *public_key,
-  Eurydice_arr_74 *serialized
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51 *public_key,
+  Eurydice_arr_5f *serialized
 )
 {
-  libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_89(public_key, serialized);
+  libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_b6(public_key, serialized);
 }
 
 /**
@@ -471,12 +471,12 @@ with const generics
 - PUBLIC_KEY_SIZE= 1184
 */
 static KRML_MUSTINLINE void
-unpack_public_key_31(
-  Eurydice_arr_74 *public_key,
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *unpacked_public_key
+unpack_public_key_d3(
+  Eurydice_arr_5f *public_key,
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51 *unpacked_public_key
 )
 {
-  libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_0a(public_key, unpacked_public_key);
+  libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_22(public_key, unpacked_public_key);
 }
 
 /**
@@ -484,10 +484,10 @@ unpack_public_key_31(
 */
 void
 libcrux_ml_kem_mlkem768_portable_unpacked_unpacked_public_key(
-  Eurydice_arr_74 *public_key,
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_a0 *unpacked_public_key
+  Eurydice_arr_5f *public_key,
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51 *unpacked_public_key
 )
 {
-  unpack_public_key_31(public_key, unpacked_public_key);
+  unpack_public_key_d3(public_key, unpacked_public_key);
 }
 

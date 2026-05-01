@@ -1076,12 +1076,6 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
       op, ret_t
     else
       (* Otherwise, simply the normal case *)
-      let w =
-        match first.typ with
-        | K.TInt w -> w
-        | K.TBool -> Bool
-        | t -> fail "Not an operator type: %a" ptyp t
-      in
       let op =
         if first.typ = K.TBool then
           match op with
@@ -1093,8 +1087,8 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
         else
           op
       in
-      let op_t = Krml.Helpers.type_of_op op w in
-      let op = K.(with_type op_t (EOp (op, w))) in
+      let op_t = Krml.Helpers.type_of_op op first.typ in
+      let op = K.(with_type op_t (EOp (op, first.typ))) in
       let ret_t, _ = Krml.Helpers.flatten_arrow op_t in
       op, ret_t
   in

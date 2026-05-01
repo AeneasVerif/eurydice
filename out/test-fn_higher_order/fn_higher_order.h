@@ -56,32 +56,32 @@ A monomorphic instance of core.option.Option
 with types size_t
 
 */
-typedef struct core_option_Option_08_s
+typedef struct core_option_Option_87_s
 {
   core_option_Option_77_tags tag;
   size_t f0;
 }
-core_option_Option_08;
+core_option_Option_87;
 
-extern core_option_Option_08
+extern core_option_Option_87
 core_iter_range__core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
 
-extern core_option_Option_08
+extern core_option_Option_87
 core_iter_range__core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
 
 /**
 A monomorphic instance of n-tuple
-with types size_t, core_option_Option_08
+with types size_t, core_option_Option_87
 
 */
-typedef struct tuple_d1_s
+typedef struct tuple_21_s
 {
   size_t fst;
-  core_option_Option_08 snd;
+  core_option_Option_87 snd;
 }
-tuple_d1;
+tuple_21;
 
-extern tuple_d1
+extern tuple_21
 core_iter_range__core__iter__range__Step_for_usize__steps_between(
   const size_t *x0,
   const size_t *x1
@@ -101,9 +101,9 @@ with types int32_t
 with const generics
 - $3size_t
 */
-typedef struct Eurydice_arr_8d_s { int32_t data[3U]; } Eurydice_arr_8d;
+typedef struct Eurydice_arr_bf_s { int32_t data[3U]; } Eurydice_arr_bf;
 
-int32_t fn_higher_order_more_sum_lst(const Eurydice_arr_8d *l);
+int32_t fn_higher_order_more_sum_lst(const Eurydice_arr_bf *l);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -111,7 +111,7 @@ with types size_t
 with const generics
 - $5size_t
 */
-typedef struct Eurydice_arr_99_s { size_t data[5U]; } Eurydice_arr_99;
+typedef struct Eurydice_arr_2b_s { size_t data[5U]; } Eurydice_arr_2b;
 
 /**
 A monomorphic instance of fn_higher_order.compose_cg_apply
@@ -120,10 +120,10 @@ with const generics
 - N= 5
 */
 size_t
-fn_higher_order_compose_cg_apply_fd(
-  size_t (*f)(const Eurydice_arr_99 *x0),
+fn_higher_order_compose_cg_apply_4d(
+  size_t (*f)(const Eurydice_arr_2b *x0),
   size_t (*g)(size_t x0),
-  const Eurydice_arr_99 *arg
+  const Eurydice_arr_2b *arg
 );
 
 /**
@@ -131,14 +131,14 @@ A monomorphic instance of fn_higher_order.sum_lst
 with const generics
 - N= 5
 */
-size_t fn_higher_order_sum_lst_c9(const Eurydice_arr_99 *lst);
+size_t fn_higher_order_sum_lst_a5(const Eurydice_arr_2b *lst);
 
 /**
 A monomorphic instance of fn_higher_order.id
 with types size_t
 
 */
-size_t fn_higher_order_id_37(size_t r);
+size_t fn_higher_order_id_60(size_t r);
 
 /**
 A monomorphic instance of fn_higher_order.compose_cg_apply
@@ -147,10 +147,10 @@ with const generics
 - N= 3
 */
 int32_t
-fn_higher_order_compose_cg_apply_82(
-  int32_t (*f)(const Eurydice_arr_8d *x0),
+fn_higher_order_compose_cg_apply_36(
+  int32_t (*f)(const Eurydice_arr_bf *x0),
   int32_t (*g)(int32_t x0),
-  const Eurydice_arr_8d *arg
+  const Eurydice_arr_bf *arg
 );
 
 /**

@@ -54,32 +54,32 @@ A monomorphic instance of core.option.Option
 with types size_t
 
 */
-typedef struct core_option_Option_08_s
+typedef struct core_option_Option_87_s
 {
   core_option_Option_77_tags tag;
   size_t f0;
 }
-core_option_Option_08;
+core_option_Option_87;
 
-extern core_option_Option_08
+extern core_option_Option_87
 core_iter_range__core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
 
-extern core_option_Option_08
+extern core_option_Option_87
 core_iter_range__core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
 
 /**
 A monomorphic instance of n-tuple
-with types size_t, core_option_Option_08
+with types size_t, core_option_Option_87
 
 */
-typedef struct tuple_d1_s
+typedef struct tuple_21_s
 {
   size_t fst;
-  core_option_Option_08 snd;
+  core_option_Option_87 snd;
 }
-tuple_d1;
+tuple_21;
 
-extern tuple_d1
+extern tuple_21
 core_iter_range__core__iter__range__Step_for_usize__steps_between(
   const size_t *x0,
   const size_t *x1
@@ -101,15 +101,15 @@ with types nested_arrays_Key
 with const generics
 - $3size_t
 */
-typedef struct Eurydice_arr_3d_s { nested_arrays_Key data[3U]; } Eurydice_arr_3d;
+typedef struct Eurydice_arr_40_s { nested_arrays_Key data[3U]; } Eurydice_arr_40;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr_3d
+with types Eurydice_arr_40
 with const generics
 - $3size_t
 */
-typedef struct Eurydice_arr_06_s { Eurydice_arr_3d data[3U]; } Eurydice_arr_06;
+typedef struct Eurydice_arr_9a_s { Eurydice_arr_40 data[3U]; } Eurydice_arr_9a;
 
 void nested_arrays_main(void);
 
@@ -119,17 +119,17 @@ with types uint8_t
 with const generics
 - $200size_t
 */
-typedef struct Eurydice_arr_88_s { uint8_t data[200U]; } Eurydice_arr_88;
+typedef struct Eurydice_arr_5c_s { uint8_t data[200U]; } Eurydice_arr_5c;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr_88
+with types Eurydice_arr_5c
 with const generics
 - $4size_t
 */
-typedef struct Eurydice_arr_dd_s { Eurydice_arr_88 data[4U]; } Eurydice_arr_dd;
+typedef struct Eurydice_arr_a1_s { Eurydice_arr_5c data[4U]; } Eurydice_arr_a1;
 
-Eurydice_arr_dd nested_arrays_test(void);
+Eurydice_arr_a1 nested_arrays_test(void);
 
 #if defined(__cplusplus)
 }

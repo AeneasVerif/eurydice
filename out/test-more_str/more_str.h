@@ -20,16 +20,16 @@ A monomorphic instance of Eurydice.dst_ref_shared
 with types Eurydice_c_char_t, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_65_s
+typedef struct Eurydice_dst_ref_shared_0d_s
 {
   const Eurydice_c_char_t *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_65;
+Eurydice_dst_ref_shared_0d;
 
-extern size_t core_str__str__len(Eurydice_dst_ref_shared_65 x0);
+extern size_t core_str__str__len(Eurydice_dst_ref_shared_0d x0);
 
-void more_str_use_str(Eurydice_dst_ref_shared_65 s);
+void more_str_use_str(Eurydice_dst_ref_shared_0d s);
 
 void more_str_main(void);
 

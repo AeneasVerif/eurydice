@@ -14,28 +14,28 @@ with const generics
 - N= 32
 */
 static Eurydice_borrow_slice_u8
-array_to_subslice_shared_36(const Eurydice_arr_60 *a, core_ops_range_Range_08 r)
+array_to_subslice_shared_d4(const Eurydice_arr_ec *a, core_ops_range_Range_87 r)
 {
   return
     (KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = a->data + r.start, .meta = r.end - r.start });
 }
 
-uint8_t array_fun(Eurydice_dst_ref_shared_10 x)
+uint8_t array_fun(Eurydice_dst_ref_shared_60 x)
 {
   return
-    array_to_subslice_shared_36(&x.ptr[0U],
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)1U })).ptr[0U];
+    array_to_subslice_shared_d4(&x.ptr[0U],
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)1U })).ptr[0U];
 }
 
-Eurydice_arr_60 array_init(void)
+Eurydice_arr_ec array_init(void)
 {
-  return (KRML_CLITERAL(Eurydice_arr_60){ .data = { 0U } });
+  return (KRML_CLITERAL(Eurydice_arr_ec){ .data = { 0U } });
 }
 
 array_Foo array_mk_foo(void)
 {
-  Eurydice_arr_b2 x = { .data = { 0U } };
-  Eurydice_arr_b2 y;
+  Eurydice_arr_a0 x = { .data = { 0U } };
+  Eurydice_arr_a0 y;
   uint32_t repeat_expression[2U];
   for (uint32_t _i = 0U; _i < (size_t)2U; ++_i)
     repeat_expression[_i] = 1U;
@@ -48,7 +48,7 @@ array_Foo array_mk_foo2(void)
   return array_mk_foo();
 }
 
-void array_mut_array(Eurydice_arr_b2 x)
+void array_mut_array(Eurydice_arr_a0 x)
 {
   x.data[0U] = 1U;
 }
@@ -56,7 +56,7 @@ void array_mut_array(Eurydice_arr_b2 x)
 void array_mut_foo(array_Foo f)
 {
   f.x.data[0U] = 1U;
-  Eurydice_arr_b2 copy = f.y;
+  Eurydice_arr_a0 copy = f.y;
   copy.data[0U] = 0U;
   EURYDICE_ASSERT(copy.data[0U] != 1U, "panic!");
 }
@@ -69,7 +69,7 @@ A monomorphic instance of array.mk_incr.call_mut_e2
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr_call_mut_e2_95(void **_, size_t tupled_args)
+uint32_t array_mk_incr_call_mut_e2_55(void **_, size_t tupled_args)
 {
   size_t i = tupled_args;
   return (uint32_t)i;
@@ -83,11 +83,11 @@ A monomorphic instance of array.mk_incr.call_once_b7
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr_call_once_b7_95(size_t _)
+uint32_t array_mk_incr_call_once_b7_55(size_t _)
 {
   /* original Rust expression is not an lvalue in C */
   void *lvalue = (void *)0U;
-  return array_mk_incr_call_mut_e2_95(&lvalue, _);
+  return array_mk_incr_call_mut_e2_55(&lvalue, _);
 }
 
 /**
@@ -95,16 +95,16 @@ A monomorphic instance of array.mk_incr
 with const generics
 - K= 10
 */
-Eurydice_arr_79 array_mk_incr_95(void)
+Eurydice_arr_6c array_mk_incr_55(void)
 {
-  Eurydice_arr_79 arr_struct;
+  Eurydice_arr_6c arr_struct;
   KRML_MAYBE_FOR10(i,
     (size_t)0U,
     (size_t)10U,
     (size_t)1U,
     /* original Rust expression is not an lvalue in C */
     void *lvalue = (void *)0U;
-    arr_struct.data[i] = array_mk_incr_call_mut_e2_95(&lvalue, i););
+    arr_struct.data[i] = array_mk_incr_call_mut_e2_55(&lvalue, i););
   return arr_struct;
 }
 
@@ -116,7 +116,7 @@ A monomorphic instance of array.mk_incr2.call_mut_eb
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr2_call_mut_eb_95(const uint32_t **_, size_t tupled_args)
+uint32_t array_mk_incr2_call_mut_eb_55(const uint32_t **_, size_t tupled_args)
 {
   size_t i = tupled_args;
   return (uint32_t)i + _[0U][0U];
@@ -130,9 +130,9 @@ A monomorphic instance of array.mk_incr2.call_once_ad
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr2_call_once_ad_95(const uint32_t *_, size_t _0)
+uint32_t array_mk_incr2_call_once_ad_55(const uint32_t *_, size_t _0)
 {
-  return array_mk_incr2_call_mut_eb_95(&_, _0);
+  return array_mk_incr2_call_mut_eb_55(&_, _0);
 }
 
 /**
@@ -140,17 +140,17 @@ A monomorphic instance of array.mk_incr2
 with const generics
 - K= 10
 */
-Eurydice_arr_79 array_mk_incr2_95(void)
+Eurydice_arr_6c array_mk_incr2_55(void)
 {
   uint32_t j = 1U;
-  Eurydice_arr_79 arr_struct;
+  Eurydice_arr_6c arr_struct;
   KRML_MAYBE_FOR10(i,
     (size_t)0U,
     (size_t)10U,
     (size_t)1U,
     /* original Rust expression is not an lvalue in C */
     const uint32_t *lvalue = &j;
-    arr_struct.data[i] = array_mk_incr2_call_mut_eb_95(&lvalue, i););
+    arr_struct.data[i] = array_mk_incr2_call_mut_eb_55(&lvalue, i););
   return arr_struct;
 }
 
@@ -162,7 +162,7 @@ A monomorphic instance of array.plus_one.call_mut_8d
 with const generics
 - K= 1
 */
-uint16_t array_plus_one_call_mut_8d_74(void **_, uint32_t tupled_args)
+uint16_t array_plus_one_call_mut_8d_6c(void **_, uint32_t tupled_args)
 {
   uint32_t x = tupled_args;
   return (uint16_t)(x + 1U);
@@ -176,11 +176,11 @@ A monomorphic instance of array.plus_one.call_once_36
 with const generics
 - K= 1
 */
-uint16_t array_plus_one_call_once_36_74(uint32_t _)
+uint16_t array_plus_one_call_once_36_6c(uint32_t _)
 {
   /* original Rust expression is not an lvalue in C */
   void *lvalue = (void *)0U;
-  return array_plus_one_call_mut_8d_74(&lvalue, _);
+  return array_plus_one_call_mut_8d_6c(&lvalue, _);
 }
 
 /**
@@ -188,13 +188,13 @@ A monomorphic instance of array.plus_one
 with const generics
 - K= 1
 */
-Eurydice_arr_2e array_plus_one_74(Eurydice_arr_a5 x)
+Eurydice_arr_96 array_plus_one_6c(Eurydice_arr_d5 x)
 {
-  Eurydice_arr_2e arr_mapped_str;
+  Eurydice_arr_96 arr_mapped_str;
   {
     /* original Rust expression is not an lvalue in C */
     void *lvalue = (void *)0U;
-    arr_mapped_str.data[0U] = array_plus_one_call_mut_8d_74(&lvalue, x.data[0U]);
+    arr_mapped_str.data[0U] = array_plus_one_call_mut_8d_6c(&lvalue, x.data[0U]);
   }
   return arr_mapped_str;
 }
@@ -207,7 +207,7 @@ A monomorphic instance of array.nested_from_fn.closure.call_mut_74
 with const generics
 - K= 4
 */
-size_t array_nested_from_fn_closure_call_mut_74_ac(const size_t **_, size_t tupled_args)
+size_t array_nested_from_fn_closure_call_mut_74_23(const size_t **_, size_t tupled_args)
 {
   size_t i = tupled_args;
   return i + _[0U][0U];
@@ -221,9 +221,9 @@ A monomorphic instance of array.nested_from_fn.closure.call_once_4d
 with const generics
 - K= 4
 */
-size_t array_nested_from_fn_closure_call_once_4d_ac(const size_t *_, size_t _0)
+size_t array_nested_from_fn_closure_call_once_4d_23(const size_t *_, size_t _0)
 {
-  return array_nested_from_fn_closure_call_mut_74_ac(&_, _0);
+  return array_nested_from_fn_closure_call_mut_74_23(&_, _0);
 }
 
 /**
@@ -234,17 +234,17 @@ A monomorphic instance of array.nested_from_fn.call_mut_6c
 with const generics
 - K= 4
 */
-Eurydice_arr_33 array_nested_from_fn_call_mut_6c_ac(void **_, size_t tupled_args)
+Eurydice_arr_cc array_nested_from_fn_call_mut_6c_23(void **_, size_t tupled_args)
 {
   size_t j = tupled_args;
-  Eurydice_arr_33 arr_struct;
+  Eurydice_arr_cc arr_struct;
   KRML_MAYBE_FOR4(i,
     (size_t)0U,
     (size_t)4U,
     (size_t)1U,
     /* original Rust expression is not an lvalue in C */
     const size_t *lvalue = &j;
-    arr_struct.data[i] = array_nested_from_fn_closure_call_mut_74_ac(&lvalue, i););
+    arr_struct.data[i] = array_nested_from_fn_closure_call_mut_74_23(&lvalue, i););
   return arr_struct;
 }
 
@@ -256,11 +256,11 @@ A monomorphic instance of array.nested_from_fn.call_once_d9
 with const generics
 - K= 4
 */
-Eurydice_arr_33 array_nested_from_fn_call_once_d9_ac(size_t _)
+Eurydice_arr_cc array_nested_from_fn_call_once_d9_23(size_t _)
 {
   /* original Rust expression is not an lvalue in C */
   void *lvalue = (void *)0U;
-  return array_nested_from_fn_call_mut_6c_ac(&lvalue, _);
+  return array_nested_from_fn_call_mut_6c_23(&lvalue, _);
 }
 
 /**
@@ -268,16 +268,16 @@ A monomorphic instance of array.nested_from_fn
 with const generics
 - K= 4
 */
-Eurydice_arr_c6 array_nested_from_fn_ac(void)
+Eurydice_arr_89 array_nested_from_fn_23(void)
 {
-  Eurydice_arr_c6 arr_struct;
+  Eurydice_arr_89 arr_struct;
   KRML_MAYBE_FOR4(i,
     (size_t)0U,
     (size_t)4U,
     (size_t)1U,
     /* original Rust expression is not an lvalue in C */
     void *lvalue = (void *)0U;
-    arr_struct.data[i] = array_nested_from_fn_call_mut_6c_ac(&lvalue, i););
+    arr_struct.data[i] = array_nested_from_fn_call_mut_6c_23(&lvalue, i););
   return arr_struct;
 }
 
@@ -286,7 +286,7 @@ A monomorphic instance of array.const_eq
 with const generics
 - K= 2
 */
-bool array_const_eq_fd(Eurydice_arr_b2 x, Eurydice_arr_b2 y)
+bool array_const_eq_af(Eurydice_arr_a0 x, Eurydice_arr_a0 y)
 {
   return Eurydice_array_eq((size_t)2U, &x, &y, uint32_t);
 }
@@ -323,8 +323,8 @@ void array_main(void)
 {
   /* XXX1 */
   array_Foo uu____0 = array_mk_foo2();
-  Eurydice_arr_b2 x = uu____0.x;
-  Eurydice_arr_b2 y = uu____0.y;
+  Eurydice_arr_a0 x = uu____0.x;
+  Eurydice_arr_a0 y = uu____0.y;
   uint32_t unsigned0 = 0U;
   array_mut_array(x);
   /* XXX2 */
@@ -333,38 +333,38 @@ void array_main(void)
     XXX4 */
   const_uint32_t__x2 uu____1 = { .fst = x.data, .snd = &unsigned0 };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
-  Eurydice_arr_79 a = array_mk_incr_95();
+  Eurydice_arr_6c a = array_mk_incr_55();
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue0 = 9U;
   const_uint32_t__x2 uu____2 = { .fst = &a.data[9U], .snd = &lvalue0 };
   EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
-  Eurydice_arr_79 a0 = array_mk_incr2_95();
+  Eurydice_arr_6c a0 = array_mk_incr2_55();
   uint32_t expected = 10U;
   const_uint32_t__x2 uu____3 = { .fst = &a0.data[9U], .snd = &expected };
   EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
-  Eurydice_arr_2e a1 = array_plus_one_74((KRML_CLITERAL(Eurydice_arr_a5){ .data = { 0U } }));
+  Eurydice_arr_96 a1 = array_plus_one_6c((KRML_CLITERAL(Eurydice_arr_d5){ .data = { 0U } }));
   /* original Rust expression is not an lvalue in C */
   uint16_t lvalue1 = 1U;
   const_uint16_t__x2 uu____4 = { .fst = a1.data, .snd = &lvalue1 };
   EURYDICE_ASSERT(uu____4.fst[0U] == uu____4.snd[0U], "panic!");
   /* XXX5 */
-  Eurydice_arr_c6 a2 = array_nested_from_fn_ac();
+  Eurydice_arr_89 a2 = array_nested_from_fn_23();
   /* original Rust expression is not an lvalue in C */
   size_t lvalue2 = (size_t)6U;
   const_size_t__x2 uu____5 = { .fst = &a2.data[3U].data[3U], .snd = &lvalue2 };
   EURYDICE_ASSERT(uu____5.fst[0U] == uu____5.snd[0U], "panic!");
   /* XXX6 */
-  Eurydice_arr_b2 x0;
+  Eurydice_arr_a0 x0;
   uint32_t repeat_expression0[2U];
   for (uint32_t _i = 0U; _i < (size_t)2U; ++_i)
     repeat_expression0[_i] = 2U;
   memcpy(x0.data, repeat_expression0, (size_t)2U * sizeof (uint32_t));
-  Eurydice_arr_b2 y0;
+  Eurydice_arr_a0 y0;
   uint32_t repeat_expression[2U];
   for (uint32_t _i = 0U; _i < (size_t)2U; ++_i)
     repeat_expression[_i] = 2U;
   memcpy(y0.data, repeat_expression, (size_t)2U * sizeof (uint32_t));
-  bool b = array_const_eq_fd(x0, y0);
+  bool b = array_const_eq_af(x0, y0);
   /* original Rust expression is not an lvalue in C */
   bool lvalue = true;
   const_bool__x2 uu____6 = { .fst = &b, .snd = &lvalue };

@@ -7,7 +7,7 @@
 
 #include "issue_96.h"
 
-void issue_96_use_it(const Eurydice_arr_3f *x)
+void issue_96_use_it(const Eurydice_arr_48 *x)
 {
 
 }
@@ -19,7 +19,7 @@ void issue_96_use_it2(const issue_96_MyStruct2 *x)
 
 void issue_96_main(void)
 {
-  Eurydice_arr_3f x = { .data = { 0U } };
+  Eurydice_arr_48 x = { .data = { 0U } };
   issue_96_MyStruct2 x0 = { .fst = { .data = { 0U } }, .snd = 2U };
 }
 

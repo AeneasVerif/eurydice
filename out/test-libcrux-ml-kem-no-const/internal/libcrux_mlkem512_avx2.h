@@ -19,7 +19,7 @@ extern "C" {
 #include "libcrux_core.h"
 #include "../libcrux_mlkem512_avx2.h"
 
-typedef libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94
+typedef libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_c7
 libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512PublicKeyUnpacked;
 
 /**
@@ -29,10 +29,10 @@ libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512PublicKeyUnpacked;
  The input is a reference to an unpacked key pair of type [`MlKem512KeyPairUnpacked`]
  and an [`MlKem512Ciphertext`].
 */
-Eurydice_arr_60
+Eurydice_arr_ec
 libcrux_ml_kem_mlkem512_avx2_unpacked_decapsulate(
   libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked *private_key,
-  Eurydice_arr_56 *ciphertext
+  Eurydice_arr_d2 *ciphertext
 );
 
 /**
@@ -42,10 +42,10 @@ libcrux_ml_kem_mlkem512_avx2_unpacked_decapsulate(
  The input is a reference to an unpacked public key of type [`MlKem512PublicKeyUnpacked`],
  the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
 */
-tuple_50
+tuple_ab
 libcrux_ml_kem_mlkem512_avx2_unpacked_encapsulate(
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94 *public_key,
-  Eurydice_arr_60 randomness
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_c7 *public_key,
+  Eurydice_arr_ec randomness
 );
 
 /**
@@ -53,7 +53,7 @@ libcrux_ml_kem_mlkem512_avx2_unpacked_encapsulate(
 */
 void
 libcrux_ml_kem_mlkem512_avx2_unpacked_generate_key_pair_mut(
-  Eurydice_arr_06 randomness,
+  Eurydice_arr_c7 randomness,
   libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked *key_pair
 );
 
@@ -61,7 +61,7 @@ libcrux_ml_kem_mlkem512_avx2_unpacked_generate_key_pair_mut(
  Generate ML-KEM 512 Key Pair in "unpacked" form.
 */
 libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked
-libcrux_ml_kem_mlkem512_avx2_unpacked_generate_key_pair(Eurydice_arr_06 randomness);
+libcrux_ml_kem_mlkem512_avx2_unpacked_generate_key_pair(Eurydice_arr_c7 randomness);
 
 /**
  Create a new, empty unpacked key.
@@ -72,7 +72,7 @@ libcrux_ml_kem_mlkem512_avx2_unpacked_init_key_pair(void);
 /**
  Create a new, empty unpacked public key.
 */
-libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94
+libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_c7
 libcrux_ml_kem_mlkem512_avx2_unpacked_init_public_key(void);
 
 /**
@@ -80,14 +80,14 @@ libcrux_ml_kem_mlkem512_avx2_unpacked_init_public_key(void);
 */
 void
 libcrux_ml_kem_mlkem512_avx2_unpacked_key_pair_from_private_mut(
-  Eurydice_arr_7f *private_key,
+  Eurydice_arr_ab0 *private_key,
   libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked *key_pair
 );
 
 /**
  Get the serialized private key.
 */
-Eurydice_arr_7f
+Eurydice_arr_ab0
 libcrux_ml_kem_mlkem512_avx2_unpacked_key_pair_serialized_private_key(
   libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked *key_pair
 );
@@ -98,13 +98,13 @@ libcrux_ml_kem_mlkem512_avx2_unpacked_key_pair_serialized_private_key(
 void
 libcrux_ml_kem_mlkem512_avx2_unpacked_key_pair_serialized_private_key_mut(
   libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked *key_pair,
-  Eurydice_arr_7f *serialized
+  Eurydice_arr_ab0 *serialized
 );
 
 /**
  Get the serialized public key.
 */
-Eurydice_arr_30
+Eurydice_arr_03
 libcrux_ml_kem_mlkem512_avx2_unpacked_key_pair_serialized_public_key(
   libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked *key_pair
 );
@@ -115,7 +115,7 @@ libcrux_ml_kem_mlkem512_avx2_unpacked_key_pair_serialized_public_key(
 void
 libcrux_ml_kem_mlkem512_avx2_unpacked_key_pair_serialized_public_key_mut(
   libcrux_ml_kem_mlkem512_avx2_unpacked_MlKem512KeyPairUnpacked *key_pair,
-  Eurydice_arr_30 *serialized
+  Eurydice_arr_03 *serialized
 );
 
 /**
@@ -123,8 +123,8 @@ libcrux_ml_kem_mlkem512_avx2_unpacked_key_pair_serialized_public_key_mut(
 */
 void
 libcrux_ml_kem_mlkem512_avx2_unpacked_serialized_public_key(
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94 *public_key,
-  Eurydice_arr_30 *serialized
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_c7 *public_key,
+  Eurydice_arr_03 *serialized
 );
 
 /**
@@ -132,8 +132,8 @@ libcrux_ml_kem_mlkem512_avx2_unpacked_serialized_public_key(
 */
 void
 libcrux_ml_kem_mlkem512_avx2_unpacked_unpacked_public_key(
-  Eurydice_arr_30 *public_key,
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94 *unpacked_public_key
+  Eurydice_arr_03 *public_key,
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_c7 *unpacked_public_key
 );
 
 #if defined(__cplusplus)

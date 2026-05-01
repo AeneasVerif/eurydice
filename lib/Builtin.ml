@@ -545,7 +545,7 @@ let array_to_subslice_func const =
     let data = data_of_arrref ~const:true arrref element_t 0 in
     let r_start = mk_sizeT (EField (range, "start")) in
     let r_end = mk_sizeT (EField (range, "end")) in
-    let meta = mk_sizeT (EApp (Helpers.mk_op Sub SizeT, [ r_end; r_start ])) in
+    let meta = mk_sizeT (EApp (Helpers.mk_op Sub (TInt SizeT), [ r_end; r_start ])) in
     let ptr = with_type (TBuf (element_t, const)) (EBufSub (data, r_start)) in
     with_type ret_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
   in
@@ -607,7 +607,7 @@ let array_to_subslice_from_func const =
     let range = with_type (mk_range_from (TInt SizeT)) (EBound 0) in
     let data = data_of_arrref ~const:true arrref element_t 0 in
     let start = mk_sizeT (EField (range, "start")) in
-    let meta = mk_sizeT (EApp (Helpers.mk_op Sub SizeT, [ n; start ])) in
+    let meta = mk_sizeT (EApp (Helpers.mk_op Sub (TInt SizeT), [ n; start ])) in
     let ptr = with_type (TBuf (element_t, const)) (EBufSub (data, start)) in
     with_type ret_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
   in
@@ -634,7 +634,7 @@ let slice_subslice_func const =
     let ptr = with_type (TBuf (element_t, const)) (EField (slice, "ptr")) in
     let r_start = mk_sizeT (EField (range, "start")) in
     let r_end = mk_sizeT (EField (range, "end")) in
-    let meta = mk_sizeT (EApp (Helpers.mk_op Sub SizeT, [ r_end; r_start ])) in
+    let meta = mk_sizeT (EApp (Helpers.mk_op Sub (TInt SizeT), [ r_end; r_start ])) in
     let ptr = with_type (TBuf (element_t, const)) (EBufSub (ptr, r_start)) in
     with_type slice_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
   in
@@ -686,7 +686,7 @@ let slice_subslice_from_func const =
     let meta = mk_sizeT (EField (slice, "meta")) in
     let start = mk_sizeT (EField (range, "start")) in
     let ptr = with_type (TBuf (element_t, const)) (EBufSub (ptr, start)) in
-    let meta = mk_sizeT (EApp (Helpers.mk_op Sub SizeT, [ meta; start ])) in
+    let meta = mk_sizeT (EApp (Helpers.mk_op Sub (TInt SizeT), [ meta; start ])) in
     with_type slice_t (EFlat [ Some "ptr", ptr; Some "meta", meta ])
   in
   DFunction (None, [ Private ], 0, 3, slice_t, lid, binders, expr)
