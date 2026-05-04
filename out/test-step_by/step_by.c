@@ -17,10 +17,10 @@ const_int32_t__x2;
 void step_by_bar(void)
 {
   int32_t i0 = 0;
-  for (int32_t i = 0; i < 24; i = i + (int32_t)(size_t)6U)
+  for (int32_t i = 0; i < 24; i += (int32_t)(size_t)6U)
   {
     int32_t j = i;
-    i0 = i0 + j;
+    i0 += j;
   }
   /* original Rust expression is not an lvalue in C */
   int32_t lvalue = 36;
@@ -32,26 +32,26 @@ void step_by_main1(void)
 {
   step_by_bar();
   int32_t i0 = 0;
-  for (int32_t i = 0; i < 24; i = i + (int32_t)(size_t)6U)
+  for (int32_t i = 0; i < 24; i += (int32_t)(size_t)6U)
   {
     int32_t j = i;
-    i0 = i0 + j;
+    i0 += j;
   }
-  for (int32_t i = 0; i < 24; i = i + (int32_t)(size_t)6U)
+  for (int32_t i = 0; i < 24; i += (int32_t)(size_t)6U)
   {
     int32_t j = i;
-    i0 = i0 + j;
+    i0 += j;
   }
 }
 
 void step_by_main2(void)
 {
   step_by_main1();
-  for (int32_t i = 0; i < 24; i = i + (int32_t)(size_t)6U)
+  for (int32_t i = 0; i < 24; i += (int32_t)(size_t)6U)
   {
 
   }
-  for (int32_t i = 0; i < 24; i = i + (int32_t)(size_t)6U)
+  for (int32_t i = 0; i < 24; i += (int32_t)(size_t)6U)
   {
 
   }
