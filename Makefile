@@ -45,7 +45,7 @@ all: format-check
 build: check-karamel check-charon
 	dune build && ln -sf _build/default/bin/main.exe eurydice
 
-CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
+CFLAGS		:= -Wall -Werror -Wno-unused-variable -Wno-unused-but-set-variable $(CFLAGS) -I$(KRML_HOME)/include
 CXXFLAGS	:= -std=c++17
 
 test: $(addprefix test-,$(TEST_DIRS)) custom-test-libcrux-ml-kem-no-const custom-test-array custom-test-for testxx-result check-charon check-libcrux test-libcrux-ml-kem

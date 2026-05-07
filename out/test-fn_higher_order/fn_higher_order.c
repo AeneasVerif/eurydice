@@ -20,7 +20,7 @@ int32_t fn_higher_order_more_sum_lst(const Eurydice_arr_bf *l)
     (size_t)3U,
     (size_t)1U,
     size_t i0 = i;
-    sum = sum + l->data[i0];);
+    sum += l->data[i0];);
   return sum;
 }
 
@@ -54,7 +54,7 @@ size_t fn_higher_order_sum_lst_a5(const Eurydice_arr_2b *lst)
     (size_t)5U,
     (size_t)1U,
     size_t i0 = i;
-    sum = sum + lst->data[i0];);
+    sum += lst->data[i0];);
   return sum + (size_t)5U;
 }
 
