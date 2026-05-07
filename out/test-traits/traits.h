@@ -20,12 +20,12 @@ A monomorphic instance of core.ops.range.Range
 with types size_t
 
 */
-typedef struct core_ops_range_Range_08_s
+typedef struct core_ops_range_Range_87_s
 {
   size_t start;
   size_t end;
 }
-core_ops_range_Range_08;
+core_ops_range_Range_87;
 
 #define traits_Foo_Foo1 0
 #define traits_Foo_Foo2 1
@@ -42,17 +42,17 @@ A monomorphic instance of Eurydice.dst_ref_shared
 with types traits_Foo, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_e2_s
+typedef struct Eurydice_dst_ref_shared_42_s
 {
   const traits_Foo *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_e2;
+Eurydice_dst_ref_shared_42;
 
 /**
 This function found in impl {traits::ToInt for &0 ([traits::Foo])}
 */
-uint32_t traits_to_int_0f(const Eurydice_dst_ref_shared_e2 *self);
+uint32_t traits_to_int_0f(const Eurydice_dst_ref_shared_42 *self);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -60,7 +60,7 @@ with types traits_Foo
 with const generics
 - $2size_t
 */
-typedef struct Eurydice_arr_e2_s { traits_Foo data[2U]; } Eurydice_arr_e2;
+typedef struct Eurydice_arr_0e_s { traits_Foo data[2U]; } Eurydice_arr_0e;
 
 void traits_main(void);
 

@@ -72,26 +72,26 @@ A monomorphic instance of core.option.Option
 with types size_t
 
 */
-typedef struct core_option_Option_08_s
+typedef struct core_option_Option_87_s
 {
   core_option_Option_77_tags tag;
   size_t f0;
 }
-core_option_Option_08;
+core_option_Option_87;
 
 /**
 A monomorphic instance of n-tuple
-with types size_t, core_option_Option_08
+with types size_t, core_option_Option_87
 
 */
-typedef struct tuple_d1_s
+typedef struct tuple_21_s
 {
   size_t fst;
-  core_option_Option_08 snd;
+  core_option_Option_87 snd;
 }
-tuple_d1;
+tuple_21;
 
-extern tuple_d1
+extern tuple_21
 core_iter_range__core__iter__range__Step_for_i32__steps_between(
   const int32_t *x0,
   const int32_t *x1

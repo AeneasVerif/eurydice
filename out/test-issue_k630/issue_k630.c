@@ -16,17 +16,17 @@ const_uint32_t__x2;
 
 void issue_k630_main(void)
 {
-  Eurydice_arr_35 v;
-  Eurydice_arr_a5 repeat_expression0[5U];
+  Eurydice_arr_21 v;
+  Eurydice_arr_d5 repeat_expression0[5U];
   KRML_MAYBE_FOR5(i,
     (size_t)0U,
     (size_t)5U,
     (size_t)1U,
-    Eurydice_arr_a5 lit;
+    Eurydice_arr_d5 lit;
     uint32_t repeat_expression = 2U;
     memcpy(lit.data, &repeat_expression, (size_t)1U * sizeof (uint32_t));
     repeat_expression0[i] = lit;);
-  memcpy(v.data, repeat_expression0, (size_t)5U * sizeof (Eurydice_arr_a5));
+  memcpy(v.data, repeat_expression0, (size_t)5U * sizeof (Eurydice_arr_d5));
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 2U;
   const_uint32_t__x2 uu____0 = { .fst = v.data->data, .snd = &lvalue };

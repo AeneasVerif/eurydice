@@ -62,32 +62,32 @@ A monomorphic instance of core.option.Option
 with types size_t
 
 */
-typedef struct core_option_Option_08_s
+typedef struct core_option_Option_87_s
 {
   core_option_Option_77_tags tag;
   size_t f0;
 }
-core_option_Option_08;
+core_option_Option_87;
 
-extern core_option_Option_08
+extern core_option_Option_87
 core_iter_range__core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
 
-extern core_option_Option_08
+extern core_option_Option_87
 core_iter_range__core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
 
 /**
 A monomorphic instance of n-tuple
-with types size_t, core_option_Option_08
+with types size_t, core_option_Option_87
 
 */
-typedef struct tuple_d1_s
+typedef struct tuple_21_s
 {
   size_t fst;
-  core_option_Option_08 snd;
+  core_option_Option_87 snd;
 }
-tuple_d1;
+tuple_21;
 
-extern tuple_d1
+extern tuple_21
 core_iter_range__core__iter__range__Step_for_usize__steps_between(
   const size_t *x0,
   const size_t *x1
@@ -100,12 +100,12 @@ A monomorphic instance of core.ops.range.Range
 with types size_t
 
 */
-typedef struct core_ops_range_Range_08_s
+typedef struct core_ops_range_Range_87_s
 {
   size_t start;
   size_t end;
 }
-core_ops_range_Range_08;
+core_ops_range_Range_87;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -113,11 +113,11 @@ with types uint16_t
 with const generics
 - $256size_t
 */
-typedef struct Eurydice_arr_bc_s { uint16_t data[256U]; } Eurydice_arr_bc;
+typedef struct Eurydice_arr_82_s { uint16_t data[256U]; } Eurydice_arr_82;
 
 void
 symcrust_SymCrustMlKemPolyElementCompressAndEncode(
-  const Eurydice_arr_bc *coeffs,
+  const Eurydice_arr_82 *coeffs,
   uint32_t nBitsPerCoefficient,
   Eurydice_mut_borrow_slice_u8 dst
 );

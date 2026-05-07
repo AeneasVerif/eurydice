@@ -34,7 +34,7 @@ uint32_t traits_to_int_ac(const traits_Foo *self)
 /**
 This function found in impl {traits::ToInt for &0 ([traits::Foo])}
 */
-uint32_t traits_to_int_0f(const Eurydice_dst_ref_shared_e2 *self)
+uint32_t traits_to_int_0f(const Eurydice_dst_ref_shared_42 *self)
 {
   uint32_t uu____0 = traits_to_int_ac(&self->ptr[0U]);
   return uu____0 * traits_to_int_ac(&self->ptr[1U]);
@@ -46,23 +46,23 @@ with types traits_Foo, core_ops_range_Range size_t, Eurydice_derefed_slice trait
 with const generics
 - N= 2
 */
-static Eurydice_dst_ref_shared_e2
-array_to_subslice_shared_91(const Eurydice_arr_e2 *a, core_ops_range_Range_08 r)
+static Eurydice_dst_ref_shared_42
+array_to_subslice_shared_7d(const Eurydice_arr_0e *a, core_ops_range_Range_87 r)
 {
   return
     (
-      KRML_CLITERAL(Eurydice_dst_ref_shared_e2){ .ptr = a->data + r.start, .meta = r.end - r.start }
+      KRML_CLITERAL(Eurydice_dst_ref_shared_42){ .ptr = a->data + r.start, .meta = r.end - r.start }
     );
 }
 
 void traits_main(void)
 {
-  Eurydice_arr_e2 foos = { .data = { traits_Foo_Foo1, traits_Foo_Foo2 } };
+  Eurydice_arr_0e foos = { .data = { traits_Foo_Foo1, traits_Foo_Foo2 } };
   /* original Rust expression is not an lvalue in C */
-  Eurydice_dst_ref_shared_e2
+  Eurydice_dst_ref_shared_42
   lvalue =
-    array_to_subslice_shared_91(&foos,
-      (KRML_CLITERAL(core_ops_range_Range_08){ .start = (size_t)0U, .end = (size_t)2U }));
+    array_to_subslice_shared_7d(&foos,
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)2U }));
   if (!(traits_to_int_0f(&lvalue) != 2U))
   {
     return;

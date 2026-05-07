@@ -21,14 +21,14 @@ with types int32_t
 with const generics
 - $3size_t
 */
-typedef struct Eurydice_arr_8d_s { int32_t data[3U]; } Eurydice_arr_8d;
+typedef struct Eurydice_arr_bf_s { int32_t data[3U]; } Eurydice_arr_bf;
 
 /**
 A monomorphic instance of issue_212.id_mut
 with types Eurydice_arr int32_t[[$3size_t]]
 
 */
-const Eurydice_arr_8d *issue_212_id_mut_16(const Eurydice_arr_8d *x);
+const Eurydice_arr_bf *issue_212_id_mut_25(const Eurydice_arr_bf *x);
 
 void issue_212_main(void);
 

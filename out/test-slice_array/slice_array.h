@@ -39,12 +39,12 @@ A monomorphic instance of Eurydice.dst_ref_mut
 with types Eurydice_array_u8x4, size_t
 
 */
-typedef struct Eurydice_dst_ref_mut_75_s
+typedef struct Eurydice_dst_ref_mut_b5_s
 {
   Eurydice_array_u8x4 *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_mut_75;
+Eurydice_dst_ref_mut_b5;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -52,14 +52,14 @@ with types Eurydice_array_u8x4
 with const generics
 - $4size_t
 */
-typedef struct Eurydice_arr_44_s { Eurydice_array_u8x4 data[4U]; } Eurydice_arr_44;
+typedef struct Eurydice_arr_ba_s { Eurydice_array_u8x4 data[4U]; } Eurydice_arr_ba;
 
-typedef struct Eurydice_dst_ref_mut_75_x2_s
+typedef struct Eurydice_dst_ref_mut_b5_x2_s
 {
-  Eurydice_dst_ref_mut_75 fst;
-  Eurydice_dst_ref_mut_75 snd;
+  Eurydice_dst_ref_mut_b5 fst;
+  Eurydice_dst_ref_mut_b5 snd;
 }
-Eurydice_dst_ref_mut_75_x2;
+Eurydice_dst_ref_mut_b5_x2;
 
 void slice_array_f1(void);
 
@@ -68,12 +68,12 @@ A monomorphic instance of Eurydice.dst_ref_shared
 with types Eurydice_array_u8x4, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_75_s
+typedef struct Eurydice_dst_ref_shared_b5_s
 {
   const Eurydice_array_u8x4 *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_75;
+Eurydice_dst_ref_shared_b5;
 
 void slice_array_f2(void);
 
@@ -116,14 +116,14 @@ A monomorphic instance of slice_array.f4
 with const generics
 - K= 4
 */
-void slice_array_f4_ac(void);
+void slice_array_f4_23(void);
 
 /**
 A monomorphic instance of slice_array.f5
 with const generics
 - K= 4
 */
-void slice_array_f5_ac(void);
+void slice_array_f5_23(void);
 
 void slice_array_main(void);
 

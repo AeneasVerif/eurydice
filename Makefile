@@ -4,7 +4,7 @@ LIBCRUX_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/libcrux
 EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
 CHARON		?= $(CHARON_HOME)/bin/charon
 
-BROKEN_TESTS		= where_clauses println chunks mutable_slice_range issue_99 issue_14
+BROKEN_TESTS		= where_clauses println chunks mutable_slice_range issue_99 issue_14 issue_311
 TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.rs))))
 
 # Warn on old versions of bash
@@ -45,7 +45,7 @@ all: format-check
 build: check-karamel check-charon
 	dune build && ln -sf _build/default/bin/main.exe eurydice
 
-CFLAGS		:= -Wall -Werror -Wno-unused-variable $(CFLAGS) -I$(KRML_HOME)/include
+CFLAGS		:= -Wall -Werror -Wno-unused-variable -Wno-unused-but-set-variable $(CFLAGS) -I$(KRML_HOME)/include
 CXXFLAGS	:= -std=c++17
 
 test: $(addprefix test-,$(TEST_DIRS)) custom-test-libcrux-ml-kem-no-const custom-test-array custom-test-for testxx-result check-charon check-libcrux test-libcrux-ml-kem

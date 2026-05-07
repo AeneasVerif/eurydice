@@ -39,7 +39,7 @@ rebuild() {
             if ! $has_nix; then
               opam install --deps-only .
             fi
-            make lib/Version.ml
+            make lib/Version.ml lib/AutoConfig.ml
         ;;
         charon)
             if $has_nix; then

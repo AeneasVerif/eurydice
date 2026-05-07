@@ -31,7 +31,7 @@ const_size_t__x2;
 void floating_points_main(void)
 {
   float32_t f = (float32_t)1;
-  Eurydice_arr_d5 arr;
+  Eurydice_arr_fe arr;
   float32_t repeat_expression0[100U];
   for (size_t i = (size_t)0U; i < (size_t)100U; i++)
   {
@@ -39,7 +39,7 @@ void floating_points_main(void)
   }
   memcpy(arr.data, repeat_expression0, (size_t)100U * sizeof (float32_t));
   float64_t d = (float64_t)1;
-  Eurydice_arr_22 arr2;
+  Eurydice_arr_9f arr2;
   float64_t repeat_expression[100U];
   for (size_t i = (size_t)0U; i < (size_t)100U; i++)
   {

@@ -7,10 +7,10 @@
 
 #include "array2d.h"
 
-bool array2d_f(Eurydice_arr_1e x)
+bool array2d_f(Eurydice_arr_ac x)
 {
-  x.data[0U] = (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 1U, 2U } });
-  Eurydice_arr_1e
+  x.data[0U] = (KRML_CLITERAL(Eurydice_arr_a0){ .data = { 1U, 2U } });
+  Eurydice_arr_ac
   y =
     {
       .data = {
@@ -20,7 +20,7 @@ bool array2d_f(Eurydice_arr_1e x)
         { .data = { 3U, 4U } }
       }
     };
-  return Eurydice_array_eq((size_t)4U, &x, &y, Eurydice_arr_b2);
+  return Eurydice_array_eq((size_t)4U, &x, &y, Eurydice_arr_a0);
 }
 
 typedef struct const_bool__x2_s
@@ -32,16 +32,16 @@ const_bool__x2;
 
 void array2d_main(void)
 {
-  Eurydice_arr_1e y;
-  Eurydice_arr_b2 repeat_expression[4U];
+  Eurydice_arr_ac y;
+  Eurydice_arr_a0 repeat_expression[4U];
   KRML_MAYBE_FOR4(i,
     (size_t)0U,
     (size_t)4U,
     (size_t)1U,
-    repeat_expression[i] = (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 1U, 2U } }););
-  memcpy(y.data, repeat_expression, (size_t)4U * sizeof (Eurydice_arr_b2));
-  y.data[1U] = (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 3U, 4U } });
-  y.data[3U] = (KRML_CLITERAL(Eurydice_arr_b2){ .data = { 3U, 4U } });
+    repeat_expression[i] = (KRML_CLITERAL(Eurydice_arr_a0){ .data = { 1U, 2U } }););
+  memcpy(y.data, repeat_expression, (size_t)4U * sizeof (Eurydice_arr_a0));
+  y.data[1U] = (KRML_CLITERAL(Eurydice_arr_a0){ .data = { 3U, 4U } });
+  y.data[3U] = (KRML_CLITERAL(Eurydice_arr_a0){ .data = { 3U, 4U } });
   bool actual = array2d_f(y);
   bool expected = true;
   const_bool__x2 uu____0 = { .fst = &actual, .snd = &expected };

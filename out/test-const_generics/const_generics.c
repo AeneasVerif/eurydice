@@ -14,7 +14,7 @@ with const generics
 - N= 8
 */
 static Eurydice_mut_borrow_slice_u8
-array_to_subslice_to_mut_6e(Eurydice_array_u8x8 *a, size_t r)
+array_to_subslice_to_mut_21(Eurydice_array_u8x8 *a, size_t r)
 {
   Eurydice_mut_borrow_slice_u8 lit;
   lit.ptr = a->data;
@@ -28,7 +28,7 @@ with types uint8_t
 with const generics
 - N= 4
 */
-static Eurydice_borrow_slice_u8 array_to_slice_shared_60(const Eurydice_array_u8x4 *a)
+static Eurydice_borrow_slice_u8 array_to_slice_shared_98(const Eurydice_array_u8x4 *a)
 {
   Eurydice_borrow_slice_u8 lit;
   lit.ptr = a->data;
@@ -43,7 +43,7 @@ with const generics
 - N= 8
 */
 static Eurydice_mut_borrow_slice_u8
-array_to_subslice_from_mut_8c(Eurydice_array_u8x8 *a, size_t r)
+array_to_subslice_from_mut_5f(Eurydice_array_u8x8 *a, size_t r)
 {
   return
     (KRML_CLITERAL(Eurydice_mut_borrow_slice_u8){ .ptr = a->data + r, .meta = (size_t)8U - r });
@@ -54,17 +54,17 @@ A monomorphic instance of const_generics.serialize
 with const generics
 - OUT_LEN= 8
 */
-Eurydice_array_u8x8 const_generics_serialize_3b(Eurydice_dst_ref_shared_3c re)
+Eurydice_array_u8x8 const_generics_serialize_70(Eurydice_dst_ref_shared_0c re)
 {
   Eurydice_array_u8x8 out = { .data = { 0U } };
-  Eurydice_mut_borrow_slice_u8 uu____0 = array_to_subslice_to_mut_6e(&out, (size_t)4U);
+  Eurydice_mut_borrow_slice_u8 uu____0 = array_to_subslice_to_mut_21(&out, (size_t)4U);
   /* original Rust expression is not an lvalue in C */
   Eurydice_array_u8x4 lvalue0 = core_num__u32__to_be_bytes(re.ptr[0U]);
-  Eurydice_slice_copy(uu____0, array_to_slice_shared_60(&lvalue0), uint8_t);
-  Eurydice_mut_borrow_slice_u8 uu____1 = array_to_subslice_from_mut_8c(&out, (size_t)4U);
+  Eurydice_slice_copy(uu____0, array_to_slice_shared_98(&lvalue0), uint8_t);
+  Eurydice_mut_borrow_slice_u8 uu____1 = array_to_subslice_from_mut_5f(&out, (size_t)4U);
   /* original Rust expression is not an lvalue in C */
   Eurydice_array_u8x4 lvalue = core_num__u32__to_be_bytes(re.ptr[1U]);
-  Eurydice_slice_copy(uu____1, array_to_slice_shared_60(&lvalue), uint8_t);
+  Eurydice_slice_copy(uu____1, array_to_slice_shared_98(&lvalue), uint8_t);
   return out;
 }
 
@@ -74,9 +74,9 @@ with types uint32_t
 with const generics
 - N= 2
 */
-static Eurydice_dst_ref_shared_3c array_to_slice_shared_a1(const Eurydice_arr_b2 *a)
+static Eurydice_dst_ref_shared_0c array_to_slice_shared_49(const Eurydice_arr_a0 *a)
 {
-  Eurydice_dst_ref_shared_3c lit;
+  Eurydice_dst_ref_shared_0c lit;
   lit.ptr = a->data;
   lit.meta = (size_t)2U;
   return lit;
@@ -85,8 +85,8 @@ static Eurydice_dst_ref_shared_3c array_to_slice_shared_a1(const Eurydice_arr_b2
 void const_generics_main(void)
 {
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_b2 lvalue = { .data = { 1U, 2U } };
-  Eurydice_array_u8x8 s = const_generics_serialize_3b(array_to_slice_shared_a1(&lvalue));
+  Eurydice_arr_a0 lvalue = { .data = { 1U, 2U } };
+  Eurydice_array_u8x8 s = const_generics_serialize_70(array_to_slice_shared_49(&lvalue));
   EURYDICE_ASSERT(s.data[3U] == 1U, "panic!");
   EURYDICE_ASSERT(s.data[7U] == 2U, "panic!");
 }
@@ -98,19 +98,19 @@ with const generics
 - N= 2
 - M= 4
 */
-const_generics_Pair_4e const_generics_mk_pairs_e0(uint32_t x, uint64_t y)
+const_generics_Pair_30 const_generics_mk_pairs_67(uint32_t x, uint64_t y)
 {
-  Eurydice_arr_b2 a1;
+  Eurydice_arr_a0 a1;
   uint32_t repeat_expression0[2U];
   KRML_MAYBE_FOR2(i, (size_t)0U, (size_t)2U, (size_t)1U, repeat_expression0[i] = x;);
   memcpy(a1.data, repeat_expression0, (size_t)2U * sizeof (uint32_t));
-  Eurydice_arr_61 a2;
+  Eurydice_arr_e4 a2;
   uint64_t repeat_expression[4U];
   KRML_MAYBE_FOR4(i, (size_t)0U, (size_t)4U, (size_t)1U, repeat_expression[i] = y;);
   memcpy(a2.data, repeat_expression, (size_t)4U * sizeof (uint64_t));
-  const_generics_Pair_a5 p1 = { .left = a1, .right = a2 };
-  const_generics_Pair_87 p2 = { .left = a2, .right = a1 };
-  return (KRML_CLITERAL(const_generics_Pair_4e){ .left = p1.left, .right = p2.right });
+  const_generics_Pair_67 p1 = { .left = a1, .right = a2 };
+  const_generics_Pair_54 p2 = { .left = a2, .right = a1 };
+  return (KRML_CLITERAL(const_generics_Pair_30){ .left = p1.left, .right = p2.right });
 }
 
 typedef struct const_uint32_t__x2_s
@@ -122,9 +122,9 @@ const_uint32_t__x2;
 
 void const_generics_main1(void)
 {
-  const_generics_Pair_4e uu____0 = const_generics_mk_pairs_e0(0U, 0ULL);
-  Eurydice_arr_b2 left = uu____0.left;
-  Eurydice_arr_b2 right = uu____0.right;
+  const_generics_Pair_30 uu____0 = const_generics_mk_pairs_67(0U, 0ULL);
+  Eurydice_arr_a0 left = uu____0.left;
+  Eurydice_arr_a0 right = uu____0.right;
   uint32_t expected = 0U;
   const_uint32_t__x2 uu____1 = { .fst = left.data, .snd = &expected };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
@@ -142,15 +142,15 @@ with const generics
 - FOO= 1
 - BAR= 2
 */
-bool const_generics_f_e5(uint32_t x, size_t y)
+bool const_generics_f_06(uint32_t x, size_t y)
 {
-  Eurydice_arr_a5 arr1;
+  Eurydice_arr_d5 arr1;
   uint32_t repeat_expression0[1U];
   {
     repeat_expression0[0U] = x;
   }
   memcpy(arr1.data, repeat_expression0, (size_t)1U * sizeof (uint32_t));
-  Eurydice_arr_e4 arr2;
+  Eurydice_arr_58 arr2;
   size_t repeat_expression[1U];
   {
     repeat_expression[0U] = y;
@@ -174,13 +174,13 @@ with const generics
 - FOO= 3
 - BAR= 4
 */
-bool const_generics_f_70(uint32_t x, size_t y)
+bool const_generics_f_16(uint32_t x, size_t y)
 {
-  Eurydice_arr_6f arr1;
+  Eurydice_arr_a5 arr1;
   uint32_t repeat_expression0[3U];
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, repeat_expression0[i] = x;);
   memcpy(arr1.data, repeat_expression0, (size_t)3U * sizeof (uint32_t));
-  Eurydice_arr_c8 arr2;
+  Eurydice_arr_eb arr2;
   size_t repeat_expression[3U];
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, repeat_expression[i] = y;);
   memcpy(arr2.data, repeat_expression, (size_t)3U * sizeof (size_t));
@@ -202,10 +202,10 @@ with const generics
 - BAR= 3
 - FOO= 4
 */
-bool const_generics_g_70(uint32_t x, size_t y)
+bool const_generics_g_16(uint32_t x, size_t y)
 {
   bool uu____0;
-  if (const_generics_f_70(x, y))
+  if (const_generics_f_16(x, y))
   {
     if (x == 4U)
     {
@@ -233,9 +233,9 @@ const_bool__x2;
 void const_generics_main3(void)
 {
   bool x;
-  if (const_generics_f_e5(0U, (size_t)0U))
+  if (const_generics_f_06(0U, (size_t)0U))
   {
-    x = const_generics_g_70(0U, (size_t)0U);
+    x = const_generics_g_16(0U, (size_t)0U);
   }
   else
   {

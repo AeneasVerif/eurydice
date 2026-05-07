@@ -57,9 +57,9 @@ files:
         - [libcrux_sha3, simd, avx2, "*"]
         - [libcrux_sha3, generic_keccak, simd256, "*"]
       monomorphizations_exact:
-        - [libcrux_sha3, generic_keccak, KeccakState_55]
-        - [Eurydice, arr_05]
-        - [Eurydice, arr_c0]
+        - [libcrux_sha3, generic_keccak, KeccakState_7d]
+        - [Eurydice, arr_c40]
+        - [Eurydice, arr_50]
     include_in_h:
       - '"intrinsics/libcrux_intrinsics_avx2.h"'
 

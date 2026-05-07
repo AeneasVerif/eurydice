@@ -16,7 +16,7 @@ with const generics
 - K= 8
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_16_7b(Eurydice_arr_8b x, Eurydice_arr_5a _)
+uint64_t where_clauses_fncg_bar_16_f4(Eurydice_arr_07 x, Eurydice_arr_34 _)
 {
   return (uint64_t)x.data->data[0U];
 }
@@ -29,11 +29,11 @@ with const generics
 - L= 8
 - M= 10
 */
-uint64_t where_clauses_fncg_f_43(void)
+uint64_t where_clauses_fncg_f_d3(void)
 {
   return
-    where_clauses_fncg_bar_16_7b((
-        KRML_CLITERAL(Eurydice_arr_8b){
+    where_clauses_fncg_bar_16_f4((
+        KRML_CLITERAL(Eurydice_arr_07){
           .data = {
             { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } },
             { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }
@@ -41,7 +41,7 @@ uint64_t where_clauses_fncg_f_43(void)
         }
       ),
       (
-        KRML_CLITERAL(Eurydice_arr_5a){
+        KRML_CLITERAL(Eurydice_arr_34){
           .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } }
         }
       ));
@@ -56,7 +56,7 @@ with const generics
 - K= 12
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_16_fa(Eurydice_arr_fb x, Eurydice_arr_c5 _)
+uint64_t where_clauses_fncg_bar_16_9e(Eurydice_arr_40 x, Eurydice_arr_11 _)
 {
   return (uint64_t)x.data->data[0U];
 }
@@ -70,11 +70,11 @@ with types uint64_t
 with const generics
 - K= 12
 */
-uint64_t where_clauses_fncg_method_foo_db_7c(void)
+uint64_t where_clauses_fncg_method_foo_db_27(void)
 {
   return
-    where_clauses_fncg_bar_16_fa((
-        KRML_CLITERAL(Eurydice_arr_fb){
+    where_clauses_fncg_bar_16_9e((
+        KRML_CLITERAL(Eurydice_arr_40){
           .data = {
             { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } },
             { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } },
@@ -83,7 +83,7 @@ uint64_t where_clauses_fncg_method_foo_db_7c(void)
         }
       ),
       (
-        KRML_CLITERAL(Eurydice_arr_c5){
+        KRML_CLITERAL(Eurydice_arr_11){
           .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } }
         }
       ));
@@ -97,7 +97,7 @@ with const generics
 */
 uint64_t where_clauses_fncg_g_ec(void)
 {
-  return where_clauses_fncg_method_foo_db_7c();
+  return where_clauses_fncg_method_foo_db_27();
 }
 
 typedef struct const_uint64_t__x2_s
@@ -109,7 +109,7 @@ const_uint64_t__x2;
 
 void where_clauses_fncg_main(void)
 {
-  uint64_t r = where_clauses_fncg_f_43();
+  uint64_t r = where_clauses_fncg_f_d3();
   /* original Rust expression is not an lvalue in C */
   uint64_t lvalue0 = 0ULL;
   const_uint64_t__x2 uu____0 = { .fst = &r, .snd = &lvalue0 };

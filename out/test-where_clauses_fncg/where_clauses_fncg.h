@@ -29,7 +29,7 @@ with types Eurydice_array_u8x4
 with const generics
 - $8size_t
 */
-typedef struct Eurydice_arr_8b_s { Eurydice_array_u8x4 data[8U]; } Eurydice_arr_8b;
+typedef struct Eurydice_arr_07_s { Eurydice_array_u8x4 data[8U]; } Eurydice_arr_07;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -37,7 +37,7 @@ with types Eurydice_array_u8x8
 with const generics
 - $4size_t
 */
-typedef struct Eurydice_arr_5a_s { Eurydice_array_u8x8 data[4U]; } Eurydice_arr_5a;
+typedef struct Eurydice_arr_34_s { Eurydice_array_u8x8 data[4U]; } Eurydice_arr_34;
 
 /**
 This function found in impl {where_clauses_fncg::Foo<K> for u64}
@@ -48,7 +48,7 @@ with const generics
 - K= 8
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_16_7b(Eurydice_arr_8b x, Eurydice_arr_5a _);
+uint64_t where_clauses_fncg_bar_16_f4(Eurydice_arr_07 x, Eurydice_arr_34 _);
 
 /**
 A monomorphic instance of where_clauses_fncg.f
@@ -58,7 +58,7 @@ with const generics
 - L= 8
 - M= 10
 */
-uint64_t where_clauses_fncg_f_43(void);
+uint64_t where_clauses_fncg_f_d3(void);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -66,7 +66,7 @@ with types Eurydice_array_u8x4
 with const generics
 - $12size_t
 */
-typedef struct Eurydice_arr_fb_s { Eurydice_array_u8x4 data[12U]; } Eurydice_arr_fb;
+typedef struct Eurydice_arr_40_s { Eurydice_array_u8x4 data[12U]; } Eurydice_arr_40;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -74,15 +74,15 @@ with types uint8_t
 with const generics
 - $12size_t
 */
-typedef struct Eurydice_arr_48_s { uint8_t data[12U]; } Eurydice_arr_48;
+typedef struct Eurydice_arr_a3_s { uint8_t data[12U]; } Eurydice_arr_a3;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr_48
+with types Eurydice_arr_a3
 with const generics
 - $4size_t
 */
-typedef struct Eurydice_arr_c5_s { Eurydice_arr_48 data[4U]; } Eurydice_arr_c5;
+typedef struct Eurydice_arr_11_s { Eurydice_arr_a3 data[4U]; } Eurydice_arr_11;
 
 /**
 This function found in impl {where_clauses_fncg::Foo<K> for u64}
@@ -93,7 +93,7 @@ with const generics
 - K= 12
 - L= 4
 */
-uint64_t where_clauses_fncg_bar_16_fa(Eurydice_arr_fb x, Eurydice_arr_c5 _);
+uint64_t where_clauses_fncg_bar_16_9e(Eurydice_arr_40 x, Eurydice_arr_11 _);
 
 /**
 This function found in impl {where_clauses_fncg::UseFoo for ()}
@@ -104,7 +104,7 @@ with types uint64_t
 with const generics
 - K= 12
 */
-uint64_t where_clauses_fncg_method_foo_db_7c(void);
+uint64_t where_clauses_fncg_method_foo_db_27(void);
 
 /**
 A monomorphic instance of where_clauses_fncg.g

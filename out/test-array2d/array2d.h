@@ -27,17 +27,17 @@ with types uint32_t
 with const generics
 - $2size_t
 */
-typedef struct Eurydice_arr_b2_s { uint32_t data[2U]; } Eurydice_arr_b2;
+typedef struct Eurydice_arr_a0_s { uint32_t data[2U]; } Eurydice_arr_a0;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types Eurydice_arr_b2
+with types Eurydice_arr_a0
 with const generics
 - $4size_t
 */
-typedef struct Eurydice_arr_1e_s { Eurydice_arr_b2 data[4U]; } Eurydice_arr_1e;
+typedef struct Eurydice_arr_ac_s { Eurydice_arr_a0 data[4U]; } Eurydice_arr_ac;
 
-bool array2d_f(Eurydice_arr_1e x);
+bool array2d_f(Eurydice_arr_ac x);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1

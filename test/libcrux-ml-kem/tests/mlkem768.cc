@@ -178,7 +178,7 @@ compute_implicit_rejection_shared_secret(uint8_t *ciphertext,
     return sharedSecret;
 }
 
-typedef Eurydice_arr_060 libcrux_sha3_Sha3_512Digest;
+typedef Eurydice_arr_c7 libcrux_sha3_Sha3_512Digest;
 
 TEST(MlKem768TestPortable, ConsistencyTest)
 {
@@ -191,13 +191,13 @@ TEST(MlKem768TestPortable, ConsistencyTest)
     //  cout << "key pair.pk: " << bytes_to_hex(bytes(key_pair.pk.value, key_pair.pk.value + 16U)) << endl;
     //  cout << "key pair.sk: " << bytes_to_hex(bytes(key_pair.sk.value, key_pair.sk.value + 16U)) << endl;
 
-    Eurydice_arr_60 randomness32;
+    Eurydice_arr_ec randomness32;
     memcpy(randomness32.data, randomness.data, 32);
     auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness32);
 
     // cout << "ctxt: " << bytes_to_hex(bytes(ctxt.fst.value, ctxt.fst.value + 16U)) << endl;
 
-    Eurydice_arr_60 sharedSecret2 = libcrux_ml_kem_mlkem768_portable_decapsulate(&key_pair.sk, &ctxt.fst);
+    Eurydice_arr_ec sharedSecret2 = libcrux_ml_kem_mlkem768_portable_decapsulate(&key_pair.sk, &ctxt.fst);
 
     EXPECT_EQ(0,
               memcmp(ctxt.snd.data,
@@ -232,7 +232,7 @@ TEST(Kyber768TestPortable, ModifiedCiphertextTest)
     generate_random(randomness.data, 64);
     auto key_pair = libcrux_ml_kem_mlkem768_portable_generate_key_pair(randomness);
 
-    Eurydice_arr_60 randomness32;
+    Eurydice_arr_ec randomness32;
     generate_random(randomness32.data, 32);
     auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness32);
 
@@ -265,7 +265,7 @@ TEST(Kyber768TestPortable, ModifiedSecretKeyTest)
     generate_random(randomness.data, 64);
     auto key_pair = libcrux_ml_kem_mlkem768_portable_generate_key_pair(randomness);
 
-    Eurydice_arr_60 randomness32;
+    Eurydice_arr_ec randomness32;
     generate_random(randomness32.data, 32);
     auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(&key_pair.pk, randomness32);
 
@@ -318,7 +318,7 @@ TEST(MlKem768TestPortable, NISTKnownAnswerTest)
               mk_slice_u8(key_pair.sk.data, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE));
         EXPECT_EQ(0, memcmp(sk_hash.data, kat.sha3_256_hash_of_secret_key.data(), 32));
 
-        Eurydice_arr_60 randomness32;
+        Eurydice_arr_ec randomness32;
         memcpy(randomness32.data, kat.encapsulation_seed.data(), 32);
         auto ctxt = libcrux_ml_kem_mlkem768_portable_encapsulate(
             &key_pair.pk, randomness32);
@@ -390,7 +390,7 @@ TEST(MlKem768TestAvx2, ConsistencyTest)
         randomness.data[i] = 13;
     }
     auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair(randomness);
-    Eurydice_arr_60 randomness32;
+    Eurydice_arr_ec randomness32;
     memcpy(randomness32.data, randomness.data, 32);
     auto ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate(&key_pair.pk, randomness32);
 
@@ -409,7 +409,7 @@ TEST(Kyber768TestAvx2, ModifiedCiphertextTest)
     generate_random(randomness.data, 64);
     auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair(randomness);
 
-    Eurydice_arr_60 randomness32;
+    Eurydice_arr_ec randomness32;
     generate_random(randomness32.data, 32);
     auto ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate(&key_pair.pk, randomness32);
 
@@ -443,7 +443,7 @@ TEST(Kyber768TestAvx2, ModifiedSecretKeyTest)
     generate_random(randomness.data, 64);
     auto key_pair = libcrux_ml_kem_mlkem768_avx2_generate_key_pair(randomness);
 
-    Eurydice_arr_60 randomness32;
+    Eurydice_arr_ec randomness32;
     generate_random(randomness32.data, 32);
     auto ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate(&key_pair.pk, randomness32);
 
@@ -496,7 +496,7 @@ TEST(MlKem768TestAvx2, NISTKnownAnswerTest)
               mk_slice_u8(key_pair.sk.data, LIBCRUX_ML_KEM_MLKEM768_SECRET_KEY_SIZE));
         EXPECT_EQ(0, memcmp(sk_hash.data, kat.sha3_256_hash_of_secret_key.data(), 32));
 
-        Eurydice_arr_60 randomness32;
+        Eurydice_arr_ec randomness32;
         memcpy(randomness32.data, kat.encapsulation_seed.data(), 32);
         auto ctxt = libcrux_ml_kem_mlkem768_avx2_encapsulate(
             &key_pair.pk, randomness32);

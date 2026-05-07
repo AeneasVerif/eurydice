@@ -15,7 +15,7 @@ with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
 
 */
 static Eurydice_mut_borrow_slice_u8
-slice_subslice_mut_7e(Eurydice_mut_borrow_slice_u8 s, core_ops_range_Range_08 r)
+slice_subslice_mut_c8(Eurydice_mut_borrow_slice_u8 s, core_ops_range_Range_87 r)
 {
   return
     (
@@ -29,7 +29,7 @@ with types uint8_t
 with const generics
 - N= 4
 */
-static Eurydice_borrow_slice_u8 array_to_slice_shared_60(const Eurydice_array_u8x4 *a)
+static Eurydice_borrow_slice_u8 array_to_slice_shared_98(const Eurydice_array_u8x4 *a)
 {
   Eurydice_borrow_slice_u8 lit;
   lit.ptr = a->data;
@@ -39,7 +39,7 @@ static Eurydice_borrow_slice_u8 array_to_slice_shared_60(const Eurydice_array_u8
 
 void
 symcrust_SymCrustMlKemPolyElementCompressAndEncode(
-  const Eurydice_arr_bc *coeffs,
+  const Eurydice_arr_82 *coeffs,
   uint32_t nBitsPerCoefficient,
   Eurydice_mut_borrow_slice_u8 dst
 )
@@ -64,32 +64,32 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
         (uint32_t)(multiplication >>
           (uint32_t)(SYMCRYPT_MLKEM_COMPRESS_SHIFTCONSTANT - (nBitsPerCoefficient + 1U)));
       coefficient++;
-      coefficient = coefficient >> 1U;
-      coefficient = coefficient & ((1U << (uint32_t)nBitsPerCoefficient) - 1U);
+      coefficient >>= 1U;
+      coefficient &= ((1U << (uint32_t)nBitsPerCoefficient) - 1U);
     }
     while (nBitsInCoefficient > 0U)
     {
       uint32_t nBitsToEncode = Eurydice_min_u32(nBitsInCoefficient, 32U - nBitsInAccumulator);
       uint32_t bitsToEncode = coefficient & ((1U << (uint32_t)nBitsToEncode) - 1U);
-      coefficient = coefficient >> (uint32_t)nBitsToEncode;
-      nBitsInCoefficient = nBitsInCoefficient - nBitsToEncode;
-      accumulator = accumulator | bitsToEncode << (uint32_t)nBitsInAccumulator;
-      nBitsInAccumulator = nBitsInAccumulator + nBitsToEncode;
+      coefficient >>= (uint32_t)nBitsToEncode;
+      nBitsInCoefficient -= nBitsToEncode;
+      accumulator |= bitsToEncode << (uint32_t)nBitsInAccumulator;
+      nBitsInAccumulator += nBitsToEncode;
       if (nBitsInAccumulator == 32U)
       {
         Eurydice_mut_borrow_slice_u8
         uu____0 =
-          slice_subslice_mut_7e(dst,
+          slice_subslice_mut_c8(dst,
             (
-              KRML_CLITERAL(core_ops_range_Range_08){
+              KRML_CLITERAL(core_ops_range_Range_87){
                 .start = cbDstWritten,
                 .end = cbDstWritten + (size_t)4U
               }
             ));
         /* original Rust expression is not an lvalue in C */
         Eurydice_array_u8x4 lvalue = core_num__u32__to_le_bytes(accumulator);
-        Eurydice_slice_copy(uu____0, array_to_slice_shared_60(&lvalue), uint8_t);
-        cbDstWritten = cbDstWritten + (size_t)4U;
+        Eurydice_slice_copy(uu____0, array_to_slice_shared_98(&lvalue), uint8_t);
+        cbDstWritten += (size_t)4U;
         accumulator = 0U;
         nBitsInAccumulator = 0U;
       }

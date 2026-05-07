@@ -32,7 +32,7 @@ with types size_t
 with const generics
 - K= 1
 */
-size_t where_clauses_closures_test_call_mut_1a_e3(void **_, size_t tupled_args)
+size_t where_clauses_closures_test_call_mut_1a_df(void **_, size_t tupled_args)
 {
   size_t i = tupled_args;
   return where_clauses_closures_of_usize_38(i);
@@ -47,11 +47,11 @@ with types size_t
 with const generics
 - K= 1
 */
-size_t where_clauses_closures_test_call_once_79_e3(size_t _)
+size_t where_clauses_closures_test_call_once_79_df(size_t _)
 {
   /* original Rust expression is not an lvalue in C */
   void *lvalue = (void *)0U;
-  return where_clauses_closures_test_call_mut_1a_e3(&lvalue, _);
+  return where_clauses_closures_test_call_mut_1a_df(&lvalue, _);
 }
 
 /**
@@ -60,15 +60,15 @@ with types size_t
 with const generics
 - K= 1
 */
-size_t_x2 where_clauses_closures_test_e3(void)
+size_t_x2 where_clauses_closures_test_df(void)
 {
-  Eurydice_arr_e4 arr_struct;
+  Eurydice_arr_58 arr_struct;
   {
     /* original Rust expression is not an lvalue in C */
     void *lvalue = (void *)0U;
-    arr_struct.data[0U] = where_clauses_closures_test_call_mut_1a_e3(&lvalue, (size_t)0U);
+    arr_struct.data[0U] = where_clauses_closures_test_call_mut_1a_df(&lvalue, (size_t)0U);
   }
-  Eurydice_arr_e4 x = arr_struct;
+  Eurydice_arr_58 x = arr_struct;
   size_t y = where_clauses_closures_zero_38();
   return (KRML_CLITERAL(size_t_x2){ .fst = x.data[0U], .snd = y });
 }
@@ -82,7 +82,7 @@ const_size_t__x2;
 
 void where_clauses_closures_main(void)
 {
-  size_t_x2 uu____0 = where_clauses_closures_test_e3();
+  size_t_x2 uu____0 = where_clauses_closures_test_df();
   size_t x = uu____0.fst;
   size_t y = uu____0.snd;
   const_size_t__x2 uu____1 = { .fst = &x, .snd = &y };

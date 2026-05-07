@@ -27,7 +27,7 @@ with types float32_t
 with const generics
 - $100size_t
 */
-typedef struct Eurydice_arr_d5_s { float32_t data[100U]; } Eurydice_arr_d5;
+typedef struct Eurydice_arr_fe_s { float32_t data[100U]; } Eurydice_arr_fe;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -35,7 +35,7 @@ with types float64_t
 with const generics
 - $100size_t
 */
-typedef struct Eurydice_arr_22_s { float64_t data[100U]; } Eurydice_arr_22;
+typedef struct Eurydice_arr_9f_s { float64_t data[100U]; } Eurydice_arr_9f;
 
 void floating_points_main(void);
 

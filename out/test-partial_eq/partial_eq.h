@@ -20,12 +20,12 @@ A monomorphic instance of Eurydice.dst_ref_shared
 with types Eurydice_c_char_t, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_65_s
+typedef struct Eurydice_dst_ref_shared_0d_s
 {
   const Eurydice_c_char_t *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_65;
+Eurydice_dst_ref_shared_0d;
 
 #define core_result_Ok 0
 #define core_result_Err 1
@@ -35,7 +35,7 @@ typedef uint8_t core_result_Result_10;
 extern core_result_Result_10
 core_fmt__core__fmt__Formatter__a___write_str(
   core_fmt_Formatter *x0,
-  Eurydice_dst_ref_shared_65 x1
+  Eurydice_dst_ref_shared_0d x1
 );
 
 #define core_panicking_AssertKind_Eq 0

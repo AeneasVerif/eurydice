@@ -23,7 +23,7 @@ with types core_core_arch_x86___m256i
 with const generics
 - $25size_t
 */
-typedef struct Eurydice_arr_05_s { __m256i data[25U]; } Eurydice_arr_05;
+typedef struct Eurydice_arr_c40_s { __m256i data[25U]; } Eurydice_arr_c40;
 
 /**
 A monomorphic instance of libcrux_sha3.generic_keccak.KeccakState
@@ -31,7 +31,7 @@ with types core_core_arch_x86___m256i
 with const generics
 - $4size_t
 */
-typedef Eurydice_arr_05 libcrux_sha3_generic_keccak_KeccakState_55;
+typedef Eurydice_arr_c40 libcrux_sha3_generic_keccak_KeccakState_7d;
 
 /**
  Perform 4 SHAKE256 operations in parallel
@@ -48,20 +48,20 @@ libcrux_sha3_avx2_x4_shake256(
   Eurydice_mut_borrow_slice_u8 out3
 );
 
-typedef libcrux_sha3_generic_keccak_KeccakState_55
+typedef libcrux_sha3_generic_keccak_KeccakState_7d
 libcrux_sha3_avx2_x4_incremental_KeccakState;
 
 /**
  Initialise the [`KeccakState`].
 */
-Eurydice_arr_05 libcrux_sha3_avx2_x4_incremental_init(void);
+Eurydice_arr_c40 libcrux_sha3_avx2_x4_incremental_init(void);
 
 /**
  Absorb
 */
 void
 libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
-  Eurydice_arr_05 *s,
+  Eurydice_arr_c40 *s,
   Eurydice_mut_borrow_slice_u8 data0,
   Eurydice_mut_borrow_slice_u8 data1,
   Eurydice_mut_borrow_slice_u8 data2,
@@ -73,7 +73,7 @@ libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
 */
 void
 libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
-  Eurydice_arr_05 *s,
+  Eurydice_arr_c40 *s,
   Eurydice_mut_borrow_slice_u8 out0,
   Eurydice_mut_borrow_slice_u8 out1,
   Eurydice_mut_borrow_slice_u8 out2,
@@ -85,7 +85,7 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
 */
 void
 libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
-  Eurydice_arr_05 *s,
+  Eurydice_arr_c40 *s,
   Eurydice_mut_borrow_slice_u8 out0,
   Eurydice_mut_borrow_slice_u8 out1,
   Eurydice_mut_borrow_slice_u8 out2,
@@ -97,7 +97,7 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
 */
 void
 libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_five_blocks(
-  Eurydice_arr_05 *s,
+  Eurydice_arr_c40 *s,
   Eurydice_mut_borrow_slice_u8 out0,
   Eurydice_mut_borrow_slice_u8 out1,
   Eurydice_mut_borrow_slice_u8 out2,
@@ -109,7 +109,7 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_five_blocks(
 */
 void
 libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
-  Eurydice_arr_05 *s,
+  Eurydice_arr_c40 *s,
   Eurydice_mut_borrow_slice_u8 data0,
   Eurydice_mut_borrow_slice_u8 data1,
   Eurydice_mut_borrow_slice_u8 data2,
@@ -121,7 +121,7 @@ libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
 */
 void
 libcrux_sha3_avx2_x4_incremental_shake256_squeeze_first_block(
-  Eurydice_arr_05 *s,
+  Eurydice_arr_c40 *s,
   Eurydice_mut_borrow_slice_u8 out0,
   Eurydice_mut_borrow_slice_u8 out1,
   Eurydice_mut_borrow_slice_u8 out2,
@@ -133,7 +133,7 @@ libcrux_sha3_avx2_x4_incremental_shake256_squeeze_first_block(
 */
 void
 libcrux_sha3_avx2_x4_incremental_shake256_squeeze_next_block(
-  Eurydice_arr_05 *s,
+  Eurydice_arr_c40 *s,
   Eurydice_mut_borrow_slice_u8 out0,
   Eurydice_mut_borrow_slice_u8 out1,
   Eurydice_mut_borrow_slice_u8 out2,

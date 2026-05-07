@@ -22,33 +22,33 @@ A monomorphic instance of core.ops.range.RangeTo
 with types size_t
 
 */
-typedef size_t core_ops_range_RangeTo_08;
+typedef size_t core_ops_range_RangeTo_87;
 
 /**
 A monomorphic instance of core.ops.range.RangeFrom
 with types size_t
 
 */
-typedef size_t core_ops_range_RangeFrom_08;
+typedef size_t core_ops_range_RangeFrom_87;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
 with types uint32_t, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_3c_s
+typedef struct Eurydice_dst_ref_shared_0c_s
 {
   const uint32_t *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_3c;
+Eurydice_dst_ref_shared_0c;
 
 /**
 A monomorphic instance of const_generics.serialize
 with const generics
 - OUT_LEN= 8
 */
-Eurydice_array_u8x8 const_generics_serialize_3b(Eurydice_dst_ref_shared_3c re);
+Eurydice_array_u8x8 const_generics_serialize_70(Eurydice_dst_ref_shared_0c re);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -56,7 +56,7 @@ with types uint32_t
 with const generics
 - $2size_t
 */
-typedef struct Eurydice_arr_b2_s { uint32_t data[2U]; } Eurydice_arr_b2;
+typedef struct Eurydice_arr_a0_s { uint32_t data[2U]; } Eurydice_arr_a0;
 
 void const_generics_main(void);
 
@@ -73,12 +73,12 @@ with const generics
 - $2size_t
 - $2size_t
 */
-typedef struct const_generics_Pair_4e_s
+typedef struct const_generics_Pair_30_s
 {
-  Eurydice_arr_b2 left;
-  Eurydice_arr_b2 right;
+  Eurydice_arr_a0 left;
+  Eurydice_arr_a0 right;
 }
-const_generics_Pair_4e;
+const_generics_Pair_30;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -86,7 +86,7 @@ with types uint64_t
 with const generics
 - $4size_t
 */
-typedef struct Eurydice_arr_61_s { uint64_t data[4U]; } Eurydice_arr_61;
+typedef struct Eurydice_arr_e4_s { uint64_t data[4U]; } Eurydice_arr_e4;
 
 /**
 A monomorphic instance of const_generics.Pair
@@ -95,12 +95,12 @@ with const generics
 - $2size_t
 - $4size_t
 */
-typedef struct const_generics_Pair_a5_s
+typedef struct const_generics_Pair_67_s
 {
-  Eurydice_arr_b2 left;
-  Eurydice_arr_61 right;
+  Eurydice_arr_a0 left;
+  Eurydice_arr_e4 right;
 }
-const_generics_Pair_a5;
+const_generics_Pair_67;
 
 /**
 A monomorphic instance of const_generics.Pair
@@ -109,12 +109,12 @@ with const generics
 - $4size_t
 - $2size_t
 */
-typedef struct const_generics_Pair_87_s
+typedef struct const_generics_Pair_54_s
 {
-  Eurydice_arr_61 left;
-  Eurydice_arr_b2 right;
+  Eurydice_arr_e4 left;
+  Eurydice_arr_a0 right;
 }
-const_generics_Pair_87;
+const_generics_Pair_54;
 
 /**
 A monomorphic instance of const_generics.mk_pairs
@@ -123,7 +123,7 @@ with const generics
 - N= 2
 - M= 4
 */
-const_generics_Pair_4e const_generics_mk_pairs_e0(uint32_t x, uint64_t y);
+const_generics_Pair_30 const_generics_mk_pairs_67(uint32_t x, uint64_t y);
 
 void const_generics_main1(void);
 
@@ -133,7 +133,7 @@ with types uint32_t
 with const generics
 - $1size_t
 */
-typedef struct Eurydice_arr_a5_s { uint32_t data[1U]; } Eurydice_arr_a5;
+typedef struct Eurydice_arr_d5_s { uint32_t data[1U]; } Eurydice_arr_d5;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -141,7 +141,7 @@ with types size_t
 with const generics
 - $1size_t
 */
-typedef struct Eurydice_arr_e4_s { size_t data[1U]; } Eurydice_arr_e4;
+typedef struct Eurydice_arr_58_s { size_t data[1U]; } Eurydice_arr_58;
 
 /**
 A monomorphic instance of const_generics.f
@@ -149,7 +149,7 @@ with const generics
 - FOO= 1
 - BAR= 2
 */
-bool const_generics_f_e5(uint32_t x, size_t y);
+bool const_generics_f_06(uint32_t x, size_t y);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -157,7 +157,7 @@ with types uint32_t
 with const generics
 - $3size_t
 */
-typedef struct Eurydice_arr_6f_s { uint32_t data[3U]; } Eurydice_arr_6f;
+typedef struct Eurydice_arr_a5_s { uint32_t data[3U]; } Eurydice_arr_a5;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -165,7 +165,7 @@ with types size_t
 with const generics
 - $3size_t
 */
-typedef struct Eurydice_arr_c8_s { size_t data[3U]; } Eurydice_arr_c8;
+typedef struct Eurydice_arr_eb_s { size_t data[3U]; } Eurydice_arr_eb;
 
 /**
 A monomorphic instance of const_generics.f
@@ -173,7 +173,7 @@ with const generics
 - FOO= 3
 - BAR= 4
 */
-bool const_generics_f_70(uint32_t x, size_t y);
+bool const_generics_f_16(uint32_t x, size_t y);
 
 /**
 A monomorphic instance of const_generics.g
@@ -181,7 +181,7 @@ with const generics
 - BAR= 3
 - FOO= 4
 */
-bool const_generics_g_70(uint32_t x, size_t y);
+bool const_generics_g_16(uint32_t x, size_t y);
 
 void const_generics_main3(void);
 

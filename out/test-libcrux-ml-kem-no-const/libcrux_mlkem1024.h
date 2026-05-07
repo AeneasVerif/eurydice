@@ -47,9 +47,9 @@ extern "C" {
 
 #define LIBCRUX_ML_KEM_MLKEM1024_IMPLICIT_REJECTION_HASH_INPUT_SIZE (LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE + LIBCRUX_ML_KEM_MLKEM1024_CPA_PKE_CIPHERTEXT_SIZE)
 
-typedef Eurydice_arr_17 libcrux_ml_kem_mlkem1024_MlKem1024PrivateKey;
+typedef Eurydice_arr_a8 libcrux_ml_kem_mlkem1024_MlKem1024PrivateKey;
 
-typedef Eurydice_arr_00 libcrux_ml_kem_mlkem1024_MlKem1024PublicKey;
+typedef Eurydice_arr_d1 libcrux_ml_kem_mlkem1024_MlKem1024PublicKey;
 
 #define LIBCRUX_ML_KEM_MLKEM1024_RANKED_BYTES_PER_RING_ELEMENT (LIBCRUX_ML_KEM_MLKEM1024_RANK * LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT / (size_t)8U)
 

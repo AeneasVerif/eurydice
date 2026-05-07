@@ -43,7 +43,7 @@ with types uint8_t
 with const generics
 - N= 0
 */
-static Eurydice_borrow_slice_u8 array_to_slice_shared_5d(const Eurydice_arr_51 *a)
+static Eurydice_borrow_slice_u8 array_to_slice_shared_08(const Eurydice_arr_bb *a)
 {
   Eurydice_borrow_slice_u8 lit;
   lit.ptr = a->data;
@@ -54,7 +54,7 @@ static Eurydice_borrow_slice_u8 array_to_slice_shared_5d(const Eurydice_arr_51 *
 void issue_128_main(void)
 {
   /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_51 lvalue = Eurydice_empty_array((void *)0U, uint8_t, Eurydice_arr_51);
-  issue_128_use_enum(issue_128_E_A, array_to_slice_shared_5d(&lvalue));
+  Eurydice_arr_bb lvalue = Eurydice_empty_array((void *)0U, uint8_t, Eurydice_arr_bb);
+  issue_128_use_enum(issue_128_E_A, array_to_slice_shared_08(&lvalue));
 }
 
