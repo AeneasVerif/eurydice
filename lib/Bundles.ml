@@ -387,6 +387,20 @@ let topological_sort decls =
       in
       Hashtbl.add graph (lid_of_decl decl, is_forward decl) (ref White, deps, decl))
     decls;
+
+  if L.has_logging "dfs" then
+    Hashtbl.iter
+      (fun (lid, forward) (_, deps, _) ->
+        let open Krml in
+        let open PrintAst.Ops in
+        KPrint.bprintf "%a(%s) depends on: %s\n" plid lid
+          (match forward with
+          | `Forward -> "forward"
+          | `Regular -> "regular")
+          (String.concat " ++ "
+             (List.map (fun (lid, b) -> KPrint.bsprintf "%a(%b)" plid lid b) deps)))
+      graph;
+
   let stack = ref [] in
   let rec dfs (lid, under_ref) =
     let has_forward_decl = Hashtbl.mem graph (lid, `Forward) in
@@ -405,12 +419,31 @@ let topological_sort decls =
           r := Gray;
           List.iter dfs deps;
           r := Black;
+          (* Krml.(PrintAst.Ops.(KPrint.bprintf "%a %b\n" plid lid under_ref)); *)
           stack := decl :: !stack
   in
   List.iter (fun decl -> dfs (lid_of_decl decl, false)) decls;
   List.rev !stack
 
 module LidMap = Krml.Idents.LidMap
+
+(* Because the krml monomorphization procedure is not optimal, it is sometimes
+   the case the our topological sort places a forward declaration *after* the
+   corresponding struct. Filter those out! *)
+let filter_forward files =
+  let seen = Hashtbl.create 41 in
+  List.map
+    (fun (file, decls) ->
+      ( file,
+        List.filter_map
+          (fun decl ->
+            match decl with
+            | DType (lid, _, _, _, Forward _) when Hashtbl.mem seen lid -> None
+            | _ ->
+                Hashtbl.add seen (lid_of_decl decl) ();
+                Some decl)
+          decls ))
+    files
 
 (* Second phase of bundling, post-monomorphization. This is Eurydice-specific,
    as we oftentimes need to move definitions that have been /specialized/ using
@@ -624,4 +657,5 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
              else
                None)
        c0 c1);
+  let files = filter_forward files in
   files

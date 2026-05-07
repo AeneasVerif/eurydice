@@ -151,37 +151,37 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_11_int(Eurydice_borrow_slic
 {
   int16_t
   r0 =
-    (libcrux_secrets_int_as_i16_59(bytes.ptr[1U]) & 7) << 8U |
+    (int16_t)((uint32_t)(libcrux_secrets_int_as_i16_59(bytes.ptr[1U]) & 7) << 8U) |
       libcrux_secrets_int_as_i16_59(bytes.ptr[0U]);
   int16_t
   r1 =
-    (libcrux_secrets_int_as_i16_59(bytes.ptr[2U]) & 63) << 5U |
+    (int16_t)((uint32_t)(libcrux_secrets_int_as_i16_59(bytes.ptr[2U]) & 63) << 5U) |
       libcrux_secrets_int_as_i16_59(bytes.ptr[1U]) >> 3U;
   int16_t
   r2 =
-    ((libcrux_secrets_int_as_i16_59(bytes.ptr[4U]) & 1) << 10U |
-      libcrux_secrets_int_as_i16_59(bytes.ptr[3U]) << 2U)
+    ((int16_t)((uint32_t)(libcrux_secrets_int_as_i16_59(bytes.ptr[4U]) & 1) << 10U) |
+      (int16_t)((uint32_t)libcrux_secrets_int_as_i16_59(bytes.ptr[3U]) << 2U))
     | libcrux_secrets_int_as_i16_59(bytes.ptr[2U]) >> 6U;
   int16_t
   r3 =
-    (libcrux_secrets_int_as_i16_59(bytes.ptr[5U]) & 15) << 7U |
+    (int16_t)((uint32_t)(libcrux_secrets_int_as_i16_59(bytes.ptr[5U]) & 15) << 7U) |
       libcrux_secrets_int_as_i16_59(bytes.ptr[4U]) >> 1U;
   int16_t
   r4 =
-    (libcrux_secrets_int_as_i16_59(bytes.ptr[6U]) & 127) << 4U |
+    (int16_t)((uint32_t)(libcrux_secrets_int_as_i16_59(bytes.ptr[6U]) & 127) << 4U) |
       libcrux_secrets_int_as_i16_59(bytes.ptr[5U]) >> 4U;
   int16_t
   r5 =
-    ((libcrux_secrets_int_as_i16_59(bytes.ptr[8U]) & 3) << 9U |
-      libcrux_secrets_int_as_i16_59(bytes.ptr[7U]) << 1U)
+    ((int16_t)((uint32_t)(libcrux_secrets_int_as_i16_59(bytes.ptr[8U]) & 3) << 9U) |
+      (int16_t)((uint32_t)libcrux_secrets_int_as_i16_59(bytes.ptr[7U]) << 1U))
     | libcrux_secrets_int_as_i16_59(bytes.ptr[6U]) >> 7U;
   int16_t
   r6 =
-    (libcrux_secrets_int_as_i16_59(bytes.ptr[9U]) & 31) << 6U |
+    (int16_t)((uint32_t)(libcrux_secrets_int_as_i16_59(bytes.ptr[9U]) & 31) << 6U) |
       libcrux_secrets_int_as_i16_59(bytes.ptr[8U]) >> 2U;
   int16_t
   r7 =
-    libcrux_secrets_int_as_i16_59(bytes.ptr[10U]) << 3U |
+    (int16_t)((uint32_t)libcrux_secrets_int_as_i16_59(bytes.ptr[10U]) << 3U) |
       libcrux_secrets_int_as_i16_59(bytes.ptr[9U]) >> 5U;
   return
     (
@@ -280,8 +280,9 @@ libcrux_ml_kem_vector_portable_vector_type_from_bytes(Eurydice_borrow_slice_u8 a
   {
     size_t i0 = i;
     elements.data[i0] =
-      libcrux_secrets_int_as_i16_59(array.ptr[(size_t)2U * i0 + (size_t)1U]) << 8U |
-        libcrux_secrets_int_as_i16_59(array.ptr[(size_t)2U * i0]);
+      (int16_t)((uint32_t)libcrux_secrets_int_as_i16_59(array.ptr[(size_t)2U * i0 + (size_t)1U]) <<
+        8U)
+      | libcrux_secrets_int_as_i16_59(array.ptr[(size_t)2U * i0]);
   }
   return elements;
 }
@@ -1238,13 +1239,19 @@ Eurydice_arr_d6 libcrux_ml_kem_vector_portable_deserialize_4_b8(Eurydice_borrow_
 KRML_MUSTINLINE uint8_t_x5
 libcrux_ml_kem_vector_portable_serialize_serialize_5_int(Eurydice_borrow_slice_i16 v)
 {
-  uint8_t r0 = libcrux_secrets_int_as_u8_f5(v.ptr[0U] | v.ptr[1U] << 5U);
+  uint8_t r0 = libcrux_secrets_int_as_u8_f5(v.ptr[0U] | (int16_t)((uint32_t)v.ptr[1U] << 5U));
   uint8_t
-  r1 = libcrux_secrets_int_as_u8_f5((v.ptr[1U] >> 3U | v.ptr[2U] << 2U) | v.ptr[3U] << 7U);
-  uint8_t r2 = libcrux_secrets_int_as_u8_f5(v.ptr[3U] >> 1U | v.ptr[4U] << 4U);
+  r1 =
+    libcrux_secrets_int_as_u8_f5((v.ptr[1U] >> 3U | (int16_t)((uint32_t)v.ptr[2U] << 2U)) |
+        (int16_t)((uint32_t)v.ptr[3U] << 7U));
   uint8_t
-  r3 = libcrux_secrets_int_as_u8_f5((v.ptr[4U] >> 4U | v.ptr[5U] << 1U) | v.ptr[6U] << 6U);
-  uint8_t r4 = libcrux_secrets_int_as_u8_f5(v.ptr[6U] >> 2U | v.ptr[7U] << 3U);
+  r2 = libcrux_secrets_int_as_u8_f5(v.ptr[3U] >> 1U | (int16_t)((uint32_t)v.ptr[4U] << 4U));
+  uint8_t
+  r3 =
+    libcrux_secrets_int_as_u8_f5((v.ptr[4U] >> 4U | (int16_t)((uint32_t)v.ptr[5U] << 1U)) |
+        (int16_t)((uint32_t)v.ptr[6U] << 6U));
+  uint8_t
+  r4 = libcrux_secrets_int_as_u8_f5(v.ptr[6U] >> 2U | (int16_t)((uint32_t)v.ptr[7U] << 3U));
   return (KRML_CLITERAL(uint8_t_x5){ .fst = r0, .snd = r1, .thd = r2, .f3 = r3, .f4 = r4 });
 }
 
@@ -1428,36 +1435,50 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_10_int(Eurydice_borrow_slic
 {
   int16_t
   r0 =
-    libcrux_secrets_int_as_i16_f5((libcrux_secrets_int_as_i16_59(bytes.ptr[1U]) & 3) << 8U |
-        (libcrux_secrets_int_as_i16_59(bytes.ptr[0U]) & 255));
+    libcrux_secrets_int_as_i16_f5((int16_t)((uint32_t)(libcrux_secrets_int_as_i16_59(bytes.ptr[1U])
+      & 3)
+      << 8U)
+      | (libcrux_secrets_int_as_i16_59(bytes.ptr[0U]) & 255));
   int16_t
   r1 =
-    libcrux_secrets_int_as_i16_f5((libcrux_secrets_int_as_i16_59(bytes.ptr[2U]) & 15) << 6U |
-        libcrux_secrets_int_as_i16_59(bytes.ptr[1U]) >> 2U);
+    libcrux_secrets_int_as_i16_f5((int16_t)((uint32_t)(libcrux_secrets_int_as_i16_59(bytes.ptr[2U])
+      & 15)
+      << 6U)
+      | libcrux_secrets_int_as_i16_59(bytes.ptr[1U]) >> 2U);
   int16_t
   r2 =
-    libcrux_secrets_int_as_i16_f5((libcrux_secrets_int_as_i16_59(bytes.ptr[3U]) & 63) << 4U |
-        libcrux_secrets_int_as_i16_59(bytes.ptr[2U]) >> 4U);
+    libcrux_secrets_int_as_i16_f5((int16_t)((uint32_t)(libcrux_secrets_int_as_i16_59(bytes.ptr[3U])
+      & 63)
+      << 4U)
+      | libcrux_secrets_int_as_i16_59(bytes.ptr[2U]) >> 4U);
   int16_t
   r3 =
-    libcrux_secrets_int_as_i16_f5(libcrux_secrets_int_as_i16_59(bytes.ptr[4U]) << 2U |
-        libcrux_secrets_int_as_i16_59(bytes.ptr[3U]) >> 6U);
+    libcrux_secrets_int_as_i16_f5((int16_t)((uint32_t)libcrux_secrets_int_as_i16_59(bytes.ptr[4U])
+      << 2U)
+      | libcrux_secrets_int_as_i16_59(bytes.ptr[3U]) >> 6U);
   int16_t
   r4 =
-    libcrux_secrets_int_as_i16_f5((libcrux_secrets_int_as_i16_59(bytes.ptr[6U]) & 3) << 8U |
-        (libcrux_secrets_int_as_i16_59(bytes.ptr[5U]) & 255));
+    libcrux_secrets_int_as_i16_f5((int16_t)((uint32_t)(libcrux_secrets_int_as_i16_59(bytes.ptr[6U])
+      & 3)
+      << 8U)
+      | (libcrux_secrets_int_as_i16_59(bytes.ptr[5U]) & 255));
   int16_t
   r5 =
-    libcrux_secrets_int_as_i16_f5((libcrux_secrets_int_as_i16_59(bytes.ptr[7U]) & 15) << 6U |
-        libcrux_secrets_int_as_i16_59(bytes.ptr[6U]) >> 2U);
+    libcrux_secrets_int_as_i16_f5((int16_t)((uint32_t)(libcrux_secrets_int_as_i16_59(bytes.ptr[7U])
+      & 15)
+      << 6U)
+      | libcrux_secrets_int_as_i16_59(bytes.ptr[6U]) >> 2U);
   int16_t
   r6 =
-    libcrux_secrets_int_as_i16_f5((libcrux_secrets_int_as_i16_59(bytes.ptr[8U]) & 63) << 4U |
-        libcrux_secrets_int_as_i16_59(bytes.ptr[7U]) >> 4U);
+    libcrux_secrets_int_as_i16_f5((int16_t)((uint32_t)(libcrux_secrets_int_as_i16_59(bytes.ptr[8U])
+      & 63)
+      << 4U)
+      | libcrux_secrets_int_as_i16_59(bytes.ptr[7U]) >> 4U);
   int16_t
   r7 =
-    libcrux_secrets_int_as_i16_f5(libcrux_secrets_int_as_i16_59(bytes.ptr[9U]) << 2U |
-        libcrux_secrets_int_as_i16_59(bytes.ptr[8U]) >> 6U);
+    libcrux_secrets_int_as_i16_f5((int16_t)((uint32_t)libcrux_secrets_int_as_i16_59(bytes.ptr[9U])
+      << 2U)
+      | libcrux_secrets_int_as_i16_59(bytes.ptr[8U]) >> 6U);
   return
     (
       KRML_CLITERAL(int16_t_x8){
@@ -1513,7 +1534,9 @@ KRML_MUSTINLINE uint8_t_x3
 libcrux_ml_kem_vector_portable_serialize_serialize_12_int(Eurydice_borrow_slice_i16 v)
 {
   uint8_t r0 = libcrux_secrets_int_as_u8_f5(v.ptr[0U] & 255);
-  uint8_t r1 = libcrux_secrets_int_as_u8_f5(v.ptr[0U] >> 8U | (v.ptr[1U] & 15) << 4U);
+  uint8_t
+  r1 =
+    libcrux_secrets_int_as_u8_f5(v.ptr[0U] >> 8U | (int16_t)((uint32_t)(v.ptr[1U] & 15) << 4U));
   uint8_t r2 = libcrux_secrets_int_as_u8_f5(v.ptr[1U] >> 4U & 255);
   return (KRML_CLITERAL(uint8_t_x3){ .fst = r0, .snd = r1, .thd = r2 });
 }
@@ -1586,8 +1609,8 @@ libcrux_ml_kem_vector_portable_serialize_deserialize_12_int(Eurydice_borrow_slic
   int16_t byte0 = libcrux_secrets_int_as_i16_59(bytes.ptr[0U]);
   int16_t byte1 = libcrux_secrets_int_as_i16_59(bytes.ptr[1U]);
   int16_t byte2 = libcrux_secrets_int_as_i16_59(bytes.ptr[2U]);
-  int16_t r0 = (byte1 & 15) << 8U | (byte0 & 255);
-  int16_t r1 = byte2 << 4U | (byte1 >> 4U & 15);
+  int16_t r0 = (int16_t)((uint32_t)(byte1 & 15) << 8U) | (byte0 & 255);
+  int16_t r1 = (int16_t)((uint32_t)byte2 << 4U) | (byte1 >> 4U & 15);
   return (KRML_CLITERAL(int16_t_x2){ .fst = r0, .snd = r1 });
 }
 
@@ -1664,8 +1687,8 @@ libcrux_ml_kem_vector_portable_sampling_rej_sample(
     int16_t b1 = (int16_t)a.ptr[i0 * (size_t)3U + (size_t)0U];
     int16_t b2 = (int16_t)a.ptr[i0 * (size_t)3U + (size_t)1U];
     int16_t b3 = (int16_t)a.ptr[i0 * (size_t)3U + (size_t)2U];
-    int16_t d1 = (b2 & 15) << 8U | b1;
-    int16_t d2 = b3 << 4U | b2 >> 4U;
+    int16_t d1 = (int16_t)((uint32_t)(b2 & 15) << 8U) | b1;
+    int16_t d2 = (int16_t)((uint32_t)b3 << 4U) | b2 >> 4U;
     if (d1 < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS)
     {
       if (sampled < (size_t)16U)
@@ -4806,7 +4829,7 @@ static KRML_MUSTINLINE Eurydice_arr_d6 decompress_ciphertext_coefficient_ef(Eury
     decompressed =
       libcrux_secrets_int_as_i32_f5(a.data[i0]) *
         libcrux_secrets_int_as_i32_f5(libcrux_secrets_int_public_integers_classify_27_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
-    decompressed = (decompressed << 1U) + (1 << (uint32_t)10);
+    decompressed = (int32_t)((uint32_t)decompressed << 1U) + (int32_t)((uint32_t)1 << (uint32_t)10);
     decompressed >>= (uint32_t)(10 + 1);
     a.data[i0] = libcrux_secrets_int_as_i16_36(decompressed);
   }
@@ -4869,7 +4892,7 @@ static KRML_MUSTINLINE Eurydice_arr_d6 decompress_ciphertext_coefficient_c4(Eury
     decompressed =
       libcrux_secrets_int_as_i32_f5(a.data[i0]) *
         libcrux_secrets_int_as_i32_f5(libcrux_secrets_int_public_integers_classify_27_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
-    decompressed = (decompressed << 1U) + (1 << (uint32_t)11);
+    decompressed = (int32_t)((uint32_t)decompressed << 1U) + (int32_t)((uint32_t)1 << (uint32_t)11);
     decompressed >>= (uint32_t)(11 + 1);
     a.data[i0] = libcrux_secrets_int_as_i16_36(decompressed);
   }
@@ -5014,7 +5037,7 @@ static KRML_MUSTINLINE Eurydice_arr_d6 decompress_ciphertext_coefficient_d1(Eury
     decompressed =
       libcrux_secrets_int_as_i32_f5(a.data[i0]) *
         libcrux_secrets_int_as_i32_f5(libcrux_secrets_int_public_integers_classify_27_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
-    decompressed = (decompressed << 1U) + (1 << (uint32_t)4);
+    decompressed = (int32_t)((uint32_t)decompressed << 1U) + (int32_t)((uint32_t)1 << (uint32_t)4);
     decompressed >>= (uint32_t)(4 + 1);
     a.data[i0] = libcrux_secrets_int_as_i16_36(decompressed);
   }
@@ -5077,7 +5100,7 @@ static KRML_MUSTINLINE Eurydice_arr_d6 decompress_ciphertext_coefficient_f4(Eury
     decompressed =
       libcrux_secrets_int_as_i32_f5(a.data[i0]) *
         libcrux_secrets_int_as_i32_f5(libcrux_secrets_int_public_integers_classify_27_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
-    decompressed = (decompressed << 1U) + (1 << (uint32_t)5);
+    decompressed = (int32_t)((uint32_t)decompressed << 1U) + (int32_t)((uint32_t)1 << (uint32_t)5);
     decompressed >>= (uint32_t)(5 + 1);
     a.data[i0] = libcrux_secrets_int_as_i16_36(decompressed);
   }

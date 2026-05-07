@@ -99,6 +99,7 @@ test-more_str: EXTRA_C = ../../test/core_str_lib.c
 test-more_primitive_types: EXTRA = --config test/more_primitive_types.yaml
 test-global_ref: EXTRA_C = ../../test/core_cmp_lib.c
 test-lvalue: CFLAGS += -Wno-unused-but-set-variable
+test-issue_shift: CFLAGS += -fsanitize=undefined
 
 
 test-%: test/%.llbc out/test-%/main.c | all
