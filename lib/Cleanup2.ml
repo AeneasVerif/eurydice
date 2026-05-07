@@ -1534,7 +1534,7 @@ let rewrite_signed_shifts files =
 
      method! visit_EApp env e es =
        match e.node, es with
-       | EOp (BShiftL, w), [ e1; e2 ] when is_signed w ->
+       | EOp (BShiftL, TInt w), [ e1; e2 ] when is_signed w ->
            let unsigned_w = unsigned_of_signed w in
            (* No point in casting to uint16 or uint8: this will be promoted to
               `int` once in C, which AstToCStar defeats by casting to (uint32_t)
@@ -1552,7 +1552,7 @@ let rewrite_signed_shifts files =
            let op_type = H.fold_arrow [ TInt unsigned_w; e2.typ ] (TInt unsigned_w) in
            let shift =
              with_type (TInt unsigned_w)
-               (EApp (with_type op_type (EOp (BShiftL, unsigned_w)), [ e1_unsigned; e2 ]))
+               (EApp (with_type op_type (EOp (BShiftL, TInt unsigned_w)), [ e1_unsigned; e2 ]))
            in
            ECast (shift, TInt w)
        | _ -> super#visit_EApp env e es

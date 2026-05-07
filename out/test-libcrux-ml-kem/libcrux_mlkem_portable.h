@@ -176,7 +176,7 @@ Eurydice_arr_d6 libcrux_ml_kem_vector_portable_cond_subtract_3329_b8(Eurydice_ar
 
 #define LIBCRUX_ML_KEM_VECTOR_TRAITS_BARRETT_SHIFT (26)
 
-#define LIBCRUX_ML_KEM_VECTOR_TRAITS_BARRETT_R (1 << (uint32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_BARRETT_SHIFT)
+#define LIBCRUX_ML_KEM_VECTOR_TRAITS_BARRETT_R ((int32_t)((uint32_t)1 << (uint32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_BARRETT_SHIFT))
 
 /**
  Signed Barrett Reduction
