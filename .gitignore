@@ -14,3 +14,4 @@ eurydice
 
 test/libcrux-*/build
 _opam
+.cache
