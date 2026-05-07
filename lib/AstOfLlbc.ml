@@ -1781,6 +1781,7 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
           fail "expression_of_operand Constant: %s"
             (Charon.Print.operand_to_string env.format_env op)
     end
+  | Constant { kind = CAdt _; ty } when Charon.TypesUtils.ty_is_unit ty -> K.with_type TUnit K.EUnit
   | Constant _ ->
       fail "expression_of_operand: %s" (Charon.Print.operand_to_string env.format_env op)
 
