@@ -43,6 +43,7 @@ let fail fmt =
 type var_id =
   | TraitClauseMethod of {
       clause_id : C.trait_ref_kind;
+      method_id : C.trait_method_id;
       item_name : string;
       pretty_name : string;
       ts : K.type_scheme;
@@ -660,7 +661,7 @@ let assert_var = function
   | _ -> assert false
 
 let assert_trait_clause_method = function
-  | TraitClauseMethod { clause_id; item_name; ts; _ } -> clause_id, item_name, ts
+  | TraitClauseMethod { ts; _ } -> ts
   | _ -> assert false
 
 (* Regular binders *)
@@ -695,12 +696,27 @@ let push_binders env (ts : C.local list) = List.fold_left push_binder env ts
 let push_clause_binder env b = { env with binders = b :: env.binders }
 let push_clause_binders env bs = List.fold_left push_clause_binder env bs
 
-let lookup_clause_binder env clause_id item_name =
+let lookup_clause_method env clause_id method_id =
   let i, (v, t) =
     try
       findi
         (function
-          | TraitClauseMethod { clause_id = clause_id2; item_name = item_name2; _ }, _
+          | TraitClauseMethod { clause_id = clause_id2; method_id = method_id2; _ }, _ ->
+              clause_id2 = clause_id && method_id2 = method_id
+          | _ -> false)
+        env.binders
+    with Not_found ->
+      Krml.KPrint.bprintf "Error looking up %s.%s\n" (C.show_trait_ref_kind clause_id)
+        (C.show_trait_method_id method_id);
+      raise Not_found
+  in
+  i, t, assert_trait_clause_method v
+
+let lookup_clause_constant env clause_id item_name =
+  let i, (_, t) =
+    try
+      findi
+        (function
           | TraitClauseConstant { clause_id = clause_id2; item_name = item_name2; _ }, _ ->
               clause_id2 = clause_id && item_name2 = item_name
           | _ -> false)
@@ -709,14 +725,6 @@ let lookup_clause_binder env clause_id item_name =
       Krml.KPrint.bprintf "Error looking up %s.%s\n" (C.show_trait_ref_kind clause_id) item_name;
       raise Not_found
   in
-  i, t, v
-
-let lookup_clause_method env clause_id item_name =
-  let i, t, v = lookup_clause_binder env clause_id item_name in
-  i, t, thd3 (assert_trait_clause_method v)
-
-let lookup_clause_constant env clause_id item_name =
-  let i, t, _ = lookup_clause_binder env clause_id item_name in
   i, t
 
 (** Translation of expressions (statements, operands, rvalues, places) *)
@@ -1246,7 +1254,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
           (C.TraitClauseId.to_int clause_id)
           (String.concat " ++ " (List.map C.show_ty trait_generics.C.types))
           (String.concat " ++ " (List.map C.show_constant_expr trait_generics.C.const_generics))
-          (List.length trait_decl.C.methods);
+          (C.TraitMethodId.Map.cardinal trait_decl.C.methods);
 
         (* 1. Associated constants *)
         List.map
@@ -1261,14 +1269,14 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
           trait_decl.C.consts
         (* 2. Trait methods *)
         @ List.map
-            (fun (mthd : C.trait_method C.binder) ->
+            (fun ((method_id, mthd) : _ * C.trait_method C.binder) ->
               let item_name = mthd.C.binder_value.C.name in
               let trait_name = trait_decl.C.item_meta.name in
               let pretty_name = string_of_name env trait_name ^ "_" ^ item_name in
 
               (* Ask charon for the properly bound method signature. *)
               let bound_method_sig : C.fun_sig C.binder C.item_binder =
-                Option.get (Charon.Substitute.lookup_method_sig env.crate trait_decl_id item_name)
+                Option.get (Charon.Substitute.lookup_method_sig env.crate trait_decl_id method_id)
               in
               (* First we substitute the trait generics. *)
               let bound_method_sig : C.fun_sig C.binder =
@@ -1338,8 +1346,10 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
                 (Charon.Print.fun_sig_to_string env.format_env "" " " method_sig);
               let ts, t = typ_of_signature env method_sig in
               let t = maybe_ts ts t in
-              TraitClauseMethod { item_name; pretty_name; clause_id = clause_ref.kind; ts }, t)
-            trait_decl.C.methods
+              ( TraitClauseMethod
+                  { method_id; item_name; pretty_name; clause_id = clause_ref.kind; ts },
+                t ))
+            (C.TraitMethodId.Map.to_list trait_decl.C.methods)
         (* 1 + 2, recursively, for parent traits *)
         @ List.concat_map
             (fun (parent_clause : C.trait_param) ->
@@ -1431,9 +1441,9 @@ and debug_trait_clause_mapping env (mapping : (var_id * K.typ) list) =
    type information required to build a proper instantiation. The function reference is an expression
    that is either a reference to a variable in scope (trait methods), or to a top-level qualified
    name, which encompasses both externally-defined function (builtins), or regular functions. *)
-let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
+let lookup_fun (env : env) depth (fn_ptr : C.fn_ptr) : K.expr' * lookup_result =
   let open RustNames in
-  let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p f in
+  let matches p = Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config p fn_ptr in
   let builtin b =
     let { Builtin.name; typ; n_type_args; cg_args; _ } = b in
     let ret_type, arg_types = Krml.Helpers.flatten_arrow typ in
@@ -1450,23 +1460,22 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
         K.EQualified lid, lookup_signature env depth (C.bound_fun_sig_of_decl decl)
       in
 
-      match f.kind with
+      match fn_ptr.kind with
       | FunId (FRegular f) -> lookup_result_of_fun_id f
       | FunId (FBuiltin f) -> fail "unknown builtin function: %s" (C.show_builtin_fun_id f)
-      | TraitMethod (trait_ref, method_name, _trait_opaque_signature) -> (
+      | TraitMethod (trait_ref, method_id, _trait_opaque_signature) -> (
           match trait_ref.kind with
           | TraitImpl { id; _ } ->
-              let trait = env.get_nth_trait_impl id in
+              let trait_impl = env.get_nth_trait_impl id in
               let f =
-                try List.assoc method_name trait.methods
+                try C.TraitMethodId.Map.find method_id trait_impl.methods
                 with Not_found ->
-                  fail "Error looking trait impl: %s %s%!"
-                    (Charon.Print.trait_ref_to_string env.format_env trait_ref)
-                    method_name
+                  fail "Error looking trait impl: %s%!"
+                    (Charon.Print.fn_ptr_to_string env.format_env fn_ptr)
               in
               lookup_result_of_fun_id f.C.binder_value.id
           | (Clause _ | ParentClause _) as tcid ->
-              let f, t, sig_info = lookup_clause_method env tcid method_name in
+              let f, t, sig_info = lookup_clause_method env tcid method_id in
               (* the sig_info is kind of redundant here *)
               let t =
                 match t with
@@ -1477,9 +1486,8 @@ let lookup_fun (env : env) depth (f : C.fn_ptr) : K.expr' * lookup_result =
               let cg_types, arg_types = Krml.KList.split sig_info.n_cgs arg_types in
               EBound f, { ts = sig_info; cg_types; arg_types; ret_type; is_known_builtin = false }
           | _ ->
-              fail "Error looking trait ref: %s %s%!"
-                (Charon.Print.trait_ref_to_string env.format_env trait_ref)
-                method_name))
+              fail "Error looking trait ref: %s%!"
+                (Charon.Print.fn_ptr_to_string env.format_env fn_ptr)))
 
 let fn_ptr_is_opaque env (fn_ptr : C.fn_ptr) =
   match fn_ptr.kind with
@@ -1599,17 +1607,17 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                       (K.EQualified (lid_of_name env global.item_meta.name)))
                   trait_impl.consts
                 @ List.map
-                    (fun ((item_name, bound_fn) : _ * C.fun_decl_ref C.binder) ->
+                    (fun ((method_id, bound_fn) : _ * C.fun_decl_ref C.binder) ->
                       let fun_decl_id = bound_fn.C.binder_value.C.id in
                       let fn_ptr : C.fn_ptr =
                         {
-                          kind = TraitMethod (trait_ref, item_name, fun_decl_id);
+                          kind = TraitMethod (trait_ref, method_id, fun_decl_id);
                           generics = Charon.TypesUtils.empty_generic_args;
                         }
                       in
                       let fn_ptr = fst3 (expression_of_fn_ptr env (depth ^ "  ") fn_ptr) in
                       fn_ptr)
-                    trait_impl.methods
+                    (C.TraitMethodId.Map.to_list trait_impl.methods)
                 @ build_trait_ref_mapping ("  " ^ depth)
                     (let subst =
                        Charon.Substitute.make_subst_from_generics trait_impl.generics _generics Self
