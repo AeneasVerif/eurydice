@@ -50,6 +50,7 @@ type var_id =
     }
   | TraitClauseConstant of {
       clause_id : C.trait_ref_kind;
+      const_id : C.assoc_const_id;
       item_name : string;
       pretty_name : string;
     }
@@ -444,8 +445,8 @@ let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
           let assoc_tys =
             let base_removal = fun l -> snd (Krml.KList.split (List.length base_args.types) l) in
             let find_assoc_ty_arg = function
-              | C.TTraitType (tref, name) ->
-                  (* We match by the trait-ID and the assoc-ty name, which should be unique *)
+              | C.TTraitType (tref, type_id) ->
+                  (* We match by the trait-ID and the assoc-ty id, which is unique *)
                   let target_id = tref.trait_decl_ref.binder_value.id in
                   let assoc_ty_assns = binder_params.trait_type_constraints in
                   let finder (binded_assn : C.trait_type_constraint C.region_binder) =
@@ -455,7 +456,7 @@ let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
                     in
                     if
                       assn.trait_ref.trait_decl_ref.binder_value.id = target_id
-                      && assn.type_name = name
+                      && assn.type_id = type_id
                     then
                       Some assn.ty
                     else
@@ -465,6 +466,9 @@ let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
                     match List.find_map finder assoc_ty_assns with
                     | Some ty -> ty
                     | None ->
+                        let name =
+                          Charon.GAstUtils.get_assoc_type_name env.crate target_id type_id
+                        in
                         fail "Could not find associated type assignment for associated type %s" name
                   end
               | _ ->
@@ -712,17 +716,18 @@ let lookup_clause_method env clause_id method_id =
   in
   i, t, assert_trait_clause_method v
 
-let lookup_clause_constant env clause_id item_name =
+let lookup_clause_constant env clause_id trait_id const_id =
   let i, (_, t) =
     try
       findi
         (function
-          | TraitClauseConstant { clause_id = clause_id2; item_name = item_name2; _ }, _ ->
-              clause_id2 = clause_id && item_name2 = item_name
+          | TraitClauseConstant { clause_id = clause_id2; const_id = const_id2; _ }, _ ->
+              clause_id2 = clause_id && const_id2 = const_id
           | _ -> false)
         env.binders
     with Not_found ->
-      Krml.KPrint.bprintf "Error looking up %s.%s\n" (C.show_trait_ref_kind clause_id) item_name;
+      let name = Charon.GAstUtils.get_assoc_const_name env.crate trait_id const_id in
+      Krml.KPrint.bprintf "Error looking up %s.%s\n" (C.show_trait_ref_kind clause_id) name;
       raise Not_found
   in
   i, t
@@ -1258,15 +1263,15 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
 
         (* 1. Associated constants *)
         List.map
-          (fun (const : C.trait_assoc_const) ->
+          (fun ((const_id, const) : _ * C.trait_assoc_const) ->
             let trait_name = trait_decl.C.item_meta.name in
             let pretty_name = string_of_name env trait_name ^ "_" ^ const.C.name in
             let t = substitute_visitor#visit_ty subst const.C.ty in
             let t = typ_of_ty env t in
             ( TraitClauseConstant
-                { item_name = const.C.name; pretty_name; clause_id = clause_ref.kind },
+                { const_id; item_name = const.C.name; pretty_name; clause_id = clause_ref.kind },
               t ))
-          trait_decl.C.consts
+          (C.AssocConstId.Map.to_list trait_decl.C.consts)
         (* 2. Trait methods *)
         @ List.map
             (fun ((method_id, mthd) : _ * C.trait_method C.binder) ->
@@ -1595,7 +1600,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
 
                 (* This must be in agreement, and in the same order as mk_clause_binders_and_args *)
                 List.map
-                  (fun ((_item_name, { C.id; generics }) : _ * C.global_decl_ref) ->
+                  (fun ({ C.id; generics } : C.global_decl_ref) ->
                     if
                       not
                         (generics.types = [] && generics.const_generics = []
@@ -1605,7 +1610,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                     let global = env.get_nth_global id in
                     K.with_type (typ_of_ty env global.ty)
                       (K.EQualified (lid_of_name env global.item_meta.name)))
-                  trait_impl.consts
+                  (C.AssocConstId.Map.values trait_impl.consts)
                 @ List.map
                     (fun ((method_id, bound_fn) : _ * C.fun_decl_ref C.binder) ->
                       let fun_decl_id = bound_fn.C.binder_value.C.id in
@@ -1767,17 +1772,19 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
   | Constant { kind = CFnDef fn_ptr; _ } ->
       let e, _, _ = expression_of_fn_ptr env fn_ptr in
       e
-  | Constant { kind = CTraitConst (({ C.kind; _ } as trait_ref), name); _ } -> begin
+  | Constant { kind = CTraitConst (({ C.kind; _ } as trait_ref), const_id); _ } -> begin
       (* Logic similar to lookup_fun *)
+      let trait_id = trait_ref.trait_decl_ref.binder_value.id in
       match kind with
       | Clause _ | ParentClause _ ->
-          let i, t = lookup_clause_constant env kind name in
+          let i, t = lookup_clause_constant env kind trait_id const_id in
           K.(with_type t (EBound i))
       | TraitImpl { id; _ } ->
-          let trait = env.get_nth_trait_impl id in
+          let trait_impl = env.get_nth_trait_impl id in
           let global =
-            try List.assoc name trait.consts
+            try C.AssocConstId.Map.find const_id trait_impl.consts
             with Not_found ->
+              let name = Charon.GAstUtils.get_assoc_const_name env.crate trait_id const_id in
               fail "Error looking trait impl: %s %s%!"
                 (Charon.Print.trait_ref_to_string env.format_env trait_ref)
                 name
