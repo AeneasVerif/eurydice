@@ -908,7 +908,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
             | TBuf (t_pointee, _) ->
                 let const =
                   match sub_place.ty with
-                  | TRef (_, _, k) -> const_of_ref_kind k
+                  | TRawPtr (_, k) | TRef (_, _, k) -> const_of_ref_kind k
                   | _ -> false
                 in
                 Krml.Helpers.(mk_deref ~const t_pointee !*sub_e.K.node)
@@ -925,7 +925,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           let place_typ = typ_of_ty env p.ty in
           let const =
             match sub_place.ty with
-            | TRef (_, _, k) -> const_of_ref_kind k
+            | TRawPtr (_, k) | TRef (_, _, k) -> const_of_ref_kind k
             | _ -> false
           in
           begin
