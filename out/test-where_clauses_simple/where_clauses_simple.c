@@ -17,7 +17,7 @@ with const generics
 */
 size_t where_clauses_simple_of_u16_81_78(uint16_t x)
 {
-  return (size_t)x;
+  return (size_t)(uint32_t)x;
 }
 
 /**
@@ -30,7 +30,7 @@ with const generics
 */
 size_t where_clauses_simple_add_81_78(Eurydice_arr_dc x, size_t y)
 {
-  return (size_t)x.data[0U] + y + (size_t)3U;
+  return (size_t)(uint32_t)x.data[0U] + y + (size_t)3U;
 }
 
 /**
@@ -65,7 +65,7 @@ This function found in impl {where_clauses_simple::Ops<1usize> for u64}
 */
 uint64_t where_clauses_simple_add_19(Eurydice_arr_96 x, uint64_t y)
 {
-  return (uint64_t)x.data[0U] + y;
+  return (uint64_t)(uint32_t)x.data[0U] + y;
 }
 
 /**
@@ -73,7 +73,7 @@ This function found in impl {where_clauses_simple::Ops<1usize> for u64}
 */
 uint64_t where_clauses_simple_of_u16_19(uint16_t x)
 {
-  return (uint64_t)x;
+  return (uint64_t)(uint32_t)x;
 }
 
 /**
@@ -113,7 +113,7 @@ with const generics
 */
 size_t where_clauses_simple_of_u16_81_6c(uint16_t x)
 {
-  return (size_t)x;
+  return (size_t)(uint32_t)x;
 }
 
 /**
@@ -126,7 +126,7 @@ with const generics
 */
 size_t where_clauses_simple_add_81_6c(Eurydice_arr_96 x, size_t y)
 {
-  return (size_t)x.data[0U] + y + (size_t)1U;
+  return (size_t)(uint32_t)x.data[0U] + y + (size_t)1U;
 }
 
 /**
