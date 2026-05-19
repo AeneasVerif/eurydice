@@ -1684,9 +1684,9 @@ libcrux_ml_kem_vector_portable_sampling_rej_sample(
   for (size_t i = (size_t)0U; i < a.meta / (size_t)3U; i++)
   {
     size_t i0 = i;
-    int16_t b1 = (int16_t)a.ptr[i0 * (size_t)3U + (size_t)0U];
-    int16_t b2 = (int16_t)a.ptr[i0 * (size_t)3U + (size_t)1U];
-    int16_t b3 = (int16_t)a.ptr[i0 * (size_t)3U + (size_t)2U];
+    int16_t b1 = (int16_t)(uint32_t)a.ptr[i0 * (size_t)3U + (size_t)0U];
+    int16_t b2 = (int16_t)(uint32_t)a.ptr[i0 * (size_t)3U + (size_t)1U];
+    int16_t b3 = (int16_t)(uint32_t)a.ptr[i0 * (size_t)3U + (size_t)2U];
     int16_t d1 = (int16_t)((uint32_t)(b2 & 15) << 8U) | b1;
     int16_t d2 = (int16_t)((uint32_t)b3 << 4U) | b2 >> 4U;
     if (d1 < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS)
