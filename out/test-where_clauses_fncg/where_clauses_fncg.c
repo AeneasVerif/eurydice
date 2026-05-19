@@ -18,7 +18,7 @@ with const generics
 */
 uint64_t where_clauses_fncg_bar_16_f4(Eurydice_arr_07 x, Eurydice_arr_34 _)
 {
-  return (uint64_t)x.data->data[0U];
+  return (uint64_t)(uint32_t)x.data->data[0U];
 }
 
 /**
@@ -58,7 +58,7 @@ with const generics
 */
 uint64_t where_clauses_fncg_bar_16_9e(Eurydice_arr_40 x, Eurydice_arr_11 _)
 {
-  return (uint64_t)x.data->data[0U];
+  return (uint64_t)(uint32_t)x.data->data[0U];
 }
 
 /**

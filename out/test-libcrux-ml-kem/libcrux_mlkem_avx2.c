@@ -864,8 +864,8 @@ KRML_MUSTINLINE __m256i
 libcrux_ml_kem_vector_avx2_serialize_deserialize_1_deserialize_1_u8s(uint8_t a, uint8_t b)
 {
   return
-    libcrux_ml_kem_vector_avx2_serialize_deserialize_1_deserialize_1_i16s((int16_t)a,
-      (int16_t)b);
+    libcrux_ml_kem_vector_avx2_serialize_deserialize_1_deserialize_1_i16s((int16_t)(uint32_t)a,
+      (int16_t)(uint32_t)b);
 }
 
 KRML_MUSTINLINE __m256i
@@ -1029,14 +1029,14 @@ libcrux_ml_kem_vector_avx2_serialize_deserialize_4_deserialize_4_u8s(
 )
 {
   return
-    libcrux_ml_kem_vector_avx2_serialize_deserialize_4_deserialize_4_i16s((int16_t)b0,
-      (int16_t)b1,
-      (int16_t)b2,
-      (int16_t)b3,
-      (int16_t)b4,
-      (int16_t)b5,
-      (int16_t)b6,
-      (int16_t)b7);
+    libcrux_ml_kem_vector_avx2_serialize_deserialize_4_deserialize_4_i16s((int16_t)(uint32_t)b0,
+      (int16_t)(uint32_t)b1,
+      (int16_t)(uint32_t)b2,
+      (int16_t)(uint32_t)b3,
+      (int16_t)(uint32_t)b4,
+      (int16_t)(uint32_t)b5,
+      (int16_t)(uint32_t)b6,
+      (int16_t)(uint32_t)b7);
 }
 
 KRML_MUSTINLINE __m256i
@@ -1149,22 +1149,22 @@ libcrux_ml_kem_vector_avx2_serialize_deserialize_5(Eurydice_borrow_slice_u8 byte
 {
   __m128i
   coefficients =
-    mm_set_epi8((int8_t)bytes.ptr[9U],
-      (int8_t)bytes.ptr[8U],
-      (int8_t)bytes.ptr[8U],
-      (int8_t)bytes.ptr[7U],
-      (int8_t)bytes.ptr[7U],
-      (int8_t)bytes.ptr[6U],
-      (int8_t)bytes.ptr[6U],
-      (int8_t)bytes.ptr[5U],
-      (int8_t)bytes.ptr[4U],
-      (int8_t)bytes.ptr[3U],
-      (int8_t)bytes.ptr[3U],
-      (int8_t)bytes.ptr[2U],
-      (int8_t)bytes.ptr[2U],
-      (int8_t)bytes.ptr[1U],
-      (int8_t)bytes.ptr[1U],
-      (int8_t)bytes.ptr[0U]);
+    mm_set_epi8((int8_t)(uint32_t)bytes.ptr[9U],
+      (int8_t)(uint32_t)bytes.ptr[8U],
+      (int8_t)(uint32_t)bytes.ptr[8U],
+      (int8_t)(uint32_t)bytes.ptr[7U],
+      (int8_t)(uint32_t)bytes.ptr[7U],
+      (int8_t)(uint32_t)bytes.ptr[6U],
+      (int8_t)(uint32_t)bytes.ptr[6U],
+      (int8_t)(uint32_t)bytes.ptr[5U],
+      (int8_t)(uint32_t)bytes.ptr[4U],
+      (int8_t)(uint32_t)bytes.ptr[3U],
+      (int8_t)(uint32_t)bytes.ptr[3U],
+      (int8_t)(uint32_t)bytes.ptr[2U],
+      (int8_t)(uint32_t)bytes.ptr[2U],
+      (int8_t)(uint32_t)bytes.ptr[1U],
+      (int8_t)(uint32_t)bytes.ptr[1U],
+      (int8_t)(uint32_t)bytes.ptr[0U]);
   __m256i
   coefficients_loaded =
     libcrux_ml_kem_vector_avx2_serialize_mm256_si256_from_two_si128(coefficients,
@@ -1604,7 +1604,7 @@ libcrux_ml_kem_vector_avx2_sampling_rejection_sample(
   good = libcrux_ml_kem_vector_avx2_serialize_serialize_1(compare_with_field_modulus);
   Eurydice_arr_b2
   lower_shuffles =
-    LIBCRUX_ML_KEM_VECTOR_REJ_SAMPLE_TABLE_REJECTION_SAMPLE_SHUFFLE_TABLE.data[(size_t)good.data[0U]];
+    LIBCRUX_ML_KEM_VECTOR_REJ_SAMPLE_TABLE_REJECTION_SAMPLE_SHUFFLE_TABLE.data[(size_t)(uint32_t)good.data[0U]];
   __m128i lower_shuffles0 = mm_loadu_si128(Eurydice_array_to_slice_shared_29(&lower_shuffles));
   __m128i lower_coefficients = mm256_castsi256_si128(potential_coefficients);
   __m128i lower_coefficients0 = mm_shuffle_epi8(lower_coefficients, lower_shuffles0);
@@ -1612,7 +1612,7 @@ libcrux_ml_kem_vector_avx2_sampling_rejection_sample(
   size_t sampled_count = (size_t)core_num__u8__count_ones(good.data[0U]);
   Eurydice_arr_b2
   upper_shuffles =
-    LIBCRUX_ML_KEM_VECTOR_REJ_SAMPLE_TABLE_REJECTION_SAMPLE_SHUFFLE_TABLE.data[(size_t)good.data[1U]];
+    LIBCRUX_ML_KEM_VECTOR_REJ_SAMPLE_TABLE_REJECTION_SAMPLE_SHUFFLE_TABLE.data[(size_t)(uint32_t)good.data[1U]];
   __m128i upper_shuffles0 = mm_loadu_si128(Eurydice_array_to_slice_shared_29(&upper_shuffles));
   __m128i upper_coefficients = mm256_extracti128_si256(1, potential_coefficients, __m128i);
   __m128i upper_coefficients0 = mm_shuffle_epi8(upper_coefficients, upper_shuffles0);
