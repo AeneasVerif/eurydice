@@ -9,7 +9,7 @@
 
 size_t issue_49_f(size_t a, size_t b)
 {
-  return core_cmp_impls__core__cmp__Ord_for_usize__min(a, b);
+  return core_cmp_impls__impl_core__cmp__Ord_for_usize__min(a, b);
 }
 
 typedef struct const_size_t__x2_s

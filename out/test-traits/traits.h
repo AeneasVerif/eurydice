@@ -33,9 +33,9 @@ core_ops_range_Range_87;
 typedef uint8_t traits_Foo;
 
 /**
-This function found in impl {traits::ToInt for traits::Foo}
+This function found in impl {impl traits::ToInt for traits::Foo}
 */
-uint32_t traits_to_int_ac(const traits_Foo *self);
+uint32_t traits_to_int_62(const traits_Foo *self);
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
@@ -50,9 +50,9 @@ typedef struct Eurydice_dst_ref_shared_42_s
 Eurydice_dst_ref_shared_42;
 
 /**
-This function found in impl {traits::ToInt for &0 ([traits::Foo])}
+This function found in impl {impl traits::ToInt for &'_0 [traits::Foo]}
 */
-uint32_t traits_to_int_0f(const Eurydice_dst_ref_shared_42 *self);
+uint32_t traits_to_int_db(const Eurydice_dst_ref_shared_42 *self);
 
 /**
 A monomorphic instance of Eurydice.arr

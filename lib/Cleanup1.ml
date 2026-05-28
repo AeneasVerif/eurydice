@@ -468,10 +468,10 @@ let remove_slice_eq =
       match e with
       | [%cremepat {| core::cmp::impls::?impl::eq(#?eq..)<?t,?u>(?s1, ?s2) |}] -> begin
           match impl with
-          | "{core::cmp::PartialEq<&0 mut (B)> for &1 mut (A)}" ->
+          | "{impl core::cmp::PartialEq<&'_0 mut B> for &'_1 mut A}" ->
               self#do_it ~const:false eq t u s1 s2
-          | "{core::cmp::PartialEq<&0 (B)> for &1 (A)}" -> self#do_it ~const:true eq t u s1 s2
-          | _ -> failwith "unknown eq impl in core::cmp::impls"
+          | "{impl core::cmp::PartialEq<&'_0 B> for &'_1 A}" -> self#do_it ~const:true eq t u s1 s2
+          | _ -> failwith ("unknown eq impl in core::cmp::impls: " ^ impl)
         end
       | _ -> super#visit_expr ((), e.typ) e
   end

@@ -35,14 +35,14 @@ void option_main(void)
  ```
 */
 /**
-This function found in impl {core::option::Option<T>[TraitClause@0]}
+This function found in impl {core::option::Option<T>[@TraitClause0]}
 */
 /**
-A monomorphic instance of core.option.as_ref_cd
+A monomorphic instance of core.option.as_ref_99
 with types Eurydice_arr uint8_t[[$16size_t]]
 
 */
-inline core_option_Option_4d core_option_as_ref_cd_4f(const core_option_Option_9e *self)
+inline core_option_Option_4d core_option_as_ref_99_4f(const core_option_Option_9e *self)
 {
   if (!(self->tag == core_option_None))
   {
@@ -57,6 +57,6 @@ This function found in impl {option::S}
 */
 core_option_Option_4d option_option_ref_b6(const core_option_Option_9e *self)
 {
-  return core_option_as_ref_cd_4f(self);
+  return core_option_as_ref_99_4f(self);
 }
 

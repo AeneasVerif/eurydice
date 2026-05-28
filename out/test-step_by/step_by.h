@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-extern int32_t core_clone_impls__core__clone__Clone_for_i32__clone(const int32_t *x0);
+extern int32_t core_clone_impls__impl_core__clone__Clone_for_i32__clone(const int32_t *x0);
 
 #define core_cmp_Ordering_Less -1
 #define core_cmp_Ordering_Equal 0
@@ -24,7 +24,10 @@ extern int32_t core_clone_impls__core__clone__Clone_for_i32__clone(const int32_t
 typedef int8_t core_cmp_Ordering;
 
 extern bool
-core_cmp_impls__core__cmp__PartialEq_i32__for_i32__eq(const int32_t *x0, const int32_t *x1);
+core_cmp_impls__impl_core__cmp__PartialEq_i32__for_i32__eq(
+  const int32_t *x0,
+  const int32_t *x1
+);
 
 #define core_option_None 0
 #define core_option_Some 1
@@ -44,7 +47,7 @@ typedef struct core_option_Option_77_s
 core_option_Option_77;
 
 extern core_option_Option_77
-core_cmp_impls__core__cmp__PartialOrd_i32__for_i32__partial_cmp(
+core_cmp_impls__impl_core__cmp__PartialOrd_i32__for_i32__partial_cmp(
   const int32_t *x0,
   const int32_t *x1
 );
@@ -62,10 +65,10 @@ typedef struct core_option_Option_9e_s
 core_option_Option_9e;
 
 extern core_option_Option_9e
-core_iter_range__core__iter__range__Step_for_i32__backward_checked(int32_t x0, size_t x1);
+core_iter_range__impl_core__iter__range__Step_for_i32__backward_checked(int32_t x0, size_t x1);
 
 extern core_option_Option_9e
-core_iter_range__core__iter__range__Step_for_i32__forward_checked(int32_t x0, size_t x1);
+core_iter_range__impl_core__iter__range__Step_for_i32__forward_checked(int32_t x0, size_t x1);
 
 /**
 A monomorphic instance of core.option.Option
@@ -92,7 +95,7 @@ typedef struct tuple_21_s
 tuple_21;
 
 extern tuple_21
-core_iter_range__core__iter__range__Step_for_i32__steps_between(
+core_iter_range__impl_core__iter__range__Step_for_i32__steps_between(
   const int32_t *x0,
   const int32_t *x1
 );

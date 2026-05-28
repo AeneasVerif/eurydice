@@ -43,9 +43,9 @@ void issue_123_main(void)
 }
 
 /**
-This function found in impl {core::cmp::PartialEq<issue_123::E2> for issue_123::E2}
+This function found in impl {impl core::cmp::PartialEq<issue_123::E2> for issue_123::E2}
 */
-inline bool issue_123_eq_e3(const issue_123_E2 *self, const issue_123_E2 *other)
+inline bool issue_123_eq_76(const issue_123_E2 *self, const issue_123_E2 *other)
 {
   ptrdiff_t __self_discr = (ptrdiff_t)self[0U];
   ptrdiff_t __arg1_discr = (ptrdiff_t)other[0U];

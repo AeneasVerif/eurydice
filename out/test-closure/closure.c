@@ -8,43 +8,43 @@
 #include "closure.h"
 
 /**
-This function found in impl {core::ops::function::FnMut<(usize), usize> for closure::f::closure::closure<0, 1>}
+This function found in impl {impl core::ops::function::FnMut<(usize,), usize> for closure::f::closure::closure<'_0, '_1>}
 */
-size_t closure_f_closure_call_mut_8a(closure_f_closure_closure *_, size_t tupled_args)
+size_t closure_f_closure_call_mut_50(closure_f_closure_closure *_, size_t tupled_args)
 {
   size_t j = tupled_args;
   return _->fst->data[0U] + _->snd[0U] + j;
 }
 
 /**
-This function found in impl {core::ops::function::FnOnce<(usize), usize> for closure::f::closure::closure<0, 1>}
+This function found in impl {impl core::ops::function::FnOnce<(usize,), usize> for closure::f::closure::closure<'_0, '_1>}
 */
-size_t closure_f_closure_call_once_b7(closure_f_closure_closure _, size_t _0)
+size_t closure_f_closure_call_once_c1(closure_f_closure_closure _, size_t _0)
 {
-  return closure_f_closure_call_mut_8a(&_, _0);
+  return closure_f_closure_call_mut_50(&_, _0);
 }
 
 /**
-This function found in impl {core::ops::function::FnMut<(usize), [usize; 1usize]> for closure::f::closure<0>}
+This function found in impl {impl core::ops::function::FnMut<(usize,), [usize; 1 : usize]> for closure::f::closure<'_0>}
 */
-Eurydice_arr_58 closure_f_call_mut_82(const Eurydice_arr_58 **_, size_t tupled_args)
+Eurydice_arr_58 closure_f_call_mut_92(const Eurydice_arr_58 **_, size_t tupled_args)
 {
   size_t i0 = tupled_args;
   Eurydice_arr_58 arr_struct;
   {
     /* original Rust expression is not an lvalue in C */
     closure_f_closure_closure lvalue = { .fst = _[0U], .snd = &i0 };
-    arr_struct.data[0U] = closure_f_closure_call_mut_8a(&lvalue, (size_t)0U);
+    arr_struct.data[0U] = closure_f_closure_call_mut_50(&lvalue, (size_t)0U);
   }
   return arr_struct;
 }
 
 /**
-This function found in impl {core::ops::function::FnOnce<(usize), [usize; 1usize]> for closure::f::closure<0>}
+This function found in impl {impl core::ops::function::FnOnce<(usize,), [usize; 1 : usize]> for closure::f::closure<'_0>}
 */
-Eurydice_arr_58 closure_f_call_once_86(const Eurydice_arr_58 *_, size_t _0)
+Eurydice_arr_58 closure_f_call_once_b7(const Eurydice_arr_58 *_, size_t _0)
 {
-  return closure_f_call_mut_82(&_, _0);
+  return closure_f_call_mut_92(&_, _0);
 }
 
 Eurydice_arr_2d closure_f(void)
@@ -54,7 +54,7 @@ Eurydice_arr_2d closure_f(void)
   {
     /* original Rust expression is not an lvalue in C */
     const Eurydice_arr_58 *lvalue = &s;
-    arr_struct.data[0U] = closure_f_call_mut_82(&lvalue, (size_t)0U);
+    arr_struct.data[0U] = closure_f_call_mut_92(&lvalue, (size_t)0U);
   }
   Eurydice_arr_2d a = arr_struct;
   return a;

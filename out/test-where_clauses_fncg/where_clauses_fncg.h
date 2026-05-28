@@ -15,7 +15,8 @@
 extern "C" {
 #endif
 
-static inline uint64_t core_convert_num__core__convert__From_u8__for_u64__from(uint8_t x0);
+static inline uint64_t
+core_convert_num__impl_core__convert__From_u8__for_u64__from(uint8_t x0);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -40,7 +41,7 @@ with const generics
 typedef struct Eurydice_arr_34_s { Eurydice_array_u8x8 data[4U]; } Eurydice_arr_34;
 
 /**
-This function found in impl {where_clauses_fncg::Foo<K> for u64}
+This function found in impl {impl where_clauses_fncg::Foo<K> for u64}
 */
 /**
 A monomorphic instance of where_clauses_fncg.bar_16
@@ -85,7 +86,7 @@ with const generics
 typedef struct Eurydice_arr_11_s { Eurydice_arr_a3 data[4U]; } Eurydice_arr_11;
 
 /**
-This function found in impl {where_clauses_fncg::Foo<K> for u64}
+This function found in impl {impl where_clauses_fncg::Foo<K> for u64}
 */
 /**
 A monomorphic instance of where_clauses_fncg.bar_16
@@ -96,15 +97,15 @@ with const generics
 uint64_t where_clauses_fncg_bar_16_9e(Eurydice_arr_40 x, Eurydice_arr_11 _);
 
 /**
-This function found in impl {where_clauses_fncg::UseFoo for ()}
+This function found in impl {impl where_clauses_fncg::UseFoo for ()}
 */
 /**
-A monomorphic instance of where_clauses_fncg.method_foo_db
+A monomorphic instance of where_clauses_fncg.method_foo_4a
 with types uint64_t
 with const generics
 - K= 12
 */
-uint64_t where_clauses_fncg_method_foo_db_27(void);
+uint64_t where_clauses_fncg_method_foo_4a_27(void);
 
 /**
 A monomorphic instance of where_clauses_fncg.g
@@ -112,7 +113,7 @@ with types ()
 with const generics
 
 */
-uint64_t where_clauses_fncg_g_ec(void);
+uint64_t where_clauses_fncg_g_92(void);
 
 void where_clauses_fncg_main(void);
 

@@ -117,8 +117,8 @@ typedef struct Eurydice_mut_borrow_slice_i16_s {
   (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.ptr =)(ptr_)->data,                   \
                         EURYDICE_CFIELD(.meta =) len_})
 
-#define core_array__core__clone__Clone_for__T__N___clone(len, src, elem_type,  \
-                                                         _ret_t)               \
+#define core_array__impl_core__clone__Clone_for__T__N___clone(                 \
+    len, src, elem_type, _ret_t)                                               \
   (*(src))
 #define TryFromSliceError uint8_t
 #define core_array_TryFromSliceError uint8_t
@@ -128,21 +128,21 @@ typedef struct Eurydice_mut_borrow_slice_i16_s {
 // core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>
 #define Eurydice_array_eq(sz, a1, a2, t)                                       \
   (memcmp((a1)->data, (a2)->data, sz * sizeof(t)) == 0)
-// core::cmp::PartialEq<&0 (@Slice<U>)> for @Array<T, N>
+// core::cmp::PartialEq<&'_0 [U]> for @Array<T, N>
 #define Eurydice_array_eq_slice_shared(sz, a1, s2, t, _)                       \
   (memcmp((a1)->data, (s2)->ptr, sz * sizeof(t)) == 0)
 #define Eurydice_array_eq_slice_mut(sz, a1, s2, t, _)                          \
   Eurydice_array_eq_slice_shared(sz, a1, s2, t, _)
 
 // DEPRECATED -- should no longer be generated
-#define core_array_equality__core__cmp__PartialEq__Array_U__N___for__Array_T__N___eq( \
-    sz, a1, a2, t, _, _ret_t)                                                         \
+#define core_array_equality__impl_core__cmp__PartialEq__Array_U__N___for__Array_T__N___eq( \
+    sz, a1, a2, t, _, _ret_t)                                                              \
   Eurydice_array_eq(sz, a1, a2, t)
-#define core_array_equality__core__cmp__PartialEq__0___Slice_U____for__Array_T__N___eq( \
-    sz, a1, a2, t, _, _ret_t)                                                           \
+#define core_array_equality__impl_core__cmp__PartialEq__0___Slice_U____for__Array_T__N___eq( \
+    sz, a1, a2, t, _, _ret_t)                                                                \
   Eurydice_array_eq(sz, a1, ((a2)->ptr), t)
-#define core_cmp_impls__core__cmp__PartialEq__0_mut__B___for__1_mut__A___eq(   \
-    _m0, _m1, src1, src2, _0, _1, T)                                           \
+#define core_cmp_impls__impl_core__cmp__PartialEq__0_mut__B___for__1_mut__A___eq( \
+    _m0, _m1, src1, src2, _0, _1, T)                                              \
   Eurydice_slice_eq(src1, src2, _, _, T, _)
 
 #define Eurydice_slice_split_at(slice, mid, element_type, ret_t)               \
@@ -235,22 +235,22 @@ static inline uint64_t core_num__u64__from_le_bytes(Eurydice_array_u8x8 buf) {
 }
 
 static inline int64_t
-core_convert_num__core__convert__From_i32__for_i64__from(int32_t x) {
+core_convert_num__impl_core__convert__From_i32__for_i64__from(int32_t x) {
   return x;
 }
 
 static inline uint64_t
-core_convert_num__core__convert__From_u8__for_u64__from(uint8_t x) {
+core_convert_num__impl_core__convert__From_u8__for_u64__from(uint8_t x) {
   return x;
 }
 
 static inline uint64_t
-core_convert_num__core__convert__From_u16__for_u64__from(uint16_t x) {
+core_convert_num__impl_core__convert__From_u16__for_u64__from(uint16_t x) {
   return x;
 }
 
 static inline size_t
-core_convert_num__core__convert__From_u16__for_usize__from(uint16_t x) {
+core_convert_num__impl_core__convert__From_u16__for_usize__from(uint16_t x) {
   return x;
 }
 
@@ -278,8 +278,8 @@ static inline uint32_t core_num__i32__count_ones(int32_t x0) {
 #endif
 }
 
-static inline size_t core_cmp_impls__core__cmp__Ord_for_usize__min(size_t a,
-                                                                   size_t b) {
+static inline size_t
+core_cmp_impls__impl_core__cmp__Ord_for_usize__min(size_t a, size_t b) {
   if (a <= b)
     return a;
   else
@@ -432,12 +432,12 @@ core_num_nonzero_private___core__clone__Clone_for_core__num__nonzero__private__N
        : (KRML_CLITERAL(ret_t){EURYDICE_CFIELD(.tag =) 1,                      \
                                EURYDICE_CFIELD(.f0 =)(iter_ptr)->start++}))
 
-#define core_iter_range__core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A__TraitClause_0___next \
+#define core_iter_range__impl_core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A___TraitClause0___next \
   Eurydice_range_iter_next
 
 // See note in karamel/lib/Inlining.ml if you change this
 #define Eurydice_into_iter(x, t, _ret_t, _) (x)
-#define core_iter_traits_collect__core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter \
+#define core_iter_traits_collect__impl_core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter \
   Eurydice_into_iter
 
 // STRINGS

@@ -76,41 +76,41 @@ typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94_s
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94;
 
 /**
-This function found in impl {libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
+This function found in impl {impl libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final_4a
+A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final_29
 with const generics
 - K= 4
 */
 Eurydice_arr_4a
-libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_23(
+libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_29_23(
   const Eurydice_arr_56 *input
 );
 
 /**
-This function found in impl {libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
+This function found in impl {impl libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks_4a
+A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks_29
 with const generics
 - K= 4
 */
 Eurydice_arr_7c0
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_4a_23(
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_29_23(
   Eurydice_arr_4a *self
 );
 
 /**
-This function found in impl {libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
+This function found in impl {impl libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block_4a
+A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block_29
 with const generics
 - K= 4
 */
 Eurydice_arr_9c
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_4a_23(Eurydice_arr_4a *self);
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_29_23(Eurydice_arr_4a *self);
 
 /**
  Generate an unpacked key from a serialized key.
@@ -153,17 +153,17 @@ libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked;
  Get the serialized public key.
 */
 /**
-This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_mut_dd
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_mut_86
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 4
 - PUBLIC_KEY_SIZE= 1568
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_1c(
+libcrux_ml_kem_ind_cca_unpacked_serialized_mut_86_1c(
   const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94 *self,
   Eurydice_arr_d1 *serialized
 );
@@ -172,17 +172,17 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_1c(
  Get the serialized public key.
 */
 /**
-This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_mut_11
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_mut_5b
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 4
 - PUBLIC_KEY_SIZE= 1568
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_1c(
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_5b_1c(
   const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *self,
   Eurydice_arr_d1 *serialized
 );
@@ -191,17 +191,17 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_1c(
  Get the serialized public key.
 */
 /**
-This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_11
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_5b
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 4
 - PUBLIC_KEY_SIZE= 1568
 */
 Eurydice_arr_d1
-libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_11_1c(
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_5b_1c(
   const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *self
 );
 
@@ -227,10 +227,10 @@ libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_4c(
  Get the serialized private key.
 */
 /**
-This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_private_key_mut_11
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_private_key_mut_5b
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 4
@@ -239,7 +239,7 @@ with const generics
 - PUBLIC_KEY_SIZE= 1568
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_2e(
+libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_5b_2e(
   const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *self,
   Eurydice_arr_a8 *serialized
 );
@@ -248,10 +248,10 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_2e(
  Get the serialized private key.
 */
 /**
-This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_private_key_11
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_private_key_5b
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 4
@@ -260,7 +260,7 @@ with const generics
 - PUBLIC_KEY_SIZE= 1568
 */
 Eurydice_arr_a8
-libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_2e(
+libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_5b_2e(
   const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *self
 );
 
@@ -284,28 +284,28 @@ libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_38(
 );
 
 /**
-This function found in impl {core::default::Default for libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {impl core::default::Default for libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.default_30
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.default_1d
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 4
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94
-libcrux_ml_kem_ind_cca_unpacked_default_30_ee(void);
+libcrux_ml_kem_ind_cca_unpacked_default_1d_ee(void);
 
 /**
-This function found in impl {core::default::Default for libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {impl core::default::Default for libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.default_7b
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.default_87
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 4
 */
 libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
-libcrux_ml_kem_ind_cca_unpacked_default_7b_ee(void);
+libcrux_ml_kem_ind_cca_unpacked_default_87_ee(void);
 
 /**
  Generate Unpacked Keys
@@ -549,41 +549,41 @@ typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b_s
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b;
 
 /**
-This function found in impl {libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
+This function found in impl {impl libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final_4a
+A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final_29
 with const generics
 - K= 2
 */
 Eurydice_arr_e3
-libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_af(
+libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_29_af(
   const Eurydice_arr_bf *input
 );
 
 /**
-This function found in impl {libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
+This function found in impl {impl libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks_4a
+A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks_29
 with const generics
 - K= 2
 */
 Eurydice_arr_b8
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_4a_af(
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_29_af(
   Eurydice_arr_e3 *self
 );
 
 /**
-This function found in impl {libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
+This function found in impl {impl libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block_4a
+A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block_29
 with const generics
 - K= 2
 */
 Eurydice_arr_5b0
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_4a_af(Eurydice_arr_e3 *self);
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_29_af(Eurydice_arr_e3 *self);
 
 /**
  Generate an unpacked key from a serialized key.
@@ -626,17 +626,17 @@ libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked;
  Get the serialized public key.
 */
 /**
-This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_mut_dd
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_mut_86
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 2
 - PUBLIC_KEY_SIZE= 800
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_53(
+libcrux_ml_kem_ind_cca_unpacked_serialized_mut_86_53(
   const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b *self,
   Eurydice_arr_03 *serialized
 );
@@ -645,17 +645,17 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_53(
  Get the serialized public key.
 */
 /**
-This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_mut_11
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_mut_5b
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 2
 - PUBLIC_KEY_SIZE= 800
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_53(
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_5b_53(
   const libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *self,
   Eurydice_arr_03 *serialized
 );
@@ -664,17 +664,17 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_53(
  Get the serialized public key.
 */
 /**
-This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_11
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_5b
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 2
 - PUBLIC_KEY_SIZE= 800
 */
 Eurydice_arr_03
-libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_11_53(
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_5b_53(
   const libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *self
 );
 
@@ -700,10 +700,10 @@ libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_e2(
  Get the serialized private key.
 */
 /**
-This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_private_key_mut_11
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_private_key_mut_5b
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 2
@@ -712,7 +712,7 @@ with const generics
 - PUBLIC_KEY_SIZE= 800
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_a3(
+libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_5b_a3(
   const libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *self,
   Eurydice_arr_ab0 *serialized
 );
@@ -721,10 +721,10 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_a3(
  Get the serialized private key.
 */
 /**
-This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_private_key_11
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_private_key_5b
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 2
@@ -733,7 +733,7 @@ with const generics
 - PUBLIC_KEY_SIZE= 800
 */
 Eurydice_arr_ab0
-libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_a3(
+libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_5b_a3(
   const libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *self
 );
 
@@ -757,28 +757,28 @@ libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_71(
 );
 
 /**
-This function found in impl {core::default::Default for libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {impl core::default::Default for libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.default_30
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.default_1d
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 2
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b
-libcrux_ml_kem_ind_cca_unpacked_default_30_66(void);
+libcrux_ml_kem_ind_cca_unpacked_default_1d_66(void);
 
 /**
-This function found in impl {core::default::Default for libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {impl core::default::Default for libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.default_7b
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.default_87
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 2
 */
 libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
-libcrux_ml_kem_ind_cca_unpacked_default_7b_66(void);
+libcrux_ml_kem_ind_cca_unpacked_default_87_66(void);
 
 /**
  Generate Unpacked Keys
@@ -1022,41 +1022,41 @@ typedef struct libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51_s
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51;
 
 /**
-This function found in impl {libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
+This function found in impl {impl libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final_4a
+A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_init_absorb_final_29
 with const generics
 - K= 3
 */
 Eurydice_arr_1b
-libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_4a_78(
+libcrux_ml_kem_hash_functions_portable_shake128_init_absorb_final_29_78(
   const Eurydice_arr_81 *input
 );
 
 /**
-This function found in impl {libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
+This function found in impl {impl libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks_4a
+A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeeze_first_three_blocks_29
 with const generics
 - K= 3
 */
 Eurydice_arr_7e
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_4a_78(
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_first_three_blocks_29_78(
   Eurydice_arr_1b *self
 );
 
 /**
-This function found in impl {libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
+This function found in impl {impl libcrux_ml_kem::hash_functions::Hash<K> for libcrux_ml_kem::hash_functions::portable::PortableHash<K>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block_4a
+A monomorphic instance of libcrux_ml_kem.hash_functions.portable.shake128_squeeze_next_block_29
 with const generics
 - K= 3
 */
 Eurydice_arr_2c
-libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_4a_78(Eurydice_arr_1b *self);
+libcrux_ml_kem_hash_functions_portable_shake128_squeeze_next_block_29_78(Eurydice_arr_1b *self);
 
 /**
  Generate an unpacked key from a serialized key.
@@ -1099,31 +1099,31 @@ libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked;
  Get the serialized public key.
 */
 /**
-This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.public_key_11
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.public_key_5b
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 3
 */
 const
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51
-*libcrux_ml_kem_ind_cca_unpacked_public_key_11_68(
+*libcrux_ml_kem_ind_cca_unpacked_public_key_5b_68(
   const libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *self
 );
 
 /**
-This function found in impl {core::clone::Clone for libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[TraitClause@0, TraitClause@2]}
+This function found in impl {impl core::clone::Clone for libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[@TraitClause0, @TraitClause2]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.clone_d7
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.clone_04
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 3
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51
-libcrux_ml_kem_ind_cca_unpacked_clone_d7_68(
+libcrux_ml_kem_ind_cca_unpacked_clone_04_68(
   const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51 *self
 );
 
@@ -1131,17 +1131,17 @@ libcrux_ml_kem_ind_cca_unpacked_clone_d7_68(
  Get the serialized public key.
 */
 /**
-This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_mut_dd
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_mut_86
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 3
 - PUBLIC_KEY_SIZE= 1184
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_b6(
+libcrux_ml_kem_ind_cca_unpacked_serialized_mut_86_b6(
   const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51 *self,
   Eurydice_arr_5f *serialized
 );
@@ -1150,17 +1150,17 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_b6(
  Get the serialized public key.
 */
 /**
-This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_mut_11
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_mut_5b
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 3
 - PUBLIC_KEY_SIZE= 1184
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_b6(
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_5b_b6(
   const libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *self,
   Eurydice_arr_5f *serialized
 );
@@ -1169,17 +1169,17 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_b6(
  Get the serialized public key.
 */
 /**
-This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_11
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_public_key_5b
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 3
 - PUBLIC_KEY_SIZE= 1184
 */
 Eurydice_arr_5f
-libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_11_b6(
+libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_5b_b6(
   const libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *self
 );
 
@@ -1205,10 +1205,10 @@ libcrux_ml_kem_ind_cca_serialize_kem_secret_key_mut_52(
  Get the serialized private key.
 */
 /**
-This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_private_key_mut_11
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_private_key_mut_5b
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 3
@@ -1217,7 +1217,7 @@ with const generics
 - PUBLIC_KEY_SIZE= 1184
 */
 void
-libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_21(
+libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_5b_21(
   const libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *self,
   Eurydice_arr_7d *serialized
 );
@@ -1226,10 +1226,10 @@ libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_21(
  Get the serialized private key.
 */
 /**
-This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_private_key_11
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.serialized_private_key_5b
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 3
@@ -1238,7 +1238,7 @@ with const generics
 - PUBLIC_KEY_SIZE= 1184
 */
 Eurydice_arr_7d
-libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_21(
+libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_5b_21(
   const libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *self
 );
 
@@ -1262,28 +1262,28 @@ libcrux_ml_kem_ind_cca_unpacked_keys_from_private_key_01(
 );
 
 /**
-This function found in impl {core::default::Default for libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {impl core::default::Default for libcrux_ml_kem::ind_cca::unpacked::MlKemPublicKeyUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.default_30
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.default_1d
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 3
 */
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51
-libcrux_ml_kem_ind_cca_unpacked_default_30_68(void);
+libcrux_ml_kem_ind_cca_unpacked_default_1d_68(void);
 
 /**
-This function found in impl {core::default::Default for libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[TraitClause@0, TraitClause@1]}
+This function found in impl {impl core::default::Default for libcrux_ml_kem::ind_cca::unpacked::MlKemKeyPairUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.default_7b
+A monomorphic instance of libcrux_ml_kem.ind_cca.unpacked.default_87
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
 - K= 3
 */
 libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
-libcrux_ml_kem_ind_cca_unpacked_default_7b_68(void);
+libcrux_ml_kem_ind_cca_unpacked_default_87_68(void);
 
 /**
  Generate Unpacked Keys

@@ -88,101 +88,101 @@ libcrux_ml_kem_constant_time_ops_compare_ciphertexts_select_shared_secret_in_con
 size_t libcrux_ml_kem_constants_ranked_bytes_per_ring_element(size_t rank);
 
 /**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
+This function found in impl {impl libcrux_secrets::traits::Declassify<T> for T}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
+A monomorphic instance of libcrux_secrets.int.public_integers.declassify_22
 with types int16_t
 
 */
-int16_t libcrux_secrets_int_public_integers_declassify_d8_39(int16_t self);
+int16_t libcrux_secrets_int_public_integers_declassify_22_39(int16_t self);
 
 /**
-This function found in impl {libcrux_secrets::int::CastOps for i16}
+This function found in impl {impl libcrux_secrets::int::CastOps for i16}
 */
-uint8_t libcrux_secrets_int_as_u8_f5(int16_t self);
+uint8_t libcrux_secrets_int_as_u8_e5(int16_t self);
 
 /**
-This function found in impl {libcrux_secrets::traits::Classify<T> for T}
+This function found in impl {impl libcrux_secrets::traits::Classify<T> for T}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.classify_27
+A monomorphic instance of libcrux_secrets.int.public_integers.classify_f9
 with types int16_t
 
 */
-int16_t libcrux_secrets_int_public_integers_classify_27_39(int16_t self);
+int16_t libcrux_secrets_int_public_integers_classify_f9_39(int16_t self);
 
 /**
-This function found in impl {libcrux_secrets::int::CastOps for u8}
+This function found in impl {impl libcrux_secrets::int::CastOps for u8}
 */
-int16_t libcrux_secrets_int_as_i16_59(uint8_t self);
+int16_t libcrux_secrets_int_as_i16_c3(uint8_t self);
 
 int16_t libcrux_secrets_int_I16(int16_t v);
 
 /**
-This function found in impl {libcrux_secrets::int::CastOps for i16}
+This function found in impl {impl libcrux_secrets::int::CastOps for i16}
 */
-int32_t libcrux_secrets_int_as_i32_f5(int16_t self);
+int32_t libcrux_secrets_int_as_i32_e5(int16_t self);
 
 /**
-This function found in impl {libcrux_secrets::int::CastOps for i32}
+This function found in impl {impl libcrux_secrets::int::CastOps for i32}
 */
-int16_t libcrux_secrets_int_as_i16_36(int32_t self);
+int16_t libcrux_secrets_int_as_i16_06(int32_t self);
 
 /**
-This function found in impl {libcrux_secrets::int::CastOps for u32}
+This function found in impl {impl libcrux_secrets::int::CastOps for u32}
 */
-int32_t libcrux_secrets_int_as_i32_b8(uint32_t self);
+int32_t libcrux_secrets_int_as_i32_c6(uint32_t self);
 
 /**
-This function found in impl {libcrux_secrets::int::CastOps for i16}
+This function found in impl {impl libcrux_secrets::int::CastOps for i16}
 */
-uint16_t libcrux_secrets_int_as_u16_f5(int16_t self);
+uint16_t libcrux_secrets_int_as_u16_e5(int16_t self);
 
 /**
-This function found in impl {libcrux_secrets::int::CastOps for u16}
+This function found in impl {impl libcrux_secrets::int::CastOps for u16}
 */
-int16_t libcrux_secrets_int_as_i16_ca(uint16_t self);
+int16_t libcrux_secrets_int_as_i16_80(uint16_t self);
 
 /**
-This function found in impl {libcrux_secrets::int::CastOps for u16}
+This function found in impl {impl libcrux_secrets::int::CastOps for u16}
 */
-uint64_t libcrux_secrets_int_as_u64_ca(uint16_t self);
+uint64_t libcrux_secrets_int_as_u64_80(uint16_t self);
 
 /**
-This function found in impl {libcrux_secrets::traits::Classify<T> for T}
+This function found in impl {impl libcrux_secrets::traits::Classify<T> for T}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.classify_27
+A monomorphic instance of libcrux_secrets.int.public_integers.classify_f9
 with types uint32_t
 
 */
-uint32_t libcrux_secrets_int_public_integers_classify_27_df(uint32_t self);
+uint32_t libcrux_secrets_int_public_integers_classify_f9_df(uint32_t self);
 
 /**
-This function found in impl {libcrux_secrets::int::CastOps for u64}
+This function found in impl {impl libcrux_secrets::int::CastOps for u64}
 */
-uint32_t libcrux_secrets_int_as_u32_a3(uint64_t self);
+uint32_t libcrux_secrets_int_as_u32_11(uint64_t self);
 
 /**
-This function found in impl {libcrux_secrets::int::CastOps for u32}
+This function found in impl {impl libcrux_secrets::int::CastOps for u32}
 */
-int16_t libcrux_secrets_int_as_i16_b8(uint32_t self);
+int16_t libcrux_secrets_int_as_i16_c6(uint32_t self);
 
 /**
-This function found in impl {libcrux_secrets::int::CastOps for i16}
+This function found in impl {impl libcrux_secrets::int::CastOps for i16}
 */
-int16_t libcrux_secrets_int_as_i16_f5(int16_t self);
+int16_t libcrux_secrets_int_as_i16_e5(int16_t self);
 
 /**
-This function found in impl {core::default::Default for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
+This function found in impl {impl core::default::Default for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.default_d3
+A monomorphic instance of libcrux_ml_kem.types.default_43
 with const generics
 - SIZE= 3168
 */
-Eurydice_arr_a8 libcrux_ml_kem_types_default_d3_0e(void);
+Eurydice_arr_a8 libcrux_ml_kem_types_default_43_0e(void);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_to_mut
@@ -194,14 +194,14 @@ Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_to_mut_212(Eurydice_arr_d1 *a, size_t r);
 
 /**
-This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
+This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_51
+A monomorphic instance of libcrux_ml_kem.types.from_bd
 with const generics
 - SIZE= 1568
 */
-Eurydice_arr_d1 libcrux_ml_kem_types_from_51_d9(Eurydice_arr_d1 value);
+Eurydice_arr_d1 libcrux_ml_kem_types_from_bd_d9(Eurydice_arr_d1 value);
 
 /**
  Create a new [`MlKemKeyPair`] from the secret and public key.
@@ -219,14 +219,14 @@ libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
 libcrux_ml_kem_types_from_17_70(Eurydice_arr_a8 sk, Eurydice_arr_d1 pk);
 
 /**
-This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
+This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_b2
+A monomorphic instance of libcrux_ml_kem.types.from_3b
 with const generics
 - SIZE= 3168
 */
-Eurydice_arr_a8 libcrux_ml_kem_types_from_b2_0e(Eurydice_arr_a8 value);
+Eurydice_arr_a8 libcrux_ml_kem_types_from_3b_0e(Eurydice_arr_a8 value);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -254,14 +254,14 @@ with const generics
 Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_2f(Eurydice_arr_df *a);
 
 /**
-This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_19
+A monomorphic instance of libcrux_ml_kem.types.from_63
 with const generics
 - SIZE= 1568
 */
-Eurydice_arr_d1 libcrux_ml_kem_types_from_19_d9(Eurydice_arr_d1 value);
+Eurydice_arr_d1 libcrux_ml_kem_types_from_63_d9(Eurydice_arr_d1 value);
 
 /**
  A reference to the raw byte slice.
@@ -435,14 +435,14 @@ with const generics
 Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_b50(Eurydice_arr_d1 *a);
 
 /**
-This function found in impl {core::convert::AsRef<[u8]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+This function found in impl {impl core::convert::AsRef<[u8]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.as_ref_c1
+A monomorphic instance of libcrux_ml_kem.types.as_ref_17
 with const generics
 - SIZE= 1568
 */
-Eurydice_mut_borrow_slice_u8 libcrux_ml_kem_types_as_ref_c1_d9(Eurydice_arr_d1 *self);
+Eurydice_mut_borrow_slice_u8 libcrux_ml_kem_types_as_ref_17_d9(Eurydice_arr_d1 *self);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_from_mut
@@ -520,14 +520,14 @@ Eurydice_mut_borrow_slice_u8_x4
 libcrux_ml_kem_types_unpack_private_key_e3(Eurydice_mut_borrow_slice_u8 private_key);
 
 /**
-This function found in impl {core::default::Default for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
+This function found in impl {impl core::default::Default for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.default_d3
+A monomorphic instance of libcrux_ml_kem.types.default_43
 with const generics
 - SIZE= 2400
 */
-Eurydice_arr_7d libcrux_ml_kem_types_default_d3_79(void);
+Eurydice_arr_7d libcrux_ml_kem_types_default_43_79(void);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_to_mut
@@ -539,14 +539,14 @@ Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_to_mut_211(Eurydice_arr_5f *a, size_t r);
 
 /**
-This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
+This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_51
+A monomorphic instance of libcrux_ml_kem.types.from_bd
 with const generics
 - SIZE= 1184
 */
-Eurydice_arr_5f libcrux_ml_kem_types_from_51_3d(Eurydice_arr_5f value);
+Eurydice_arr_5f libcrux_ml_kem_types_from_bd_3d(Eurydice_arr_5f value);
 
 /**
  Create a new [`MlKemKeyPair`] from the secret and public key.
@@ -564,14 +564,14 @@ libcrux_ml_kem_mlkem768_MlKem768KeyPair
 libcrux_ml_kem_types_from_17_bc(Eurydice_arr_7d sk, Eurydice_arr_5f pk);
 
 /**
-This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
+This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_b2
+A monomorphic instance of libcrux_ml_kem.types.from_3b
 with const generics
 - SIZE= 2400
 */
-Eurydice_arr_7d libcrux_ml_kem_types_from_b2_79(Eurydice_arr_7d value);
+Eurydice_arr_7d libcrux_ml_kem_types_from_3b_79(Eurydice_arr_7d value);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -617,14 +617,14 @@ Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_mut_d417(Eurydice_arr_5f *a, core_ops_range_Range_87 r);
 
 /**
-This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_19
+A monomorphic instance of libcrux_ml_kem.types.from_63
 with const generics
 - SIZE= 1088
 */
-Eurydice_arr_2b libcrux_ml_kem_types_from_19_52(Eurydice_arr_2b value);
+Eurydice_arr_2b libcrux_ml_kem_types_from_63_52(Eurydice_arr_2b value);
 
 /**
  A reference to the raw byte slice.
@@ -749,14 +749,14 @@ with const generics
 Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_06(Eurydice_arr_2b *a);
 
 /**
-This function found in impl {core::convert::AsRef<[u8]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+This function found in impl {impl core::convert::AsRef<[u8]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.as_ref_c1
+A monomorphic instance of libcrux_ml_kem.types.as_ref_17
 with const generics
 - SIZE= 1088
 */
-Eurydice_mut_borrow_slice_u8 libcrux_ml_kem_types_as_ref_c1_52(Eurydice_arr_2b *self);
+Eurydice_mut_borrow_slice_u8 libcrux_ml_kem_types_as_ref_17_52(Eurydice_arr_2b *self);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_from_mut
@@ -837,14 +837,14 @@ with const generics
 Eurydice_arr_ec libcrux_ml_kem_utils_into_padded_array_ce(Eurydice_mut_borrow_slice_u8 slice);
 
 /**
-This function found in impl {core::default::Default for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
+This function found in impl {impl core::default::Default for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.default_d3
+A monomorphic instance of libcrux_ml_kem.types.default_43
 with const generics
 - SIZE= 1632
 */
-Eurydice_arr_ab0 libcrux_ml_kem_types_default_d3_be(void);
+Eurydice_arr_ab0 libcrux_ml_kem_types_default_43_be(void);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_to_mut
@@ -856,14 +856,14 @@ Eurydice_mut_borrow_slice_u8
 Eurydice_array_to_subslice_to_mut_210(Eurydice_arr_03 *a, size_t r);
 
 /**
-This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
+This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPublicKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_51
+A monomorphic instance of libcrux_ml_kem.types.from_bd
 with const generics
 - SIZE= 800
 */
-Eurydice_arr_03 libcrux_ml_kem_types_from_51_df(Eurydice_arr_03 value);
+Eurydice_arr_03 libcrux_ml_kem_types_from_bd_df(Eurydice_arr_03 value);
 
 /**
  Create a new [`MlKemKeyPair`] from the secret and public key.
@@ -881,14 +881,14 @@ libcrux_ml_kem_types_MlKemKeyPair_0d
 libcrux_ml_kem_types_from_17_d6(Eurydice_arr_ab0 sk, Eurydice_arr_03 pk);
 
 /**
-This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
+This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemPrivateKey<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_b2
+A monomorphic instance of libcrux_ml_kem.types.from_3b
 with const generics
 - SIZE= 1632
 */
-Eurydice_arr_ab0 libcrux_ml_kem_types_from_b2_be(Eurydice_arr_ab0 value);
+Eurydice_arr_ab0 libcrux_ml_kem_types_from_3b_be(Eurydice_arr_ab0 value);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -954,24 +954,24 @@ typedef struct core_result_Result_07_s
 core_result_Result_07;
 
 /**
-This function found in impl {core::result::Result<T, E>[TraitClause@0, TraitClause@1]}
+This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_26
+A monomorphic instance of core.result.unwrap_37
 with types Eurydice_arr uint8_t[[$32size_t]], core_array_TryFromSliceError
 
 */
-Eurydice_arr_ec core_result_unwrap_26_39(core_result_Result_07 self);
+Eurydice_arr_ec core_result_unwrap_37_39(core_result_Result_07 self);
 
 /**
-This function found in impl {core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+This function found in impl {impl core::convert::From<[u8; SIZE]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.from_19
+A monomorphic instance of libcrux_ml_kem.types.from_63
 with const generics
 - SIZE= 768
 */
-Eurydice_arr_d2 libcrux_ml_kem_types_from_19_80(Eurydice_arr_d2 value);
+Eurydice_arr_d2 libcrux_ml_kem_types_from_63_80(Eurydice_arr_d2 value);
 
 /**
  A reference to the raw byte slice.
@@ -1264,14 +1264,14 @@ with const generics
 Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_27(Eurydice_arr_d2 *a);
 
 /**
-This function found in impl {core::convert::AsRef<[u8]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
+This function found in impl {impl core::convert::AsRef<[u8]> for libcrux_ml_kem::types::MlKemCiphertext<SIZE>}
 */
 /**
-A monomorphic instance of libcrux_ml_kem.types.as_ref_c1
+A monomorphic instance of libcrux_ml_kem.types.as_ref_17
 with const generics
 - SIZE= 768
 */
-Eurydice_mut_borrow_slice_u8 libcrux_ml_kem_types_as_ref_c1_80(Eurydice_arr_d2 *self);
+Eurydice_mut_borrow_slice_u8 libcrux_ml_kem_types_as_ref_17_80(Eurydice_arr_d2 *self);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_from_mut
@@ -1394,14 +1394,14 @@ typedef struct core_result_Result_57_s
 core_result_Result_57;
 
 /**
-This function found in impl {core::result::Result<T, E>[TraitClause@0, TraitClause@1]}
+This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_26
+A monomorphic instance of core.result.unwrap_37
 with types Eurydice_arr uint8_t[[$24size_t]], core_array_TryFromSliceError
 
 */
-Eurydice_arr_94 core_result_unwrap_26_78(core_result_Result_57 self);
+Eurydice_arr_94 core_result_unwrap_37_78(core_result_Result_57 self);
 
 /**
 A monomorphic instance of core.result.Result
@@ -1420,14 +1420,14 @@ typedef struct core_result_Result_83_s
 core_result_Result_83;
 
 /**
-This function found in impl {core::result::Result<T, E>[TraitClause@0, TraitClause@1]}
+This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_26
+A monomorphic instance of core.result.unwrap_37
 with types Eurydice_arr uint8_t[[$20size_t]], core_array_TryFromSliceError
 
 */
-Eurydice_arr_fc core_result_unwrap_26_7d(core_result_Result_83 self);
+Eurydice_arr_fc core_result_unwrap_37_7d(core_result_Result_83 self);
 
 /**
 A monomorphic instance of core.result.Result
@@ -1446,14 +1446,14 @@ typedef struct core_result_Result_80_s
 core_result_Result_80;
 
 /**
-This function found in impl {core::result::Result<T, E>[TraitClause@0, TraitClause@1]}
+This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_26
+A monomorphic instance of core.result.unwrap_37
 with types Eurydice_arr uint8_t[[$10size_t]], core_array_TryFromSliceError
 
 */
-Eurydice_arr_6d core_result_unwrap_26_63(core_result_Result_80 self);
+Eurydice_arr_6d core_result_unwrap_37_63(core_result_Result_80 self);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -1481,56 +1481,56 @@ with const generics
 Eurydice_mut_borrow_slice_i16 Eurydice_array_to_slice_mut_8a(Eurydice_arr_d6 *a);
 
 /**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
+This function found in impl {impl libcrux_secrets::traits::Declassify<T> for T}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
+A monomorphic instance of libcrux_secrets.int.public_integers.declassify_22
 with types Eurydice_arr uint8_t[[$24size_t]]
 
 */
-Eurydice_arr_94 libcrux_secrets_int_public_integers_declassify_d8_40(Eurydice_arr_94 self);
+Eurydice_arr_94 libcrux_secrets_int_public_integers_declassify_22_40(Eurydice_arr_94 self);
 
 /**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
+This function found in impl {impl libcrux_secrets::traits::Declassify<T> for T}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
+A monomorphic instance of libcrux_secrets.int.public_integers.declassify_22
 with types Eurydice_arr uint8_t[[$20size_t]]
 
 */
-Eurydice_arr_fc libcrux_secrets_int_public_integers_declassify_d8_2b(Eurydice_arr_fc self);
+Eurydice_arr_fc libcrux_secrets_int_public_integers_declassify_22_2b(Eurydice_arr_fc self);
 
 /**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
+This function found in impl {impl libcrux_secrets::traits::Declassify<T> for T}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
+A monomorphic instance of libcrux_secrets.int.public_integers.declassify_22
 with types Eurydice_arr uint8_t[[$10size_t]]
 
 */
-Eurydice_arr_6d libcrux_secrets_int_public_integers_declassify_d8_37(Eurydice_arr_6d self);
+Eurydice_arr_6d libcrux_secrets_int_public_integers_declassify_22_37(Eurydice_arr_6d self);
 
 /**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
+This function found in impl {impl libcrux_secrets::traits::Declassify<T> for T}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
+A monomorphic instance of libcrux_secrets.int.public_integers.declassify_22
 with types Eurydice_arr uint8_t[[$8size_t]]
 
 */
 Eurydice_array_u8x8
-libcrux_secrets_int_public_integers_declassify_d8_52(Eurydice_array_u8x8 self);
+libcrux_secrets_int_public_integers_declassify_22_52(Eurydice_array_u8x8 self);
 
 /**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
+This function found in impl {impl libcrux_secrets::traits::Declassify<T> for T}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
+A monomorphic instance of libcrux_secrets.int.public_integers.declassify_22
 with types Eurydice_arr uint8_t[[$2size_t]]
 
 */
 Eurydice_array_u8x2
-libcrux_secrets_int_public_integers_declassify_d8_75(Eurydice_array_u8x2 self);
+libcrux_secrets_int_public_integers_declassify_22_75(Eurydice_array_u8x2 self);
 
 /**
  Classify a mutable slice (identity)
@@ -1545,45 +1545,45 @@ Eurydice_mut_borrow_slice_u8
 libcrux_secrets_int_public_integers_classify_mut_slice_75(Eurydice_mut_borrow_slice_u8 x);
 
 /**
-This function found in impl {libcrux_secrets::traits::Classify<T> for T}
+This function found in impl {impl libcrux_secrets::traits::Classify<T> for T}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.classify_27
+A monomorphic instance of libcrux_secrets.int.public_integers.classify_f9
 with types Eurydice_arr int16_t[[$16size_t]]
 
 */
-Eurydice_arr_d6 libcrux_secrets_int_public_integers_classify_27_4b(Eurydice_arr_d6 self);
+Eurydice_arr_d6 libcrux_secrets_int_public_integers_classify_f9_4b(Eurydice_arr_d6 self);
 
 /**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
+This function found in impl {impl libcrux_secrets::traits::Declassify<T> for T}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
+A monomorphic instance of libcrux_secrets.int.public_integers.declassify_22
 with types Eurydice_arr int16_t[[$16size_t]]
 
 */
-Eurydice_arr_d6 libcrux_secrets_int_public_integers_declassify_d8_4b(Eurydice_arr_d6 self);
+Eurydice_arr_d6 libcrux_secrets_int_public_integers_declassify_22_4b(Eurydice_arr_d6 self);
 
 /**
-This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a ([T])> for &'a ([T])}
+This function found in impl {impl libcrux_secrets::traits::ClassifyRef<&'a [T]> for &'a [T]}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_6d
+A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_57
 with types uint8_t
 
 */
 Eurydice_mut_borrow_slice_u8
-libcrux_secrets_int_classify_public_classify_ref_6d_90(Eurydice_mut_borrow_slice_u8 self);
+libcrux_secrets_int_classify_public_classify_ref_57_90(Eurydice_mut_borrow_slice_u8 self);
 
 /**
-This function found in impl {libcrux_secrets::traits::Declassify<T> for T}
+This function found in impl {impl libcrux_secrets::traits::Declassify<T> for T}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.public_integers.declassify_d8
+A monomorphic instance of libcrux_secrets.int.public_integers.declassify_22
 with types Eurydice_arr uint8_t[[$22size_t]]
 
 */
-Eurydice_arr_80 libcrux_secrets_int_public_integers_declassify_d8_0b(Eurydice_arr_80 self);
+Eurydice_arr_80 libcrux_secrets_int_public_integers_declassify_22_0b(Eurydice_arr_80 self);
 
 /**
 A monomorphic instance of Eurydice.array_to_subslice_mut
@@ -1595,15 +1595,15 @@ Eurydice_mut_borrow_slice_i16
 Eurydice_array_to_subslice_mut_e7(Eurydice_arr_d6 *a, core_ops_range_Range_87 r);
 
 /**
-This function found in impl {libcrux_secrets::traits::ClassifyRef<&'a ([T])> for &'a ([T])}
+This function found in impl {impl libcrux_secrets::traits::ClassifyRef<&'a [T]> for &'a [T]}
 */
 /**
-A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_6d
+A monomorphic instance of libcrux_secrets.int.classify_public.classify_ref_57
 with types int16_t
 
 */
 Eurydice_mut_borrow_slice_i16
-libcrux_secrets_int_classify_public_classify_ref_6d_39(Eurydice_mut_borrow_slice_i16 self);
+libcrux_secrets_int_classify_public_classify_ref_57_39(Eurydice_mut_borrow_slice_i16 self);
 
 /**
 A monomorphic instance of Eurydice.slice_subslice_mut
@@ -1630,14 +1630,14 @@ typedef struct core_result_Result_ec_s
 core_result_Result_ec;
 
 /**
-This function found in impl {core::result::Result<T, E>[TraitClause@0, TraitClause@1]}
+This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_26
+A monomorphic instance of core.result.unwrap_37
 with types Eurydice_arr int16_t[[$16size_t]], core_array_TryFromSliceError
 
 */
-Eurydice_arr_d6 core_result_unwrap_26_d3(core_result_Result_ec self);
+Eurydice_arr_d6 core_result_unwrap_37_d3(core_result_Result_ec self);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -1837,14 +1837,14 @@ typedef struct core_result_Result_8e_s
 core_result_Result_8e;
 
 /**
-This function found in impl {core::result::Result<T, E>[TraitClause@0, TraitClause@1]}
+This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_26
+A monomorphic instance of core.result.unwrap_37
 with types Eurydice_arr uint8_t[[$8size_t]], core_array_TryFromSliceError
 
 */
-Eurydice_array_u8x8 core_result_unwrap_26_e0(core_result_Result_8e self);
+Eurydice_array_u8x8 core_result_unwrap_37_e0(core_result_Result_8e self);
 
 /**
 A monomorphic instance of Eurydice.slice_subslice_mut

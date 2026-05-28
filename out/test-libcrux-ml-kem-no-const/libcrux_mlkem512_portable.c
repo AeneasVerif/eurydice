@@ -331,7 +331,7 @@ libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
 libcrux_ml_kem_mlkem512_portable_unpacked_generate_key_pair(Eurydice_arr_c7 randomness)
 {
   libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
-  key_pair = libcrux_ml_kem_ind_cca_unpacked_default_7b_66();
+  key_pair = libcrux_ml_kem_ind_cca_unpacked_default_87_66();
   libcrux_ml_kem_mlkem512_portable_unpacked_generate_key_pair_mut(randomness, &key_pair);
   return key_pair;
 }
@@ -342,7 +342,7 @@ libcrux_ml_kem_mlkem512_portable_unpacked_generate_key_pair(Eurydice_arr_c7 rand
 libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
 libcrux_ml_kem_mlkem512_portable_unpacked_init_key_pair(void)
 {
-  return libcrux_ml_kem_ind_cca_unpacked_default_7b_66();
+  return libcrux_ml_kem_ind_cca_unpacked_default_87_66();
 }
 
 /**
@@ -351,7 +351,7 @@ libcrux_ml_kem_mlkem512_portable_unpacked_init_key_pair(void)
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b
 libcrux_ml_kem_mlkem512_portable_unpacked_init_public_key(void)
 {
-  return libcrux_ml_kem_ind_cca_unpacked_default_30_66();
+  return libcrux_ml_kem_ind_cca_unpacked_default_1d_66();
 }
 
 /**
@@ -395,7 +395,7 @@ libcrux_ml_kem_mlkem512_portable_unpacked_key_pair_serialized_private_key(
   libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *key_pair
 )
 {
-  return libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_a3(key_pair);
+  return libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_5b_a3(key_pair);
 }
 
 /**
@@ -407,7 +407,7 @@ libcrux_ml_kem_mlkem512_portable_unpacked_key_pair_serialized_private_key_mut(
   Eurydice_arr_ab0 *serialized
 )
 {
-  libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_a3(key_pair, serialized);
+  libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_5b_a3(key_pair, serialized);
 }
 
 /**
@@ -418,7 +418,7 @@ libcrux_ml_kem_mlkem512_portable_unpacked_key_pair_serialized_public_key(
   libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *key_pair
 )
 {
-  return libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_11_53(key_pair);
+  return libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_5b_53(key_pair);
 }
 
 /**
@@ -430,7 +430,7 @@ libcrux_ml_kem_mlkem512_portable_unpacked_key_pair_serialized_public_key_mut(
   Eurydice_arr_03 *serialized
 )
 {
-  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_53(key_pair, serialized);
+  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_5b_53(key_pair, serialized);
 }
 
 /**
@@ -442,7 +442,7 @@ libcrux_ml_kem_mlkem512_portable_unpacked_serialized_public_key(
   Eurydice_arr_03 *serialized
 )
 {
-  libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_53(public_key, serialized);
+  libcrux_ml_kem_ind_cca_unpacked_serialized_mut_86_53(public_key, serialized);
 }
 
 /**

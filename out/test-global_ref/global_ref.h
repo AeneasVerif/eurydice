@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 extern bool
-core_cmp_impls__core__cmp__PartialEq_____for_____eq(void *const *x0, void *const *x1);
+core_cmp_impls__impl_core__cmp__PartialEq_____for_____eq(void *const *x0, void *const *x1);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1

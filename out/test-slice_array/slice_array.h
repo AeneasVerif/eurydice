@@ -21,12 +21,12 @@ extern "C" {
 typedef uint8_t core_result_Result_10;
 
 extern core_result_Result_10
-core_array__core__fmt__Debug_for_core__array__TryFromSliceError__fmt(
+core_array__impl_core__fmt__Debug_for_core__array__TryFromSliceError__fmt(
   const core_array_TryFromSliceError *x0,
   core_fmt_Formatter *x1
 );
 
-extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(const uint8_t *x0);
+extern uint8_t core_clone_impls__impl_core__clone__Clone_for_u8__clone(const uint8_t *x0);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1

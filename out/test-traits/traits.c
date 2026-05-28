@@ -8,9 +8,9 @@
 #include "traits.h"
 
 /**
-This function found in impl {traits::ToInt for traits::Foo}
+This function found in impl {impl traits::ToInt for traits::Foo}
 */
-uint32_t traits_to_int_ac(const traits_Foo *self)
+uint32_t traits_to_int_62(const traits_Foo *self)
 {
   switch (self[0U])
   {
@@ -32,12 +32,12 @@ uint32_t traits_to_int_ac(const traits_Foo *self)
 }
 
 /**
-This function found in impl {traits::ToInt for &0 ([traits::Foo])}
+This function found in impl {impl traits::ToInt for &'_0 [traits::Foo]}
 */
-uint32_t traits_to_int_0f(const Eurydice_dst_ref_shared_42 *self)
+uint32_t traits_to_int_db(const Eurydice_dst_ref_shared_42 *self)
 {
-  uint32_t uu____0 = traits_to_int_ac(&self->ptr[0U]);
-  return uu____0 * traits_to_int_ac(&self->ptr[1U]);
+  uint32_t uu____0 = traits_to_int_62(&self->ptr[0U]);
+  return uu____0 * traits_to_int_62(&self->ptr[1U]);
 }
 
 /**
@@ -63,7 +63,7 @@ void traits_main(void)
   lvalue =
     array_to_subslice_shared_7d(&foos,
       (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)2U }));
-  if (!(traits_to_int_0f(&lvalue) != 2U))
+  if (!(traits_to_int_db(&lvalue) != 2U))
   {
     return;
   }
