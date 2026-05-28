@@ -81,6 +81,7 @@ with const generics
 */
 inline core_result_Result_1d core_result_from_residual_1f_48(core_result_Result_8f residual)
 {
+  EURYDICE_ASSERT(!!((ptrdiff_t)residual.tag == (ptrdiff_t)1), "assert failure");
   uint8_t e = residual.val.case_Err;
   return
     (
