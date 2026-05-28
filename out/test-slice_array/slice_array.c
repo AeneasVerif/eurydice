@@ -84,14 +84,14 @@ static Eurydice_borrow_slice_u8 array_to_slice_shared_98(const Eurydice_array_u8
 }
 
 /**
-This function found in impl {core::result::Result<T, E>[TraitClause@0, TraitClause@1]}
+This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_26
+A monomorphic instance of core.result.unwrap_37
 with types Eurydice_arr uint8_t[[$4size_t]], core_array_TryFromSliceError
 
 */
-static Eurydice_array_u8x4 unwrap_26_cc(core_result_Result_c7 self)
+static Eurydice_array_u8x4 unwrap_37_cc(core_result_Result_c7 self)
 {
   if (self.tag == core_result_Ok)
   {
@@ -105,14 +105,14 @@ static Eurydice_array_u8x4 unwrap_26_cc(core_result_Result_c7 self)
 }
 
 /**
-This function found in impl {core::result::Result<T, E>[TraitClause@0, TraitClause@1]}
+This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of core.result.unwrap_26
+A monomorphic instance of core.result.unwrap_37
 with types const Eurydice_arr uint8_t[[$4size_t]]*, core_array_TryFromSliceError
 
 */
-static const Eurydice_array_u8x4 *unwrap_26_7f(core_result_Result_90 self)
+static const Eurydice_array_u8x4 *unwrap_37_7f(core_result_Result_90 self)
 {
   if (self.tag == core_result_Ok)
   {
@@ -148,7 +148,7 @@ void slice_array_f3(void)
   memcpy(arr0.data, x1.ptr, (size_t)4U * sizeof (uint8_t));
   Eurydice_array_u8x4
   y1 =
-    unwrap_26_cc((
+    unwrap_37_cc((
         KRML_CLITERAL(core_result_Result_c7){ .tag = core_result_Ok, .val = { .case_Ok = arr0 } }
       ));
   /* original Rust expression is not an lvalue in C */
@@ -160,7 +160,7 @@ void slice_array_f3(void)
   const
   Eurydice_array_u8x4
   *y2 =
-    unwrap_26_7f(Eurydice_slice_to_ref_array2((size_t)4U,
+    unwrap_37_7f(Eurydice_slice_to_ref_array2((size_t)4U,
         uu____0,
         &arr1,
         Eurydice_borrow_slice_u8,
@@ -174,7 +174,7 @@ void slice_array_f3(void)
   memcpy(arr.data, x3.ptr, (size_t)4U * sizeof (uint8_t));
   Eurydice_array_u8x4
   y3 =
-    unwrap_26_cc((
+    unwrap_37_cc((
         KRML_CLITERAL(core_result_Result_c7){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
       ));
   const_uint8_t__x2 uu____1 = { .fst = y1.data, .snd = y2->data };
@@ -220,7 +220,7 @@ void slice_array_f5_23(void)
   memcpy(arr0.data, x1.ptr, (size_t)4U * sizeof (uint8_t));
   Eurydice_array_u8x4
   y1 =
-    unwrap_26_cc((
+    unwrap_37_cc((
         KRML_CLITERAL(core_result_Result_c7){ .tag = core_result_Ok, .val = { .case_Ok = arr0 } }
       ));
   /* original Rust expression is not an lvalue in C */
@@ -233,7 +233,7 @@ void slice_array_f5_23(void)
   const
   Eurydice_array_u8x4
   *y2 =
-    unwrap_26_7f(Eurydice_slice_to_ref_array2((size_t)4U,
+    unwrap_37_7f(Eurydice_slice_to_ref_array2((size_t)4U,
         uu____0,
         &arr,
         Eurydice_borrow_slice_u8,

@@ -334,7 +334,7 @@ libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
 libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair(Eurydice_arr_c7 randomness)
 {
   libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
-  key_pair = libcrux_ml_kem_ind_cca_unpacked_default_7b_68();
+  key_pair = libcrux_ml_kem_ind_cca_unpacked_default_87_68();
   libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair_mut(randomness, &key_pair);
   return key_pair;
 }
@@ -345,7 +345,7 @@ libcrux_ml_kem_mlkem768_portable_unpacked_generate_key_pair(Eurydice_arr_c7 rand
 libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked
 libcrux_ml_kem_mlkem768_portable_unpacked_init_key_pair(void)
 {
-  return libcrux_ml_kem_ind_cca_unpacked_default_7b_68();
+  return libcrux_ml_kem_ind_cca_unpacked_default_87_68();
 }
 
 /**
@@ -354,7 +354,7 @@ libcrux_ml_kem_mlkem768_portable_unpacked_init_key_pair(void)
 libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51
 libcrux_ml_kem_mlkem768_portable_unpacked_init_public_key(void)
 {
-  return libcrux_ml_kem_ind_cca_unpacked_default_30_68();
+  return libcrux_ml_kem_ind_cca_unpacked_default_1d_68();
 }
 
 /**
@@ -398,7 +398,7 @@ libcrux_ml_kem_mlkem768_portable_unpacked_key_pair_serialized_private_key(
   const libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair
 )
 {
-  return libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_11_21(key_pair);
+  return libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_5b_21(key_pair);
 }
 
 /**
@@ -410,7 +410,7 @@ libcrux_ml_kem_mlkem768_portable_unpacked_key_pair_serialized_private_key_mut(
   Eurydice_arr_7d *serialized
 )
 {
-  libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_11_21(key_pair, serialized);
+  libcrux_ml_kem_ind_cca_unpacked_serialized_private_key_mut_5b_21(key_pair, serialized);
 }
 
 /**
@@ -421,7 +421,7 @@ libcrux_ml_kem_mlkem768_portable_unpacked_key_pair_serialized_public_key(
   const libcrux_ml_kem_mlkem768_portable_unpacked_MlKem768KeyPairUnpacked *key_pair
 )
 {
-  return libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_11_b6(key_pair);
+  return libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_5b_b6(key_pair);
 }
 
 /**
@@ -433,7 +433,7 @@ libcrux_ml_kem_mlkem768_portable_unpacked_key_pair_serialized_public_key_mut(
   Eurydice_arr_5f *serialized
 )
 {
-  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_11_b6(key_pair, serialized);
+  libcrux_ml_kem_ind_cca_unpacked_serialized_public_key_mut_5b_b6(key_pair, serialized);
 }
 
 /**
@@ -447,7 +447,7 @@ libcrux_ml_kem_mlkem768_portable_unpacked_public_key(
 {
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_51
   uu____0 =
-    libcrux_ml_kem_ind_cca_unpacked_clone_d7_68(libcrux_ml_kem_ind_cca_unpacked_public_key_11_68(key_pair));
+    libcrux_ml_kem_ind_cca_unpacked_clone_04_68(libcrux_ml_kem_ind_cca_unpacked_public_key_5b_68(key_pair));
   pk[0U] = uu____0;
 }
 
@@ -460,7 +460,7 @@ libcrux_ml_kem_mlkem768_portable_unpacked_serialized_public_key(
   Eurydice_arr_5f *serialized
 )
 {
-  libcrux_ml_kem_ind_cca_unpacked_serialized_mut_dd_b6(public_key, serialized);
+  libcrux_ml_kem_ind_cca_unpacked_serialized_mut_86_b6(public_key, serialized);
 }
 
 /**

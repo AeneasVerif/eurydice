@@ -35,24 +35,24 @@ with const generics
 typedef struct Eurydice_arr_58_s { size_t data[1U]; } Eurydice_arr_58;
 
 /**
-This function found in impl {core::ops::function::FnMut<(usize), usize> for closure::f::closure::closure<0, 1>}
+This function found in impl {impl core::ops::function::FnMut<(usize,), usize> for closure::f::closure::closure<'_0, '_1>}
 */
-size_t closure_f_closure_call_mut_8a(closure_f_closure_closure *_, size_t tupled_args);
+size_t closure_f_closure_call_mut_50(closure_f_closure_closure *_, size_t tupled_args);
 
 /**
-This function found in impl {core::ops::function::FnOnce<(usize), usize> for closure::f::closure::closure<0, 1>}
+This function found in impl {impl core::ops::function::FnOnce<(usize,), usize> for closure::f::closure::closure<'_0, '_1>}
 */
-size_t closure_f_closure_call_once_b7(closure_f_closure_closure _, size_t _0);
+size_t closure_f_closure_call_once_c1(closure_f_closure_closure _, size_t _0);
 
 /**
-This function found in impl {core::ops::function::FnMut<(usize), [usize; 1usize]> for closure::f::closure<0>}
+This function found in impl {impl core::ops::function::FnMut<(usize,), [usize; 1 : usize]> for closure::f::closure<'_0>}
 */
-Eurydice_arr_58 closure_f_call_mut_82(const Eurydice_arr_58 **_, size_t tupled_args);
+Eurydice_arr_58 closure_f_call_mut_92(const Eurydice_arr_58 **_, size_t tupled_args);
 
 /**
-This function found in impl {core::ops::function::FnOnce<(usize), [usize; 1usize]> for closure::f::closure<0>}
+This function found in impl {impl core::ops::function::FnOnce<(usize,), [usize; 1 : usize]> for closure::f::closure<'_0>}
 */
-Eurydice_arr_58 closure_f_call_once_86(const Eurydice_arr_58 *_, size_t _0);
+Eurydice_arr_58 closure_f_call_once_b7(const Eurydice_arr_58 *_, size_t _0);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -73,12 +73,12 @@ typedef uint8_t core_panicking_AssertKind;
 void closure_main(void);
 
 extern void
-closure_f_closure_closure__core__marker__Destruct_for_closure__f__closure__closure_0__1___drop_in_place(
+closure_f_closure_closure__impl_core__marker__Destruct_for_closure__f__closure__closure___0____1___drop_in_place(
   closure_f_closure_closure *x0
 );
 
 extern void
-closure_f_closure__core__marker__Destruct_for_closure__f__closure_0___drop_in_place(
+closure_f_closure__impl_core__marker__Destruct_for_closure__f__closure___0___drop_in_place(
   const Eurydice_arr_58 **x0
 );
 

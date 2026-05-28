@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t *x0);
+extern size_t core_clone_impls__impl_core__clone__Clone_for_usize__clone(const size_t *x0);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -24,36 +24,36 @@ extern size_t core_clone_impls__core__clone__Clone_for_usize__clone(const size_t
 typedef uint8_t core_panicking_AssertKind;
 
 /**
-This function found in impl {where_clauses_closures::Ops<1usize> for usize}
+This function found in impl {impl where_clauses_closures::Ops<1 : usize> for usize}
 */
-size_t where_clauses_closures_zero_38(void);
+size_t where_clauses_closures_zero_ec(void);
 
 /**
-This function found in impl {where_clauses_closures::Ops<1usize> for usize}
+This function found in impl {impl where_clauses_closures::Ops<1 : usize> for usize}
 */
-size_t where_clauses_closures_of_usize_38(size_t x);
+size_t where_clauses_closures_of_usize_ec(size_t x);
 
 /**
-This function found in impl {core::ops::function::FnMut<(usize), T> for where_clauses_closures::test::closure<T, K>[TraitClause@0, TraitClause@1, TraitClause@2]}
+This function found in impl {impl core::ops::function::FnMut<(usize,), T> for where_clauses_closures::test::closure<T, K>[@TraitClause0, @TraitClause1, @TraitClause2]}
 */
 /**
-A monomorphic instance of where_clauses_closures.test.call_mut_1a
+A monomorphic instance of where_clauses_closures.test.call_mut_0c
 with types size_t
 with const generics
 - K= 1
 */
-size_t where_clauses_closures_test_call_mut_1a_df(void **_, size_t tupled_args);
+size_t where_clauses_closures_test_call_mut_0c_df(void **_, size_t tupled_args);
 
 /**
-This function found in impl {core::ops::function::FnOnce<(usize), T> for where_clauses_closures::test::closure<T, K>[TraitClause@0, TraitClause@1, TraitClause@2]}
+This function found in impl {impl core::ops::function::FnOnce<(usize,), T> for where_clauses_closures::test::closure<T, K>[@TraitClause0, @TraitClause1, @TraitClause2]}
 */
 /**
-A monomorphic instance of where_clauses_closures.test.call_once_79
+A monomorphic instance of where_clauses_closures.test.call_once_8c
 with types size_t
 with const generics
 - K= 1
 */
-size_t where_clauses_closures_test_call_once_79_df(size_t _);
+size_t where_clauses_closures_test_call_once_8c_df(size_t _);
 
 typedef struct size_t_x2_s
 {

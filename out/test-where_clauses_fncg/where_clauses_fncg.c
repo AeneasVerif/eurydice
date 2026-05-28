@@ -8,7 +8,7 @@
 #include "where_clauses_fncg.h"
 
 /**
-This function found in impl {where_clauses_fncg::Foo<K> for u64}
+This function found in impl {impl where_clauses_fncg::Foo<K> for u64}
 */
 /**
 A monomorphic instance of where_clauses_fncg.bar_16
@@ -48,7 +48,7 @@ uint64_t where_clauses_fncg_f_d3(void)
 }
 
 /**
-This function found in impl {where_clauses_fncg::Foo<K> for u64}
+This function found in impl {impl where_clauses_fncg::Foo<K> for u64}
 */
 /**
 A monomorphic instance of where_clauses_fncg.bar_16
@@ -62,15 +62,15 @@ uint64_t where_clauses_fncg_bar_16_9e(Eurydice_arr_40 x, Eurydice_arr_11 _)
 }
 
 /**
-This function found in impl {where_clauses_fncg::UseFoo for ()}
+This function found in impl {impl where_clauses_fncg::UseFoo for ()}
 */
 /**
-A monomorphic instance of where_clauses_fncg.method_foo_db
+A monomorphic instance of where_clauses_fncg.method_foo_4a
 with types uint64_t
 with const generics
 - K= 12
 */
-uint64_t where_clauses_fncg_method_foo_db_27(void)
+uint64_t where_clauses_fncg_method_foo_4a_27(void)
 {
   return
     where_clauses_fncg_bar_16_9e((
@@ -95,9 +95,9 @@ with types ()
 with const generics
 
 */
-uint64_t where_clauses_fncg_g_ec(void)
+uint64_t where_clauses_fncg_g_92(void)
 {
-  return where_clauses_fncg_method_foo_db_27();
+  return where_clauses_fncg_method_foo_4a_27();
 }
 
 typedef struct const_uint64_t__x2_s
@@ -114,7 +114,7 @@ void where_clauses_fncg_main(void)
   uint64_t lvalue0 = 0ULL;
   const_uint64_t__x2 uu____0 = { .fst = &r, .snd = &lvalue0 };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
-  uint64_t r0 = where_clauses_fncg_g_ec();
+  uint64_t r0 = where_clauses_fncg_g_92();
   /* original Rust expression is not an lvalue in C */
   uint64_t lvalue = 0ULL;
   const_uint64_t__x2 uu____1 = { .fst = &r0, .snd = &lvalue };

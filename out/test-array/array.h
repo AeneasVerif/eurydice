@@ -31,7 +31,10 @@ typedef struct array_Foo_s
 array_Foo;
 
 extern bool
-core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(const uint32_t *x0, const uint32_t *x1);
+core_cmp_impls__impl_core__cmp__PartialEq_u32__for_u32__eq(
+  const uint32_t *x0,
+  const uint32_t *x1
+);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -84,24 +87,24 @@ void array_mut_array(Eurydice_arr_a0 x);
 void array_mut_foo(array_Foo f);
 
 /**
-This function found in impl {core::ops::function::FnMut<(usize), u32> for array::mk_incr::closure<K>}
+This function found in impl {impl core::ops::function::FnMut<(usize,), u32> for array::mk_incr::closure<K>}
 */
 /**
-A monomorphic instance of array.mk_incr.call_mut_e2
+A monomorphic instance of array.mk_incr.call_mut_fc
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr_call_mut_e2_55(void **_, size_t tupled_args);
+uint32_t array_mk_incr_call_mut_fc_55(void **_, size_t tupled_args);
 
 /**
-This function found in impl {core::ops::function::FnOnce<(usize), u32> for array::mk_incr::closure<K>}
+This function found in impl {impl core::ops::function::FnOnce<(usize,), u32> for array::mk_incr::closure<K>}
 */
 /**
-A monomorphic instance of array.mk_incr.call_once_b7
+A monomorphic instance of array.mk_incr.call_once_89
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr_call_once_b7_55(size_t _);
+uint32_t array_mk_incr_call_once_89_55(size_t _);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -126,24 +129,24 @@ with const generics
 typedef const uint32_t *array_mk_incr2_closure_e4;
 
 /**
-This function found in impl {core::ops::function::FnMut<(usize), u32> for array::mk_incr2::closure<0, K>}
+This function found in impl {impl core::ops::function::FnMut<(usize,), u32> for array::mk_incr2::closure<'_0, K>}
 */
 /**
-A monomorphic instance of array.mk_incr2.call_mut_eb
+A monomorphic instance of array.mk_incr2.call_mut_b4
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr2_call_mut_eb_55(const uint32_t **_, size_t tupled_args);
+uint32_t array_mk_incr2_call_mut_b4_55(const uint32_t **_, size_t tupled_args);
 
 /**
-This function found in impl {core::ops::function::FnOnce<(usize), u32> for array::mk_incr2::closure<0, K>}
+This function found in impl {impl core::ops::function::FnOnce<(usize,), u32> for array::mk_incr2::closure<'_0, K>}
 */
 /**
-A monomorphic instance of array.mk_incr2.call_once_ad
+A monomorphic instance of array.mk_incr2.call_once_83
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr2_call_once_ad_55(const uint32_t *_, size_t _0);
+uint32_t array_mk_incr2_call_once_83_55(const uint32_t *_, size_t _0);
 
 /**
 A monomorphic instance of array.mk_incr2
@@ -153,24 +156,24 @@ with const generics
 Eurydice_arr_6c array_mk_incr2_55(void);
 
 /**
-This function found in impl {core::ops::function::FnMut<(u32), u16> for array::plus_one::closure<K>}
+This function found in impl {impl core::ops::function::FnMut<(u32,), u16> for array::plus_one::closure<K>}
 */
 /**
-A monomorphic instance of array.plus_one.call_mut_8d
+A monomorphic instance of array.plus_one.call_mut_55
 with const generics
 - K= 1
 */
-uint16_t array_plus_one_call_mut_8d_6c(void **_, uint32_t tupled_args);
+uint16_t array_plus_one_call_mut_55_6c(void **_, uint32_t tupled_args);
 
 /**
-This function found in impl {core::ops::function::FnOnce<(u32), u16> for array::plus_one::closure<K>}
+This function found in impl {impl core::ops::function::FnOnce<(u32,), u16> for array::plus_one::closure<K>}
 */
 /**
-A monomorphic instance of array.plus_one.call_once_36
+A monomorphic instance of array.plus_one.call_once_50
 with const generics
 - K= 1
 */
-uint16_t array_plus_one_call_once_36_6c(uint32_t _);
+uint16_t array_plus_one_call_once_50_6c(uint32_t _);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -203,24 +206,24 @@ with const generics
 typedef const size_t *array_nested_from_fn_closure_closure_34;
 
 /**
-This function found in impl {core::ops::function::FnMut<(usize), usize> for array::nested_from_fn::closure::closure<0, K>}
+This function found in impl {impl core::ops::function::FnMut<(usize,), usize> for array::nested_from_fn::closure::closure<'_0, K>}
 */
 /**
-A monomorphic instance of array.nested_from_fn.closure.call_mut_74
+A monomorphic instance of array.nested_from_fn.closure.call_mut_a9
 with const generics
 - K= 4
 */
-size_t array_nested_from_fn_closure_call_mut_74_23(const size_t **_, size_t tupled_args);
+size_t array_nested_from_fn_closure_call_mut_a9_23(const size_t **_, size_t tupled_args);
 
 /**
-This function found in impl {core::ops::function::FnOnce<(usize), usize> for array::nested_from_fn::closure::closure<0, K>}
+This function found in impl {impl core::ops::function::FnOnce<(usize,), usize> for array::nested_from_fn::closure::closure<'_0, K>}
 */
 /**
-A monomorphic instance of array.nested_from_fn.closure.call_once_4d
+A monomorphic instance of array.nested_from_fn.closure.call_once_d7
 with const generics
 - K= 4
 */
-size_t array_nested_from_fn_closure_call_once_4d_23(const size_t *_, size_t _0);
+size_t array_nested_from_fn_closure_call_once_d7_23(const size_t *_, size_t _0);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -231,24 +234,24 @@ with const generics
 typedef struct Eurydice_arr_cc_s { size_t data[4U]; } Eurydice_arr_cc;
 
 /**
-This function found in impl {core::ops::function::FnMut<(usize), [usize; K]> for array::nested_from_fn::closure<K>}
+This function found in impl {impl core::ops::function::FnMut<(usize,), [usize; K]> for array::nested_from_fn::closure<K>}
 */
 /**
-A monomorphic instance of array.nested_from_fn.call_mut_6c
+A monomorphic instance of array.nested_from_fn.call_mut_e9
 with const generics
 - K= 4
 */
-Eurydice_arr_cc array_nested_from_fn_call_mut_6c_23(void **_, size_t tupled_args);
+Eurydice_arr_cc array_nested_from_fn_call_mut_e9_23(void **_, size_t tupled_args);
 
 /**
-This function found in impl {core::ops::function::FnOnce<(usize), [usize; K]> for array::nested_from_fn::closure<K>}
+This function found in impl {impl core::ops::function::FnOnce<(usize,), [usize; K]> for array::nested_from_fn::closure<K>}
 */
 /**
-A monomorphic instance of array.nested_from_fn.call_once_d9
+A monomorphic instance of array.nested_from_fn.call_once_3c
 with const generics
 - K= 4
 */
-Eurydice_arr_cc array_nested_from_fn_call_once_d9_23(size_t _);
+Eurydice_arr_cc array_nested_from_fn_call_once_3c_23(size_t _);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -276,26 +279,26 @@ void array_main(void);
 
 void array_references(void);
 
-#define array_mk_incr_closure__core__marker__Destruct_for_array__mk_incr__closure_K___drop_in_place(x_0, x_1, _ret_t) array_mk_incr_closure__core__marker__Destruct_for_array__mk_incr__closure_K___drop_in_place_(x_0, x_1)
+#define array_mk_incr_closure__impl_core__marker__Destruct_for_array__mk_incr__closure_K___drop_in_place(x_0, x_1, _ret_t) array_mk_incr_closure__impl_core__marker__Destruct_for_array__mk_incr__closure_K___drop_in_place_(x_0, x_1)
 
 extern void
-array_mk_incr_closure__core__marker__Destruct_for_array__mk_incr__closure_K___drop_in_place_(
+array_mk_incr_closure__impl_core__marker__Destruct_for_array__mk_incr__closure_K___drop_in_place_(
   size_t x0,
   void **x1
 );
 
-#define array_nested_from_fn_closure__core__marker__Destruct_for_array__nested_from_fn__closure_K___drop_in_place(x_0, x_1, _ret_t) array_nested_from_fn_closure__core__marker__Destruct_for_array__nested_from_fn__closure_K___drop_in_place_(x_0, x_1)
+#define array_nested_from_fn_closure__impl_core__marker__Destruct_for_array__nested_from_fn__closure_K___drop_in_place(x_0, x_1, _ret_t) array_nested_from_fn_closure__impl_core__marker__Destruct_for_array__nested_from_fn__closure_K___drop_in_place_(x_0, x_1)
 
 extern void
-array_nested_from_fn_closure__core__marker__Destruct_for_array__nested_from_fn__closure_K___drop_in_place_(
+array_nested_from_fn_closure__impl_core__marker__Destruct_for_array__nested_from_fn__closure_K___drop_in_place_(
   size_t x0,
   void **x1
 );
 
-#define array_plus_one_closure__core__marker__Destruct_for_array__plus_one__closure_K___drop_in_place(x_0, x_1, _ret_t) array_plus_one_closure__core__marker__Destruct_for_array__plus_one__closure_K___drop_in_place_(x_0, x_1)
+#define array_plus_one_closure__impl_core__marker__Destruct_for_array__plus_one__closure_K___drop_in_place(x_0, x_1, _ret_t) array_plus_one_closure__impl_core__marker__Destruct_for_array__plus_one__closure_K___drop_in_place_(x_0, x_1)
 
 extern void
-array_plus_one_closure__core__marker__Destruct_for_array__plus_one__closure_K___drop_in_place_(
+array_plus_one_closure__impl_core__marker__Destruct_for_array__plus_one__closure_K___drop_in_place_(
   size_t x0,
   void **x1
 );

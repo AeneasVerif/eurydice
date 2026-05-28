@@ -56,9 +56,9 @@ int32_t issue_123_fun(issue_123_E e);
 void issue_123_main(void);
 
 /**
-This function found in impl {core::cmp::PartialEq<issue_123::E2> for issue_123::E2}
+This function found in impl {impl core::cmp::PartialEq<issue_123::E2> for issue_123::E2}
 */
-bool issue_123_eq_e3(const issue_123_E2 *self, const issue_123_E2 *other);
+bool issue_123_eq_76(const issue_123_E2 *self, const issue_123_E2 *other);
 
 #if defined(__cplusplus)
 }

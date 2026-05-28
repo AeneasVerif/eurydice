@@ -185,11 +185,11 @@ bool const_generics_g_16(uint32_t x, size_t y);
 
 void const_generics_main3(void);
 
-extern uint32_t core_clone_impls__core__clone__Clone_for_u32__clone(const uint32_t *x0);
+extern uint32_t core_clone_impls__impl_core__clone__Clone_for_u32__clone(const uint32_t *x0);
 
-extern uint64_t core_clone_impls__core__clone__Clone_for_u64__clone(const uint64_t *x0);
+extern uint64_t core_clone_impls__impl_core__clone__Clone_for_u64__clone(const uint64_t *x0);
 
-extern uint8_t core_clone_impls__core__clone__Clone_for_u8__clone(const uint8_t *x0);
+extern uint8_t core_clone_impls__impl_core__clone__Clone_for_u8__clone(const uint8_t *x0);
 
 #if defined(__cplusplus)
 }

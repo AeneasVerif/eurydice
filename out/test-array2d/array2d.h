@@ -16,10 +16,16 @@ extern "C" {
 #endif
 
 extern bool
-core_cmp_impls__core__cmp__PartialEq_u32__for_u32__eq(const uint32_t *x0, const uint32_t *x1);
+core_cmp_impls__impl_core__cmp__PartialEq_u32__for_u32__eq(
+  const uint32_t *x0,
+  const uint32_t *x1
+);
 
 extern bool
-core_cmp_impls__core__cmp__PartialEq_u32__for_u32__ne(const uint32_t *x0, const uint32_t *x1);
+core_cmp_impls__impl_core__cmp__PartialEq_u32__for_u32__ne(
+  const uint32_t *x0,
+  const uint32_t *x1
+);
 
 /**
 A monomorphic instance of Eurydice.arr
