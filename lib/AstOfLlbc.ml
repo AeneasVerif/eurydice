@@ -546,16 +546,17 @@ and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
         failwith
           "Eurydice does not handle taking metadata from non-Sized type vars, please consider \
            using monomorphized LLBC."
+  | C.TPattern (ty, _) -> metadata_typ_of_ty env ty
   | C.TTraitType (_, _) ->
       failwith
         "Eurydice does not handle taking metadata from assoc types, please consider using \
          monomorphized LLBC."
   (* The metadata of a &dyn Trait object is a pointer to its vtable *)
   | C.TDynTrait pred -> Some (K.TBuf (vtable_typ_of_dyn_pred env pred, false))
-  | C.TLiteral _ | C.TRef (_, _, _) | C.TRawPtr (_, _) | C.TFnPtr _ | C.TFnDef _ -> None
+  | C.TLiteral _ | C.TRef (_, _, _) | C.TRawPtr (_, _) | C.TFnPtr _ | C.TFnDef _ | C.TNever -> None
   (* The metadata must not have ptr metadata as they must be Sized. *)
   | C.TPtrMetadata _ -> None
-  | C.TNever | C.TError _ -> failwith "Error types to fetch metadata"
+  | C.TError _ -> failwith "Error types to fetch metadata"
 
 (* Translate Charon type &T as a krml type -- this handles special cases
  where address-taking in Rust creates a DST, which we represent as instances
@@ -633,6 +634,7 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       | None -> failwith "Missing function declaration"
       | Some fn_sig -> typ_of_ty env (TFnPtr fn_sig)
     end
+  | TPattern (ty, _) -> typ_of_ty env ty
   | TPtrMetadata _ ->
       failwith
         "The type-level computation `PtrMetadata(t)` should be handled by Charon, consider using \
