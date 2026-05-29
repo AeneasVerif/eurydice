@@ -4,7 +4,8 @@ set -euo pipefail
 BASE_REMOTE="${BASE_REMOTE:-upstream}"
 BASE_BRANCH="${BASE_BRANCH:-main}"
 PUSH_REMOTE="${PUSH_REMOTE:-}"
-AENEAS_REPO="${AENEAS_REPO:-AeneasVerif/aeneas}"
+THIS_REPO_NAME="eurydice"
+THIS_REPO="${THIS_REPO:-AeneasVerif/$THIS_REPO_NAME}"
 CHARON_REPO="${CHARON_REPO:-AeneasVerif/charon}"
 BRANCH_PREFIX="${BRANCH_PREFIX:-update-charon}"
 COMMIT_TITLE="Update charon"
@@ -182,16 +183,16 @@ wait_for_pr_merged() {
     done
 }
 
-ensure_charon_pr_mentions_aeneas_pr() {
+ensure_charon_pr_mentions_this_pr() {
     local charon_pr="$1"
-    local aeneas_pr="$2"
-    local ci_line="ci: use https://github.com/AeneasVerif/aeneas/pull/$aeneas_pr"
+    local this_pr="$2"
+    local ci_line="ci: use ${THIS_REPO}/pull/${this_pr}"
     local charon_body updated_body
 
     charon_body="$(gh pr view "$charon_pr" --repo "$CHARON_REPO" --json body --jq '.body // ""')"
 
     if [[ "$charon_body" == *"$ci_line"* ]]; then
-        echo "Charon PR #$charon_pr already mentions aeneas PR #$aeneas_pr"
+        echo "Charon PR #$charon_pr already mentions $THIS_REPO_NAME PR #$this_pr"
         return 0
     fi
 
@@ -201,7 +202,7 @@ ensure_charon_pr_mentions_aeneas_pr() {
         updated_body="$ci_line"
     fi
 
-    echo "Adding aeneas PR #$aeneas_pr to charon PR #$charon_pr"
+    echo "Adding $THIS_REPO_NAME PR #$this_pr to charon PR #$charon_pr"
     gh pr edit "$charon_pr" --repo "$CHARON_REPO" --body "$updated_body"
 }
 
@@ -302,7 +303,7 @@ git -C charon rev-parse --is-inside-work-tree >/dev/null 2>&1 ||
     die "./charon is not a git worktree"
 
 current_branch="$(git branch --show-current)"
-[[ -n "$current_branch" ]] || die "aeneas is in detached HEAD state"
+[[ -n "$current_branch" ]] || die "$THIS_REPO_NAME is in detached HEAD state"
 
 echo "Fetching $BASE_REMOTE/$BASE_BRANCH"
 git fetch "$BASE_REMOTE" "$BASE_BRANCH"
@@ -334,7 +335,7 @@ fi
 [[ -n "$charon_pr" ]] ||
     die "no charon PR found for $charon_owner:$charon_branch in $CHARON_REPO"
 
-pr_body="Companion PR to https://github.com/AeneasVerif/charon/pull/$charon_pr"
+pr_body="Companion PR to https://github.com/${CHARON_REPO}/pull/${charon_pr}"
 
 echo "Committing changes"
 git add --all
@@ -354,7 +355,7 @@ else
     fi
 fi
 
-aeneas_owner="$(github_owner_from_remote . "$PUSH_REMOTE")" ||
+this_owner="$(github_owner_from_remote . "$PUSH_REMOTE")" ||
     die "could not infer GitHub owner from remote '$PUSH_REMOTE'"
 
 echo "Pushing $current_branch to $PUSH_REMOTE"
@@ -362,36 +363,36 @@ git fetch "$PUSH_REMOTE" "+refs/heads/$current_branch:refs/remotes/$PUSH_REMOTE/
     >/dev/null 2>&1 || true
 git push --force-with-lease -u "$PUSH_REMOTE" "$current_branch"
 
-echo "Looking for existing aeneas PR for $aeneas_owner:$current_branch"
-aeneas_pr="$(find_pr_for_head "$AENEAS_REPO" "$aeneas_owner" "$current_branch" open)"
-if [[ -n "$aeneas_pr" ]]; then
-    gh pr edit "$aeneas_pr" \
-        --repo "$AENEAS_REPO" \
+echo "Looking for existing $THIS_REPO_NAME PR for $this_owner:$current_branch"
+this_pr="$(find_pr_for_head "$THIS_REPO" "$this_owner" "$current_branch" open)"
+if [[ -n "$this_pr" ]]; then
+    gh pr edit "$this_pr" \
+        --repo "$THIS_REPO" \
         --title "$COMMIT_TITLE" \
         --body "$pr_body"
-    gh pr view "$aeneas_pr" --repo "$AENEAS_REPO" --json url --jq .url
+    gh pr view "$this_pr" --repo "$THIS_REPO" --json url --jq .url
 else
     gh pr create \
-        --repo "$AENEAS_REPO" \
+        --repo "$THIS_REPO" \
         --base "$BASE_BRANCH" \
-        --head "$aeneas_owner:$current_branch" \
+        --head "$this_owner:$current_branch" \
         --title "$COMMIT_TITLE" \
         --body "$pr_body"
-    aeneas_pr="$(find_pr_for_head "$AENEAS_REPO" "$aeneas_owner" "$current_branch" open)"
-    [[ -n "$aeneas_pr" ]] ||
-        die "created aeneas PR, but could not find it for $aeneas_owner:$current_branch"
+    this_pr="$(find_pr_for_head "$THIS_REPO" "$this_owner" "$current_branch" open)"
+    [[ -n "$this_pr" ]] ||
+        die "created $THIS_REPO_NAME PR, but could not find it for $this_owner:$current_branch"
 fi
 
 if pr_is_merged "$CHARON_REPO" "$charon_pr"; then
-    echo "Charon PR #$charon_pr is merged; rerunning aeneas job 'charon-pin-is-merged'"
-    rerun_pr_job "$AENEAS_REPO" "$aeneas_pr" "charon-pin-is-merged"
+    echo "Charon PR #$charon_pr is merged; rerunning $THIS_REPO_NAME job 'charon-pin-is-merged'"
+    rerun_pr_job "$THIS_REPO" "$this_pr" "charon-pin-is-merged"
 elif pr_is_in_merge_queue "$CHARON_REPO" "$charon_pr"; then
     echo "Charon PR #$charon_pr is in the merge queue"
     wait_for_pr_merged "$CHARON_REPO" "$charon_pr"
-    rerun_pr_job "$AENEAS_REPO" "$aeneas_pr" "charon-pin-is-merged"
+    rerun_pr_job "$THIS_REPO" "$this_pr" "charon-pin-is-merged"
 else
-    ensure_charon_pr_mentions_aeneas_pr "$charon_pr" "$aeneas_pr"
+    ensure_charon_pr_mentions_this_pr "$charon_pr" "$this_pr"
     rerun_pr_job "$CHARON_REPO" "$charon_pr" "select-dep-versions"
     wait_for_pr_merged "$CHARON_REPO" "$charon_pr" false
-    rerun_pr_job "$AENEAS_REPO" "$aeneas_pr" "charon-pin-is-merged"
+    rerun_pr_job "$THIS_REPO" "$this_pr" "charon-pin-is-merged"
 fi
