@@ -186,7 +186,7 @@ wait_for_pr_merged() {
 ensure_charon_pr_mentions_this_pr() {
     local charon_pr="$1"
     local this_pr="$2"
-    local ci_line="ci: use ${THIS_REPO}/pull/${this_pr}"
+    local ci_line="ci: use https://github.com/${THIS_REPO}/pull/${this_pr}"
     local charon_body updated_body
 
     charon_body="$(gh pr view "$charon_pr" --repo "$CHARON_REPO" --json body --jq '.body // ""')"
@@ -243,15 +243,20 @@ rerun_pr_job() {
     local repo="$1"
     local pr="$2"
     local job_name="$3"
-    local run_id job_id head_sha
+    local run_id job_id head_sha runs_json run_ids_text
     local -a run_ids
 
-    run_id="$(run_id_from_pr_check "$repo" "$pr" "$job_name")"
+    run_id="$(run_id_from_pr_check "$repo" "$pr" "$job_name")" ||
+        die "could not inspect checks for $repo PR #$pr"
     if [[ -n "$run_id" ]]; then
-        job_id="$(job_id_from_run "$repo" "$run_id" "$job_name")"
+        job_id="$(job_id_from_run "$repo" "$run_id" "$job_name")" ||
+            die "could not inspect $repo run $run_id for job '$job_name'"
         if [[ -n "$job_id" ]]; then
             echo "Rerunning $repo job '$job_name' from run $run_id"
-            gh run rerun "$run_id" --repo "$repo" --job "$job_id"
+            if ! gh run rerun "$run_id" --repo "$repo" --job "$job_id"; then
+                echo "Could not rerun $repo job '$job_name' from run $run_id" >&2
+                return 1
+            fi
             return 0
         fi
     fi
@@ -260,21 +265,31 @@ rerun_pr_job() {
     [[ -n "$head_sha" ]] ||
         die "could not determine head SHA for $repo PR #$pr"
 
-    mapfile -t run_ids < <(
-        gh run list --repo "$repo" --commit "$head_sha" --limit 50 --json databaseId,createdAt |
-            jq -r 'sort_by(.createdAt) | reverse | .[].databaseId'
-    )
+    runs_json="$(gh run list --repo "$repo" --commit "$head_sha" --limit 50 --json databaseId,createdAt)" ||
+        die "could not list runs for $repo PR #$pr"
+    run_ids_text="$(jq -r 'sort_by(.createdAt) | reverse | .[].databaseId' <<<"$runs_json")" ||
+        die "could not parse runs for $repo PR #$pr"
+    if [[ -n "$run_ids_text" ]]; then
+        mapfile -t run_ids <<<"$run_ids_text"
+    else
+        run_ids=()
+    fi
 
     for run_id in "${run_ids[@]}"; do
-        job_id="$(job_id_from_run "$repo" "$run_id" "$job_name")"
+        job_id="$(job_id_from_run "$repo" "$run_id" "$job_name")" ||
+            die "could not inspect $repo run $run_id for job '$job_name'"
         if [[ -n "$job_id" ]]; then
             echo "Rerunning $repo job '$job_name' from run $run_id"
-            gh run rerun "$run_id" --repo "$repo" --job "$job_id"
+            if ! gh run rerun "$run_id" --repo "$repo" --job "$job_id"; then
+                echo "Could not rerun $repo job '$job_name' from run $run_id" >&2
+                return 1
+            fi
             return 0
         fi
     done
 
-    die "could not find $repo job '$job_name' on PR #$pr"
+    echo "Could not find $repo job '$job_name' on PR #$pr" >&2
+    return 1
 }
 
 require_cmd git
@@ -283,7 +298,7 @@ require_cmd jq
 require_cmd make
 
 echo "Updating charon pin"
-make update-charon-pin
+make update-charon-pin || die "make update-charon-pin failed"
 
 repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
@@ -340,11 +355,7 @@ pr_body="Companion PR to https://github.com/${CHARON_REPO}/pull/${charon_pr}"
 echo "Committing changes"
 git add --all
 if git diff --cached --quiet; then
-    if head_is_update_charon_commit; then
-        echo "No staged changes; reusing existing '$COMMIT_TITLE' commit"
-    else
-        die "no changes to commit and HEAD is not already '$COMMIT_TITLE'"
-    fi
+    echo "No staged changes; pushing current HEAD"
 else
     if head_is_update_charon_commit; then
         echo "Amending existing '$COMMIT_TITLE' commit"
@@ -392,7 +403,9 @@ elif pr_is_in_merge_queue "$CHARON_REPO" "$charon_pr"; then
     rerun_pr_job "$THIS_REPO" "$this_pr" "charon-pin-is-merged"
 else
     ensure_charon_pr_mentions_this_pr "$charon_pr" "$this_pr"
-    rerun_pr_job "$CHARON_REPO" "$charon_pr" "select-dep-versions"
+    if ! rerun_pr_job "$CHARON_REPO" "$charon_pr" "select-dep-versions"; then
+        echo "Continuing to wait for $CHARON_REPO PR #$charon_pr to merge"
+    fi
     wait_for_pr_merged "$CHARON_REPO" "$charon_pr" false
     rerun_pr_job "$THIS_REPO" "$this_pr" "charon-pin-is-merged"
 fi
