@@ -1,6 +1,6 @@
 (library
  (name eurydice)
- (libraries charon krml yaml)
+ (libraries charon krml str yaml)
  (preprocess
   (pps ppx_deriving.std cremepat)))
 
