@@ -165,8 +165,12 @@ let assert_slice (t : K.typ) =
   | TApp (lid, [ t; u ]) when is_dst_ref lid && u = TInt SizeT -> t
   | _ -> fail "Not a slice: %a" ptyp t
 
+(* Charon changed its pretty-printer. To avoid huge output changes we just re-add that one symbol. *)
+let trait_clause_name = Str.regexp "\\(^\\|[^@]\\)TraitClause"
+let restore_old_trait_clause_names = Str.global_replace trait_clause_name "\\1@TraitClause"
+
 let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
-  Charon.Print.path_elem_to_string env.format_env p
+  restore_old_trait_clause_names (Charon.Print.path_elem_to_string env.format_env p)
 
 let string_of_name env ps = String.concat "::" (List.map (string_of_path_elem env) ps)
 

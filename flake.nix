@@ -64,7 +64,14 @@
 
             nativeBuildInputs = [ gnugrep ] ++ (with ocamlPackages; [ menhir ]);
 
-            propagatedBuildInputs = [ krml charon-ml ocamlPackages.terminal ocamlPackages.yaml ] ++ (with ocamlPackages; [ menhirLib ]);
+            propagatedBuildInputs = [
+              krml
+              charon-ml
+            ] ++ (with ocamlPackages; [
+              terminal
+              yaml
+              menhirLib
+            ]);
 
             postInstall = ''
               ln -s ${charon}/bin/charon $out/bin/charon
