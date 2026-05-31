@@ -98,14 +98,14 @@ typedef struct core_ops_control_flow_ControlFlow_19_s
 core_ops_control_flow_ControlFlow_19;
 
 /**
-This function found in impl {impl core::ops::try_trait::Try<T, core::result::Result<core::convert::Infallible, E>[{built_in impl core::marker::Sized for core::convert::Infallible}, @TraitClause1]> for core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
+This function found in impl {impl core::ops::try_trait::Try for core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of core.result.branch_ef
+A monomorphic instance of core.result.branch_fd
 with types (), uint8_t
 
 */
-core_ops_control_flow_ControlFlow_19 core_result_branch_ef_e9(core_result_Result_1d self);
+core_ops_control_flow_ControlFlow_19 core_result_branch_fd_e9(core_result_Result_1d self);
 
 /**
  Returns the argument unchanged.
