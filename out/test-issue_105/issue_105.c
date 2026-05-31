@@ -45,15 +45,15 @@ core_result_Result_1d issue_105_inner(void)
 }
 
 /**
-This function found in impl {impl core::ops::try_trait::Try<T, core::result::Result<core::convert::Infallible, E>[{built_in impl core::marker::Sized for core::convert::Infallible}, @TraitClause1]> for core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
+This function found in impl {impl core::ops::try_trait::Try for core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
 */
 /**
-A monomorphic instance of core.result.branch_ef
+A monomorphic instance of core.result.branch_fd
 with types (), uint8_t
 
 */
 inline core_ops_control_flow_ControlFlow_19
-core_result_branch_ef_e9(core_result_Result_1d self)
+core_result_branch_fd_e9(core_result_Result_1d self)
 {
   if (!(self.tag == core_result_Ok))
   {
@@ -94,7 +94,7 @@ inline core_result_Result_1d core_result_from_residual_9d_48(core_result_Result_
 
 core_result_Result_1d issue_105_call_it(void)
 {
-  core_ops_control_flow_ControlFlow_19 uu____0 = core_result_branch_ef_e9(issue_105_inner());
+  core_ops_control_flow_ControlFlow_19 uu____0 = core_result_branch_fd_e9(issue_105_inner());
   if (!(uu____0.tag == core_ops_control_flow_Continue))
   {
     core_result_Result_8f residual = uu____0.f0;
