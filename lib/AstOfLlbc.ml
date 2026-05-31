@@ -449,7 +449,7 @@ let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
           let assoc_tys =
             let base_removal = fun l -> snd (Krml.KList.split (List.length base_args.types) l) in
             let find_assoc_ty_arg = function
-              | C.TTraitType (tref, type_id) ->
+              | C.TTraitType (tref, type_id, _) ->
                   (* We match by the trait-ID and the assoc-ty id, which is unique *)
                   let target_id = tref.trait_decl_ref.binder_value.id in
                   let assoc_ty_assns = binder_params.trait_type_constraints in
@@ -551,7 +551,7 @@ and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
           "Eurydice does not handle taking metadata from non-Sized type vars, please consider \
            using monomorphized LLBC."
   | C.TPattern (ty, _) -> metadata_typ_of_ty env ty
-  | C.TTraitType (_, _) ->
+  | C.TTraitType _ ->
       failwith
         "Eurydice does not handle taking metadata from assoc types, please consider using \
          monomorphized LLBC."
