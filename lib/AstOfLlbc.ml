@@ -1886,7 +1886,7 @@ let maybe_reborrow_slice t_dst e_src =
 
 let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   match p with
-  | Use op -> expression_of_operand env op
+  | Use (op, _) -> expression_of_operand env op
   (* Generally, MIR / current LLBC is guaranteed to apply [Deref] only to places that are
      references or raw pointers, in these cases [&*p] == [p].
      The [Deref] traits types are desugared to function calls to [deref].
