@@ -165,12 +165,21 @@ let assert_slice (t : K.typ) =
   | TApp (lid, [ t; u ]) when is_dst_ref lid && u = TInt SizeT -> t
   | _ -> fail "Not a slice: %a" ptyp t
 
-(* Charon changed its pretty-printer. To avoid huge output changes we just re-add that one symbol. *)
+(* Charon changed its pretty-printer. To avoid huge output changes we patch names back up. *)
 let trait_clause_name = Str.regexp "\\(^\\|[^@]\\)TraitClause"
 let restore_old_trait_clause_names = Str.global_replace trait_clause_name "\\1@TraitClause"
 
+let suffixed_integer =
+  Str.regexp
+    "\\(^\\|[^A-Za-z0-9_]\\)\\([0-9]+\\)\\(usize\\|isize\\|u8\\|u16\\|u32\\|u64\\|u128\\|i8\\|i16\\|i32\\|i64\\|i128\\)\\([^A-Za-z0-9_]\\|$\\)"
+
+let restore_old_integer_const_names = Str.global_replace suffixed_integer "\\1\\2 : \\3\\4"
+
+let restore_old_pretty_name s =
+  s |> restore_old_trait_clause_names |> restore_old_integer_const_names
+
 let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
-  restore_old_trait_clause_names (Charon.Print.path_elem_to_string env.format_env p)
+  restore_old_pretty_name (Charon.Print.path_elem_to_string env.format_env p)
 
 let string_of_name env ps = String.concat "::" (List.map (string_of_path_elem env) ps)
 
