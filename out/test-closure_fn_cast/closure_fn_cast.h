@@ -34,10 +34,10 @@ int32_t closure_fn_cast_main_closure_as_fn(int32_t arg1);
 
 void closure_fn_cast_main(void);
 
-extern void
-closure_fn_cast_main_closure__impl_core__marker__Destruct_for_closure_fn_cast__main__closure__drop_in_place(
-  void **x0
-);
+/**
+This function found in impl {impl core::marker::Destruct for closure_fn_cast::main::closure}
+*/
+void closure_fn_cast_main_closure_drop_in_place_f6(void **_);
 
 #if defined(__cplusplus)
 }

@@ -47,3 +47,11 @@ void closure_fn_cast_main(void)
   KRML_HOST_IGNORE(f(1));
 }
 
+/**
+This function found in impl {impl core::marker::Destruct for closure_fn_cast::main::closure}
+*/
+void closure_fn_cast_main_closure_drop_in_place_f6(void **_)
+{
+
+}
+

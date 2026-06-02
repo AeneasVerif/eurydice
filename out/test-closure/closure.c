@@ -77,3 +77,19 @@ void closure_main(void)
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
+/**
+This function found in impl {impl core::marker::Destruct for closure::f::closure::closure<'_0, '_1>}
+*/
+void closure_f_closure_closure_drop_in_place_a5(closure_f_closure_closure *_)
+{
+
+}
+
+/**
+This function found in impl {impl core::marker::Destruct for closure::f::closure<'_0>}
+*/
+void closure_f_closure_drop_in_place_03(const Eurydice_arr_58 **_)
+{
+
+}
+
