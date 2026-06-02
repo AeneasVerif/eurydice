@@ -72,15 +72,15 @@ typedef uint8_t core_panicking_AssertKind;
 
 void closure_main(void);
 
-extern void
-closure_f_closure_closure__impl_core__marker__Destruct_for_closure__f__closure__closure___0____1___drop_in_place(
-  closure_f_closure_closure *x0
-);
+/**
+This function found in impl {impl core::marker::Destruct for closure::f::closure::closure<'_0, '_1>}
+*/
+void closure_f_closure_closure_drop_in_place_a5(closure_f_closure_closure *_);
 
-extern void
-closure_f_closure__impl_core__marker__Destruct_for_closure__f__closure___0___drop_in_place(
-  const Eurydice_arr_58 **x0
-);
+/**
+This function found in impl {impl core::marker::Destruct for closure::f::closure<'_0>}
+*/
+void closure_f_closure_drop_in_place_03(const Eurydice_arr_58 **_);
 
 #if defined(__cplusplus)
 }
