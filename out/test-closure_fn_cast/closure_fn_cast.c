@@ -50,7 +50,7 @@ void closure_fn_cast_main(void)
 /**
 This function found in impl {impl core::marker::Destruct for closure_fn_cast::main::closure}
 */
-void closure_fn_cast_main_closure_drop_in_place_f6(void **_)
+void closure_fn_cast_main_closure_drop_glue_f6(void **_)
 {
 
 }
