@@ -80,7 +80,7 @@ void closure_main(void)
 /**
 This function found in impl {impl core::marker::Destruct for closure::f::closure::closure<'_0, '_1>}
 */
-void closure_f_closure_closure_drop_in_place_a5(closure_f_closure_closure *_)
+void closure_f_closure_closure_drop_glue_a5(closure_f_closure_closure *_)
 {
 
 }
@@ -88,7 +88,7 @@ void closure_f_closure_closure_drop_in_place_a5(closure_f_closure_closure *_)
 /**
 This function found in impl {impl core::marker::Destruct for closure::f::closure<'_0>}
 */
-void closure_f_closure_drop_in_place_03(const Eurydice_arr_58 **_)
+void closure_f_closure_drop_glue_03(const Eurydice_arr_58 **_)
 {
 
 }
