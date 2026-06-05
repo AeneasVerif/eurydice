@@ -2761,7 +2761,8 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
             (* This one needs to have an address, so definitely not emitting it as a macro. *)
             []
       in
-      let body = env.get_nth_function def.init in
+      let fn_id = Option.get (Charon.GAstUtils.init_fun_id_of_global global) in
+      let body = env.get_nth_function fn_id in
       L.log "AstOfLlbc" "Corresponding body:%s"
         (Charon.Print.fun_decl_to_string env.format_env "  " "  " body);
       begin
