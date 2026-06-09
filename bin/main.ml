@@ -276,6 +276,8 @@ Supported options:|}
   let ((map, _, _) as map3), files = Krml.DataTypes.everything files in
   Eurydice.Cleanup2.fixup_monomorphization_map map;
   let files = Eurydice.Cleanup2.remove_discriminant_reads map3 files in
+  (* Run this again to detect asserts revealed by a preceding pass. *)
+  let files = Eurydice.Cleanup2.recognize_asserts#visit_files () files in
   Eurydice.Logging.log "Phase2.3" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_ite#visit_files () files in
   Eurydice.Logging.log "Phase2.4" "%a" pfiles files;
