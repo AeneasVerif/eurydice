@@ -450,7 +450,12 @@ let remove_slice_eq =
         else
           Builtin.slice_eq_mut
       in
+      let fallback () =
+        let deref e = with_type (H.assert_tbuf e.typ) (EBufRead (e, H.zero_usize)) in
+        with_type TBool (EApp (List.hd eq, [ deref s1; deref s2 ]))
+      in
       match flatten_tapp t with
+      | exception Invalid_argument _ -> fallback ()
       | lid, [ t ], [] when lid = Builtin.derefed_slice ->
           let rec is_flat = function
             | TArray (t, _) -> is_flat t
@@ -460,9 +465,7 @@ let remove_slice_eq =
           if not (is_flat t) then
             failwith "TODO: slice eq at non-flat types";
           with_type TBool (EApp (Builtin.expr_of_builtin_t slice_eq [ t ], [ s1; s2 ]))
-      | _ ->
-          let deref e = with_type (H.assert_tbuf e.typ) (EBufRead (e, H.zero_usize)) in
-          with_type TBool (EApp (List.hd eq, [ deref s1; deref s2 ]))
+      | _ -> fallback ()
 
     method! visit_expr _ e =
       match e with

@@ -81,7 +81,7 @@ with const generics
 */
 inline core_result_Result_1d core_result_from_residual_9d_48(core_result_Result_8f residual)
 {
-  EURYDICE_ASSERT(!!((ptrdiff_t)residual.tag == (ptrdiff_t)1), "assert failure");
+  EURYDICE_ASSERT(residual.tag == core_result_Err, "panic!");
   uint8_t e = residual.val.case_Err;
   return
     (
@@ -103,6 +103,13 @@ core_result_Result_1d issue_105_call_it(void)
   return (KRML_CLITERAL(core_result_Result_1d){ .tag = core_result_Ok });
 }
 
+typedef struct const_core_result_Result_1d__x2_s
+{
+  const core_result_Result_1d *fst;
+  const core_result_Result_1d *snd;
+}
+const_core_result_Result_1d__x2;
+
 /**
 This function found in impl {impl core::cmp::PartialEq<core::result::Result<T, E>[@TraitClause0, @TraitClause1]> for core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
 */
@@ -120,9 +127,10 @@ core_result_eq_89_eb(const core_result_Result_1d *self, const core_result_Result
   bool uu____0;
   if (__self_discr == __arg1_discr)
   {
-    if (self->tag == core_result_Ok)
+    const_core_result_Result_1d__x2 uu____1 = { .fst = self, .snd = other };
+    if (uu____1.fst->tag == core_result_Ok)
     {
-      EURYDICE_ASSERT(!!((ptrdiff_t)other->tag == (ptrdiff_t)0), "assert failure");
+      EURYDICE_ASSERT(uu____1.snd->tag == core_result_Ok, "panic!");
       /* original Rust expression is not an lvalue in C */
       void *lvalue0 = (void *)0U;
       void *const *__self_0 = &lvalue0;
@@ -133,9 +141,9 @@ core_result_eq_89_eb(const core_result_Result_1d *self, const core_result_Result
     }
     else
     {
-      EURYDICE_ASSERT(!!((ptrdiff_t)other->tag == (ptrdiff_t)1), "assert failure");
-      const uint8_t *__self_0 = &self->f0;
-      const uint8_t *__arg1_0 = &other->f0;
+      EURYDICE_ASSERT(uu____1.snd->tag == core_result_Err, "panic!");
+      const uint8_t *__self_0 = &uu____1.fst->f0;
+      const uint8_t *__arg1_0 = &uu____1.snd->f0;
       uu____0 = core_cmp_impls_eq_a2(__self_0, __arg1_0);
     }
   }
@@ -145,13 +153,6 @@ core_result_eq_89_eb(const core_result_Result_1d *self, const core_result_Result
   }
   return uu____0;
 }
-
-typedef struct const_core_result_Result_1d__x2_s
-{
-  const core_result_Result_1d *fst;
-  const core_result_Result_1d *snd;
-}
-const_core_result_Result_1d__x2;
 
 void issue_105_main(void)
 {
