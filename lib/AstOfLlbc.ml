@@ -1483,7 +1483,7 @@ let lookup_fun (env : env) depth (fn_ptr : C.fn_ptr) : K.expr' * lookup_result =
       match fn_ptr.kind with
       | FunId (FRegular f) -> lookup_result_of_fun_id f
       | FunId (FBuiltin f) -> fail "unknown builtin function: %s" (C.show_builtin_fun_id f)
-      | TraitMethod (trait_ref, method_id, _trait_opaque_signature) -> (
+      | TraitMethod (trait_ref, method_id) -> (
           match trait_ref.kind with
           | TraitImpl { id; _ } ->
               let trait_impl = env.get_nth_trait_impl id in
@@ -1547,7 +1547,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   let type_args, const_generic_args, trait_refs =
     let generics =
       match kind with
-      | TraitMethod ({ kind = TraitImpl { generics; _ }; _ }, _, _) ->
+      | TraitMethod ({ kind = TraitImpl { generics; _ }; _ }, _) ->
           L.log "Calls" "%s--> this is a trait method" depth;
           generics
       | _ -> C.empty_generic_args
@@ -1627,11 +1627,10 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                       (K.EQualified (lid_of_name env global.item_meta.name)))
                   (C.AssocConstId.Map.values trait_impl.consts)
                 @ List.map
-                    (fun ((method_id, bound_fn) : _ * C.fun_decl_ref C.binder) ->
-                      let fun_decl_id = bound_fn.C.binder_value.C.id in
+                    (fun (method_id, _) ->
                       let fn_ptr : C.fn_ptr =
                         {
-                          kind = TraitMethod (trait_ref, method_id, fun_decl_id);
+                          kind = TraitMethod (trait_ref, method_id);
                           generics = Charon.TypesUtils.empty_generic_args;
                         }
                       in
@@ -2350,7 +2349,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
         (* TODO: determine whether extra_types is necessary *)
         let extra_types =
           match fn_ptr.kind with
-          | TraitMethod ({ kind = TraitImpl { id = _; generics }; _ }, _, _) -> generics.types
+          | TraitMethod ({ kind = TraitImpl { id = _; generics }; _ }, _) -> generics.types
           | _ -> []
         in
         match fn_ptr.kind, fn_ptr.generics.types @ extra_types with
@@ -2602,14 +2601,9 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
           assert (def_id = id);
           let name = lid_of_name env item_meta.name in
           match body, src with
-          | _, TraitDeclItem (_, _, false) ->
-              (* We skip those on the basis that they generate useless external prototypes, which we
-                 do not really need. *)
-              None
           | ( ( OpaqueBody
               | ExternBody _
               | IntrinsicBody _
-              | TraitMethodWithoutDefaultBody
               | TargetDispatchBody _
               | MissingBody
               | ErrorBody _
