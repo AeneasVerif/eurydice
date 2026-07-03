@@ -15,36 +15,6 @@
 extern "C" {
 #endif
 
-/**
-This function found in impl {impl core::cmp::PartialEq<()> for ()}
-*/
-bool core_cmp_impls_eq_23(void *const *self, void *const *_other);
-
-/**
-This function found in impl {impl core::cmp::PartialEq<()> for ()}
-*/
-bool core_cmp_impls_ne_23(void *const *self, void *const *_other);
-
-/**
-This function found in impl {impl core::cmp::PartialEq<u8> for u8}
-*/
-bool core_cmp_impls_eq_a2(const uint8_t *self, const uint8_t *other);
-
-/**
-This function found in impl {impl core::cmp::PartialEq<u8> for u8}
-*/
-bool core_cmp_impls_ne_a2(const uint8_t *self, const uint8_t *other);
-
-
-
-typedef uint8_t core_convert_Infallible;
-
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
-
 #define core_result_Ok 0
 #define core_result_Err 1
 
@@ -62,7 +32,14 @@ typedef struct core_result_Result_1d_s
 }
 core_result_Result_1d;
 
-core_result_Result_1d issue_105_inner(void);
+
+
+typedef uint8_t core_convert_Infallible;
+
+#define core_ops_control_flow_Continue 0
+#define core_ops_control_flow_Break 1
+
+typedef uint8_t core_ops_control_flow_ControlFlow_19_tags;
 
 /**
 A monomorphic instance of core.result.Result
@@ -80,11 +57,6 @@ typedef struct core_result_Result_8f_s
 }
 core_result_Result_8f;
 
-#define core_ops_control_flow_Continue 0
-#define core_ops_control_flow_Break 1
-
-typedef uint8_t core_ops_control_flow_ControlFlow_19_tags;
-
 /**
 A monomorphic instance of core.ops.control_flow.ControlFlow
 with types core_result_Result_8f, ()
@@ -96,6 +68,14 @@ typedef struct core_ops_control_flow_ControlFlow_19_s
   core_result_Result_8f f0;
 }
 core_ops_control_flow_ControlFlow_19;
+
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
+
+core_result_Result_1d issue_105_inner(void);
 
 /**
 This function found in impl {impl core::ops::try_trait::Try for core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
@@ -137,6 +117,16 @@ core_result_Result_1d core_result_from_residual_9d_48(core_result_Result_8f resi
 core_result_Result_1d issue_105_call_it(void);
 
 /**
+This function found in impl {impl core::cmp::PartialEq<()> for ()}
+*/
+bool core_cmp_impls_eq_23(void *const *self, void *const *_other);
+
+/**
+This function found in impl {impl core::cmp::PartialEq<u8> for u8}
+*/
+bool core_cmp_impls_eq_a2(const uint8_t *self, const uint8_t *other);
+
+/**
 This function found in impl {impl core::cmp::PartialEq<core::result::Result<T, E>[@TraitClause0, @TraitClause1]> for core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
 */
 /**
@@ -149,6 +139,16 @@ bool
 core_result_eq_89_eb(const core_result_Result_1d *self, const core_result_Result_1d *other);
 
 void issue_105_main(void);
+
+/**
+This function found in impl {impl core::cmp::PartialEq<()> for ()}
+*/
+bool core_cmp_impls_ne_23(void *const *self, void *const *_other);
+
+/**
+This function found in impl {impl core::cmp::PartialEq<u8> for u8}
+*/
+bool core_cmp_impls_ne_a2(const uint8_t *self, const uint8_t *other);
 
 #if defined(__cplusplus)
 }

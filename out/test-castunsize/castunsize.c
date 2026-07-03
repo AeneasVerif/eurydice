@@ -26,6 +26,22 @@ void castunsize_main1(void)
 }
 
 /**
+A monomorphic instance of castunsize.main2
+with const generics
+- K= 5
+*/
+void castunsize_main2_a5(void)
+{
+  castunsize_S_b9 x = { .foo = 0U, .my_data = { .data = { 0U } } };
+  Eurydice_dst_ref_shared_8b x0 = { .ptr = (const castunsize_T *)&x, .meta = (size_t)5U };
+  /* original Rust expression is not an lvalue in C */
+  uint32_t lvalue = 0U;
+  const_uint32_t__x2
+  uu____0 = { .fst = &((const uint32_t *)x0.ptr->my_data)[3U], .snd = &lvalue };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+}
+
+/**
 A monomorphic instance of Eurydice.array_to_slice_mut
 with types uint32_t
 with const generics
@@ -49,22 +65,6 @@ void castunsize_main3(void)
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
   const_uint32_t__x2 uu____0 = { .fst = &x.ptr[3U], .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
-}
-
-/**
-A monomorphic instance of castunsize.main2
-with const generics
-- K= 5
-*/
-void castunsize_main2_a5(void)
-{
-  castunsize_S_b9 x = { .foo = 0U, .my_data = { .data = { 0U } } };
-  Eurydice_dst_ref_shared_8b x0 = { .ptr = (const castunsize_T *)&x, .meta = (size_t)5U };
-  /* original Rust expression is not an lvalue in C */
-  uint32_t lvalue = 0U;
-  const_uint32_t__x2
-  uu____0 = { .fst = &((const uint32_t *)x0.ptr->my_data)[3U], .snd = &lvalue };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 

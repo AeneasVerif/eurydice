@@ -164,17 +164,24 @@ Supported options:|}
             ro
         | _ -> false);
 
-  let files =
-    Eurydice.Builtin.files
-    @ [
-        Eurydice.PreCleanup.merge
-          (List.map
-             (fun filename ->
-               let llbc = Eurydice.LoadLlbc.load_file filename in
-               Eurydice.AstOfLlbc.file_of_crate llbc)
-             !files);
-      ]
+  let input_files =
+    List.map
+      (fun filename ->
+        let llbc = Eurydice.LoadLlbc.load_file filename in
+        Eurydice.AstOfLlbc.file_of_crate llbc)
+      !files
   in
+
+  (* Record the order of files as given by Charon's `crate.declarations`,
+     so we can recover it at the end of the pipeline. *)
+  Eurydice.DeclOrder.reset ();
+  Eurydice.DeclOrder.record_decls
+    Eurydice.Builtin.[ dst_ref_shared_decl; dst_ref_mut_decl; decl_of_arr ];
+  Eurydice.DeclOrder.record_lid Krml.Ast.tuple_lid;
+  List.iter Eurydice.DeclOrder.record_lid Eurydice.Builtin.[ range; range_to; range_from ];
+  List.iter Eurydice.DeclOrder.record_file input_files;
+
+  let files = Eurydice.Builtin.files @ [ Eurydice.PreCleanup.merge input_files ] in
 
   if !O.no_const then
     Printf.printf "⚠️  Not using 'const' for pointer types\n";
@@ -304,6 +311,7 @@ Supported options:|}
   (* This chunk which reuses key elements of simplify2 *)
   let files = Eurydice.Cleanup2.check_addrof#visit_files () files in
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
+  let files = Eurydice.DeclOrder.sort_files files in
   let files = Eurydice.Cleanup2.hoist#visit_files [] files in
   let files = Eurydice.Cleanup2.fixup_hoist#visit_files () files in
   Eurydice.Logging.log "Phase2.75" "%a" pfiles files;
@@ -399,6 +407,7 @@ Supported options:|}
             ds ))
       files
   in
+  let files = Eurydice.DeclOrder.sort_files_for_c files in
   let files = AstToCStar.mk_files files c_name_map Idents.LidSet.empty macros in
 
   (* Uncomment to debug C* AST *)

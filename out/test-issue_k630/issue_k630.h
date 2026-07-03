@@ -15,12 +15,6 @@
 extern "C" {
 #endif
 
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
-
 /**
 A monomorphic instance of Eurydice.arr
 with types uint32_t
@@ -36,6 +30,12 @@ with const generics
 - $5size_t
 */
 typedef struct Eurydice_arr_21_s { Eurydice_arr_d5 data[5U]; } Eurydice_arr_21;
+
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
 
 void issue_k630_main(void);
 

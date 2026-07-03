@@ -21,10 +21,10 @@ extern "C" {
 
 typedef uint8_t core_panicking_AssertKind;
 
-#define issue_123_E_One 1
-#define issue_123_E_Five 5
+#define issue_123_Gamma2_V95_232 95232
+#define issue_123_Gamma2_V261_888 261888
 
-typedef uint8_t issue_123_E;
+typedef uint32_t issue_123_Gamma2;
 
 #define issue_123_E1_C1 4294967295
 #define issue_123_E1_C2 -4294967295
@@ -46,10 +46,10 @@ typedef uint8_t issue_123_E3;
 
 typedef int8_t issue_123_E4;
 
-#define issue_123_Gamma2_V95_232 95232
-#define issue_123_Gamma2_V261_888 261888
+#define issue_123_E_One 1
+#define issue_123_E_Five 5
 
-typedef uint32_t issue_123_Gamma2;
+typedef uint8_t issue_123_E;
 
 int32_t issue_123_fun(issue_123_E e);
 

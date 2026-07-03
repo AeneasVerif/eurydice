@@ -7,6 +7,13 @@
 
 #include "where_clauses_fncg.h"
 
+typedef struct const_uint64_t__x2_s
+{
+  const uint64_t *fst;
+  const uint64_t *snd;
+}
+const_uint64_t__x2;
+
 /**
 This function found in impl {impl where_clauses_fncg::Foo<K> for u64}
 */
@@ -99,13 +106,6 @@ uint64_t where_clauses_fncg_g_92(void)
 {
   return where_clauses_fncg_method_foo_4a_27();
 }
-
-typedef struct const_uint64_t__x2_s
-{
-  const uint64_t *fst;
-  const uint64_t *snd;
-}
-const_uint64_t__x2;
 
 void where_clauses_fncg_main(void)
 {

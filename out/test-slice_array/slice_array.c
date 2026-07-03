@@ -7,6 +7,13 @@
 
 #include "slice_array.h"
 
+typedef struct const_uint8_t__x2_s
+{
+  const uint8_t *fst;
+  const uint8_t *snd;
+}
+const_uint8_t__x2;
+
 /**
 A monomorphic instance of Eurydice.array_to_slice_mut
 with types Eurydice_arr uint8_t[[$4size_t]]
@@ -21,14 +28,30 @@ static Eurydice_dst_ref_mut_b5 array_to_slice_mut_4e(Eurydice_arr_ba *a)
   return lit;
 }
 
-typedef struct const_uint8_t__x2_s
-{
-  const uint8_t *fst;
-  const uint8_t *snd;
-}
-const_uint8_t__x2;
-
 void slice_array_f1(void)
+{
+  Eurydice_arr_ba
+  x =
+    { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
+  Eurydice_dst_ref_mut_b5
+  y0 =
+    Eurydice_slice_split_at_mut(array_to_slice_mut_4e(&x),
+      (size_t)2U,
+      Eurydice_array_u8x4,
+      Eurydice_dst_ref_mut_b5_x2).fst;
+  y0.ptr->data[0U] = 1U;
+  uint8_t actual = x.data->data[0U];
+  uint8_t expected = 1U;
+  const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+}
+
+/**
+A monomorphic instance of slice_array.f4
+with const generics
+- K= 4
+*/
+void slice_array_f4_23(void)
 {
   Eurydice_arr_ba
   x =
@@ -181,29 +204,6 @@ void slice_array_f3(void)
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
   const_uint8_t__x2 uu____2 = { .fst = y1.data, .snd = y3.data };
   EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
-}
-
-/**
-A monomorphic instance of slice_array.f4
-with const generics
-- K= 4
-*/
-void slice_array_f4_23(void)
-{
-  Eurydice_arr_ba
-  x =
-    { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
-  Eurydice_dst_ref_mut_b5
-  y0 =
-    Eurydice_slice_split_at_mut(array_to_slice_mut_4e(&x),
-      (size_t)2U,
-      Eurydice_array_u8x4,
-      Eurydice_dst_ref_mut_b5_x2).fst;
-  y0.ptr->data[0U] = 1U;
-  uint8_t actual = x.data->data[0U];
-  uint8_t expected = 1U;
-  const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
 /**

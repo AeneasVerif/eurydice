@@ -15,6 +15,21 @@
 extern "C" {
 #endif
 
+/**
+A monomorphic instance of Eurydice.arr
+with types size_t
+with const generics
+- $1size_t
+*/
+typedef struct Eurydice_arr_58_s { size_t data[1U]; } Eurydice_arr_58;
+
+typedef struct size_t_x2_s
+{
+  size_t fst;
+  size_t snd;
+}
+size_t_x2;
+
 extern size_t core_clone_impls__impl_core__clone__Clone_for_usize__clone(const size_t *x0);
 
 #define core_panicking_AssertKind_Eq 0
@@ -22,11 +37,6 @@ extern size_t core_clone_impls__impl_core__clone__Clone_for_usize__clone(const s
 #define core_panicking_AssertKind_Match 2
 
 typedef uint8_t core_panicking_AssertKind;
-
-/**
-This function found in impl {impl where_clauses_closures::Ops<1 : usize> for usize}
-*/
-size_t where_clauses_closures_zero_ec(void);
 
 /**
 This function found in impl {impl where_clauses_closures::Ops<1 : usize> for usize}
@@ -45,30 +55,9 @@ with const generics
 size_t where_clauses_closures_test_call_mut_0c_df(void **_, size_t tupled_args);
 
 /**
-This function found in impl {impl core::ops::function::FnOnce<(usize,), T> for where_clauses_closures::test::closure<T, K>[@TraitClause0, @TraitClause1, @TraitClause2]}
+This function found in impl {impl where_clauses_closures::Ops<1 : usize> for usize}
 */
-/**
-A monomorphic instance of where_clauses_closures.test.call_once_8c
-with types size_t
-with const generics
-- K= 1
-*/
-size_t where_clauses_closures_test_call_once_8c_df(size_t _);
-
-typedef struct size_t_x2_s
-{
-  size_t fst;
-  size_t snd;
-}
-size_t_x2;
-
-/**
-A monomorphic instance of Eurydice.arr
-with types size_t
-with const generics
-- $1size_t
-*/
-typedef struct Eurydice_arr_58_s { size_t data[1U]; } Eurydice_arr_58;
+size_t where_clauses_closures_zero_ec(void);
 
 /**
 A monomorphic instance of where_clauses_closures.test
@@ -79,6 +68,17 @@ with const generics
 size_t_x2 where_clauses_closures_test_df(void);
 
 void where_clauses_closures_main(void);
+
+/**
+This function found in impl {impl core::ops::function::FnOnce<(usize,), T> for where_clauses_closures::test::closure<T, K>[@TraitClause0, @TraitClause1, @TraitClause2]}
+*/
+/**
+A monomorphic instance of where_clauses_closures.test.call_once_8c
+with types size_t
+with const generics
+- K= 1
+*/
+size_t where_clauses_closures_test_call_once_8c_df(size_t _);
 
 #if defined(__cplusplus)
 }

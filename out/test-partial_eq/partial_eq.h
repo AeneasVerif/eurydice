@@ -27,6 +27,10 @@ typedef struct Eurydice_dst_ref_shared_0d_s
 }
 Eurydice_dst_ref_shared_0d;
 
+#define partial_eq_Enum_A 0
+
+typedef uint8_t partial_eq_Enum;
+
 #define core_result_Ok 0
 #define core_result_Err 1
 
@@ -43,10 +47,6 @@ core_fmt__core__fmt__Formatter__a___write_str(
 #define core_panicking_AssertKind_Match 2
 
 typedef uint8_t core_panicking_AssertKind;
-
-#define partial_eq_Enum_A 0
-
-typedef uint8_t partial_eq_Enum;
 
 /**
 This function found in impl {impl core::cmp::PartialEq<partial_eq::Enum> for partial_eq::Enum}

@@ -7,290 +7,6 @@
 
 #include "array.h"
 
-/**
-A monomorphic instance of Eurydice.array_to_subslice_shared
-with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
-with const generics
-- N= 32
-*/
-static Eurydice_borrow_slice_u8
-array_to_subslice_shared_d4(const Eurydice_arr_ec *a, core_ops_range_Range_87 r)
-{
-  return
-    (KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = a->data + r.start, .meta = r.end - r.start });
-}
-
-uint8_t array_fun(Eurydice_dst_ref_shared_60 x)
-{
-  return
-    array_to_subslice_shared_d4(&x.ptr[0U],
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)1U })).ptr[0U];
-}
-
-Eurydice_arr_ec array_init(void)
-{
-  return (KRML_CLITERAL(Eurydice_arr_ec){ .data = { 0U } });
-}
-
-array_Foo array_mk_foo(void)
-{
-  Eurydice_arr_a0 x = { .data = { 0U } };
-  Eurydice_arr_a0 y;
-  uint32_t repeat_expression[2U];
-  for (uint32_t _i = 0U; _i < (size_t)2U; ++_i)
-    repeat_expression[_i] = 1U;
-  memcpy(y.data, repeat_expression, (size_t)2U * sizeof (uint32_t));
-  return (KRML_CLITERAL(array_Foo){ .x = x, .y = y });
-}
-
-array_Foo array_mk_foo2(void)
-{
-  return array_mk_foo();
-}
-
-void array_mut_array(Eurydice_arr_a0 x)
-{
-  x.data[0U] = 1U;
-}
-
-void array_mut_foo(array_Foo f)
-{
-  f.x.data[0U] = 1U;
-  Eurydice_arr_a0 copy = f.y;
-  copy.data[0U] = 0U;
-  EURYDICE_ASSERT(copy.data[0U] != 1U, "panic!");
-}
-
-/**
-This function found in impl {impl core::ops::function::FnMut<(usize,), u32> for array::mk_incr::closure<K>}
-*/
-/**
-A monomorphic instance of array.mk_incr.call_mut_fc
-with const generics
-- K= 10
-*/
-uint32_t array_mk_incr_call_mut_fc_55(void **_, size_t tupled_args)
-{
-  size_t i = tupled_args;
-  return (uint32_t)i;
-}
-
-/**
-This function found in impl {impl core::ops::function::FnOnce<(usize,), u32> for array::mk_incr::closure<K>}
-*/
-/**
-A monomorphic instance of array.mk_incr.call_once_89
-with const generics
-- K= 10
-*/
-uint32_t array_mk_incr_call_once_89_55(size_t _)
-{
-  /* original Rust expression is not an lvalue in C */
-  void *lvalue = (void *)0U;
-  return array_mk_incr_call_mut_fc_55(&lvalue, _);
-}
-
-/**
-A monomorphic instance of array.mk_incr
-with const generics
-- K= 10
-*/
-Eurydice_arr_6c array_mk_incr_55(void)
-{
-  Eurydice_arr_6c arr_struct;
-  KRML_MAYBE_FOR10(i,
-    (size_t)0U,
-    (size_t)10U,
-    (size_t)1U,
-    /* original Rust expression is not an lvalue in C */
-    void *lvalue = (void *)0U;
-    arr_struct.data[i] = array_mk_incr_call_mut_fc_55(&lvalue, i););
-  return arr_struct;
-}
-
-/**
-This function found in impl {impl core::ops::function::FnMut<(usize,), u32> for array::mk_incr2::closure<'_0, K>}
-*/
-/**
-A monomorphic instance of array.mk_incr2.call_mut_b4
-with const generics
-- K= 10
-*/
-uint32_t array_mk_incr2_call_mut_b4_55(const uint32_t **_, size_t tupled_args)
-{
-  size_t i = tupled_args;
-  return (uint32_t)i + _[0U][0U];
-}
-
-/**
-This function found in impl {impl core::ops::function::FnOnce<(usize,), u32> for array::mk_incr2::closure<'_0, K>}
-*/
-/**
-A monomorphic instance of array.mk_incr2.call_once_83
-with const generics
-- K= 10
-*/
-uint32_t array_mk_incr2_call_once_83_55(const uint32_t *_, size_t _0)
-{
-  return array_mk_incr2_call_mut_b4_55(&_, _0);
-}
-
-/**
-A monomorphic instance of array.mk_incr2
-with const generics
-- K= 10
-*/
-Eurydice_arr_6c array_mk_incr2_55(void)
-{
-  uint32_t j = 1U;
-  Eurydice_arr_6c arr_struct;
-  KRML_MAYBE_FOR10(i,
-    (size_t)0U,
-    (size_t)10U,
-    (size_t)1U,
-    /* original Rust expression is not an lvalue in C */
-    const uint32_t *lvalue = &j;
-    arr_struct.data[i] = array_mk_incr2_call_mut_b4_55(&lvalue, i););
-  return arr_struct;
-}
-
-/**
-This function found in impl {impl core::ops::function::FnMut<(u32,), u16> for array::plus_one::closure<K>}
-*/
-/**
-A monomorphic instance of array.plus_one.call_mut_55
-with const generics
-- K= 1
-*/
-uint16_t array_plus_one_call_mut_55_6c(void **_, uint32_t tupled_args)
-{
-  uint32_t x = tupled_args;
-  return (uint16_t)(x + 1U);
-}
-
-/**
-This function found in impl {impl core::ops::function::FnOnce<(u32,), u16> for array::plus_one::closure<K>}
-*/
-/**
-A monomorphic instance of array.plus_one.call_once_50
-with const generics
-- K= 1
-*/
-uint16_t array_plus_one_call_once_50_6c(uint32_t _)
-{
-  /* original Rust expression is not an lvalue in C */
-  void *lvalue = (void *)0U;
-  return array_plus_one_call_mut_55_6c(&lvalue, _);
-}
-
-/**
-A monomorphic instance of array.plus_one
-with const generics
-- K= 1
-*/
-Eurydice_arr_96 array_plus_one_6c(Eurydice_arr_d5 x)
-{
-  Eurydice_arr_96 arr_mapped_str;
-  {
-    /* original Rust expression is not an lvalue in C */
-    void *lvalue = (void *)0U;
-    arr_mapped_str.data[0U] = array_plus_one_call_mut_55_6c(&lvalue, x.data[0U]);
-  }
-  return arr_mapped_str;
-}
-
-/**
-This function found in impl {impl core::ops::function::FnMut<(usize,), usize> for array::nested_from_fn::closure::closure<'_0, K>}
-*/
-/**
-A monomorphic instance of array.nested_from_fn.closure.call_mut_a9
-with const generics
-- K= 4
-*/
-size_t array_nested_from_fn_closure_call_mut_a9_23(const size_t **_, size_t tupled_args)
-{
-  size_t i = tupled_args;
-  return i + _[0U][0U];
-}
-
-/**
-This function found in impl {impl core::ops::function::FnOnce<(usize,), usize> for array::nested_from_fn::closure::closure<'_0, K>}
-*/
-/**
-A monomorphic instance of array.nested_from_fn.closure.call_once_d7
-with const generics
-- K= 4
-*/
-size_t array_nested_from_fn_closure_call_once_d7_23(const size_t *_, size_t _0)
-{
-  return array_nested_from_fn_closure_call_mut_a9_23(&_, _0);
-}
-
-/**
-This function found in impl {impl core::ops::function::FnMut<(usize,), [usize; K]> for array::nested_from_fn::closure<K>}
-*/
-/**
-A monomorphic instance of array.nested_from_fn.call_mut_e9
-with const generics
-- K= 4
-*/
-Eurydice_arr_cc array_nested_from_fn_call_mut_e9_23(void **_, size_t tupled_args)
-{
-  size_t j = tupled_args;
-  Eurydice_arr_cc arr_struct;
-  KRML_MAYBE_FOR4(i,
-    (size_t)0U,
-    (size_t)4U,
-    (size_t)1U,
-    /* original Rust expression is not an lvalue in C */
-    const size_t *lvalue = &j;
-    arr_struct.data[i] = array_nested_from_fn_closure_call_mut_a9_23(&lvalue, i););
-  return arr_struct;
-}
-
-/**
-This function found in impl {impl core::ops::function::FnOnce<(usize,), [usize; K]> for array::nested_from_fn::closure<K>}
-*/
-/**
-A monomorphic instance of array.nested_from_fn.call_once_3c
-with const generics
-- K= 4
-*/
-Eurydice_arr_cc array_nested_from_fn_call_once_3c_23(size_t _)
-{
-  /* original Rust expression is not an lvalue in C */
-  void *lvalue = (void *)0U;
-  return array_nested_from_fn_call_mut_e9_23(&lvalue, _);
-}
-
-/**
-A monomorphic instance of array.nested_from_fn
-with const generics
-- K= 4
-*/
-Eurydice_arr_89 array_nested_from_fn_23(void)
-{
-  Eurydice_arr_89 arr_struct;
-  KRML_MAYBE_FOR4(i,
-    (size_t)0U,
-    (size_t)4U,
-    (size_t)1U,
-    /* original Rust expression is not an lvalue in C */
-    void *lvalue = (void *)0U;
-    arr_struct.data[i] = array_nested_from_fn_call_mut_e9_23(&lvalue, i););
-  return arr_struct;
-}
-
-/**
-A monomorphic instance of array.const_eq
-with const generics
-- K= 2
-*/
-bool array_const_eq_af(Eurydice_arr_a0 x, Eurydice_arr_a0 y)
-{
-  return Eurydice_array_eq((size_t)2U, &x, &y, uint32_t);
-}
-
 typedef struct const_uint32_t__x2_s
 {
   const uint32_t *fst;
@@ -318,6 +34,224 @@ typedef struct const_bool__x2_s
   const bool *snd;
 }
 const_bool__x2;
+
+void array_mut_array(Eurydice_arr_a0 x)
+{
+  x.data[0U] = 1U;
+}
+
+void array_mut_foo(array_Foo f)
+{
+  f.x.data[0U] = 1U;
+  Eurydice_arr_a0 copy = f.y;
+  copy.data[0U] = 0U;
+  EURYDICE_ASSERT(copy.data[0U] != 1U, "panic!");
+}
+
+array_Foo array_mk_foo(void)
+{
+  Eurydice_arr_a0 x = { .data = { 0U } };
+  Eurydice_arr_a0 y;
+  uint32_t repeat_expression[2U];
+  for (uint32_t _i = 0U; _i < (size_t)2U; ++_i)
+    repeat_expression[_i] = 1U;
+  memcpy(y.data, repeat_expression, (size_t)2U * sizeof (uint32_t));
+  return (KRML_CLITERAL(array_Foo){ .x = x, .y = y });
+}
+
+array_Foo array_mk_foo2(void)
+{
+  return array_mk_foo();
+}
+
+/**
+This function found in impl {impl core::ops::function::FnMut<(usize,), u32> for array::mk_incr2::closure<'_0, K>}
+*/
+/**
+A monomorphic instance of array.mk_incr2.call_mut_b4
+with const generics
+- K= 10
+*/
+uint32_t array_mk_incr2_call_mut_b4_55(const uint32_t **_, size_t tupled_args)
+{
+  size_t i = tupled_args;
+  return (uint32_t)i + _[0U][0U];
+}
+
+/**
+A monomorphic instance of array.mk_incr2
+with const generics
+- K= 10
+*/
+Eurydice_arr_6c array_mk_incr2_55(void)
+{
+  uint32_t j = 1U;
+  Eurydice_arr_6c arr_struct;
+  KRML_MAYBE_FOR10(i,
+    (size_t)0U,
+    (size_t)10U,
+    (size_t)1U,
+    /* original Rust expression is not an lvalue in C */
+    const uint32_t *lvalue = &j;
+    arr_struct.data[i] = array_mk_incr2_call_mut_b4_55(&lvalue, i););
+  return arr_struct;
+}
+
+/**
+This function found in impl {impl core::ops::function::FnMut<(usize,), u32> for array::mk_incr::closure<K>}
+*/
+/**
+A monomorphic instance of array.mk_incr.call_mut_fc
+with const generics
+- K= 10
+*/
+uint32_t array_mk_incr_call_mut_fc_55(void **_, size_t tupled_args)
+{
+  size_t i = tupled_args;
+  return (uint32_t)i;
+}
+
+/**
+A monomorphic instance of array.mk_incr
+with const generics
+- K= 10
+*/
+Eurydice_arr_6c array_mk_incr_55(void)
+{
+  Eurydice_arr_6c arr_struct;
+  KRML_MAYBE_FOR10(i,
+    (size_t)0U,
+    (size_t)10U,
+    (size_t)1U,
+    /* original Rust expression is not an lvalue in C */
+    void *lvalue = (void *)0U;
+    arr_struct.data[i] = array_mk_incr_call_mut_fc_55(&lvalue, i););
+  return arr_struct;
+}
+
+/**
+This function found in impl {impl core::ops::function::FnMut<(usize,), usize> for array::nested_from_fn::closure::closure<'_0, K>}
+*/
+/**
+A monomorphic instance of array.nested_from_fn.closure.call_mut_a9
+with const generics
+- K= 4
+*/
+size_t array_nested_from_fn_closure_call_mut_a9_23(const size_t **_, size_t tupled_args)
+{
+  size_t i = tupled_args;
+  return i + _[0U][0U];
+}
+
+/**
+This function found in impl {impl core::ops::function::FnMut<(usize,), [usize; K]> for array::nested_from_fn::closure<K>}
+*/
+/**
+A monomorphic instance of array.nested_from_fn.call_mut_e9
+with const generics
+- K= 4
+*/
+Eurydice_arr_cc array_nested_from_fn_call_mut_e9_23(void **_, size_t tupled_args)
+{
+  size_t j = tupled_args;
+  Eurydice_arr_cc arr_struct;
+  KRML_MAYBE_FOR4(i,
+    (size_t)0U,
+    (size_t)4U,
+    (size_t)1U,
+    /* original Rust expression is not an lvalue in C */
+    const size_t *lvalue = &j;
+    arr_struct.data[i] = array_nested_from_fn_closure_call_mut_a9_23(&lvalue, i););
+  return arr_struct;
+}
+
+/**
+A monomorphic instance of array.nested_from_fn
+with const generics
+- K= 4
+*/
+Eurydice_arr_89 array_nested_from_fn_23(void)
+{
+  Eurydice_arr_89 arr_struct;
+  KRML_MAYBE_FOR4(i,
+    (size_t)0U,
+    (size_t)4U,
+    (size_t)1U,
+    /* original Rust expression is not an lvalue in C */
+    void *lvalue = (void *)0U;
+    arr_struct.data[i] = array_nested_from_fn_call_mut_e9_23(&lvalue, i););
+  return arr_struct;
+}
+
+/**
+This function found in impl {impl core::ops::function::FnMut<(u32,), u16> for array::plus_one::closure<K>}
+*/
+/**
+A monomorphic instance of array.plus_one.call_mut_55
+with const generics
+- K= 1
+*/
+uint16_t array_plus_one_call_mut_55_6c(void **_, uint32_t tupled_args)
+{
+  uint32_t x = tupled_args;
+  return (uint16_t)(x + 1U);
+}
+
+/**
+A monomorphic instance of array.plus_one
+with const generics
+- K= 1
+*/
+Eurydice_arr_96 array_plus_one_6c(Eurydice_arr_d5 x)
+{
+  Eurydice_arr_96 arr_mapped_str;
+  {
+    /* original Rust expression is not an lvalue in C */
+    void *lvalue = (void *)0U;
+    arr_mapped_str.data[0U] = array_plus_one_call_mut_55_6c(&lvalue, x.data[0U]);
+  }
+  return arr_mapped_str;
+}
+
+/**
+A monomorphic instance of array.const_eq
+with const generics
+- K= 2
+*/
+bool array_const_eq_af(Eurydice_arr_a0 x, Eurydice_arr_a0 y)
+{
+  return Eurydice_array_eq((size_t)2U, &x, &y, uint32_t);
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_subslice_shared
+with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
+with const generics
+- N= 32
+*/
+static Eurydice_borrow_slice_u8
+array_to_subslice_shared_d4(const Eurydice_arr_ec *a, core_ops_range_Range_87 r)
+{
+  return
+    (KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = a->data + r.start, .meta = r.end - r.start });
+}
+
+uint8_t array_fun(Eurydice_dst_ref_shared_60 x)
+{
+  return
+    array_to_subslice_shared_d4(&x.ptr[0U],
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)1U })).ptr[0U];
+}
+
+Eurydice_arr_ec array_init(void)
+{
+  return (KRML_CLITERAL(Eurydice_arr_ec){ .data = { 0U } });
+}
+
+void array_references(void)
+{
+  array_init();
+}
 
 void array_main(void)
 {
@@ -371,8 +305,74 @@ void array_main(void)
   EURYDICE_ASSERT(uu____6.fst[0U] == uu____6.snd[0U], "panic!");
 }
 
-void array_references(void)
+/**
+This function found in impl {impl core::ops::function::FnOnce<(usize,), u32> for array::mk_incr::closure<K>}
+*/
+/**
+A monomorphic instance of array.mk_incr.call_once_89
+with const generics
+- K= 10
+*/
+uint32_t array_mk_incr_call_once_89_55(size_t _)
 {
-  array_init();
+  /* original Rust expression is not an lvalue in C */
+  void *lvalue = (void *)0U;
+  return array_mk_incr_call_mut_fc_55(&lvalue, _);
+}
+
+/**
+This function found in impl {impl core::ops::function::FnOnce<(usize,), u32> for array::mk_incr2::closure<'_0, K>}
+*/
+/**
+A monomorphic instance of array.mk_incr2.call_once_83
+with const generics
+- K= 10
+*/
+uint32_t array_mk_incr2_call_once_83_55(const uint32_t *_, size_t _0)
+{
+  return array_mk_incr2_call_mut_b4_55(&_, _0);
+}
+
+/**
+This function found in impl {impl core::ops::function::FnOnce<(u32,), u16> for array::plus_one::closure<K>}
+*/
+/**
+A monomorphic instance of array.plus_one.call_once_50
+with const generics
+- K= 1
+*/
+uint16_t array_plus_one_call_once_50_6c(uint32_t _)
+{
+  /* original Rust expression is not an lvalue in C */
+  void *lvalue = (void *)0U;
+  return array_plus_one_call_mut_55_6c(&lvalue, _);
+}
+
+/**
+This function found in impl {impl core::ops::function::FnOnce<(usize,), usize> for array::nested_from_fn::closure::closure<'_0, K>}
+*/
+/**
+A monomorphic instance of array.nested_from_fn.closure.call_once_d7
+with const generics
+- K= 4
+*/
+size_t array_nested_from_fn_closure_call_once_d7_23(const size_t *_, size_t _0)
+{
+  return array_nested_from_fn_closure_call_mut_a9_23(&_, _0);
+}
+
+/**
+This function found in impl {impl core::ops::function::FnOnce<(usize,), [usize; K]> for array::nested_from_fn::closure<K>}
+*/
+/**
+A monomorphic instance of array.nested_from_fn.call_once_3c
+with const generics
+- K= 4
+*/
+Eurydice_arr_cc array_nested_from_fn_call_once_3c_23(size_t _)
+{
+  /* original Rust expression is not an lvalue in C */
+  void *lvalue = (void *)0U;
+  return array_nested_from_fn_call_mut_e9_23(&lvalue, _);
 }
 

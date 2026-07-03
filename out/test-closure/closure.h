@@ -15,6 +15,28 @@
 extern "C" {
 #endif
 
+/**
+A monomorphic instance of Eurydice.arr
+with types size_t
+with const generics
+- $1size_t
+*/
+typedef struct Eurydice_arr_58_s { size_t data[1U]; } Eurydice_arr_58;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr_58
+with const generics
+- $1size_t
+*/
+typedef struct Eurydice_arr_2d_s { Eurydice_arr_58 data[1U]; } Eurydice_arr_2d;
+
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
+
 typedef struct Eurydice_arr_58_s Eurydice_arr_58;
 
 typedef const Eurydice_arr_58 *closure_f_closure;
@@ -27,17 +49,18 @@ typedef struct closure_f_closure_closure_s
 closure_f_closure_closure;
 
 /**
-A monomorphic instance of Eurydice.arr
-with types size_t
-with const generics
-- $1size_t
-*/
-typedef struct Eurydice_arr_58_s { size_t data[1U]; } Eurydice_arr_58;
-
-/**
 This function found in impl {impl core::ops::function::FnMut<(usize,), usize> for closure::f::closure::closure<'_0, '_1>}
 */
 size_t closure_f_closure_call_mut_50(closure_f_closure_closure *_, size_t tupled_args);
+
+/**
+This function found in impl {impl core::ops::function::FnMut<(usize,), [usize; 1 : usize]> for closure::f::closure<'_0>}
+*/
+Eurydice_arr_58 closure_f_call_mut_92(const Eurydice_arr_58 **_, size_t tupled_args);
+
+Eurydice_arr_2d closure_f(void);
+
+void closure_main(void);
 
 /**
 This function found in impl {impl core::ops::function::FnOnce<(usize,), usize> for closure::f::closure::closure<'_0, '_1>}
@@ -45,32 +68,9 @@ This function found in impl {impl core::ops::function::FnOnce<(usize,), usize> f
 size_t closure_f_closure_call_once_c1(closure_f_closure_closure _, size_t _0);
 
 /**
-This function found in impl {impl core::ops::function::FnMut<(usize,), [usize; 1 : usize]> for closure::f::closure<'_0>}
-*/
-Eurydice_arr_58 closure_f_call_mut_92(const Eurydice_arr_58 **_, size_t tupled_args);
-
-/**
 This function found in impl {impl core::ops::function::FnOnce<(usize,), [usize; 1 : usize]> for closure::f::closure<'_0>}
 */
 Eurydice_arr_58 closure_f_call_once_b7(const Eurydice_arr_58 *_, size_t _0);
-
-/**
-A monomorphic instance of Eurydice.arr
-with types Eurydice_arr_58
-with const generics
-- $1size_t
-*/
-typedef struct Eurydice_arr_2d_s { Eurydice_arr_58 data[1U]; } Eurydice_arr_2d;
-
-Eurydice_arr_2d closure_f(void);
-
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
-
-void closure_main(void);
 
 /**
 This function found in impl {impl core::marker::Destruct for closure::f::closure::closure<'_0, '_1>}

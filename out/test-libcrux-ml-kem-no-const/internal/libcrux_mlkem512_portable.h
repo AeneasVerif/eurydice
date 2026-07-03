@@ -23,47 +23,6 @@ typedef libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b
 libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512PublicKeyUnpacked;
 
 /**
- Decapsulate ML-KEM 512 (unpacked)
-
- Generates an [`MlKemSharedSecret`].
- The input is a reference to an unpacked key pair of type [`MlKem512KeyPairUnpacked`]
- and an [`MlKem512Ciphertext`].
-*/
-Eurydice_arr_ec
-libcrux_ml_kem_mlkem512_portable_unpacked_decapsulate(
-  libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *private_key,
-  Eurydice_arr_d2 *ciphertext
-);
-
-/**
- Encapsulate ML-KEM 512 (unpacked)
-
- Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
- The input is a reference to an unpacked public key of type [`MlKem512PublicKeyUnpacked`],
- the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
-*/
-tuple_ab
-libcrux_ml_kem_mlkem512_portable_unpacked_encapsulate(
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b *public_key,
-  Eurydice_arr_ec randomness
-);
-
-/**
- Generate ML-KEM 512 Key Pair in "unpacked" form
-*/
-void
-libcrux_ml_kem_mlkem512_portable_unpacked_generate_key_pair_mut(
-  Eurydice_arr_c7 randomness,
-  libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *key_pair
-);
-
-/**
- Generate ML-KEM 512 Key Pair in "unpacked" form.
-*/
-libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
-libcrux_ml_kem_mlkem512_portable_unpacked_generate_key_pair(Eurydice_arr_c7 randomness);
-
-/**
  Create a new, empty unpacked key.
 */
 libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
@@ -76,12 +35,12 @@ libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b
 libcrux_ml_kem_mlkem512_portable_unpacked_init_public_key(void);
 
 /**
- Get an unpacked key from a private key.
+ Get the serialized public key.
 */
 void
-libcrux_ml_kem_mlkem512_portable_unpacked_key_pair_from_private_mut(
-  Eurydice_arr_ab0 *private_key,
-  libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *key_pair
+libcrux_ml_kem_mlkem512_portable_unpacked_serialized_public_key(
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b *public_key,
+  Eurydice_arr_03 *serialized
 );
 
 /**
@@ -104,14 +63,6 @@ libcrux_ml_kem_mlkem512_portable_unpacked_key_pair_serialized_private_key_mut(
 /**
  Get the serialized public key.
 */
-Eurydice_arr_03
-libcrux_ml_kem_mlkem512_portable_unpacked_key_pair_serialized_public_key(
-  libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *key_pair
-);
-
-/**
- Get the serialized public key.
-*/
 void
 libcrux_ml_kem_mlkem512_portable_unpacked_key_pair_serialized_public_key_mut(
   libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *key_pair,
@@ -121,10 +72,18 @@ libcrux_ml_kem_mlkem512_portable_unpacked_key_pair_serialized_public_key_mut(
 /**
  Get the serialized public key.
 */
+Eurydice_arr_03
+libcrux_ml_kem_mlkem512_portable_unpacked_key_pair_serialized_public_key(
+  libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *key_pair
+);
+
+/**
+ Get an unpacked key from a private key.
+*/
 void
-libcrux_ml_kem_mlkem512_portable_unpacked_serialized_public_key(
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b *public_key,
-  Eurydice_arr_03 *serialized
+libcrux_ml_kem_mlkem512_portable_unpacked_key_pair_from_private_mut(
+  Eurydice_arr_ab0 *private_key,
+  libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *key_pair
 );
 
 /**
@@ -134,6 +93,47 @@ void
 libcrux_ml_kem_mlkem512_portable_unpacked_unpacked_public_key(
   Eurydice_arr_03 *public_key,
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b *unpacked_public_key
+);
+
+/**
+ Generate ML-KEM 512 Key Pair in "unpacked" form
+*/
+void
+libcrux_ml_kem_mlkem512_portable_unpacked_generate_key_pair_mut(
+  Eurydice_arr_c7 randomness,
+  libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *key_pair
+);
+
+/**
+ Generate ML-KEM 512 Key Pair in "unpacked" form.
+*/
+libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked
+libcrux_ml_kem_mlkem512_portable_unpacked_generate_key_pair(Eurydice_arr_c7 randomness);
+
+/**
+ Encapsulate ML-KEM 512 (unpacked)
+
+ Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
+ The input is a reference to an unpacked public key of type [`MlKem512PublicKeyUnpacked`],
+ the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
+*/
+tuple_ab
+libcrux_ml_kem_mlkem512_portable_unpacked_encapsulate(
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_3b *public_key,
+  Eurydice_arr_ec randomness
+);
+
+/**
+ Decapsulate ML-KEM 512 (unpacked)
+
+ Generates an [`MlKemSharedSecret`].
+ The input is a reference to an unpacked key pair of type [`MlKem512KeyPairUnpacked`]
+ and an [`MlKem512Ciphertext`].
+*/
+Eurydice_arr_ec
+libcrux_ml_kem_mlkem512_portable_unpacked_decapsulate(
+  libcrux_ml_kem_mlkem512_portable_unpacked_MlKem512KeyPairUnpacked *private_key,
+  Eurydice_arr_d2 *ciphertext
 );
 
 #if defined(__cplusplus)

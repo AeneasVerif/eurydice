@@ -40,12 +40,6 @@ typedef struct core_option_Option_9e_s
 }
 core_option_Option_9e;
 
-typedef core_option_Option_9e option_S;
-
-typedef Eurydice_arr_b2 option_Val;
-
-void option_main(void);
-
 /**
 A monomorphic instance of core.option.Option
 with types const Eurydice_arr_b2*
@@ -57,6 +51,12 @@ typedef struct core_option_Option_4d_s
   const Eurydice_arr_b2 *f0;
 }
 core_option_Option_4d;
+
+typedef Eurydice_arr_b2 option_Val;
+
+typedef core_option_Option_9e option_S;
+
+void option_main(void);
 
 /**
  Converts from `&Option<T>` to `Option<&T>`.

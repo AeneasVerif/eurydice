@@ -15,6 +15,22 @@
 extern "C" {
 #endif
 
+#define collision_Left0 0
+#define collision_Right0 1
+
+typedef uint8_t collision_Either_tags;
+
+typedef struct collision_Either_s
+{
+  collision_Either_tags tag;
+  union {
+    int32_t case_Left;
+    bool case_Right;
+  }
+  val;
+}
+collision_Either;
+
 #define collision_Left 0
 #define collision_Middle 1
 #define collision_Right 2
@@ -31,22 +47,6 @@ typedef struct collision_Direction_s
   val;
 }
 collision_Direction;
-
-#define collision_Left0 0
-#define collision_Right0 1
-
-typedef uint8_t collision_Either_tags;
-
-typedef struct collision_Either_s
-{
-  collision_Either_tags tag;
-  union {
-    int32_t case_Left;
-    bool case_Right;
-  }
-  val;
-}
-collision_Either;
 
 int32_t collision_collision(collision_Either a, collision_Direction b);
 

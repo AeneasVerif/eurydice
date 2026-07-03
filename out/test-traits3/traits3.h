@@ -23,11 +23,6 @@ typedef struct uint64_t_x2_s
 uint64_t_x2;
 
 /**
-This function found in impl {impl traits3::internal::KeccakItem<2 : usize> for (u64, u64)}
-*/
-uint64_t_x2 traits3_zero_81(void);
-
-/**
 A monomorphic instance of traits3.keccak
 with types (uint64_t * uint64_t)
 with const generics
@@ -35,11 +30,16 @@ with const generics
 */
 void traits3_keccak_ea(void);
 
+typedef uint64_t_x2 traits3_uint64x2_t;
+
 void traits3_keccakx2(void);
 
 void traits3_main(void);
 
-typedef uint64_t_x2 traits3_uint64x2_t;
+/**
+This function found in impl {impl traits3::internal::KeccakItem<2 : usize> for (u64, u64)}
+*/
+uint64_t_x2 traits3_zero_81(void);
 
 #if defined(__cplusplus)
 }

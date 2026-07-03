@@ -15,8 +15,6 @@
 extern "C" {
 #endif
 
-#define LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE ((size_t)32U)
-
 /**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
@@ -24,14 +22,6 @@ with const generics
 - $32size_t
 */
 typedef struct Eurydice_arr_ec_s { uint8_t data[32U]; } Eurydice_arr_ec;
-
-#define LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_COEFFICIENT ((size_t)12U)
-
-#define LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT ((size_t)256U)
-
-#define LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)12U)
-
-#define LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE ((size_t)32U)
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -49,25 +39,6 @@ with const generics
 */
 typedef struct Eurydice_arr_d1_s { uint8_t data[1568U]; } Eurydice_arr_d1;
 
-typedef struct libcrux_ml_kem_mlkem1024_MlKem1024KeyPair_s
-{
-  Eurydice_arr_a8 sk;
-  Eurydice_arr_d1 pk;
-}
-libcrux_ml_kem_mlkem1024_MlKem1024KeyPair;
-
-/**
-A monomorphic instance of n-tuple
-with types libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext, Eurydice_arr_ec
-
-*/
-typedef struct tuple_25_s
-{
-  Eurydice_arr_d1 fst;
-  Eurydice_arr_ec snd;
-}
-tuple_25;
-
 /**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
@@ -84,13 +55,6 @@ with const generics
 */
 typedef struct Eurydice_arr_5f_s { uint8_t data[1184U]; } Eurydice_arr_5f;
 
-typedef struct libcrux_ml_kem_mlkem768_MlKem768KeyPair_s
-{
-  Eurydice_arr_7d sk;
-  Eurydice_arr_5f pk;
-}
-libcrux_ml_kem_mlkem768_MlKem768KeyPair;
-
 /**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
@@ -98,18 +62,6 @@ with const generics
 - $1088size_t
 */
 typedef struct Eurydice_arr_2b_s { uint8_t data[1088U]; } Eurydice_arr_2b;
-
-/**
-A monomorphic instance of n-tuple
-with types libcrux_ml_kem_mlkem768_MlKem768Ciphertext, Eurydice_arr_ec
-
-*/
-typedef struct tuple_f4_s
-{
-  Eurydice_arr_2b fst;
-  Eurydice_arr_ec snd;
-}
-tuple_f4;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -136,19 +88,6 @@ with const generics
 typedef struct Eurydice_arr_03_s { uint8_t data[800U]; } Eurydice_arr_03;
 
 /**
-A monomorphic instance of libcrux_ml_kem.types.MlKemKeyPair
-with const generics
-- $1632size_t
-- $800size_t
-*/
-typedef struct libcrux_ml_kem_types_MlKemKeyPair_0d_s
-{
-  Eurydice_arr_ab0 sk;
-  Eurydice_arr_03 pk;
-}
-libcrux_ml_kem_types_MlKemKeyPair_0d;
-
-/**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
 with const generics
@@ -171,18 +110,6 @@ with const generics
 - $64size_t
 */
 typedef struct Eurydice_arr_c7_s { uint8_t data[64U]; } Eurydice_arr_c7;
-
-/**
-A monomorphic instance of n-tuple
-with types libcrux_ml_kem_types_MlKemCiphertext_6e, Eurydice_arr_ec
-
-*/
-typedef struct tuple_ab_s
-{
-  Eurydice_arr_d2 fst;
-  Eurydice_arr_ec snd;
-}
-tuple_ab;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -303,6 +230,79 @@ with const generics
 - $24size_t
 */
 typedef struct Eurydice_arr_22_s { uint64_t data[24U]; } Eurydice_arr_22;
+
+/**
+A monomorphic instance of n-tuple
+with types libcrux_ml_kem_mlkem1024_MlKem1024Ciphertext, Eurydice_arr_ec
+
+*/
+typedef struct tuple_25_s
+{
+  Eurydice_arr_d1 fst;
+  Eurydice_arr_ec snd;
+}
+tuple_25;
+
+/**
+A monomorphic instance of n-tuple
+with types libcrux_ml_kem_mlkem768_MlKem768Ciphertext, Eurydice_arr_ec
+
+*/
+typedef struct tuple_f4_s
+{
+  Eurydice_arr_2b fst;
+  Eurydice_arr_ec snd;
+}
+tuple_f4;
+
+/**
+A monomorphic instance of n-tuple
+with types libcrux_ml_kem_types_MlKemCiphertext_6e, Eurydice_arr_ec
+
+*/
+typedef struct tuple_ab_s
+{
+  Eurydice_arr_d2 fst;
+  Eurydice_arr_ec snd;
+}
+tuple_ab;
+
+#define LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE ((size_t)32U)
+
+#define LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_COEFFICIENT ((size_t)12U)
+
+#define LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT ((size_t)256U)
+
+#define LIBCRUX_ML_KEM_CONSTANTS_BITS_PER_RING_ELEMENT (LIBCRUX_ML_KEM_CONSTANTS_COEFFICIENTS_IN_RING_ELEMENT * (size_t)12U)
+
+#define LIBCRUX_ML_KEM_CONSTANTS_H_DIGEST_SIZE ((size_t)32U)
+
+/**
+A monomorphic instance of libcrux_ml_kem.types.MlKemKeyPair
+with const generics
+- $1632size_t
+- $800size_t
+*/
+typedef struct libcrux_ml_kem_types_MlKemKeyPair_0d_s
+{
+  Eurydice_arr_ab0 sk;
+  Eurydice_arr_03 pk;
+}
+libcrux_ml_kem_types_MlKemKeyPair_0d;
+
+typedef struct libcrux_ml_kem_mlkem1024_MlKem1024KeyPair_s
+{
+  Eurydice_arr_a8 sk;
+  Eurydice_arr_d1 pk;
+}
+libcrux_ml_kem_mlkem1024_MlKem1024KeyPair;
+
+typedef struct libcrux_ml_kem_mlkem768_MlKem768KeyPair_s
+{
+  Eurydice_arr_7d sk;
+  Eurydice_arr_5f pk;
+}
+libcrux_ml_kem_mlkem768_MlKem768KeyPair;
 
 #if defined(__cplusplus)
 }

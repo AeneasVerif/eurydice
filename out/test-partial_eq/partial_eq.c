@@ -7,14 +7,6 @@
 
 #include "partial_eq.h"
 
-/**
-This function found in impl {impl core::cmp::PartialEq<partial_eq::Enum> for partial_eq::Enum}
-*/
-inline bool partial_eq_eq_9e(const partial_eq_Enum *self, const partial_eq_Enum *other)
-{
-  return true;
-}
-
 typedef struct const_partial_eq_Enum__x2_s
 {
   const partial_eq_Enum *fst;
@@ -28,6 +20,14 @@ typedef struct const_const_partial_eq_Enum___x2_s
   const partial_eq_Enum *const *snd;
 }
 const_const_partial_eq_Enum___x2;
+
+/**
+This function found in impl {impl core::cmp::PartialEq<partial_eq::Enum> for partial_eq::Enum}
+*/
+inline bool partial_eq_eq_9e(const partial_eq_Enum *self, const partial_eq_Enum *other)
+{
+  return true;
+}
 
 void partial_eq_main(void)
 {

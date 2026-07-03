@@ -7,37 +7,12 @@
 
 #include "issue_105.h"
 
-/**
-This function found in impl {impl core::cmp::PartialEq<()> for ()}
-*/
-inline bool core_cmp_impls_eq_23(void *const *self, void *const *_other)
+typedef struct const_core_result_Result_1d__x2_s
 {
-  return true;
+  const core_result_Result_1d *fst;
+  const core_result_Result_1d *snd;
 }
-
-/**
-This function found in impl {impl core::cmp::PartialEq<()> for ()}
-*/
-inline bool core_cmp_impls_ne_23(void *const *self, void *const *_other)
-{
-  return false;
-}
-
-/**
-This function found in impl {impl core::cmp::PartialEq<u8> for u8}
-*/
-inline bool core_cmp_impls_eq_a2(const uint8_t *self, const uint8_t *other)
-{
-  return self[0U] == other[0U];
-}
-
-/**
-This function found in impl {impl core::cmp::PartialEq<u8> for u8}
-*/
-inline bool core_cmp_impls_ne_a2(const uint8_t *self, const uint8_t *other)
-{
-  return self[0U] != other[0U];
-}
+const_core_result_Result_1d__x2;
 
 core_result_Result_1d issue_105_inner(void)
 {
@@ -103,12 +78,21 @@ core_result_Result_1d issue_105_call_it(void)
   return (KRML_CLITERAL(core_result_Result_1d){ .tag = core_result_Ok });
 }
 
-typedef struct const_core_result_Result_1d__x2_s
+/**
+This function found in impl {impl core::cmp::PartialEq<()> for ()}
+*/
+inline bool core_cmp_impls_eq_23(void *const *self, void *const *_other)
 {
-  const core_result_Result_1d *fst;
-  const core_result_Result_1d *snd;
+  return true;
 }
-const_core_result_Result_1d__x2;
+
+/**
+This function found in impl {impl core::cmp::PartialEq<u8> for u8}
+*/
+inline bool core_cmp_impls_eq_a2(const uint8_t *self, const uint8_t *other)
+{
+  return self[0U] == other[0U];
+}
 
 /**
 This function found in impl {impl core::cmp::PartialEq<core::result::Result<T, E>[@TraitClause0, @TraitClause1]> for core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
@@ -162,5 +146,21 @@ void issue_105_main(void)
   core_result_Result_1d lvalue = { .tag = core_result_Err, .f0 = 1U };
   const_core_result_Result_1d__x2 uu____0 = { .fst = &lvalue0, .snd = &lvalue };
   EURYDICE_ASSERT(core_result_eq_89_eb(uu____0.fst, uu____0.snd), "panic!");
+}
+
+/**
+This function found in impl {impl core::cmp::PartialEq<()> for ()}
+*/
+inline bool core_cmp_impls_ne_23(void *const *self, void *const *_other)
+{
+  return false;
+}
+
+/**
+This function found in impl {impl core::cmp::PartialEq<u8> for u8}
+*/
+inline bool core_cmp_impls_ne_a2(const uint8_t *self, const uint8_t *other)
+{
+  return self[0U] != other[0U];
 }
 

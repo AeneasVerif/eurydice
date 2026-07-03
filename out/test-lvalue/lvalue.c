@@ -7,11 +7,6 @@
 
 #include "lvalue.h"
 
-void lvalue_main(void)
-{
-
-}
-
 lvalue_Struct lvalue_use_struct(lvalue_ThreeWays s)
 {
   bool uu____0 = false;
@@ -42,6 +37,11 @@ lvalue_Struct lvalue_use_struct(lvalue_ThreeWays s)
     return uu____1;
   }
   return uu____1;
+}
+
+void lvalue_main(void)
+{
+
 }
 
 /**

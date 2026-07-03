@@ -7,89 +7,19 @@
 
 #include "const_generics.h"
 
-/**
-A monomorphic instance of Eurydice.array_to_subslice_to_mut
-with types uint8_t, core_ops_range_RangeTo size_t, Eurydice_derefed_slice uint8_t
-with const generics
-- N= 8
-*/
-static Eurydice_mut_borrow_slice_u8
-array_to_subslice_to_mut_21(Eurydice_array_u8x8 *a, size_t r)
+typedef struct const_uint32_t__x2_s
 {
-  Eurydice_mut_borrow_slice_u8 lit;
-  lit.ptr = a->data;
-  lit.meta = r;
-  return lit;
+  const uint32_t *fst;
+  const uint32_t *snd;
 }
+const_uint32_t__x2;
 
-/**
-A monomorphic instance of Eurydice.array_to_slice_shared
-with types uint8_t
-with const generics
-- N= 4
-*/
-static Eurydice_borrow_slice_u8 array_to_slice_shared_98(const Eurydice_array_u8x4 *a)
+typedef struct const_bool__x2_s
 {
-  Eurydice_borrow_slice_u8 lit;
-  lit.ptr = a->data;
-  lit.meta = (size_t)4U;
-  return lit;
+  const bool *fst;
+  const bool *snd;
 }
-
-/**
-A monomorphic instance of Eurydice.array_to_subslice_from_mut
-with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint8_t
-with const generics
-- N= 8
-*/
-static Eurydice_mut_borrow_slice_u8
-array_to_subslice_from_mut_5f(Eurydice_array_u8x8 *a, size_t r)
-{
-  return
-    (KRML_CLITERAL(Eurydice_mut_borrow_slice_u8){ .ptr = a->data + r, .meta = (size_t)8U - r });
-}
-
-/**
-A monomorphic instance of const_generics.serialize
-with const generics
-- OUT_LEN= 8
-*/
-Eurydice_array_u8x8 const_generics_serialize_70(Eurydice_dst_ref_shared_0c re)
-{
-  Eurydice_array_u8x8 out = { .data = { 0U } };
-  Eurydice_mut_borrow_slice_u8 uu____0 = array_to_subslice_to_mut_21(&out, (size_t)4U);
-  /* original Rust expression is not an lvalue in C */
-  Eurydice_array_u8x4 lvalue0 = core_num__u32__to_be_bytes(re.ptr[0U]);
-  Eurydice_slice_copy(uu____0, array_to_slice_shared_98(&lvalue0), uint8_t);
-  Eurydice_mut_borrow_slice_u8 uu____1 = array_to_subslice_from_mut_5f(&out, (size_t)4U);
-  /* original Rust expression is not an lvalue in C */
-  Eurydice_array_u8x4 lvalue = core_num__u32__to_be_bytes(re.ptr[1U]);
-  Eurydice_slice_copy(uu____1, array_to_slice_shared_98(&lvalue), uint8_t);
-  return out;
-}
-
-/**
-A monomorphic instance of Eurydice.array_to_slice_shared
-with types uint32_t
-with const generics
-- N= 2
-*/
-static Eurydice_dst_ref_shared_0c array_to_slice_shared_49(const Eurydice_arr_a0 *a)
-{
-  Eurydice_dst_ref_shared_0c lit;
-  lit.ptr = a->data;
-  lit.meta = (size_t)2U;
-  return lit;
-}
-
-void const_generics_main(void)
-{
-  /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_a0 lvalue = { .data = { 1U, 2U } };
-  Eurydice_array_u8x8 s = const_generics_serialize_70(array_to_slice_shared_49(&lvalue));
-  EURYDICE_ASSERT(s.data[3U] == 1U, "panic!");
-  EURYDICE_ASSERT(s.data[7U] == 2U, "panic!");
-}
+const_bool__x2;
 
 /**
 A monomorphic instance of const_generics.mk_pairs
@@ -112,13 +42,6 @@ const_generics_Pair_30 const_generics_mk_pairs_67(uint32_t x, uint64_t y)
   const_generics_Pair_54 p2 = { .left = a2, .right = a1 };
   return (KRML_CLITERAL(const_generics_Pair_30){ .left = p1.left, .right = p2.right });
 }
-
-typedef struct const_uint32_t__x2_s
-{
-  const uint32_t *fst;
-  const uint32_t *snd;
-}
-const_uint32_t__x2;
 
 void const_generics_main1(void)
 {
@@ -223,13 +146,6 @@ bool const_generics_g_16(uint32_t x, size_t y)
   return uu____0;
 }
 
-typedef struct const_bool__x2_s
-{
-  const bool *fst;
-  const bool *snd;
-}
-const_bool__x2;
-
 void const_generics_main3(void)
 {
   bool x;
@@ -244,5 +160,89 @@ void const_generics_main3(void)
   bool expected = false;
   const_bool__x2 uu____0 = { .fst = &x, .snd = &expected };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_subslice_to_mut
+with types uint8_t, core_ops_range_RangeTo size_t, Eurydice_derefed_slice uint8_t
+with const generics
+- N= 8
+*/
+static Eurydice_mut_borrow_slice_u8
+array_to_subslice_to_mut_21(Eurydice_array_u8x8 *a, size_t r)
+{
+  Eurydice_mut_borrow_slice_u8 lit;
+  lit.ptr = a->data;
+  lit.meta = r;
+  return lit;
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_shared
+with types uint8_t
+with const generics
+- N= 4
+*/
+static Eurydice_borrow_slice_u8 array_to_slice_shared_98(const Eurydice_array_u8x4 *a)
+{
+  Eurydice_borrow_slice_u8 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)4U;
+  return lit;
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_subslice_from_mut
+with types uint8_t, core_ops_range_RangeFrom size_t, Eurydice_derefed_slice uint8_t
+with const generics
+- N= 8
+*/
+static Eurydice_mut_borrow_slice_u8
+array_to_subslice_from_mut_5f(Eurydice_array_u8x8 *a, size_t r)
+{
+  return
+    (KRML_CLITERAL(Eurydice_mut_borrow_slice_u8){ .ptr = a->data + r, .meta = (size_t)8U - r });
+}
+
+/**
+A monomorphic instance of const_generics.serialize
+with const generics
+- OUT_LEN= 8
+*/
+Eurydice_array_u8x8 const_generics_serialize_70(Eurydice_dst_ref_shared_0c re)
+{
+  Eurydice_array_u8x8 out = { .data = { 0U } };
+  Eurydice_mut_borrow_slice_u8 uu____0 = array_to_subslice_to_mut_21(&out, (size_t)4U);
+  /* original Rust expression is not an lvalue in C */
+  Eurydice_array_u8x4 lvalue0 = core_num__u32__to_be_bytes(re.ptr[0U]);
+  Eurydice_slice_copy(uu____0, array_to_slice_shared_98(&lvalue0), uint8_t);
+  Eurydice_mut_borrow_slice_u8 uu____1 = array_to_subslice_from_mut_5f(&out, (size_t)4U);
+  /* original Rust expression is not an lvalue in C */
+  Eurydice_array_u8x4 lvalue = core_num__u32__to_be_bytes(re.ptr[1U]);
+  Eurydice_slice_copy(uu____1, array_to_slice_shared_98(&lvalue), uint8_t);
+  return out;
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_shared
+with types uint32_t
+with const generics
+- N= 2
+*/
+static Eurydice_dst_ref_shared_0c array_to_slice_shared_49(const Eurydice_arr_a0 *a)
+{
+  Eurydice_dst_ref_shared_0c lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)2U;
+  return lit;
+}
+
+void const_generics_main(void)
+{
+  /* original Rust expression is not an lvalue in C */
+  Eurydice_arr_a0 lvalue = { .data = { 1U, 2U } };
+  Eurydice_array_u8x8 s = const_generics_serialize_70(array_to_slice_shared_49(&lvalue));
+  EURYDICE_ASSERT(s.data[3U] == 1U, "panic!");
+  EURYDICE_ASSERT(s.data[7U] == 2U, "panic!");
 }
 

@@ -7,34 +7,13 @@
 
 #include "more_primitive_types.h"
 
-int32_t more_primitive_types_int128_operations(more_primitive_types_MorePrimitiveTypes *p)
-{
-  Eurydice_Int128_int128_t uu____0 = p->int128;
-  Eurydice_Int128_int128_t
-  uu____1 =
-    Eurydice_Int128_i128_mul(Eurydice_Int128_i128_from_bits(0x0ULL, 0x1ffffffffffffffULL),
-      Eurydice_Int128_i128_from_bits(0x0ULL, 0x1ULL));
-  Eurydice_Int128_int128_t
-  uu____2 =
-    Eurydice_Int128_i128_shl(Eurydice_Int128_i128_sub(Eurydice_Int128_i128_from_bits(0x0ULL,
-          0xffffffff1ULL),
-        uu____1),
-      10U);
-  p->int128 = Eurydice_Int128_i128_band(uu____0, uu____2);
-  Eurydice_Int128_uint128_t uu____3 = p->uint128;
-  Eurydice_Int128_uint128_t
-  uu____4 =
-    Eurydice_Int128_u128_sub(Eurydice_Int128_u128_from_bits(0x0ULL, 0xffffffff1ULL),
-      Eurydice_Int128_u128_from_bits(0x0ULL, 0x1fULL));
-  p->uint128 = Eurydice_Int128_u128_band(uu____3, uu____4);
-  Eurydice_Int128_uint128_t uu____5 = p->uint128;
-  Eurydice_Int128_uint128_t
-  uu____6 =
-    Eurydice_Int128_u128_shr(Eurydice_Int128_u128_from_bits(0x0ULL, 0x1ULL),
-      (uint32_t)uu____5);
-  Eurydice_Int128_uint128_t x = Eurydice_Int128_u128_shl(uu____6, (uint32_t)p->int128);
-  return (int32_t)x;
-}
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $6size_t
+*/
+typedef struct arr_d7_s { uint8_t data[6U]; } arr_d7;
 
 int32_t more_primitive_types_match_u128(const more_primitive_types_MorePrimitiveTypes *p)
 {
@@ -104,34 +83,33 @@ int32_t more_primitive_types_match_i128(const more_primitive_types_MorePrimitive
   return 3;
 }
 
-/**
-A monomorphic instance of Eurydice.arr
-with types uint8_t
-with const generics
-- $6size_t
-*/
-typedef struct arr_d7_s { uint8_t data[6U]; } arr_d7;
-
-void more_primitive_types_use_more_primitive_types(void)
+int32_t more_primitive_types_int128_operations(more_primitive_types_MorePrimitiveTypes *p)
 {
-  /* original Rust expression is not an lvalue in C */
-  arr_d7 lvalue = { .data = { 97U, 104U, 101U, 108U, 108U, 111U } };
-  const arr_d7 *s = &lvalue;
-  more_primitive_types_MorePrimitiveTypes
-  p =
-    {
-      .int128 = Eurydice_Int128_i128_from_bits(0xfffff00000000000ULL, 0x1ULL),
-      .uint128 = Eurydice_Int128_u128_from_bits(0xffffffffffffULL, 0xffffffffffffffffULL),
-      .c = 97U
-    };
-  more_primitive_types_match_u128(&p);
-  more_primitive_types_match_i128(&p);
-  EURYDICE_ASSERT(p.c == (uint32_t)s->data[0U], "panic!");
-}
-
-void more_primitive_types_main(void)
-{
-  more_primitive_types_use_more_primitive_types();
+  Eurydice_Int128_int128_t uu____0 = p->int128;
+  Eurydice_Int128_int128_t
+  uu____1 =
+    Eurydice_Int128_i128_mul(Eurydice_Int128_i128_from_bits(0x0ULL, 0x1ffffffffffffffULL),
+      Eurydice_Int128_i128_from_bits(0x0ULL, 0x1ULL));
+  Eurydice_Int128_int128_t
+  uu____2 =
+    Eurydice_Int128_i128_shl(Eurydice_Int128_i128_sub(Eurydice_Int128_i128_from_bits(0x0ULL,
+          0xffffffff1ULL),
+        uu____1),
+      10U);
+  p->int128 = Eurydice_Int128_i128_band(uu____0, uu____2);
+  Eurydice_Int128_uint128_t uu____3 = p->uint128;
+  Eurydice_Int128_uint128_t
+  uu____4 =
+    Eurydice_Int128_u128_sub(Eurydice_Int128_u128_from_bits(0x0ULL, 0xffffffff1ULL),
+      Eurydice_Int128_u128_from_bits(0x0ULL, 0x1fULL));
+  p->uint128 = Eurydice_Int128_u128_band(uu____3, uu____4);
+  Eurydice_Int128_uint128_t uu____5 = p->uint128;
+  Eurydice_Int128_uint128_t
+  uu____6 =
+    Eurydice_Int128_u128_shr(Eurydice_Int128_u128_from_bits(0x0ULL, 0x1ULL),
+      (uint32_t)uu____5);
+  Eurydice_Int128_uint128_t x = Eurydice_Int128_u128_shl(uu____6, (uint32_t)p->int128);
+  return (int32_t)x;
 }
 
 int32_t more_primitive_types_more_operations(more_primitive_types_MorePrimitiveTypes *p)
@@ -252,5 +230,27 @@ int32_t more_primitive_types_more_operations(more_primitive_types_MorePrimitiveT
   result += (int32_t)Eurydice_Int128_i128_neg(p->int128);
   result += (int32_t)Eurydice_Int128_i128_bnot(p->int128);
   return result + (int32_t)Eurydice_Int128_u128_bnot(p->uint128);
+}
+
+void more_primitive_types_use_more_primitive_types(void)
+{
+  /* original Rust expression is not an lvalue in C */
+  arr_d7 lvalue = { .data = { 97U, 104U, 101U, 108U, 108U, 111U } };
+  const arr_d7 *s = &lvalue;
+  more_primitive_types_MorePrimitiveTypes
+  p =
+    {
+      .int128 = Eurydice_Int128_i128_from_bits(0xfffff00000000000ULL, 0x1ULL),
+      .uint128 = Eurydice_Int128_u128_from_bits(0xffffffffffffULL, 0xffffffffffffffffULL),
+      .c = 97U
+    };
+  more_primitive_types_match_u128(&p);
+  more_primitive_types_match_i128(&p);
+  EURYDICE_ASSERT(p.c == (uint32_t)s->data[0U], "panic!");
+}
+
+void more_primitive_types_main(void)
+{
+  more_primitive_types_use_more_primitive_types();
 }
 
