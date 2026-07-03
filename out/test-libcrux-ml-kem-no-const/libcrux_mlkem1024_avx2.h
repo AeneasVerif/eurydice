@@ -45,7 +45,7 @@ bool libcrux_ml_kem_mlkem1024_avx2_validate_private_key_only(Eurydice_arr_a8 *pr
 /**
  Generate ML-KEM 1024 Key Pair
 */
-libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
+libcrux_ml_kem_types_MlKemKeyPair___3168___usize__1568___usize_
 libcrux_ml_kem_mlkem1024_avx2_generate_key_pair(Eurydice_arr_c7 randomness);
 
 /**
@@ -55,7 +55,7 @@ libcrux_ml_kem_mlkem1024_avx2_generate_key_pair(Eurydice_arr_c7 randomness);
  The input is a reference to an [`MlKem1024PublicKey`] and [`SHARED_SECRET_SIZE`]
  bytes of `randomness`.
 */
-tuple_25
+tuple_2b
 libcrux_ml_kem_mlkem1024_avx2_encapsulate(
   Eurydice_arr_d1 *public_key,
   Eurydice_arr_ec randomness

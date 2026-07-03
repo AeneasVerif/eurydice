@@ -53,11 +53,12 @@ extern "C" {
 
 typedef Eurydice_arr_d2 libcrux_ml_kem_mlkem512_MlKem512Ciphertext;
 
-typedef Eurydice_arr_ab0 libcrux_ml_kem_mlkem512_MlKem512PrivateKey;
+typedef Eurydice_arr_ab libcrux_ml_kem_mlkem512_MlKem512PrivateKey;
 
 typedef Eurydice_arr_03 libcrux_ml_kem_mlkem512_MlKem512PublicKey;
 
-typedef libcrux_ml_kem_types_MlKemKeyPair_0d libcrux_ml_kem_mlkem512_MlKem512KeyPair;
+typedef libcrux_ml_kem_types_MlKemKeyPair___1632___usize__800___usize_
+libcrux_ml_kem_mlkem512_MlKem512KeyPair;
 
 #if defined(__cplusplus)
 }

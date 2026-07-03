@@ -26,6 +26,9 @@ type file = {
 
 type config = file list
 
+let config_file_name (f : file) = f.name
+let config_file_definitions (f : file) = f.definitions
+
 (** Loading & parsing *)
 
 let load_config (path : string) : Yaml.value =
@@ -238,6 +241,52 @@ let find_map desc f l =
         None)
     l
 
+let legacy_short_type_lid (generic_lid, ts, cgs) =
+  (* Existing configs may still refer to Karamel's old short names for generated
+     type monomorphizations, e.g. `KeccakState_7d`. Charon --monomorphize gives
+     the translated declaration its own instantiated name instead, so exact
+     config rules need this compatibility lid for matching only. *)
+  let m, n =
+    if generic_lid = tuple_lid then
+      [], "tuple"
+    else
+      generic_lid
+  in
+  let hash = Hashtbl.hash (ts, cgs) in
+  m, Printf.sprintf "%s_%02x" n (hash land 0xFF)
+
+let dependencies_of_decl decl =
+  begin
+    object (self)
+      inherit [_] reduce as super
+      method zero = []
+      method plus = ( @ )
+      method! visit_EQualified (under_ref, _) lid = [ lid, under_ref ]
+      method! visit_TQualified under_ref lid = [ lid, under_ref ]
+
+      method! visit_TApp under_ref lid ts =
+        [ lid, under_ref ] @ List.concat_map (self#visit_typ under_ref) ts
+
+      method! visit_TBuf _ t const = super#visit_TBuf true t const
+    end
+  end
+    #visit_decl
+    false decl
+
+let expr_of_cg = function
+  | CgConst ((width, _) as constant) -> Some (with_type (TInt width) (EConstant constant))
+  | CgVar _ -> None
+
+let map_option f xs =
+  let rec go acc = function
+    | [] -> Some (List.rev acc)
+    | x :: xs -> (
+        match f x with
+        | Some x -> go (x :: acc) xs
+        | None -> None)
+  in
+  go [] xs
+
 let mark_internal =
   let add_if name flags =
     let is_internal = List.mem Krml.Common.Internal flags in
@@ -260,7 +309,33 @@ let adjust vis decl =
   | Private -> Krml.Bundles.mark_private decl
   | Internal -> mark_internal decl
 
-let record_inline_static lid = Krml.Options.(static_header := Lid lid :: !static_header)
+let record_inline_static lid =
+  let already_recorded =
+    Krml.Options.(
+      List.exists
+        (function
+          | Krml.Bundle.Lid lid' -> lid = lid'
+          | _ -> false)
+        !static_header)
+  in
+  if not already_recorded then
+    Krml.Options.(static_header := Lid lid :: !static_header)
+
+let record_inline_static_files files config =
+  let inline_static_files =
+    List.filter_map
+      (fun { name; inline_static; _ } ->
+        if inline_static then
+          Some name
+        else
+          None)
+      config
+  in
+  List.iter
+    (fun (file, decls) ->
+      if List.mem file inline_static_files then
+        List.iter (fun decl -> record_inline_static (lid_of_decl decl)) decls)
+    files
 
 let bundle (files : Krml.Ast.file list) (c : config) : files =
   let bundled = Hashtbl.create 137 in
@@ -283,7 +358,7 @@ let bundle (files : Krml.Ast.file list) (c : config) : files =
                 | [] ->
                     Krml.(KPrint.bprintf "%a doesn't go anywhere\n" PrintAst.Ops.plid lid);
                     false
-                | { name; definitions; inline_static; library; _ } :: config -> (
+                | { name; definitions; library; _ } :: config -> (
                     (* Krml.KPrint.bprintf "for %s, definitions are :\n" name; *)
                     (* List.iter (fun (p, vis) -> *)
                     (*   Krml.KPrint.bprintf "%s: %s\n" (show_visibility vis) (show_pattern p) *)
@@ -304,8 +379,6 @@ let bundle (files : Krml.Ast.file list) (c : config) : files =
                         (*   Krml.(KPrint.bprintf "vis_ was: %s\n" (String.concat ", " (List.map show_visibility vis_))); *)
                         let decl = adjust vis decl in
                         bundle name decl;
-                        if inline_static then
-                          record_inline_static lid;
                         if library then
                           record_library lid;
                         true)
@@ -404,12 +477,15 @@ let topological_sort decls =
   let stack = ref [] in
   let rec dfs (lid, under_ref) =
     let has_forward_decl = Hashtbl.mem graph (lid, `Forward) in
-    if Hashtbl.mem graph (lid, `Regular) || has_forward_decl then
+    let has_regular_decl = Hashtbl.mem graph (lid, `Regular) in
+    if has_regular_decl || has_forward_decl then
       let key =
         if has_forward_decl && under_ref then
           lid, `Forward
-        else
+        else if has_regular_decl then
           lid, `Regular
+        else
+          lid, `Forward
       in
       let r, deps, decl = Hashtbl.find graph key in
       match !r with
@@ -450,7 +526,8 @@ let filter_forward files =
    e.g. a platform-specific trait into their own file.
 
    Note that there may be multiple definitions per `lid`, because of forward structs. *)
-let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
+let reassign_monomorphizations ?charon_metadata (files : Krml.Ast.file list) (config : config) =
+  let charon_metadata = Option.value charon_metadata ~default:(CharonMetadata.create ()) in
   let open Krml.Ast in
   let open Krml.PrintAst.Ops in
   (* Pure sanity check *)
@@ -473,6 +550,35 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
     | Some _ -> o1
     | None -> o2
   in
+  let with_definition_visibility lid (target, inline_static, ((pat, _vis, desc) as original)) =
+    match original with
+    | _, _, "monomorphizations_exact" -> target, inline_static, original
+    | _ -> (
+        match List.find_opt (fun f -> config_file_name f = target) config with
+        | Some f -> (
+            let definitions = config_file_definitions f in
+            match
+              List.find_map
+                (fun (pat, vis) ->
+                  if matches lid pat then
+                    Some vis
+                  else
+                    None)
+                definitions
+            with
+            | Some vis -> target, inline_static, (pat, vis, desc)
+            | None -> target, inline_static, original)
+        | None -> target, inline_static, original)
+  in
+  let add_target_of_lid lid target =
+    Hashtbl.add target_of_lid lid (with_definition_visibility lid target)
+  in
+  let set_target_of_lid lid target =
+    while Hashtbl.mem target_of_lid lid do
+      Hashtbl.remove target_of_lid lid
+    done;
+    add_target_of_lid lid target
+  in
   let reverse_type_map =
     (* Maps t____u (an lid) to t<u> (a type application) *)
     let map = Hashtbl.create 41 in
@@ -483,6 +589,44 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
       Krml.MonomorphizationState.state;
     map
   in
+  let charon_functions_by_lid = Hashtbl.create 41 in
+  Hashtbl.iter
+    (fun (generic_lid, cgs, ts) monomorphized_lid ->
+      Hashtbl.add charon_functions_by_lid monomorphized_lid (generic_lid, cgs, ts))
+    charon_metadata.functions;
+  let charon_types_by_lid = Hashtbl.create 41 in
+  let charon_reverse_type_map = Hashtbl.create 41 in
+  Hashtbl.iter
+    (fun (generic_lid, ts, cgs) monomorphized_lid ->
+      Hashtbl.add charon_types_by_lid monomorphized_lid (generic_lid, ts, cgs);
+      Hashtbl.add charon_reverse_type_map monomorphized_lid (fold_tapp (generic_lid, ts, cgs)))
+    charon_metadata.types;
+  let charon_instantiated_lids = Hashtbl.create 41 in
+  Hashtbl.iter
+    (fun _ monomorphized_lid -> Hashtbl.replace charon_instantiated_lids monomorphized_lid ())
+    charon_metadata.functions;
+  Hashtbl.iter
+    (fun _ monomorphized_lid -> Hashtbl.replace charon_instantiated_lids monomorphized_lid ())
+    charon_metadata.types;
+  Hashtbl.iter
+    (fun ((generic_lid, _, _) as node) monomorphized_lid ->
+      if
+        Hashtbl.mem charon_metadata.functions node
+        || CharonMetadata.is_instantiated charon_metadata generic_lid
+      then
+        Hashtbl.replace charon_instantiated_lids monomorphized_lid ())
+    Krml.MonomorphizationState.generated_lids;
+  Hashtbl.iter
+    (fun ((generic_lid, _, _) as node) (_, monomorphized_lid) ->
+      if
+        Hashtbl.mem charon_metadata.types node
+        || CharonMetadata.is_instantiated charon_metadata generic_lid
+      then
+        Hashtbl.replace charon_instantiated_lids monomorphized_lid ())
+    Krml.MonomorphizationState.state;
+  let is_charon_instantiated_lid lid =
+    Hashtbl.mem charon_instantiated_lids lid || CharonMetadata.is_instantiated charon_metadata lid
+  in
   let uses monomorphizations_using t =
     begin
       object (self)
@@ -490,6 +634,7 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
 
         method private visit_through_map lid =
           Option.bind (Hashtbl.find_opt reverse_type_map lid) (self#visit_typ ())
+          ||| Option.bind (Hashtbl.find_opt charon_reverse_type_map lid) (self#visit_typ ())
 
         method zero = None
 
@@ -510,6 +655,47 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
     end
       #visit_typ
       () t
+  in
+  let charon_function_target monomorphized_lid generic_lid cgs ts =
+    List.find_map
+      (fun {
+             name;
+             inline_static;
+             monomorphizations_using;
+             monomorphizations_of;
+             monomorphizations_exact;
+             _;
+           } ->
+        find_map "monomorphizations_exact" (matches monomorphized_lid) monomorphizations_exact
+        ||| List.find_map
+              (fun e ->
+                match e.node with
+                | EQualified lid' ->
+                    find_map "monomorphizations_using" (matches lid') monomorphizations_using
+                | _ -> None)
+              cgs
+        ||| List.find_map (uses monomorphizations_using) ts
+        ||| find_map "monomorphizations_of" (matches generic_lid) monomorphizations_of
+        |> Option.map (fun vis -> name, inline_static, vis))
+      config
+  in
+  let charon_type_target monomorphized_lid generic_lid ts cgs =
+    let legacy_lid = legacy_short_type_lid (generic_lid, ts, cgs) in
+    List.find_map
+      (fun {
+             name;
+             inline_static;
+             monomorphizations_of;
+             monomorphizations_using;
+             monomorphizations_exact;
+             _;
+           } ->
+        find_map "monomorphizations_exact" (matches monomorphized_lid) monomorphizations_exact
+        ||| find_map "monomorphizations_exact" (matches legacy_lid) monomorphizations_exact
+        ||| List.find_map (uses monomorphizations_using) ts
+        ||| find_map "monomorphizations_of" (matches generic_lid) monomorphizations_of
+        |> Option.map (fun vis -> name, inline_static, vis))
+      config
   in
   (* Review the function monomorphization state.
 
@@ -559,7 +745,7 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
             |> Option.map (fun vis -> name, inline_static, vis))
           config
       with
-      | Some name -> Hashtbl.add target_of_lid monomorphized_lid name
+      | Some name -> add_target_of_lid monomorphized_lid name
       | None -> ())
     Krml.MonomorphizationState.generated_lids;
   (* Review the type monomorphization state. *)
@@ -582,9 +768,76 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
             |> Option.map (fun vis -> name, inline_static, vis))
           config
       with
-      | Some name -> Hashtbl.add target_of_lid monomorphized_lid name
+      | Some name -> add_target_of_lid monomorphized_lid name
       | None -> ())
     Krml.MonomorphizationState.state;
+  (* Charon's --monomorphize mode emits already-specialized declarations, so
+     Karamel's monomorphization tables can only contain stale secondary
+     assignments for them. Use the Charon tables as the authoritative source for
+     Charon-instantiated names. *)
+  Hashtbl.iter
+    (fun monomorphized_lid (generic_lid, cgs, ts) ->
+      match charon_function_target monomorphized_lid generic_lid cgs ts with
+      | Some target -> set_target_of_lid monomorphized_lid target
+      | None -> ())
+    charon_functions_by_lid;
+  Hashtbl.iter
+    (fun monomorphized_lid (generic_lid, ts, cgs) ->
+      match charon_type_target monomorphized_lid generic_lid ts cgs with
+      | Some target -> set_target_of_lid monomorphized_lid target
+      | None -> ())
+    charon_types_by_lid;
+  let exact_type_targets_by_args = Hashtbl.create 41 in
+  Hashtbl.iter
+    (fun monomorphized_lid (_generic_lid, ts, cgs) ->
+      match map_option expr_of_cg cgs with
+      | None -> ()
+      | Some cgs ->
+          Hashtbl.find_all target_of_lid monomorphized_lid
+          |> List.filter (fun (_, _, (_, _, desc)) -> desc = "monomorphizations_exact")
+          |> List.iter (fun target -> Hashtbl.add exact_type_targets_by_args (ts, cgs) target))
+    charon_types_by_lid;
+  (* If a Charon-instantiated declaration only got a broad fallback assignment,
+     but it mentions another Charon-instantiated declaration with an exact
+     assignment, keep those specializations together. This intentionally ignores
+     Karamel-generated dependencies such as `Eurydice_arr_*`; those are too
+     generic to decide where a Charon item belongs. *)
+  List.iter
+    (fun (_file, decls) ->
+      List.iter
+        (fun decl ->
+          let lid = lid_of_decl decl in
+          let targets = Hashtbl.find_all target_of_lid lid in
+          let has_only_fallback_targets =
+            targets = []
+            || List.for_all (fun (_, _, (_, _, desc)) -> desc = "monomorphizations_of") targets
+          in
+          if has_only_fallback_targets then
+            let targets =
+              dependencies_of_decl decl
+              |> List.concat_map (fun (dep, _) ->
+                     if is_charon_instantiated_lid dep then
+                       Hashtbl.find_all target_of_lid dep
+                       |> List.filter (fun (_, _, (_, _, desc)) -> desc = "monomorphizations_exact")
+                     else
+                       [])
+              |> List.sort_uniq compare
+            in
+            let targets =
+              match targets with
+              | [] -> (
+                  match Hashtbl.find_opt charon_functions_by_lid lid with
+                  | Some (_generic_lid, cgs, ts) ->
+                      Hashtbl.find_all exact_type_targets_by_args (ts, cgs)
+                      |> List.sort_uniq compare
+                  | None -> [])
+              | targets -> targets
+            in
+            match targets with
+            | [ target ] -> set_target_of_lid lid target
+            | _ -> ())
+        decls)
+    files;
   (* Debug *)
   Hashtbl.iter
     (fun lid (target, _inline_static, (pat, vis, desc)) ->
@@ -608,10 +861,8 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
               | [] -> true
               | entries ->
                   List.iter
-                    (fun (target, inline_static, (_, vis, _)) ->
+                    (fun (target, _inline_static, (_, vis, _)) ->
                       let decl = adjust vis decl in
-                      if inline_static then
-                        record_inline_static lid;
                       if Hashtbl.mem reassigned target then
                         Hashtbl.replace reassigned target (decl :: Hashtbl.find reassigned target)
                       else
@@ -658,4 +909,5 @@ let reassign_monomorphizations (files : Krml.Ast.file list) (config : config) =
                None)
        c0 c1);
   let files = filter_forward files in
+  record_inline_static_files files config;
   files

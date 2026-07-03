@@ -15,6 +15,24 @@
 extern "C" {
 #endif
 
+typedef struct core_marker_MetaSized__vtable__s
+{
+  size_t size;
+  size_t align;
+  void *const *drop;
+}
+core_marker_MetaSized__vtable_;
+
+extern void
+alloc_boxed_Box__impl_core__marker__Destruct_for_alloc__boxed__Box_f64___built_in_impl_core__marker__MetaSized_for_f64____built_in_impl_core__marker__Sized_for_alloc__alloc__Global____drop_glue___f64__alloc__alloc__Global_(
+  float64_t **x0
+);
+
+extern void
+alloc_vec_Vec__impl_core__marker__Destruct_for_alloc__vec__Vec___u8__alloc__alloc__Global___drop_glue___u8__alloc__alloc__Global_(
+  void **x0
+);
+
 #define lvalue_A 0
 #define lvalue_B 1
 #define lvalue_C 2
@@ -24,11 +42,7 @@ typedef uint8_t lvalue_Struct_tags;
 typedef struct lvalue_Struct_s
 {
   lvalue_Struct_tags tag;
-  union {
-    Eurydice_vec case_A;
-    int32_t *case_B;
-  }
-  val;
+  int32_t *f0;
 }
 lvalue_Struct;
 
@@ -43,7 +57,6 @@ typedef struct lvalue_ThreeWays_s
   lvalue_ThreeWays_tags tag;
   union {
     int32_t case_Middle;
-    Eurydice_vec case_Left;
     float64_t *case_Right;
   }
   val;

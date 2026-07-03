@@ -14,9 +14,21 @@ typedef struct const_size_t__x2_s
 }
 const_size_t__x2;
 
+size_t core_cmp_Ord_min___usize_(size_t x, size_t y)
+{
+  if (x <= y)
+  {
+    return x;
+  }
+  else
+  {
+    return y;
+  }
+}
+
 size_t issue_49_f(size_t a, size_t b)
 {
-  return core_cmp_impls__impl_core__cmp__Ord_for_usize__min(a, b);
+  return core_cmp_Ord_min___usize_(a, b);
 }
 
 void issue_49_main(void)

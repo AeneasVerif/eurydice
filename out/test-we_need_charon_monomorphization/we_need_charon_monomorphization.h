@@ -35,12 +35,7 @@ with const generics
 */
 typedef struct Eurydice_arr_bf_s { int32_t data[3U]; } Eurydice_arr_bf;
 
-/**
-A monomorphic instance of we_need_charon_monomorphization.use_ref
-with types Eurydice_derefed_slice int32_t
-
-*/
-void we_need_charon_monomorphization_use_ref_ee(const int32_t (*_t)[]);
+void we_need_charon_monomorphization_use_ref____i32__(Eurydice_dst_ref_shared_83 _t);
 
 void we_need_charon_monomorphization_supply_ref(Eurydice_dst_ref_shared_83 s);
 

@@ -16,6 +16,30 @@ extern "C" {
 #endif
 
 /**
+A monomorphic instance of Eurydice.dst_ref_shared
+with types float32_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_shared_57_s
+{
+  const float32_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_shared_57;
+
+/**
+A monomorphic instance of Eurydice.dst_ref_shared
+with types float64_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_shared_9f_s
+{
+  const float64_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_shared_9f;
+
+/**
 A monomorphic instance of Eurydice.arr
 with types float32_t
 with const generics
@@ -36,6 +60,16 @@ typedef struct Eurydice_arr_9f_s { float64_t data[100U]; } Eurydice_arr_9f;
 #define core_panicking_AssertKind_Match 2
 
 typedef uint8_t core_panicking_AssertKind;
+
+/**
+This function found in impl {[f32]}
+*/
+size_t core_slice_len___f32__fc(Eurydice_dst_ref_shared_57 s);
+
+/**
+This function found in impl {[f64]}
+*/
+size_t core_slice_len___f64__17(Eurydice_dst_ref_shared_9f s);
 
 void floating_points_main(void);
 

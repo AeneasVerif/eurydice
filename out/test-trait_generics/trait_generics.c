@@ -8,31 +8,28 @@
 #include "trait_generics.h"
 
 /**
-This function found in impl {impl trait_generics::MyFnOnce for trait_generics::Foo<K>}
+This function found in impl {impl trait_generics::MyFnOnce for trait_generics::Foo::<10 : usize>}
 */
-/**
-A monomorphic instance of trait_generics.call_once_b2
-with const generics
-- K= 10
-*/
-uint32_t trait_generics_call_once_b2_55(void)
+uint32_t trait_generics_call_once___10___usize__4b(void)
 {
   return 0U;
 }
 
-/**
-A monomorphic instance of trait_generics.from_fn
-with types trait_generics_Foo[[$10size_t]]
-with const generics
-
-*/
-void trait_generics_from_fn_74(void)
+void trait_generics_from_fn___trait_generics__Foo___10___usize__(void)
 {
-  trait_generics_call_once_b2_55();
+  trait_generics_call_once___10___usize__4b();
 }
 
 void trait_generics_main(void)
 {
-  trait_generics_from_fn_74();
+  trait_generics_from_fn___trait_generics__Foo___10___usize__();
+}
+
+/**
+This function found in impl {impl core::marker::Destruct for trait_generics::Foo::<10 : usize>}
+*/
+void trait_generics_Foo_drop_glue___10___usize__f7(void **_)
+{
+
 }
 

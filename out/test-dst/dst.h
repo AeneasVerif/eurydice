@@ -15,24 +15,24 @@
 extern "C" {
 #endif
 
-typedef struct dst_T_s
+typedef struct dst_S____u32___s
 {
   uint32_t foo;
   uint32_t my_data[];
 }
-dst_T;
+dst_S____u32__;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
-with types dst_T, size_t
+with types dst_S::<[u32]>, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_2f_s
+typedef struct Eurydice_dst_ref_shared_7f_s
 {
-  const dst_T *ptr;
+  const dst_S____u32__ *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_2f;
+Eurydice_dst_ref_shared_7f;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
@@ -54,24 +54,24 @@ with const generics
 */
 typedef struct Eurydice_arr_a5_s { uint32_t data[3U]; } Eurydice_arr_a5;
 
-typedef struct dst_T3_s
+typedef struct dst_S_____u32__3___usize____s
 {
   uint32_t foo;
   Eurydice_arr_a5 my_data[];
 }
-dst_T3;
+dst_S_____u32__3___usize___;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
-with types dst_T3, size_t
+with types dst_S::<[[u32; 3 : usize]]>, size_t
 
 */
-typedef struct Eurydice_dst_ref_shared_bb_s
+typedef struct Eurydice_dst_ref_shared_62_s
 {
-  const dst_T3 *ptr;
+  const dst_S_____u32__3___usize___ *ptr;
   size_t meta;
 }
-Eurydice_dst_ref_shared_bb;
+Eurydice_dst_ref_shared_62;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
@@ -87,44 +87,6 @@ Eurydice_dst_ref_shared_d3;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_mut
-with types dst_T, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_2f_s
-{
-  dst_T *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_mut_2f;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types dst_T3, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_bb_s
-{
-  dst_T3 *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_mut_bb;
-
-typedef struct dst_T2_be_s dst_T2_be;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types dst_T2_be, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_b7_s
-{
-  dst_T2_be *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_mut_b7;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_mut
 with types uint32_t, size_t
 
 */
@@ -134,6 +96,49 @@ typedef struct Eurydice_dst_ref_mut_0c_s
   size_t meta;
 }
 Eurydice_dst_ref_mut_0c;
+
+/**
+A monomorphic instance of Eurydice.dst_ref_mut
+with types dst_S::<[[u32; 3 : usize]]>, size_t
+
+*/
+typedef struct Eurydice_dst_ref_mut_62_s
+{
+  dst_S_____u32__3___usize___ *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_mut_62;
+
+/**
+A monomorphic instance of Eurydice.dst_ref_mut
+with types dst_S::<[u32]>, size_t
+
+*/
+typedef struct Eurydice_dst_ref_mut_7f_s
+{
+  dst_S____u32__ *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_mut_7f;
+
+typedef struct dst_T2____u32___s
+{
+  size_t header;
+  uint32_t my_data[];
+}
+dst_T2____u32__;
+
+/**
+A monomorphic instance of Eurydice.dst_ref_mut
+with types dst_T2::<[u32]>, size_t
+
+*/
+typedef struct Eurydice_dst_ref_mut_fd_s
+{
+  dst_T2____u32__ *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_mut_fd;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -151,75 +156,100 @@ with const generics
 */
 typedef struct Eurydice_arr_53_s { Eurydice_arr_a5 data[4U]; } Eurydice_arr_53;
 
+typedef struct core_marker_MetaSized__vtable__s
+{
+  size_t size;
+  size_t align;
+  void *const *drop;
+}
+core_marker_MetaSized__vtable_;
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2
 
 typedef uint8_t core_panicking_AssertKind;
 
-/**
-A monomorphic instance of dst.T2
-with types Eurydice_derefed_slice uint32_t
+extern void
+alloc_boxed_Box__impl_core__marker__Destruct_for_alloc__boxed__Box_dst__T2____u32_____built_in_impl_core__marker__MetaSized_for_dst__T2____u32______built_in_impl_core__marker__Sized_for_alloc__alloc__Global____drop_glue___dst__T2____u32____alloc__alloc__Global_(
+  Eurydice_dst_ref_mut_fd *x0
+);
 
-*/
-typedef struct dst_T2_be_s
-{
-  size_t header;
-  uint32_t my_data[];
-}
-dst_T2_be;
-
-/**
-A monomorphic instance of dst.T2
-with types Eurydice_arr_e5
-
-*/
-typedef struct dst_T2_e9_s
+typedef struct dst_T2____u32__4___usize___s
 {
   size_t header;
   Eurydice_arr_e5 my_data;
 }
-dst_T2_e9;
+dst_T2____u32__4___usize__;
 
-Eurydice_dst_ref_mut_b7 dst_mk(void);
+extern void
+alloc_boxed_Box__impl_core__marker__Destruct_for_alloc__boxed__Box_dst__T2____u32__4___usize_____built_in_impl_core__marker__MetaSized_for_dst__T2____u32__4___usize______built_in_impl_core__marker__Sized_for_alloc__alloc__Global____drop_glue___dst__T2____u32__4___usize____alloc__alloc__Global_(
+  dst_T2____u32__4___usize__ **x0
+);
 
-/**
-A monomorphic instance of dst.S
-with types Eurydice_arr_e5
+extern void
+alloc_boxed_Box__impl_core__marker__Destruct_for_alloc__boxed__Box_dst__S____u32_____built_in_impl_core__marker__MetaSized_for_dst__S____u32______built_in_impl_core__marker__Sized_for_alloc__alloc__Global____drop_glue___dst__S____u32____alloc__alloc__Global_(
+  Eurydice_dst_ref_mut_7f *x0
+);
 
-*/
-typedef struct dst_S_e9_s
+typedef struct dst_S____u32__4___usize___s
 {
   uint32_t foo;
   Eurydice_arr_e5 my_data;
 }
-dst_S_e9;
+dst_S____u32__4___usize__;
 
-/**
-A monomorphic instance of dst.S
-with types Eurydice_arr_53
+extern void
+alloc_boxed_Box__impl_core__marker__Destruct_for_alloc__boxed__Box_dst__S____u32__4___usize_____built_in_impl_core__marker__MetaSized_for_dst__S____u32__4___usize______built_in_impl_core__marker__Sized_for_alloc__alloc__Global____drop_glue___dst__S____u32__4___usize____alloc__alloc__Global_(
+  dst_S____u32__4___usize__ **x0
+);
 
-*/
-typedef struct dst_S_93_s
+extern void
+alloc_boxed_Box__impl_core__marker__Destruct_for_alloc__boxed__Box_dst__S_____u32__3___usize______built_in_impl_core__marker__MetaSized_for_dst__S_____u32__3___usize_______built_in_impl_core__marker__Sized_for_alloc__alloc__Global____drop_glue___dst__S_____u32__3___usize_____alloc__alloc__Global_(
+  Eurydice_dst_ref_mut_62 *x0
+);
+
+typedef struct dst_S_____u32__3___usize___4___usize___s
 {
   uint32_t foo;
   Eurydice_arr_53 my_data;
 }
-dst_S_93;
+dst_S_____u32__3___usize___4___usize__;
 
-void dst_check_regular_field(Eurydice_dst_ref_mut_2f x);
+extern void
+alloc_boxed_Box__impl_core__marker__Destruct_for_alloc__boxed__Box_dst__S_____u32__3___usize___4___usize_____built_in_impl_core__marker__MetaSized_for_dst__S_____u32__3___usize___4___usize______built_in_impl_core__marker__Sized_for_alloc__alloc__Global____drop_glue___dst__S_____u32__3___usize___4___usize____alloc__alloc__Global_(
+  dst_S_____u32__3___usize___4___usize__ **x0
+);
 
-void dst_check_var_field(Eurydice_dst_ref_mut_2f x);
+extern void
+alloc_boxed_Box__impl_core__marker__Destruct_for_alloc__boxed__Box__u32__4___usize____built_in_impl_core__marker__MetaSized_for__u32__4___usize_____built_in_impl_core__marker__Sized_for_alloc__alloc__Global____drop_glue____u32__4___usize___alloc__alloc__Global_(
+  Eurydice_arr_e5 **x0
+);
 
-void dst_check_regular_field_ref(Eurydice_dst_ref_shared_2f x);
+extern void
+alloc_boxed_Box__impl_core__marker__Destruct_for_alloc__boxed__Box__u32____built_in_impl_core__marker__MetaSized_for__u32_____built_in_impl_core__marker__Sized_for_alloc__alloc__Global____drop_glue____u32___alloc__alloc__Global_(
+  Eurydice_dst_ref_mut_0c *x0
+);
 
-void dst_check_var_field_ref(Eurydice_dst_ref_shared_2f x);
+Eurydice_dst_ref_mut_fd dst_mk(void);
 
-Eurydice_dst_ref_mut_2f dst_alloc(void);
+typedef dst_S____u32__ dst_T;
 
-Eurydice_dst_ref_mut_bb dst_alloc3(void);
+void dst_check_regular_field(Eurydice_dst_ref_mut_7f x);
 
-void dst_check_var_field_ref3(Eurydice_dst_ref_shared_bb x);
+void dst_check_var_field(Eurydice_dst_ref_mut_7f x);
+
+void dst_check_regular_field_ref(Eurydice_dst_ref_shared_7f x);
+
+void dst_check_var_field_ref(Eurydice_dst_ref_shared_7f x);
+
+Eurydice_dst_ref_mut_7f dst_alloc(void);
+
+typedef dst_S_____u32__3___usize___ dst_T3;
+
+Eurydice_dst_ref_mut_62 dst_alloc3(void);
+
+void dst_check_var_field_ref3(Eurydice_dst_ref_shared_62 x);
 
 void dst_main3(void);
 

@@ -7,12 +7,7 @@
 
 #include "issue_212.h"
 
-/**
-A monomorphic instance of issue_212.id_mut
-with types Eurydice_arr int32_t[[$3size_t]]
-
-*/
-const Eurydice_arr_bf *issue_212_id_mut_25(const Eurydice_arr_bf *x)
+const Eurydice_arr_bf *issue_212_id_mut____i32__3___usize__(const Eurydice_arr_bf *x)
 {
   return x;
 }
@@ -20,7 +15,7 @@ const Eurydice_arr_bf *issue_212_id_mut_25(const Eurydice_arr_bf *x)
 void issue_212_main(void)
 {
   Eurydice_arr_bf arr = { .data = { 1, 2, 3 } };
-  const Eurydice_arr_bf *r = issue_212_id_mut_25(&arr);
+  const Eurydice_arr_bf *r = issue_212_id_mut____i32__3___usize__(&arr);
   EURYDICE_ASSERT(r->data[0U] > 0, "panic!");
 }
 

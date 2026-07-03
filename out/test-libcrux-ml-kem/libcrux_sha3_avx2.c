@@ -5,7 +5,7 @@
 
  */
 
-#include "libcrux_sha3_avx2.h"
+#include "internal/libcrux_sha3_avx2.h"
 
 #include "libcrux_sha3_portable.h"
 #include "libcrux_core.h"
@@ -19,603 +19,19 @@ with const generics
 */
 typedef struct arr_50_s { __m256i data[5U]; } arr_50;
 
-static KRML_MUSTINLINE __m256i _veorq_n_u64(__m256i a, uint64_t c)
-{
-  __m256i c0 = mm256_set1_epi64x((int64_t)c);
-  return mm256_xor_si256(a, c0);
-}
-
-static KRML_MUSTINLINE __m256i _vbcaxq_u64(__m256i a, __m256i b, __m256i c)
-{
-  return mm256_xor_si256(a, mm256_andnot_si256(c, b));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 1
-- RIGHT= 63
-*/
-static KRML_MUSTINLINE __m256i rotate_left_76(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(1, x, __m256i), mm256_srli_epi64(63, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 36
-- RIGHT= 28
-*/
-static KRML_MUSTINLINE __m256i rotate_left_02(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(36, x, __m256i), mm256_srli_epi64(28, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 3
-- RIGHT= 61
-*/
-static KRML_MUSTINLINE __m256i rotate_left_ac(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(3, x, __m256i), mm256_srli_epi64(61, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 41
-- RIGHT= 23
-*/
-static KRML_MUSTINLINE __m256i rotate_left_020(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(41, x, __m256i), mm256_srli_epi64(23, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 18
-- RIGHT= 46
-*/
-static KRML_MUSTINLINE __m256i rotate_left_a9(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(18, x, __m256i), mm256_srli_epi64(46, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 44
-- RIGHT= 20
-*/
-static KRML_MUSTINLINE __m256i rotate_left_58(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(44, x, __m256i), mm256_srli_epi64(20, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 10
-- RIGHT= 54
-*/
-static KRML_MUSTINLINE __m256i rotate_left_e0(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(10, x, __m256i), mm256_srli_epi64(54, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 45
-- RIGHT= 19
-*/
-static KRML_MUSTINLINE __m256i rotate_left_63(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(45, x, __m256i), mm256_srli_epi64(19, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 2
-- RIGHT= 62
-*/
-static KRML_MUSTINLINE __m256i rotate_left_6a(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(2, x, __m256i), mm256_srli_epi64(62, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 62
-- RIGHT= 2
-*/
-static KRML_MUSTINLINE __m256i rotate_left_ab(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(62, x, __m256i), mm256_srli_epi64(2, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 6
-- RIGHT= 58
-*/
-static KRML_MUSTINLINE __m256i rotate_left_5b(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(6, x, __m256i), mm256_srli_epi64(58, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 43
-- RIGHT= 21
-*/
-static KRML_MUSTINLINE __m256i rotate_left_6f(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(43, x, __m256i), mm256_srli_epi64(21, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 15
-- RIGHT= 49
-*/
-static KRML_MUSTINLINE __m256i rotate_left_62(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(15, x, __m256i), mm256_srli_epi64(49, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 61
-- RIGHT= 3
-*/
-static KRML_MUSTINLINE __m256i rotate_left_23(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(61, x, __m256i), mm256_srli_epi64(3, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 28
-- RIGHT= 36
-*/
-static KRML_MUSTINLINE __m256i rotate_left_37(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(28, x, __m256i), mm256_srli_epi64(36, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 55
-- RIGHT= 9
-*/
-static KRML_MUSTINLINE __m256i rotate_left_bb(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(55, x, __m256i), mm256_srli_epi64(9, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 25
-- RIGHT= 39
-*/
-static KRML_MUSTINLINE __m256i rotate_left_b9(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(25, x, __m256i), mm256_srli_epi64(39, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 21
-- RIGHT= 43
-*/
-static KRML_MUSTINLINE __m256i rotate_left_54(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(21, x, __m256i), mm256_srli_epi64(43, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 56
-- RIGHT= 8
-*/
-static KRML_MUSTINLINE __m256i rotate_left_4c(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(56, x, __m256i), mm256_srli_epi64(8, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 27
-- RIGHT= 37
-*/
-static KRML_MUSTINLINE __m256i rotate_left_ce(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(27, x, __m256i), mm256_srli_epi64(37, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 20
-- RIGHT= 44
-*/
-static KRML_MUSTINLINE __m256i rotate_left_77(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(20, x, __m256i), mm256_srli_epi64(44, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 39
-- RIGHT= 25
-*/
-static KRML_MUSTINLINE __m256i rotate_left_25(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(39, x, __m256i), mm256_srli_epi64(25, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 8
-- RIGHT= 56
-*/
-static KRML_MUSTINLINE __m256i rotate_left_af(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(8, x, __m256i), mm256_srli_epi64(56, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.rotate_left
-with const generics
-- LEFT= 14
-- RIGHT= 50
-*/
-static KRML_MUSTINLINE __m256i rotate_left_fd(__m256i x)
-{
-  return mm256_xor_si256(mm256_slli_epi64(14, x, __m256i), mm256_srli_epi64(50, x, __m256i));
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 36
-- RIGHT= 28
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_02(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_02(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 3
-- RIGHT= 61
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_ac(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_ac(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 41
-- RIGHT= 23
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_020(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_020(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 18
-- RIGHT= 46
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_a9(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_a9(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 1
-- RIGHT= 63
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_76(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_76(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 44
-- RIGHT= 20
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_58(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_58(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 10
-- RIGHT= 54
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_e0(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_e0(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 45
-- RIGHT= 19
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_63(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_63(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 2
-- RIGHT= 62
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_6a(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_6a(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 62
-- RIGHT= 2
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_ab(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_ab(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 6
-- RIGHT= 58
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_5b(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_5b(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 43
-- RIGHT= 21
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_6f(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_6f(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 15
-- RIGHT= 49
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_62(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_62(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 61
-- RIGHT= 3
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_23(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_23(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 28
-- RIGHT= 36
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_37(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_37(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 55
-- RIGHT= 9
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_bb(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_bb(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 25
-- RIGHT= 39
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_b9(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_b9(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 21
-- RIGHT= 43
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_54(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_54(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 56
-- RIGHT= 8
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_4c(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_4c(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 27
-- RIGHT= 37
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_ce(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_ce(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 20
-- RIGHT= 44
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_77(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_77(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 39
-- RIGHT= 25
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_25(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_25(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 8
-- RIGHT= 56
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_af(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_af(ab);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2._vxarq_u64
-with const generics
-- LEFT= 14
-- RIGHT= 50
-*/
-static KRML_MUSTINLINE __m256i _vxarq_u64_fd(__m256i a, __m256i b)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  return rotate_left_fd(ab);
-}
-
-static KRML_MUSTINLINE __m256i _vrax1q_u64(__m256i a, __m256i b)
-{
-  return mm256_xor_si256(a, rotate_left_76(b));
-}
-
-static KRML_MUSTINLINE __m256i
-_veor5q_u64(__m256i a, __m256i b, __m256i c, __m256i d, __m256i e)
-{
-  __m256i ab = mm256_xor_si256(a, b);
-  __m256i cd = mm256_xor_si256(c, d);
-  __m256i abcd = mm256_xor_si256(ab, cd);
-  return mm256_xor_si256(abcd, e);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.traits.get_ij
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
 static KRML_MUSTINLINE const
 __m256i
-*get_ij_5d(const Eurydice_arr_c40 *arr, size_t i, size_t j)
+*get_ij___core__core_arch__x86____m256i__4___usize_(
+  const Eurydice_arr_c40 *arr,
+  size_t i,
+  size_t j
+)
 {
   return &arr->data[(size_t)5U * j + i];
 }
 
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.store_block
-with const generics
-- RATE= 136
-*/
 static KRML_MUSTINLINE void
-store_block_b2(
+store_block___136___usize_(
   const Eurydice_arr_c40 *s,
   Eurydice_mut_borrow_slice_u8 out0,
   Eurydice_mut_borrow_slice_u8 out1,
@@ -626,21 +42,14 @@ store_block_b2(
 )
 {
   size_t chunks = len / (size_t)32U;
-  core_ops_range_Range_87
-  iter =
-    core_iter_traits_collect__impl_core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter((
-        KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = chunks }
-      ),
-      core_ops_range_Range_87,
-      size_t,
-      core_ops_range_Range_87);
+  core_ops_range_Range___usize_
+  iter0 =
+    core_iter_traits_collect_into_iter___core__ops__range__Range___usize___4e((
+        KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)0U, .end = chunks }
+      ));
   while (true)
   {
-    core_option_Option_87
-    uu____0 =
-      core_iter_range__impl_core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A___TraitClause0___next(&iter,
-        size_t,
-        core_option_Option_87);
+    core_option_Option___usize_ uu____0 = core_iter_range_next___usize__dc(&iter0);
     if (uu____0.tag == core_option_None)
     {
       size_t rem = len % (size_t)32U;
@@ -649,116 +58,143 @@ store_block_b2(
         size_t start0 = start + (size_t)32U * chunks;
         Eurydice_arr_ec u8s = { .data = { 0U } };
         size_t chunks8 = rem / (size_t)8U;
-        for (size_t i0 = (size_t)0U; i0 < chunks8; i0++)
+        core_ops_range_Range___usize_
+        iter =
+          core_iter_traits_collect_into_iter___core__ops__range__Range___usize___4e((
+              KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)0U, .end = chunks8 }
+            ));
+        while (true)
         {
-          size_t k = i0;
-          size_t i = ((size_t)4U * chunks + k) / (size_t)5U;
-          size_t j = ((size_t)4U * chunks + k) % (size_t)5U;
-          Eurydice_mut_borrow_slice_u8 uu____1 = Eurydice_array_to_slice_mut_01(&u8s);
-          mm256_storeu_si256_u8(uu____1, get_ij_5d(s, i, j)[0U]);
-          Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out0,
-              (
-                KRML_CLITERAL(core_ops_range_Range_87){
-                  .start = start0 + (size_t)8U * k,
-                  .end = start0 + (size_t)8U * (k + (size_t)1U)
-                }
-              )),
-            Eurydice_array_to_subslice_shared_d4(&u8s,
-              (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)8U })),
-            uint8_t);
-          Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out1,
-              (
-                KRML_CLITERAL(core_ops_range_Range_87){
-                  .start = start0 + (size_t)8U * k,
-                  .end = start0 + (size_t)8U * (k + (size_t)1U)
-                }
-              )),
-            Eurydice_array_to_subslice_shared_d4(&u8s,
-              (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)8U, .end = (size_t)16U })),
-            uint8_t);
-          Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out2,
-              (
-                KRML_CLITERAL(core_ops_range_Range_87){
-                  .start = start0 + (size_t)8U * k,
-                  .end = start0 + (size_t)8U * (k + (size_t)1U)
-                }
-              )),
-            Eurydice_array_to_subslice_shared_d4(&u8s,
-              (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)16U, .end = (size_t)24U })),
-            uint8_t);
-          Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out3,
-              (
-                KRML_CLITERAL(core_ops_range_Range_87){
-                  .start = start0 + (size_t)8U * k,
-                  .end = start0 + (size_t)8U * (k + (size_t)1U)
-                }
-              )),
-            Eurydice_array_to_subslice_shared_d4(&u8s,
-              (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)24U, .end = (size_t)32U })),
-            uint8_t);
+          core_option_Option___usize_ uu____1 = core_iter_range_next___usize__dc(&iter);
+          if (uu____1.tag == core_option_None)
+          {
+            break;
+          }
+          else
+          {
+            size_t k = uu____1.f0;
+            size_t i = ((size_t)4U * chunks + k) / (size_t)5U;
+            size_t j = ((size_t)4U * chunks + k) % (size_t)5U;
+            Eurydice_mut_borrow_slice_u8 uu____2 = Eurydice_array_to_slice_mut_01(&u8s);
+            mm256_storeu_si256_u8(uu____2,
+              get_ij___core__core_arch__x86____m256i__4___usize_(s, i, j)[0U]);
+            core_slice_copy_from_slice___u8__ea(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out0,
+                (
+                  KRML_CLITERAL(core_ops_range_Range___usize_){
+                    .start = start0 + (size_t)8U * k,
+                    .end = start0 + (size_t)8U * (k + (size_t)1U)
+                  }
+                )),
+              core_array_index___u8__core__ops__range__Range___usize___32___usize__5c(&u8s,
+                (
+                  KRML_CLITERAL(core_ops_range_Range___usize_){
+                    .start = (size_t)0U,
+                    .end = (size_t)8U
+                  }
+                )));
+            core_slice_copy_from_slice___u8__ea(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out1,
+                (
+                  KRML_CLITERAL(core_ops_range_Range___usize_){
+                    .start = start0 + (size_t)8U * k,
+                    .end = start0 + (size_t)8U * (k + (size_t)1U)
+                  }
+                )),
+              core_array_index___u8__core__ops__range__Range___usize___32___usize__5c(&u8s,
+                (
+                  KRML_CLITERAL(core_ops_range_Range___usize_){
+                    .start = (size_t)8U,
+                    .end = (size_t)16U
+                  }
+                )));
+            core_slice_copy_from_slice___u8__ea(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out2,
+                (
+                  KRML_CLITERAL(core_ops_range_Range___usize_){
+                    .start = start0 + (size_t)8U * k,
+                    .end = start0 + (size_t)8U * (k + (size_t)1U)
+                  }
+                )),
+              core_array_index___u8__core__ops__range__Range___usize___32___usize__5c(&u8s,
+                (
+                  KRML_CLITERAL(core_ops_range_Range___usize_){
+                    .start = (size_t)16U,
+                    .end = (size_t)24U
+                  }
+                )));
+            core_slice_copy_from_slice___u8__ea(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out3,
+                (
+                  KRML_CLITERAL(core_ops_range_Range___usize_){
+                    .start = start0 + (size_t)8U * k,
+                    .end = start0 + (size_t)8U * (k + (size_t)1U)
+                  }
+                )),
+              core_array_index___u8__core__ops__range__Range___usize___32___usize__5c(&u8s,
+                (
+                  KRML_CLITERAL(core_ops_range_Range___usize_){
+                    .start = (size_t)24U,
+                    .end = (size_t)32U
+                  }
+                )));
+          }
         }
         size_t rem8 = rem % (size_t)8U;
         if (rem8 > (size_t)0U)
         {
           size_t i = ((size_t)4U * chunks + chunks8) / (size_t)5U;
           size_t j = ((size_t)4U * chunks + chunks8) % (size_t)5U;
-          Eurydice_mut_borrow_slice_u8 uu____2 = Eurydice_array_to_slice_mut_01(&u8s);
-          mm256_storeu_si256_u8(uu____2, get_ij_5d(s, i, j)[0U]);
-          Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out0,
+          Eurydice_mut_borrow_slice_u8 uu____3 = Eurydice_array_to_slice_mut_01(&u8s);
+          mm256_storeu_si256_u8(uu____3,
+            get_ij___core__core_arch__x86____m256i__4___usize_(s, i, j)[0U]);
+          core_slice_copy_from_slice___u8__ea(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out0,
               (
-                KRML_CLITERAL(core_ops_range_Range_87){
+                KRML_CLITERAL(core_ops_range_Range___usize_){
                   .start = start0 + len - rem8,
                   .end = start0 + len
                 }
               )),
-            Eurydice_array_to_subslice_shared_d4(&u8s,
-              (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = rem8 })),
-            uint8_t);
-          Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out1,
+            core_array_index___u8__core__ops__range__Range___usize___32___usize__5c(&u8s,
+              (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)0U, .end = rem8 })));
+          core_slice_copy_from_slice___u8__ea(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out1,
               (
-                KRML_CLITERAL(core_ops_range_Range_87){
+                KRML_CLITERAL(core_ops_range_Range___usize_){
                   .start = start0 + len - rem8,
                   .end = start0 + len
                 }
               )),
-            Eurydice_array_to_subslice_shared_d4(&u8s,
+            core_array_index___u8__core__ops__range__Range___usize___32___usize__5c(&u8s,
               (
-                KRML_CLITERAL(core_ops_range_Range_87){
+                KRML_CLITERAL(core_ops_range_Range___usize_){
                   .start = (size_t)8U,
                   .end = (size_t)8U + rem8
                 }
-              )),
-            uint8_t);
-          Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out2,
+              )));
+          core_slice_copy_from_slice___u8__ea(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out2,
               (
-                KRML_CLITERAL(core_ops_range_Range_87){
+                KRML_CLITERAL(core_ops_range_Range___usize_){
                   .start = start0 + len - rem8,
                   .end = start0 + len
                 }
               )),
-            Eurydice_array_to_subslice_shared_d4(&u8s,
+            core_array_index___u8__core__ops__range__Range___usize___32___usize__5c(&u8s,
               (
-                KRML_CLITERAL(core_ops_range_Range_87){
+                KRML_CLITERAL(core_ops_range_Range___usize_){
                   .start = (size_t)16U,
                   .end = (size_t)16U + rem8
                 }
-              )),
-            uint8_t);
-          Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out3,
+              )));
+          core_slice_copy_from_slice___u8__ea(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out3,
               (
-                KRML_CLITERAL(core_ops_range_Range_87){
+                KRML_CLITERAL(core_ops_range_Range___usize_){
                   .start = start0 + len - rem8,
                   .end = start0 + len
                 }
               )),
-            Eurydice_array_to_subslice_shared_d4(&u8s,
+            core_array_index___u8__core__ops__range__Range___usize___32___usize__5c(&u8s,
               (
-                KRML_CLITERAL(core_ops_range_Range_87){
+                KRML_CLITERAL(core_ops_range_Range___usize_){
                   .start = (size_t)24U,
                   .end = (size_t)24U + rem8
                 }
-              )),
-            uint8_t);
+              )));
         }
       }
       return;
@@ -773,44 +209,60 @@ store_block_b2(
     size_t i3 = ((size_t)4U * i + (size_t)3U) / (size_t)5U;
     size_t j3 = ((size_t)4U * i + (size_t)3U) % (size_t)5U;
     __m256i
-    v0l = mm256_permute2x128_si256(32, get_ij_5d(s, i0, j0)[0U], get_ij_5d(s, i2, j2)[0U], __m256i);
+    v0l =
+      mm256_permute2x128_si256___32___i32_(get_ij___core__core_arch__x86____m256i__4___usize_(s,
+          i0,
+          j0)[0U],
+        get_ij___core__core_arch__x86____m256i__4___usize_(s, i2, j2)[0U]);
     __m256i
-    v1h = mm256_permute2x128_si256(32, get_ij_5d(s, i1, j1)[0U], get_ij_5d(s, i3, j3)[0U], __m256i);
+    v1h =
+      mm256_permute2x128_si256___32___i32_(get_ij___core__core_arch__x86____m256i__4___usize_(s,
+          i1,
+          j1)[0U],
+        get_ij___core__core_arch__x86____m256i__4___usize_(s, i3, j3)[0U]);
     __m256i
-    v2l = mm256_permute2x128_si256(49, get_ij_5d(s, i0, j0)[0U], get_ij_5d(s, i2, j2)[0U], __m256i);
+    v2l =
+      mm256_permute2x128_si256___49___i32_(get_ij___core__core_arch__x86____m256i__4___usize_(s,
+          i0,
+          j0)[0U],
+        get_ij___core__core_arch__x86____m256i__4___usize_(s, i2, j2)[0U]);
     __m256i
-    v3h = mm256_permute2x128_si256(49, get_ij_5d(s, i1, j1)[0U], get_ij_5d(s, i3, j3)[0U], __m256i);
+    v3h =
+      mm256_permute2x128_si256___49___i32_(get_ij___core__core_arch__x86____m256i__4___usize_(s,
+          i1,
+          j1)[0U],
+        get_ij___core__core_arch__x86____m256i__4___usize_(s, i3, j3)[0U]);
     __m256i v0 = mm256_unpacklo_epi64(v0l, v1h);
     __m256i v1 = mm256_unpackhi_epi64(v0l, v1h);
     __m256i v2 = mm256_unpacklo_epi64(v2l, v3h);
     __m256i v3 = mm256_unpackhi_epi64(v2l, v3h);
-    mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_c8(out0,
+    mm256_storeu_si256_u8(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out0,
         (
-          KRML_CLITERAL(core_ops_range_Range_87){
+          KRML_CLITERAL(core_ops_range_Range___usize_){
             .start = start + (size_t)32U * i,
             .end = start + (size_t)32U * (i + (size_t)1U)
           }
         )),
       v0);
-    mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_c8(out1,
+    mm256_storeu_si256_u8(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out1,
         (
-          KRML_CLITERAL(core_ops_range_Range_87){
+          KRML_CLITERAL(core_ops_range_Range___usize_){
             .start = start + (size_t)32U * i,
             .end = start + (size_t)32U * (i + (size_t)1U)
           }
         )),
       v1);
-    mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_c8(out2,
+    mm256_storeu_si256_u8(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out2,
         (
-          KRML_CLITERAL(core_ops_range_Range_87){
+          KRML_CLITERAL(core_ops_range_Range___usize_){
             .start = start + (size_t)32U * i,
             .end = start + (size_t)32U * (i + (size_t)1U)
           }
         )),
       v2);
-    mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_c8(out3,
+    mm256_storeu_si256_u8(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out3,
         (
-          KRML_CLITERAL(core_ops_range_Range_87){
+          KRML_CLITERAL(core_ops_range_Range___usize_){
             .start = start + (size_t)32U * i,
             .end = start + (size_t)32U * (i + (size_t)1U)
           }
@@ -821,236 +273,23 @@ store_block_b2(
   KRML_HOST_EXIT(255U);
 }
 
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.store_block
-with const generics
-- RATE= 168
-*/
 static KRML_MUSTINLINE void
-store_block_60(
-  const Eurydice_arr_c40 *s,
-  Eurydice_mut_borrow_slice_u8 out0,
-  Eurydice_mut_borrow_slice_u8 out1,
-  Eurydice_mut_borrow_slice_u8 out2,
-  Eurydice_mut_borrow_slice_u8 out3,
-  size_t start,
-  size_t len
+set_ij___core__core_arch__x86____m256i__4___usize_(
+  Eurydice_arr_c40 *arr,
+  size_t i,
+  size_t j,
+  __m256i value
 )
-{
-  size_t chunks = len / (size_t)32U;
-  core_ops_range_Range_87
-  iter =
-    core_iter_traits_collect__impl_core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter((
-        KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = chunks }
-      ),
-      core_ops_range_Range_87,
-      size_t,
-      core_ops_range_Range_87);
-  while (true)
-  {
-    core_option_Option_87
-    uu____0 =
-      core_iter_range__impl_core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A___TraitClause0___next(&iter,
-        size_t,
-        core_option_Option_87);
-    if (uu____0.tag == core_option_None)
-    {
-      size_t rem = len % (size_t)32U;
-      if (rem > (size_t)0U)
-      {
-        size_t start0 = start + (size_t)32U * chunks;
-        Eurydice_arr_ec u8s = { .data = { 0U } };
-        size_t chunks8 = rem / (size_t)8U;
-        for (size_t i0 = (size_t)0U; i0 < chunks8; i0++)
-        {
-          size_t k = i0;
-          size_t i = ((size_t)4U * chunks + k) / (size_t)5U;
-          size_t j = ((size_t)4U * chunks + k) % (size_t)5U;
-          Eurydice_mut_borrow_slice_u8 uu____1 = Eurydice_array_to_slice_mut_01(&u8s);
-          mm256_storeu_si256_u8(uu____1, get_ij_5d(s, i, j)[0U]);
-          Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out0,
-              (
-                KRML_CLITERAL(core_ops_range_Range_87){
-                  .start = start0 + (size_t)8U * k,
-                  .end = start0 + (size_t)8U * (k + (size_t)1U)
-                }
-              )),
-            Eurydice_array_to_subslice_shared_d4(&u8s,
-              (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)8U })),
-            uint8_t);
-          Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out1,
-              (
-                KRML_CLITERAL(core_ops_range_Range_87){
-                  .start = start0 + (size_t)8U * k,
-                  .end = start0 + (size_t)8U * (k + (size_t)1U)
-                }
-              )),
-            Eurydice_array_to_subslice_shared_d4(&u8s,
-              (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)8U, .end = (size_t)16U })),
-            uint8_t);
-          Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out2,
-              (
-                KRML_CLITERAL(core_ops_range_Range_87){
-                  .start = start0 + (size_t)8U * k,
-                  .end = start0 + (size_t)8U * (k + (size_t)1U)
-                }
-              )),
-            Eurydice_array_to_subslice_shared_d4(&u8s,
-              (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)16U, .end = (size_t)24U })),
-            uint8_t);
-          Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out3,
-              (
-                KRML_CLITERAL(core_ops_range_Range_87){
-                  .start = start0 + (size_t)8U * k,
-                  .end = start0 + (size_t)8U * (k + (size_t)1U)
-                }
-              )),
-            Eurydice_array_to_subslice_shared_d4(&u8s,
-              (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)24U, .end = (size_t)32U })),
-            uint8_t);
-        }
-        size_t rem8 = rem % (size_t)8U;
-        if (rem8 > (size_t)0U)
-        {
-          size_t i = ((size_t)4U * chunks + chunks8) / (size_t)5U;
-          size_t j = ((size_t)4U * chunks + chunks8) % (size_t)5U;
-          Eurydice_mut_borrow_slice_u8 uu____2 = Eurydice_array_to_slice_mut_01(&u8s);
-          mm256_storeu_si256_u8(uu____2, get_ij_5d(s, i, j)[0U]);
-          Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out0,
-              (
-                KRML_CLITERAL(core_ops_range_Range_87){
-                  .start = start0 + len - rem8,
-                  .end = start0 + len
-                }
-              )),
-            Eurydice_array_to_subslice_shared_d4(&u8s,
-              (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = rem8 })),
-            uint8_t);
-          Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out1,
-              (
-                KRML_CLITERAL(core_ops_range_Range_87){
-                  .start = start0 + len - rem8,
-                  .end = start0 + len
-                }
-              )),
-            Eurydice_array_to_subslice_shared_d4(&u8s,
-              (
-                KRML_CLITERAL(core_ops_range_Range_87){
-                  .start = (size_t)8U,
-                  .end = (size_t)8U + rem8
-                }
-              )),
-            uint8_t);
-          Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out2,
-              (
-                KRML_CLITERAL(core_ops_range_Range_87){
-                  .start = start0 + len - rem8,
-                  .end = start0 + len
-                }
-              )),
-            Eurydice_array_to_subslice_shared_d4(&u8s,
-              (
-                KRML_CLITERAL(core_ops_range_Range_87){
-                  .start = (size_t)16U,
-                  .end = (size_t)16U + rem8
-                }
-              )),
-            uint8_t);
-          Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(out3,
-              (
-                KRML_CLITERAL(core_ops_range_Range_87){
-                  .start = start0 + len - rem8,
-                  .end = start0 + len
-                }
-              )),
-            Eurydice_array_to_subslice_shared_d4(&u8s,
-              (
-                KRML_CLITERAL(core_ops_range_Range_87){
-                  .start = (size_t)24U,
-                  .end = (size_t)24U + rem8
-                }
-              )),
-            uint8_t);
-        }
-      }
-      return;
-    }
-    size_t i = uu____0.f0;
-    size_t i0 = (size_t)4U * i / (size_t)5U;
-    size_t j0 = (size_t)4U * i % (size_t)5U;
-    size_t i1 = ((size_t)4U * i + (size_t)1U) / (size_t)5U;
-    size_t j1 = ((size_t)4U * i + (size_t)1U) % (size_t)5U;
-    size_t i2 = ((size_t)4U * i + (size_t)2U) / (size_t)5U;
-    size_t j2 = ((size_t)4U * i + (size_t)2U) % (size_t)5U;
-    size_t i3 = ((size_t)4U * i + (size_t)3U) / (size_t)5U;
-    size_t j3 = ((size_t)4U * i + (size_t)3U) % (size_t)5U;
-    __m256i
-    v0l = mm256_permute2x128_si256(32, get_ij_5d(s, i0, j0)[0U], get_ij_5d(s, i2, j2)[0U], __m256i);
-    __m256i
-    v1h = mm256_permute2x128_si256(32, get_ij_5d(s, i1, j1)[0U], get_ij_5d(s, i3, j3)[0U], __m256i);
-    __m256i
-    v2l = mm256_permute2x128_si256(49, get_ij_5d(s, i0, j0)[0U], get_ij_5d(s, i2, j2)[0U], __m256i);
-    __m256i
-    v3h = mm256_permute2x128_si256(49, get_ij_5d(s, i1, j1)[0U], get_ij_5d(s, i3, j3)[0U], __m256i);
-    __m256i v0 = mm256_unpacklo_epi64(v0l, v1h);
-    __m256i v1 = mm256_unpackhi_epi64(v0l, v1h);
-    __m256i v2 = mm256_unpacklo_epi64(v2l, v3h);
-    __m256i v3 = mm256_unpackhi_epi64(v2l, v3h);
-    mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_c8(out0,
-        (
-          KRML_CLITERAL(core_ops_range_Range_87){
-            .start = start + (size_t)32U * i,
-            .end = start + (size_t)32U * (i + (size_t)1U)
-          }
-        )),
-      v0);
-    mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_c8(out1,
-        (
-          KRML_CLITERAL(core_ops_range_Range_87){
-            .start = start + (size_t)32U * i,
-            .end = start + (size_t)32U * (i + (size_t)1U)
-          }
-        )),
-      v1);
-    mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_c8(out2,
-        (
-          KRML_CLITERAL(core_ops_range_Range_87){
-            .start = start + (size_t)32U * i,
-            .end = start + (size_t)32U * (i + (size_t)1U)
-          }
-        )),
-      v2);
-    mm256_storeu_si256_u8(Eurydice_slice_subslice_mut_c8(out3,
-        (
-          KRML_CLITERAL(core_ops_range_Range_87){
-            .start = start + (size_t)32U * i,
-            .end = start + (size_t)32U * (i + (size_t)1U)
-          }
-        )),
-      v3);
-  }
-  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-  KRML_HOST_EXIT(255U);
-}
-
-/**
-A monomorphic instance of libcrux_sha3.traits.set_ij
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE void set_ij_5d(Eurydice_arr_c40 *arr, size_t i, size_t j, __m256i value)
 {
   arr->data[(size_t)5U * j + i] = value;
 }
 
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.load_block
-with const generics
-- RATE= 136
-*/
 static KRML_MUSTINLINE void
-load_block_b2(Eurydice_arr_c40 *state, const Eurydice_arr_68 *blocks, size_t offset)
+load_block___136___usize_(
+  Eurydice_arr_c40 *state,
+  const Eurydice_arr_68 *blocks,
+  size_t offset
+)
 {
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)32U; i++)
   {
@@ -1058,28 +297,48 @@ load_block_b2(Eurydice_arr_c40 *state, const Eurydice_arr_68 *blocks, size_t off
     size_t start = offset + (size_t)32U * i4;
     __m256i
     v00 =
-      mm256_loadu_si256_u8(Eurydice_slice_subslice_shared_c8(blocks->data[0U],
-          (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + (size_t)32U })));
+      mm256_loadu_si256_u8(core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[0U],
+          (
+            KRML_CLITERAL(core_ops_range_Range___usize_){
+              .start = start,
+              .end = start + (size_t)32U
+            }
+          )));
     __m256i
     v10 =
-      mm256_loadu_si256_u8(Eurydice_slice_subslice_shared_c8(blocks->data[1U],
-          (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + (size_t)32U })));
+      mm256_loadu_si256_u8(core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[1U],
+          (
+            KRML_CLITERAL(core_ops_range_Range___usize_){
+              .start = start,
+              .end = start + (size_t)32U
+            }
+          )));
     __m256i
     v20 =
-      mm256_loadu_si256_u8(Eurydice_slice_subslice_shared_c8(blocks->data[2U],
-          (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + (size_t)32U })));
+      mm256_loadu_si256_u8(core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[2U],
+          (
+            KRML_CLITERAL(core_ops_range_Range___usize_){
+              .start = start,
+              .end = start + (size_t)32U
+            }
+          )));
     __m256i
     v30 =
-      mm256_loadu_si256_u8(Eurydice_slice_subslice_shared_c8(blocks->data[3U],
-          (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + (size_t)32U })));
+      mm256_loadu_si256_u8(core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[3U],
+          (
+            KRML_CLITERAL(core_ops_range_Range___usize_){
+              .start = start,
+              .end = start + (size_t)32U
+            }
+          )));
     __m256i v0l = mm256_unpacklo_epi64(v00, v10);
     __m256i v1h = mm256_unpackhi_epi64(v00, v10);
     __m256i v2l = mm256_unpacklo_epi64(v20, v30);
     __m256i v3h = mm256_unpackhi_epi64(v20, v30);
-    __m256i v0 = mm256_permute2x128_si256(32, v0l, v2l, __m256i);
-    __m256i v1 = mm256_permute2x128_si256(32, v1h, v3h, __m256i);
-    __m256i v2 = mm256_permute2x128_si256(49, v0l, v2l, __m256i);
-    __m256i v3 = mm256_permute2x128_si256(49, v1h, v3h, __m256i);
+    __m256i v0 = mm256_permute2x128_si256___32___i32_(v0l, v2l);
+    __m256i v1 = mm256_permute2x128_si256___32___i32_(v1h, v3h);
+    __m256i v2 = mm256_permute2x128_si256___49___i32_(v0l, v2l);
+    __m256i v3 = mm256_permute2x128_si256___49___i32_(v1h, v3h);
     size_t i0 = (size_t)4U * i4 / (size_t)5U;
     size_t j0 = (size_t)4U * i4 % (size_t)5U;
     size_t i1 = ((size_t)4U * i4 + (size_t)1U) / (size_t)5U;
@@ -1088,242 +347,105 @@ load_block_b2(Eurydice_arr_c40 *state, const Eurydice_arr_68 *blocks, size_t off
     size_t j2 = ((size_t)4U * i4 + (size_t)2U) % (size_t)5U;
     size_t i3 = ((size_t)4U * i4 + (size_t)3U) / (size_t)5U;
     size_t j3 = ((size_t)4U * i4 + (size_t)3U) % (size_t)5U;
-    set_ij_5d(state, i0, j0, mm256_xor_si256(get_ij_5d(state, i0, j0)[0U], v0));
-    set_ij_5d(state, i1, j1, mm256_xor_si256(get_ij_5d(state, i1, j1)[0U], v1));
-    set_ij_5d(state, i2, j2, mm256_xor_si256(get_ij_5d(state, i2, j2)[0U], v2));
-    set_ij_5d(state, i3, j3, mm256_xor_si256(get_ij_5d(state, i3, j3)[0U], v3));
+    set_ij___core__core_arch__x86____m256i__4___usize_(state,
+      i0,
+      j0,
+      mm256_xor_si256(get_ij___core__core_arch__x86____m256i__4___usize_(state, i0, j0)[0U], v0));
+    set_ij___core__core_arch__x86____m256i__4___usize_(state,
+      i1,
+      j1,
+      mm256_xor_si256(get_ij___core__core_arch__x86____m256i__4___usize_(state, i1, j1)[0U], v1));
+    set_ij___core__core_arch__x86____m256i__4___usize_(state,
+      i2,
+      j2,
+      mm256_xor_si256(get_ij___core__core_arch__x86____m256i__4___usize_(state, i2, j2)[0U], v2));
+    set_ij___core__core_arch__x86____m256i__4___usize_(state,
+      i3,
+      j3,
+      mm256_xor_si256(get_ij___core__core_arch__x86____m256i__4___usize_(state, i3, j3)[0U], v3));
   }
   size_t rem = (size_t)136U % (size_t)32U;
   size_t start = offset + (size_t)32U * ((size_t)136U / (size_t)32U);
   Eurydice_arr_ec u8s = { .data = { 0U } };
-  Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d44(&u8s,
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)8U })),
-    Eurydice_slice_subslice_shared_c8(blocks->data[0U],
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + (size_t)8U })),
-    uint8_t);
-  Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d44(&u8s,
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)8U, .end = (size_t)16U })),
-    Eurydice_slice_subslice_shared_c8(blocks->data[1U],
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + (size_t)8U })),
-    uint8_t);
-  Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d44(&u8s,
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)16U, .end = (size_t)24U })),
-    Eurydice_slice_subslice_shared_c8(blocks->data[2U],
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + (size_t)8U })),
-    uint8_t);
-  Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d44(&u8s,
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)24U, .end = (size_t)32U })),
-    Eurydice_slice_subslice_shared_c8(blocks->data[3U],
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + (size_t)8U })),
-    uint8_t);
-  __m256i
-  u =
-    mm256_loadu_si256_u8(core_array___T__N___as_slice((size_t)32U,
-        &u8s,
-        uint8_t,
-        Eurydice_borrow_slice_u8));
+  core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___32___usize__c1(&u8s,
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)0U, .end = (size_t)8U })),
+    core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[0U],
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = start, .end = start + (size_t)8U })));
+  core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___32___usize__c1(&u8s,
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)8U, .end = (size_t)16U })),
+    core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[1U],
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = start, .end = start + (size_t)8U })));
+  core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___32___usize__c1(&u8s,
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)16U, .end = (size_t)24U })),
+    core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[2U],
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = start, .end = start + (size_t)8U })));
+  core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___32___usize__c1(&u8s,
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)24U, .end = (size_t)32U })),
+    core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[3U],
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = start, .end = start + (size_t)8U })));
+  __m256i u = mm256_loadu_si256_u8(core_array_as_slice___u8__32___usize__43(&u8s));
   size_t i0 = (size_t)4U * ((size_t)136U / (size_t)32U) / (size_t)5U;
   size_t j0 = (size_t)4U * ((size_t)136U / (size_t)32U) % (size_t)5U;
-  set_ij_5d(state, i0, j0, mm256_xor_si256(get_ij_5d(state, i0, j0)[0U], u));
+  set_ij___core__core_arch__x86____m256i__4___usize_(state,
+    i0,
+    j0,
+    mm256_xor_si256(get_ij___core__core_arch__x86____m256i__4___usize_(state, i0, j0)[0U], u));
   if (rem == (size_t)16U)
   {
     Eurydice_arr_ec u8s0 = { .data = { 0U } };
-    Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d44(&u8s0,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)8U })),
-      Eurydice_slice_subslice_shared_c8(blocks->data[0U],
+    core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___32___usize__c1(&u8s0,
+        (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)0U, .end = (size_t)8U })),
+      core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[0U],
         (
-          KRML_CLITERAL(core_ops_range_Range_87){
+          KRML_CLITERAL(core_ops_range_Range___usize_){
             .start = start + (size_t)8U,
             .end = start + (size_t)16U
           }
-        )),
-      uint8_t);
-    Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d44(&u8s0,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)8U, .end = (size_t)16U })),
-      Eurydice_slice_subslice_shared_c8(blocks->data[1U],
+        )));
+    core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___32___usize__c1(&u8s0,
+        (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)8U, .end = (size_t)16U })),
+      core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[1U],
         (
-          KRML_CLITERAL(core_ops_range_Range_87){
+          KRML_CLITERAL(core_ops_range_Range___usize_){
             .start = start + (size_t)8U,
             .end = start + (size_t)16U
           }
-        )),
-      uint8_t);
-    Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d44(&u8s0,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)16U, .end = (size_t)24U })),
-      Eurydice_slice_subslice_shared_c8(blocks->data[2U],
+        )));
+    core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___32___usize__c1(&u8s0,
+        (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)16U, .end = (size_t)24U })),
+      core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[2U],
         (
-          KRML_CLITERAL(core_ops_range_Range_87){
+          KRML_CLITERAL(core_ops_range_Range___usize_){
             .start = start + (size_t)8U,
             .end = start + (size_t)16U
           }
-        )),
-      uint8_t);
-    Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d44(&u8s0,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)24U, .end = (size_t)32U })),
-      Eurydice_slice_subslice_shared_c8(blocks->data[3U],
+        )));
+    core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___32___usize__c1(&u8s0,
+        (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)24U, .end = (size_t)32U })),
+      core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[3U],
         (
-          KRML_CLITERAL(core_ops_range_Range_87){
+          KRML_CLITERAL(core_ops_range_Range___usize_){
             .start = start + (size_t)8U,
             .end = start + (size_t)16U
           }
-        )),
-      uint8_t);
-    __m256i
-    u0 =
-      mm256_loadu_si256_u8(core_array___T__N___as_slice((size_t)32U,
-          &u8s0,
-          uint8_t,
-          Eurydice_borrow_slice_u8));
+        )));
+    __m256i u0 = mm256_loadu_si256_u8(core_array_as_slice___u8__32___usize__43(&u8s0));
     size_t i = ((size_t)4U * ((size_t)136U / (size_t)32U) + (size_t)1U) / (size_t)5U;
     size_t j = ((size_t)4U * ((size_t)136U / (size_t)32U) + (size_t)1U) % (size_t)5U;
-    set_ij_5d(state, i, j, mm256_xor_si256(get_ij_5d(state, i, j)[0U], u0));
+    set_ij___core__core_arch__x86____m256i__4___usize_(state,
+      i,
+      j,
+      mm256_xor_si256(get_ij___core__core_arch__x86____m256i__4___usize_(state, i, j)[0U], u0));
   }
 }
 
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.load_block
-with const generics
-- RATE= 168
-*/
 static KRML_MUSTINLINE void
-load_block_60(Eurydice_arr_c40 *state, const Eurydice_arr_68 *blocks, size_t offset)
-{
-  for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)32U; i++)
-  {
-    size_t i4 = i;
-    size_t start = offset + (size_t)32U * i4;
-    __m256i
-    v00 =
-      mm256_loadu_si256_u8(Eurydice_slice_subslice_shared_c8(blocks->data[0U],
-          (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + (size_t)32U })));
-    __m256i
-    v10 =
-      mm256_loadu_si256_u8(Eurydice_slice_subslice_shared_c8(blocks->data[1U],
-          (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + (size_t)32U })));
-    __m256i
-    v20 =
-      mm256_loadu_si256_u8(Eurydice_slice_subslice_shared_c8(blocks->data[2U],
-          (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + (size_t)32U })));
-    __m256i
-    v30 =
-      mm256_loadu_si256_u8(Eurydice_slice_subslice_shared_c8(blocks->data[3U],
-          (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + (size_t)32U })));
-    __m256i v0l = mm256_unpacklo_epi64(v00, v10);
-    __m256i v1h = mm256_unpackhi_epi64(v00, v10);
-    __m256i v2l = mm256_unpacklo_epi64(v20, v30);
-    __m256i v3h = mm256_unpackhi_epi64(v20, v30);
-    __m256i v0 = mm256_permute2x128_si256(32, v0l, v2l, __m256i);
-    __m256i v1 = mm256_permute2x128_si256(32, v1h, v3h, __m256i);
-    __m256i v2 = mm256_permute2x128_si256(49, v0l, v2l, __m256i);
-    __m256i v3 = mm256_permute2x128_si256(49, v1h, v3h, __m256i);
-    size_t i0 = (size_t)4U * i4 / (size_t)5U;
-    size_t j0 = (size_t)4U * i4 % (size_t)5U;
-    size_t i1 = ((size_t)4U * i4 + (size_t)1U) / (size_t)5U;
-    size_t j1 = ((size_t)4U * i4 + (size_t)1U) % (size_t)5U;
-    size_t i2 = ((size_t)4U * i4 + (size_t)2U) / (size_t)5U;
-    size_t j2 = ((size_t)4U * i4 + (size_t)2U) % (size_t)5U;
-    size_t i3 = ((size_t)4U * i4 + (size_t)3U) / (size_t)5U;
-    size_t j3 = ((size_t)4U * i4 + (size_t)3U) % (size_t)5U;
-    set_ij_5d(state, i0, j0, mm256_xor_si256(get_ij_5d(state, i0, j0)[0U], v0));
-    set_ij_5d(state, i1, j1, mm256_xor_si256(get_ij_5d(state, i1, j1)[0U], v1));
-    set_ij_5d(state, i2, j2, mm256_xor_si256(get_ij_5d(state, i2, j2)[0U], v2));
-    set_ij_5d(state, i3, j3, mm256_xor_si256(get_ij_5d(state, i3, j3)[0U], v3));
-  }
-  size_t rem = (size_t)168U % (size_t)32U;
-  size_t start = offset + (size_t)32U * ((size_t)168U / (size_t)32U);
-  Eurydice_arr_ec u8s = { .data = { 0U } };
-  Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d44(&u8s,
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)8U })),
-    Eurydice_slice_subslice_shared_c8(blocks->data[0U],
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + (size_t)8U })),
-    uint8_t);
-  Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d44(&u8s,
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)8U, .end = (size_t)16U })),
-    Eurydice_slice_subslice_shared_c8(blocks->data[1U],
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + (size_t)8U })),
-    uint8_t);
-  Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d44(&u8s,
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)16U, .end = (size_t)24U })),
-    Eurydice_slice_subslice_shared_c8(blocks->data[2U],
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + (size_t)8U })),
-    uint8_t);
-  Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d44(&u8s,
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)24U, .end = (size_t)32U })),
-    Eurydice_slice_subslice_shared_c8(blocks->data[3U],
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + (size_t)8U })),
-    uint8_t);
-  __m256i
-  u =
-    mm256_loadu_si256_u8(core_array___T__N___as_slice((size_t)32U,
-        &u8s,
-        uint8_t,
-        Eurydice_borrow_slice_u8));
-  size_t i0 = (size_t)4U * ((size_t)168U / (size_t)32U) / (size_t)5U;
-  size_t j0 = (size_t)4U * ((size_t)168U / (size_t)32U) % (size_t)5U;
-  set_ij_5d(state, i0, j0, mm256_xor_si256(get_ij_5d(state, i0, j0)[0U], u));
-  if (rem == (size_t)16U)
-  {
-    Eurydice_arr_ec u8s0 = { .data = { 0U } };
-    Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d44(&u8s0,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)8U })),
-      Eurydice_slice_subslice_shared_c8(blocks->data[0U],
-        (
-          KRML_CLITERAL(core_ops_range_Range_87){
-            .start = start + (size_t)8U,
-            .end = start + (size_t)16U
-          }
-        )),
-      uint8_t);
-    Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d44(&u8s0,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)8U, .end = (size_t)16U })),
-      Eurydice_slice_subslice_shared_c8(blocks->data[1U],
-        (
-          KRML_CLITERAL(core_ops_range_Range_87){
-            .start = start + (size_t)8U,
-            .end = start + (size_t)16U
-          }
-        )),
-      uint8_t);
-    Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d44(&u8s0,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)16U, .end = (size_t)24U })),
-      Eurydice_slice_subslice_shared_c8(blocks->data[2U],
-        (
-          KRML_CLITERAL(core_ops_range_Range_87){
-            .start = start + (size_t)8U,
-            .end = start + (size_t)16U
-          }
-        )),
-      uint8_t);
-    Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d44(&u8s0,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)24U, .end = (size_t)32U })),
-      Eurydice_slice_subslice_shared_c8(blocks->data[3U],
-        (
-          KRML_CLITERAL(core_ops_range_Range_87){
-            .start = start + (size_t)8U,
-            .end = start + (size_t)16U
-          }
-        )),
-      uint8_t);
-    __m256i
-    u0 =
-      mm256_loadu_si256_u8(core_array___T__N___as_slice((size_t)32U,
-          &u8s0,
-          uint8_t,
-          Eurydice_borrow_slice_u8));
-    size_t i = ((size_t)4U * ((size_t)168U / (size_t)32U) + (size_t)1U) / (size_t)5U;
-    size_t j = ((size_t)4U * ((size_t)168U / (size_t)32U) + (size_t)1U) % (size_t)5U;
-    set_ij_5d(state, i, j, mm256_xor_si256(get_ij_5d(state, i, j)[0U], u0));
-  }
-}
-
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.load_last
-with const generics
-- RATE= 136
-- DELIMITER= 31
-*/
-static KRML_MUSTINLINE void
-load_last_22(Eurydice_arr_c40 *state, const Eurydice_arr_68 *blocks, size_t start, size_t len)
+load_last___136___usize__31___u8_(
+  Eurydice_arr_c40 *state,
+  const Eurydice_arr_68 *blocks,
+  size_t start,
+  size_t len
+)
 {
   Eurydice_arr_dc0
   buffers =
@@ -1333,11 +455,10 @@ load_last_22(Eurydice_arr_c40 *state, const Eurydice_arr_68 *blocks, size_t star
     (size_t)4U,
     (size_t)1U,
     size_t i0 = i;
-    Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d40(&buffers.data[i0],
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = len })),
-      Eurydice_slice_subslice_shared_c8(blocks->data[i0],
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + len })),
-      uint8_t);
+    core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___136___usize__90(&buffers.data[i0],
+        (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)0U, .end = len })),
+      core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[i0],
+        (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = start, .end = start + len })));
     buffers.data[i0].data[len] = 31U;
     size_t uu____0 = i0;
     size_t uu____1 = (size_t)136U - (size_t)1U;
@@ -1353,47 +474,296 @@ load_last_22(Eurydice_arr_c40 *state, const Eurydice_arr_68 *blocks, size_t star
         Eurydice_array_to_slice_shared_58(&buffers.data[3U])
       }
     };
-  load_block_b2(state, &lvalue, (size_t)0U);
+  load_block___136___usize_(state, &lvalue, (size_t)0U);
 }
 
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.load_last
-with const generics
-- RATE= 168
-- DELIMITER= 31
-*/
-static KRML_MUSTINLINE void
-load_last_37(Eurydice_arr_c40 *state, const Eurydice_arr_68 *blocks, size_t start, size_t len)
+static KRML_MUSTINLINE __m256i _veorq_n_u64(__m256i a, uint64_t c)
 {
-  Eurydice_arr_9c
-  buffers =
-    { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
-  KRML_MAYBE_FOR4(i,
-    (size_t)0U,
-    (size_t)4U,
-    (size_t)1U,
-    size_t i0 = i;
-    Eurydice_slice_copy(Eurydice_array_to_subslice_mut_d41(&buffers.data[i0],
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = len })),
-      Eurydice_slice_subslice_shared_c8(blocks->data[i0],
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = start, .end = start + len })),
-      uint8_t);
-    buffers.data[i0].data[len] = 31U;
-    size_t uu____0 = i0;
-    size_t uu____1 = (size_t)168U - (size_t)1U;
-    buffers.data[uu____0].data[uu____1] = (uint32_t)buffers.data[uu____0].data[uu____1] | 128U;);
-  /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_68
-  lvalue =
-    {
-      .data = {
-        Eurydice_array_to_slice_shared_2c(buffers.data),
-        Eurydice_array_to_slice_shared_2c(&buffers.data[1U]),
-        Eurydice_array_to_slice_shared_2c(&buffers.data[2U]),
-        Eurydice_array_to_slice_shared_2c(&buffers.data[3U])
-      }
-    };
-  load_block_60(state, &lvalue, (size_t)0U);
+  __m256i c0 = mm256_set1_epi64x((int64_t)c);
+  return mm256_xor_si256(a, c0);
+}
+
+static KRML_MUSTINLINE __m256i _vbcaxq_u64(__m256i a, __m256i b, __m256i c)
+{
+  return mm256_xor_si256(a, mm256_andnot_si256(c, b));
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___39___i32__25___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___39___i32_(x), mm256_srli_epi64___25___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___39___i32__25___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___39___i32__25___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___27___i32__37___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___27___i32_(x), mm256_srli_epi64___37___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___27___i32__37___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___27___i32__37___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___20___i32__44___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___20___i32_(x), mm256_srli_epi64___44___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___20___i32__44___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___20___i32__44___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___14___i32__50___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___14___i32_(x), mm256_srli_epi64___50___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___14___i32__50___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___14___i32__50___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___8___i32__56___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___8___i32_(x), mm256_srli_epi64___56___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___8___i32__56___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___8___i32__56___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___56___i32__8___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___56___i32_(x), mm256_srli_epi64___8___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___56___i32__8___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___56___i32__8___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___55___i32__9___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___55___i32_(x), mm256_srli_epi64___9___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___55___i32__9___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___55___i32__9___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___28___i32__36___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___28___i32_(x), mm256_srli_epi64___36___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___28___i32__36___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___28___i32__36___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___25___i32__39___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___25___i32_(x), mm256_srli_epi64___39___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___25___i32__39___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___25___i32__39___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___21___i32__43___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___21___i32_(x), mm256_srli_epi64___43___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___21___i32__43___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___21___i32__43___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___62___i32__2___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___62___i32_(x), mm256_srli_epi64___2___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___62___i32__2___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___62___i32__2___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___61___i32__3___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___61___i32_(x), mm256_srli_epi64___3___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___61___i32__3___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___61___i32__3___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___43___i32__21___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___43___i32_(x), mm256_srli_epi64___21___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___43___i32__21___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___43___i32__21___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___15___i32__49___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___15___i32_(x), mm256_srli_epi64___49___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___15___i32__49___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___15___i32__49___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___6___i32__58___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___6___i32_(x), mm256_srli_epi64___58___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___6___i32__58___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___6___i32__58___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___45___i32__19___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___45___i32_(x), mm256_srli_epi64___19___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___45___i32__19___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___45___i32__19___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___44___i32__20___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___44___i32_(x), mm256_srli_epi64___20___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___44___i32__20___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___44___i32__20___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___10___i32__54___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___10___i32_(x), mm256_srli_epi64___54___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___10___i32__54___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___10___i32__54___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___2___i32__62___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___2___i32_(x), mm256_srli_epi64___62___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___2___i32__62___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___2___i32__62___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___1___i32__63___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___1___i32_(x), mm256_srli_epi64___63___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___1___i32__63___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___1___i32__63___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___41___i32__23___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___41___i32_(x), mm256_srli_epi64___23___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___41___i32__23___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___41___i32__23___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___36___i32__28___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___36___i32_(x), mm256_srli_epi64___28___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___36___i32__28___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___36___i32__28___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___18___i32__46___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___18___i32_(x), mm256_srli_epi64___46___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___18___i32__46___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___18___i32__46___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i rotate_left___3___i32__61___i32_(__m256i x)
+{
+  return mm256_xor_si256(mm256_slli_epi64___3___i32_(x), mm256_srli_epi64___61___i32_(x));
+}
+
+static KRML_MUSTINLINE __m256i _vxarq_u64___3___i32__61___i32_(__m256i a, __m256i b)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  return rotate_left___3___i32__61___i32_(ab);
+}
+
+static KRML_MUSTINLINE __m256i _vrax1q_u64(__m256i a, __m256i b)
+{
+  return mm256_xor_si256(a, rotate_left___1___i32__63___i32_(b));
+}
+
+static KRML_MUSTINLINE __m256i
+_veor5q_u64(__m256i a, __m256i b, __m256i c, __m256i d, __m256i e)
+{
+  __m256i ab = mm256_xor_si256(a, b);
+  __m256i cd = mm256_xor_si256(c, d);
+  __m256i abcd = mm256_xor_si256(ab, cd);
+  return mm256_xor_si256(abcd, e);
 }
 
 /**
@@ -1405,15 +775,10 @@ static KRML_MUSTINLINE __m256i zero_f5(void)
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.new_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE Eurydice_arr_c40 new_26_5d(void)
+static KRML_MUSTINLINE Eurydice_arr_c40
+new___core__core_arch__x86____m256i__4___usize__11(void)
 {
   Eurydice_arr_c40 lit;
   __m256i repeat_expression[25U];
@@ -1426,18 +791,17 @@ static KRML_MUSTINLINE Eurydice_arr_c40 new_26_5d(void)
 }
 
 /**
-This function found in impl {impl libcrux_sha3::traits::Absorb<4 : usize> for libcrux_sha3::generic_keccak::KeccakState<core::core_arch::x86::__m256i, 4 : usize>[{built_in impl core::marker::Sized for core::core_arch::x86::__m256i}, libcrux_sha3::simd::avx2::{impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.load_last_0f
-with const generics
-- RATE= 136
-- DELIMITER= 31
+This function found in impl {impl libcrux_sha3::traits::Absorb<4 : usize> for libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
 static void
-load_last_0f_22(Eurydice_arr_c40 *self, const Eurydice_arr_68 *input, size_t start, size_t len)
+load_last___136___usize__31___u8__00(
+  Eurydice_arr_c40 *self,
+  const Eurydice_arr_68 *input,
+  size_t start,
+  size_t len
+)
 {
-  load_last_22(self, input, start, len);
+  load_last___136___usize__31___u8_(self, input, start, len);
 }
 
 /**
@@ -1449,17 +813,16 @@ static KRML_MUSTINLINE __m256i xor5_f5(__m256i a, __m256i b, __m256i c, __m256i 
 }
 
 /**
-This function found in impl {impl core::ops::index::Index<(usize, usize), T> for libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {impl core::ops::index::Index<(usize, usize)> for libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.index_6a
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static const __m256i *index_6a_5d(const Eurydice_arr_c40 *self, size_t_x2 index)
+static const
+__m256i
+*index___core__core_arch__x86____m256i__4___usize__a7(
+  const Eurydice_arr_c40 *self,
+  size_t_x2 index
+)
 {
-  return get_ij_5d(self, index.fst, index.snd);
+  return get_ij___core__core_arch__x86____m256i__4___usize_(self, index.fst, index.snd);
 }
 
 /**
@@ -1471,50 +834,65 @@ static KRML_MUSTINLINE __m256i rotate_left1_and_xor_f5(__m256i a, __m256i b)
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.theta_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE arr_50 theta_26_5d(Eurydice_arr_c40 *self)
+static KRML_MUSTINLINE arr_50
+theta___core__core_arch__x86____m256i__4___usize__11(Eurydice_arr_c40 *self)
 {
   arr_50
   c =
     {
       .data = {
-        xor5_f5(index_6a_5d(self,
+        xor5_f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)0U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)0U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)0U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)0U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)0U }))[0U]),
-        xor5_f5(index_6a_5d(self,
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)0U }))[0U],
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)0U }))[0U],
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)0U }))[0U],
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)0U }))[0U]),
+        xor5_f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)1U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)1U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)1U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)1U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)1U }))[0U]),
-        xor5_f5(index_6a_5d(self,
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)1U }))[0U],
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)1U }))[0U],
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)1U }))[0U],
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)1U }))[0U]),
+        xor5_f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)2U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)2U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)2U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)2U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)2U }))[0U]),
-        xor5_f5(index_6a_5d(self,
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)2U }))[0U],
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)2U }))[0U],
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)2U }))[0U],
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)2U }))[0U]),
+        xor5_f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)3U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)3U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)3U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)3U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)3U }))[0U]),
-        xor5_f5(index_6a_5d(self,
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)3U }))[0U],
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)3U }))[0U],
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)3U }))[0U],
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)3U }))[0U]),
+        xor5_f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
             (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)4U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)4U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)4U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)4U }))[0U],
-          index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)4U }))[0U])
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)4U }))[0U],
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)4U }))[0U],
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)4U }))[0U],
+          index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)4U }))[0U])
       }
     };
   return
@@ -1537,17 +915,17 @@ static KRML_MUSTINLINE arr_50 theta_26_5d(Eurydice_arr_c40 *self)
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.set_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static void set_26_5d(Eurydice_arr_c40 *self, size_t i, size_t j, __m256i v)
+static void
+set___core__core_arch__x86____m256i__4___usize__11(
+  Eurydice_arr_c40 *self,
+  size_t i,
+  size_t j,
+  __m256i v
+)
 {
-  set_ij_5d(self, i, j, v);
+  set_ij___core__core_arch__x86____m256i__4___usize_(self, i, j, v);
 }
 
 /**
@@ -1561,98 +939,69 @@ static KRML_MUSTINLINE __m256i xor_f5(__m256i a, __m256i b)
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 36
-- RIGHT= 28
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_02(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___36___i32__28___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_02(a, b);
+  return _vxarq_u64___36___i32__28___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 3
-- RIGHT= 61
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_ac(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___3___i32__61___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_ac(a, b);
+  return _vxarq_u64___3___i32__61___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 41
-- RIGHT= 23
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_020(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___41___i32__23___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_020(a, b);
+  return _vxarq_u64___41___i32__23___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 18
-- RIGHT= 46
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_a9(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___18___i32__46___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_a9(a, b);
+  return _vxarq_u64___18___i32__46___i32_(a, b);
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.rho_0_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE void rho_0_26_5d(Eurydice_arr_c40 *self, arr_50 t)
+static KRML_MUSTINLINE void
+rho_0___core__core_arch__x86____m256i__4___usize__11(Eurydice_arr_c40 *self, arr_50 t)
 {
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)0U,
     (size_t)0U,
-    xor_f5(index_6a_5d(self,
+    xor_f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)0U }))[0U],
       t.data[0U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)1U,
     (size_t)0U,
-    xor_and_rotate_f5_02(index_6a_5d(self,
+    xor_and_rotate___36___i32__28___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)0U }))[0U],
       t.data[0U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)2U,
     (size_t)0U,
-    xor_and_rotate_f5_ac(index_6a_5d(self,
+    xor_and_rotate___3___i32__61___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)0U }))[0U],
       t.data[0U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)3U,
     (size_t)0U,
-    xor_and_rotate_f5_020(index_6a_5d(self,
+    xor_and_rotate___41___i32__23___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)0U }))[0U],
       t.data[0U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)4U,
     (size_t)0U,
-    xor_and_rotate_f5_a9(index_6a_5d(self,
+    xor_and_rotate___18___i32__46___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)0U }))[0U],
       t.data[0U]));
 }
@@ -1660,112 +1009,77 @@ static KRML_MUSTINLINE void rho_0_26_5d(Eurydice_arr_c40 *self, arr_50 t)
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 1
-- RIGHT= 63
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_76(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___1___i32__63___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_76(a, b);
+  return _vxarq_u64___1___i32__63___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 44
-- RIGHT= 20
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_58(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___44___i32__20___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_58(a, b);
+  return _vxarq_u64___44___i32__20___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 10
-- RIGHT= 54
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_e0(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___10___i32__54___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_e0(a, b);
+  return _vxarq_u64___10___i32__54___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 45
-- RIGHT= 19
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_63(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___45___i32__19___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_63(a, b);
+  return _vxarq_u64___45___i32__19___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 2
-- RIGHT= 62
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_6a(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___2___i32__62___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_6a(a, b);
+  return _vxarq_u64___2___i32__62___i32_(a, b);
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.rho_1_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE void rho_1_26_5d(Eurydice_arr_c40 *self, arr_50 t)
+static KRML_MUSTINLINE void
+rho_1___core__core_arch__x86____m256i__4___usize__11(Eurydice_arr_c40 *self, arr_50 t)
 {
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)0U,
     (size_t)1U,
-    xor_and_rotate_f5_76(index_6a_5d(self,
+    xor_and_rotate___1___i32__63___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)1U }))[0U],
       t.data[1U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)1U,
     (size_t)1U,
-    xor_and_rotate_f5_58(index_6a_5d(self,
+    xor_and_rotate___44___i32__20___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)1U }))[0U],
       t.data[1U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)2U,
     (size_t)1U,
-    xor_and_rotate_f5_e0(index_6a_5d(self,
+    xor_and_rotate___10___i32__54___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)1U }))[0U],
       t.data[1U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)3U,
     (size_t)1U,
-    xor_and_rotate_f5_63(index_6a_5d(self,
+    xor_and_rotate___45___i32__19___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)1U }))[0U],
       t.data[1U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)4U,
     (size_t)1U,
-    xor_and_rotate_f5_6a(index_6a_5d(self,
+    xor_and_rotate___2___i32__62___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)1U }))[0U],
       t.data[1U]));
 }
@@ -1773,112 +1087,77 @@ static KRML_MUSTINLINE void rho_1_26_5d(Eurydice_arr_c40 *self, arr_50 t)
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 62
-- RIGHT= 2
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_ab(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___62___i32__2___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_ab(a, b);
+  return _vxarq_u64___62___i32__2___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 6
-- RIGHT= 58
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_5b(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___6___i32__58___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_5b(a, b);
+  return _vxarq_u64___6___i32__58___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 43
-- RIGHT= 21
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_6f(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___43___i32__21___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_6f(a, b);
+  return _vxarq_u64___43___i32__21___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 15
-- RIGHT= 49
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_62(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___15___i32__49___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_62(a, b);
+  return _vxarq_u64___15___i32__49___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 61
-- RIGHT= 3
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_23(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___61___i32__3___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_23(a, b);
+  return _vxarq_u64___61___i32__3___i32_(a, b);
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.rho_2_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE void rho_2_26_5d(Eurydice_arr_c40 *self, arr_50 t)
+static KRML_MUSTINLINE void
+rho_2___core__core_arch__x86____m256i__4___usize__11(Eurydice_arr_c40 *self, arr_50 t)
 {
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)0U,
     (size_t)2U,
-    xor_and_rotate_f5_ab(index_6a_5d(self,
+    xor_and_rotate___62___i32__2___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)2U }))[0U],
       t.data[2U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)1U,
     (size_t)2U,
-    xor_and_rotate_f5_5b(index_6a_5d(self,
+    xor_and_rotate___6___i32__58___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)2U }))[0U],
       t.data[2U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)2U,
     (size_t)2U,
-    xor_and_rotate_f5_6f(index_6a_5d(self,
+    xor_and_rotate___43___i32__21___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)2U }))[0U],
       t.data[2U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)3U,
     (size_t)2U,
-    xor_and_rotate_f5_62(index_6a_5d(self,
+    xor_and_rotate___15___i32__49___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)2U }))[0U],
       t.data[2U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)4U,
     (size_t)2U,
-    xor_and_rotate_f5_23(index_6a_5d(self,
+    xor_and_rotate___61___i32__3___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)2U }))[0U],
       t.data[2U]));
 }
@@ -1886,112 +1165,77 @@ static KRML_MUSTINLINE void rho_2_26_5d(Eurydice_arr_c40 *self, arr_50 t)
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 28
-- RIGHT= 36
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_37(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___28___i32__36___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_37(a, b);
+  return _vxarq_u64___28___i32__36___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 55
-- RIGHT= 9
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_bb(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___55___i32__9___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_bb(a, b);
+  return _vxarq_u64___55___i32__9___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 25
-- RIGHT= 39
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_b9(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___25___i32__39___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_b9(a, b);
+  return _vxarq_u64___25___i32__39___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 21
-- RIGHT= 43
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_54(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___21___i32__43___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_54(a, b);
+  return _vxarq_u64___21___i32__43___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 56
-- RIGHT= 8
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_4c(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___56___i32__8___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_4c(a, b);
+  return _vxarq_u64___56___i32__8___i32_(a, b);
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.rho_3_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE void rho_3_26_5d(Eurydice_arr_c40 *self, arr_50 t)
+static KRML_MUSTINLINE void
+rho_3___core__core_arch__x86____m256i__4___usize__11(Eurydice_arr_c40 *self, arr_50 t)
 {
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)0U,
     (size_t)3U,
-    xor_and_rotate_f5_37(index_6a_5d(self,
+    xor_and_rotate___28___i32__36___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)3U }))[0U],
       t.data[3U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)1U,
     (size_t)3U,
-    xor_and_rotate_f5_bb(index_6a_5d(self,
+    xor_and_rotate___55___i32__9___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)3U }))[0U],
       t.data[3U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)2U,
     (size_t)3U,
-    xor_and_rotate_f5_b9(index_6a_5d(self,
+    xor_and_rotate___25___i32__39___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)3U }))[0U],
       t.data[3U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)3U,
     (size_t)3U,
-    xor_and_rotate_f5_54(index_6a_5d(self,
+    xor_and_rotate___21___i32__43___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)3U }))[0U],
       t.data[3U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)4U,
     (size_t)3U,
-    xor_and_rotate_f5_4c(index_6a_5d(self,
+    xor_and_rotate___56___i32__8___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)3U }))[0U],
       t.data[3U]));
 }
@@ -1999,312 +1243,281 @@ static KRML_MUSTINLINE void rho_3_26_5d(Eurydice_arr_c40 *self, arr_50 t)
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 27
-- RIGHT= 37
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_ce(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___27___i32__37___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_ce(a, b);
+  return _vxarq_u64___27___i32__37___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 20
-- RIGHT= 44
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_77(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___20___i32__44___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_77(a, b);
+  return _vxarq_u64___20___i32__44___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 39
-- RIGHT= 25
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_25(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___39___i32__25___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_25(a, b);
+  return _vxarq_u64___39___i32__25___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 8
-- RIGHT= 56
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_af(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___8___i32__56___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_af(a, b);
+  return _vxarq_u64___8___i32__56___i32_(a, b);
 }
 
 /**
 This function found in impl {impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}
 */
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.xor_and_rotate_f5
-with const generics
-- LEFT= 14
-- RIGHT= 50
-*/
-static KRML_MUSTINLINE __m256i xor_and_rotate_f5_fd(__m256i a, __m256i b)
+static KRML_MUSTINLINE __m256i xor_and_rotate___14___i32__50___i32__f5(__m256i a, __m256i b)
 {
-  return _vxarq_u64_fd(a, b);
+  return _vxarq_u64___14___i32__50___i32_(a, b);
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.rho_4_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE void rho_4_26_5d(Eurydice_arr_c40 *self, arr_50 t)
+static KRML_MUSTINLINE void
+rho_4___core__core_arch__x86____m256i__4___usize__11(Eurydice_arr_c40 *self, arr_50 t)
 {
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)0U,
     (size_t)4U,
-    xor_and_rotate_f5_ce(index_6a_5d(self,
+    xor_and_rotate___27___i32__37___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)4U }))[0U],
       t.data[4U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)1U,
     (size_t)4U,
-    xor_and_rotate_f5_77(index_6a_5d(self,
+    xor_and_rotate___20___i32__44___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)4U }))[0U],
       t.data[4U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)2U,
     (size_t)4U,
-    xor_and_rotate_f5_25(index_6a_5d(self,
+    xor_and_rotate___39___i32__25___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)4U }))[0U],
       t.data[4U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)3U,
     (size_t)4U,
-    xor_and_rotate_f5_af(index_6a_5d(self,
+    xor_and_rotate___8___i32__56___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)4U }))[0U],
       t.data[4U]));
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)4U,
     (size_t)4U,
-    xor_and_rotate_f5_fd(index_6a_5d(self,
+    xor_and_rotate___14___i32__50___i32__f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)4U }))[0U],
       t.data[4U]));
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.rho_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE void rho_26_5d(Eurydice_arr_c40 *self, arr_50 t)
+static KRML_MUSTINLINE void
+rho___core__core_arch__x86____m256i__4___usize__11(Eurydice_arr_c40 *self, arr_50 t)
 {
-  rho_0_26_5d(self, t);
-  rho_1_26_5d(self, t);
-  rho_2_26_5d(self, t);
-  rho_3_26_5d(self, t);
-  rho_4_26_5d(self, t);
+  rho_0___core__core_arch__x86____m256i__4___usize__11(self, t);
+  rho_1___core__core_arch__x86____m256i__4___usize__11(self, t);
+  rho_2___core__core_arch__x86____m256i__4___usize__11(self, t);
+  rho_3___core__core_arch__x86____m256i__4___usize__11(self, t);
+  rho_4___core__core_arch__x86____m256i__4___usize__11(self, t);
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.pi_0_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE void pi_0_26_5d(Eurydice_arr_c40 *self, Eurydice_arr_c40 old)
+static KRML_MUSTINLINE void
+pi_0___core__core_arch__x86____m256i__4___usize__11(
+  Eurydice_arr_c40 *self,
+  Eurydice_arr_c40 old
+)
 {
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)1U,
     (size_t)0U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)3U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)3U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)2U,
     (size_t)0U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)1U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)1U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)3U,
     (size_t)0U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)4U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)4U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)4U,
     (size_t)0U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)2U }))[0U]);
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)2U }))[0U]);
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.pi_1_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE void pi_1_26_5d(Eurydice_arr_c40 *self, Eurydice_arr_c40 old)
+static KRML_MUSTINLINE void
+pi_1___core__core_arch__x86____m256i__4___usize__11(
+  Eurydice_arr_c40 *self,
+  Eurydice_arr_c40 old
+)
 {
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)0U,
     (size_t)1U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)1U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)1U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)1U,
     (size_t)1U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)4U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)4U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)2U,
     (size_t)1U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)2U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)2U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)3U,
     (size_t)1U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)0U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)0U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)4U,
     (size_t)1U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)3U }))[0U]);
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)1U, .snd = (size_t)3U }))[0U]);
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.pi_2_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE void pi_2_26_5d(Eurydice_arr_c40 *self, Eurydice_arr_c40 old)
+static KRML_MUSTINLINE void
+pi_2___core__core_arch__x86____m256i__4___usize__11(
+  Eurydice_arr_c40 *self,
+  Eurydice_arr_c40 old
+)
 {
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)0U,
     (size_t)2U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)2U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)2U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)1U,
     (size_t)2U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)0U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)0U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)2U,
     (size_t)2U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)3U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)3U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)3U,
     (size_t)2U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)1U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)1U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)4U,
     (size_t)2U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)4U }))[0U]);
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)2U, .snd = (size_t)4U }))[0U]);
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.pi_3_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE void pi_3_26_5d(Eurydice_arr_c40 *self, Eurydice_arr_c40 old)
+static KRML_MUSTINLINE void
+pi_3___core__core_arch__x86____m256i__4___usize__11(
+  Eurydice_arr_c40 *self,
+  Eurydice_arr_c40 old
+)
 {
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)0U,
     (size_t)3U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)3U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)3U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)1U,
     (size_t)3U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)1U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)1U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)2U,
     (size_t)3U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)4U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)4U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)3U,
     (size_t)3U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)2U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)2U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)4U,
     (size_t)3U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)0U }))[0U]);
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)3U, .snd = (size_t)0U }))[0U]);
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.pi_4_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE void pi_4_26_5d(Eurydice_arr_c40 *self, Eurydice_arr_c40 old)
+static KRML_MUSTINLINE void
+pi_4___core__core_arch__x86____m256i__4___usize__11(
+  Eurydice_arr_c40 *self,
+  Eurydice_arr_c40 old
+)
 {
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)0U,
     (size_t)4U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)4U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)4U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)1U,
     (size_t)4U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)2U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)2U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)2U,
     (size_t)4U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)0U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)0U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)3U,
     (size_t)4U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)3U }))[0U]);
-  set_26_5d(self,
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)3U }))[0U]);
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)4U,
     (size_t)4U,
-    index_6a_5d(&old, (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)1U }))[0U]);
+    index___core__core_arch__x86____m256i__4___usize__a7(&old,
+      (KRML_CLITERAL(size_t_x2){ .fst = (size_t)4U, .snd = (size_t)1U }))[0U]);
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.pi_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE void pi_26_5d(Eurydice_arr_c40 *self)
+static KRML_MUSTINLINE void
+pi___core__core_arch__x86____m256i__4___usize__11(Eurydice_arr_c40 *self)
 {
   Eurydice_arr_c40 old = self[0U];
-  pi_0_26_5d(self, old);
-  pi_1_26_5d(self, old);
-  pi_2_26_5d(self, old);
-  pi_3_26_5d(self, old);
-  pi_4_26_5d(self, old);
+  pi_0___core__core_arch__x86____m256i__4___usize__11(self, old);
+  pi_1___core__core_arch__x86____m256i__4___usize__11(self, old);
+  pi_2___core__core_arch__x86____m256i__4___usize__11(self, old);
+  pi_3___core__core_arch__x86____m256i__4___usize__11(self, old);
+  pi_4___core__core_arch__x86____m256i__4___usize__11(self, old);
 }
 
 /**
@@ -2316,15 +1529,10 @@ static KRML_MUSTINLINE __m256i and_not_xor_f5(__m256i a, __m256i b, __m256i c)
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.chi_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE void chi_26_5d(Eurydice_arr_c40 *self)
+static KRML_MUSTINLINE void
+chi___core__core_arch__x86____m256i__4___usize__11(Eurydice_arr_c40 *self)
 {
   Eurydice_arr_c40 old = self[0U];
   KRML_MAYBE_FOR5(i0,
@@ -2337,13 +1545,14 @@ static KRML_MUSTINLINE void chi_26_5d(Eurydice_arr_c40 *self)
       (size_t)5U,
       (size_t)1U,
       size_t j = i;
-      set_26_5d(self,
+      set___core__core_arch__x86____m256i__4___usize__11(self,
         i1,
         j,
-        and_not_xor_f5(index_6a_5d(self, (KRML_CLITERAL(size_t_x2){ .fst = i1, .snd = j }))[0U],
-          index_6a_5d(&old,
+        and_not_xor_f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
+            (KRML_CLITERAL(size_t_x2){ .fst = i1, .snd = j }))[0U],
+          index___core__core_arch__x86____m256i__4___usize__a7(&old,
             (KRML_CLITERAL(size_t_x2){ .fst = i1, .snd = (j + (size_t)2U) % (size_t)5U }))[0U],
-          index_6a_5d(&old,
+          index___core__core_arch__x86____m256i__4___usize__a7(&old,
             (KRML_CLITERAL(size_t_x2){ .fst = i1, .snd = (j + (size_t)1U) % (size_t)5U }))[0U]));););
 }
 
@@ -2356,79 +1565,56 @@ static KRML_MUSTINLINE __m256i xor_constant_f5(__m256i a, uint64_t c)
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.iota_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE void iota_26_5d(Eurydice_arr_c40 *self, size_t i)
+static KRML_MUSTINLINE void
+iota___core__core_arch__x86____m256i__4___usize__11(Eurydice_arr_c40 *self, size_t i)
 {
-  set_26_5d(self,
+  set___core__core_arch__x86____m256i__4___usize__11(self,
     (size_t)0U,
     (size_t)0U,
-    xor_constant_f5(index_6a_5d(self,
+    xor_constant_f5(index___core__core_arch__x86____m256i__4___usize__a7(self,
         (KRML_CLITERAL(size_t_x2){ .fst = (size_t)0U, .snd = (size_t)0U }))[0U],
       LIBCRUX_SHA3_GENERIC_KECCAK_CONSTANTS_ROUNDCONSTANTS.data[i]));
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.keccakf1600_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-*/
-static KRML_MUSTINLINE void keccakf1600_26_5d(Eurydice_arr_c40 *self)
+static KRML_MUSTINLINE void
+keccakf1600___core__core_arch__x86____m256i__4___usize__11(Eurydice_arr_c40 *self)
 {
   for (size_t i = (size_t)0U; i < (size_t)24U; i++)
   {
     size_t i0 = i;
-    arr_50 t = theta_26_5d(self);
-    rho_26_5d(self, t);
-    pi_26_5d(self);
-    chi_26_5d(self);
-    iota_26_5d(self, i0);
+    arr_50 t = theta___core__core_arch__x86____m256i__4___usize__11(self);
+    rho___core__core_arch__x86____m256i__4___usize__11(self, t);
+    pi___core__core_arch__x86____m256i__4___usize__11(self);
+    chi___core__core_arch__x86____m256i__4___usize__11(self);
+    iota___core__core_arch__x86____m256i__4___usize__11(self, i0);
   }
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.absorb_final_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-- RATE= 136
-- DELIM= 31
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
 static KRML_MUSTINLINE void
-absorb_final_26_af(
+absorb_final___core__core_arch__x86____m256i__4___usize__136___usize__31___u8__11(
   Eurydice_arr_c40 *self,
   const Eurydice_arr_68 *input,
   size_t start,
   size_t len
 )
 {
-  load_last_0f_22(self, input, start, len);
-  keccakf1600_26_5d(self);
+  load_last___136___usize__31___u8__00(self, input, start, len);
+  keccakf1600___core__core_arch__x86____m256i__4___usize__11(self);
 }
 
 /**
-This function found in impl {impl libcrux_sha3::traits::Squeeze4<core::core_arch::x86::__m256i> for libcrux_sha3::generic_keccak::KeccakState<core::core_arch::x86::__m256i, 4 : usize>[{built_in impl core::marker::Sized for core::core_arch::x86::__m256i}, libcrux_sha3::simd::avx2::{impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.squeeze4_f3
-with const generics
-- RATE= 136
+This function found in impl {impl libcrux_sha3::traits::Squeeze4<core::core_arch::x86::__m256i> for libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
 static void
-squeeze4_f3_b2(
+squeeze4___136___usize__bf(
   const Eurydice_arr_c40 *self,
   Eurydice_mut_borrow_slice_u8 out0,
   Eurydice_mut_borrow_slice_u8 out1,
@@ -2438,48 +1624,38 @@ squeeze4_f3_b2(
   size_t len
 )
 {
-  store_block_b2(self, out0, out1, out2, out3, start, len);
+  store_block___136___usize_(self, out0, out1, out2, out3, start, len);
 }
 
 /**
-This function found in impl {impl libcrux_sha3::traits::Absorb<4 : usize> for libcrux_sha3::generic_keccak::KeccakState<core::core_arch::x86::__m256i, 4 : usize>[{built_in impl core::marker::Sized for core::core_arch::x86::__m256i}, libcrux_sha3::simd::avx2::{impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.load_block_0f
-with const generics
-- RATE= 136
+This function found in impl {impl libcrux_sha3::traits::Absorb<4 : usize> for libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
 static void
-load_block_0f_b2(Eurydice_arr_c40 *self, const Eurydice_arr_68 *input, size_t start)
+load_block___136___usize__00(
+  Eurydice_arr_c40 *self,
+  const Eurydice_arr_68 *input,
+  size_t start
+)
 {
-  load_block_b2(self, input, start);
+  load_block___136___usize_(self, input, start);
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.absorb_block_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-- RATE= 136
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
 static KRML_MUSTINLINE void
-absorb_block_26_48(Eurydice_arr_c40 *self, const Eurydice_arr_68 *input, size_t start)
+absorb_block___core__core_arch__x86____m256i__4___usize__136___usize__11(
+  Eurydice_arr_c40 *self,
+  const Eurydice_arr_68 *input,
+  size_t start
+)
 {
-  load_block_0f_b2(self, input, start);
-  keccakf1600_26_5d(self);
+  load_block___136___usize__00(self, input, start);
+  keccakf1600___core__core_arch__x86____m256i__4___usize__11(self);
 }
 
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.simd256.keccak4
-with const generics
-- RATE= 136
-- DELIM= 31
-*/
 static KRML_MUSTINLINE void
-keccak4_22(
+keccak4___136___usize__31___u8_(
   const Eurydice_arr_68 *data,
   Eurydice_mut_borrow_slice_u8 out0,
   Eurydice_mut_borrow_slice_u8 out1,
@@ -2487,56 +1663,71 @@ keccak4_22(
   Eurydice_mut_borrow_slice_u8 out3
 )
 {
-  Eurydice_arr_c40 s = new_26_5d();
-  size_t data_len = data->data->meta;
-  core_ops_range_Range_87
-  iter =
-    core_iter_traits_collect__impl_core__iter__traits__collect__IntoIterator_Clause1_Item__I__for_I__into_iter((
-        KRML_CLITERAL(core_ops_range_Range_87){
+  Eurydice_arr_c40 s = new___core__core_arch__x86____m256i__4___usize__11();
+  size_t data_len = core_slice_len___u8__ea(data->data[0U]);
+  core_ops_range_Range___usize_
+  iter0 =
+    core_iter_traits_collect_into_iter___core__ops__range__Range___usize___4e((
+        KRML_CLITERAL(core_ops_range_Range___usize_){
           .start = (size_t)0U,
           .end = data_len / (size_t)136U
         }
-      ),
-      core_ops_range_Range_87,
-      size_t,
-      core_ops_range_Range_87);
+      ));
   while (true)
   {
-    core_option_Option_87
-    uu____0 =
-      core_iter_range__impl_core__iter__traits__iterator__Iterator_A__for_core__ops__range__Range_A___TraitClause0___next(&iter,
-        size_t,
-        core_option_Option_87);
+    core_option_Option___usize_ uu____0 = core_iter_range_next___usize__dc(&iter0);
     if (uu____0.tag == core_option_None)
     {
       size_t rem = data_len % (size_t)136U;
-      absorb_final_26_af(&s, data, data_len - rem, rem);
-      size_t outlen = out0.meta;
+      absorb_final___core__core_arch__x86____m256i__4___usize__136___usize__31___u8__11(&s,
+        data,
+        data_len - rem,
+        rem);
+      size_t
+      outlen =
+        core_slice_len___u8__ea((
+            KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = out0.ptr, .meta = out0.meta }
+          ));
       size_t blocks = outlen / (size_t)136U;
       size_t last = outlen - outlen % (size_t)136U;
       if (blocks == (size_t)0U)
       {
-        squeeze4_f3_b2(&s, out0, out1, out2, out3, (size_t)0U, outlen);
+        squeeze4___136___usize__bf(&s, out0, out1, out2, out3, (size_t)0U, outlen);
       }
       else
       {
-        squeeze4_f3_b2(&s, out0, out1, out2, out3, (size_t)0U, (size_t)136U);
-        for (size_t i = (size_t)1U; i < blocks; i++)
+        squeeze4___136___usize__bf(&s, out0, out1, out2, out3, (size_t)0U, (size_t)136U);
+        core_ops_range_Range___usize_
+        iter =
+          core_iter_traits_collect_into_iter___core__ops__range__Range___usize___4e((
+              KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)1U, .end = blocks }
+            ));
+        while (true)
         {
-          size_t i0 = i;
-          keccakf1600_26_5d(&s);
-          squeeze4_f3_b2(&s, out0, out1, out2, out3, i0 * (size_t)136U, (size_t)136U);
+          core_option_Option___usize_ uu____1 = core_iter_range_next___usize__dc(&iter);
+          if (uu____1.tag == core_option_None)
+          {
+            break;
+          }
+          else
+          {
+            size_t i = uu____1.f0;
+            keccakf1600___core__core_arch__x86____m256i__4___usize__11(&s);
+            squeeze4___136___usize__bf(&s, out0, out1, out2, out3, i * (size_t)136U, (size_t)136U);
+          }
         }
         if (last < outlen)
         {
-          keccakf1600_26_5d(&s);
-          squeeze4_f3_b2(&s, out0, out1, out2, out3, last, outlen - last);
+          keccakf1600___core__core_arch__x86____m256i__4___usize__11(&s);
+          squeeze4___136___usize__bf(&s, out0, out1, out2, out3, last, outlen - last);
         }
       }
       return;
     }
     size_t i = uu____0.f0;
-    absorb_block_26_48(&s, data, i * (size_t)136U);
+    absorb_block___core__core_arch__x86____m256i__4___usize__136___usize__11(&s,
+      data,
+      i * (size_t)136U);
   }
   KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
   KRML_HOST_EXIT(255U);
@@ -2559,7 +1750,7 @@ libcrux_sha3_avx2_x4_shake256(
 {
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_68 lvalue = { .data = { input0, input1, input2, input3 } };
-  keccak4_22(&lvalue, out0, out1, out2, out3);
+  keccak4___136___usize__31___u8_(&lvalue, out0, out1, out2, out3);
 }
 
 /**
@@ -2567,45 +1758,229 @@ libcrux_sha3_avx2_x4_shake256(
 */
 Eurydice_arr_c40 libcrux_sha3_avx2_x4_incremental_init(void)
 {
-  return new_26_5d();
+  return new___core__core_arch__x86____m256i__4___usize__11();
+}
+
+static KRML_MUSTINLINE void
+load_block___168___usize_(
+  Eurydice_arr_c40 *state,
+  const Eurydice_arr_68 *blocks,
+  size_t offset
+)
+{
+  for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)32U; i++)
+  {
+    size_t i4 = i;
+    size_t start = offset + (size_t)32U * i4;
+    __m256i
+    v00 =
+      mm256_loadu_si256_u8(core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[0U],
+          (
+            KRML_CLITERAL(core_ops_range_Range___usize_){
+              .start = start,
+              .end = start + (size_t)32U
+            }
+          )));
+    __m256i
+    v10 =
+      mm256_loadu_si256_u8(core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[1U],
+          (
+            KRML_CLITERAL(core_ops_range_Range___usize_){
+              .start = start,
+              .end = start + (size_t)32U
+            }
+          )));
+    __m256i
+    v20 =
+      mm256_loadu_si256_u8(core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[2U],
+          (
+            KRML_CLITERAL(core_ops_range_Range___usize_){
+              .start = start,
+              .end = start + (size_t)32U
+            }
+          )));
+    __m256i
+    v30 =
+      mm256_loadu_si256_u8(core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[3U],
+          (
+            KRML_CLITERAL(core_ops_range_Range___usize_){
+              .start = start,
+              .end = start + (size_t)32U
+            }
+          )));
+    __m256i v0l = mm256_unpacklo_epi64(v00, v10);
+    __m256i v1h = mm256_unpackhi_epi64(v00, v10);
+    __m256i v2l = mm256_unpacklo_epi64(v20, v30);
+    __m256i v3h = mm256_unpackhi_epi64(v20, v30);
+    __m256i v0 = mm256_permute2x128_si256___32___i32_(v0l, v2l);
+    __m256i v1 = mm256_permute2x128_si256___32___i32_(v1h, v3h);
+    __m256i v2 = mm256_permute2x128_si256___49___i32_(v0l, v2l);
+    __m256i v3 = mm256_permute2x128_si256___49___i32_(v1h, v3h);
+    size_t i0 = (size_t)4U * i4 / (size_t)5U;
+    size_t j0 = (size_t)4U * i4 % (size_t)5U;
+    size_t i1 = ((size_t)4U * i4 + (size_t)1U) / (size_t)5U;
+    size_t j1 = ((size_t)4U * i4 + (size_t)1U) % (size_t)5U;
+    size_t i2 = ((size_t)4U * i4 + (size_t)2U) / (size_t)5U;
+    size_t j2 = ((size_t)4U * i4 + (size_t)2U) % (size_t)5U;
+    size_t i3 = ((size_t)4U * i4 + (size_t)3U) / (size_t)5U;
+    size_t j3 = ((size_t)4U * i4 + (size_t)3U) % (size_t)5U;
+    set_ij___core__core_arch__x86____m256i__4___usize_(state,
+      i0,
+      j0,
+      mm256_xor_si256(get_ij___core__core_arch__x86____m256i__4___usize_(state, i0, j0)[0U], v0));
+    set_ij___core__core_arch__x86____m256i__4___usize_(state,
+      i1,
+      j1,
+      mm256_xor_si256(get_ij___core__core_arch__x86____m256i__4___usize_(state, i1, j1)[0U], v1));
+    set_ij___core__core_arch__x86____m256i__4___usize_(state,
+      i2,
+      j2,
+      mm256_xor_si256(get_ij___core__core_arch__x86____m256i__4___usize_(state, i2, j2)[0U], v2));
+    set_ij___core__core_arch__x86____m256i__4___usize_(state,
+      i3,
+      j3,
+      mm256_xor_si256(get_ij___core__core_arch__x86____m256i__4___usize_(state, i3, j3)[0U], v3));
+  }
+  size_t rem = (size_t)168U % (size_t)32U;
+  size_t start = offset + (size_t)32U * ((size_t)168U / (size_t)32U);
+  Eurydice_arr_ec u8s = { .data = { 0U } };
+  core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___32___usize__c1(&u8s,
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)0U, .end = (size_t)8U })),
+    core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[0U],
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = start, .end = start + (size_t)8U })));
+  core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___32___usize__c1(&u8s,
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)8U, .end = (size_t)16U })),
+    core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[1U],
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = start, .end = start + (size_t)8U })));
+  core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___32___usize__c1(&u8s,
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)16U, .end = (size_t)24U })),
+    core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[2U],
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = start, .end = start + (size_t)8U })));
+  core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___32___usize__c1(&u8s,
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)24U, .end = (size_t)32U })),
+    core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[3U],
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = start, .end = start + (size_t)8U })));
+  __m256i u = mm256_loadu_si256_u8(core_array_as_slice___u8__32___usize__43(&u8s));
+  size_t i0 = (size_t)4U * ((size_t)168U / (size_t)32U) / (size_t)5U;
+  size_t j0 = (size_t)4U * ((size_t)168U / (size_t)32U) % (size_t)5U;
+  set_ij___core__core_arch__x86____m256i__4___usize_(state,
+    i0,
+    j0,
+    mm256_xor_si256(get_ij___core__core_arch__x86____m256i__4___usize_(state, i0, j0)[0U], u));
+  if (rem == (size_t)16U)
+  {
+    Eurydice_arr_ec u8s0 = { .data = { 0U } };
+    core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___32___usize__c1(&u8s0,
+        (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)0U, .end = (size_t)8U })),
+      core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[0U],
+        (
+          KRML_CLITERAL(core_ops_range_Range___usize_){
+            .start = start + (size_t)8U,
+            .end = start + (size_t)16U
+          }
+        )));
+    core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___32___usize__c1(&u8s0,
+        (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)8U, .end = (size_t)16U })),
+      core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[1U],
+        (
+          KRML_CLITERAL(core_ops_range_Range___usize_){
+            .start = start + (size_t)8U,
+            .end = start + (size_t)16U
+          }
+        )));
+    core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___32___usize__c1(&u8s0,
+        (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)16U, .end = (size_t)24U })),
+      core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[2U],
+        (
+          KRML_CLITERAL(core_ops_range_Range___usize_){
+            .start = start + (size_t)8U,
+            .end = start + (size_t)16U
+          }
+        )));
+    core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___32___usize__c1(&u8s0,
+        (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)24U, .end = (size_t)32U })),
+      core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[3U],
+        (
+          KRML_CLITERAL(core_ops_range_Range___usize_){
+            .start = start + (size_t)8U,
+            .end = start + (size_t)16U
+          }
+        )));
+    __m256i u0 = mm256_loadu_si256_u8(core_array_as_slice___u8__32___usize__43(&u8s0));
+    size_t i = ((size_t)4U * ((size_t)168U / (size_t)32U) + (size_t)1U) / (size_t)5U;
+    size_t j = ((size_t)4U * ((size_t)168U / (size_t)32U) + (size_t)1U) % (size_t)5U;
+    set_ij___core__core_arch__x86____m256i__4___usize_(state,
+      i,
+      j,
+      mm256_xor_si256(get_ij___core__core_arch__x86____m256i__4___usize_(state, i, j)[0U], u0));
+  }
+}
+
+static KRML_MUSTINLINE void
+load_last___168___usize__31___u8_(
+  Eurydice_arr_c40 *state,
+  const Eurydice_arr_68 *blocks,
+  size_t start,
+  size_t len
+)
+{
+  Eurydice_arr_9c
+  buffers =
+    { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
+  KRML_MAYBE_FOR4(i,
+    (size_t)0U,
+    (size_t)4U,
+    (size_t)1U,
+    size_t i0 = i;
+    core_slice_copy_from_slice___u8__ea(core_array_index_mut___u8__core__ops__range__Range___usize___168___usize__a8(&buffers.data[i0],
+        (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)0U, .end = len })),
+      core_slice_index_index___u8__core__ops__range__Range___usize___46(blocks->data[i0],
+        (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = start, .end = start + len })));
+    buffers.data[i0].data[len] = 31U;
+    size_t uu____0 = i0;
+    size_t uu____1 = (size_t)168U - (size_t)1U;
+    buffers.data[uu____0].data[uu____1] = (uint32_t)buffers.data[uu____0].data[uu____1] | 128U;);
+  /* original Rust expression is not an lvalue in C */
+  Eurydice_arr_68
+  lvalue =
+    {
+      .data = {
+        Eurydice_array_to_slice_shared_2c(buffers.data),
+        Eurydice_array_to_slice_shared_2c(&buffers.data[1U]),
+        Eurydice_array_to_slice_shared_2c(&buffers.data[2U]),
+        Eurydice_array_to_slice_shared_2c(&buffers.data[3U])
+      }
+    };
+  load_block___168___usize_(state, &lvalue, (size_t)0U);
 }
 
 /**
-This function found in impl {impl libcrux_sha3::traits::Absorb<4 : usize> for libcrux_sha3::generic_keccak::KeccakState<core::core_arch::x86::__m256i, 4 : usize>[{built_in impl core::marker::Sized for core::core_arch::x86::__m256i}, libcrux_sha3::simd::avx2::{impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.load_last_0f
-with const generics
-- RATE= 168
-- DELIMITER= 31
+This function found in impl {impl libcrux_sha3::traits::Absorb<4 : usize> for libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
 static void
-load_last_0f_37(Eurydice_arr_c40 *self, const Eurydice_arr_68 *input, size_t start, size_t len)
-{
-  load_last_37(self, input, start, len);
-}
-
-/**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<T, N>[@TraitClause0, @TraitClause1]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.absorb_final_26
-with types core_core_arch_x86___m256i
-with const generics
-- N= 4
-- RATE= 168
-- DELIM= 31
-*/
-static KRML_MUSTINLINE void
-absorb_final_26_af0(
+load_last___168___usize__31___u8__00(
   Eurydice_arr_c40 *self,
   const Eurydice_arr_68 *input,
   size_t start,
   size_t len
 )
 {
-  load_last_0f_37(self, input, start, len);
-  keccakf1600_26_5d(self);
+  load_last___168___usize__31___u8_(self, input, start, len);
+}
+
+/**
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
+*/
+static KRML_MUSTINLINE void
+absorb_final___core__core_arch__x86____m256i__4___usize__168___usize__31___u8__11(
+  Eurydice_arr_c40 *self,
+  const Eurydice_arr_68 *input,
+  size_t start,
+  size_t len
+)
+{
+  load_last___168___usize__31___u8__00(self, input, start, len);
+  keccakf1600___core__core_arch__x86____m256i__4___usize__11(self);
 }
 
 /**
@@ -2622,108 +1997,261 @@ libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
 {
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_68 lvalue = { .data = { data0, data1, data2, data3 } };
-  absorb_final_26_af0(s, &lvalue, (size_t)0U, data0.meta);
+  const Eurydice_arr_68 *uu____0 = &lvalue;
+  absorb_final___core__core_arch__x86____m256i__4___usize__168___usize__31___u8__11(s,
+    uu____0,
+    (size_t)0U,
+    core_slice_len___u8__ea(data0));
 }
 
-/**
- Absorb
-*/
-KRML_MUSTINLINE void
-libcrux_sha3_avx2_x4_incremental_shake256_absorb_final(
-  Eurydice_arr_c40 *s,
-  Eurydice_borrow_slice_u8 data0,
-  Eurydice_borrow_slice_u8 data1,
-  Eurydice_borrow_slice_u8 data2,
-  Eurydice_borrow_slice_u8 data3
-)
-{
-  /* original Rust expression is not an lvalue in C */
-  Eurydice_arr_68 lvalue = { .data = { data0, data1, data2, data3 } };
-  absorb_final_26_af(s, &lvalue, (size_t)0U, data0.meta);
-}
-
-/**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<core::core_arch::x86::__m256i, 4 : usize>[{built_in impl core::marker::Sized for core::core_arch::x86::__m256i}, libcrux_sha3::simd::avx2::{impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.simd256.squeeze_first_block_a8
-with const generics
-- RATE= 136
-*/
 static KRML_MUSTINLINE void
-squeeze_first_block_a8_b2(
-  const Eurydice_arr_c40 *self,
-  Eurydice_mut_borrow_slice_u8 out0,
-  Eurydice_mut_borrow_slice_u8 out1,
-  Eurydice_mut_borrow_slice_u8 out2,
-  Eurydice_mut_borrow_slice_u8 out3
-)
-{
-  squeeze4_f3_b2(self, out0, out1, out2, out3, (size_t)0U, (size_t)136U);
-}
-
-/**
- Squeeze block
-*/
-KRML_MUSTINLINE void
-libcrux_sha3_avx2_x4_incremental_shake256_squeeze_first_block(
-  Eurydice_arr_c40 *s,
-  Eurydice_mut_borrow_slice_u8 out0,
-  Eurydice_mut_borrow_slice_u8 out1,
-  Eurydice_mut_borrow_slice_u8 out2,
-  Eurydice_mut_borrow_slice_u8 out3
-)
-{
-  squeeze_first_block_a8_b2(&s[0U], out0, out1, out2, out3);
-}
-
-/**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<core::core_arch::x86::__m256i, 4 : usize>[{built_in impl core::marker::Sized for core::core_arch::x86::__m256i}, libcrux_sha3::simd::avx2::{impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.simd256.squeeze_next_block_a8
-with const generics
-- RATE= 136
-*/
-static KRML_MUSTINLINE void
-squeeze_next_block_a8_b2(
-  Eurydice_arr_c40 *self,
+store_block___168___usize_(
+  const Eurydice_arr_c40 *s,
   Eurydice_mut_borrow_slice_u8 out0,
   Eurydice_mut_borrow_slice_u8 out1,
   Eurydice_mut_borrow_slice_u8 out2,
   Eurydice_mut_borrow_slice_u8 out3,
-  size_t start
+  size_t start,
+  size_t len
 )
 {
-  keccakf1600_26_5d(self);
-  squeeze4_f3_b2(self, out0, out1, out2, out3, start, (size_t)136U);
+  size_t chunks = len / (size_t)32U;
+  core_ops_range_Range___usize_
+  iter0 =
+    core_iter_traits_collect_into_iter___core__ops__range__Range___usize___4e((
+        KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)0U, .end = chunks }
+      ));
+  while (true)
+  {
+    core_option_Option___usize_ uu____0 = core_iter_range_next___usize__dc(&iter0);
+    if (uu____0.tag == core_option_None)
+    {
+      size_t rem = len % (size_t)32U;
+      if (rem > (size_t)0U)
+      {
+        size_t start0 = start + (size_t)32U * chunks;
+        Eurydice_arr_ec u8s = { .data = { 0U } };
+        size_t chunks8 = rem / (size_t)8U;
+        core_ops_range_Range___usize_
+        iter =
+          core_iter_traits_collect_into_iter___core__ops__range__Range___usize___4e((
+              KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)0U, .end = chunks8 }
+            ));
+        while (true)
+        {
+          core_option_Option___usize_ uu____1 = core_iter_range_next___usize__dc(&iter);
+          if (uu____1.tag == core_option_None)
+          {
+            break;
+          }
+          else
+          {
+            size_t k = uu____1.f0;
+            size_t i = ((size_t)4U * chunks + k) / (size_t)5U;
+            size_t j = ((size_t)4U * chunks + k) % (size_t)5U;
+            Eurydice_mut_borrow_slice_u8 uu____2 = Eurydice_array_to_slice_mut_01(&u8s);
+            mm256_storeu_si256_u8(uu____2,
+              get_ij___core__core_arch__x86____m256i__4___usize_(s, i, j)[0U]);
+            core_slice_copy_from_slice___u8__ea(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out0,
+                (
+                  KRML_CLITERAL(core_ops_range_Range___usize_){
+                    .start = start0 + (size_t)8U * k,
+                    .end = start0 + (size_t)8U * (k + (size_t)1U)
+                  }
+                )),
+              core_array_index___u8__core__ops__range__Range___usize___32___usize__5c(&u8s,
+                (
+                  KRML_CLITERAL(core_ops_range_Range___usize_){
+                    .start = (size_t)0U,
+                    .end = (size_t)8U
+                  }
+                )));
+            core_slice_copy_from_slice___u8__ea(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out1,
+                (
+                  KRML_CLITERAL(core_ops_range_Range___usize_){
+                    .start = start0 + (size_t)8U * k,
+                    .end = start0 + (size_t)8U * (k + (size_t)1U)
+                  }
+                )),
+              core_array_index___u8__core__ops__range__Range___usize___32___usize__5c(&u8s,
+                (
+                  KRML_CLITERAL(core_ops_range_Range___usize_){
+                    .start = (size_t)8U,
+                    .end = (size_t)16U
+                  }
+                )));
+            core_slice_copy_from_slice___u8__ea(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out2,
+                (
+                  KRML_CLITERAL(core_ops_range_Range___usize_){
+                    .start = start0 + (size_t)8U * k,
+                    .end = start0 + (size_t)8U * (k + (size_t)1U)
+                  }
+                )),
+              core_array_index___u8__core__ops__range__Range___usize___32___usize__5c(&u8s,
+                (
+                  KRML_CLITERAL(core_ops_range_Range___usize_){
+                    .start = (size_t)16U,
+                    .end = (size_t)24U
+                  }
+                )));
+            core_slice_copy_from_slice___u8__ea(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out3,
+                (
+                  KRML_CLITERAL(core_ops_range_Range___usize_){
+                    .start = start0 + (size_t)8U * k,
+                    .end = start0 + (size_t)8U * (k + (size_t)1U)
+                  }
+                )),
+              core_array_index___u8__core__ops__range__Range___usize___32___usize__5c(&u8s,
+                (
+                  KRML_CLITERAL(core_ops_range_Range___usize_){
+                    .start = (size_t)24U,
+                    .end = (size_t)32U
+                  }
+                )));
+          }
+        }
+        size_t rem8 = rem % (size_t)8U;
+        if (rem8 > (size_t)0U)
+        {
+          size_t i = ((size_t)4U * chunks + chunks8) / (size_t)5U;
+          size_t j = ((size_t)4U * chunks + chunks8) % (size_t)5U;
+          Eurydice_mut_borrow_slice_u8 uu____3 = Eurydice_array_to_slice_mut_01(&u8s);
+          mm256_storeu_si256_u8(uu____3,
+            get_ij___core__core_arch__x86____m256i__4___usize_(s, i, j)[0U]);
+          core_slice_copy_from_slice___u8__ea(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out0,
+              (
+                KRML_CLITERAL(core_ops_range_Range___usize_){
+                  .start = start0 + len - rem8,
+                  .end = start0 + len
+                }
+              )),
+            core_array_index___u8__core__ops__range__Range___usize___32___usize__5c(&u8s,
+              (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)0U, .end = rem8 })));
+          core_slice_copy_from_slice___u8__ea(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out1,
+              (
+                KRML_CLITERAL(core_ops_range_Range___usize_){
+                  .start = start0 + len - rem8,
+                  .end = start0 + len
+                }
+              )),
+            core_array_index___u8__core__ops__range__Range___usize___32___usize__5c(&u8s,
+              (
+                KRML_CLITERAL(core_ops_range_Range___usize_){
+                  .start = (size_t)8U,
+                  .end = (size_t)8U + rem8
+                }
+              )));
+          core_slice_copy_from_slice___u8__ea(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out2,
+              (
+                KRML_CLITERAL(core_ops_range_Range___usize_){
+                  .start = start0 + len - rem8,
+                  .end = start0 + len
+                }
+              )),
+            core_array_index___u8__core__ops__range__Range___usize___32___usize__5c(&u8s,
+              (
+                KRML_CLITERAL(core_ops_range_Range___usize_){
+                  .start = (size_t)16U,
+                  .end = (size_t)16U + rem8
+                }
+              )));
+          core_slice_copy_from_slice___u8__ea(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out3,
+              (
+                KRML_CLITERAL(core_ops_range_Range___usize_){
+                  .start = start0 + len - rem8,
+                  .end = start0 + len
+                }
+              )),
+            core_array_index___u8__core__ops__range__Range___usize___32___usize__5c(&u8s,
+              (
+                KRML_CLITERAL(core_ops_range_Range___usize_){
+                  .start = (size_t)24U,
+                  .end = (size_t)24U + rem8
+                }
+              )));
+        }
+      }
+      return;
+    }
+    size_t i = uu____0.f0;
+    size_t i0 = (size_t)4U * i / (size_t)5U;
+    size_t j0 = (size_t)4U * i % (size_t)5U;
+    size_t i1 = ((size_t)4U * i + (size_t)1U) / (size_t)5U;
+    size_t j1 = ((size_t)4U * i + (size_t)1U) % (size_t)5U;
+    size_t i2 = ((size_t)4U * i + (size_t)2U) / (size_t)5U;
+    size_t j2 = ((size_t)4U * i + (size_t)2U) % (size_t)5U;
+    size_t i3 = ((size_t)4U * i + (size_t)3U) / (size_t)5U;
+    size_t j3 = ((size_t)4U * i + (size_t)3U) % (size_t)5U;
+    __m256i
+    v0l =
+      mm256_permute2x128_si256___32___i32_(get_ij___core__core_arch__x86____m256i__4___usize_(s,
+          i0,
+          j0)[0U],
+        get_ij___core__core_arch__x86____m256i__4___usize_(s, i2, j2)[0U]);
+    __m256i
+    v1h =
+      mm256_permute2x128_si256___32___i32_(get_ij___core__core_arch__x86____m256i__4___usize_(s,
+          i1,
+          j1)[0U],
+        get_ij___core__core_arch__x86____m256i__4___usize_(s, i3, j3)[0U]);
+    __m256i
+    v2l =
+      mm256_permute2x128_si256___49___i32_(get_ij___core__core_arch__x86____m256i__4___usize_(s,
+          i0,
+          j0)[0U],
+        get_ij___core__core_arch__x86____m256i__4___usize_(s, i2, j2)[0U]);
+    __m256i
+    v3h =
+      mm256_permute2x128_si256___49___i32_(get_ij___core__core_arch__x86____m256i__4___usize_(s,
+          i1,
+          j1)[0U],
+        get_ij___core__core_arch__x86____m256i__4___usize_(s, i3, j3)[0U]);
+    __m256i v0 = mm256_unpacklo_epi64(v0l, v1h);
+    __m256i v1 = mm256_unpackhi_epi64(v0l, v1h);
+    __m256i v2 = mm256_unpacklo_epi64(v2l, v3h);
+    __m256i v3 = mm256_unpackhi_epi64(v2l, v3h);
+    mm256_storeu_si256_u8(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out0,
+        (
+          KRML_CLITERAL(core_ops_range_Range___usize_){
+            .start = start + (size_t)32U * i,
+            .end = start + (size_t)32U * (i + (size_t)1U)
+          }
+        )),
+      v0);
+    mm256_storeu_si256_u8(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out1,
+        (
+          KRML_CLITERAL(core_ops_range_Range___usize_){
+            .start = start + (size_t)32U * i,
+            .end = start + (size_t)32U * (i + (size_t)1U)
+          }
+        )),
+      v1);
+    mm256_storeu_si256_u8(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out2,
+        (
+          KRML_CLITERAL(core_ops_range_Range___usize_){
+            .start = start + (size_t)32U * i,
+            .end = start + (size_t)32U * (i + (size_t)1U)
+          }
+        )),
+      v2);
+    mm256_storeu_si256_u8(core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(out3,
+        (
+          KRML_CLITERAL(core_ops_range_Range___usize_){
+            .start = start + (size_t)32U * i,
+            .end = start + (size_t)32U * (i + (size_t)1U)
+          }
+        )),
+      v3);
+  }
+  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
+  KRML_HOST_EXIT(255U);
 }
 
 /**
- Squeeze next block
-*/
-KRML_MUSTINLINE void
-libcrux_sha3_avx2_x4_incremental_shake256_squeeze_next_block(
-  Eurydice_arr_c40 *s,
-  Eurydice_mut_borrow_slice_u8 out0,
-  Eurydice_mut_borrow_slice_u8 out1,
-  Eurydice_mut_borrow_slice_u8 out2,
-  Eurydice_mut_borrow_slice_u8 out3
-)
-{
-  squeeze_next_block_a8_b2(s, out0, out1, out2, out3, (size_t)0U);
-}
-
-/**
-This function found in impl {impl libcrux_sha3::traits::Squeeze4<core::core_arch::x86::__m256i> for libcrux_sha3::generic_keccak::KeccakState<core::core_arch::x86::__m256i, 4 : usize>[{built_in impl core::marker::Sized for core::core_arch::x86::__m256i}, libcrux_sha3::simd::avx2::{impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.simd.avx2.squeeze4_f3
-with const generics
-- RATE= 168
+This function found in impl {impl libcrux_sha3::traits::Squeeze4<core::core_arch::x86::__m256i> for libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
 static void
-squeeze4_f3_60(
+squeeze4___168___usize__bf(
   const Eurydice_arr_c40 *self,
   Eurydice_mut_borrow_slice_u8 out0,
   Eurydice_mut_borrow_slice_u8 out1,
@@ -2733,19 +2261,14 @@ squeeze4_f3_60(
   size_t len
 )
 {
-  store_block_60(self, out0, out1, out2, out3, start, len);
+  store_block___168___usize_(self, out0, out1, out2, out3, start, len);
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<core::core_arch::x86::__m256i, 4 : usize>[{built_in impl core::marker::Sized for core::core_arch::x86::__m256i}, libcrux_sha3::simd::avx2::{impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.simd256.squeeze_first_three_blocks_a8
-with const generics
-- RATE= 168
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
 static KRML_MUSTINLINE void
-squeeze_first_three_blocks_a8_60(
+squeeze_first_three_blocks___168___usize__11(
   Eurydice_arr_c40 *self,
   Eurydice_mut_borrow_slice_u8 out0,
   Eurydice_mut_borrow_slice_u8 out1,
@@ -2753,11 +2276,17 @@ squeeze_first_three_blocks_a8_60(
   Eurydice_mut_borrow_slice_u8 out3
 )
 {
-  squeeze4_f3_60(self, out0, out1, out2, out3, (size_t)0U, (size_t)168U);
-  keccakf1600_26_5d(self);
-  squeeze4_f3_60(self, out0, out1, out2, out3, (size_t)168U, (size_t)168U);
-  keccakf1600_26_5d(self);
-  squeeze4_f3_60(self, out0, out1, out2, out3, (size_t)2U * (size_t)168U, (size_t)168U);
+  squeeze4___168___usize__bf(self, out0, out1, out2, out3, (size_t)0U, (size_t)168U);
+  keccakf1600___core__core_arch__x86____m256i__4___usize__11(self);
+  squeeze4___168___usize__bf(self, out0, out1, out2, out3, (size_t)168U, (size_t)168U);
+  keccakf1600___core__core_arch__x86____m256i__4___usize__11(self);
+  squeeze4___168___usize__bf(self,
+    out0,
+    out1,
+    out2,
+    out3,
+    (size_t)2U * (size_t)168U,
+    (size_t)168U);
 }
 
 /**
@@ -2772,62 +2301,14 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
   Eurydice_mut_borrow_slice_u8 out3
 )
 {
-  squeeze_first_three_blocks_a8_60(s, out0, out1, out2, out3);
+  squeeze_first_three_blocks___168___usize__11(s, out0, out1, out2, out3);
 }
 
 /**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<core::core_arch::x86::__m256i, 4 : usize>[{built_in impl core::marker::Sized for core::core_arch::x86::__m256i}, libcrux_sha3::simd::avx2::{impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.simd256.squeeze_first_five_blocks_a8
-with const generics
-- RATE= 168
+This function found in impl {libcrux_sha3::generic_keccak::KeccakState::<core::core_arch::x86::__m256i, 4 : usize>}
 */
 static KRML_MUSTINLINE void
-squeeze_first_five_blocks_a8_60(
-  Eurydice_arr_c40 *self,
-  Eurydice_mut_borrow_slice_u8 out0,
-  Eurydice_mut_borrow_slice_u8 out1,
-  Eurydice_mut_borrow_slice_u8 out2,
-  Eurydice_mut_borrow_slice_u8 out3
-)
-{
-  squeeze4_f3_60(self, out0, out1, out2, out3, (size_t)0U, (size_t)168U);
-  keccakf1600_26_5d(self);
-  squeeze4_f3_60(self, out0, out1, out2, out3, (size_t)168U, (size_t)168U);
-  keccakf1600_26_5d(self);
-  squeeze4_f3_60(self, out0, out1, out2, out3, (size_t)2U * (size_t)168U, (size_t)168U);
-  keccakf1600_26_5d(self);
-  squeeze4_f3_60(self, out0, out1, out2, out3, (size_t)3U * (size_t)168U, (size_t)168U);
-  keccakf1600_26_5d(self);
-  squeeze4_f3_60(self, out0, out1, out2, out3, (size_t)4U * (size_t)168U, (size_t)168U);
-}
-
-/**
- Squeeze five blocks
-*/
-KRML_MUSTINLINE void
-libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_five_blocks(
-  Eurydice_arr_c40 *s,
-  Eurydice_mut_borrow_slice_u8 out0,
-  Eurydice_mut_borrow_slice_u8 out1,
-  Eurydice_mut_borrow_slice_u8 out2,
-  Eurydice_mut_borrow_slice_u8 out3
-)
-{
-  squeeze_first_five_blocks_a8_60(s, out0, out1, out2, out3);
-}
-
-/**
-This function found in impl {libcrux_sha3::generic_keccak::KeccakState<core::core_arch::x86::__m256i, 4 : usize>[{built_in impl core::marker::Sized for core::core_arch::x86::__m256i}, libcrux_sha3::simd::avx2::{impl libcrux_sha3::traits::KeccakItem<4 : usize> for core::core_arch::x86::__m256i}]}
-*/
-/**
-A monomorphic instance of libcrux_sha3.generic_keccak.simd256.squeeze_next_block_a8
-with const generics
-- RATE= 168
-*/
-static KRML_MUSTINLINE void
-squeeze_next_block_a8_60(
+squeeze_next_block___168___usize__11(
   Eurydice_arr_c40 *self,
   Eurydice_mut_borrow_slice_u8 out0,
   Eurydice_mut_borrow_slice_u8 out1,
@@ -2836,8 +2317,8 @@ squeeze_next_block_a8_60(
   size_t start
 )
 {
-  keccakf1600_26_5d(self);
-  squeeze4_f3_60(self, out0, out1, out2, out3, start, (size_t)168U);
+  keccakf1600___core__core_arch__x86____m256i__4___usize__11(self);
+  squeeze4___168___usize__bf(self, out0, out1, out2, out3, start, (size_t)168U);
 }
 
 /**
@@ -2852,6 +2333,6 @@ libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
   Eurydice_mut_borrow_slice_u8 out3
 )
 {
-  squeeze_next_block_a8_60(s, out0, out1, out2, out3, (size_t)0U);
+  squeeze_next_block___168___usize__11(s, out0, out1, out2, out3, (size_t)0U);
 }
 

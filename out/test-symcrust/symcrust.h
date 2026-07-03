@@ -23,82 +23,7 @@ with const generics
 */
 typedef struct Eurydice_arr_82_s { uint16_t data[256U]; } Eurydice_arr_82;
 
-#define core_option_None 0
-#define core_option_Some 1
-
-typedef uint8_t core_option_Option_77_tags;
-
-/**
-A monomorphic instance of core.option.Option
-with types size_t
-
-*/
-typedef struct core_option_Option_87_s
-{
-  core_option_Option_77_tags tag;
-  size_t f0;
-}
-core_option_Option_87;
-
-/**
-A monomorphic instance of n-tuple
-with types size_t, core_option_Option_87
-
-*/
-typedef struct tuple_21_s
-{
-  size_t fst;
-  core_option_Option_87 snd;
-}
-tuple_21;
-
-/**
-A monomorphic instance of core.ops.range.Range
-with types size_t
-
-*/
-typedef struct core_ops_range_Range_87_s
-{
-  size_t start;
-  size_t end;
-}
-core_ops_range_Range_87;
-
-extern size_t core_clone_impls__impl_core__clone__Clone_for_usize__clone(const size_t *x0);
-
-extern uint8_t core_clone_impls__impl_core__clone__Clone_for_u8__clone(const uint8_t *x0);
-
-#define core_cmp_Ordering_Less -1
-#define core_cmp_Ordering_Equal 0
-#define core_cmp_Ordering_Greater 1
-
-typedef int8_t core_cmp_Ordering;
-
-/**
-A monomorphic instance of core.option.Option
-with types core_cmp_Ordering
-
-*/
-typedef struct core_option_Option_77_s
-{
-  core_option_Option_77_tags tag;
-  core_cmp_Ordering f0;
-}
-core_option_Option_77;
-
-extern bool
-core_cmp_impls__impl_core__cmp__PartialEq_usize__for_usize__eq(
-  const size_t *x0,
-  const size_t *x1
-);
-
-extern core_option_Option_77
-core_cmp_impls__impl_core__cmp__PartialOrd_usize__for_usize__partial_cmp(
-  const size_t *x0,
-  const size_t *x1
-);
-
-extern uint32_t core_cmp_impls__impl_core__cmp__Ord_for_u32__min(uint32_t x0, uint32_t x1);
+uint32_t core_cmp_Ord_min___u32_(uint32_t x, uint32_t y);
 
 static inline uint64_t
 core_convert_num__impl_core__convert__From_u32__for_u64__from(uint32_t x0);
@@ -106,19 +31,49 @@ core_convert_num__impl_core__convert__From_u32__for_u64__from(uint32_t x0);
 static inline uint32_t
 core_convert_num__impl_core__convert__From_u16__for_u32__from(uint16_t x0);
 
-extern core_option_Option_87
-core_iter_range__impl_core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
+#define core_option_None 0
+#define core_option_Some 1
 
-extern core_option_Option_87
-core_iter_range__impl_core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
+typedef uint8_t core_option_Option___usize__tags;
 
-extern tuple_21
-core_iter_range__impl_core__iter__range__Step_for_usize__steps_between(
-  const size_t *x0,
-  const size_t *x1
-);
+typedef struct core_option_Option___usize__s
+{
+  core_option_Option___usize__tags tag;
+  size_t f0;
+}
+core_option_Option___usize_;
+
+typedef struct core_ops_range_Range___usize__s
+{
+  size_t start;
+  size_t end;
+}
+core_ops_range_Range___usize_;
 
 static inline Eurydice_array_u8x4 core_num__u32__to_le_bytes(uint32_t x0);
+
+/**
+This function found in impl {[u8]}
+*/
+size_t core_slice_len___u8__ea(Eurydice_borrow_slice_u8 s);
+
+/**
+This function found in impl {impl core::ops::index::IndexMut<core::ops::range::Range::<usize>> for [u8]}
+*/
+Eurydice_mut_borrow_slice_u8
+core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(
+  Eurydice_mut_borrow_slice_u8 s,
+  core_ops_range_Range___usize_ r
+);
+
+/**
+This function found in impl {[u8]}
+*/
+void
+core_slice_copy_from_slice___u8__ea(
+  Eurydice_mut_borrow_slice_u8 dst,
+  Eurydice_borrow_slice_u8 src
+);
 
 void
 symcrust_SymCrustMlKemPolyElementCompressAndEncode(
@@ -128,6 +83,20 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
 );
 
 void symcrust_main(void);
+
+/**
+This function found in impl {impl core::iter::traits::iterator::Iterator for core::ops::range::Range::<usize>}
+*/
+core_option_Option___usize_
+core_iter_range_next___usize__dc(core_ops_range_Range___usize_ *range);
+
+/**
+This function found in impl {impl core::iter::traits::collect::IntoIterator for core::ops::range::Range::<usize>}
+*/
+core_ops_range_Range___usize_
+core_iter_traits_collect_into_iter___core__ops__range__Range___usize___4e(
+  core_ops_range_Range___usize_ range
+);
 
 #if defined(__cplusplus)
 }

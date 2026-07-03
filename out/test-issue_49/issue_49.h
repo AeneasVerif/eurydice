@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-extern size_t core_cmp_impls__impl_core__cmp__Ord_for_usize__min(size_t x0, size_t x1);
+size_t core_cmp_Ord_min___usize_(size_t x, size_t y);
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1

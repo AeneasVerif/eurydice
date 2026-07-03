@@ -51,9 +51,14 @@ extern "C" {
 
 #define LIBCRUX_ML_KEM_MLKEM768_IMPLICIT_REJECTION_HASH_INPUT_SIZE (LIBCRUX_ML_KEM_CONSTANTS_SHARED_SECRET_SIZE + LIBCRUX_ML_KEM_MLKEM768_CPA_PKE_CIPHERTEXT_SIZE)
 
+typedef Eurydice_arr_2b libcrux_ml_kem_mlkem768_MlKem768Ciphertext;
+
 typedef Eurydice_arr_7d libcrux_ml_kem_mlkem768_MlKem768PrivateKey;
 
 typedef Eurydice_arr_5f libcrux_ml_kem_mlkem768_MlKem768PublicKey;
+
+typedef libcrux_ml_kem_types_MlKemKeyPair___2400___usize__1184___usize_
+libcrux_ml_kem_mlkem768_MlKem768KeyPair;
 
 #if defined(__cplusplus)
 }

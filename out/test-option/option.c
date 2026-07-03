@@ -35,28 +35,31 @@ void option_main(void)
  ```
 */
 /**
-This function found in impl {core::option::Option<T>[@TraitClause0]}
+This function found in impl {core::option::Option::<[u8; 16 : usize]>}
 */
-/**
-A monomorphic instance of core.option.as_ref_99
-with types Eurydice_arr uint8_t[[$16size_t]]
-
-*/
-inline core_option_Option_4d core_option_as_ref_99_4f(const core_option_Option_9e *self)
+inline core_option_Option________u8__16___usize__
+core_option_as_ref____u8__16___usize___74(const core_option_Option____u8__16___usize__ *self)
 {
   if (!(self->tag == core_option_None))
   {
     const Eurydice_arr_b2 *x = &self->f0;
-    return (KRML_CLITERAL(core_option_Option_4d){ .tag = core_option_Some, .f0 = x });
+    return
+      (
+        KRML_CLITERAL(core_option_Option________u8__16___usize__){
+          .tag = core_option_Some,
+          .f0 = x
+        }
+      );
   }
-  return (KRML_CLITERAL(core_option_Option_4d){ .tag = core_option_None });
+  return (KRML_CLITERAL(core_option_Option________u8__16___usize__){ .tag = core_option_None });
 }
 
 /**
 This function found in impl {option::S}
 */
-core_option_Option_4d option_option_ref_b6(const core_option_Option_9e *self)
+core_option_Option________u8__16___usize__
+option_option_ref_b6(const core_option_Option____u8__16___usize__ *self)
 {
-  return core_option_as_ref_99_4f(self);
+  return core_option_as_ref____u8__16___usize___74(self);
 }
 

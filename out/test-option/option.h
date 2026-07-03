@@ -26,35 +26,27 @@ typedef struct Eurydice_arr_b2_s { uint8_t data[16U]; } Eurydice_arr_b2;
 #define core_option_None 0
 #define core_option_Some 1
 
-typedef uint8_t core_option_Option_9e_tags;
+typedef uint8_t core_option_Option________u8__16___usize___tags;
 
-/**
-A monomorphic instance of core.option.Option
-with types Eurydice_arr_b2
+typedef struct Eurydice_arr_b2_s Eurydice_arr_b2;
 
-*/
-typedef struct core_option_Option_9e_s
+typedef struct core_option_Option________u8__16___usize___s
 {
-  core_option_Option_9e_tags tag;
-  Eurydice_arr_b2 f0;
-}
-core_option_Option_9e;
-
-/**
-A monomorphic instance of core.option.Option
-with types const Eurydice_arr_b2*
-
-*/
-typedef struct core_option_Option_4d_s
-{
-  core_option_Option_9e_tags tag;
+  core_option_Option________u8__16___usize___tags tag;
   const Eurydice_arr_b2 *f0;
 }
-core_option_Option_4d;
+core_option_Option________u8__16___usize__;
+
+typedef struct core_option_Option____u8__16___usize___s
+{
+  core_option_Option________u8__16___usize___tags tag;
+  Eurydice_arr_b2 f0;
+}
+core_option_Option____u8__16___usize__;
 
 typedef Eurydice_arr_b2 option_Val;
 
-typedef core_option_Option_9e option_S;
+typedef core_option_Option____u8__16___usize__ option_S;
 
 void option_main(void);
 
@@ -81,19 +73,16 @@ void option_main(void);
  ```
 */
 /**
-This function found in impl {core::option::Option<T>[@TraitClause0]}
+This function found in impl {core::option::Option::<[u8; 16 : usize]>}
 */
-/**
-A monomorphic instance of core.option.as_ref_99
-with types Eurydice_arr uint8_t[[$16size_t]]
-
-*/
-core_option_Option_4d core_option_as_ref_99_4f(const core_option_Option_9e *self);
+core_option_Option________u8__16___usize__
+core_option_as_ref____u8__16___usize___74(const core_option_Option____u8__16___usize__ *self);
 
 /**
 This function found in impl {option::S}
 */
-core_option_Option_4d option_option_ref_b6(const core_option_Option_9e *self);
+core_option_Option________u8__16___usize__
+option_option_ref_b6(const core_option_Option____u8__16___usize__ *self);
 
 #if defined(__cplusplus)
 }

@@ -15,25 +15,37 @@
 extern "C" {
 #endif
 
-/**
-This function found in impl {impl trait_generics::MyFnOnce for trait_generics::Foo<K>}
-*/
-/**
-A monomorphic instance of trait_generics.call_once_b2
-with const generics
-- K= 10
-*/
-uint32_t trait_generics_call_once_b2_55(void);
+typedef struct core_marker_MetaSized__vtable__s
+{
+  size_t size;
+  size_t align;
+  void *const *drop;
+}
+core_marker_MetaSized__vtable_;
+
+typedef struct trait_generics_MyFnOnce__vtable__s
+{
+  size_t size;
+  size_t align;
+  void *const *drop;
+  void *const *method_call_once;
+  const core_marker_MetaSized__vtable_ *super_trait_0;
+}
+trait_generics_MyFnOnce__vtable_;
 
 /**
-A monomorphic instance of trait_generics.from_fn
-with types trait_generics_Foo[[$10size_t]]
-with const generics
-
+This function found in impl {impl trait_generics::MyFnOnce for trait_generics::Foo::<10 : usize>}
 */
-void trait_generics_from_fn_74(void);
+uint32_t trait_generics_call_once___10___usize__4b(void);
+
+void trait_generics_from_fn___trait_generics__Foo___10___usize__(void);
 
 void trait_generics_main(void);
+
+/**
+This function found in impl {impl core::marker::Destruct for trait_generics::Foo::<10 : usize>}
+*/
+void trait_generics_Foo_drop_glue___10___usize__f7(void **_);
 
 #if defined(__cplusplus)
 }

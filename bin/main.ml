@@ -164,13 +164,15 @@ Supported options:|}
             ro
         | _ -> false);
 
-  let input_files =
+  let input_files, charon_metadata =
     List.map
       (fun filename ->
         let llbc = Eurydice.LoadLlbc.load_file filename in
         Eurydice.AstOfLlbc.file_of_crate llbc)
       !files
+    |> List.split
   in
+  let charon_metadata = Eurydice.CharonMetadata.merge charon_metadata in
 
   (* Record the order of files as given by Charon's `crate.declarations`,
      so we can recover it at the end of the pipeline. *)
@@ -207,6 +209,7 @@ Supported options:|}
     | Some config ->
         let files = Eurydice.Bundles.bundle files config in
         let files = Eurydice.Bundles.libraries files in
+        let files = Eurydice.Bundles.reassign_monomorphizations ~charon_metadata files config in
         let files = Krml.Bundles.topological_sort files in
         Krml.KPrint.bprintf "File order after topological sort: %s\n"
           (String.concat ", " (List.map fst files));
@@ -256,7 +259,7 @@ Supported options:|}
     match config with
     | None -> files
     | Some config -> (
-        let files = Eurydice.Bundles.reassign_monomorphizations files config in
+        let files = Eurydice.Bundles.reassign_monomorphizations ~charon_metadata files config in
         Eurydice.Logging.log "Phase2.15" "%a" pfiles files;
         try
           let files = Krml.Bundles.topological_sort files in
@@ -320,6 +323,7 @@ Supported options:|}
   let files = Eurydice.Cleanup2.reconstruct_for_loops#visit_files () files in
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
   let files = Krml.Simplify.let_to_sequence#visit_files () files in
+  let files = Eurydice.Cleanup1.remove_units#visit_files () files in
   Eurydice.Logging.log "Phase2.9" "%a" pfiles files;
   let files = Eurydice.Cleanup2.float_comments files in
   Eurydice.Logging.log "Phase2.95" "%a" pfiles files;

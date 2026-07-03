@@ -15,31 +15,18 @@ typedef struct const_uint64_t__x2_s
 const_uint64_t__x2;
 
 /**
-This function found in impl {impl where_clauses_fncg::Foo<K> for u64}
+This function found in impl {impl where_clauses_fncg::Foo<8 : usize> for u64}
 */
-/**
-A monomorphic instance of where_clauses_fncg.bar_16
-with const generics
-- K= 8
-- L= 4
-*/
-uint64_t where_clauses_fncg_bar_16_f4(Eurydice_arr_07 x, Eurydice_arr_34 _)
+uint64_t
+where_clauses_fncg_bar___8___usize__4___usize__4c(Eurydice_arr_07 x, Eurydice_arr_34 _)
 {
   return (uint64_t)(uint32_t)x.data->data[0U];
 }
 
-/**
-A monomorphic instance of where_clauses_fncg.f
-with types uint64_t
-with const generics
-- K= 6
-- L= 8
-- M= 10
-*/
-uint64_t where_clauses_fncg_f_d3(void)
+uint64_t where_clauses_fncg_f___u64__6___usize__8___usize__10___usize_(void)
 {
   return
-    where_clauses_fncg_bar_16_f4((
+    where_clauses_fncg_bar___8___usize__4___usize__4c((
         KRML_CLITERAL(Eurydice_arr_07){
           .data = {
             { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } },
@@ -55,15 +42,10 @@ uint64_t where_clauses_fncg_f_d3(void)
 }
 
 /**
-This function found in impl {impl where_clauses_fncg::Foo<K> for u64}
+This function found in impl {impl where_clauses_fncg::Foo<12 : usize> for u64}
 */
-/**
-A monomorphic instance of where_clauses_fncg.bar_16
-with const generics
-- K= 12
-- L= 4
-*/
-uint64_t where_clauses_fncg_bar_16_9e(Eurydice_arr_40 x, Eurydice_arr_11 _)
+uint64_t
+where_clauses_fncg_bar___12___usize__4___usize__fe(Eurydice_arr_40 x, Eurydice_arr_11 _)
 {
   return (uint64_t)(uint32_t)x.data->data[0U];
 }
@@ -71,16 +53,10 @@ uint64_t where_clauses_fncg_bar_16_9e(Eurydice_arr_40 x, Eurydice_arr_11 _)
 /**
 This function found in impl {impl where_clauses_fncg::UseFoo for ()}
 */
-/**
-A monomorphic instance of where_clauses_fncg.method_foo_4a
-with types uint64_t
-with const generics
-- K= 12
-*/
-uint64_t where_clauses_fncg_method_foo_4a_27(void)
+uint64_t where_clauses_fncg_method_foo___u64__12___usize__4a(void)
 {
   return
-    where_clauses_fncg_bar_16_9e((
+    where_clauses_fncg_bar___12___usize__4___usize__fe((
         KRML_CLITERAL(Eurydice_arr_40){
           .data = {
             { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } },
@@ -96,25 +72,19 @@ uint64_t where_clauses_fncg_method_foo_4a_27(void)
       ));
 }
 
-/**
-A monomorphic instance of where_clauses_fncg.g
-with types ()
-with const generics
-
-*/
-uint64_t where_clauses_fncg_g_92(void)
+uint64_t where_clauses_fncg_g______(void)
 {
-  return where_clauses_fncg_method_foo_4a_27();
+  return where_clauses_fncg_method_foo___u64__12___usize__4a();
 }
 
 void where_clauses_fncg_main(void)
 {
-  uint64_t r = where_clauses_fncg_f_d3();
+  uint64_t r = where_clauses_fncg_f___u64__6___usize__8___usize__10___usize_();
   /* original Rust expression is not an lvalue in C */
   uint64_t lvalue0 = 0ULL;
   const_uint64_t__x2 uu____0 = { .fst = &r, .snd = &lvalue0 };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
-  uint64_t r0 = where_clauses_fncg_g_92();
+  uint64_t r0 = where_clauses_fncg_g______();
   /* original Rust expression is not an lvalue in C */
   uint64_t lvalue = 0ULL;
   const_uint64_t__x2 uu____1 = { .fst = &r0, .snd = &lvalue };

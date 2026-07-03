@@ -15,6 +15,14 @@
 extern "C" {
 #endif
 
+typedef struct core_marker_MetaSized__vtable__s
+{
+  size_t size;
+  size_t align;
+  void *const *drop;
+}
+core_marker_MetaSized__vtable_;
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2
@@ -54,11 +62,6 @@ typedef uint8_t issue_123_E;
 int32_t issue_123_fun(issue_123_E e);
 
 void issue_123_main(void);
-
-/**
-This function found in impl {impl core::cmp::PartialEq<issue_123::E2> for issue_123::E2}
-*/
-bool issue_123_eq_76(const issue_123_E2 *self, const issue_123_E2 *other);
 
 #if defined(__cplusplus)
 }

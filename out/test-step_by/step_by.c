@@ -14,59 +14,211 @@ typedef struct const_int32_t__x2_s
 }
 const_int32_t__x2;
 
+core_iter_adapters_step_by_StepBy___core__ops__range__Range___i32__
+core_iter_traits_iterator_Iterator_step_by___core__ops__range__Range___i32__(
+  core_ops_range_Range___i32_ iter,
+  size_t step
+)
+{
+  return
+    (
+      KRML_CLITERAL(core_iter_adapters_step_by_StepBy___core__ops__range__Range___i32__){
+        .iter = iter,
+        .step = step
+      }
+    );
+}
+
+/**
+This function found in impl {impl core::iter::traits::collect::IntoIterator for core::iter::adapters::step_by::StepBy::<core::ops::range::Range::<i32>>}
+*/
+core_iter_adapters_step_by_StepBy___core__ops__range__Range___i32__
+core_iter_traits_collect_into_iter___core__iter__adapters__step_by__StepBy___core__ops__range__Range___i32____f8(
+  core_iter_adapters_step_by_StepBy___core__ops__range__Range___i32__ iter
+)
+{
+  return iter;
+}
+
+/**
+This function found in impl {impl core::iter::traits::iterator::Iterator for core::iter::adapters::step_by::StepBy::<core::ops::range::Range::<i32>>}
+*/
+core_option_Option___i32_
+core_iter_adapters_step_by_next___core__ops__range__Range___i32___50(
+  core_iter_adapters_step_by_StepBy___core__ops__range__Range___i32__ *iter
+)
+{
+  int32_t start = iter->iter.start;
+  if (start < iter->iter.end)
+  {
+    iter->iter.start = start + (int32_t)iter->step;
+    return (KRML_CLITERAL(core_option_Option___i32_){ .tag = core_option_Some, .f0 = start });
+  }
+  else
+  {
+    return (KRML_CLITERAL(core_option_Option___i32_){ .tag = core_option_None });
+  }
+}
+
 void step_by_bar(void)
 {
-  int32_t i0 = 0;
-  for (int32_t i = 0; i < 24; i += (int32_t)(size_t)6U)
+  int32_t i = 0;
+  core_iter_adapters_step_by_StepBy___core__ops__range__Range___i32__
+  iter =
+    core_iter_traits_collect_into_iter___core__iter__adapters__step_by__StepBy___core__ops__range__Range___i32____f8(core_iter_traits_iterator_Iterator_step_by___core__ops__range__Range___i32__((
+          KRML_CLITERAL(core_ops_range_Range___i32_){ .start = 0, .end = 24 }
+        ),
+        (size_t)6U));
+  while (true)
   {
-    int32_t j = i;
-    i0 += j;
+    core_option_Option___i32_
+    uu____0 = core_iter_adapters_step_by_next___core__ops__range__Range___i32___50(&iter);
+    if (uu____0.tag == core_option_None)
+    {
+      break;
+    }
+    int32_t j = uu____0.f0;
+    i += j;
   }
   /* original Rust expression is not an lvalue in C */
   int32_t lvalue = 36;
-  const_int32_t__x2 uu____0 = { .fst = &i0, .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  const_int32_t__x2 uu____1 = { .fst = &i, .snd = &lvalue };
+  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 
 void step_by_main1(void)
 {
   step_by_bar();
-  int32_t i0 = 0;
-  for (int32_t i = 0; i < 24; i += (int32_t)(size_t)6U)
+  int32_t i = 0;
+  core_iter_adapters_step_by_StepBy___core__ops__range__Range___i32__
+  iter =
+    core_iter_traits_collect_into_iter___core__iter__adapters__step_by__StepBy___core__ops__range__Range___i32____f8(core_iter_traits_iterator_Iterator_step_by___core__ops__range__Range___i32__((
+          KRML_CLITERAL(core_ops_range_Range___i32_){ .start = 0, .end = 24 }
+        ),
+        (size_t)6U));
+  while (true)
   {
-    int32_t j = i;
-    i0 += j;
+    core_option_Option___i32_
+    uu____0 = core_iter_adapters_step_by_next___core__ops__range__Range___i32___50(&iter);
+    if (uu____0.tag == core_option_None)
+    {
+      break;
+    }
+    int32_t j = uu____0.f0;
+    i += j;
   }
-  for (int32_t i = 0; i < 24; i += (int32_t)(size_t)6U)
+  core_iter_adapters_step_by_StepBy___core__ops__range__Range___i32__
+  iter0 =
+    core_iter_traits_collect_into_iter___core__iter__adapters__step_by__StepBy___core__ops__range__Range___i32____f8(core_iter_traits_iterator_Iterator_step_by___core__ops__range__Range___i32__((
+          KRML_CLITERAL(core_ops_range_Range___i32_){ .start = 0, .end = 24 }
+        ),
+        (size_t)6U));
+  while (true)
   {
-    int32_t j = i;
-    i0 += j;
+    core_option_Option___i32_
+    uu____1 = core_iter_adapters_step_by_next___core__ops__range__Range___i32___50(&iter0);
+    if (uu____1.tag == core_option_None)
+    {
+      break;
+    }
+    int32_t j = uu____1.f0;
+    i += j;
   }
 }
 
 void step_by_main2(void)
 {
   step_by_main1();
-  for (int32_t i = 0; i < 24; i += (int32_t)(size_t)6U)
+  core_iter_adapters_step_by_StepBy___core__ops__range__Range___i32__
+  iter =
+    core_iter_traits_collect_into_iter___core__iter__adapters__step_by__StepBy___core__ops__range__Range___i32____f8(core_iter_traits_iterator_Iterator_step_by___core__ops__range__Range___i32__((
+          KRML_CLITERAL(core_ops_range_Range___i32_){ .start = 0, .end = 24 }
+        ),
+        (size_t)6U));
+  while (true)
   {
-
+    if
+    (
+      core_iter_adapters_step_by_next___core__ops__range__Range___i32___50(&iter).tag ==
+        core_option_None
+    )
+    {
+      break;
+    }
   }
-  for (int32_t i = 0; i < 24; i += (int32_t)(size_t)6U)
+  core_iter_adapters_step_by_StepBy___core__ops__range__Range___i32__
+  iter0 =
+    core_iter_traits_collect_into_iter___core__iter__adapters__step_by__StepBy___core__ops__range__Range___i32____f8(core_iter_traits_iterator_Iterator_step_by___core__ops__range__Range___i32__((
+          KRML_CLITERAL(core_ops_range_Range___i32_){ .start = 0, .end = 24 }
+        ),
+        (size_t)6U));
+  while (true)
   {
+    if
+    (
+      core_iter_adapters_step_by_next___core__ops__range__Range___i32___50(&iter0).tag ==
+        core_option_None
+    )
+    {
+      break;
+    }
+  }
+}
 
+/**
+This function found in impl {impl core::iter::traits::collect::IntoIterator for core::ops::range::Range::<i32>}
+*/
+core_ops_range_Range___i32_
+core_iter_traits_collect_into_iter___core__ops__range__Range___i32___55(
+  core_ops_range_Range___i32_ range
+)
+{
+  return range;
+}
+
+/**
+This function found in impl {impl core::iter::traits::iterator::Iterator for core::ops::range::Range::<i32>}
+*/
+core_option_Option___i32_ core_iter_range_next___i32__33(core_ops_range_Range___i32_ *range)
+{
+  int32_t start = range->start;
+  if (start < range->end)
+  {
+    range->start = start + 1;
+    return (KRML_CLITERAL(core_option_Option___i32_){ .tag = core_option_Some, .f0 = start });
+  }
+  else
+  {
+    return (KRML_CLITERAL(core_option_Option___i32_){ .tag = core_option_None });
   }
 }
 
 void step_by_main(void)
 {
   step_by_main2();
-  for (int32_t i = 0; i < 24; i++)
+  core_ops_range_Range___i32_
+  iter =
+    core_iter_traits_collect_into_iter___core__ops__range__Range___i32___55((
+        KRML_CLITERAL(core_ops_range_Range___i32_){ .start = 0, .end = 24 }
+      ));
+  while (true)
   {
-
+    if (core_iter_range_next___i32__33(&iter).tag == core_option_None)
+    {
+      break;
+    }
   }
-  for (int32_t i = 0; i < 24; i++)
+  core_ops_range_Range___i32_
+  iter0 =
+    core_iter_traits_collect_into_iter___core__ops__range__Range___i32___55((
+        KRML_CLITERAL(core_ops_range_Range___i32_){ .start = 0, .end = 24 }
+      ));
+  while (true)
   {
-
+    if (core_iter_range_next___i32__33(&iter0).tag == core_option_None)
+    {
+      break;
+    }
   }
 }
 

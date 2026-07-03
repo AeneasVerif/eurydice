@@ -75,25 +75,9 @@ with const generics
 */
 typedef struct Eurydice_arr_eb_s { size_t data[3U]; } Eurydice_arr_eb;
 
-/**
-A monomorphic instance of core.ops.range.RangeTo
-with types size_t
+typedef size_t core_ops_range_RangeTo___usize_;
 
-*/
-typedef size_t core_ops_range_RangeTo_87;
-
-/**
-A monomorphic instance of core.ops.range.RangeFrom
-with types size_t
-
-*/
-typedef size_t core_ops_range_RangeFrom_87;
-
-extern uint32_t core_clone_impls__impl_core__clone__Clone_for_u32__clone(const uint32_t *x0);
-
-extern uint64_t core_clone_impls__impl_core__clone__Clone_for_u64__clone(const uint64_t *x0);
-
-extern uint8_t core_clone_impls__impl_core__clone__Clone_for_u8__clone(const uint8_t *x0);
+typedef size_t core_ops_range_RangeFrom___usize_;
 
 static inline Eurydice_array_u8x4 core_num__u32__to_be_bytes(uint32_t x0);
 
@@ -103,91 +87,68 @@ static inline Eurydice_array_u8x4 core_num__u32__to_be_bytes(uint32_t x0);
 
 typedef uint8_t core_panicking_AssertKind;
 
-/**
-A monomorphic instance of const_generics.Pair
-with types uint32_t, uint32_t
-with const generics
-- $2size_t
-- $2size_t
-*/
-typedef struct const_generics_Pair_30_s
+typedef struct const_generics_Pair___u32__u32__2___usize__2___usize__s
 {
   Eurydice_arr_a0 left;
   Eurydice_arr_a0 right;
 }
-const_generics_Pair_30;
+const_generics_Pair___u32__u32__2___usize__2___usize_;
 
-/**
-A monomorphic instance of const_generics.Pair
-with types uint32_t, uint64_t
-with const generics
-- $2size_t
-- $4size_t
-*/
-typedef struct const_generics_Pair_67_s
+typedef struct const_generics_Pair___u32__u64__2___usize__4___usize__s
 {
   Eurydice_arr_a0 left;
   Eurydice_arr_e4 right;
 }
-const_generics_Pair_67;
+const_generics_Pair___u32__u64__2___usize__4___usize_;
 
-/**
-A monomorphic instance of const_generics.Pair
-with types uint64_t, uint32_t
-with const generics
-- $4size_t
-- $2size_t
-*/
-typedef struct const_generics_Pair_54_s
+typedef struct const_generics_Pair___u64__u32__4___usize__2___usize__s
 {
   Eurydice_arr_e4 left;
   Eurydice_arr_a0 right;
 }
-const_generics_Pair_54;
+const_generics_Pair___u64__u32__4___usize__2___usize_;
 
-/**
-A monomorphic instance of const_generics.mk_pairs
-with types uint32_t, uint64_t
-with const generics
-- N= 2
-- M= 4
-*/
-const_generics_Pair_30 const_generics_mk_pairs_67(uint32_t x, uint64_t y);
+const_generics_Pair___u32__u32__2___usize__2___usize_
+const_generics_mk_pairs___u32__u64__2___usize__4___usize_(uint32_t x, uint64_t y);
 
 void const_generics_main1(void);
 
-/**
-A monomorphic instance of const_generics.f
-with const generics
-- FOO= 1
-- BAR= 2
-*/
-bool const_generics_f_06(uint32_t x, size_t y);
+bool const_generics_f___1___usize__2___u32_(uint32_t x, size_t y);
 
-/**
-A monomorphic instance of const_generics.f
-with const generics
-- FOO= 3
-- BAR= 4
-*/
-bool const_generics_f_16(uint32_t x, size_t y);
+bool const_generics_f___3___usize__4___u32_(uint32_t x, size_t y);
 
-/**
-A monomorphic instance of const_generics.g
-with const generics
-- BAR= 3
-- FOO= 4
-*/
-bool const_generics_g_16(uint32_t x, size_t y);
+bool const_generics_g___3___usize__4___u32_(uint32_t x, size_t y);
 
 void const_generics_main3(void);
 
 /**
-A monomorphic instance of const_generics.serialize
-with const generics
-- OUT_LEN= 8
+This function found in impl {impl core::ops::index::IndexMut<core::ops::range::RangeTo::<usize>> for [u8; 8 : usize]}
 */
-Eurydice_array_u8x8 const_generics_serialize_70(Eurydice_dst_ref_shared_0c re);
+Eurydice_mut_borrow_slice_u8
+core_array_index_mut___u8__core__ops__range__RangeTo___usize___8___usize__31(
+  Eurydice_array_u8x8 *a,
+  size_t r
+);
+
+/**
+This function found in impl {[u8]}
+*/
+void
+core_slice_copy_from_slice___u8__ea(
+  Eurydice_mut_borrow_slice_u8 dst,
+  Eurydice_borrow_slice_u8 src
+);
+
+/**
+This function found in impl {impl core::ops::index::IndexMut<core::ops::range::RangeFrom::<usize>> for [u8; 8 : usize]}
+*/
+Eurydice_mut_borrow_slice_u8
+core_array_index_mut___u8__core__ops__range__RangeFrom___usize___8___usize__0a(
+  Eurydice_array_u8x8 *a,
+  size_t r
+);
+
+Eurydice_array_u8x8 const_generics_serialize___8___usize_(Eurydice_dst_ref_shared_0c re);
 
 void const_generics_main(void);
 

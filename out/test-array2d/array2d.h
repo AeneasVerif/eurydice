@@ -31,16 +31,10 @@ with const generics
 */
 typedef struct Eurydice_arr_ac_s { Eurydice_arr_a0 data[4U]; } Eurydice_arr_ac;
 
-extern bool
-core_cmp_impls__impl_core__cmp__PartialEq_u32__for_u32__ne(
-  const uint32_t *x0,
-  const uint32_t *x1
-);
-
-extern bool
-core_cmp_impls__impl_core__cmp__PartialEq_u32__for_u32__eq(
-  const uint32_t *x0,
-  const uint32_t *x1
+bool
+core_intrinsics_raw_eq_____u32__2___usize___4___usize__(
+  const Eurydice_arr_ac *a,
+  const Eurydice_arr_ac *b
 );
 
 #define core_panicking_AssertKind_Eq 0
@@ -48,6 +42,24 @@ core_cmp_impls__impl_core__cmp__PartialEq_u32__for_u32__eq(
 #define core_panicking_AssertKind_Match 2
 
 typedef uint8_t core_panicking_AssertKind;
+
+/**
+This function found in impl {impl core::array::equality::SpecArrayEq<[u32; 2 : usize], 4 : usize> for [u32; 2 : usize]}
+*/
+bool
+core_array_equality_spec_eq____u32__2___usize____u32__2___usize___4___usize__e7(
+  const Eurydice_arr_ac *a,
+  const Eurydice_arr_ac *b
+);
+
+/**
+This function found in impl {impl core::cmp::PartialEq<[[u32; 2 : usize]; 4 : usize]> for [[u32; 2 : usize]; 4 : usize]}
+*/
+bool
+core_array_equality_eq____u32__2___usize____u32__2___usize___4___usize__6e(
+  const Eurydice_arr_ac *self,
+  const Eurydice_arr_ac *other
+);
 
 bool array2d_f(Eurydice_arr_ac x);
 

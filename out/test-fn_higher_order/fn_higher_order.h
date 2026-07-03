@@ -34,77 +34,23 @@ typedef struct Eurydice_arr_2b_s { size_t data[5U]; } Eurydice_arr_2b;
 #define core_option_None 0
 #define core_option_Some 1
 
-typedef uint8_t core_option_Option_77_tags;
+typedef uint8_t core_option_Option___usize__tags;
 
-/**
-A monomorphic instance of core.option.Option
-with types size_t
-
-*/
-typedef struct core_option_Option_87_s
+typedef struct core_option_Option___usize__s
 {
-  core_option_Option_77_tags tag;
+  core_option_Option___usize__tags tag;
   size_t f0;
 }
-core_option_Option_87;
+core_option_Option___usize_;
 
-/**
-A monomorphic instance of n-tuple
-with types size_t, core_option_Option_87
-
-*/
-typedef struct tuple_21_s
+typedef struct core_ops_range_Range___usize__s
 {
-  size_t fst;
-  core_option_Option_87 snd;
+  size_t start;
+  size_t end;
 }
-tuple_21;
+core_ops_range_Range___usize_;
 
-extern size_t core_clone_impls__impl_core__clone__Clone_for_usize__clone(const size_t *x0);
-
-extern int32_t core_clone_impls__impl_core__clone__Clone_for_i32__clone(const int32_t *x0);
-
-#define core_cmp_Ordering_Less -1
-#define core_cmp_Ordering_Equal 0
-#define core_cmp_Ordering_Greater 1
-
-typedef int8_t core_cmp_Ordering;
-
-/**
-A monomorphic instance of core.option.Option
-with types core_cmp_Ordering
-
-*/
-typedef struct core_option_Option_77_s
-{
-  core_option_Option_77_tags tag;
-  core_cmp_Ordering f0;
-}
-core_option_Option_77;
-
-extern bool
-core_cmp_impls__impl_core__cmp__PartialEq_usize__for_usize__eq(
-  const size_t *x0,
-  const size_t *x1
-);
-
-extern core_option_Option_77
-core_cmp_impls__impl_core__cmp__PartialOrd_usize__for_usize__partial_cmp(
-  const size_t *x0,
-  const size_t *x1
-);
-
-extern core_option_Option_87
-core_iter_range__impl_core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
-
-extern core_option_Option_87
-core_iter_range__impl_core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
-
-extern tuple_21
-core_iter_range__impl_core__iter__range__Step_for_usize__steps_between(
-  const size_t *x0,
-  const size_t *x1
-);
+typedef core_option_Option___usize__tags core_option_Option___core__fmt__Arguments_______;
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -112,12 +58,7 @@ core_iter_range__impl_core__iter__range__Step_for_usize__steps_between(
 
 typedef uint8_t core_panicking_AssertKind;
 
-/**
-A monomorphic instance of fn_higher_order.sum_lst
-with const generics
-- N= 5
-*/
-size_t fn_higher_order_sum_lst_a5(const Eurydice_arr_2b *lst);
+size_t fn_higher_order_sum_lst___5___usize_(const Eurydice_arr_2b *lst);
 
 int32_t fn_higher_order_more_sum_lst(const Eurydice_arr_bf *l);
 
@@ -125,49 +66,41 @@ int32_t fn_higher_order_empty_ptr(int32_t (*f)(void));
 
 void fn_higher_order_unit_empty_ptr(void (*f)(void));
 
-/**
-A monomorphic instance of fn_higher_order.id
-with types size_t
+int32_t fn_higher_order_id___i32_(int32_t r);
 
-*/
-size_t fn_higher_order_id_60(size_t r);
+size_t fn_higher_order_id___usize_(size_t r);
 
-/**
-A monomorphic instance of fn_higher_order.id
-with types int32_t
-
-*/
-int32_t fn_higher_order_id_a8(int32_t r);
-
-/**
-A monomorphic instance of fn_higher_order.compose_cg_apply
-with types size_t, size_t, size_t
-with const generics
-- N= 5
-*/
-size_t
-fn_higher_order_compose_cg_apply_4d(
-  size_t (*f)(const Eurydice_arr_2b *x0),
-  size_t (*g)(size_t x0),
-  const Eurydice_arr_2b *arg
-);
-
-/**
-A monomorphic instance of fn_higher_order.compose_cg_apply
-with types int32_t, int32_t, int32_t
-with const generics
-- N= 3
-*/
 int32_t
-fn_higher_order_compose_cg_apply_36(
+fn_higher_order_compose_cg_apply___i32__i32__i32__3___usize_(
   int32_t (*f)(const Eurydice_arr_bf *x0),
   int32_t (*g)(int32_t x0),
   const Eurydice_arr_bf *arg
 );
 
+size_t
+fn_higher_order_compose_cg_apply___usize__usize__usize__5___usize_(
+  size_t (*f)(const Eurydice_arr_2b *x0),
+  size_t (*g)(size_t x0),
+  const Eurydice_arr_2b *arg
+);
+
 void fn_higher_order_use_compose_cg(void);
 
 void fn_higher_order_main(void);
+
+/**
+This function found in impl {impl core::iter::traits::iterator::Iterator for core::ops::range::Range::<usize>}
+*/
+core_option_Option___usize_
+core_iter_range_next___usize__dc(core_ops_range_Range___usize_ *range);
+
+/**
+This function found in impl {impl core::iter::traits::collect::IntoIterator for core::ops::range::Range::<usize>}
+*/
+core_ops_range_Range___usize_
+core_iter_traits_collect_into_iter___core__ops__range__Range___usize___4e(
+  core_ops_range_Range___usize_ range
+);
 
 #if defined(__cplusplus)
 }

@@ -42,13 +42,3 @@ void issue_123_main(void)
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 
-/**
-This function found in impl {impl core::cmp::PartialEq<issue_123::E2> for issue_123::E2}
-*/
-inline bool issue_123_eq_76(const issue_123_E2 *self, const issue_123_E2 *other)
-{
-  ptrdiff_t __self_discr = (ptrdiff_t)self[0U];
-  ptrdiff_t __arg1_discr = (ptrdiff_t)other[0U];
-  return __self_discr == __arg1_discr;
-}
-

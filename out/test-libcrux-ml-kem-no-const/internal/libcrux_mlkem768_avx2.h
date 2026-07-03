@@ -19,19 +19,22 @@ extern "C" {
 #include "libcrux_core.h"
 #include "../libcrux_mlkem768_avx2.h"
 
-typedef libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ef
+typedef libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
 libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768PublicKeyUnpacked;
+
+typedef libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
+libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked;
 
 /**
  Create a new, empty unpacked key.
 */
-libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked
+libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
 libcrux_ml_kem_mlkem768_avx2_unpacked_init_key_pair(void);
 
 /**
  Create a new, empty unpacked public key.
 */
-libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ef
+libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
 libcrux_ml_kem_mlkem768_avx2_unpacked_init_public_key(void);
 
 /**
@@ -39,7 +42,8 @@ libcrux_ml_kem_mlkem768_avx2_unpacked_init_public_key(void);
 */
 void
 libcrux_ml_kem_mlkem768_avx2_unpacked_serialized_public_key(
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ef *public_key,
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
+  *public_key,
   Eurydice_arr_5f *serialized
 );
 
@@ -48,7 +52,8 @@ libcrux_ml_kem_mlkem768_avx2_unpacked_serialized_public_key(
 */
 Eurydice_arr_7d
 libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_private_key(
-  libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair
+  libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
+  *key_pair
 );
 
 /**
@@ -56,7 +61,8 @@ libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_private_key(
 */
 void
 libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_private_key_mut(
-  libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair,
+  libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
+  *key_pair,
   Eurydice_arr_7d *serialized
 );
 
@@ -65,7 +71,8 @@ libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_private_key_mut(
 */
 void
 libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_public_key_mut(
-  libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair,
+  libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
+  *key_pair,
   Eurydice_arr_5f *serialized
 );
 
@@ -74,7 +81,8 @@ libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_public_key_mut(
 */
 Eurydice_arr_5f
 libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_public_key(
-  libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair
+  libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
+  *key_pair
 );
 
 /**
@@ -83,7 +91,8 @@ libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_serialized_public_key(
 void
 libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_from_private_mut(
   Eurydice_arr_7d *private_key,
-  libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair
+  libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
+  *key_pair
 );
 
 /**
@@ -91,8 +100,10 @@ libcrux_ml_kem_mlkem768_avx2_unpacked_key_pair_from_private_mut(
 */
 void
 libcrux_ml_kem_mlkem768_avx2_unpacked_public_key(
-  libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair,
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ef *pk
+  libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
+  *key_pair,
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
+  *pk
 );
 
 /**
@@ -101,7 +112,8 @@ libcrux_ml_kem_mlkem768_avx2_unpacked_public_key(
 void
 libcrux_ml_kem_mlkem768_avx2_unpacked_unpacked_public_key(
   Eurydice_arr_5f *public_key,
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ef *unpacked_public_key
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
+  *unpacked_public_key
 );
 
 /**
@@ -110,13 +122,14 @@ libcrux_ml_kem_mlkem768_avx2_unpacked_unpacked_public_key(
 void
 libcrux_ml_kem_mlkem768_avx2_unpacked_generate_key_pair_mut(
   Eurydice_arr_c7 randomness,
-  libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *key_pair
+  libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
+  *key_pair
 );
 
 /**
  Generate ML-KEM 768 Key Pair in "unpacked" form.
 */
-libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked
+libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
 libcrux_ml_kem_mlkem768_avx2_unpacked_generate_key_pair(Eurydice_arr_c7 randomness);
 
 /**
@@ -126,9 +139,10 @@ libcrux_ml_kem_mlkem768_avx2_unpacked_generate_key_pair(Eurydice_arr_c7 randomne
  The input is a reference to an unpacked public key of type [`MlKem768PublicKeyUnpacked`],
  the SHA3-256 hash of this public key, and [`SHARED_SECRET_SIZE`] bytes of `randomness`.
 */
-tuple_f4
+tuple_59
 libcrux_ml_kem_mlkem768_avx2_unpacked_encapsulate(
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ef *public_key,
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
+  *public_key,
   Eurydice_arr_ec randomness
 );
 
@@ -141,7 +155,8 @@ libcrux_ml_kem_mlkem768_avx2_unpacked_encapsulate(
 */
 Eurydice_arr_ec
 libcrux_ml_kem_mlkem768_avx2_unpacked_decapsulate(
-  libcrux_ml_kem_mlkem768_avx2_unpacked_MlKem768KeyPairUnpacked *private_key,
+  libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__avx2__SIMD256Vector__3___usize_
+  *private_key,
   Eurydice_arr_2b *ciphertext
 );
 

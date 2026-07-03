@@ -19,19 +19,22 @@ extern "C" {
 #include "libcrux_core.h"
 #include "../libcrux_mlkem1024_portable.h"
 
-typedef libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94
+typedef libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked___libcrux_ml_kem__vector__portable__vector_type__PortableVector__4___usize_
 libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024PublicKeyUnpacked;
+
+typedef libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__portable__vector_type__PortableVector__4___usize_
+libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked;
 
 /**
  Create a new, empty unpacked key.
 */
-libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
+libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__portable__vector_type__PortableVector__4___usize_
 libcrux_ml_kem_mlkem1024_portable_unpacked_init_key_pair(void);
 
 /**
  Create a new, empty unpacked public key.
 */
-libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94
+libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked___libcrux_ml_kem__vector__portable__vector_type__PortableVector__4___usize_
 libcrux_ml_kem_mlkem1024_portable_unpacked_init_public_key(void);
 
 /**
@@ -39,7 +42,9 @@ libcrux_ml_kem_mlkem1024_portable_unpacked_init_public_key(void);
 */
 void
 libcrux_ml_kem_mlkem1024_portable_unpacked_serialized_public_key(
-  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94 *public_key,
+  const
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked___libcrux_ml_kem__vector__portable__vector_type__PortableVector__4___usize_
+  *public_key,
   Eurydice_arr_d1 *serialized
 );
 
@@ -48,7 +53,9 @@ libcrux_ml_kem_mlkem1024_portable_unpacked_serialized_public_key(
 */
 Eurydice_arr_a8
 libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_serialized_private_key(
-  const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *key_pair
+  const
+  libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__portable__vector_type__PortableVector__4___usize_
+  *key_pair
 );
 
 /**
@@ -56,7 +63,9 @@ libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_serialized_private_key(
 */
 void
 libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_serialized_private_key_mut(
-  const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *key_pair,
+  const
+  libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__portable__vector_type__PortableVector__4___usize_
+  *key_pair,
   Eurydice_arr_a8 *serialized
 );
 
@@ -65,7 +74,9 @@ libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_serialized_private_key_mut(
 */
 void
 libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_serialized_public_key_mut(
-  const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *key_pair,
+  const
+  libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__portable__vector_type__PortableVector__4___usize_
+  *key_pair,
   Eurydice_arr_d1 *serialized
 );
 
@@ -74,7 +85,9 @@ libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_serialized_public_key_mut(
 */
 Eurydice_arr_d1
 libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_serialized_public_key(
-  const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *key_pair
+  const
+  libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__portable__vector_type__PortableVector__4___usize_
+  *key_pair
 );
 
 /**
@@ -83,7 +96,8 @@ libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_serialized_public_key(
 void
 libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_from_private_mut(
   const Eurydice_arr_a8 *private_key,
-  libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *key_pair
+  libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__portable__vector_type__PortableVector__4___usize_
+  *key_pair
 );
 
 /**
@@ -92,7 +106,8 @@ libcrux_ml_kem_mlkem1024_portable_unpacked_key_pair_from_private_mut(
 void
 libcrux_ml_kem_mlkem1024_portable_unpacked_unpacked_public_key(
   const Eurydice_arr_d1 *public_key,
-  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94 *unpacked_public_key
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked___libcrux_ml_kem__vector__portable__vector_type__PortableVector__4___usize_
+  *unpacked_public_key
 );
 
 /**
@@ -101,13 +116,14 @@ libcrux_ml_kem_mlkem1024_portable_unpacked_unpacked_public_key(
 void
 libcrux_ml_kem_mlkem1024_portable_unpacked_generate_key_pair_mut(
   Eurydice_arr_c7 randomness,
-  libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *key_pair
+  libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__portable__vector_type__PortableVector__4___usize_
+  *key_pair
 );
 
 /**
  Generate ML-KEM 1024 Key Pair in "unpacked" form.
 */
-libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked
+libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__portable__vector_type__PortableVector__4___usize_
 libcrux_ml_kem_mlkem1024_portable_unpacked_generate_key_pair(Eurydice_arr_c7 randomness);
 
 /**
@@ -119,9 +135,11 @@ libcrux_ml_kem_mlkem1024_portable_unpacked_generate_key_pair(Eurydice_arr_c7 ran
  TODO: The F* prefix opens required modules, it should go away when the following issue is resolved:
  <https://github.com/hacspec/hax/issues/770>
 */
-tuple_25
+tuple_2b
 libcrux_ml_kem_mlkem1024_portable_unpacked_encapsulate(
-  const libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_94 *public_key,
+  const
+  libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked___libcrux_ml_kem__vector__portable__vector_type__PortableVector__4___usize_
+  *public_key,
   Eurydice_arr_ec randomness
 );
 
@@ -134,7 +152,9 @@ libcrux_ml_kem_mlkem1024_portable_unpacked_encapsulate(
 */
 Eurydice_arr_ec
 libcrux_ml_kem_mlkem1024_portable_unpacked_decapsulate(
-  const libcrux_ml_kem_mlkem1024_portable_unpacked_MlKem1024KeyPairUnpacked *private_key,
+  const
+  libcrux_ml_kem_ind_cca_unpacked_MlKemKeyPairUnpacked___libcrux_ml_kem__vector__portable__vector_type__PortableVector__4___usize_
+  *private_key,
   const Eurydice_arr_d1 *ciphertext
 );
 

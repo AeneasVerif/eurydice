@@ -3,6 +3,7 @@ KRML_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/karamel
 LIBCRUX_HOME 	?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/libcrux
 EURYDICE	?= ./eurydice $(EURYDICE_FLAGS)
 CHARON		?= $(CHARON_HOME)/bin/charon
+CHARON_FLAGS	?= --monomorphize
 
 BROKEN_TESTS		= where_clauses println chunks mutable_slice_range issue_99 issue_14 issue_311
 TEST_DIRS		= $(filter-out $(BROKEN_TESTS),$(basename $(notdir $(wildcard test/*.rs))))
@@ -57,7 +58,7 @@ clean-and-test:
 .PRECIOUS: %.llbc
 %.llbc: %.rs .charon_version
 	# --mir elaborated --add-drop-bounds 
-	$(CHARON) rustc --preset=eurydice --dest-file "$@" $(CHARON_EXTRA) -- -Aunused $<
+	$(CHARON) rustc --preset=eurydice $(CHARON_FLAGS) --dest-file "$@" $(CHARON_EXTRA) -- -Aunused $<
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
@@ -91,7 +92,6 @@ test/lvalue.llbc: CHARON_EXTRA = \
 
 test-substr: EXTRA_C = -I../../test ../../test/substr_impl.c
 test-substr: EXTRA = --config test/substr.yaml
-test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c
 test-nested_arrays: EXTRA = -funroll-loops 0
 test-array: EXTRA = -fcomments
 test-symcrust: CFLAGS += -Wno-unused-function
@@ -154,7 +154,7 @@ test-libcrux-%: test/libcrux-%.llbc
 test/libcrux-%.llbc: .FORCE
 	@# Use our committed `Cargo.lock` by default.
 	cp libcrux-Cargo.lock $(LIBCRUX_HOME)/Cargo.lock
-	RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $(CHARON) cargo --preset eurydice \
+	RUSTFLAGS="-Cdebug-assertions=no --cfg eurydice" $(CHARON) cargo --preset eurydice $(CHARON_FLAGS) \
 	  --include 'libcrux_sha3' \
 	  --include 'libcrux_secrets' \
 	  --include=core::option::* \

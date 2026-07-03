@@ -31,7 +31,7 @@ bool libcrux_ml_kem_mlkem512_avx2_validate_public_key(Eurydice_arr_03 *public_ke
 */
 bool
 libcrux_ml_kem_mlkem512_avx2_validate_private_key(
-  Eurydice_arr_ab0 *private_key,
+  Eurydice_arr_ab *private_key,
   Eurydice_arr_d2 *ciphertext
 );
 
@@ -40,12 +40,12 @@ libcrux_ml_kem_mlkem512_avx2_validate_private_key(
 
  Returns `true` if valid, and `false` otherwise.
 */
-bool libcrux_ml_kem_mlkem512_avx2_validate_private_key_only(Eurydice_arr_ab0 *private_key);
+bool libcrux_ml_kem_mlkem512_avx2_validate_private_key_only(Eurydice_arr_ab *private_key);
 
 /**
  Generate ML-KEM 512 Key Pair
 */
-libcrux_ml_kem_types_MlKemKeyPair_0d
+libcrux_ml_kem_types_MlKemKeyPair___1632___usize__800___usize_
 libcrux_ml_kem_mlkem512_avx2_generate_key_pair(Eurydice_arr_c7 randomness);
 
 /**
@@ -55,7 +55,7 @@ libcrux_ml_kem_mlkem512_avx2_generate_key_pair(Eurydice_arr_c7 randomness);
  The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
  bytes of `randomness`.
 */
-tuple_ab
+tuple_82
 libcrux_ml_kem_mlkem512_avx2_encapsulate(
   Eurydice_arr_03 *public_key,
   Eurydice_arr_ec randomness
@@ -69,7 +69,7 @@ libcrux_ml_kem_mlkem512_avx2_encapsulate(
 */
 Eurydice_arr_ec
 libcrux_ml_kem_mlkem512_avx2_decapsulate(
-  Eurydice_arr_ab0 *private_key,
+  Eurydice_arr_ab *private_key,
   Eurydice_arr_d2 *ciphertext
 );
 

@@ -15,31 +15,19 @@
 extern "C" {
 #endif
 
-typedef struct uint64_t_x2_s
+typedef struct core_marker_MetaSized__vtable__s
 {
-  uint64_t fst;
-  uint64_t snd;
+  size_t size;
+  size_t align;
+  void *const *drop;
 }
-uint64_t_x2;
+core_marker_MetaSized__vtable_;
 
-/**
-A monomorphic instance of traits3.keccak
-with types (uint64_t * uint64_t)
-with const generics
-- N= 2
-*/
-void traits3_keccak_ea(void);
-
-typedef uint64_t_x2 traits3_uint64x2_t;
+void traits3_keccak____u64__u64___2___usize_(void);
 
 void traits3_keccakx2(void);
 
 void traits3_main(void);
-
-/**
-This function found in impl {impl traits3::internal::KeccakItem<2 : usize> for (u64, u64)}
-*/
-uint64_t_x2 traits3_zero_81(void);
 
 #if defined(__cplusplus)
 }
