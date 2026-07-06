@@ -168,7 +168,7 @@
               pkgs.gnumake
               pkgs.llvmPackages_18.clang-tools # For clang-format
               pkgs.ocamlPackages.ocaml
-              pkgs.ocamlPackages.ocamlformat_0_27_0
+              pkgs.ocamlPackages.ocamlformat_0_29_0
               pkgs.ocamlPackages.dune_3
             ];
           } ''
@@ -186,7 +186,7 @@
           pkgs.jq
           pkgs.llvmPackages_18.clang-tools # For clang-format
           pkgs.ocamlPackages.ocaml
-          pkgs.ocamlPackages.ocamlformat_0_27_0
+          pkgs.ocamlPackages.ocamlformat_0_29_0
           pkgs.ocamlPackages.menhir
           # ocaml-lsp's version must match the ocaml version used. Pinning
           # this here to save me a headache.
