@@ -36,8 +36,7 @@ let rec token lexbuf =
       locate lexbuf (UIDENT l)
   | lident ->
       let l = Utf8.lexeme lexbuf in
-      begin
-        try locate lexbuf (List.assoc l keywords) with Not_found -> locate lexbuf (LIDENT l)
+      begin try locate lexbuf (List.assoc l keywords) with Not_found -> locate lexbuf (LIDENT l)
       end
   | uvar ->
       let l = Utf8.lexeme lexbuf in

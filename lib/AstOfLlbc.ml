@@ -373,7 +373,9 @@ let const_of_ref_kind kind =
   if !Options.no_const then
     false
   else
-    match kind with
+    match
+      kind
+    with
     | C.RMut -> false
     | C.RShared -> true
 
@@ -381,7 +383,9 @@ let const_of_borrow_kind bk =
   if !Options.no_const then
     false
   else
-    match bk with
+    match
+      bk
+    with
     | C.BShared -> true
     | C.BShallow -> true
     | _ -> false
@@ -390,7 +394,9 @@ let const_of_tbuf b =
   if !Options.no_const then
     false
   else
-    match b with
+    match
+      b
+    with
     | K.TBuf (_, const) -> const
     | _ -> failwith "not a tbuf"
 
@@ -475,14 +481,11 @@ let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
                     else
                       None
                   in
-                  begin
-                    match List.find_map finder assoc_ty_assns with
-                    | Some ty -> ty
-                    | None ->
-                        let name =
-                          Charon.GAstUtils.get_assoc_type_name env.crate target_id type_id
-                        in
-                        fail "Could not find associated type assignment for associated type %s" name
+                  begin match List.find_map finder assoc_ty_assns with
+                  | Some ty -> ty
+                  | None ->
+                      let name = Charon.GAstUtils.get_assoc_type_name env.crate target_id type_id in
+                      fail "Could not find associated type assignment for associated type %s" name
                   end
               | _ ->
                   failwith
@@ -503,8 +506,8 @@ let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
    or None if there is no metadata *)
 and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
   match ty with
-  | C.TAdt ty_decl_ref -> begin
-      match ty_decl_ref.id with
+  | C.TAdt ty_decl_ref ->
+      begin match ty_decl_ref.id with
       | C.TAdtId decl_id -> begin
           let decl = env.get_nth_type decl_id in
           match decl.ptr_metadata with
@@ -521,16 +524,16 @@ and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
                 "Eurydice does not handle PtrMetadata inheritance, please consider using \
                  monomorphized LLBC"
         end
-      | C.TTuple -> begin
-          match List.rev @@ ty_decl_ref.generics.types with
+      | C.TTuple ->
+          begin match List.rev @@ ty_decl_ref.generics.types with
           (* Empty metadata for empty tuple *)
           | [] -> None
           (* For tuple, the type of metadata is the last element *)
           | last :: _ -> metadata_typ_of_ty env last
-        end
+          end
       | C.TBuiltin C.TBox -> None
       | C.TBuiltin C.TStr -> Some Krml.Helpers.usize
-    end
+      end
   | C.TArray _ -> None
   | C.TSlice _ -> Some Krml.Helpers.usize
   | C.TVar _ ->
@@ -610,11 +613,10 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       K.fold_tapp (lid, ts, cgs)
   | TAdt { id = TTuple; generics = { types = args; const_generics; _ } } ->
       assert (const_generics = []);
-      begin
-        match args with
-        | [] -> TUnit
-        | [ t ] -> typ_of_ty env t (* charon issue #205 *)
-        | _ -> TTuple (List.map (typ_of_ty env) args)
+      begin match args with
+      | [] -> TUnit
+      | [ t ] -> typ_of_ty env t (* charon issue #205 *)
+      | _ -> TTuple (List.map (typ_of_ty env) args)
       end
   | TArray (t, cg) -> typ_of_struct_arr env t cg
   | TSlice t ->
@@ -634,19 +636,18 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
         | [] -> [ K.TUnit ]
         | typs -> typs
       in
-      begin
-        match typ_of_ty env t with
-        | TArrow _ ->
-            failwith
-              "Function pointer `fn` currying is not supported, consider using `&'static dyn Fn` \
-               instead."
-        | typ -> Krml.Helpers.fold_arrow typs typ
+      begin match typ_of_ty env t with
+      | TArrow _ ->
+          failwith
+            "Function pointer `fn` currying is not supported, consider using `&'static dyn Fn` \
+             instead."
+      | typ -> Krml.Helpers.fold_arrow typs typ
       end
-  | TFnDef bound_fn_ref -> begin
-      match Charon.Substitute.lookup_fndef_sig env.crate bound_fn_ref with
+  | TFnDef bound_fn_ref ->
+      begin match Charon.Substitute.lookup_fndef_sig env.crate bound_fn_ref with
       | None -> failwith "Missing function declaration"
       | Some fn_sig -> typ_of_ty env (TFnPtr fn_sig)
-    end
+      end
   | TPattern (ty, _) -> typ_of_ty env ty
   | TPtrMetadata _ ->
       failwith
@@ -867,14 +868,13 @@ let expression_of_const_generic env (cg : C.constant_expr) =
   | _ -> failwith "TODO: CgExpr"
 
 let has_unresolved_generic (ty : K.typ) : bool =
-  (object
-     inherit [_] Krml.Ast.reduce
-     method zero = false
-     method plus = ( || )
-     method! visit_TBound _ _ = true
-  end)
-    #visit_typ
-    false ty
+  object
+    inherit [_] Krml.Ast.reduce
+    method zero = false
+    method plus = ( || )
+    method! visit_TBound _ _ = true
+  end
+    #visit_typ false ty
 
 let rec expression_of_place (env : env) (p : C.place) : K.expr =
   (* We construct a target expression. Callers may still use the original type to tell arrays
@@ -918,19 +918,18 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
           _,
           (TRawPtr _ | TRef _ | TAdt { id = TBuiltin TBox; generics = { types = [ _ ]; _ } }) ) ->
           (* All types represented as a pointer at run-time, compiled to a C pointer *)
-          begin
-            match !*sub_e.K.typ with
-            | TBuf (t_pointee, _) ->
-                let const =
-                  match sub_place.ty with
-                  | TRawPtr (_, k) | TRef (_, _, k) -> const_of_ref_kind k
-                  | _ -> false
-                in
-                Krml.Helpers.(mk_deref ~const t_pointee !*sub_e.K.node)
-            | t ->
-                L.log "AstOfLlbc" "UNHANDLED DEREFERENCE\ne=%a\nt=%a\nty=%s\npe=%s\n" pexpr !*sub_e
-                  ptyp t (C.show_ty sub_place.ty) (C.show_projection_elem pe);
-                failwith "unhandled dereference"
+          begin match !*sub_e.K.typ with
+          | TBuf (t_pointee, _) ->
+              let const =
+                match sub_place.ty with
+                | TRawPtr (_, k) | TRef (_, _, k) -> const_of_ref_kind k
+                | _ -> false
+              in
+              Krml.Helpers.(mk_deref ~const t_pointee !*sub_e.K.node)
+          | t ->
+              L.log "AstOfLlbc" "UNHANDLED DEREFERENCE\ne=%a\nt=%a\nty=%s\npe=%s\n" pexpr !*sub_e
+                ptyp t (C.show_ty sub_place.ty) (C.show_projection_elem pe);
+              failwith "unhandled dereference"
           end
       | ( Field (ProjAdt (typ_id, None), field_id),
           { kind = PlaceProjection (sub_place, C.Deref); _ },
@@ -943,21 +942,18 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
             | TRawPtr (_, k) | TRef (_, _, k) -> const_of_ref_kind k
             | _ -> false
           in
-          begin
-            match sub_e.K.typ with
-            | K.TApp (dst_ref_hd, [ dst_t; _meta ]) when is_dst_ref dst_ref_hd ->
-                (* getting field from a fat pointer of DST  *)
-                (* XXX need to adjust *)
-                K.with_type place_typ (K.EField (mk_dst_deref env dst_t sub_e, field_name))
-            | _ ->
-                (* Same as below *)
-                K.with_type place_typ
-                  (K.EField
-                     ( Krml.Helpers.(
-                         mk_deref ~const
-                           (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ)
-                           sub_e.K.node),
-                       field_name ))
+          begin match sub_e.K.typ with
+          | K.TApp (dst_ref_hd, [ dst_t; _meta ]) when is_dst_ref dst_ref_hd ->
+              (* getting field from a fat pointer of DST  *)
+              (* XXX need to adjust *)
+              K.with_type place_typ (K.EField (mk_dst_deref env dst_t sub_e, field_name))
+          | _ ->
+              (* Same as below *)
+              K.with_type place_typ
+                (K.EField
+                   ( Krml.Helpers.(
+                       mk_deref ~const (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node),
+                     field_name ))
           end
       | Field (ProjAdt (typ_id, variant_id), field_id), _, C.TAdt _ -> begin
           let place_typ = typ_of_ty env p.ty in
@@ -1106,7 +1102,9 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
       (* Otherwise, simply the normal case *)
       let op =
         if first.typ = K.TBool then
-          match op with
+          match
+            op
+          with
           | BNot -> Krml.Constant.Not
           | BAnd -> And
           | BOr -> Or
@@ -1134,14 +1132,14 @@ let mk_op_app (op : K.op) (first : K.expr) (rest : K.expr list) : K.expr =
     |> List.mem lident
   in
   let modify_rest : K.expr list -> K.expr list = function
-    | [ e2 ] -> begin
-        match e2.node with
+    | [ e2 ] ->
+        begin match e2.node with
         | EConstant (_, s) ->
             let i = int_of_string s in
             assert (i >= 0);
             [ Krml.Helpers.mk_uint32 i ]
         | _ -> [ K.(with_type (TInt UInt32) (ECast (e2, TInt UInt32))) ]
-      end
+        end
     | _ ->
         failwith
           "Invalid call to binary operator `shiftl` or `shiftr` -- the number of operands is not 2"
@@ -1955,49 +1953,48 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
          coercion by hand, and slightly violate C's strict aliasing rules. *)
       let t_from = typ_of_ty env ty_from and t_to = typ_of_ty env ty_to in
       let e = expression_of_operand env e in
-      begin
-        match meta, t_from, destruct_arr_dst_ref t_to with
-        | MetaLength cg, TBuf (TApp (lid1, _), const), Some (lid2, t_u) when lid1 = lid2 ->
-            (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
+      begin match meta, t_from, destruct_arr_dst_ref t_to with
+      | MetaLength cg, TBuf (TApp (lid1, _), const), Some (lid2, t_u) when lid1 = lid2 ->
+          (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
              `Eurydice_derefed_slice data` (a.k.a. `char data[]`) *)
-            let len = expression_of_const_generic env cg in
-            let ptr = K.with_type (TBuf (t_u, const)) (K.ECast (e, TBuf (t_u, const))) in
-            Builtin.dst_new ~const ~len ~ptr t_u
-        | MetaLength cg, TBuf (K.TCgApp (K.TApp (lid_arr, [ t ]), _), _), _
-          when lid_arr = Builtin.arr ->
-            (* Cast from Box<[T;N]> (represented as a mut reference to an array) to Box<[T]> (which we
+          let len = expression_of_const_generic env cg in
+          let ptr = K.with_type (TBuf (t_u, const)) (K.ECast (e, TBuf (t_u, const))) in
+          Builtin.dst_new ~const ~len ~ptr t_u
+      | MetaLength cg, TBuf (K.TCgApp (K.TApp (lid_arr, [ t ]), _), _), _ when lid_arr = Builtin.arr
+        ->
+          (* Cast from Box<[T;N]> (represented as a mut reference to an array) to Box<[T]> (which we
                represent as a slice). See the translation of types. *)
-            let len = expression_of_const_generic env cg in
-            let const =
-              match t_to with
-              | K.TApp (dst_ref_hd, _) when dst_ref_hd = Builtin.dst_ref_shared -> true
-              | K.TApp (dst_ref_hd, _) when dst_ref_hd = Builtin.dst_ref_mut -> false
-              | _ -> assert false
-            in
-            let array_to_slice =
-              RustNames.builtin_of_function
-                (if const then
-                   Builtin.array_to_slice_func_shared
-                 else
-                   Builtin.array_to_slice_func_mut)
-            in
-            let t_without_cg = array_to_slice.typ in
-            (* array_to_slice: size_t -> arr -> Eurydice_slice 0 *)
-            let array_to_slice = Builtin.(expr_of_builtin array_to_slice) in
-            let diff = List.length env.binders - List.length env.cg_binders in
-            let array_to_slice =
-              K.with_type
-                Krml.DeBruijn.(subst_t t 0 (subst_ct diff len 0 t_without_cg))
-                (K.ETApp (array_to_slice, [ len ], [], [ t ]))
-            in
-            K.(with_type (Builtin.mk_slice ~const t) (EApp (array_to_slice, [ e ])))
-        | _, _, _ ->
-            Krml.KPrint.bprintf "t_to = %a\n" ptyp t_to;
-            Krml.KPrint.bprintf "destruct_arr_dst_ref t_to = None? %b\n"
-              (destruct_arr_dst_ref t_to = None);
-            Krml.Warn.fatal_error "unknown unsize cast: `%s`\nt_to=%a\nt_from=%a"
-              (Charon.Print.cast_kind_to_string env.format_env ck)
-              ptyp t_to ptyp t_from
+          let len = expression_of_const_generic env cg in
+          let const =
+            match t_to with
+            | K.TApp (dst_ref_hd, _) when dst_ref_hd = Builtin.dst_ref_shared -> true
+            | K.TApp (dst_ref_hd, _) when dst_ref_hd = Builtin.dst_ref_mut -> false
+            | _ -> assert false
+          in
+          let array_to_slice =
+            RustNames.builtin_of_function
+              (if const then
+                 Builtin.array_to_slice_func_shared
+               else
+                 Builtin.array_to_slice_func_mut)
+          in
+          let t_without_cg = array_to_slice.typ in
+          (* array_to_slice: size_t -> arr -> Eurydice_slice 0 *)
+          let array_to_slice = Builtin.(expr_of_builtin array_to_slice) in
+          let diff = List.length env.binders - List.length env.cg_binders in
+          let array_to_slice =
+            K.with_type
+              Krml.DeBruijn.(subst_t t 0 (subst_ct diff len 0 t_without_cg))
+              (K.ETApp (array_to_slice, [ len ], [], [ t ]))
+          in
+          K.(with_type (Builtin.mk_slice ~const t) (EApp (array_to_slice, [ e ])))
+      | _, _, _ ->
+          Krml.KPrint.bprintf "t_to = %a\n" ptyp t_to;
+          Krml.KPrint.bprintf "destruct_arr_dst_ref t_to = None? %b\n"
+            (destruct_arr_dst_ref t_to = None);
+          Krml.Warn.fatal_error "unknown unsize cast: `%s`\nt_to=%a\nt_from=%a"
+            (Charon.Print.cast_kind_to_string env.format_env ck)
+            ptyp t_to ptyp t_from
       end
   | UnaryOp (Cast (CastConcretize (_from_ty, to_ty)), e) -> (
       (* Concretization cast is a no-op at runtime *)
@@ -2048,15 +2045,15 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       K.(
         with_type expected_t
           (EApp (Builtin.(expr_of_builtin_t discriminant) [ e.typ; expected_t ], [ e ])))
-  | Aggregate (AggregatedAdt ({ id = TTuple; _ }, _, None), ops) -> begin
-      match ops with
+  | Aggregate (AggregatedAdt ({ id = TTuple; _ }, _, None), ops) ->
+      begin match ops with
       | [] -> K.with_type TUnit K.EUnit
       | [ op ] -> expression_of_operand env op
       | _ ->
           let ops = List.map (expression_of_operand env) ops in
           let ts = List.map (fun x -> x.K.typ) ops in
           K.with_type (TTuple ts) (K.ETuple ops)
-    end
+      end
   | Aggregate
       ( AggregatedAdt
           ( { id = TAdtId typ_id; generics = { types = typ_args; const_generics; _ } },
@@ -2070,52 +2067,50 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       let cg_args = List.map (cg_of_const_generic env) const_generics in
       let t = K.fold_tapp (typ_lid, typ_args, cg_args) in
       let args = List.map (expression_of_operand env) args in
-      begin
-        match variant_id with
-        | Some variant_id ->
-            let variant_id = (find_nth_variant env typ_id variant_id).variant_name in
-            if is_enum env typ_id then
-              K.with_type t (K.EEnum (mk_enum_case typ_lid variant_id))
-            else
-              K.with_type t (K.ECons (variant_id, args))
-        | None ->
-            let fields =
-              match kind with
-              | Struct fields -> fields
-              | Enum _ -> failwith "TODO: Enum"
-              | Union _ -> failwith "TODO: Union"
-              | Opaque -> failwith "TODO: Opaque"
-              | Alias _ -> failwith "TODO: Alias"
-              | TDeclError _ -> failwith "TODO: TDeclError"
-            in
-            K.with_type t
-              (K.EFlat
-                 (List.mapi
-                    (fun i (f, a) -> Some (ensure_named i f.C.field_name), a)
-                    (List.combine fields args)))
+      begin match variant_id with
+      | Some variant_id ->
+          let variant_id = (find_nth_variant env typ_id variant_id).variant_name in
+          if is_enum env typ_id then
+            K.with_type t (K.EEnum (mk_enum_case typ_lid variant_id))
+          else
+            K.with_type t (K.ECons (variant_id, args))
+      | None ->
+          let fields =
+            match kind with
+            | Struct fields -> fields
+            | Enum _ -> failwith "TODO: Enum"
+            | Union _ -> failwith "TODO: Union"
+            | Opaque -> failwith "TODO: Opaque"
+            | Alias _ -> failwith "TODO: Alias"
+            | TDeclError _ -> failwith "TODO: TDeclError"
+          in
+          K.with_type t
+            (K.EFlat
+               (List.mapi
+                  (fun i (f, a) -> Some (ensure_named i f.C.field_name), a)
+                  (List.combine fields args)))
       end
   | Aggregate (AggregatedAdt ({ id = TBuiltin _; _ }, _, _), _) ->
       failwith "unsupported: AggregatedAdt / TAssume"
   | Aggregate (AggregatedArray (t, cg), ops) ->
       let ty = typ_of_ty env t in
       let typ_arr = typ_of_struct_arr env t cg in
-      begin
-        match ops with
-        | [] ->
-            let empty_array =
-              K.with_type
-                Krml.DeBruijn.(subst_t ty 0 Builtin.empty_array.typ)
-                (K.ETApp (Builtin.(expr_of_builtin empty_array), [], [], [ ty ]))
-            in
-            K.with_type typ_arr (K.EApp (empty_array, [ K.with_type ty K.EAny ]))
-            (* a dummy arg is needed to pass the checker *)
-        | _ ->
-            let array_expr =
-              K.with_type
-                (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
-                (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
-            in
-            K.with_type typ_arr (mk_expr_arr_struct array_expr)
+      begin match ops with
+      | [] ->
+          let empty_array =
+            K.with_type
+              Krml.DeBruijn.(subst_t ty 0 Builtin.empty_array.typ)
+              (K.ETApp (Builtin.(expr_of_builtin empty_array), [], [], [ ty ]))
+          in
+          K.with_type typ_arr (K.EApp (empty_array, [ K.with_type ty K.EAny ]))
+          (* a dummy arg is needed to pass the checker *)
+      | _ ->
+          let array_expr =
+            K.with_type
+              (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
+              (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
+          in
+          K.with_type typ_arr (mk_expr_arr_struct array_expr)
       end
   | rvalue ->
       failwith ("unsupported rvalue: `" ^ Charon.Print.rvalue_to_string env.format_env rvalue ^ "`")
@@ -2202,19 +2197,18 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       K.(with_type TUnit (EIgnore p))
   | Drop (p, _, _) ->
       let _ = expression_of_place env p in
-      begin
-        match p.ty with
-        (* doesn't do the right thing yet, need to understand why there are
+      begin match p.ty with
+      (* doesn't do the right thing yet, need to understand why there are
            several drops per variable *)
-        (* | C.Adt (Builtin Vec, _) when false -> *)
-        (*     (1* p is a vec t *1) *)
-        (*     let t = match p.typ with TApp ((["Eurydice"], "vec"), [ t ]) -> t | _ -> assert false in *)
-        (*     Krml.Helpers.(with_unit K.(EApp ( *)
-        (*       with_type (Krml.DeBruijn.subst_tn [ t ] Builtin.vec_drop.typ) (ETApp ( *)
-        (*         with_type Builtin.vec_drop.typ (EQualified Builtin.vec_drop.name), *)
-        (*         [ t ])), *)
-        (*       [ p ]))) *)
-        | _ -> Krml.Helpers.eunit
+      (* | C.Adt (Builtin Vec, _) when false -> *)
+      (*     (1* p is a vec t *1) *)
+      (*     let t = match p.typ with TApp ((["Eurydice"], "vec"), [ t ]) -> t | _ -> assert false in *)
+      (*     Krml.Helpers.(with_unit K.(EApp ( *)
+      (*       with_type (Krml.DeBruijn.subst_tn [ t ] Builtin.vec_drop.typ) (ETApp ( *)
+      (*         with_type Builtin.vec_drop.typ (EQualified Builtin.vec_drop.name), *)
+      (*         [ t ])), *)
+      (*       [ p ]))) *)
+      | _ -> Krml.Helpers.eunit
       end
   | Assert (a, _on_failure) -> expression_of_assertion env a
   | Call
@@ -2759,16 +2753,15 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
       let body = env.get_nth_function fn_id in
       L.log "AstOfLlbc" "Corresponding body:%s"
         (Charon.Print.fun_decl_to_string env.format_env "  " "  " body);
-      begin
-        match body.body with
-        | StructuredBody body ->
-            let ret_var = List.hd body.locals.locals in
-            let body =
-              with_locals env ty body.locals.locals (fun env ->
-                  expression_of_block env ret_var.index body.body)
-            in
-            Some (K.DGlobal (flags, lid_of_name env name, 0, ty, body))
-        | _ -> Some (K.DExternal (None, [], 0, 0, lid_of_name env name, ty, []))
+      begin match body.body with
+      | StructuredBody body ->
+          let ret_var = List.hd body.locals.locals in
+          let body =
+            with_locals env ty body.locals.locals (fun env ->
+                expression_of_block env ret_var.index body.body)
+          in
+          Some (K.DGlobal (flags, lid_of_name env name, 0, ty, body))
+      | _ -> Some (K.DExternal (None, [], 0, 0, lid_of_name env name, ty, []))
       end
   | IdTraitDecl _ | IdTraitImpl _ -> None
 

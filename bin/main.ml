@@ -51,12 +51,11 @@ Supported options:|}
     else
       fatal_error "Unknown file extension for %s" f
   in
-  begin
-    try Arg.parse spec anon_fun usage
-    with e ->
-      Printf.printf "Error parsing command-line: %s\n%s\n" (Printexc.get_backtrace ())
-        (Printexc.to_string e);
-      fatal_error "Incorrect invocation, was: %s\n" (String.concat "␣" (Array.to_list Sys.argv))
+  begin try Arg.parse spec anon_fun usage
+  with e ->
+    Printf.printf "Error parsing command-line: %s\n%s\n" (Printexc.get_backtrace ())
+      (Printexc.to_string e);
+    fatal_error "Incorrect invocation, was: %s\n" (String.concat "␣" (Array.to_list Sys.argv))
   end;
 
   if !files = [] then
@@ -131,29 +130,29 @@ Supported options:|}
         let ret_t, _ = Helpers.flatten_arrow t in
         is_readonly_pure_lid_ lid t
         || (match lid with
-           | "libcrux_intrinsics" :: _, _ -> ret_t <> TUnit
-           | [ "Eurydice" ], "vec_len"
-           | [ "Eurydice" ], "vec_index"
-           | [ "Eurydice" ], "slice_index_shared"
-           | [ "Eurydice" ], "slice_index_mut"
-           | [ "Eurydice" ], "slice_len"
-           | [ "Eurydice" ], "slice_to_ref_array"
-           | [ "Eurydice" ], "slice_to_ref_array2"
-           | [ "Eurydice" ], "slice_subslice_shared"
-           | [ "Eurydice" ], "slice_subslice_mut"
-           | [ "Eurydice" ], "slice_subslice_to_shared"
-           | [ "Eurydice" ], "slice_subslice_to_mut"
-           | [ "Eurydice" ], "slice_subslice_from_shared"
-           | [ "Eurydice" ], "slice_subslice_from_mut"
-           | [ "Eurydice" ], "array_to_slice_shared"
-           | [ "Eurydice" ], "array_to_slice_mut"
-           | [ "Eurydice" ], "array_to_subslice_shared"
-           | [ "Eurydice" ], "array_to_subslice_mut"
-           | [ "Eurydice" ], "array_repeat"
-           | [ "core"; "mem" ], "size_of"
-           | "core" :: "slice" :: _, "as_mut_ptr"
-           | "core" :: "num" :: _, ("rotate_left" | "from_le_bytes" | "wrapping_add") -> true
-           | _ -> false)
+          | "libcrux_intrinsics" :: _, _ -> ret_t <> TUnit
+          | [ "Eurydice" ], "vec_len"
+          | [ "Eurydice" ], "vec_index"
+          | [ "Eurydice" ], "slice_index_shared"
+          | [ "Eurydice" ], "slice_index_mut"
+          | [ "Eurydice" ], "slice_len"
+          | [ "Eurydice" ], "slice_to_ref_array"
+          | [ "Eurydice" ], "slice_to_ref_array2"
+          | [ "Eurydice" ], "slice_subslice_shared"
+          | [ "Eurydice" ], "slice_subslice_mut"
+          | [ "Eurydice" ], "slice_subslice_to_shared"
+          | [ "Eurydice" ], "slice_subslice_to_mut"
+          | [ "Eurydice" ], "slice_subslice_from_shared"
+          | [ "Eurydice" ], "slice_subslice_from_mut"
+          | [ "Eurydice" ], "array_to_slice_shared"
+          | [ "Eurydice" ], "array_to_slice_mut"
+          | [ "Eurydice" ], "array_to_subslice_shared"
+          | [ "Eurydice" ], "array_to_subslice_mut"
+          | [ "Eurydice" ], "array_repeat"
+          | [ "core"; "mem" ], "size_of"
+          | "core" :: "slice" :: _, "as_mut_ptr"
+          | "core" :: "num" :: _, ("rotate_left" | "from_le_bytes" | "wrapping_add") -> true
+          | _ -> false)
         || Hashtbl.mem readonly_lids lid
         ||
         match Hashtbl.find_opt readonly_map lid with
