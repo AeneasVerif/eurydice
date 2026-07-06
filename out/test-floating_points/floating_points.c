@@ -7,19 +7,19 @@
 
 #include "floating_points.h"
 
-typedef struct const_float32_t__x2_s
+typedef struct const_float__x2_s
 {
-  const float32_t *fst;
-  const float32_t *snd;
+  const float *fst;
+  const float *snd;
 }
-const_float32_t__x2;
+const_float__x2;
 
-typedef struct const_float64_t__x2_s
+typedef struct const_double__x2_s
 {
-  const float64_t *fst;
-  const float64_t *snd;
+  const double *fst;
+  const double *snd;
 }
-const_float64_t__x2;
+const_double__x2;
 
 typedef struct const_size_t__x2_s
 {
@@ -30,29 +30,29 @@ const_size_t__x2;
 
 void floating_points_main(void)
 {
-  float32_t f = (float32_t)1;
+  float f = (float)1;
   Eurydice_arr_fe arr;
-  float32_t repeat_expression0[100U];
+  float repeat_expression0[100U];
   for (size_t i = (size_t)0U; i < (size_t)100U; i++)
   {
     repeat_expression0[i] = f;
   }
-  memcpy(arr.data, repeat_expression0, (size_t)100U * sizeof (float32_t));
-  float64_t d = (float64_t)1;
+  memcpy(arr.data, repeat_expression0, (size_t)100U * sizeof (float));
+  double d = (double)1;
   Eurydice_arr_9f arr2;
-  float64_t repeat_expression[100U];
+  double repeat_expression[100U];
   for (size_t i = (size_t)0U; i < (size_t)100U; i++)
   {
     repeat_expression[i] = d;
   }
-  memcpy(arr2.data, repeat_expression, (size_t)100U * sizeof (float64_t));
+  memcpy(arr2.data, repeat_expression, (size_t)100U * sizeof (double));
   /* original Rust expression is not an lvalue in C */
-  float32_t lvalue0 = (float32_t)1;
-  const_float32_t__x2 uu____0 = { .fst = arr.data, .snd = &lvalue0 };
+  float lvalue0 = (float)1;
+  const_float__x2 uu____0 = { .fst = arr.data, .snd = &lvalue0 };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  float64_t lvalue1 = (float64_t)1;
-  const_float64_t__x2 uu____1 = { .fst = arr2.data, .snd = &lvalue1 };
+  double lvalue1 = (double)1;
+  const_double__x2 uu____1 = { .fst = arr2.data, .snd = &lvalue1 };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
   size_t lvalue2 = (size_t)100U;

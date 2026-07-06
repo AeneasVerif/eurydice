@@ -23,19 +23,19 @@ typedef uint8_t core_panicking_AssertKind;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types float32_t
+with types float
 with const generics
 - $100size_t
 */
-typedef struct Eurydice_arr_fe_s { float32_t data[100U]; } Eurydice_arr_fe;
+typedef struct Eurydice_arr_fe_s { float data[100U]; } Eurydice_arr_fe;
 
 /**
 A monomorphic instance of Eurydice.arr
-with types float64_t
+with types double
 with const generics
 - $100size_t
 */
-typedef struct Eurydice_arr_9f_s { float64_t data[100U]; } Eurydice_arr_9f;
+typedef struct Eurydice_arr_9f_s { double data[100U]; } Eurydice_arr_9f;
 
 void floating_points_main(void);
 
