@@ -114,6 +114,7 @@ type env = {
   format_env : Charon.Print.fmt_env;
   (* For picking pretty names *)
   crate_name : string;
+  charon_metadata : CharonMetadata.t;
 }
 
 let debug env =
@@ -181,7 +182,24 @@ let restore_old_pretty_name s =
 let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
   restore_old_pretty_name (Charon.Print.path_elem_to_string env.format_env p)
 
-let string_of_name env ps = String.concat "::" (List.map (string_of_path_elem env) ps)
+let string_path_elems_of_name env ps =
+  (* Charon monomorphization represents `foo::<T>` as `foo` followed by a
+     PeInstantiated path element. Keep that suffix on the item name instead of
+     making it a child path component, so existing bundle prefixes still match. *)
+  let add acc p =
+    let s = string_of_path_elem env p in
+    match p, acc with
+    | C.PeInstantiated _, hd :: tl -> (hd ^ "::" ^ s) :: tl
+    | _ -> s :: acc
+  in
+  List.rev (List.fold_left add [] ps)
+
+let string_of_name env ps = String.concat "::" (string_path_elems_of_name env ps)
+
+let is_external_x86_vector_type env name =
+  match string_path_elems_of_name env name with
+  | [ "core"; "core_arch"; "x86"; ("__m128i" | "__m256i") ] -> true
+  | _ -> false
 
 let mk_field_name f i =
   match f with
@@ -311,13 +329,41 @@ let pattern_of_name env name =
   Charon.NameMatcher.(
     name_to_pattern env.name_ctx { tgt = TkPattern; use_trait_decl_refs = true } name)
 
-let string_of_fn_ptr env fn_ptr = string_of_pattern (pattern_of_fn_ptr env fn_ptr)
+let string_of_fn_ptr env fn_ptr =
+  match pattern_of_fn_ptr env fn_ptr with
+  | pattern -> string_of_pattern pattern
+  | exception _ -> Charon.Print.fn_ptr_to_string env.format_env fn_ptr
 
 (** Translation of types *)
 
 let lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
-  let prefix, name = Krml.KList.split_at_last name in
-  List.map (string_of_path_elem env) prefix, string_of_path_elem env name
+  let prefix, name = Krml.KList.split_at_last (string_path_elems_of_name env name) in
+  prefix, name
+
+let generic_lid_of_name (env : env) (name : Charon.Types.name) : K.lident =
+  let name =
+    List.filter
+      (function
+        | C.PeInstantiated _ -> false
+        | _ -> true)
+      name
+  in
+  let prefix, name = Krml.KList.split_at_last (string_path_elems_of_name env name) in
+  prefix, name
+
+let instantiations_of_name name =
+  List.filter_map
+    (function
+      | C.PeInstantiated binder -> Some binder.binder_value
+      | _ -> None)
+    name
+
+let has_instantiations name =
+  List.exists
+    (function
+      | C.PeInstantiated _ -> true
+      | _ -> false)
+    name
 
 let width_of_integer_type (t : Charon.Types.integer_type) : K.width =
   match t with
@@ -865,6 +911,45 @@ let expression_of_const_generic env (cg : C.constant_expr) =
   | C.CVar var -> expression_of_cg_var_id env (C.expect_free_var var)
   | C.CLiteral l -> expression_of_literal env l
   | _ -> failwith "TODO: CgExpr"
+
+let charon_instantiation_args name =
+  let instantiations = instantiations_of_name name in
+  let types = List.concat_map (fun (g : C.generic_args) -> g.types) instantiations in
+  let const_generics =
+    List.concat_map (fun (g : C.generic_args) -> g.const_generics) instantiations
+  in
+  if types = [] && const_generics = [] then
+    None
+  else
+    Some (types, const_generics)
+
+let register_charon_name env name =
+  let lid = lid_of_name env name in
+  CharonMetadata.add_name env.charon_metadata lid name
+
+let register_charon_type_monomorphization env name =
+  match charon_instantiation_args name with
+  | None -> ()
+  | Some (types, const_generics) ->
+      let generic_lid = generic_lid_of_name env name in
+      let monomorphized_lid = lid_of_name env name in
+      let types = List.map (typ_of_ty env) types in
+      let const_generics = List.map (cg_of_const_generic env) const_generics in
+      Hashtbl.replace env.charon_metadata.types
+        (generic_lid, types, const_generics)
+        monomorphized_lid
+
+let register_charon_fun_monomorphization env name =
+  match charon_instantiation_args name with
+  | None -> ()
+  | Some (types, const_generics) ->
+      let generic_lid = generic_lid_of_name env name in
+      let monomorphized_lid = lid_of_name env name in
+      let types = List.map (typ_of_ty env) types in
+      let const_generics = List.map (expression_of_const_generic env) const_generics in
+      Hashtbl.replace env.charon_metadata.functions
+        (generic_lid, const_generics, types)
+        monomorphized_lid
 
 let has_unresolved_generic (ty : K.typ) : bool =
   (object
@@ -1475,9 +1560,19 @@ let lookup_fun (env : env) depth (fn_ptr : C.fn_ptr) : K.expr' * lookup_result =
   | None -> (
       let lookup_result_of_fun_id fun_id =
         let decl = env.get_nth_function fun_id in
+        let result = lookup_signature env depth (C.bound_fun_sig_of_decl decl) in
         let lid = lid_of_name env decl.C.item_meta.name in
         L.log "Calls" "%s--> name: %a" depth plid lid;
-        K.EQualified lid, lookup_signature env depth (C.bound_fun_sig_of_decl decl)
+        K.EQualified lid, result
+      in
+      let find_trait_impl_method_fun_id impl_id method_id =
+        C.FunDeclId.Map.values env.crate.fun_decls
+        |> List.find_opt (fun (decl : C.fun_decl) ->
+               match decl.src with
+               | TraitImplItem ({ id; _ }, _, AssocIdMethod method_id', _) ->
+                   id = impl_id && method_id' = method_id
+               | _ -> false)
+        |> Option.map (fun (decl : C.fun_decl) -> decl.def_id)
       in
 
       match fn_ptr.kind with
@@ -1488,12 +1583,20 @@ let lookup_fun (env : env) depth (fn_ptr : C.fn_ptr) : K.expr' * lookup_result =
           | TraitImpl { id; _ } ->
               let trait_impl = env.get_nth_trait_impl id in
               let f =
-                try C.TraitMethodId.Map.find method_id trait_impl.methods
-                with Not_found ->
-                  fail "Error looking trait impl: %s%!"
-                    (Charon.Print.fn_ptr_to_string env.format_env fn_ptr)
+                match C.TraitMethodId.Map.find_opt method_id trait_impl.methods with
+                | Some f -> f.C.binder_value.id
+                | None -> (
+                    (* FIXME(https://github.com/AeneasVerif/charon/issues/856):
+                       traits and impls don't list any methods in mono mode,
+                       which makes it impossible to fetch the right method impl
+                       here. We work around that. *)
+                    match find_trait_impl_method_fun_id id method_id with
+                    | Some f -> f
+                    | None ->
+                        fail "Error looking trait impl: %s%!"
+                          (Charon.Print.fn_ptr_to_string env.format_env fn_ptr))
               in
-              lookup_result_of_fun_id f.C.binder_value.id
+              lookup_result_of_fun_id f
           | (Clause _ | ParentClause _) as tcid ->
               let f, t, sig_info = lookup_clause_method env tcid method_id in
               (* the sig_info is kind of redundant here *)
@@ -1863,10 +1966,34 @@ let get_dst_ref_base dst_ref =
 (* Parse the fat pointer Eurydice_dst_ref<T<U>, _> into (T,T<U>),
    where the ignored field `_` must be `usize` as metadata,
    used to handle the unsized cast from &T<V> to &T<U> *)
+let lid_of_concrete_krml_typ = function
+  | K.TApp (lid, _) | K.TQualified lid -> Some lid
+  | _ -> None
+
 let destruct_arr_dst_ref t =
   match t with
-  | K.TApp (dst_ref_hd, [ (TApp (lid, _) as t_u); _ ]) when is_dst_ref dst_ref_hd -> Some (lid, t_u)
+  | K.TApp (dst_ref_hd, [ t_u; _ ]) when is_dst_ref dst_ref_hd ->
+      Option.map (fun lid -> lid, t_u) (lid_of_concrete_krml_typ t_u)
   | _ -> None
+
+let rec generic_adt_lid_of_ty env (ty : C.ty) =
+  match ty with
+  | C.TRef (_, ty, _) | C.TRawPtr (ty, _) | C.TPattern (ty, _) -> generic_adt_lid_of_ty env ty
+  | C.TAdt { id = C.TBuiltin C.TBox; generics = { types = [ ty ]; _ } } ->
+      generic_adt_lid_of_ty env ty
+  | C.TAdt { id = C.TAdtId id; _ } ->
+      let decl = env.get_nth_type id in
+      begin
+        match decl.kind with
+        | Alias ty -> generic_adt_lid_of_ty env ty
+        | _ -> Some (generic_lid_of_name env decl.item_meta.name)
+      end
+  | _ -> None
+
+let same_generic_adt env ty1 ty2 =
+  match generic_adt_lid_of_ty env ty1, generic_adt_lid_of_ty env ty2 with
+  | Some lid1, Some lid2 -> lid1 = lid2
+  | _ -> false
 
 (* Reborrows allow going from a mutable slice to an immutable one. *)
 let maybe_reborrow_slice t_dst e_src =
@@ -1957,7 +2084,11 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       let e = expression_of_operand env e in
       begin
         match meta, t_from, destruct_arr_dst_ref t_to with
-        | MetaLength cg, TBuf (TApp (lid1, _), const), Some (lid2, t_u) when lid1 = lid2 ->
+        | MetaLength cg, TBuf (t_src, const), Some (lid_dst, t_u)
+          when (match lid_of_concrete_krml_typ t_src with
+               | Some lid_src -> lid_src = lid_dst
+               | None -> false)
+               || same_generic_adt env ty_from ty_to ->
             (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
              `Eurydice_derefed_slice data` (a.k.a. `char data[]`) *)
             let len = expression_of_const_generic env cg in
@@ -2017,6 +2148,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
         (* Here are `literal_type`s *)
         | C.CastScalar (f, t) -> f = t
         (* The following are `type`s *)
+        | C.CastTransmute (f, t) when typ_of_ty env f = typ_of_ty env t -> true
         | C.CastFnPtr (f, t) | C.CastRawPtr (f, t) | C.CastUnsize (f, t, _) | C.CastTransmute (f, t)
           -> f = t
         | C.CastConcretize _ -> false
@@ -2201,7 +2333,9 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       let p = expression_of_place env p in
       K.(with_type TUnit (EIgnore p))
   | Drop (p, _, _) ->
-      let _ = expression_of_place env p in
+      (* Drops are currently erased. Do not translate the place first: Charon's
+         monomorphized drop glue can drop `*slice`, which is not a valid value
+         place in Eurydice and is unnecessary when the drop is ignored. *)
       begin
         match p.ty with
         (* doesn't do the right thing yet, need to understand why there are
@@ -2508,6 +2642,21 @@ let flags_of_meta (meta : C.item_meta) : K.flags =
             meta.attr_info.attributes));
   ]
 
+let builtin_synthesis_ctx env : Builtin.synthesis_ctx =
+  {
+    typ_of_ty = typ_of_ty env;
+    maybe_cg_array = maybe_cg_array env;
+    expression_of_const_generic = expression_of_const_generic env;
+    const_of_ref_kind;
+    typ_of_signature = typ_of_signature env;
+    lid_of_name = lid_of_name env;
+    string_of_name = string_of_name env;
+    get_nth_type = env.get_nth_type;
+    get_nth_function = env.get_nth_function;
+    get_nth_trait_impl = env.get_nth_trait_impl;
+    fun_decls = env.crate.fun_decls;
+  }
+
 let decl_of_id (env : env) (id : C.item_id) : K.decl option =
   match id with
   | IdType id -> begin
@@ -2518,71 +2667,89 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
       let name = item_meta.name in
       L.log "AstOfLlbc" "Visiting type: %s\n%s" (string_of_name env name)
         (Charon.Print.type_decl_to_string env.format_env decl);
+      register_charon_name env name;
+      register_charon_type_monomorphization env name;
 
       assert (def_id = id);
       let name = lid_of_name env name in
       let env = push_cg_binders env const_generics in
       let env = push_type_binders env type_params in
 
-      match kind with
-      | Union _ | Opaque | TDeclError _ -> None
-      | Struct fields ->
-          let fields =
-            List.mapi
-              (fun i { C.field_name; field_ty; _ } ->
-                Some (ensure_named i field_name), (typ_of_ty env field_ty, true))
-              fields
-          in
-          Some
-            (K.DType (name, [], List.length const_generics, List.length type_params, Flat fields))
-      | Enum branches when List.for_all (fun v -> v.C.fields = []) branches ->
-          let has_custom_constants =
-            let rec has_custom_constants i = function
-              | { C.discriminant; _ } :: bs ->
-                  Charon.Scalars.get_val (Charon.ValuesUtils.literal_as_scalar discriminant)
-                  <> Z.of_int i
-                  || has_custom_constants (i + 1) bs
-              | _ -> false
-            in
-            has_custom_constants 0 branches
-          in
-
-          let cases =
-            List.map
-              (fun ({ C.variant_name; discriminant; _ } : C.variant) ->
-                let v =
-                  if has_custom_constants then
-                    Some
-                      (Charon.Scalars.get_val (Charon.ValuesUtils.literal_as_scalar discriminant))
-                  else
-                    None
+      match Builtin.step_by_range_ty_of_name item_meta.name with
+      | Some range_ty -> Some (Builtin.step_by_type_decl ~name ~range_t:(typ_of_ty env range_ty))
+      | None -> begin
+          match kind with
+          | Union _ | TDeclError _ -> None
+          | Opaque ->
+              if is_external_x86_vector_type env item_meta.name then
+                None
+              else
+                (* Charon's monomorphized output can mention concrete opaque core
+                   types in other declarations, e.g. `core::fmt::Arguments` inside
+                   `Option<Arguments>` from assertions. Emit an empty type and let
+                   Karamel's existing empty-struct elimination rewrite uses to unit. *)
+                Some
+                  (K.DType (name, [], List.length const_generics, List.length type_params, Flat []))
+          | Struct fields ->
+              let fields =
+                List.mapi
+                  (fun i { C.field_name; field_ty; _ } ->
+                    Some (ensure_named i field_name), (typ_of_ty env field_ty, true))
+                  fields
+              in
+              Some
+                (K.DType (name, [], List.length const_generics, List.length type_params, Flat fields))
+          | Enum branches when List.for_all (fun v -> v.C.fields = []) branches ->
+              let has_custom_constants =
+                let rec has_custom_constants i = function
+                  | { C.discriminant; _ } :: bs ->
+                      Charon.Scalars.get_val (Charon.ValuesUtils.literal_as_scalar discriminant)
+                      <> Z.of_int i
+                      || has_custom_constants (i + 1) bs
+                  | _ -> false
                 in
-                mk_enum_case name variant_name, v)
-              branches
-          in
-          Some (K.DType (name, [], List.length const_generics, List.length type_params, Enum cases))
-      | Enum branches ->
-          let branches =
-            List.map
-              (fun ({ C.variant_name; fields; _ } : C.variant) ->
-                ( variant_name,
-                  List.mapi
-                    (fun i { C.field_name; field_ty; _ } ->
-                      mk_field_name field_name i, (typ_of_ty env field_ty, true))
-                    fields ))
-              branches
-          in
-          Some
-            (K.DType
-               (name, [], List.length const_generics, List.length type_params, Variant branches))
-      | Alias ty ->
-          Some
-            (K.DType
-               ( name,
-                 [],
-                 List.length const_generics,
-                 List.length type_params,
-                 Abbrev (typ_of_ty env ty) ))
+                has_custom_constants 0 branches
+              in
+
+              let cases =
+                List.map
+                  (fun ({ C.variant_name; discriminant; _ } : C.variant) ->
+                    let v =
+                      if has_custom_constants then
+                        Some
+                          (Charon.Scalars.get_val
+                             (Charon.ValuesUtils.literal_as_scalar discriminant))
+                      else
+                        None
+                    in
+                    mk_enum_case name variant_name, v)
+                  branches
+              in
+              Some
+                (K.DType (name, [], List.length const_generics, List.length type_params, Enum cases))
+          | Enum branches ->
+              let branches =
+                List.map
+                  (fun ({ C.variant_name; fields; _ } : C.variant) ->
+                    ( variant_name,
+                      List.mapi
+                        (fun i { C.field_name; field_ty; _ } ->
+                          mk_field_name field_name i, (typ_of_ty env field_ty, true))
+                        fields ))
+                  branches
+              in
+              Some
+                (K.DType
+                   (name, [], List.length const_generics, List.length type_params, Variant branches))
+          | Alias ty ->
+              Some
+                (K.DType
+                   ( name,
+                     [],
+                     List.length const_generics,
+                     List.length type_params,
+                     Abbrev (typ_of_ty env ty) ))
+        end
     end
   | IdFun id -> (
       let decl = try Some (env.get_nth_function id) with Not_found -> None in
@@ -2597,10 +2764,21 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
             | _ -> "opaque ")
             (string_of_name env item_meta.name)
             (Charon.Print.fun_decl_to_string env.format_env "  " "  " decl);
+          register_charon_name env item_meta.name;
+          register_charon_fun_monomorphization env item_meta.name;
 
           assert (def_id = id);
           let name = lid_of_name env item_meta.name in
+          let opaque_decl () =
+            (* Opaque function *)
+            let { K.n_cgs; n }, t = typ_of_signature env (C.bound_fun_sig_of_decl decl) in
+            Some (K.DExternal (None, [], n_cgs, n, name, t, []))
+          in
           match body, src with
+          | IntrinsicBody ("raw_eq", _), _ -> (
+              match Builtin.raw_eq_decl (builtin_synthesis_ctx env) name signature with
+              | Some d -> Some d
+              | None -> opaque_decl ())
           | ( ( OpaqueBody
               | ExternBody _
               | IntrinsicBody _
@@ -2608,10 +2786,13 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
               | MissingBody
               | ErrorBody _
               | UnstructuredBody _ ),
-              _ ) ->
-              (* Opaque function *)
-              let { K.n_cgs; n }, t = typ_of_signature env (C.bound_fun_sig_of_decl decl) in
-              Some (K.DExternal (None, [], n_cgs, n, name, t, []))
+              _ ) -> (
+              match
+                Builtin.synthesized_builtin_decl (builtin_synthesis_ctx env) item_meta.name name
+                  signature
+              with
+              | Some d -> Some d
+              | None -> opaque_decl ())
           | StructuredBody { locals; body; _ }, _ ->
               if Option.is_some decl.is_global_initializer then
                 None
@@ -2734,6 +2915,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
       let def = env.get_nth_global def_id in
       L.log "AstOfLlbc" "Visiting global: %s\n%s" (string_of_name env name)
         (Charon.Print.global_decl_to_string env.format_env "  " "  " def);
+      register_charon_name env name;
       let ty = typ_of_ty env ty in
       let flags =
         [ Krml.Common.Const "" ]
@@ -2850,9 +3032,14 @@ let decl_of_id env decl =
           Charon.NameMatcher.match_name env.name_ctx RustNames.config p (name_of_id env decl)
         in
         if not (List.exists matches known_failures) then begin
-          Printf.eprintf "ERROR translating %s: %s\n%s"
-            (string_of_pattern (pattern_of_name env (name_of_id env decl)))
-            (Printexc.to_string e) (Printexc.get_backtrace ());
+          let name = name_of_id env decl in
+          let name =
+            match pattern_of_name env name with
+            | pattern -> string_of_pattern pattern
+            | exception _ -> string_of_name env name
+          in
+          Printf.eprintf "ERROR translating %s: %s\n%s" name (Printexc.to_string e)
+            (Printexc.get_backtrace ());
           if not !Options.keep_going then
             exit 255
           else
@@ -2879,7 +3066,7 @@ let impl_obligations (obpairs : (decl_obligation * unit) list) : K.decl list =
   List.map impl_obligation (List.map fst obpairs)
   *)
 
-let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
+let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file * CharonMetadata.t =
   let {
     C.name;
     declarations;
@@ -2929,6 +3116,7 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
         fail "Trait decl id not found: %s" (Charon.Print.trait_decl_id_to_string format_env id)
   in
   let name_ctx = Charon.NameMatcher.ctx_from_crate crate in
+  let charon_metadata = CharonMetadata.create () in
   let env =
     {
       get_nth_function;
@@ -2944,8 +3132,9 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
       crate_name = name;
       name_ctx;
       generic_params = Charon.TypesUtils.empty_generic_params;
+      charon_metadata;
     }
   in
   let trans_decls = decls_of_declarations env declarations in
   let extra_decls = Builtin.[ dst_ref_shared_decl; dst_ref_mut_decl; decl_of_arr ] in
-  name, trans_decls @ extra_decls
+  (name, trans_decls @ extra_decls), charon_metadata

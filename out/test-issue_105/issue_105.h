@@ -15,29 +15,47 @@
 extern "C" {
 #endif
 
-/**
-This function found in impl {impl core::cmp::PartialEq<()> for ()}
-*/
-bool core_cmp_impls_eq_23(void *const *self, void *const *_other);
+#define core_result_Ok 0
+#define core_result_Err 1
 
-/**
-This function found in impl {impl core::cmp::PartialEq<()> for ()}
-*/
-bool core_cmp_impls_ne_23(void *const *self, void *const *_other);
+typedef uint8_t core_result_Result___core__convert__Infallible__u8__tags;
 
-/**
-This function found in impl {impl core::cmp::PartialEq<u8> for u8}
-*/
-bool core_cmp_impls_eq_a2(const uint8_t *self, const uint8_t *other);
-
-/**
-This function found in impl {impl core::cmp::PartialEq<u8> for u8}
-*/
-bool core_cmp_impls_ne_a2(const uint8_t *self, const uint8_t *other);
+typedef struct core_result_Result_______u8__s
+{
+  core_result_Result___core__convert__Infallible__u8__tags tag;
+  uint8_t f0;
+}
+core_result_Result_______u8_;
 
 
 
 typedef uint8_t core_convert_Infallible;
+
+typedef struct core_result_Result___core__convert__Infallible__u8__s
+{
+  core_result_Result___core__convert__Infallible__u8__tags tag;
+  union {
+    core_convert_Infallible case_Ok;
+    uint8_t case_Err;
+  }
+  val;
+}
+core_result_Result___core__convert__Infallible__u8_;
+
+#define core_ops_control_flow_Continue 0
+#define core_ops_control_flow_Break 1
+
+typedef uint8_t
+core_ops_control_flow_ControlFlow___core__result__Result___core__convert__Infallible__u8_______tags;
+
+typedef struct
+core_ops_control_flow_ControlFlow___core__result__Result___core__convert__Infallible__u8_______s
+{
+  core_ops_control_flow_ControlFlow___core__result__Result___core__convert__Infallible__u8_______tags
+  tag;
+  core_result_Result___core__convert__Infallible__u8_ f0;
+}
+core_ops_control_flow_ControlFlow___core__result__Result___core__convert__Infallible__u8______;
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -45,108 +63,65 @@ typedef uint8_t core_convert_Infallible;
 
 typedef uint8_t core_panicking_AssertKind;
 
-#define core_result_Ok 0
-#define core_result_Err 1
-
-typedef uint8_t core_result_Result_1d_tags;
+core_result_Result_______u8_ issue_105_inner(void);
 
 /**
-A monomorphic instance of core.result.Result
-with types (), uint8_t
-
+This function found in impl {impl core::ops::try_trait::Try for core::result::Result::<(), u8>}
 */
-typedef struct core_result_Result_1d_s
-{
-  core_result_Result_1d_tags tag;
-  uint8_t f0;
-}
-core_result_Result_1d;
-
-core_result_Result_1d issue_105_inner(void);
-
-/**
-A monomorphic instance of core.result.Result
-with types core_convert_Infallible, uint8_t
-
-*/
-typedef struct core_result_Result_8f_s
-{
-  core_result_Result_1d_tags tag;
-  union {
-    core_convert_Infallible case_Ok;
-    uint8_t case_Err;
-  }
-  val;
-}
-core_result_Result_8f;
-
-#define core_ops_control_flow_Continue 0
-#define core_ops_control_flow_Break 1
-
-typedef uint8_t core_ops_control_flow_ControlFlow_19_tags;
-
-/**
-A monomorphic instance of core.ops.control_flow.ControlFlow
-with types core_result_Result_8f, ()
-
-*/
-typedef struct core_ops_control_flow_ControlFlow_19_s
-{
-  core_ops_control_flow_ControlFlow_19_tags tag;
-  core_result_Result_8f f0;
-}
-core_ops_control_flow_ControlFlow_19;
-
-/**
-This function found in impl {impl core::ops::try_trait::Try for core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
-*/
-/**
-A monomorphic instance of core.result.branch_fd
-with types (), uint8_t
-
-*/
-core_ops_control_flow_ControlFlow_19 core_result_branch_fd_e9(core_result_Result_1d self);
+core_ops_control_flow_ControlFlow___core__result__Result___core__convert__Infallible__u8______
+core_result_branch_______u8__c4(core_result_Result_______u8_ self);
 
 /**
  Returns the argument unchanged.
 */
 /**
-This function found in impl {impl core::convert::From<T> for T}
+This function found in impl {impl core::convert::From<u8> for u8}
 */
-/**
-A monomorphic instance of core.convert.from_29
-with types uint8_t
-
-*/
-static KRML_MUSTINLINE uint8_t core_convert_from_29_90(uint8_t t)
+static KRML_MUSTINLINE uint8_t core_convert_from___u8__24(uint8_t t)
 {
   return t;
 }
 
 /**
-This function found in impl {impl core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible, E>[{built_in impl core::marker::Sized for core::convert::Infallible}, @TraitClause1]> for core::result::Result<T, F>[@TraitClause0, @TraitClause2]}
+This function found in impl {impl core::ops::try_trait::FromResidual<core::result::Result::<core::convert::Infallible, u8>> for core::result::Result::<(), u8>}
 */
-/**
-A monomorphic instance of core.result.from_residual_9d
-with types (), uint8_t, uint8_t
-with const generics
+core_result_Result_______u8_
+core_result_from_residual_______u8__u8__82(
+  core_result_Result___core__convert__Infallible__u8_ residual
+);
 
-*/
-core_result_Result_1d core_result_from_residual_9d_48(core_result_Result_8f residual);
-
-core_result_Result_1d issue_105_call_it(void);
+core_result_Result_______u8_ issue_105_call_it(void);
 
 /**
-This function found in impl {impl core::cmp::PartialEq<core::result::Result<T, E>[@TraitClause0, @TraitClause1]> for core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
+This function found in impl {impl core::cmp::PartialEq<()> for ()}
 */
-/**
-A monomorphic instance of core.result.eq_89
-with types (), uint8_t
-with const generics
+bool core_cmp_impls_eq_23(void *const *self, void *const *_other);
 
+/**
+This function found in impl {impl core::cmp::PartialEq<&'_ ()> for &'_ ()}
 */
 bool
-core_result_eq_89_eb(const core_result_Result_1d *self, const core_result_Result_1d *other);
+core_cmp_impls_eq___________________ef(void *const *const *self, void *const *const *other);
+
+/**
+This function found in impl {impl core::cmp::PartialEq<u8> for u8}
+*/
+bool core_cmp_impls_eq_a2(const uint8_t *self, const uint8_t *other);
+
+/**
+This function found in impl {impl core::cmp::PartialEq<&'_ u8> for &'_ u8}
+*/
+bool
+core_cmp_impls_eq___________u8__u8__85(const uint8_t *const *self, const uint8_t *const *other);
+
+/**
+This function found in impl {impl core::cmp::PartialEq<core::result::Result::<(), u8>> for core::result::Result::<(), u8>}
+*/
+bool
+core_result_eq_______u8__92(
+  const core_result_Result_______u8_ *self,
+  const core_result_Result_______u8_ *other
+);
 
 void issue_105_main(void);
 

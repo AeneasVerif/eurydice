@@ -15,12 +15,15 @@
 extern "C" {
 #endif
 
-void issue_107_main(void);
+typedef struct core_marker_MetaSized__vtable__s
+{
+  size_t size;
+  size_t align;
+  void *const *drop;
+}
+core_marker_MetaSized__vtable_;
 
-/**
-This function found in impl {impl issue_107::Fun for issue_107::MyStruct}
-*/
-uint8_t issue_107_f_0b(void);
+void issue_107_main(void);
 
 #if defined(__cplusplus)
 }

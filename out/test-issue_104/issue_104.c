@@ -7,28 +7,22 @@
 
 #include "issue_104.h"
 
-/**
-A monomorphic instance of issue_104.sth
-with types issue_104_S
-with const generics
-
-*/
-uint8_t issue_104_sth_50(void)
-{
-  return ISSUE_104__IMPL_ISSUE_104__FUN_FOR_ISSUE_104__S__VAL;
-}
-
-uint8_t issue_104_call(void)
-{
-  return issue_104_sth_50();
-}
-
 typedef struct const_uint8_t__x2_s
 {
   const uint8_t *fst;
   const uint8_t *snd;
 }
 const_uint8_t__x2;
+
+uint8_t issue_104_sth___issue_104__S_(void)
+{
+  return ISSUE_104__IMPL_ISSUE_104__FUN_FOR_ISSUE_104__S__VAL;
+}
+
+uint8_t issue_104_call(void)
+{
+  return issue_104_sth___issue_104__S_();
+}
 
 void issue_104_main(void)
 {

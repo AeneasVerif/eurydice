@@ -8,98 +8,19 @@
 #include "substr.h"
 
 /**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types Eurydice_c_char_t, size_t
-
+This function found in impl {impl core::ops::index::Index<core::ops::range::RangeFrom::<usize>> for str}
 */
-typedef struct dst_ref_mut_0d_s
+static Eurydice_dst_ref_shared_0d
+index___core__ops__range__RangeFrom___usize___7e(Eurydice_dst_ref_shared_0d s, size_t r)
 {
-  Eurydice_c_char_t *ptr;
-  size_t meta;
+  return (KRML_CLITERAL(Eurydice_dst_ref_shared_0d){ .ptr = s.ptr + r, .meta = s.meta - r });
 }
-dst_ref_mut_0d;
-
-#define None 0
-#define Some 1
-
-typedef uint8_t Option_9f_tags;
-
-/**
-A monomorphic instance of core.option.Option
-with types Eurydice_dst_ref_shared_0d
-
-*/
-typedef struct Option_9f_s
-{
-  Option_9f_tags tag;
-  Eurydice_dst_ref_shared_0d f0;
-}
-Option_9f;
-
-extern Option_9f
-core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____get(
-  size_t x0,
-  Eurydice_dst_ref_shared_0d x1
-);
-
-/**
-A monomorphic instance of core.option.Option
-with types Eurydice_dst_ref_mut_0d
-
-*/
-typedef struct Option_c0_s
-{
-  Option_9f_tags tag;
-  dst_ref_mut_0d f0;
-}
-Option_c0;
-
-extern Option_c0
-core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____get_mut(
-  size_t x0,
-  dst_ref_mut_0d x1
-);
-
-extern Eurydice_dst_ref_shared_0d
-core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____get_unchecked(
-  size_t x0,
-  Eurydice_dst_ref_shared_0d x1
-);
-
-extern dst_ref_mut_0d
-core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____get_unchecked_mut(
-  size_t x0,
-  dst_ref_mut_0d x1
-);
-
-extern Eurydice_dst_ref_shared_0d
-core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____index(
-  size_t x0,
-  Eurydice_dst_ref_shared_0d x1
-);
-
-extern dst_ref_mut_0d
-core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____index_mut(
-  size_t x0,
-  dst_ref_mut_0d x1
-);
 
 void substr_main(void)
 {
   Eurydice_dst_ref_shared_0d str = { .ptr = "abc", .meta = (size_t)3U };
   Eurydice_dst_ref_shared_0d
-  take =
-    core_str_traits__impl_core__ops__index__Index_I__Clause1_Output__for_str__index(core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____get,
-      core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____get_mut,
-      core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____get_unchecked,
-      core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____get_unchecked_mut,
-      core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____index,
-      core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____index_mut,
-      str,
-      (size_t)1U,
-      size_t,
-      Eurydice_c_char_t [],
-      Eurydice_dst_ref_shared_0d);
+  take = index___core__ops__range__RangeFrom___usize___7e(str, (size_t)1U);
   EURYDICE_ASSERT(core_str__str__len(take) == (size_t)2U, "panic!");
 }
 

@@ -15,20 +15,28 @@
 extern "C" {
 #endif
 
-/**
-This function found in impl {impl core::ops::function::Fn<(i32,), i32> for closure_fn_cast::main::closure}
-*/
-int32_t closure_fn_cast_main_call_be(void *const *_, int32_t tupled_args);
+typedef struct core_marker_MetaSized__vtable__s
+{
+  size_t size;
+  size_t align;
+  void *const *drop;
+}
+core_marker_MetaSized__vtable_;
 
 /**
-This function found in impl {impl core::ops::function::FnMut<(i32,), i32> for closure_fn_cast::main::closure}
+This function found in impl {impl core::ops::function::Fn<(i32,)> for closure_fn_cast::main::closure}
 */
-int32_t closure_fn_cast_main_call_mut_3e(void **state, int32_t args);
+int32_t closure_fn_cast_main_call_76(void *const *_, int32_t tupled_args);
 
 /**
-This function found in impl {impl core::ops::function::FnOnce<(i32,), i32> for closure_fn_cast::main::closure}
+This function found in impl {impl core::ops::function::FnMut<(i32,)> for closure_fn_cast::main::closure}
 */
-int32_t closure_fn_cast_main_call_once_bf(int32_t _);
+int32_t closure_fn_cast_main_call_mut_21(void **state, int32_t args);
+
+/**
+This function found in impl {impl core::ops::function::FnOnce<(i32,)> for closure_fn_cast::main::closure}
+*/
+int32_t closure_fn_cast_main_call_once_cf(int32_t _);
 
 int32_t closure_fn_cast_main_closure_as_fn(int32_t arg1);
 

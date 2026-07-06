@@ -25,17 +25,17 @@ typedef struct more_primitive_types_MorePrimitiveTypes_s
 }
 more_primitive_types_MorePrimitiveTypes;
 
-int32_t more_primitive_types_int128_operations(more_primitive_types_MorePrimitiveTypes *p);
-
 int32_t more_primitive_types_match_u128(const more_primitive_types_MorePrimitiveTypes *p);
 
 int32_t more_primitive_types_match_i128(const more_primitive_types_MorePrimitiveTypes *p);
 
+int32_t more_primitive_types_int128_operations(more_primitive_types_MorePrimitiveTypes *p);
+
+int32_t more_primitive_types_more_operations(more_primitive_types_MorePrimitiveTypes *p);
+
 void more_primitive_types_use_more_primitive_types(void);
 
 void more_primitive_types_main(void);
-
-int32_t more_primitive_types_more_operations(more_primitive_types_MorePrimitiveTypes *p);
 
 #if defined(__cplusplus)
 }

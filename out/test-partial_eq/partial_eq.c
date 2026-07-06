@@ -7,14 +7,6 @@
 
 #include "partial_eq.h"
 
-/**
-This function found in impl {impl core::cmp::PartialEq<partial_eq::Enum> for partial_eq::Enum}
-*/
-inline bool partial_eq_eq_9e(const partial_eq_Enum *self, const partial_eq_Enum *other)
-{
-  return true;
-}
-
 typedef struct const_partial_eq_Enum__x2_s
 {
   const partial_eq_Enum *fst;
@@ -29,6 +21,26 @@ typedef struct const_const_partial_eq_Enum___x2_s
 }
 const_const_partial_eq_Enum___x2;
 
+/**
+This function found in impl {impl core::cmp::PartialEq<partial_eq::Enum> for partial_eq::Enum}
+*/
+inline bool partial_eq_eq_9e(const partial_eq_Enum *self, const partial_eq_Enum *other)
+{
+  return true;
+}
+
+/**
+This function found in impl {impl core::cmp::PartialEq<&'_ partial_eq::Enum> for &'_ partial_eq::Enum}
+*/
+bool
+core_cmp_impls_eq___________partial_eq__Enum__partial_eq__Enum__41(
+  const partial_eq_Enum *const *x,
+  const partial_eq_Enum *const *y
+)
+{
+  return partial_eq_eq_9e(x[0U], y[0U]);
+}
+
 void partial_eq_main(void)
 {
   partial_eq_Enum expected = partial_eq_Enum_A;
@@ -39,17 +51,8 @@ void partial_eq_main(void)
   /* original Rust expression is not an lvalue in C */
   const partial_eq_Enum *lvalue = &expected;
   const_const_partial_eq_Enum___x2 uu____1 = { .fst = &lvalue0, .snd = &lvalue };
-  EURYDICE_ASSERT(partial_eq_eq_9e(uu____1.fst[0U], uu____1.snd[0U]), "panic!");
-}
-
-/**
-This function found in impl {impl core::fmt::Debug for partial_eq::Enum}
-*/
-inline core_result_Result_10
-partial_eq_fmt_93(const partial_eq_Enum *self, core_fmt_Formatter *f)
-{
-  return
-    core_fmt__core__fmt__Formatter__a___write_str(f,
-      (KRML_CLITERAL(Eurydice_dst_ref_shared_0d){ .ptr = "A", .meta = (size_t)1U }));
+  EURYDICE_ASSERT(core_cmp_impls_eq___________partial_eq__Enum__partial_eq__Enum__41(uu____1.fst,
+      uu____1.snd),
+    "panic!");
 }
 

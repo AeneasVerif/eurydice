@@ -15,28 +15,17 @@
 extern "C" {
 #endif
 
-/**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types Eurydice_c_char_t, size_t
+#define partial_eq_Enum_A 0
 
-*/
-typedef struct Eurydice_dst_ref_shared_0d_s
+typedef uint8_t partial_eq_Enum;
+
+typedef struct core_marker_MetaSized__vtable__s
 {
-  const Eurydice_c_char_t *ptr;
-  size_t meta;
+  size_t size;
+  size_t align;
+  void *const *drop;
 }
-Eurydice_dst_ref_shared_0d;
-
-#define core_result_Ok 0
-#define core_result_Err 1
-
-typedef uint8_t core_result_Result_10;
-
-extern core_result_Result_10
-core_fmt__core__fmt__Formatter__a___write_str(
-  core_fmt_Formatter *x0,
-  Eurydice_dst_ref_shared_0d x1
-);
+core_marker_MetaSized__vtable_;
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -44,21 +33,21 @@ core_fmt__core__fmt__Formatter__a___write_str(
 
 typedef uint8_t core_panicking_AssertKind;
 
-#define partial_eq_Enum_A 0
-
-typedef uint8_t partial_eq_Enum;
-
 /**
 This function found in impl {impl core::cmp::PartialEq<partial_eq::Enum> for partial_eq::Enum}
 */
 bool partial_eq_eq_9e(const partial_eq_Enum *self, const partial_eq_Enum *other);
 
-void partial_eq_main(void);
-
 /**
-This function found in impl {impl core::fmt::Debug for partial_eq::Enum}
+This function found in impl {impl core::cmp::PartialEq<&'_ partial_eq::Enum> for &'_ partial_eq::Enum}
 */
-core_result_Result_10 partial_eq_fmt_93(const partial_eq_Enum *self, core_fmt_Formatter *f);
+bool
+core_cmp_impls_eq___________partial_eq__Enum__partial_eq__Enum__41(
+  const partial_eq_Enum *const *x,
+  const partial_eq_Enum *const *y
+);
+
+void partial_eq_main(void);
 
 #if defined(__cplusplus)
 }

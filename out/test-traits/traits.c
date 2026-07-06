@@ -8,6 +8,21 @@
 #include "traits.h"
 
 /**
+This function found in impl {impl core::ops::index::Index<core::ops::range::Range::<usize>> for [traits::Foo; 2 : usize]}
+*/
+Eurydice_dst_ref_shared_42
+core_array_index___traits__Foo__core__ops__range__Range___usize___2___usize__7a(
+  const Eurydice_arr_0e *a,
+  core_ops_range_Range___usize_ r
+)
+{
+  return
+    (
+      KRML_CLITERAL(Eurydice_dst_ref_shared_42){ .ptr = a->data + r.start, .meta = r.end - r.start }
+    );
+}
+
+/**
 This function found in impl {impl traits::ToInt for traits::Foo}
 */
 uint32_t traits_to_int_62(const traits_Foo *self)
@@ -32,27 +47,12 @@ uint32_t traits_to_int_62(const traits_Foo *self)
 }
 
 /**
-This function found in impl {impl traits::ToInt for &'_0 [traits::Foo]}
+This function found in impl {impl traits::ToInt for &'_ [traits::Foo]}
 */
-uint32_t traits_to_int_db(const Eurydice_dst_ref_shared_42 *self)
+uint32_t traits_to_int_______3f(const Eurydice_dst_ref_shared_42 *self)
 {
   uint32_t uu____0 = traits_to_int_62(&self->ptr[0U]);
   return uu____0 * traits_to_int_62(&self->ptr[1U]);
-}
-
-/**
-A monomorphic instance of Eurydice.array_to_subslice_shared
-with types traits_Foo, core_ops_range_Range size_t, Eurydice_derefed_slice traits_Foo
-with const generics
-- N= 2
-*/
-static Eurydice_dst_ref_shared_42
-array_to_subslice_shared_7d(const Eurydice_arr_0e *a, core_ops_range_Range_87 r)
-{
-  return
-    (
-      KRML_CLITERAL(Eurydice_dst_ref_shared_42){ .ptr = a->data + r.start, .meta = r.end - r.start }
-    );
 }
 
 void traits_main(void)
@@ -61,9 +61,9 @@ void traits_main(void)
   /* original Rust expression is not an lvalue in C */
   Eurydice_dst_ref_shared_42
   lvalue =
-    array_to_subslice_shared_7d(&foos,
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)2U }));
-  if (!(traits_to_int_db(&lvalue) != 2U))
+    core_array_index___traits__Foo__core__ops__range__Range___usize___2___usize__7a(&foos,
+      (KRML_CLITERAL(core_ops_range_Range___usize_){ .start = (size_t)0U, .end = (size_t)2U }));
+  if (!(traits_to_int_______3f(&lvalue) != 2U))
   {
     return;
   }

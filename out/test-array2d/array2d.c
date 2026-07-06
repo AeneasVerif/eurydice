@@ -7,6 +7,48 @@
 
 #include "array2d.h"
 
+typedef struct const_bool__x2_s
+{
+  const bool *fst;
+  const bool *snd;
+}
+const_bool__x2;
+
+bool
+core_intrinsics_raw_eq_____u32__2___usize___4___usize__(
+  const Eurydice_arr_ac *a,
+  const Eurydice_arr_ac *b
+)
+{
+  return Eurydice_array_eq((size_t)4U, a, b, Eurydice_arr_a0);
+}
+
+/**
+This function found in impl {impl core::array::equality::SpecArrayEq<[u32; 2 : usize], 4 : usize> for [u32; 2 : usize]}
+*/
+bool
+core_array_equality_spec_eq____u32__2___usize____u32__2___usize___4___usize__e7(
+  const Eurydice_arr_ac *a,
+  const Eurydice_arr_ac *b
+)
+{
+  return core_intrinsics_raw_eq_____u32__2___usize___4___usize__(a, b);
+}
+
+/**
+This function found in impl {impl core::cmp::PartialEq<[[u32; 2 : usize]; 4 : usize]> for [[u32; 2 : usize]; 4 : usize]}
+*/
+inline bool
+core_array_equality_eq____u32__2___usize____u32__2___usize___4___usize__6e(
+  const Eurydice_arr_ac *self,
+  const Eurydice_arr_ac *other
+)
+{
+  return
+    core_array_equality_spec_eq____u32__2___usize____u32__2___usize___4___usize__e7(self,
+      other);
+}
+
 bool array2d_f(Eurydice_arr_ac x)
 {
   x.data[0U] = (KRML_CLITERAL(Eurydice_arr_a0){ .data = { 1U, 2U } });
@@ -20,15 +62,8 @@ bool array2d_f(Eurydice_arr_ac x)
         { .data = { 3U, 4U } }
       }
     };
-  return Eurydice_array_eq((size_t)4U, &x, &y, Eurydice_arr_a0);
+  return core_array_equality_eq____u32__2___usize____u32__2___usize___4___usize__6e(&x, &y);
 }
-
-typedef struct const_bool__x2_s
-{
-  const bool *fst;
-  const bool *snd;
-}
-const_bool__x2;
 
 void array2d_main(void)
 {

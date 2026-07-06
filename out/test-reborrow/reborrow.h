@@ -15,11 +15,24 @@
 extern "C" {
 #endif
 
+typedef struct core_marker_MetaSized__vtable__s
+{
+  size_t size;
+  size_t align;
+  void *const *drop;
+}
+core_marker_MetaSized__vtable_;
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2
 
 typedef uint8_t core_panicking_AssertKind;
+
+extern void
+alloc_boxed_Box__impl_core__marker__Destruct_for_alloc__boxed__Box_u8___built_in_impl_core__marker__MetaSized_for_u8____built_in_impl_core__marker__Sized_for_alloc__alloc__Global____drop_glue___u8__alloc__alloc__Global_(
+  uint8_t **x0
+);
 
 void reborrow_main(void);
 

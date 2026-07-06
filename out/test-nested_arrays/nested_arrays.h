@@ -15,88 +15,7 @@
 extern "C" {
 #endif
 
-extern size_t core_clone_impls__impl_core__clone__Clone_for_usize__clone(const size_t *x0);
-
-#define core_cmp_Ordering_Less -1
-#define core_cmp_Ordering_Equal 0
-#define core_cmp_Ordering_Greater 1
-
-typedef int8_t core_cmp_Ordering;
-
-extern bool
-core_cmp_impls__impl_core__cmp__PartialEq_usize__for_usize__eq(
-  const size_t *x0,
-  const size_t *x1
-);
-
-#define core_option_None 0
-#define core_option_Some 1
-
-typedef uint8_t core_option_Option_77_tags;
-
-/**
-A monomorphic instance of core.option.Option
-with types core_cmp_Ordering
-
-*/
-typedef struct core_option_Option_77_s
-{
-  core_option_Option_77_tags tag;
-  core_cmp_Ordering f0;
-}
-core_option_Option_77;
-
-extern core_option_Option_77
-core_cmp_impls__impl_core__cmp__PartialOrd_usize__for_usize__partial_cmp(
-  const size_t *x0,
-  const size_t *x1
-);
-
-/**
-A monomorphic instance of core.option.Option
-with types size_t
-
-*/
-typedef struct core_option_Option_87_s
-{
-  core_option_Option_77_tags tag;
-  size_t f0;
-}
-core_option_Option_87;
-
-extern core_option_Option_87
-core_iter_range__impl_core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
-
-extern core_option_Option_87
-core_iter_range__impl_core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
-
-/**
-A monomorphic instance of n-tuple
-with types size_t, core_option_Option_87
-
-*/
-typedef struct tuple_21_s
-{
-  size_t fst;
-  core_option_Option_87 snd;
-}
-tuple_21;
-
-extern tuple_21
-core_iter_range__impl_core__iter__range__Step_for_usize__steps_between(
-  const size_t *x0,
-  const size_t *x1
-);
-
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
-
 typedef struct nested_arrays_Key_s { uint32_t data[8U]; } nested_arrays_Key;
-
-#define NESTED_ARRAYS_ZERO ((KRML_CLITERAL(nested_arrays_Key){ .data = { 0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U } }))
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -114,8 +33,6 @@ with const generics
 */
 typedef struct Eurydice_arr_9a_s { Eurydice_arr_40 data[3U]; } Eurydice_arr_9a;
 
-void nested_arrays_main(void);
-
 /**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
@@ -132,7 +49,52 @@ with const generics
 */
 typedef struct Eurydice_arr_a1_s { Eurydice_arr_5c data[4U]; } Eurydice_arr_a1;
 
+#define core_option_None 0
+#define core_option_Some 1
+
+typedef uint8_t core_option_Option___usize__tags;
+
+typedef struct core_option_Option___usize__s
+{
+  core_option_Option___usize__tags tag;
+  size_t f0;
+}
+core_option_Option___usize_;
+
+typedef struct core_ops_range_Range___usize__s
+{
+  size_t start;
+  size_t end;
+}
+core_ops_range_Range___usize_;
+
+typedef core_option_Option___usize__tags core_option_Option___core__fmt__Arguments_______;
+
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
+
+#define NESTED_ARRAYS_ZERO ((KRML_CLITERAL(nested_arrays_Key){ .data = { 0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U } }))
+
 Eurydice_arr_a1 nested_arrays_test(void);
+
+void nested_arrays_main(void);
+
+/**
+This function found in impl {impl core::iter::traits::iterator::Iterator for core::ops::range::Range::<usize>}
+*/
+core_option_Option___usize_
+core_iter_range_next___usize__dc(core_ops_range_Range___usize_ *range);
+
+/**
+This function found in impl {impl core::iter::traits::collect::IntoIterator for core::ops::range::Range::<usize>}
+*/
+core_ops_range_Range___usize_
+core_iter_traits_collect_into_iter___core__ops__range__Range___usize___4e(
+  core_ops_range_Range___usize_ range
+);
 
 #if defined(__cplusplus)
 }

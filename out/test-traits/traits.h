@@ -15,27 +15,10 @@
 extern "C" {
 #endif
 
-/**
-A monomorphic instance of core.ops.range.Range
-with types size_t
-
-*/
-typedef struct core_ops_range_Range_87_s
-{
-  size_t start;
-  size_t end;
-}
-core_ops_range_Range_87;
-
 #define traits_Foo_Foo1 0
 #define traits_Foo_Foo2 1
 
 typedef uint8_t traits_Foo;
-
-/**
-This function found in impl {impl traits::ToInt for traits::Foo}
-*/
-uint32_t traits_to_int_62(const traits_Foo *self);
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
@@ -50,17 +33,56 @@ typedef struct Eurydice_dst_ref_shared_42_s
 Eurydice_dst_ref_shared_42;
 
 /**
-This function found in impl {impl traits::ToInt for &'_0 [traits::Foo]}
-*/
-uint32_t traits_to_int_db(const Eurydice_dst_ref_shared_42 *self);
-
-/**
 A monomorphic instance of Eurydice.arr
 with types traits_Foo
 with const generics
 - $2size_t
 */
 typedef struct Eurydice_arr_0e_s { traits_Foo data[2U]; } Eurydice_arr_0e;
+
+typedef struct core_ops_range_Range___usize__s
+{
+  size_t start;
+  size_t end;
+}
+core_ops_range_Range___usize_;
+
+typedef struct core_marker_MetaSized__vtable__s
+{
+  size_t size;
+  size_t align;
+  void *const *drop;
+}
+core_marker_MetaSized__vtable_;
+
+typedef struct traits_ToInt__vtable__s
+{
+  size_t size;
+  size_t align;
+  void *const *drop;
+  void *const *method_to_int;
+  const core_marker_MetaSized__vtable_ *super_trait_0;
+}
+traits_ToInt__vtable_;
+
+/**
+This function found in impl {impl core::ops::index::Index<core::ops::range::Range::<usize>> for [traits::Foo; 2 : usize]}
+*/
+Eurydice_dst_ref_shared_42
+core_array_index___traits__Foo__core__ops__range__Range___usize___2___usize__7a(
+  const Eurydice_arr_0e *a,
+  core_ops_range_Range___usize_ r
+);
+
+/**
+This function found in impl {impl traits::ToInt for traits::Foo}
+*/
+uint32_t traits_to_int_62(const traits_Foo *self);
+
+/**
+This function found in impl {impl traits::ToInt for &'_ [traits::Foo]}
+*/
+uint32_t traits_to_int_______3f(const Eurydice_dst_ref_shared_42 *self);
 
 void traits_main(void);
 

@@ -7,6 +7,46 @@
 
 #include "where_clauses_closures.h"
 
+typedef struct const_size_t__x2_s
+{
+  const size_t *fst;
+  const size_t *snd;
+}
+const_size_t__x2;
+
+/**
+This function found in impl {impl where_clauses_closures::Ops<1 : usize> for usize}
+*/
+size_t where_clauses_closures_of_usize_ec(size_t x)
+{
+  return core_convert_into___usize__usize__83(x);
+}
+
+/**
+This function found in impl {impl core::ops::function::FnMut<(usize,)> for where_clauses_closures::test::closure::<usize, 1 : usize>}
+*/
+size_t
+where_clauses_closures_test_call_mut___usize__1___usize__93(void **_, size_t tupled_args)
+{
+  size_t i = tupled_args;
+  return where_clauses_closures_of_usize_ec(i);
+}
+
+Eurydice_arr_58
+core_array_from_fn___usize__where_clauses_closures__test__closure___usize__1___usize___1___usize_(
+  void
+)
+{
+  void *f_lvalue = (void *)0U;
+  Eurydice_arr_58 arr_struct;
+  {
+    arr_struct.data[0U] =
+      where_clauses_closures_test_call_mut___usize__1___usize__93(&f_lvalue,
+        (size_t)0U);
+  }
+  return arr_struct;
+}
+
 /**
 This function found in impl {impl where_clauses_closures::Ops<1 : usize> for usize}
 */
@@ -15,77 +55,39 @@ size_t where_clauses_closures_zero_ec(void)
   return (size_t)0U;
 }
 
-/**
-This function found in impl {impl where_clauses_closures::Ops<1 : usize> for usize}
-*/
-size_t where_clauses_closures_of_usize_ec(size_t x)
+size_t_x2 where_clauses_closures_test___usize__1___usize_(void)
 {
-  return x;
-}
-
-/**
-This function found in impl {impl core::ops::function::FnMut<(usize,), T> for where_clauses_closures::test::closure<T, K>[@TraitClause0, @TraitClause1, @TraitClause2]}
-*/
-/**
-A monomorphic instance of where_clauses_closures.test.call_mut_0c
-with types size_t
-with const generics
-- K= 1
-*/
-size_t where_clauses_closures_test_call_mut_0c_df(void **_, size_t tupled_args)
-{
-  size_t i = tupled_args;
-  return where_clauses_closures_of_usize_ec(i);
-}
-
-/**
-This function found in impl {impl core::ops::function::FnOnce<(usize,), T> for where_clauses_closures::test::closure<T, K>[@TraitClause0, @TraitClause1, @TraitClause2]}
-*/
-/**
-A monomorphic instance of where_clauses_closures.test.call_once_8c
-with types size_t
-with const generics
-- K= 1
-*/
-size_t where_clauses_closures_test_call_once_8c_df(size_t _)
-{
-  /* original Rust expression is not an lvalue in C */
-  void *lvalue = (void *)0U;
-  return where_clauses_closures_test_call_mut_0c_df(&lvalue, _);
-}
-
-/**
-A monomorphic instance of where_clauses_closures.test
-with types size_t
-with const generics
-- K= 1
-*/
-size_t_x2 where_clauses_closures_test_df(void)
-{
-  Eurydice_arr_58 arr_struct;
-  {
-    /* original Rust expression is not an lvalue in C */
-    void *lvalue = (void *)0U;
-    arr_struct.data[0U] = where_clauses_closures_test_call_mut_0c_df(&lvalue, (size_t)0U);
-  }
-  Eurydice_arr_58 x = arr_struct;
+  Eurydice_arr_58
+  x =
+    core_array_from_fn___usize__where_clauses_closures__test__closure___usize__1___usize___1___usize_();
   size_t y = where_clauses_closures_zero_ec();
   return (KRML_CLITERAL(size_t_x2){ .fst = x.data[0U], .snd = y });
 }
 
-typedef struct const_size_t__x2_s
-{
-  const size_t *fst;
-  const size_t *snd;
-}
-const_size_t__x2;
-
 void where_clauses_closures_main(void)
 {
-  size_t_x2 uu____0 = where_clauses_closures_test_df();
+  size_t_x2 uu____0 = where_clauses_closures_test___usize__1___usize_();
   size_t x = uu____0.fst;
   size_t y = uu____0.snd;
   const_size_t__x2 uu____1 = { .fst = &x, .snd = &y };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+}
+
+/**
+This function found in impl {impl core::marker::Destruct for where_clauses_closures::test::closure::<usize, 1 : usize>}
+*/
+void where_clauses_closures_test_closure_drop_glue___usize__1___usize__d3(void **_)
+{
+
+}
+
+/**
+This function found in impl {impl core::ops::function::FnOnce<(usize,)> for where_clauses_closures::test::closure::<usize, 1 : usize>}
+*/
+size_t where_clauses_closures_test_call_once___usize__1___usize__50(size_t _)
+{
+  /* original Rust expression is not an lvalue in C */
+  void *lvalue = (void *)0U;
+  return where_clauses_closures_test_call_mut___usize__1___usize__93(&lvalue, _);
 }
 

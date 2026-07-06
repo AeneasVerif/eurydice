@@ -7,6 +7,74 @@
 
 #include "issue_105.h"
 
+typedef struct const_core_result_Result_______u8___x2_s
+{
+  const core_result_Result_______u8_ *fst;
+  const core_result_Result_______u8_ *snd;
+}
+const_core_result_Result_______u8___x2;
+
+core_result_Result_______u8_ issue_105_inner(void)
+{
+  return (KRML_CLITERAL(core_result_Result_______u8_){ .tag = core_result_Err, .f0 = 1U });
+}
+
+/**
+This function found in impl {impl core::ops::try_trait::Try for core::result::Result::<(), u8>}
+*/
+inline core_ops_control_flow_ControlFlow___core__result__Result___core__convert__Infallible__u8______
+core_result_branch_______u8__c4(core_result_Result_______u8_ self)
+{
+  if (!(self.tag == core_result_Ok))
+  {
+    uint8_t e = self.f0;
+    return
+      (
+        KRML_CLITERAL(core_ops_control_flow_ControlFlow___core__result__Result___core__convert__Infallible__u8______){
+          .tag = core_ops_control_flow_Break,
+          .f0 = { .tag = core_result_Err, .val = { .case_Err = e } }
+        }
+      );
+  }
+  return
+    (
+      KRML_CLITERAL(core_ops_control_flow_ControlFlow___core__result__Result___core__convert__Infallible__u8______){
+        .tag = core_ops_control_flow_Continue
+      }
+    );
+}
+
+/**
+This function found in impl {impl core::ops::try_trait::FromResidual<core::result::Result::<core::convert::Infallible, u8>> for core::result::Result::<(), u8>}
+*/
+inline core_result_Result_______u8_
+core_result_from_residual_______u8__u8__82(
+  core_result_Result___core__convert__Infallible__u8_ residual
+)
+{
+  EURYDICE_ASSERT(residual.tag == core_result_Err, "panic!");
+  uint8_t e = residual.val.case_Err;
+  return
+    (
+      KRML_CLITERAL(core_result_Result_______u8_){
+        .tag = core_result_Err,
+        .f0 = core_convert_from___u8__24(e)
+      }
+    );
+}
+
+core_result_Result_______u8_ issue_105_call_it(void)
+{
+  core_ops_control_flow_ControlFlow___core__result__Result___core__convert__Infallible__u8______
+  uu____0 = core_result_branch_______u8__c4(issue_105_inner());
+  if (!(uu____0.tag == core_ops_control_flow_Continue))
+  {
+    core_result_Result___core__convert__Infallible__u8_ residual = uu____0.f0;
+    return core_result_from_residual_______u8__u8__82(residual);
+  }
+  return (KRML_CLITERAL(core_result_Result_______u8_){ .tag = core_result_Ok });
+}
+
 /**
 This function found in impl {impl core::cmp::PartialEq<()> for ()}
 */
@@ -16,11 +84,12 @@ inline bool core_cmp_impls_eq_23(void *const *self, void *const *_other)
 }
 
 /**
-This function found in impl {impl core::cmp::PartialEq<()> for ()}
+This function found in impl {impl core::cmp::PartialEq<&'_ ()> for &'_ ()}
 */
-inline bool core_cmp_impls_ne_23(void *const *self, void *const *_other)
+inline bool
+core_cmp_impls_eq___________________ef(void *const *const *self, void *const *const *other)
 {
-  return false;
+  return core_cmp_impls_eq_23(self[0U], other[0U]);
 }
 
 /**
@@ -32,102 +101,29 @@ inline bool core_cmp_impls_eq_a2(const uint8_t *self, const uint8_t *other)
 }
 
 /**
-This function found in impl {impl core::cmp::PartialEq<u8> for u8}
-*/
-inline bool core_cmp_impls_ne_a2(const uint8_t *self, const uint8_t *other)
-{
-  return self[0U] != other[0U];
-}
-
-core_result_Result_1d issue_105_inner(void)
-{
-  return (KRML_CLITERAL(core_result_Result_1d){ .tag = core_result_Err, .f0 = 1U });
-}
-
-/**
-This function found in impl {impl core::ops::try_trait::Try for core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
-*/
-/**
-A monomorphic instance of core.result.branch_fd
-with types (), uint8_t
-
-*/
-inline core_ops_control_flow_ControlFlow_19
-core_result_branch_fd_e9(core_result_Result_1d self)
-{
-  if (!(self.tag == core_result_Ok))
-  {
-    uint8_t e = self.f0;
-    return
-      (
-        KRML_CLITERAL(core_ops_control_flow_ControlFlow_19){
-          .tag = core_ops_control_flow_Break,
-          .f0 = { .tag = core_result_Err, .val = { .case_Err = e } }
-        }
-      );
-  }
-  return
-    (KRML_CLITERAL(core_ops_control_flow_ControlFlow_19){ .tag = core_ops_control_flow_Continue });
-}
-
-/**
-This function found in impl {impl core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible, E>[{built_in impl core::marker::Sized for core::convert::Infallible}, @TraitClause1]> for core::result::Result<T, F>[@TraitClause0, @TraitClause2]}
-*/
-/**
-A monomorphic instance of core.result.from_residual_9d
-with types (), uint8_t, uint8_t
-with const generics
-
-*/
-inline core_result_Result_1d core_result_from_residual_9d_48(core_result_Result_8f residual)
-{
-  EURYDICE_ASSERT(residual.tag == core_result_Err, "panic!");
-  uint8_t e = residual.val.case_Err;
-  return
-    (
-      KRML_CLITERAL(core_result_Result_1d){
-        .tag = core_result_Err,
-        .f0 = core_convert_from_29_90(e)
-      }
-    );
-}
-
-core_result_Result_1d issue_105_call_it(void)
-{
-  core_ops_control_flow_ControlFlow_19 uu____0 = core_result_branch_fd_e9(issue_105_inner());
-  if (!(uu____0.tag == core_ops_control_flow_Continue))
-  {
-    core_result_Result_8f residual = uu____0.f0;
-    return core_result_from_residual_9d_48(residual);
-  }
-  return (KRML_CLITERAL(core_result_Result_1d){ .tag = core_result_Ok });
-}
-
-typedef struct const_core_result_Result_1d__x2_s
-{
-  const core_result_Result_1d *fst;
-  const core_result_Result_1d *snd;
-}
-const_core_result_Result_1d__x2;
-
-/**
-This function found in impl {impl core::cmp::PartialEq<core::result::Result<T, E>[@TraitClause0, @TraitClause1]> for core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
-*/
-/**
-A monomorphic instance of core.result.eq_89
-with types (), uint8_t
-with const generics
-
+This function found in impl {impl core::cmp::PartialEq<&'_ u8> for &'_ u8}
 */
 inline bool
-core_result_eq_89_eb(const core_result_Result_1d *self, const core_result_Result_1d *other)
+core_cmp_impls_eq___________u8__u8__85(const uint8_t *const *self, const uint8_t *const *other)
+{
+  return core_cmp_impls_eq_a2(self[0U], other[0U]);
+}
+
+/**
+This function found in impl {impl core::cmp::PartialEq<core::result::Result::<(), u8>> for core::result::Result::<(), u8>}
+*/
+inline bool
+core_result_eq_______u8__92(
+  const core_result_Result_______u8_ *self,
+  const core_result_Result_______u8_ *other
+)
 {
   ptrdiff_t __self_discr = (ptrdiff_t)self->tag;
   ptrdiff_t __arg1_discr = (ptrdiff_t)other->tag;
   bool uu____0;
   if (__self_discr == __arg1_discr)
   {
-    const_core_result_Result_1d__x2 uu____1 = { .fst = self, .snd = other };
+    const_core_result_Result_______u8___x2 uu____1 = { .fst = self, .snd = other };
     if (uu____1.fst->tag == core_result_Ok)
     {
       EURYDICE_ASSERT(uu____1.snd->tag == core_result_Ok, "panic!");
@@ -137,14 +133,14 @@ core_result_eq_89_eb(const core_result_Result_1d *self, const core_result_Result
       /* original Rust expression is not an lvalue in C */
       void *lvalue = (void *)0U;
       void *const *__arg1_0 = &lvalue;
-      uu____0 = core_cmp_impls_eq_23(__self_0, __arg1_0);
+      uu____0 = core_cmp_impls_eq___________________ef(&__self_0, &__arg1_0);
     }
     else
     {
       EURYDICE_ASSERT(uu____1.snd->tag == core_result_Err, "panic!");
       const uint8_t *__self_0 = &uu____1.fst->f0;
       const uint8_t *__arg1_0 = &uu____1.snd->f0;
-      uu____0 = core_cmp_impls_eq_a2(__self_0, __arg1_0);
+      uu____0 = core_cmp_impls_eq___________u8__u8__85(&__self_0, &__arg1_0);
     }
   }
   else
@@ -157,10 +153,10 @@ core_result_eq_89_eb(const core_result_Result_1d *self, const core_result_Result
 void issue_105_main(void)
 {
   /* original Rust expression is not an lvalue in C */
-  core_result_Result_1d lvalue0 = issue_105_call_it();
+  core_result_Result_______u8_ lvalue0 = issue_105_call_it();
   /* original Rust expression is not an lvalue in C */
-  core_result_Result_1d lvalue = { .tag = core_result_Err, .f0 = 1U };
-  const_core_result_Result_1d__x2 uu____0 = { .fst = &lvalue0, .snd = &lvalue };
-  EURYDICE_ASSERT(core_result_eq_89_eb(uu____0.fst, uu____0.snd), "panic!");
+  core_result_Result_______u8_ lvalue = { .tag = core_result_Err, .f0 = 1U };
+  const_core_result_Result_______u8___x2 uu____0 = { .fst = &lvalue0, .snd = &lvalue };
+  EURYDICE_ASSERT(core_result_eq_______u8__92(uu____0.fst, uu____0.snd), "panic!");
 }
 

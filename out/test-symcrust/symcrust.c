@@ -7,20 +7,51 @@
 
 #include "symcrust.h"
 
-#include "internal/Eurydice.h"
+uint32_t core_cmp_Ord_min___u32_(uint32_t x, uint32_t y)
+{
+  if (x <= y)
+  {
+    return x;
+  }
+  else
+  {
+    return y;
+  }
+}
 
 /**
-A monomorphic instance of Eurydice.slice_subslice_mut
-with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
-
+This function found in impl {[u8]}
 */
-static Eurydice_mut_borrow_slice_u8
-slice_subslice_mut_c8(Eurydice_mut_borrow_slice_u8 s, core_ops_range_Range_87 r)
+size_t core_slice_len___u8__ea(Eurydice_borrow_slice_u8 s)
+{
+  return s.meta;
+}
+
+/**
+This function found in impl {impl core::ops::index::IndexMut<core::ops::range::Range::<usize>> for [u8]}
+*/
+Eurydice_mut_borrow_slice_u8
+core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(
+  Eurydice_mut_borrow_slice_u8 s,
+  core_ops_range_Range___usize_ r
+)
 {
   return
     (
       KRML_CLITERAL(Eurydice_mut_borrow_slice_u8){ .ptr = s.ptr + r.start, .meta = r.end - r.start }
     );
+}
+
+/**
+This function found in impl {[u8]}
+*/
+void
+core_slice_copy_from_slice___u8__ea(
+  Eurydice_mut_borrow_slice_u8 dst,
+  Eurydice_borrow_slice_u8 src
+)
+{
+  memcpy(dst.ptr, src.ptr, dst.meta * sizeof (uint8_t));
 }
 
 /**
@@ -51,7 +82,11 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
   uint32_t nBitsInAccumulator = 0U;
   EURYDICE_ASSERT(nBitsPerCoefficient > 0U, "panic!");
   EURYDICE_ASSERT(nBitsPerCoefficient <= 12U, "panic!");
-  EURYDICE_ASSERT((uint64_t)dst.meta == 256ULL * (uint64_t)nBitsPerCoefficient / 8ULL, "panic!");
+  EURYDICE_ASSERT((uint64_t)core_slice_len___u8__ea((
+        KRML_CLITERAL(Eurydice_borrow_slice_u8){ .ptr = dst.ptr, .meta = dst.meta }
+      ))
+    == 256ULL * (uint64_t)nBitsPerCoefficient / 8ULL,
+    "panic!");
   for (size_t i = (size_t)0U; i < (size_t)256U; i++)
   {
     size_t i0 = i;
@@ -69,7 +104,8 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
     }
     while (nBitsInCoefficient > 0U)
     {
-      uint32_t nBitsToEncode = Eurydice_min_u32(nBitsInCoefficient, 32U - nBitsInAccumulator);
+      uint32_t
+      nBitsToEncode = core_cmp_Ord_min___u32_(nBitsInCoefficient, 32U - nBitsInAccumulator);
       uint32_t bitsToEncode = coefficient & ((1U << (uint32_t)nBitsToEncode) - 1U);
       coefficient >>= (uint32_t)nBitsToEncode;
       nBitsInCoefficient -= nBitsToEncode;
@@ -79,16 +115,16 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
       {
         Eurydice_mut_borrow_slice_u8
         uu____0 =
-          slice_subslice_mut_c8(dst,
+          core_slice_index_index_mut___u8__core__ops__range__Range___usize___a2(dst,
             (
-              KRML_CLITERAL(core_ops_range_Range_87){
+              KRML_CLITERAL(core_ops_range_Range___usize_){
                 .start = cbDstWritten,
                 .end = cbDstWritten + (size_t)4U
               }
             ));
         /* original Rust expression is not an lvalue in C */
         Eurydice_array_u8x4 lvalue = core_num__u32__to_le_bytes(accumulator);
-        Eurydice_slice_copy(uu____0, array_to_slice_shared_98(&lvalue), uint8_t);
+        core_slice_copy_from_slice___u8__ea(uu____0, array_to_slice_shared_98(&lvalue));
         cbDstWritten += (size_t)4U;
         accumulator = 0U;
         nBitsInAccumulator = 0U;
@@ -100,5 +136,34 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
 void symcrust_main(void)
 {
 
+}
+
+/**
+This function found in impl {impl core::iter::traits::iterator::Iterator for core::ops::range::Range::<usize>}
+*/
+core_option_Option___usize_
+core_iter_range_next___usize__dc(core_ops_range_Range___usize_ *range)
+{
+  size_t start = range->start;
+  if (start < range->end)
+  {
+    range->start = start + (size_t)1U;
+    return (KRML_CLITERAL(core_option_Option___usize_){ .tag = core_option_Some, .f0 = start });
+  }
+  else
+  {
+    return (KRML_CLITERAL(core_option_Option___usize_){ .tag = core_option_None });
+  }
+}
+
+/**
+This function found in impl {impl core::iter::traits::collect::IntoIterator for core::ops::range::Range::<usize>}
+*/
+core_ops_range_Range___usize_
+core_iter_traits_collect_into_iter___core__ops__range__Range___usize___4e(
+  core_ops_range_Range___usize_ range
+)
+{
+  return range;
 }
 

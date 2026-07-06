@@ -15,7 +15,14 @@
 extern "C" {
 #endif
 
-#define names_Foo 0
+typedef struct names_Foo_s
+{
+  uint32_t x;
+  uint32_t y;
+}
+names_Foo;
+
+#define names_Foo0 0
 #define names_Bar 1
 
 typedef uint8_t names_Baz_tags;
@@ -35,13 +42,6 @@ typedef struct names_Baz_s
   val;
 }
 names_Baz;
-
-typedef struct names_Foo0_s
-{
-  uint32_t x;
-  uint32_t y;
-}
-names_Foo0;
 
 typedef struct names_Type_s
 {

@@ -599,6 +599,52 @@ let ends_with_return =
       | EReturn _ -> true
       | _ -> false)
 
+let is_unit_expr e =
+  match e.node with
+  | EUnit | ESequence [] -> true
+  | _ -> false
+
+let one_arg_call e =
+  match e.node with
+  | EApp (_, [ arg ]) -> Some arg
+  | _ -> None
+
+let option_payload_type t =
+  match t with
+  | TApp (lid, [ t ]) when lid = Builtin.option -> Some t
+  | _ -> None
+
+let range_bounds e =
+  match e.node with
+  | EFlat [ (Some "start", e_start); (Some "end", e_end) ] -> Some (e_start, e_end)
+  | _ -> None
+
+let is_addr_of_bound n e =
+  match e.node with
+  | EAddrOf { node = EBound n'; _ } -> n = n'
+  | _ -> false
+
+let is_none_break_branch (_, pat, e) =
+  match pat.node, e.node with
+  | PCons ("None", []), EBreak -> true
+  | _ -> false
+
+let is_some_unit_branch (_, pat, e) =
+  match pat.node with
+  | PCons ("Some", [ { node = PWild; _ } ]) -> is_unit_expr e
+  | _ -> false
+
+let is_split_range_guard e =
+  match e.node with
+  | EMatch (_, { node = EBound 0; _ }, [ b1; b2 ]) ->
+      (is_none_break_branch b1 && is_some_unit_branch b2)
+      || (is_none_break_branch b2 && is_some_unit_branch b1)
+  | _ -> false
+
+let split_range_payload_type = function
+  | { node = ELet (b, _, _); _ } :: _ -> Some b.typ
+  | _ -> None
+
 let resugar_loops =
   object(self)
   inherit [_] map as super
@@ -771,7 +817,26 @@ let resugar_loops =
       | _ -> None
     in
 
-    let range_iter = match e with
+    let split_range_loop_parts init next guard loop_rest rest =
+      let t1 =
+        match option_payload_type next.typ with
+        | Some t1 -> Some t1
+        | None -> split_range_payload_type loop_rest
+      in
+      match one_arg_call init, t1, one_arg_call next with
+      | Some range, Some t1, Some iter
+        when is_addr_of_bound 0 iter && is_split_range_guard guard -> (
+          match range_bounds range with
+          | Some (e_start, e_end) ->
+              let e_some_i = with_type next.typ (ECons ("Some", [ with_type t1 (EBound 0) ])) in
+              let e_body = List.map (Krml.DeBruijn.subst e_some_i 0) loop_rest in
+              Some (t1, e_start, e_end, e_body, rest)
+          | _ -> None)
+      | _ -> None
+    in
+
+    let range_iter =
+      match e with
       (* Terminal position (regular range for-loop) *)
       | [%cremepat {|
         let iter =
@@ -923,6 +988,31 @@ let resugar_loops =
         };
         ?rest..
       |}] -> Some (t1, e_start, e_end, e_body :: loop_rest, rest)
+
+      (* Name-insensitive shape used by Charon-monomorphized range loops. *)
+      | [%cremepat
+          {|
+          let iter = ?init;
+          while true {
+            let x = ?next;
+            ?guard;
+            ?loop_rest..
+          };
+          ?rest..
+        |}]
+        ->
+          split_range_loop_parts init next guard loop_rest rest
+      | [%cremepat
+          {|
+          let iter = ?init;
+          while true {
+            let x = ?next;
+            ?guard;
+            ?loop_rest..
+          }
+        |}]
+        ->
+          split_range_loop_parts init next guard loop_rest []
 
       | _ -> None
     in

@@ -23,6 +23,8 @@ with const generics
 */
 typedef struct Eurydice_arr_ec_s { uint8_t data[32U]; } Eurydice_arr_ec;
 
+Eurydice_arr_ec core_hint_black_box____u8__32___usize__(Eurydice_arr_ec x);
+
 Eurydice_arr_ec issue_37_b(Eurydice_borrow_slice_u8 x);
 
 Eurydice_arr_ec issue_37_bb(Eurydice_borrow_slice_u8 x);

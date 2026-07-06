@@ -15,6 +15,14 @@
 extern "C" {
 #endif
 
+typedef struct core_marker_MetaSized__vtable__s
+{
+  size_t size;
+  size_t align;
+  void *const *drop;
+}
+core_marker_MetaSized__vtable_;
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2
@@ -23,13 +31,7 @@ typedef uint8_t core_panicking_AssertKind;
 
 #define ISSUE_104__IMPL_ISSUE_104__FUN_FOR_ISSUE_104__S__VAL (5U)
 
-/**
-A monomorphic instance of issue_104.sth
-with types issue_104_S
-with const generics
-
-*/
-uint8_t issue_104_sth_50(void);
+uint8_t issue_104_sth___issue_104__S_(void);
 
 uint8_t issue_104_call(void);
 

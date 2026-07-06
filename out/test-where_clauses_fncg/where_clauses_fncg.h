@@ -15,15 +15,6 @@
 extern "C" {
 #endif
 
-static inline uint64_t
-core_convert_num__impl_core__convert__From_u8__for_u64__from(uint8_t x0);
-
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
-
 /**
 A monomorphic instance of Eurydice.arr
 with types Eurydice_array_u8x4
@@ -39,27 +30,6 @@ with const generics
 - $4size_t
 */
 typedef struct Eurydice_arr_34_s { Eurydice_array_u8x8 data[4U]; } Eurydice_arr_34;
-
-/**
-This function found in impl {impl where_clauses_fncg::Foo<K> for u64}
-*/
-/**
-A monomorphic instance of where_clauses_fncg.bar_16
-with const generics
-- K= 8
-- L= 4
-*/
-uint64_t where_clauses_fncg_bar_16_f4(Eurydice_arr_07 x, Eurydice_arr_34 _);
-
-/**
-A monomorphic instance of where_clauses_fncg.f
-with types uint64_t
-with const generics
-- K= 6
-- L= 8
-- M= 10
-*/
-uint64_t where_clauses_fncg_f_d3(void);
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -85,37 +55,50 @@ with const generics
 */
 typedef struct Eurydice_arr_11_s { Eurydice_arr_a3 data[4U]; } Eurydice_arr_11;
 
+typedef struct core_marker_MetaSized__vtable__s
+{
+  size_t size;
+  size_t align;
+  void *const *drop;
+}
+core_marker_MetaSized__vtable_;
+
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
+
 /**
-This function found in impl {impl where_clauses_fncg::Foo<K> for u64}
+This function found in impl {impl where_clauses_fncg::Foo<8 : usize> for u64}
 */
+uint64_t
+where_clauses_fncg_bar___8___usize__4___usize__4c(Eurydice_arr_07 x, Eurydice_arr_34 _);
+
+uint64_t where_clauses_fncg_f___u64__6___usize__8___usize__10___usize_(void);
+
 /**
-A monomorphic instance of where_clauses_fncg.bar_16
-with const generics
-- K= 12
-- L= 4
+This function found in impl {impl where_clauses_fncg::Foo<12 : usize> for u64}
 */
-uint64_t where_clauses_fncg_bar_16_9e(Eurydice_arr_40 x, Eurydice_arr_11 _);
+uint64_t
+where_clauses_fncg_bar___12___usize__4___usize__fe(Eurydice_arr_40 x, Eurydice_arr_11 _);
 
 /**
 This function found in impl {impl where_clauses_fncg::UseFoo for ()}
 */
-/**
-A monomorphic instance of where_clauses_fncg.method_foo_4a
-with types uint64_t
-with const generics
-- K= 12
-*/
-uint64_t where_clauses_fncg_method_foo_4a_27(void);
+uint64_t where_clauses_fncg_method_foo___u64__12___usize__4a(void);
 
-/**
-A monomorphic instance of where_clauses_fncg.g
-with types ()
-with const generics
-
-*/
-uint64_t where_clauses_fncg_g_92(void);
+uint64_t where_clauses_fncg_g______(void);
 
 void where_clauses_fncg_main(void);
+
+/**
+This function found in impl {impl core::convert::Into<u64> for u8}
+*/
+static inline uint64_t core_convert_into___u8__u64__a4(uint8_t x)
+{
+  return (uint64_t)(uint32_t)x;
+}
 
 #if defined(__cplusplus)
 }

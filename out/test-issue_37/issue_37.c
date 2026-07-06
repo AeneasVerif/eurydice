@@ -7,6 +7,11 @@
 
 #include "issue_37.h"
 
+Eurydice_arr_ec core_hint_black_box____u8__32___usize__(Eurydice_arr_ec x)
+{
+  return x;
+}
+
 Eurydice_arr_ec issue_37_b(Eurydice_borrow_slice_u8 x)
 {
   return (KRML_CLITERAL(Eurydice_arr_ec){ .data = { 0U } });
@@ -14,7 +19,7 @@ Eurydice_arr_ec issue_37_b(Eurydice_borrow_slice_u8 x)
 
 Eurydice_arr_ec issue_37_bb(Eurydice_borrow_slice_u8 x)
 {
-  return core_hint_black_box(issue_37_b(x), Eurydice_arr_ec, Eurydice_arr_ec);
+  return core_hint_black_box____u8__32___usize__(issue_37_b(x));
 }
 
 void issue_37_main(void)

@@ -15,24 +15,17 @@
 extern "C" {
 #endif
 
-#define core_result_Ok 0
-#define core_result_Err 1
+/**
+A monomorphic instance of Eurydice.dst_ref_shared
+with types Eurydice_array_u8x4, size_t
 
-typedef uint8_t core_result_Result_10;
-
-extern core_result_Result_10
-core_array__impl_core__fmt__Debug_for_core__array__TryFromSliceError__fmt(
-  const core_array_TryFromSliceError *x0,
-  core_fmt_Formatter *x1
-);
-
-extern uint8_t core_clone_impls__impl_core__clone__Clone_for_u8__clone(const uint8_t *x0);
-
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
+*/
+typedef struct Eurydice_dst_ref_shared_b5_s
+{
+  const Eurydice_array_u8x4 *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_shared_b5;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_mut
@@ -61,69 +54,117 @@ typedef struct Eurydice_dst_ref_mut_b5_x2_s
 }
 Eurydice_dst_ref_mut_b5_x2;
 
-void slice_array_f1(void);
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t core_result_Result________u8__4___usize___core__array__TryFromSliceError__tags;
+
+typedef struct core_result_Result____u8__4___usize___core__array__TryFromSliceError__s
+{
+  core_result_Result________u8__4___usize___core__array__TryFromSliceError__tags tag;
+  Eurydice_array_u8x4 f0;
+}
+core_result_Result____u8__4___usize___core__array__TryFromSliceError_;
+
+typedef struct core_result_Result________u8__4___usize___core__array__TryFromSliceError__s
+{
+  core_result_Result________u8__4___usize___core__array__TryFromSliceError__tags tag;
+  const Eurydice_array_u8x4 *f0;
+}
+core_result_Result________u8__4___usize___core__array__TryFromSliceError_;
+
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
 
 /**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types Eurydice_array_u8x4, size_t
-
+This function found in impl {[[u8; 4 : usize]]}
 */
-typedef struct Eurydice_dst_ref_shared_b5_s
-{
-  const Eurydice_array_u8x4 *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_b5;
+Eurydice_dst_ref_mut_b5_x2
+core_slice_split_at_mut____u8__4___usize___4f(Eurydice_dst_ref_mut_b5 s, size_t mid);
+
+void slice_array_f1(void);
+
+void slice_array_f4___4___usize_(void);
 
 void slice_array_f2(void);
 
 /**
-A monomorphic instance of core.result.Result
-with types Eurydice_array_u8x4, core_array_TryFromSliceError
-
+This function found in impl {core::result::Result::<[u8; 4 : usize], core::array::TryFromSliceError>}
 */
-typedef struct core_result_Result_c7_s
-{
-  core_result_Result_10 tag;
-  union {
-    Eurydice_array_u8x4 case_Ok;
-    core_array_TryFromSliceError case_Err;
-  }
-  val;
-}
-core_result_Result_c7;
+Eurydice_array_u8x4
+core_result_unwrap____u8__4___usize___core__array__TryFromSliceError__4f(
+  core_result_Result____u8__4___usize___core__array__TryFromSliceError_ self
+);
 
 /**
-A monomorphic instance of core.result.Result
-with types const Eurydice_array_u8x4*, core_array_TryFromSliceError
-
+This function found in impl {impl core::convert::TryInto<[u8; 4 : usize]> for &'_ [u8]}
 */
-typedef struct core_result_Result_90_s
+static inline core_result_Result____u8__4___usize___core__array__TryFromSliceError_
+core_convert_try_into________u8____u8__4___usize___d4(Eurydice_borrow_slice_u8 s)
 {
-  core_result_Result_10 tag;
-  union {
-    const Eurydice_array_u8x4 *case_Ok;
-    core_array_TryFromSliceError case_Err;
-  }
-  val;
+  Eurydice_array_u8x4 arr;
+  memcpy(arr.data, s.ptr, (size_t)4U * sizeof (uint8_t));
+  return
+    (
+      KRML_CLITERAL(core_result_Result____u8__4___usize___core__array__TryFromSliceError_){
+        .tag = core_result_Ok,
+        .f0 = arr
+      }
+    );
 }
-core_result_Result_90;
+
+/**
+This function found in impl {core::result::Result::<&'_ [u8; 4 : usize], core::array::TryFromSliceError>}
+*/
+const
+Eurydice_array_u8x4
+*core_result_unwrap________u8__4___usize___core__array__TryFromSliceError__ae(
+  core_result_Result________u8__4___usize___core__array__TryFromSliceError_ self
+);
+
+/**
+This function found in impl {impl core::convert::TryInto<&'_ [u8; 4 : usize]> for &'_ [u8]}
+*/
+static inline core_result_Result________u8__4___usize___core__array__TryFromSliceError_
+core_convert_try_into________u8________u8__4___usize___eb(Eurydice_borrow_slice_u8 s)
+{
+  return
+    (
+      KRML_CLITERAL(core_result_Result________u8__4___usize___core__array__TryFromSliceError_){
+        .tag = core_result_Ok,
+        .f0 = (const Eurydice_array_u8x4 *)s.ptr
+      }
+    );
+}
+
+/**
+This function found in impl {impl core::convert::TryInto<[u8; 4 : usize]> for &'_ mut [u8]}
+*/
+static inline core_result_Result____u8__4___usize___core__array__TryFromSliceError_
+core_convert_try_into_______mut__u8____u8__4___usize___e1(Eurydice_mut_borrow_slice_u8 s)
+{
+  Eurydice_array_u8x4 arr;
+  memcpy(arr.data, s.ptr, (size_t)4U * sizeof (uint8_t));
+  return
+    (
+      KRML_CLITERAL(core_result_Result____u8__4___usize___core__array__TryFromSliceError_){
+        .tag = core_result_Ok,
+        .f0 = arr
+      }
+    );
+}
 
 void slice_array_f3(void);
 
 /**
-A monomorphic instance of slice_array.f4
-with const generics
-- K= 4
+This function found in impl {[u8; 4 : usize]}
 */
-void slice_array_f4_23(void);
+Eurydice_borrow_slice_u8 core_array_as_slice___u8__4___usize__1c(const Eurydice_array_u8x4 *a);
 
-/**
-A monomorphic instance of slice_array.f5
-with const generics
-- K= 4
-*/
-void slice_array_f5_23(void);
+void slice_array_f5___4___usize_(void);
 
 void slice_array_main(void);
 

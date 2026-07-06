@@ -25,14 +25,14 @@ typedef struct Eurydice_arr_48_s { uint8_t data[5U]; } Eurydice_arr_48;
 
 typedef Eurydice_arr_48 issue_96_MyStruct;
 
+void issue_96_use_it(const Eurydice_arr_48 *x);
+
 typedef struct issue_96_MyStruct2_s
 {
   Eurydice_arr_48 fst;
   uint32_t snd;
 }
 issue_96_MyStruct2;
-
-void issue_96_use_it(const Eurydice_arr_48 *x);
 
 void issue_96_use_it2(const issue_96_MyStruct2 *x);
 

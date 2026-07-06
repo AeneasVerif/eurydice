@@ -18,35 +18,11 @@ extern "C" {
 #include "libcrux_core.h"
 
 /**
- Decapsulate ML-KEM 1024
+ Validate a public key.
 
- Generates an [`MlKemSharedSecret`].
- The input is a reference to an [`MlKem1024PrivateKey`] and an [`MlKem1024Ciphertext`].
+ Returns `true` if valid, and `false` otherwise.
 */
-Eurydice_arr_ec
-libcrux_ml_kem_mlkem1024_portable_decapsulate(
-  const Eurydice_arr_a8 *private_key,
-  const Eurydice_arr_d1 *ciphertext
-);
-
-/**
- Encapsulate ML-KEM 1024
-
- Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
- The input is a reference to an [`MlKem1024PublicKey`] and [`SHARED_SECRET_SIZE`]
- bytes of `randomness`.
-*/
-tuple_25
-libcrux_ml_kem_mlkem1024_portable_encapsulate(
-  const Eurydice_arr_d1 *public_key,
-  Eurydice_arr_ec randomness
-);
-
-/**
- Generate ML-KEM 1024 Key Pair
-*/
-libcrux_ml_kem_mlkem1024_MlKem1024KeyPair
-libcrux_ml_kem_mlkem1024_portable_generate_key_pair(Eurydice_arr_c7 randomness);
+bool libcrux_ml_kem_mlkem1024_portable_validate_public_key(const Eurydice_arr_d1 *public_key);
 
 /**
  Validate a private key.
@@ -68,11 +44,35 @@ bool
 libcrux_ml_kem_mlkem1024_portable_validate_private_key_only(const Eurydice_arr_a8 *private_key);
 
 /**
- Validate a public key.
-
- Returns `true` if valid, and `false` otherwise.
+ Generate ML-KEM 1024 Key Pair
 */
-bool libcrux_ml_kem_mlkem1024_portable_validate_public_key(const Eurydice_arr_d1 *public_key);
+libcrux_ml_kem_types_MlKemKeyPair___3168___usize__1568___usize_
+libcrux_ml_kem_mlkem1024_portable_generate_key_pair(Eurydice_arr_c7 randomness);
+
+/**
+ Encapsulate ML-KEM 1024
+
+ Generates an ([`MlKem1024Ciphertext`], [`MlKemSharedSecret`]) tuple.
+ The input is a reference to an [`MlKem1024PublicKey`] and [`SHARED_SECRET_SIZE`]
+ bytes of `randomness`.
+*/
+tuple_2b
+libcrux_ml_kem_mlkem1024_portable_encapsulate(
+  const Eurydice_arr_d1 *public_key,
+  Eurydice_arr_ec randomness
+);
+
+/**
+ Decapsulate ML-KEM 1024
+
+ Generates an [`MlKemSharedSecret`].
+ The input is a reference to an [`MlKem1024PrivateKey`] and an [`MlKem1024Ciphertext`].
+*/
+Eurydice_arr_ec
+libcrux_ml_kem_mlkem1024_portable_decapsulate(
+  const Eurydice_arr_a8 *private_key,
+  const Eurydice_arr_d1 *ciphertext
+);
 
 #if defined(__cplusplus)
 }

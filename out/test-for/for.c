@@ -7,11 +7,6 @@
 
 #include "for.h"
 
-void for_main(void)
-{
-
-}
-
 uint8_t for_other(Eurydice_borrow_slice_u8 input)
 {
   for (int32_t i = 0; i < 5; i++)
@@ -23,5 +18,38 @@ uint8_t for_other(Eurydice_borrow_slice_u8 input)
     }
   }
   return input.ptr[0U];
+}
+
+void for_main(void)
+{
+
+}
+
+/**
+This function found in impl {impl core::iter::traits::iterator::Iterator for core::ops::range::Range::<i32>}
+*/
+core_option_Option___i32_ core_iter_range_next___i32__33(core_ops_range_Range___i32_ *range)
+{
+  int32_t start = range->start;
+  if (start < range->end)
+  {
+    range->start = start + 1;
+    return (KRML_CLITERAL(core_option_Option___i32_){ .tag = core_option_Some, .f0 = start });
+  }
+  else
+  {
+    return (KRML_CLITERAL(core_option_Option___i32_){ .tag = core_option_None });
+  }
+}
+
+/**
+This function found in impl {impl core::iter::traits::collect::IntoIterator for core::ops::range::Range::<i32>}
+*/
+core_ops_range_Range___i32_
+core_iter_traits_collect_into_iter___core__ops__range__Range___i32___55(
+  core_ops_range_Range___i32_ range
+)
+{
+  return range;
 }
 

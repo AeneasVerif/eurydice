@@ -7,32 +7,24 @@
 
 #include "fn_cast.h"
 
-/**
-A monomorphic instance of fn_cast.applies
-with types int32_t, int32_t
-
-*/
-const int32_t *fn_cast_applies_99(const int32_t *(*f)(const int32_t *x0), const int32_t *arg)
-{
-  return f(arg);
-}
-
-/**
-A monomorphic instance of fn_cast.id_ref
-with types int32_t
-
-*/
-const int32_t *fn_cast_id_ref_a8(const int32_t *x)
-{
-  return x;
-}
-
 typedef struct const_int32_t__x2_s
 {
   const int32_t *fst;
   const int32_t *snd;
 }
 const_int32_t__x2;
+
+const int32_t *fn_cast_id_ref___i32_(const int32_t *x)
+{
+  return x;
+}
+
+const
+int32_t
+*fn_cast_applies___i32__i32_(const int32_t *(*f)(const int32_t *x0), const int32_t *arg)
+{
+  return f(arg);
+}
 
 void fn_cast_main(void)
 {
@@ -43,7 +35,9 @@ void fn_cast_main(void)
   const_int32_t__x2
   uu____0 =
     {
-      .fst = fn_cast_applies_99((const int32_t *(*)(const int32_t *x0))fn_cast_id_ref_a8, &lvalue0),
+      .fst = fn_cast_applies___i32__i32_((const
+        int32_t *(*)(const int32_t *x0))fn_cast_id_ref___i32_,
+        &lvalue0),
       .snd = &lvalue
     };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");

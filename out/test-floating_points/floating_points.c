@@ -28,6 +28,50 @@ typedef struct const_size_t__x2_s
 }
 const_size_t__x2;
 
+/**
+This function found in impl {[f32]}
+*/
+size_t core_slice_len___f32__fc(Eurydice_dst_ref_shared_57 s)
+{
+  return s.meta;
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_shared
+with types float32_t
+with const generics
+- N= 100
+*/
+static Eurydice_dst_ref_shared_57 array_to_slice_shared_4e(const Eurydice_arr_fe *a)
+{
+  Eurydice_dst_ref_shared_57 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)100U;
+  return lit;
+}
+
+/**
+This function found in impl {[f64]}
+*/
+size_t core_slice_len___f64__17(Eurydice_dst_ref_shared_9f s)
+{
+  return s.meta;
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_shared
+with types float64_t
+with const generics
+- N= 100
+*/
+static Eurydice_dst_ref_shared_9f array_to_slice_shared_fe(const Eurydice_arr_9f *a)
+{
+  Eurydice_dst_ref_shared_9f lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)100U;
+  return lit;
+}
+
 void floating_points_main(void)
 {
   float32_t f = (float32_t)1;
@@ -55,13 +99,13 @@ void floating_points_main(void)
   const_float64_t__x2 uu____1 = { .fst = arr2.data, .snd = &lvalue1 };
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  size_t lvalue2 = (size_t)100U;
+  size_t lvalue2 = core_slice_len___f32__fc(array_to_slice_shared_4e(&arr));
   /* original Rust expression is not an lvalue in C */
   size_t lvalue3 = (size_t)100U;
   const_size_t__x2 uu____2 = { .fst = &lvalue2, .snd = &lvalue3 };
   EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
   /* original Rust expression is not an lvalue in C */
-  size_t lvalue4 = (size_t)100U;
+  size_t lvalue4 = core_slice_len___f64__17(array_to_slice_shared_fe(&arr2));
   /* original Rust expression is not an lvalue in C */
   size_t lvalue = (size_t)100U;
   const_size_t__x2 uu____3 = { .fst = &lvalue4, .snd = &lvalue };

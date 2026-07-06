@@ -16,8 +16,21 @@ const_uint32_t__x2;
 
 void castunsize_main1(void)
 {
-  castunsize_S_e9 x = { .foo = 0U, .my_data = { .data = { 0U } } };
-  Eurydice_dst_ref_shared_8b x0 = { .ptr = (const castunsize_T *)&x, .meta = (size_t)4U };
+  castunsize_S____u32__4___usize__ x = { .foo = 0U, .my_data = { .data = { 0U } } };
+  Eurydice_dst_ref_shared_65
+  x0 = { .ptr = (const castunsize_S____u32__ *)&x, .meta = (size_t)4U };
+  /* original Rust expression is not an lvalue in C */
+  uint32_t lvalue = 0U;
+  const_uint32_t__x2
+  uu____0 = { .fst = &((const uint32_t *)x0.ptr->my_data)[3U], .snd = &lvalue };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+}
+
+void castunsize_main2___5___usize_(void)
+{
+  castunsize_S____u32__5___usize__ x = { .foo = 0U, .my_data = { .data = { 0U } } };
+  Eurydice_dst_ref_shared_65
+  x0 = { .ptr = (const castunsize_S____u32__ *)&x, .meta = (size_t)5U };
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
   const_uint32_t__x2
@@ -53,22 +66,6 @@ void castunsize_main3(void)
 }
 
 /**
-A monomorphic instance of castunsize.main2
-with const generics
-- K= 5
-*/
-void castunsize_main2_a5(void)
-{
-  castunsize_S_b9 x = { .foo = 0U, .my_data = { .data = { 0U } } };
-  Eurydice_dst_ref_shared_8b x0 = { .ptr = (const castunsize_T *)&x, .meta = (size_t)5U };
-  /* original Rust expression is not an lvalue in C */
-  uint32_t lvalue = 0U;
-  const_uint32_t__x2
-  uu____0 = { .fst = &((const uint32_t *)x0.ptr->my_data)[3U], .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
-}
-
-/**
 A monomorphic instance of Eurydice.array_to_slice_mut
 with types uint32_t
 with const generics
@@ -82,12 +79,7 @@ static Eurydice_dst_ref_mut_0c array_to_slice_mut_d0(Eurydice_arr_fb *a)
   return lit;
 }
 
-/**
-A monomorphic instance of castunsize.main4
-with const generics
-- K= 5
-*/
-void castunsize_main4_a5(void)
+void castunsize_main4___5___usize_(void)
 {
   Eurydice_dst_ref_mut_0c
   x =
@@ -103,8 +95,8 @@ void castunsize_main4_a5(void)
 void castunsize_main(void)
 {
   castunsize_main1();
-  castunsize_main2_a5();
+  castunsize_main2___5___usize_();
   castunsize_main3();
-  castunsize_main4_a5();
+  castunsize_main4___5___usize_();
 }
 

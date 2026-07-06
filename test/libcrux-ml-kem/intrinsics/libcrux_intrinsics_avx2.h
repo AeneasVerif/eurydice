@@ -297,6 +297,146 @@ static inline core_core_arch_x86___m128i mm_packs_epi16(
 
 #define mm256_blend_epi16(a, b, c, _) (_mm256_blend_epi16(b, c, a))
 
+// Charon --monomorphize emits one C symbol per const-generic immediate value.
+// Keep the generic macros above for older Eurydice output, and expose concrete
+// wrappers below so the immediate operands remain compile-time constants.
+#define LIBCRUX_AVX2_IMM_M256(name, intrinsic, imm)                         \
+  static inline core_core_arch_x86___m256i name(                            \
+      core_core_arch_x86___m256i a) {                                       \
+    return intrinsic(a, imm);                                               \
+  }
+
+#define LIBCRUX_AVX2_IMM_M128(name, intrinsic, imm)                         \
+  static inline core_core_arch_x86___m128i name(                            \
+      core_core_arch_x86___m256i a) {                                       \
+    return intrinsic(a, imm);                                               \
+  }
+
+#define LIBCRUX_AVX2_IMM2_M256(name, intrinsic, imm)                        \
+  static inline core_core_arch_x86___m256i name(                            \
+      core_core_arch_x86___m256i a, core_core_arch_x86___m256i b) {         \
+    return intrinsic(a, b, imm);                                            \
+  }
+
+#define LIBCRUX_AVX2_INSERTI128(name, imm)                                  \
+  static inline core_core_arch_x86___m256i name(                            \
+      core_core_arch_x86___m256i a, core_core_arch_x86___m128i b) {         \
+    return _mm256_inserti128_si256(a, b, imm);                              \
+  }
+
+LIBCRUX_AVX2_IMM_M256(mm256_srai_epi16___10___i32_, _mm256_srai_epi16, 10)
+LIBCRUX_AVX2_IMM_M256(mm256_srai_epi16___15___i32_, _mm256_srai_epi16, 15)
+LIBCRUX_AVX2_IMM_M256(mm256_srai_epi32___16___i32_, _mm256_srai_epi32, 16)
+
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi16___4___i32_, _mm256_srli_epi16, 4)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi16___6___i32_, _mm256_srli_epi16, 6)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi16___11___i32_, _mm256_srli_epi16, 11)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi16___15___i32_, _mm256_srli_epi16, 15)
+
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi32___1___i32_, _mm256_srli_epi32, 1)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi32___3___i32_, _mm256_srli_epi32, 3)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi32___4___i32_, _mm256_srli_epi32, 4)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi32___5___i32_, _mm256_srli_epi32, 5)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi32___10___i32_, _mm256_srli_epi32, 10)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi32___11___i32_, _mm256_srli_epi32, 11)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi32___16___i32_, _mm256_srli_epi32, 16)
+
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___2___i32_, _mm256_srli_epi64, 2)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___3___i32_, _mm256_srli_epi64, 3)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___8___i32_, _mm256_srli_epi64, 8)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___9___i32_, _mm256_srli_epi64, 9)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___12___i32_, _mm256_srli_epi64, 12)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___19___i32_, _mm256_srli_epi64, 19)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___20___i32_, _mm256_srli_epi64, 20)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___21___i32_, _mm256_srli_epi64, 21)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___22___i32_, _mm256_srli_epi64, 22)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___23___i32_, _mm256_srli_epi64, 23)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___25___i32_, _mm256_srli_epi64, 25)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___28___i32_, _mm256_srli_epi64, 28)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___36___i32_, _mm256_srli_epi64, 36)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___37___i32_, _mm256_srli_epi64, 37)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___39___i32_, _mm256_srli_epi64, 39)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___43___i32_, _mm256_srli_epi64, 43)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___44___i32_, _mm256_srli_epi64, 44)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___46___i32_, _mm256_srli_epi64, 46)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___49___i32_, _mm256_srli_epi64, 49)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___50___i32_, _mm256_srli_epi64, 50)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___54___i32_, _mm256_srli_epi64, 54)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___56___i32_, _mm256_srli_epi64, 56)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___58___i32_, _mm256_srli_epi64, 58)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___61___i32_, _mm256_srli_epi64, 61)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___62___i32_, _mm256_srli_epi64, 62)
+LIBCRUX_AVX2_IMM_M256(mm256_srli_epi64___63___i32_, _mm256_srli_epi64, 63)
+
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi16___15___i32_, _mm256_slli_epi16, 15)
+
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi32___1___i32_, _mm256_slli_epi32, 1)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi32___4___i32_, _mm256_slli_epi32, 4)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi32___5___i32_, _mm256_slli_epi32, 5)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi32___10___i32_, _mm256_slli_epi32, 10)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi32___11___i32_, _mm256_slli_epi32, 11)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi32___16___i32_, _mm256_slli_epi32, 16)
+
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___1___i32_, _mm256_slli_epi64, 1)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___2___i32_, _mm256_slli_epi64, 2)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___3___i32_, _mm256_slli_epi64, 3)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___6___i32_, _mm256_slli_epi64, 6)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___8___i32_, _mm256_slli_epi64, 8)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___10___i32_, _mm256_slli_epi64, 10)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___14___i32_, _mm256_slli_epi64, 14)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___15___i32_, _mm256_slli_epi64, 15)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___18___i32_, _mm256_slli_epi64, 18)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___20___i32_, _mm256_slli_epi64, 20)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___21___i32_, _mm256_slli_epi64, 21)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___25___i32_, _mm256_slli_epi64, 25)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___27___i32_, _mm256_slli_epi64, 27)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___28___i32_, _mm256_slli_epi64, 28)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___36___i32_, _mm256_slli_epi64, 36)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___39___i32_, _mm256_slli_epi64, 39)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___41___i32_, _mm256_slli_epi64, 41)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___43___i32_, _mm256_slli_epi64, 43)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___44___i32_, _mm256_slli_epi64, 44)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___45___i32_, _mm256_slli_epi64, 45)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___55___i32_, _mm256_slli_epi64, 55)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___56___i32_, _mm256_slli_epi64, 56)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___61___i32_, _mm256_slli_epi64, 61)
+LIBCRUX_AVX2_IMM_M256(mm256_slli_epi64___62___i32_, _mm256_slli_epi64, 62)
+
+LIBCRUX_AVX2_IMM_M256(mm256_shuffle_epi32___8___i32_, _mm256_shuffle_epi32, 8)
+LIBCRUX_AVX2_IMM_M256(mm256_shuffle_epi32___68___i32_, _mm256_shuffle_epi32, 68)
+LIBCRUX_AVX2_IMM_M256(mm256_shuffle_epi32___160___i32_, _mm256_shuffle_epi32, 160)
+LIBCRUX_AVX2_IMM_M256(mm256_shuffle_epi32___238___i32_, _mm256_shuffle_epi32, 238)
+LIBCRUX_AVX2_IMM_M256(mm256_shuffle_epi32___245___i32_, _mm256_shuffle_epi32, 245)
+
+LIBCRUX_AVX2_IMM_M128(mm256_extracti128_si256___1___i32_,
+                      _mm256_extracti128_si256, 1)
+
+LIBCRUX_AVX2_IMM_M256(mm256_permute4x64_epi64___160___i32_,
+                      _mm256_permute4x64_epi64, 160)
+LIBCRUX_AVX2_IMM_M256(mm256_permute4x64_epi64___216___i32_,
+                      _mm256_permute4x64_epi64, 216)
+LIBCRUX_AVX2_IMM_M256(mm256_permute4x64_epi64___245___i32_,
+                      _mm256_permute4x64_epi64, 245)
+
+LIBCRUX_AVX2_IMM2_M256(mm256_permute2x128_si256___32___i32_,
+                       _mm256_permute2x128_si256, 32)
+LIBCRUX_AVX2_IMM2_M256(mm256_permute2x128_si256___49___i32_,
+                       _mm256_permute2x128_si256, 49)
+
+LIBCRUX_AVX2_INSERTI128(mm256_inserti128_si256___1___i32_, 1)
+
+LIBCRUX_AVX2_IMM2_M256(mm256_blend_epi16___170___i32_, _mm256_blend_epi16,
+                       170)
+LIBCRUX_AVX2_IMM2_M256(mm256_blend_epi16___204___i32_, _mm256_blend_epi16,
+                       204)
+LIBCRUX_AVX2_IMM2_M256(mm256_blend_epi16___240___i32_, _mm256_blend_epi16,
+                       240)
+
+#undef LIBCRUX_AVX2_INSERTI128
+#undef LIBCRUX_AVX2_IMM2_M256
+#undef LIBCRUX_AVX2_IMM_M128
+#undef LIBCRUX_AVX2_IMM_M256
+
 static inline core_core_arch_x86___m256i mm256_shuffle_epi8(
     core_core_arch_x86___m256i a, core_core_arch_x86___m256i b) {
   return _mm256_shuffle_epi8(a, b);

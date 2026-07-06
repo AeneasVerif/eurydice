@@ -15,17 +15,6 @@
 extern "C" {
 #endif
 
-typedef struct Eurydice_arr_58_s Eurydice_arr_58;
-
-typedef const Eurydice_arr_58 *closure_f_closure;
-
-typedef struct closure_f_closure_closure_s
-{
-  const Eurydice_arr_58 *fst;
-  const size_t *snd;
-}
-closure_f_closure_closure;
-
 /**
 A monomorphic instance of Eurydice.arr
 with types size_t
@@ -35,26 +24,6 @@ with const generics
 typedef struct Eurydice_arr_58_s { size_t data[1U]; } Eurydice_arr_58;
 
 /**
-This function found in impl {impl core::ops::function::FnMut<(usize,), usize> for closure::f::closure::closure<'_0, '_1>}
-*/
-size_t closure_f_closure_call_mut_50(closure_f_closure_closure *_, size_t tupled_args);
-
-/**
-This function found in impl {impl core::ops::function::FnOnce<(usize,), usize> for closure::f::closure::closure<'_0, '_1>}
-*/
-size_t closure_f_closure_call_once_c1(closure_f_closure_closure _, size_t _0);
-
-/**
-This function found in impl {impl core::ops::function::FnMut<(usize,), [usize; 1 : usize]> for closure::f::closure<'_0>}
-*/
-Eurydice_arr_58 closure_f_call_mut_92(const Eurydice_arr_58 **_, size_t tupled_args);
-
-/**
-This function found in impl {impl core::ops::function::FnOnce<(usize,), [usize; 1 : usize]> for closure::f::closure<'_0>}
-*/
-Eurydice_arr_58 closure_f_call_once_b7(const Eurydice_arr_58 *_, size_t _0);
-
-/**
 A monomorphic instance of Eurydice.arr
 with types Eurydice_arr_58
 with const generics
@@ -62,13 +31,52 @@ with const generics
 */
 typedef struct Eurydice_arr_2d_s { Eurydice_arr_58 data[1U]; } Eurydice_arr_2d;
 
-Eurydice_arr_2d closure_f(void);
+typedef struct Eurydice_arr_58_s Eurydice_arr_58;
+
+typedef struct closure_f_closure_closure_s
+{
+  const Eurydice_arr_58 *fst;
+  const size_t *snd;
+}
+closure_f_closure_closure;
+
+/**
+This function found in impl {impl core::ops::function::FnMut<(usize,)> for closure::f::closure::closure<'_0, '_1>}
+*/
+size_t closure_f_closure_call_mut_3f(closure_f_closure_closure *_, size_t tupled_args);
+
+Eurydice_arr_58
+core_array_from_fn___usize__closure__f__closure__closure__________1___usize_(
+  closure_f_closure_closure f
+);
+
+typedef const Eurydice_arr_58 *closure_f_closure;
+
+/**
+This function found in impl {impl core::ops::function::FnMut<(usize,)> for closure::f::closure<'_0>}
+*/
+Eurydice_arr_58 closure_f_call_mut_25(const Eurydice_arr_58 **_, size_t tupled_args);
+
+Eurydice_arr_2d
+core_array_from_fn____usize__1___usize___closure__f__closure______1___usize_(
+  const Eurydice_arr_58 *f
+);
+
+typedef struct core_marker_MetaSized__vtable__s
+{
+  size_t size;
+  size_t align;
+  void *const *drop;
+}
+core_marker_MetaSized__vtable_;
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2
 
 typedef uint8_t core_panicking_AssertKind;
+
+Eurydice_arr_2d closure_f(void);
 
 void closure_main(void);
 
@@ -81,6 +89,16 @@ void closure_f_closure_closure_drop_glue_a5(closure_f_closure_closure *_);
 This function found in impl {impl core::marker::Destruct for closure::f::closure<'_0>}
 */
 void closure_f_closure_drop_glue_03(const Eurydice_arr_58 **_);
+
+/**
+This function found in impl {impl core::ops::function::FnOnce<(usize,)> for closure::f::closure::closure<'_0, '_1>}
+*/
+size_t closure_f_closure_call_once_d4(closure_f_closure_closure _, size_t _0);
+
+/**
+This function found in impl {impl core::ops::function::FnOnce<(usize,)> for closure::f::closure<'_0>}
+*/
+Eurydice_arr_58 closure_f_call_once_f1(const Eurydice_arr_58 *_, size_t _0);
 
 #if defined(__cplusplus)
 }

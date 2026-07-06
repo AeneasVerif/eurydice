@@ -7,11 +7,6 @@
 
 #include "lvalue.h"
 
-void lvalue_main(void)
-{
-
-}
-
 lvalue_Struct lvalue_use_struct(lvalue_ThreeWays s)
 {
   bool uu____0 = false;
@@ -24,14 +19,13 @@ lvalue_Struct lvalue_use_struct(lvalue_ThreeWays s)
       (
         KRML_CLITERAL(lvalue_Struct){
           .tag = lvalue_B,
-          .val = { .case_B = Eurydice_box_new(i, int32_t, int32_t *) }
+          .f0 = Eurydice_box_new(i, int32_t, int32_t *)
         }
       );
   }
   else if (s.tag == lvalue_Left)
   {
-    Eurydice_vec st = s.val.case_Left;
-    uu____1 = (KRML_CLITERAL(lvalue_Struct){ .tag = lvalue_A, .val = { .case_A = st } });
+    uu____1 = (KRML_CLITERAL(lvalue_Struct){ .tag = lvalue_A });
   }
   else
   {
@@ -42,6 +36,11 @@ lvalue_Struct lvalue_use_struct(lvalue_ThreeWays s)
     return uu____1;
   }
   return uu____1;
+}
+
+void lvalue_main(void)
+{
+
 }
 
 /**

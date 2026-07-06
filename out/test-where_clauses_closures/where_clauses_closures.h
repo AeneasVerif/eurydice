@@ -15,7 +15,52 @@
 extern "C" {
 #endif
 
-extern size_t core_clone_impls__impl_core__clone__Clone_for_usize__clone(const size_t *x0);
+/**
+A monomorphic instance of Eurydice.arr
+with types size_t
+with const generics
+- $1size_t
+*/
+typedef struct Eurydice_arr_58_s { size_t data[1U]; } Eurydice_arr_58;
+
+typedef struct size_t_x2_s
+{
+  size_t fst;
+  size_t snd;
+}
+size_t_x2;
+
+/**
+This function found in impl {impl core::convert::Into<usize> for usize}
+*/
+static inline size_t core_convert_into___usize__usize__83(size_t x)
+{
+  return x;
+}
+
+/**
+This function found in impl {impl where_clauses_closures::Ops<1 : usize> for usize}
+*/
+size_t where_clauses_closures_of_usize_ec(size_t x);
+
+/**
+This function found in impl {impl core::ops::function::FnMut<(usize,)> for where_clauses_closures::test::closure::<usize, 1 : usize>}
+*/
+size_t
+where_clauses_closures_test_call_mut___usize__1___usize__93(void **_, size_t tupled_args);
+
+Eurydice_arr_58
+core_array_from_fn___usize__where_clauses_closures__test__closure___usize__1___usize___1___usize_(
+  void
+);
+
+typedef struct core_marker_MetaSized__vtable__s
+{
+  size_t size;
+  size_t align;
+  void *const *drop;
+}
+core_marker_MetaSized__vtable_;
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -28,57 +73,19 @@ This function found in impl {impl where_clauses_closures::Ops<1 : usize> for usi
 */
 size_t where_clauses_closures_zero_ec(void);
 
-/**
-This function found in impl {impl where_clauses_closures::Ops<1 : usize> for usize}
-*/
-size_t where_clauses_closures_of_usize_ec(size_t x);
-
-/**
-This function found in impl {impl core::ops::function::FnMut<(usize,), T> for where_clauses_closures::test::closure<T, K>[@TraitClause0, @TraitClause1, @TraitClause2]}
-*/
-/**
-A monomorphic instance of where_clauses_closures.test.call_mut_0c
-with types size_t
-with const generics
-- K= 1
-*/
-size_t where_clauses_closures_test_call_mut_0c_df(void **_, size_t tupled_args);
-
-/**
-This function found in impl {impl core::ops::function::FnOnce<(usize,), T> for where_clauses_closures::test::closure<T, K>[@TraitClause0, @TraitClause1, @TraitClause2]}
-*/
-/**
-A monomorphic instance of where_clauses_closures.test.call_once_8c
-with types size_t
-with const generics
-- K= 1
-*/
-size_t where_clauses_closures_test_call_once_8c_df(size_t _);
-
-typedef struct size_t_x2_s
-{
-  size_t fst;
-  size_t snd;
-}
-size_t_x2;
-
-/**
-A monomorphic instance of Eurydice.arr
-with types size_t
-with const generics
-- $1size_t
-*/
-typedef struct Eurydice_arr_58_s { size_t data[1U]; } Eurydice_arr_58;
-
-/**
-A monomorphic instance of where_clauses_closures.test
-with types size_t
-with const generics
-- K= 1
-*/
-size_t_x2 where_clauses_closures_test_df(void);
+size_t_x2 where_clauses_closures_test___usize__1___usize_(void);
 
 void where_clauses_closures_main(void);
+
+/**
+This function found in impl {impl core::marker::Destruct for where_clauses_closures::test::closure::<usize, 1 : usize>}
+*/
+void where_clauses_closures_test_closure_drop_glue___usize__1___usize__d3(void **_);
+
+/**
+This function found in impl {impl core::ops::function::FnOnce<(usize,)> for where_clauses_closures::test::closure::<usize, 1 : usize>}
+*/
+size_t where_clauses_closures_test_call_once___usize__1___usize__50(size_t _);
 
 #if defined(__cplusplus)
 }

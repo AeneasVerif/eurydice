@@ -15,94 +15,41 @@
 extern "C" {
 #endif
 
-extern int32_t core_clone_impls__impl_core__clone__Clone_for_i32__clone(const int32_t *x0);
-
-#define core_cmp_Ordering_Less -1
-#define core_cmp_Ordering_Equal 0
-#define core_cmp_Ordering_Greater 1
-
-typedef int8_t core_cmp_Ordering;
-
-extern bool
-core_cmp_impls__impl_core__cmp__PartialEq_i32__for_i32__eq(
-  const int32_t *x0,
-  const int32_t *x1
-);
-
 #define core_option_None 0
 #define core_option_Some 1
 
-typedef uint8_t core_option_Option_77_tags;
+typedef uint8_t core_option_Option___i32__tags;
 
-/**
-A monomorphic instance of core.option.Option
-with types core_cmp_Ordering
-
-*/
-typedef struct core_option_Option_77_s
+typedef struct core_option_Option___i32__s
 {
-  core_option_Option_77_tags tag;
-  core_cmp_Ordering f0;
-}
-core_option_Option_77;
-
-extern core_option_Option_77
-core_cmp_impls__impl_core__cmp__PartialOrd_i32__for_i32__partial_cmp(
-  const int32_t *x0,
-  const int32_t *x1
-);
-
-/**
-A monomorphic instance of core.option.Option
-with types int32_t
-
-*/
-typedef struct core_option_Option_9e_s
-{
-  core_option_Option_77_tags tag;
+  core_option_Option___i32__tags tag;
   int32_t f0;
 }
-core_option_Option_9e;
+core_option_Option___i32_;
 
-extern core_option_Option_9e
-core_iter_range__impl_core__iter__range__Step_for_i32__backward_checked(int32_t x0, size_t x1);
-
-extern core_option_Option_9e
-core_iter_range__impl_core__iter__range__Step_for_i32__forward_checked(int32_t x0, size_t x1);
-
-/**
-A monomorphic instance of core.option.Option
-with types size_t
-
-*/
-typedef struct core_option_Option_87_s
+typedef struct core_ops_range_Range___i32__s
 {
-  core_option_Option_77_tags tag;
-  size_t f0;
+  int32_t start;
+  int32_t end;
 }
-core_option_Option_87;
+core_ops_range_Range___i32_;
 
-/**
-A monomorphic instance of n-tuple
-with types size_t, core_option_Option_87
-
-*/
-typedef struct tuple_21_s
-{
-  size_t fst;
-  core_option_Option_87 snd;
-}
-tuple_21;
-
-extern tuple_21
-core_iter_range__impl_core__iter__range__Step_for_i32__steps_between(
-  const int32_t *x0,
-  const int32_t *x1
-);
+uint8_t for_other(Eurydice_borrow_slice_u8 input);
 
 void for_main(void);
 
-uint8_t for_other(Eurydice_borrow_slice_u8 input);
+/**
+This function found in impl {impl core::iter::traits::iterator::Iterator for core::ops::range::Range::<i32>}
+*/
+core_option_Option___i32_ core_iter_range_next___i32__33(core_ops_range_Range___i32_ *range);
+
+/**
+This function found in impl {impl core::iter::traits::collect::IntoIterator for core::ops::range::Range::<i32>}
+*/
+core_ops_range_Range___i32_
+core_iter_traits_collect_into_iter___core__ops__range__Range___i32___55(
+  core_ops_range_Range___i32_ range
+);
 
 #if defined(__cplusplus)
 }

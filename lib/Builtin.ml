@@ -2,6 +2,16 @@ module K = struct
   include Krml.Ast
 end
 
+module C = struct
+  include Charon.GAst
+  include Charon.LlbcAst
+  include Charon.Types
+  include Charon.TypesUtils
+  include Charon.Expressions
+  include Charon.Values
+  include Charon.GAstUtils
+end
+
 (** 1. Things that could otherwise be emitted as an extern prototype, but for some reason ought to
     be skipped. This is used by main.ml *)
 let skip = Krml.Idents.LidSet.of_list [ [ "Eurydice" ], "assert"; [], "UNIT_METADATA" ]
@@ -693,6 +703,1163 @@ let slice_subslice_from_func const =
 
 let slice_subslice_from_func_shared = slice_subslice_from_func true
 let slice_subslice_from_func_mut = slice_subslice_from_func false
+
+let array_eq_mono_decl ~name ~array_t ~elt_t ~len ~const =
+  let open Krml in
+  let open Ast in
+  let arg_t = TBuf (array_t, const) in
+  let array_eq_arg_t = TBuf (array_t, true) in
+  let array_eq_arg i =
+    let arg = with_type arg_t (EBound i) in
+    if const then
+      arg
+    else
+      with_type array_eq_arg_t (ECast (arg, array_eq_arg_t))
+  in
+  let a = Helpers.fresh_binder "a" arg_t in
+  let b = Helpers.fresh_binder "b" arg_t in
+  let array_eq = expr_of_builtin_t ~cgs:(0, [ len ]) array_eq [ elt_t ] in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      TBool,
+      name,
+      [ a; b ],
+      with_type TBool (EApp (array_eq, [ array_eq_arg 1; array_eq_arg 0 ])) )
+
+let array_eq_slice_mono_decl ~name ~array_t ~elt_t ~len ~array_const ~slice_t ~slice_const ~rhs_t =
+  let open Krml in
+  let open Ast in
+  let lhs_t = TBuf (array_t, array_const) in
+  let lhs_expected_t = TBuf (array_t, true) in
+  let rhs_expected_t = TBuf (slice_t, true) in
+  let cast_if_needed expected_t e =
+    if e.typ = expected_t then
+      e
+    else
+      with_type expected_t (ECast (e, expected_t))
+  in
+  let lhs = cast_if_needed lhs_expected_t (with_type lhs_t (EBound 1)) in
+  let rhs = cast_if_needed rhs_expected_t (with_type rhs_t (EBound 0)) in
+  let array_eq_slice =
+    expr_of_builtin_t ~cgs:(0, [ len ])
+      (if slice_const then
+         array_eq_slice_shared
+       else
+         array_eq_slice_mut)
+      [ elt_t ]
+  in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      TBool,
+      name,
+      [ Helpers.fresh_binder "a" lhs_t; Helpers.fresh_binder "b" rhs_t ],
+      with_type TBool (EApp (array_eq_slice, [ lhs; rhs ])) )
+
+let array_clone_mono_decl ~name ~array_t ~const =
+  let open Krml in
+  let open Ast in
+  let arg_t = TBuf (array_t, const) in
+  let src = with_type arg_t (EBound 0) in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      array_t,
+      name,
+      [ Helpers.fresh_binder "src" arg_t ],
+      Helpers.mk_deref array_t ~const src.node )
+
+let array_from_fn_mono_decl ~name ~ret_t ~state_t ~data_t ~len ~call_mut =
+  let open Krml in
+  let open Ast in
+  let elt_t = Helpers.assert_tbuf_or_tarray data_t in
+  let state_arg = with_type state_t (EBound 0) in
+  let state_b, state = Helpers.mk_binding ~mut:true "f_lvalue" state_t in
+  let arr_b, dst_struct = Helpers.mk_binding ~mut:true "arr_struct" ret_t in
+  let dst = with_type data_t (EField (dst_struct, "data")) in
+  let lift1 = DeBruijn.lift 1 in
+  let init_state = Helpers.with_unit (EAssign (state, state_arg)) in
+  let for_assign =
+    with_type TUnit
+      (EFor
+         ( Helpers.fresh_binder ~mut:true "i" Helpers.usize,
+           Helpers.zero_usize,
+           Helpers.mk_lt_usize (lift1 len),
+           Helpers.mk_incr_usize,
+           let i = with_type Helpers.usize (EBound 0) in
+           Helpers.with_unit
+             (EBufWrite
+                ( lift1 dst,
+                  i,
+                  with_type elt_t
+                    (EApp
+                       ( call_mut,
+                         [
+                           with_type (TBuf (state_t, false)) (EAddrOf (lift1 state));
+                           with_type (TInt SizeT) (EBound 0);
+                         ] )) )) ))
+  in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      ret_t,
+      name,
+      [ Helpers.fresh_binder ~mut:true "f" state_t ],
+      Helpers.nest
+        [ state_b, with_type state_t EAny; arr_b, with_type ret_t EAny ]
+        ret_t
+        (with_type ret_t (ESequence [ init_state; for_assign; dst_struct ])) )
+
+let array_map_mono_decl ~name ~src_struct_t ~state_t ~dst_struct_t ~src_data_t ~dst_data_t ~src_t
+    ~len ~call_mut =
+  let open Krml in
+  let open Ast in
+  let dst_t = Helpers.assert_tbuf_or_tarray dst_data_t in
+  let src = with_type src_struct_t (EBound 1) in
+  let state = with_type state_t (EBound 0) in
+  let lift1 = DeBruijn.lift 1 in
+  let src = with_type src_data_t (EField (src, "data")) in
+  let arr_b, dst_struct = Helpers.mk_binding ~mut:true "arr_mapped_str" dst_struct_t in
+  let dst = with_type dst_data_t (EField (dst_struct, "data")) in
+  let for_assign =
+    with_type TUnit
+      (EFor
+         ( Helpers.fresh_binder ~mut:true "i" Helpers.usize,
+           Helpers.zero_usize,
+           Helpers.mk_lt_usize (lift1 len),
+           Helpers.mk_incr_usize,
+           let i = with_type Helpers.usize (EBound 0) in
+           let src_i = with_type src_t (EBufRead (lift1 src, i)) in
+           Helpers.with_unit
+             (EBufWrite
+                ( lift1 dst,
+                  i,
+                  with_type dst_t
+                    (EApp
+                       ( call_mut,
+                         [ with_type (TBuf (state_t, false)) (EAddrOf (lift1 state)); src_i ] )) ))
+         ))
+  in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      dst_struct_t,
+      name,
+      [ Helpers.fresh_binder "src" src_struct_t; Helpers.fresh_binder ~mut:true "f" state_t ],
+      Helpers.nest
+        [ arr_b, with_type dst_struct_t EAny ]
+        dst_struct_t
+        (with_type dst_struct_t (ESequence [ for_assign; dst_struct ])) )
+
+type array_subslice_kind = ArrayRange | ArrayRangeTo | ArrayRangeFrom
+
+let array_index_mono_decl ~name ~ret_t ~array_t ~data_t ~elt_t ~range_t ~const ~kind ~len =
+  let open Krml in
+  let open Ast in
+  let arrref_t = TBuf (array_t, const) in
+  let arrref = with_type arrref_t (EBound 1) in
+  let range = with_type range_t (EBound 0) in
+  let arr = Helpers.mk_deref array_t ~const arrref.node in
+  let data = with_type data_t (EField (arr, "data")) in
+  let ptr, meta =
+    match kind with
+    | ArrayRange ->
+        let r_start = mk_sizeT (EField (range, "start")) in
+        let r_end = mk_sizeT (EField (range, "end")) in
+        ( with_type (TBuf (elt_t, const)) (EBufSub (data, r_start)),
+          mk_sizeT (EApp (Helpers.mk_op Sub (TInt SizeT), [ r_end; r_start ])) )
+    | ArrayRangeTo ->
+        let r_end = mk_sizeT (EField (range, "end")) in
+        with_type (TBuf (elt_t, const)) (EBufSub (data, Helpers.zero_usize)), r_end
+    | ArrayRangeFrom ->
+        let r_start = mk_sizeT (EField (range, "start")) in
+        ( with_type (TBuf (elt_t, const)) (EBufSub (data, r_start)),
+          mk_sizeT (EApp (Helpers.mk_op Sub (TInt SizeT), [ len; r_start ])) )
+  in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      ret_t,
+      name,
+      [ Helpers.fresh_binder "a" arrref_t; Helpers.fresh_binder "r" range_t ],
+      with_type ret_t (EFlat [ Some "ptr", ptr; Some "meta", meta ]) )
+
+let slice_index_mono_decl ~name ~ret_t ~slice_t ~elt_t ~range_t ~const ~kind =
+  let open Krml in
+  let open Ast in
+  let slice = with_type slice_t (EBound 1) in
+  let range = with_type range_t (EBound 0) in
+  let data = with_type (TBuf (elt_t, const)) (EField (slice, "ptr")) in
+  let ptr, meta =
+    match kind with
+    | ArrayRange ->
+        let r_start = mk_sizeT (EField (range, "start")) in
+        let r_end = mk_sizeT (EField (range, "end")) in
+        ( with_type (TBuf (elt_t, const)) (EBufSub (data, r_start)),
+          mk_sizeT (EApp (Helpers.mk_op Sub (TInt SizeT), [ r_end; r_start ])) )
+    | ArrayRangeTo ->
+        let r_end = mk_sizeT (EField (range, "end")) in
+        data, r_end
+    | ArrayRangeFrom ->
+        let r_start = mk_sizeT (EField (range, "start")) in
+        let slice_len = mk_sizeT (EField (slice, "meta")) in
+        ( with_type (TBuf (elt_t, const)) (EBufSub (data, r_start)),
+          mk_sizeT (EApp (Helpers.mk_op Sub (TInt SizeT), [ slice_len; r_start ])) )
+  in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      ret_t,
+      name,
+      [ Helpers.fresh_binder "s" slice_t; Helpers.fresh_binder "r" range_t ],
+      with_type ret_t (EFlat [ Some "ptr", ptr; Some "meta", meta ]) )
+
+let slice_copy_mono_decl ~name ~elt_t ~dst_t ~src_t =
+  let open Krml in
+  let open Ast in
+  let dst = with_type dst_t (EBound 1) in
+  let src = with_type src_t (EBound 0) in
+  let dst_ptr = with_type (TBuf (elt_t, false)) (EField (dst, "ptr")) in
+  let src_ptr = with_type (TBuf (elt_t, true)) (EField (src, "ptr")) in
+  let len = mk_sizeT (EField (dst, "meta")) in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      TUnit,
+      name,
+      [ Helpers.fresh_binder "dst" dst_t; Helpers.fresh_binder "src" src_t ],
+      Helpers.with_unit (EBufBlit (src_ptr, Helpers.zero_usize, dst_ptr, Helpers.zero_usize, len))
+    )
+
+let slice_len_mono_decl ~name ~slice_t =
+  let open Krml in
+  let open Ast in
+  let slice = with_type slice_t (EBound 0) in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      TInt SizeT,
+      name,
+      [ Helpers.fresh_binder "s" slice_t ],
+      mk_sizeT (EField (slice, "meta")) )
+
+let str_index_from_mono_decl ~name ~range_t =
+  let open Krml in
+  let open Ast in
+  let str_t = str_t ~const:true in
+  let s = with_type str_t (EBound 1) in
+  let range = with_type range_t (EBound 0) in
+  let ptr = with_type (TBuf (c_char_t, true)) (EField (s, "ptr")) in
+  let meta = mk_sizeT (EField (s, "meta")) in
+  let start = mk_sizeT (EField (range, "start")) in
+  let ptr = with_type (TBuf (c_char_t, true)) (EBufSub (ptr, start)) in
+  let meta = mk_sizeT (EApp (Helpers.mk_op Sub (TInt SizeT), [ meta; start ])) in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      str_t,
+      name,
+      [ Helpers.fresh_binder "s" str_t; Helpers.fresh_binder "r" range_t ],
+      with_type str_t (EFlat [ Some "ptr", ptr; Some "meta", meta ]) )
+
+let array_as_slice_mono_decl ~name ~ret_t ~array_t ~data_t ~elt_t ~const ~len =
+  let open Krml in
+  let open Ast in
+  let arrref_t = TBuf (array_t, const) in
+  let arrref = with_type arrref_t (EBound 0) in
+  let arr = Helpers.mk_deref array_t ~const arrref.node in
+  let data = with_type data_t (EField (arr, "data")) in
+  let ptr = with_type (TBuf (elt_t, const)) (EBufSub (data, Helpers.zero_usize)) in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      ret_t,
+      name,
+      [ Helpers.fresh_binder "a" arrref_t ],
+      with_type ret_t (EFlat [ Some "ptr", ptr; Some "meta", len ]) )
+
+let slice_split_at_mono_decl ~name ~slice_t ~elt_t ~const ~ret_t =
+  let open Krml in
+  let open Ast in
+  let slice = with_type slice_t (EBound 1) in
+  let mid = with_type (TInt SizeT) (EBound 0) in
+  let ptr = with_type (TBuf (elt_t, const)) (EField (slice, "ptr")) in
+  let meta = mk_sizeT (EField (slice, "meta")) in
+  let left = with_type slice_t (EFlat [ Some "ptr", ptr; Some "meta", mid ]) in
+  let right_ptr = with_type (TBuf (elt_t, const)) (EBufSub (ptr, mid)) in
+  let right_meta = mk_sizeT (EApp (Helpers.mk_op Sub (TInt SizeT), [ meta; mid ])) in
+  let right = with_type slice_t (EFlat [ Some "ptr", right_ptr; Some "meta", right_meta ]) in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      ret_t,
+      name,
+      [ Helpers.fresh_binder "s" slice_t; Helpers.fresh_binder "mid" (TInt SizeT) ],
+      with_type ret_t (ETuple [ left; right ]) )
+
+let identity_mono_decl ~name ~typ ~arg_name =
+  let open Krml in
+  let open Ast in
+  DFunction
+    (None, [], 0, 0, typ, name, [ Helpers.fresh_binder arg_name typ ], with_type typ (EBound 0))
+
+let numeric_cast_mono_decl ~name ~src_t ~dst_t =
+  let open Krml in
+  let open Ast in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      dst_t,
+      name,
+      [ Helpers.fresh_binder "x" src_t ],
+      with_type dst_t (ECast (with_type src_t (EBound 0), dst_t)) )
+
+let black_box_mono_decl ~name ~typ = identity_mono_decl ~name ~typ ~arg_name:"x"
+
+let range_into_iter_mono_decl ~name ~range_t =
+  identity_mono_decl ~name ~typ:range_t ~arg_name:"range"
+
+let step_by_type_decl ~name ~range_t =
+  let open Krml in
+  let open Ast in
+  DType (name, [], 0, 0, Flat [ Some "iter", (range_t, true); Some "step", (TInt SizeT, false) ])
+
+let iterator_step_by_mono_decl ~name ~range_t ~step_by_t =
+  let open Krml in
+  let open Ast in
+  let range = with_type range_t (EBound 1) in
+  let step = with_type (TInt SizeT) (EBound 0) in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      step_by_t,
+      name,
+      [ Helpers.fresh_binder "iter" range_t; Helpers.fresh_binder "step" (TInt SizeT) ],
+      with_type step_by_t (EFlat [ Some "iter", range; Some "step", step ]) )
+
+let step_by_into_iter_mono_decl ~name ~step_by_t =
+  identity_mono_decl ~name ~typ:step_by_t ~arg_name:"iter"
+
+let ord_min_mono_decl ~name ~typ =
+  let open Krml in
+  let open Ast in
+  let x = with_type typ (EBound 1) in
+  let y = with_type typ (EBound 0) in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      typ,
+      name,
+      [ Helpers.fresh_binder "x" typ; Helpers.fresh_binder "y" typ ],
+      with_type typ (EIfThenElse (with_type TBool (EApp (Helpers.mk_op Lte typ, [ x; y ])), x, y))
+    )
+
+let partial_eq_ref_mono_decl ~name ~lhs_t ~rhs_t ~inner_lhs_t ~inner_rhs_t ~lhs_const ~rhs_const
+    ~inner_eq =
+  let open Krml in
+  let open Ast in
+  let lhs = with_type lhs_t (EBound 1) in
+  let rhs = with_type rhs_t (EBound 0) in
+  let lhs = Helpers.mk_deref inner_lhs_t ~const:lhs_const lhs.node in
+  let rhs = Helpers.mk_deref inner_rhs_t ~const:rhs_const rhs.node in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      TBool,
+      name,
+      [ Helpers.fresh_binder "x" lhs_t; Helpers.fresh_binder "y" rhs_t ],
+      with_type TBool (EApp (inner_eq, [ lhs; rhs ])) )
+
+let slice_try_into_array_mono_decl ~name ~slice_t ~elt_t ~array_t ~ok_t ~result_t ~len =
+  let open Krml in
+  let open Ast in
+  let slice = with_type slice_t (EBound 0) in
+  let slice_const =
+    match slice_t with
+    | TApp (lid, _) when lid = dst_ref_shared -> true
+    | TApp (lid, _) when lid = dst_ref_mut -> false
+    | _ -> true
+  in
+  let src = with_type (TBuf (elt_t, slice_const)) (EField (slice, "ptr")) in
+  match ok_t with
+  | TBuf _ ->
+      let ok = with_type ok_t (ECast (src, ok_t)) in
+      DFunction
+        ( None,
+          [],
+          0,
+          0,
+          result_t,
+          name,
+          [ Helpers.fresh_binder "s" slice_t ],
+          with_type result_t (ECons ("Ok", [ ok ])) )
+  | _ ->
+      let arr_b, arr = Helpers.mk_binding ~mut:true "arr" array_t in
+      let dst = with_type (TBuf (elt_t, false)) (EField (arr, "data")) in
+      let memcpy =
+        Helpers.with_unit (EBufBlit (src, Helpers.zero_usize, dst, Helpers.zero_usize, len))
+      in
+      DFunction
+        ( None,
+          [],
+          0,
+          0,
+          result_t,
+          name,
+          [ Helpers.fresh_binder "s" slice_t ],
+          Helpers.nest
+            [ arr_b, with_type array_t EAny ]
+            result_t
+            (with_type result_t (ESequence [ memcpy; with_type result_t (ECons ("Ok", [ arr ])) ]))
+        )
+
+let unwrap_mono_decl ~name ~result_t ~ok_t =
+  let open Krml in
+  let open Ast in
+  let b = Helpers.fresh_binder "f0" ok_t in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      ok_t,
+      name,
+      [ Helpers.fresh_binder "self" result_t ],
+      with_type ok_t
+        (EMatch
+           ( Unchecked,
+             with_type result_t (EBound 0),
+             [
+               ( [ b ],
+                 with_type result_t (PCons ("Ok", [ with_type ok_t (PBound 0) ])),
+                 with_type ok_t (EBound 0) );
+               ( [],
+                 with_type result_t PWild,
+                 with_type ok_t (EAbort (Some ok_t, Some "unwrap not Ok")) );
+             ] )) )
+
+let range_next_mono_decl ~name ~range_t ~elt_t ~option_t =
+  let open Krml in
+  let open Ast in
+  let one =
+    match elt_t with
+    | TInt w -> Helpers.one w
+    | _ -> failwith "range_next_mono_decl: expected integer range element type"
+  in
+  let range_ref_t = TBuf (range_t, false) in
+  let range_ref = with_type range_ref_t (EBound 0) in
+  let start_b, start = Helpers.mk_binding ~mut:true "start" elt_t in
+  let range = Helpers.mk_deref range_t ~const:false range_ref.node in
+  let range_start = with_type elt_t (EField (range, "start")) in
+  let range_end = with_type elt_t (EField (range, "end")) in
+  let init_start = Helpers.with_unit (EAssign (start, range_start)) in
+  let increment_start =
+    Helpers.with_unit
+      (EAssign (range_start, with_type elt_t (EApp (Helpers.mk_op Add elt_t, [ start; one ]))))
+  in
+  let some_start = with_type option_t (ECons ("Some", [ start ])) in
+  let none = with_type option_t (ECons ("None", [])) in
+  let cond = with_type TBool (EApp (Helpers.mk_op Lt elt_t, [ start; range_end ])) in
+  let body =
+    with_type option_t
+      (ESequence
+         [
+           init_start;
+           with_type option_t
+             (EIfThenElse
+                (cond, with_type option_t (ESequence [ increment_start; some_start ]), none));
+         ])
+  in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      option_t,
+      name,
+      [ Helpers.fresh_binder "range" range_ref_t ],
+      Helpers.nest [ start_b, with_type elt_t EAny ] option_t body )
+
+let step_by_next_mono_decl ~name ~step_by_t ~range_t ~elt_t ~option_t =
+  let open Krml in
+  let open Ast in
+  let step_by_ref_t = TBuf (step_by_t, false) in
+  let step_by_ref = with_type step_by_ref_t (EBound 0) in
+  let step_by = Helpers.mk_deref step_by_t ~const:false step_by_ref.node in
+  let iter = with_type range_t (EField (step_by, "iter")) in
+  let start_b, start = Helpers.mk_binding ~mut:true "start" elt_t in
+  let range_start = with_type elt_t (EField (iter, "start")) in
+  let range_end = with_type elt_t (EField (iter, "end")) in
+  let step =
+    let step = with_type (TInt SizeT) (EField (step_by, "step")) in
+    match elt_t with
+    | TInt SizeT -> step
+    | TInt w -> with_type elt_t (ECast (step, TInt w))
+    | _ -> failwith "step_by_next_mono_decl: expected integer range element type"
+  in
+  let init_start = Helpers.with_unit (EAssign (start, range_start)) in
+  let increment_start =
+    Helpers.with_unit
+      (EAssign (range_start, with_type elt_t (EApp (Helpers.mk_op Add elt_t, [ start; step ]))))
+  in
+  let some_start = with_type option_t (ECons ("Some", [ start ])) in
+  let none = with_type option_t (ECons ("None", [])) in
+  let cond = with_type TBool (EApp (Helpers.mk_op Lt elt_t, [ start; range_end ])) in
+  let body =
+    with_type option_t
+      (ESequence
+         [
+           init_start;
+           with_type option_t
+             (EIfThenElse
+                (cond, with_type option_t (ESequence [ increment_start; some_start ]), none));
+         ])
+  in
+  DFunction
+    ( None,
+      [],
+      0,
+      0,
+      option_t,
+      name,
+      [ Helpers.fresh_binder "iter" step_by_ref_t ],
+      Helpers.nest [ start_b, with_type elt_t EAny ] option_t body )
+
+type synthesis_ctx = {
+  typ_of_ty : C.ty -> K.typ;
+  maybe_cg_array : C.ty -> C.constant_expr -> K.typ;
+  expression_of_const_generic : C.constant_expr -> K.expr;
+  const_of_ref_kind : C.ref_kind -> bool;
+  typ_of_signature : C.bound_fun_sig -> K.type_scheme * K.typ;
+  lid_of_name : C.name -> K.lident;
+  string_of_name : C.name -> string;
+  get_nth_type : C.type_decl_id -> C.type_decl;
+  get_nth_function : C.fun_decl_id -> C.fun_decl;
+  get_nth_trait_impl : C.trait_impl_id -> C.trait_impl;
+  fun_decls : C.fun_decl C.FunDeclId.Map.t;
+}
+
+let ident s = function
+  | C.PeIdent (s', _) -> s = s'
+  | _ -> false
+
+let without_instantiations =
+  List.filter (function
+    | C.PeInstantiated _ -> false
+    | _ -> true)
+
+let instantiations_of_name name =
+  List.filter_map
+    (function
+      | C.PeInstantiated binder -> Some binder.binder_value
+      | _ -> None)
+    name
+
+let range_subslice_kind ctx = function
+  | C.TAdt { id = C.TAdtId id; _ } -> (
+      match without_instantiations (ctx.get_nth_type id).item_meta.name with
+      | [ core; ops; range; range_name ]
+        when ident "core" core && ident "ops" ops && ident "range" range ->
+          if ident "Range" range_name then
+            Some ArrayRange
+          else if ident "RangeTo" range_name then
+            Some ArrayRangeTo
+          else if ident "RangeFrom" range_name then
+            Some ArrayRangeFrom
+          else
+            None
+      | _ -> None)
+  | _ -> None
+
+let range_element_ty ctx = function
+  | C.TAdt { id = C.TAdtId id; _ } as ty -> begin
+      match range_subslice_kind ctx ty, (ctx.get_nth_type id).kind with
+      | Some ArrayRange, C.Struct fields ->
+          let field name =
+            List.find_opt (fun (field : C.field) -> field.field_name = Some name) fields
+          in
+          begin
+            match field "start", field "end" with
+            | Some start, Some end_ when start.field_ty = end_.field_ty -> Some start.field_ty
+            | _ -> None
+          end
+      | _ -> None
+    end
+  | _ -> None
+
+let is_core_array_from_fn_name = function
+  | [ core; array; from_fn; C.PeInstantiated _ ] ->
+      ident "core" core && ident "array" array && ident "from_fn" from_fn
+  | _ -> false
+
+let is_core_array_map_name = function
+  | [ core; array; C.PeImpl _; map; C.PeInstantiated _ ] ->
+      ident "core" core && ident "array" array && ident "map" map
+  | _ -> false
+
+let is_core_array_equality_name = function
+  | [ core; array; equality; C.PeImpl _; eq; C.PeInstantiated _ ] ->
+      ident "core" core && ident "array" array && ident "equality" equality && ident "eq" eq
+  | _ -> false
+
+let is_core_array_clone_name = function
+  | [ core; array; C.PeImpl _; clone; C.PeInstantiated _ ] ->
+      ident "core" core && ident "array" array && ident "clone" clone
+  | _ -> false
+
+let is_core_array_index_name = function
+  | [ core; array; C.PeImpl _; index; C.PeInstantiated _ ] ->
+      ident "core" core && ident "array" array && (ident "index" index || ident "index_mut" index)
+  | _ -> false
+
+let is_core_slice_index_name = function
+  | [ core; slice; index_mod; C.PeImpl _; index; C.PeInstantiated _ ] ->
+      ident "core" core && ident "slice" slice && ident "index" index_mod
+      && (ident "index" index || ident "index_mut" index)
+  | _ -> false
+
+let is_core_slice_copy_from_slice_name = function
+  | [ core; slice; C.PeImpl _; copy_from_slice; C.PeInstantiated _ ] ->
+      ident "core" core && ident "slice" slice && ident "copy_from_slice" copy_from_slice
+  | _ -> false
+
+let is_core_slice_len_name = function
+  | [ core; slice; C.PeImpl _; len; C.PeInstantiated _ ] ->
+      ident "core" core && ident "slice" slice && ident "len" len
+  | _ -> false
+
+let is_core_str_index_name = function
+  | [ core; str; traits; C.PeImpl _; index; C.PeInstantiated _ ] ->
+      ident "core" core && ident "str" str && ident "traits" traits && ident "index" index
+  | _ -> false
+
+let is_core_slice_split_at_name = function
+  | [ core; slice; C.PeImpl _; split_at; C.PeInstantiated _ ] ->
+      ident "core" core && ident "slice" slice
+      && (ident "split_at" split_at || ident "split_at_mut" split_at)
+  | _ -> false
+
+let is_core_array_as_slice_name = function
+  | [ core; array; C.PeImpl _; as_slice; C.PeInstantiated _ ] ->
+      ident "core" core && ident "array" array && ident "as_slice" as_slice
+  | _ -> false
+
+let is_core_convert_try_into_name = function
+  | [ core; convert; C.PeImpl _; try_into; C.PeInstantiated _ ] ->
+      ident "core" core && ident "convert" convert && ident "try_into" try_into
+  | _ -> false
+
+let is_core_convert_into_name = function
+  | [ core; convert; C.PeImpl _; into_; C.PeInstantiated _ ] ->
+      ident "core" core && ident "convert" convert && ident "into" into_
+  | _ -> false
+
+let is_core_result_unwrap_name = function
+  | [ core; result; C.PeImpl _; unwrap; C.PeInstantiated _ ] ->
+      ident "core" core && ident "result" result && ident "unwrap" unwrap
+  | _ -> false
+
+let is_core_step_by_type_name = function
+  | [ core; iter; adapters; step_by_mod; step_by_ty; C.PeInstantiated _ ] ->
+      ident "core" core && ident "iter" iter && ident "adapters" adapters
+      && ident "step_by" step_by_mod && ident "StepBy" step_by_ty
+  | _ -> false
+
+let is_core_iterator_step_by_name = function
+  | [ core; iter; traits; iterator; iterator_trait; step_by; C.PeInstantiated _ ] ->
+      ident "core" core && ident "iter" iter && ident "traits" traits && ident "iterator" iterator
+      && ident "Iterator" iterator_trait && ident "step_by" step_by
+  | _ -> false
+
+let is_core_step_by_into_iter_name = function
+  | [ core; iter; traits; collect; C.PeImpl _; into_iter; C.PeInstantiated _ ] ->
+      ident "core" core && ident "iter" iter && ident "traits" traits && ident "collect" collect
+      && ident "into_iter" into_iter
+  | _ -> false
+
+let is_core_step_by_next_name = function
+  | [ core; iter; adapters; step_by_mod; C.PeImpl _; next; C.PeInstantiated _ ] ->
+      ident "core" core && ident "iter" iter && ident "adapters" adapters
+      && ident "step_by" step_by_mod && ident "next" next
+  | _ -> false
+
+let is_core_range_into_iter_name = function
+  | [ core; iter; traits; collect; C.PeImpl _; into_iter; C.PeInstantiated _ ] ->
+      ident "core" core && ident "iter" iter && ident "traits" traits && ident "collect" collect
+      && ident "into_iter" into_iter
+  | _ -> false
+
+let is_core_range_next_name = function
+  | [ core; iter; range; C.PeImpl _; next; C.PeInstantiated _ ] ->
+      ident "core" core && ident "iter" iter && ident "range" range && ident "next" next
+  | _ -> false
+
+let is_core_hint_black_box_name = function
+  | [ core; hint; black_box; C.PeInstantiated _ ] ->
+      ident "core" core && ident "hint" hint && ident "black_box" black_box
+  | _ -> false
+
+let is_core_ord_min_name = function
+  | [ core; cmp; ord; min ] | [ core; cmp; ord; min; C.PeInstantiated _ ] ->
+      ident "core" core && ident "cmp" cmp && ident "Ord" ord && ident "min" min
+  | [ core; cmp; impls; C.PeImpl _; min ]
+  | [ core; cmp; impls; C.PeImpl _; min; C.PeInstantiated _ ] ->
+      ident "core" core && ident "cmp" cmp && ident "impls" impls && ident "min" min
+  | _ -> false
+
+let is_core_partial_eq_ref_name = function
+  | [ core; cmp; impls; C.PeImpl _; eq ] | [ core; cmp; impls; C.PeImpl _; eq; C.PeInstantiated _ ]
+    -> ident "core" core && ident "cmp" cmp && ident "impls" impls && ident "eq" eq
+  | _ -> false
+
+let is_eq_name name =
+  match List.rev (without_instantiations name) with
+  | eq :: _ -> ident "eq" eq
+  | _ -> false
+
+let raw_eq_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs with
+  | [ C.TRef (_, C.TArray (elt1, len1), rk1); C.TRef (_, C.TArray (elt2, len2), rk2) ]
+    when elt1 = elt2 && len1 = len2 ->
+      let const1 = ctx.const_of_ref_kind rk1 in
+      let const2 = ctx.const_of_ref_kind rk2 in
+      if const1 <> const2 then
+        None
+      else
+        let elt_t = ctx.typ_of_ty elt1 in
+        let array_t = ctx.typ_of_ty (C.TArray (elt1, len1)) in
+        let len = ctx.expression_of_const_generic len1 in
+        Some (array_eq_mono_decl ~name ~array_t ~elt_t ~len ~const:const1)
+  | [ C.TRef (_, C.TArray (elt1, len), rk1); C.TRef (_, C.TRef (_, C.TSlice elt2, rk2), _) ]
+    when elt1 = elt2 ->
+      let elt_t = ctx.typ_of_ty elt1 in
+      let array_t = ctx.typ_of_ty (C.TArray (elt1, len)) in
+      let slice_const = ctx.const_of_ref_kind rk2 in
+      let slice_t = mk_slice ~const:slice_const elt_t in
+      Some
+        (array_eq_slice_mono_decl ~name ~array_t ~elt_t
+           ~len:(ctx.expression_of_const_generic len)
+           ~array_const:(ctx.const_of_ref_kind rk1) ~slice_t ~slice_const
+           ~rhs_t:(ctx.typ_of_ty (List.nth signature.inputs 1)))
+  | _ -> None
+
+let rec result_ok_ty ctx = function
+  | C.TPattern (ty, _) -> result_ok_ty ctx ty
+  | C.TAdt { generics = { types = [ ok_ty; _ ]; _ }; _ } -> Some ok_ty
+  | C.TAdt { id = C.TAdtId id; generics = { types = []; _ } } -> (
+      match (ctx.get_nth_type id).kind with
+      | C.Enum variants ->
+          List.find_map
+            (fun (variant : C.variant) ->
+              match variant.variant_name, variant.fields with
+              | "Ok", [ field ] -> Some field.field_ty
+              | _ -> None)
+            variants
+      | _ -> None)
+  | _ -> None
+
+let rec array_ty_of_ok_ty = function
+  | C.TPattern (ty, _) -> array_ty_of_ok_ty ty
+  | C.TArray (elt, len) | C.TRef (_, C.TArray (elt, len), _) -> Some (elt, len)
+  | _ -> None
+
+let step_by_range_ty_of_name name =
+  if is_core_step_by_type_name name then
+    match List.concat_map (fun (g : C.generic_args) -> g.types) (instantiations_of_name name) with
+    | [ range_ty ] -> Some range_ty
+    | _ -> None
+  else
+    None
+
+let rec step_by_range_ty ctx = function
+  | C.TPattern (ty, _) -> step_by_range_ty ctx ty
+  | C.TAdt { id = C.TAdtId id; _ } -> step_by_range_ty_of_name (ctx.get_nth_type id).item_meta.name
+  | _ -> None
+
+let decl_expr ctx (decl : C.fun_decl) =
+  let { K.n_cgs; n }, t = ctx.typ_of_signature (C.bound_fun_sig_of_decl decl) in
+  if n_cgs <> 0 || n <> 0 then
+    failwith
+      (Printf.sprintf "Unexpected generic function while synthesizing array helper: %s"
+         (ctx.string_of_name decl.item_meta.name));
+  K.with_type t (K.EQualified (ctx.lid_of_name decl.item_meta.name))
+
+let closure_info_of_ty ctx (ty : C.ty) =
+  match ty with
+  | C.TAdt { id = C.TAdtId id; _ } -> (
+      match (ctx.get_nth_type id).src with
+      | C.ClosureItem info -> Some info
+      | _ -> None)
+  | _ -> None
+
+let single_method_of_trait_impl ctx impl_id =
+  let trait_impl = ctx.get_nth_trait_impl impl_id in
+  match C.TraitMethodId.Map.to_list trait_impl.methods with
+  | [ (_, f) ] -> Some (ctx.get_nth_function f.C.binder_value.id)
+  | _ ->
+      C.FunDeclId.Map.values ctx.fun_decls
+      |> List.find_opt (fun (decl : C.fun_decl) ->
+             match decl.src with
+             | C.TraitImplItem ({ id; _ }, _, C.AssocIdMethod _, _) -> id = impl_id
+             | _ -> false)
+
+let fn_mut_call_of_closure ctx state_ty =
+  match closure_info_of_ty ctx state_ty with
+  | Some { fn_mut_impl = Some impl; _ } ->
+      single_method_of_trait_impl ctx impl.C.binder_value.id |> Option.map (decl_expr ctx)
+  | _ -> None
+
+let array_from_fn_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs, signature.output with
+  | [ state_ty ], C.TArray (elt_ty, len) -> (
+      match fn_mut_call_of_closure ctx state_ty with
+      | None -> None
+      | Some call_mut ->
+          let ret_t = ctx.typ_of_ty signature.output in
+          let state_t = ctx.typ_of_ty state_ty in
+          let data_t = ctx.maybe_cg_array elt_ty len in
+          let len = ctx.expression_of_const_generic len in
+          Some (array_from_fn_mono_decl ~name ~ret_t ~state_t ~data_t ~len ~call_mut))
+  | _ -> None
+
+let array_map_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs, signature.output with
+  | [ C.TArray (src_ty, len1); state_ty ], C.TArray (dst_ty, len2) when len1 = len2 -> (
+      match fn_mut_call_of_closure ctx state_ty with
+      | None -> None
+      | Some call_mut ->
+          let src_struct_t = ctx.typ_of_ty (C.TArray (src_ty, len1)) in
+          let state_t = ctx.typ_of_ty state_ty in
+          let dst_struct_t = ctx.typ_of_ty signature.output in
+          let src_data_t = ctx.maybe_cg_array src_ty len1 in
+          let dst_data_t = ctx.maybe_cg_array dst_ty len2 in
+          let src_t = ctx.typ_of_ty src_ty in
+          let len = ctx.expression_of_const_generic len1 in
+          Some
+            (array_map_mono_decl ~name ~src_struct_t ~state_t ~dst_struct_t ~src_data_t ~dst_data_t
+               ~src_t ~len ~call_mut))
+  | _ -> None
+
+let array_index_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs, signature.output with
+  | [ C.TRef (_, C.TArray (elt1, len), rk1); range_ty ], C.TRef (_, C.TSlice elt2, rk2)
+    when elt1 = elt2 ->
+      let const1 = ctx.const_of_ref_kind rk1 in
+      let const2 = ctx.const_of_ref_kind rk2 in
+      if const1 <> const2 then
+        None
+      else
+        let array_t = ctx.typ_of_ty (C.TArray (elt1, len)) in
+        let data_t = ctx.maybe_cg_array elt1 len in
+        let elt_t = ctx.typ_of_ty elt1 in
+        let range_t = ctx.typ_of_ty range_ty in
+        let ret_t = ctx.typ_of_ty signature.output in
+        let len = ctx.expression_of_const_generic len in
+        Option.map
+          (fun kind ->
+            array_index_mono_decl ~name ~ret_t ~array_t ~data_t ~elt_t ~range_t ~const:const1 ~kind
+              ~len)
+          (range_subslice_kind ctx range_ty)
+  | _ -> None
+
+let slice_index_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs, signature.output with
+  | [ C.TRef (_, C.TSlice elt1, rk1); range_ty ], C.TRef (_, C.TSlice elt2, rk2) when elt1 = elt2 ->
+      let const1 = ctx.const_of_ref_kind rk1 in
+      let const2 = ctx.const_of_ref_kind rk2 in
+      if const1 <> const2 then
+        None
+      else
+        let elt_t = ctx.typ_of_ty elt1 in
+        let range_t = ctx.typ_of_ty range_ty in
+        let slice_t = mk_slice ~const:const1 elt_t in
+        let ret_t = ctx.typ_of_ty signature.output in
+        Option.map
+          (fun kind ->
+            slice_index_mono_decl ~name ~ret_t ~slice_t ~elt_t ~range_t ~const:const1 ~kind)
+          (range_subslice_kind ctx range_ty)
+  | _ -> None
+
+let slice_copy_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs with
+  | [ C.TRef (_, C.TSlice elt1, C.RMut); C.TRef (_, C.TSlice elt2, C.RShared) ]
+    when elt1 = elt2 && ctx.typ_of_ty signature.output = K.TUnit ->
+      let elt_t = ctx.typ_of_ty elt1 in
+      Some
+        (slice_copy_mono_decl ~name ~elt_t ~dst_t:(mk_slice ~const:false elt_t)
+           ~src_t:(mk_slice ~const:true elt_t))
+  | _ -> None
+
+let slice_len_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs, signature.output with
+  | [ C.TRef (_, C.TSlice elt, rk) ], C.TLiteral (C.TUInt C.Usize) ->
+      let elt_t = ctx.typ_of_ty elt in
+      Some (slice_len_mono_decl ~name ~slice_t:(mk_slice ~const:(ctx.const_of_ref_kind rk) elt_t))
+  | _ -> None
+
+let is_str_ty = function
+  | C.TAdt { id = C.TBuiltin C.TStr; generics = { types = []; _ } } -> true
+  | _ -> false
+
+let str_index_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs, signature.output with
+  | [ C.TRef (_, str_ty1, C.RShared); range_ty ], C.TRef (_, str_ty2, C.RShared)
+    when is_str_ty str_ty1 && is_str_ty str_ty2 -> begin
+      match range_subslice_kind ctx range_ty with
+      | Some ArrayRangeFrom ->
+          Some (str_index_from_mono_decl ~name ~range_t:(ctx.typ_of_ty range_ty))
+      | _ -> None
+    end
+  | _ -> None
+
+let slice_split_at_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs with
+  | [ C.TRef (_, C.TSlice elt, rk); C.TLiteral (C.TUInt C.Usize) ] ->
+      let const = ctx.const_of_ref_kind rk in
+      let elt_t = ctx.typ_of_ty elt in
+      Some
+        (slice_split_at_mono_decl ~name ~slice_t:(mk_slice ~const elt_t) ~elt_t ~const
+           ~ret_t:(ctx.typ_of_ty signature.output))
+  | _ -> None
+
+let array_clone_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs, signature.output with
+  | [ C.TRef (_, C.TArray (elt1, len1), rk) ], C.TArray (elt2, len2) when elt1 = elt2 && len1 = len2
+    ->
+      Some
+        (array_clone_mono_decl ~name ~array_t:(ctx.typ_of_ty signature.output)
+           ~const:(ctx.const_of_ref_kind rk))
+  | _ -> None
+
+let array_as_slice_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs, signature.output with
+  | [ C.TRef (_, C.TArray (elt1, len), rk1) ], C.TRef (_, C.TSlice elt2, rk2)
+    when elt1 = elt2 && ctx.const_of_ref_kind rk1 = ctx.const_of_ref_kind rk2 ->
+      let const = ctx.const_of_ref_kind rk1 in
+      let elt_t = ctx.typ_of_ty elt1 in
+      let array_t = ctx.typ_of_ty (C.TArray (elt1, len)) in
+      let data_t = ctx.maybe_cg_array elt1 len in
+      let len = ctx.expression_of_const_generic len in
+      Some
+        (array_as_slice_mono_decl ~name ~ret_t:(ctx.typ_of_ty signature.output) ~array_t ~data_t
+           ~elt_t ~const ~len)
+  | _ -> None
+
+let slice_try_into_array_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs, result_ok_ty ctx signature.output with
+  | [ (C.TRef (_, C.TSlice elt1, _) as slice_ty) ], Some ok_ty -> begin
+      match array_ty_of_ok_ty ok_ty with
+      | Some (elt2, len) when elt1 = elt2 ->
+          let elt_t = ctx.typ_of_ty elt1 in
+          Some
+            (slice_try_into_array_mono_decl ~name ~slice_t:(ctx.typ_of_ty slice_ty) ~elt_t
+               ~array_t:(ctx.typ_of_ty (C.TArray (elt2, len)))
+               ~ok_t:(ctx.typ_of_ty ok_ty) ~result_t:(ctx.typ_of_ty signature.output)
+               ~len:(ctx.expression_of_const_generic len))
+      | _ -> None
+    end
+  | _ -> None
+
+let convert_into_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs, signature.output with
+  | [ ty ], output when ty = output ->
+      Some (identity_mono_decl ~name ~typ:(ctx.typ_of_ty ty) ~arg_name:"x")
+  | [ ty ], output -> begin
+      match ctx.typ_of_ty ty, ctx.typ_of_ty output with
+      | (K.TInt _ as src_t), (K.TInt _ as dst_t) ->
+          Some (numeric_cast_mono_decl ~name ~src_t ~dst_t)
+      | _ -> None
+    end
+  | _ -> None
+
+let unwrap_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs with
+  | [ result_ty ] -> begin
+      match result_ok_ty ctx result_ty with
+      | Some ok_ty when ok_ty = signature.output ->
+          Some
+            (unwrap_mono_decl ~name ~result_t:(ctx.typ_of_ty result_ty) ~ok_t:(ctx.typ_of_ty ok_ty))
+      | _ -> None
+    end
+  | _ -> None
+
+let range_into_iter_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs, signature.output with
+  | [ range_ty ], output when range_ty = output -> (
+      match range_subslice_kind ctx range_ty with
+      | Some ArrayRange -> Some (range_into_iter_mono_decl ~name ~range_t:(ctx.typ_of_ty range_ty))
+      | _ -> None)
+  | _ -> None
+
+let iterator_step_by_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs, step_by_range_ty ctx signature.output with
+  | [ range_ty; C.TLiteral (C.TUInt C.Usize) ], Some step_by_range_ty
+    when range_ty = step_by_range_ty ->
+      Some
+        (iterator_step_by_mono_decl ~name ~range_t:(ctx.typ_of_ty range_ty)
+           ~step_by_t:(ctx.typ_of_ty signature.output))
+  | _ -> None
+
+let step_by_into_iter_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs, step_by_range_ty ctx signature.output with
+  | [ step_by_ty ], Some _ when step_by_ty = signature.output ->
+      Some (step_by_into_iter_mono_decl ~name ~step_by_t:(ctx.typ_of_ty step_by_ty))
+  | _ -> None
+
+let step_by_next_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs with
+  | [ C.TRef (_, step_by_ty, C.RMut) ] -> begin
+      match step_by_range_ty ctx step_by_ty with
+      | Some range_ty -> begin
+          match range_element_ty ctx range_ty with
+          | Some elt_ty ->
+              Some
+                (step_by_next_mono_decl ~name ~step_by_t:(ctx.typ_of_ty step_by_ty)
+                   ~range_t:(ctx.typ_of_ty range_ty) ~elt_t:(ctx.typ_of_ty elt_ty)
+                   ~option_t:(ctx.typ_of_ty signature.output))
+          | None -> None
+        end
+      | None -> None
+    end
+  | _ -> None
+
+let range_next_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs with
+  | [ C.TRef (_, range_ty, C.RMut) ] -> begin
+      match range_element_ty ctx range_ty with
+      | Some elt_ty ->
+          Some
+            (range_next_mono_decl ~name ~range_t:(ctx.typ_of_ty range_ty)
+               ~elt_t:(ctx.typ_of_ty elt_ty) ~option_t:(ctx.typ_of_ty signature.output))
+      | None -> None
+    end
+  | _ -> None
+
+let black_box_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs, signature.output with
+  | [ ty ], output when ty = output -> Some (black_box_mono_decl ~name ~typ:(ctx.typ_of_ty ty))
+  | _ -> None
+
+let ord_min_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs, signature.output with
+  | [ ty1; ty2 ], output when ty1 = ty2 && ty1 = output -> begin
+      match ctx.typ_of_ty ty1 with
+      | K.TInt _ as typ -> Some (ord_min_mono_decl ~name ~typ)
+      | _ -> None
+    end
+  | _ -> None
+
+let partial_eq_ref_decl ctx name (signature : C.fun_sig) =
+  match signature.inputs, signature.output with
+  | ( [
+        C.TRef (_, (C.TRef (_, lhs_inner_ty, lhs_inner_rk) as lhs_inner_ref_ty), lhs_outer_rk);
+        C.TRef (_, (C.TRef (_, rhs_inner_ty, rhs_inner_rk) as rhs_inner_ref_ty), rhs_outer_rk);
+      ],
+      C.TLiteral C.TBool ) ->
+      let inner_eq =
+        C.FunDeclId.Map.values ctx.fun_decls
+        |> List.find_opt (fun (decl : C.fun_decl) ->
+               is_eq_name decl.item_meta.name
+               &&
+               match decl.signature.inputs, decl.signature.output with
+               | [ C.TRef (_, lhs_ty, lhs_rk); C.TRef (_, rhs_ty, rhs_rk) ], output ->
+                   lhs_ty = lhs_inner_ty && rhs_ty = rhs_inner_ty && lhs_rk = lhs_inner_rk
+                   && rhs_rk = rhs_inner_rk && output = signature.output
+               | _ -> false)
+      in
+      Option.map
+        (fun inner_eq ->
+          partial_eq_ref_mono_decl ~name
+            ~lhs_t:(ctx.typ_of_ty (List.nth signature.inputs 0))
+            ~rhs_t:(ctx.typ_of_ty (List.nth signature.inputs 1))
+            ~inner_lhs_t:(ctx.typ_of_ty lhs_inner_ref_ty)
+            ~inner_rhs_t:(ctx.typ_of_ty rhs_inner_ref_ty)
+            ~lhs_const:(ctx.const_of_ref_kind lhs_outer_rk)
+            ~rhs_const:(ctx.const_of_ref_kind rhs_outer_rk)
+            ~inner_eq:(decl_expr ctx inner_eq))
+        inner_eq
+  | _ -> None
+
+let synthesized_builtin_decl ctx charon_name name signature =
+  if is_core_array_from_fn_name charon_name then
+    array_from_fn_decl ctx name signature
+  else if is_core_array_map_name charon_name then
+    array_map_decl ctx name signature
+  else if is_core_array_clone_name charon_name then
+    array_clone_decl ctx name signature
+  else if is_core_array_equality_name charon_name then
+    raw_eq_decl ctx name signature
+  else if is_core_array_index_name charon_name then
+    array_index_decl ctx name signature
+  else if is_core_slice_index_name charon_name then
+    slice_index_decl ctx name signature
+  else if is_core_slice_copy_from_slice_name charon_name then
+    slice_copy_decl ctx name signature
+  else if is_core_slice_len_name charon_name then
+    slice_len_decl ctx name signature
+  else if is_core_str_index_name charon_name then
+    str_index_decl ctx name signature
+  else if is_core_slice_split_at_name charon_name then
+    slice_split_at_decl ctx name signature
+  else if is_core_array_as_slice_name charon_name then
+    array_as_slice_decl ctx name signature
+  else if is_core_convert_try_into_name charon_name then
+    slice_try_into_array_decl ctx name signature
+  else if is_core_convert_into_name charon_name then
+    convert_into_decl ctx name signature
+  else if is_core_result_unwrap_name charon_name then
+    unwrap_decl ctx name signature
+  else if is_core_iterator_step_by_name charon_name then
+    iterator_step_by_decl ctx name signature
+  else if is_core_step_by_next_name charon_name then
+    step_by_next_decl ctx name signature
+  else if is_core_range_into_iter_name charon_name then
+    match range_into_iter_decl ctx name signature with
+    | Some _ as decl -> decl
+    | None -> step_by_into_iter_decl ctx name signature
+  else if is_core_range_next_name charon_name then
+    range_next_decl ctx name signature
+  else if is_core_hint_black_box_name charon_name then
+    black_box_decl ctx name signature
+  else if is_core_ord_min_name charon_name then
+    ord_min_decl ctx name signature
+  else if is_core_partial_eq_ref_name charon_name then
+    partial_eq_ref_decl ctx name signature
+  else
+    None
 
 (* Not fully general *)
 let static_assert, static_assert_ref =
