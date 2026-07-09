@@ -44,7 +44,7 @@ typedef struct lvalue_ThreeWays_s
   union {
     int32_t case_Middle;
     Eurydice_vec case_Left;
-    float64_t *case_Right;
+    double *case_Right;
   }
   val;
 }
