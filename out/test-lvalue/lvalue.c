@@ -37,11 +37,14 @@ lvalue_Struct lvalue_use_struct(lvalue_ThreeWays s)
   {
     uu____1 = (KRML_CLITERAL(lvalue_Struct){ .tag = lvalue_C });
   }
-  if (!(s.tag == lvalue_Left))
+  if (s.tag == lvalue_Left)
   {
     return uu____1;
   }
-  return uu____1;
+  else
+  {
+    return uu____1;
+  }
 }
 
 /**

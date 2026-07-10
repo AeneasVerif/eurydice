@@ -2200,7 +2200,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
   | PlaceMention p ->
       let p = expression_of_place env p in
       K.(with_type TUnit (EIgnore p))
-  | Drop (p, _, _) ->
+  | Drop (p, _, _, _) ->
       let _ = expression_of_place env p in
       begin
         match p.ty with
@@ -2216,20 +2216,21 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
         (*       [ p ]))) *)
         | _ -> Krml.Helpers.eunit
       end
-  | Assert (a, _on_failure) -> expression_of_assertion env a
+  | Assert (a, _on_failure, _) -> expression_of_assertion env a
   | Call
-      {
-        func =
-          FnOpRegular
-            {
-              kind = FunId (FBuiltin ArrayRepeat);
-              generics = { types = [ ty ]; const_generics = [ c ]; _ };
-              _;
-            };
-        args = [ e ];
-        dest;
-        _;
-      } ->
+      ( {
+          func =
+            FnOpRegular
+              {
+                kind = FunId (FBuiltin ArrayRepeat);
+                generics = { types = [ ty ]; const_generics = [ c ]; _ };
+                _;
+              };
+          args = [ e ];
+          dest;
+          _;
+        },
+        _ ) ->
       (* Special treatment *)
       let e = expression_of_operand env e in
       let t = typ_of_ty env ty in
@@ -2255,18 +2256,20 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
             ( dest,
               with_type dest.typ (mk_expr_arr_struct (with_type t_array (EApp (repeat, [ e ])))) ))
   | Call
-      {
-        func =
-          FnOpRegular
-            {
-              kind = FunId (FBuiltin (Index { is_array = true; mutability = _; is_range = false }));
-              generics = { types = [ ty ]; const_generics = [ cg ]; _ };
-              _;
-            };
-        args = [ e1; e2 ];
-        dest;
-        _;
-      } ->
+      ( {
+          func =
+            FnOpRegular
+              {
+                kind =
+                  FunId (FBuiltin (Index { is_array = true; mutability = _; is_range = false }));
+                generics = { types = [ ty ]; const_generics = [ cg ]; _ };
+                _;
+              };
+          args = [ e1; e2 ];
+          dest;
+          _;
+        },
+        _ ) ->
       (* Special treatment for e1[e2] of array which are translated into struct.
          e1[e2] is translated as fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T
 
@@ -2286,7 +2289,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       let dest = expression_of_place env dest in
       Krml.Helpers.with_unit
         K.(EAssign (dest, addrof ~const:false (with_type t (EBufRead (e1, e2)))))
-  | Call { func = FnOpRegular fn_ptr; args; dest; _ }
+  | Call ({ func = FnOpRegular fn_ptr; args; dest; _ }, _)
     when Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u16 fn_ptr
          || Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u32 fn_ptr
          || Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u64 fn_ptr
@@ -2323,7 +2326,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       let dest = expression_of_place env dest in
       let e = expression_of_operand env (Krml.KList.one args) in
       Krml.Helpers.with_unit K.(EAssign (dest, with_type (TInt w) (ECast (e, TInt w))))
-  | Call { func = FnOpRegular fn_ptr; args; dest; _ } ->
+  | Call ({ func = FnOpRegular fn_ptr; args; dest; _ }, _) ->
       (* For now, we take trait type arguments to be part of the code-gen *)
       let hd, _is_known_builtin, output_t = expression_of_fn_ptr env fn_ptr in
       let dest = expression_of_place env dest in
@@ -2367,7 +2370,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
         | _ -> rhs
       in
       Krml.Helpers.with_unit K.(EAssign (dest, rhs))
-  | Call ({ func = FnOpDynamic _; _ } as call) -> expression_of_fn_op_dynamic env call
+  | Call (({ func = FnOpDynamic _; _ } as call), _) -> expression_of_fn_op_dynamic env call
   | Abort _ -> with_any (K.EAbort (None, Some "panic!"))
   | Return ->
       let e = expression_of_var_id env ret_var in
