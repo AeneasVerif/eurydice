@@ -521,6 +521,109 @@ let remove_trivial_ite =
       | _ -> super#visit_ESwitch env scrut branches
   end
 
+let mk_sequence_node = function
+  | [] -> EUnit
+  | [ e ] -> e.node
+  | es -> ESequence es
+
+(* Recover assertions that were split by earlier cleanup passes. In particular,
+   an assertion followed by an early non-unit return can end up shaped like:
+
+     (if cond then return e else ()); abort
+
+   or the same pattern with the branches swapped. Rebuild this as:
+
+     Eurydice.assert(cond); return e
+
+   The non-unit return guard keeps this from treating explicit panic paths in
+   unit-returning code as assertions.
+*)
+let recover_asserts_before_abort =
+  let static_assert cond msg =
+    with_type TUnit
+      (EApp
+         ( Builtin.static_assert_ref,
+           [ cond; with_type Krml.Checker.c_string (EString (Option.value ~default:"" msg)) ] ))
+  in
+  let rec ends_with_nonunit_return e =
+    match e.node with
+    | EReturn e -> e.typ <> TUnit
+    | ELet (_, _, e) -> ends_with_nonunit_return e
+    | ESequence es -> List.length es > 0 && ends_with_nonunit_return (Krml.KList.last es)
+    | _ -> false
+  in
+  let rec rewrite_before_abort abort e =
+    match e.node with
+    | EIfThenElse (cond, e_then, { node = EUnit; _ }) when ends_with_nonunit_return e_then ->
+        Some { e with node = ESequence [ static_assert cond abort; e_then ] }
+    | EIfThenElse (cond, { node = EUnit; _ }, e_else) when ends_with_nonunit_return e_else ->
+        Some { e with node = ESequence [ static_assert (Krml.Helpers.mk_not cond) abort; e_else ] }
+    | EIfThenElse (cond, e_then, e_else) -> (
+        match rewrite_before_abort abort e_then, rewrite_before_abort abort e_else with
+        | None, None -> None
+        | e_then', e_else' ->
+            Some
+              {
+                e with
+                node =
+                  EIfThenElse
+                    ( cond,
+                      Option.value ~default:e_then e_then',
+                      Option.value ~default:e_else e_else' );
+              })
+    | ELet (b, e1, e2) ->
+        Option.map (fun e2 -> { e with node = ELet (b, e1, e2) }) (rewrite_before_abort abort e2)
+    | ESequence es -> (
+        match List.rev es with
+        | [] -> None
+        | e_last :: rest ->
+            Option.map
+              (fun e_last -> { e with node = ESequence (List.rev (e_last :: rest)) })
+              (rewrite_before_abort abort e_last))
+    | _ -> None
+  in
+  object (self)
+    inherit [_] map
+
+    method! visit_ESequence (((), _) as env) es =
+      let es = List.map (self#visit_expr env) es in
+      match List.rev es with
+      | { node = EAbort (_, msg); _ } :: previous :: rest -> (
+          match rewrite_before_abort msg previous with
+          | Some previous -> mk_sequence_node (List.rev (previous :: rest))
+          | None -> ESequence es)
+      | _ -> ESequence es
+  end
+
+(* Takes the prefix of the list until (and including) the first element that
+   verifies the predicate. If there are none, this keeps the whole list. *)
+let rec take_through pred = function
+  | [] -> []
+  | e :: es ->
+      if pred e then
+        [ e ]
+      else
+        e :: take_through pred es
+
+(* If a `match` gets simplified, we can end up with code like `foo(); return;
+   bar()`. This removes the unreachable `bar()`. *)
+let remove_unreachable_after_terminal =
+  let rec definitely_terminal e =
+    match e.node with
+    | EReturn _ | EAbort _ -> true
+    | ELet (_, _, e) -> definitely_terminal e
+    | ESequence es -> List.length es > 0 && definitely_terminal (Krml.KList.last es)
+    | _ -> false
+  in
+
+  object (self)
+    inherit [_] map
+
+    method! visit_ESequence (((), _) as env) es =
+      let es = List.map (self#visit_expr env) es in
+      mk_sequence_node (take_through definitely_terminal es)
+  end
+
 let contains_array t =
   begin
     object (_self)

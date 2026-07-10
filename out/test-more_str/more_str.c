@@ -9,7 +9,7 @@
 
 void more_str_use_str(Eurydice_dst_ref_shared_0d s)
 {
-  EURYDICE_ASSERT(core_str__str__len(s) > (size_t)2U, "panic!");
+  EURYDICE_ASSERT(!!(core_str__str__len(s) > (size_t)2U), "assert failure");
 }
 
 void more_str_main(void)

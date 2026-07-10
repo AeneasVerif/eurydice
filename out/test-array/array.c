@@ -58,7 +58,7 @@ void array_mut_foo(array_Foo f)
   f.x.data[0U] = 1U;
   Eurydice_arr_a0 copy = f.y;
   copy.data[0U] = 0U;
-  EURYDICE_ASSERT(copy.data[0U] != 1U, "panic!");
+  EURYDICE_ASSERT(!!(copy.data[0U] != 1U), "assert failure");
 }
 
 /**

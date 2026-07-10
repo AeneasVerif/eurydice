@@ -9,16 +9,9 @@
 
 void repeat_main(void)
 {
-  if
-  (
-    !(REPEAT_C1.data[0U] + REPEAT_C2.data->data[0U] +
+  EURYDICE_ASSERT(!(REPEAT_C1.data[0U] + REPEAT_C2.data->data[0U] +
       (uint32_t)REPEAT_REJECTION_SAMPLE_SHUFFLE_TABLE.data[255U].data[0U]
-    != 0U)
-  )
-  {
-    return;
-  }
-  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-  KRML_HOST_EXIT(255U);
+    != 0U),
+    "assert failure");
 }
 

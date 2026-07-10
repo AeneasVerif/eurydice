@@ -21,6 +21,6 @@ void issue_212_main(void)
 {
   Eurydice_arr_bf arr = { .data = { 1, 2, 3 } };
   const Eurydice_arr_bf *r = issue_212_id_mut_25(&arr);
-  EURYDICE_ASSERT(r->data[0U] > 0, "panic!");
+  EURYDICE_ASSERT(!!(r->data[0U] > 0), "assert failure");
 }
 

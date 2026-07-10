@@ -3002,6 +3002,49 @@ static inline Eurydice_arr_3b0 PRFxN_29_f5(const Eurydice_arr_890 *input)
 }
 
 /**
+A monomorphic instance of libcrux_ml_kem.sampling.sample_from_binomial_distribution_3
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+
+*/
+static KRML_MUSTINLINE Eurydice_arr_9e
+sample_from_binomial_distribution_3_28(Eurydice_borrow_slice_u8 randomness)
+{
+  Eurydice_arr_04 sampled_i16s = { .data = { 0U } };
+  for (size_t i0 = (size_t)0U; i0 < randomness.meta / (size_t)3U; i0++)
+  {
+    size_t chunk_number = i0;
+    Eurydice_borrow_slice_u8
+    byte_chunk =
+      Eurydice_slice_subslice_shared_c8(randomness,
+        (
+          KRML_CLITERAL(core_ops_range_Range_87){
+            .start = chunk_number * (size_t)3U,
+            .end = chunk_number * (size_t)3U + (size_t)3U
+          }
+        ));
+    uint32_t
+    random_bits_as_u24 =
+      ((uint32_t)byte_chunk.ptr[0U] | (uint32_t)byte_chunk.ptr[1U] << 8U) |
+        (uint32_t)byte_chunk.ptr[2U] << 16U;
+    uint32_t first_bits = random_bits_as_u24 & 2396745U;
+    uint32_t second_bits = random_bits_as_u24 >> 1U & 2396745U;
+    uint32_t third_bits = random_bits_as_u24 >> 2U & 2396745U;
+    uint32_t coin_toss_outcomes = first_bits + second_bits + third_bits;
+    for (int32_t i = 0; i < 24 / 6; i++)
+    {
+      int32_t outcome_set = i;
+      int32_t outcome_set0 = outcome_set * 6;
+      int16_t outcome_1 = (int16_t)(coin_toss_outcomes >> (uint32_t)outcome_set0 & 7U);
+      int16_t outcome_2 = (int16_t)(coin_toss_outcomes >> (uint32_t)(outcome_set0 + 3) & 7U);
+      size_t offset = (size_t)(outcome_set0 / 6);
+      sampled_i16s.data[(size_t)4U * chunk_number + offset] = outcome_1 - outcome_2;
+    }
+  }
+  return from_i16_array_0b_28(Eurydice_array_to_slice_shared_990(&sampled_i16s));
+}
+
+/**
  Given a series of uniformly random bytes in `randomness`, for some number `eta`,
  the `sample_from_binomial_distribution_{eta}` functions sample
  a ring element from a binomial distribution centered at 0 that uses two sets
@@ -3089,49 +3132,6 @@ sample_from_binomial_distribution_2_28(Eurydice_borrow_slice_u8 randomness)
       int16_t outcome_2 = (int16_t)(coin_toss_outcomes >> (uint32_t)(outcome_set0 + 2U) & 3U);
       size_t offset = (size_t)(outcome_set0 >> 2U);
       sampled_i16s.data[(size_t)8U * chunk_number + offset] = outcome_1 - outcome_2;
-    }
-  }
-  return from_i16_array_0b_28(Eurydice_array_to_slice_shared_990(&sampled_i16s));
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.sampling.sample_from_binomial_distribution_3
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
-with const generics
-
-*/
-static KRML_MUSTINLINE Eurydice_arr_9e
-sample_from_binomial_distribution_3_28(Eurydice_borrow_slice_u8 randomness)
-{
-  Eurydice_arr_04 sampled_i16s = { .data = { 0U } };
-  for (size_t i0 = (size_t)0U; i0 < randomness.meta / (size_t)3U; i0++)
-  {
-    size_t chunk_number = i0;
-    Eurydice_borrow_slice_u8
-    byte_chunk =
-      Eurydice_slice_subslice_shared_c8(randomness,
-        (
-          KRML_CLITERAL(core_ops_range_Range_87){
-            .start = chunk_number * (size_t)3U,
-            .end = chunk_number * (size_t)3U + (size_t)3U
-          }
-        ));
-    uint32_t
-    random_bits_as_u24 =
-      ((uint32_t)byte_chunk.ptr[0U] | (uint32_t)byte_chunk.ptr[1U] << 8U) |
-        (uint32_t)byte_chunk.ptr[2U] << 16U;
-    uint32_t first_bits = random_bits_as_u24 & 2396745U;
-    uint32_t second_bits = random_bits_as_u24 >> 1U & 2396745U;
-    uint32_t third_bits = random_bits_as_u24 >> 2U & 2396745U;
-    uint32_t coin_toss_outcomes = first_bits + second_bits + third_bits;
-    for (int32_t i = 0; i < 24 / 6; i++)
-    {
-      int32_t outcome_set = i;
-      int32_t outcome_set0 = outcome_set * 6;
-      int16_t outcome_1 = (int16_t)(coin_toss_outcomes >> (uint32_t)outcome_set0 & 7U);
-      int16_t outcome_2 = (int16_t)(coin_toss_outcomes >> (uint32_t)(outcome_set0 + 3) & 7U);
-      size_t offset = (size_t)(outcome_set0 / 6);
-      sampled_i16s.data[(size_t)4U * chunk_number + offset] = outcome_1 - outcome_2;
     }
   }
   return from_i16_array_0b_28(Eurydice_array_to_slice_shared_990(&sampled_i16s));
@@ -4212,38 +4212,6 @@ compute_vector_u_ee(
 /**
 A monomorphic instance of libcrux_ml_kem.vector.portable.compress.compress
 with const generics
-- COEFFICIENT_BITS= 10
-*/
-static KRML_MUSTINLINE Eurydice_arr_d6 compress_ef(Eurydice_arr_d6 a)
-{
-  for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++)
-  {
-    size_t i0 = i;
-    int16_t
-    uu____0 =
-      libcrux_secrets_int_as_i16_e5(libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient((uint8_t)10,
-          libcrux_secrets_int_as_u16_e5(a.data[i0])));
-    a.data[i0] = uu____0;
-  }
-  return a;
-}
-
-/**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.vector.portable.compress_44
-with const generics
-- COEFFICIENT_BITS= 10
-*/
-static Eurydice_arr_d6 compress_44_ef(Eurydice_arr_d6 a)
-{
-  return compress_ef(a);
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.vector.portable.compress.compress
-with const generics
 - COEFFICIENT_BITS= 11
 */
 static KRML_MUSTINLINE Eurydice_arr_d6 compress_c4(Eurydice_arr_d6 a)
@@ -4300,6 +4268,38 @@ static KRML_MUSTINLINE Eurydice_arr_e7 compress_then_serialize_11_bd(const Euryd
       uint8_t);
   }
   return serialized;
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.vector.portable.compress.compress
+with const generics
+- COEFFICIENT_BITS= 10
+*/
+static KRML_MUSTINLINE Eurydice_arr_d6 compress_ef(Eurydice_arr_d6 a)
+{
+  for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++)
+  {
+    size_t i0 = i;
+    int16_t
+    uu____0 =
+      libcrux_secrets_int_as_i16_e5(libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient((uint8_t)10,
+          libcrux_secrets_int_as_u16_e5(a.data[i0])));
+    a.data[i0] = uu____0;
+  }
+  return a;
+}
+
+/**
+This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.vector.portable.compress_44
+with const generics
+- COEFFICIENT_BITS= 10
+*/
+static Eurydice_arr_d6 compress_44_ef(Eurydice_arr_d6 a)
+{
+  return compress_ef(a);
 }
 
 /**
@@ -4511,64 +4511,6 @@ compute_ring_element_v_ee(
 /**
 A monomorphic instance of libcrux_ml_kem.vector.portable.compress.compress
 with const generics
-- COEFFICIENT_BITS= 4
-*/
-static KRML_MUSTINLINE Eurydice_arr_d6 compress_d1(Eurydice_arr_d6 a)
-{
-  for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++)
-  {
-    size_t i0 = i;
-    int16_t
-    uu____0 =
-      libcrux_secrets_int_as_i16_e5(libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient((uint8_t)4,
-          libcrux_secrets_int_as_u16_e5(a.data[i0])));
-    a.data[i0] = uu____0;
-  }
-  return a;
-}
-
-/**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.vector.portable.compress_44
-with const generics
-- COEFFICIENT_BITS= 4
-*/
-static Eurydice_arr_d6 compress_44_d1(Eurydice_arr_d6 a)
-{
-  return compress_d1(a);
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.serialize.compress_then_serialize_4
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
-with const generics
-
-*/
-static KRML_MUSTINLINE void
-compress_then_serialize_4_28(Eurydice_arr_9e re, Eurydice_mut_borrow_slice_u8 serialized)
-{
-  for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++)
-  {
-    size_t i0 = i;
-    Eurydice_arr_d6 coefficient = compress_44_d1(to_unsigned_field_modulus_28(re.data[i0]));
-    Eurydice_array_u8x8 bytes = libcrux_ml_kem_vector_portable_serialize_4_44(coefficient);
-    Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_87){
-            .start = (size_t)8U * i0,
-            .end = (size_t)8U * i0 + (size_t)8U
-          }
-        )),
-      Eurydice_array_to_slice_shared_6e(&bytes),
-      uint8_t);
-  }
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.vector.portable.compress.compress
-with const generics
 - COEFFICIENT_BITS= 5
 */
 static KRML_MUSTINLINE Eurydice_arr_d6 compress_f4(Eurydice_arr_d6 a)
@@ -4627,6 +4569,64 @@ compress_then_serialize_5_28(Eurydice_arr_9e re, Eurydice_mut_borrow_slice_u8 se
 }
 
 /**
+A monomorphic instance of libcrux_ml_kem.vector.portable.compress.compress
+with const generics
+- COEFFICIENT_BITS= 4
+*/
+static KRML_MUSTINLINE Eurydice_arr_d6 compress_d1(Eurydice_arr_d6 a)
+{
+  for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++)
+  {
+    size_t i0 = i;
+    int16_t
+    uu____0 =
+      libcrux_secrets_int_as_i16_e5(libcrux_ml_kem_vector_portable_compress_compress_ciphertext_coefficient((uint8_t)4,
+          libcrux_secrets_int_as_u16_e5(a.data[i0])));
+    a.data[i0] = uu____0;
+  }
+  return a;
+}
+
+/**
+This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.vector.portable.compress_44
+with const generics
+- COEFFICIENT_BITS= 4
+*/
+static Eurydice_arr_d6 compress_44_d1(Eurydice_arr_d6 a)
+{
+  return compress_d1(a);
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.serialize.compress_then_serialize_4
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+
+*/
+static KRML_MUSTINLINE void
+compress_then_serialize_4_28(Eurydice_arr_9e re, Eurydice_mut_borrow_slice_u8 serialized)
+{
+  for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++)
+  {
+    size_t i0 = i;
+    Eurydice_arr_d6 coefficient = compress_44_d1(to_unsigned_field_modulus_28(re.data[i0]));
+    Eurydice_array_u8x8 bytes = libcrux_ml_kem_vector_portable_serialize_4_44(coefficient);
+    Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(serialized,
+        (
+          KRML_CLITERAL(core_ops_range_Range_87){
+            .start = (size_t)8U * i0,
+            .end = (size_t)8U * i0 + (size_t)8U
+          }
+        )),
+      Eurydice_array_to_slice_shared_6e(&bytes),
+      uint8_t);
+  }
+}
+
+/**
 A monomorphic instance of libcrux_ml_kem.serialize.compress_then_serialize_ring_element_v
 with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
 with const generics
@@ -4638,6 +4638,7 @@ static KRML_MUSTINLINE void
 compress_then_serialize_ring_element_v_1c(Eurydice_arr_9e re, Eurydice_mut_borrow_slice_u8 out)
 {
   compress_then_serialize_5_28(re, out);
+  return;
 }
 
 /**
@@ -4818,69 +4819,6 @@ static Eurydice_arr_9e call_mut_db_1c(void **_)
 /**
 A monomorphic instance of libcrux_ml_kem.vector.portable.compress.decompress_ciphertext_coefficient
 with const generics
-- COEFFICIENT_BITS= 10
-*/
-static KRML_MUSTINLINE Eurydice_arr_d6 decompress_ciphertext_coefficient_ef(Eurydice_arr_d6 a)
-{
-  for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++)
-  {
-    size_t i0 = i;
-    int32_t
-    decompressed =
-      libcrux_secrets_int_as_i32_e5(a.data[i0]) *
-        libcrux_secrets_int_as_i32_e5(libcrux_secrets_int_public_integers_classify_f9_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
-    decompressed = (int32_t)((uint32_t)decompressed << 1U) + (int32_t)((uint32_t)1 << (uint32_t)10);
-    decompressed >>= (uint32_t)(10 + 1);
-    a.data[i0] = libcrux_secrets_int_as_i16_06(decompressed);
-  }
-  return a;
-}
-
-/**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.vector.portable.decompress_ciphertext_coefficient_44
-with const generics
-- COEFFICIENT_BITS= 10
-*/
-static Eurydice_arr_d6 decompress_ciphertext_coefficient_44_ef(Eurydice_arr_d6 a)
-{
-  return decompress_ciphertext_coefficient_ef(a);
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.serialize.deserialize_then_decompress_10
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
-with const generics
-
-*/
-static KRML_MUSTINLINE Eurydice_arr_9e
-deserialize_then_decompress_10_28(Eurydice_borrow_slice_u8 serialized)
-{
-  Eurydice_arr_9e re = ZERO_0b_28();
-  for (size_t i = (size_t)0U; i < serialized.meta / (size_t)20U; i++)
-  {
-    size_t i0 = i;
-    Eurydice_borrow_slice_u8
-    bytes =
-      Eurydice_slice_subslice_shared_c8(serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_87){
-            .start = i0 * (size_t)20U,
-            .end = i0 * (size_t)20U + (size_t)20U
-          }
-        ));
-    Eurydice_arr_d6 coefficient = libcrux_ml_kem_vector_portable_deserialize_10_44(bytes);
-    Eurydice_arr_d6 uu____0 = decompress_ciphertext_coefficient_44_ef(coefficient);
-    re.data[i0] = uu____0;
-  }
-  return re;
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.vector.portable.compress.decompress_ciphertext_coefficient
-with const generics
 - COEFFICIENT_BITS= 11
 */
 static KRML_MUSTINLINE Eurydice_arr_d6 decompress_ciphertext_coefficient_c4(Eurydice_arr_d6 a)
@@ -4936,6 +4874,69 @@ deserialize_then_decompress_11_28(Eurydice_borrow_slice_u8 serialized)
         ));
     Eurydice_arr_d6 coefficient = libcrux_ml_kem_vector_portable_deserialize_11_44(bytes);
     Eurydice_arr_d6 uu____0 = decompress_ciphertext_coefficient_44_c4(coefficient);
+    re.data[i0] = uu____0;
+  }
+  return re;
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.vector.portable.compress.decompress_ciphertext_coefficient
+with const generics
+- COEFFICIENT_BITS= 10
+*/
+static KRML_MUSTINLINE Eurydice_arr_d6 decompress_ciphertext_coefficient_ef(Eurydice_arr_d6 a)
+{
+  for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++)
+  {
+    size_t i0 = i;
+    int32_t
+    decompressed =
+      libcrux_secrets_int_as_i32_e5(a.data[i0]) *
+        libcrux_secrets_int_as_i32_e5(libcrux_secrets_int_public_integers_classify_f9_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
+    decompressed = (int32_t)((uint32_t)decompressed << 1U) + (int32_t)((uint32_t)1 << (uint32_t)10);
+    decompressed >>= (uint32_t)(10 + 1);
+    a.data[i0] = libcrux_secrets_int_as_i16_06(decompressed);
+  }
+  return a;
+}
+
+/**
+This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.vector.portable.decompress_ciphertext_coefficient_44
+with const generics
+- COEFFICIENT_BITS= 10
+*/
+static Eurydice_arr_d6 decompress_ciphertext_coefficient_44_ef(Eurydice_arr_d6 a)
+{
+  return decompress_ciphertext_coefficient_ef(a);
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.serialize.deserialize_then_decompress_10
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+
+*/
+static KRML_MUSTINLINE Eurydice_arr_9e
+deserialize_then_decompress_10_28(Eurydice_borrow_slice_u8 serialized)
+{
+  Eurydice_arr_9e re = ZERO_0b_28();
+  for (size_t i = (size_t)0U; i < serialized.meta / (size_t)20U; i++)
+  {
+    size_t i0 = i;
+    Eurydice_borrow_slice_u8
+    bytes =
+      Eurydice_slice_subslice_shared_c8(serialized,
+        (
+          KRML_CLITERAL(core_ops_range_Range_87){
+            .start = i0 * (size_t)20U,
+            .end = i0 * (size_t)20U + (size_t)20U
+          }
+        ));
+    Eurydice_arr_d6 coefficient = libcrux_ml_kem_vector_portable_deserialize_10_44(bytes);
+    Eurydice_arr_d6 uu____0 = decompress_ciphertext_coefficient_44_ef(coefficient);
     re.data[i0] = uu____0;
   }
   return re;
@@ -5026,69 +5027,6 @@ deserialize_then_decompress_u_1c(const Eurydice_arr_d1 *ciphertext)
 /**
 A monomorphic instance of libcrux_ml_kem.vector.portable.compress.decompress_ciphertext_coefficient
 with const generics
-- COEFFICIENT_BITS= 4
-*/
-static KRML_MUSTINLINE Eurydice_arr_d6 decompress_ciphertext_coefficient_d1(Eurydice_arr_d6 a)
-{
-  for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++)
-  {
-    size_t i0 = i;
-    int32_t
-    decompressed =
-      libcrux_secrets_int_as_i32_e5(a.data[i0]) *
-        libcrux_secrets_int_as_i32_e5(libcrux_secrets_int_public_integers_classify_f9_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
-    decompressed = (int32_t)((uint32_t)decompressed << 1U) + (int32_t)((uint32_t)1 << (uint32_t)4);
-    decompressed >>= (uint32_t)(4 + 1);
-    a.data[i0] = libcrux_secrets_int_as_i16_06(decompressed);
-  }
-  return a;
-}
-
-/**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::portable::vector_type::PortableVector}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.vector.portable.decompress_ciphertext_coefficient_44
-with const generics
-- COEFFICIENT_BITS= 4
-*/
-static Eurydice_arr_d6 decompress_ciphertext_coefficient_44_d1(Eurydice_arr_d6 a)
-{
-  return decompress_ciphertext_coefficient_d1(a);
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.serialize.deserialize_then_decompress_4
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
-with const generics
-
-*/
-static KRML_MUSTINLINE Eurydice_arr_9e
-deserialize_then_decompress_4_28(Eurydice_borrow_slice_u8 serialized)
-{
-  Eurydice_arr_9e re = ZERO_0b_28();
-  for (size_t i = (size_t)0U; i < serialized.meta / (size_t)8U; i++)
-  {
-    size_t i0 = i;
-    Eurydice_borrow_slice_u8
-    bytes =
-      Eurydice_slice_subslice_shared_c8(serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_87){
-            .start = i0 * (size_t)8U,
-            .end = i0 * (size_t)8U + (size_t)8U
-          }
-        ));
-    Eurydice_arr_d6 coefficient = libcrux_ml_kem_vector_portable_deserialize_4_44(bytes);
-    Eurydice_arr_d6 uu____0 = decompress_ciphertext_coefficient_44_d1(coefficient);
-    re.data[i0] = uu____0;
-  }
-  return re;
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.vector.portable.compress.decompress_ciphertext_coefficient
-with const generics
 - COEFFICIENT_BITS= 5
 */
 static KRML_MUSTINLINE Eurydice_arr_d6 decompress_ciphertext_coefficient_f4(Eurydice_arr_d6 a)
@@ -5145,6 +5083,69 @@ deserialize_then_decompress_5_28(Eurydice_borrow_slice_u8 serialized)
     re.data[i0] = libcrux_ml_kem_vector_portable_deserialize_5_44(bytes);
     Eurydice_arr_d6 uu____1 = decompress_ciphertext_coefficient_44_f4(re.data[i0]);
     re.data[i0] = uu____1;
+  }
+  return re;
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.vector.portable.compress.decompress_ciphertext_coefficient
+with const generics
+- COEFFICIENT_BITS= 4
+*/
+static KRML_MUSTINLINE Eurydice_arr_d6 decompress_ciphertext_coefficient_d1(Eurydice_arr_d6 a)
+{
+  for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_ELEMENTS_IN_VECTOR; i++)
+  {
+    size_t i0 = i;
+    int32_t
+    decompressed =
+      libcrux_secrets_int_as_i32_e5(a.data[i0]) *
+        libcrux_secrets_int_as_i32_e5(libcrux_secrets_int_public_integers_classify_f9_39(LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS));
+    decompressed = (int32_t)((uint32_t)decompressed << 1U) + (int32_t)((uint32_t)1 << (uint32_t)4);
+    decompressed >>= (uint32_t)(4 + 1);
+    a.data[i0] = libcrux_secrets_int_as_i16_06(decompressed);
+  }
+  return a;
+}
+
+/**
+This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::portable::vector_type::PortableVector}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.vector.portable.decompress_ciphertext_coefficient_44
+with const generics
+- COEFFICIENT_BITS= 4
+*/
+static Eurydice_arr_d6 decompress_ciphertext_coefficient_44_d1(Eurydice_arr_d6 a)
+{
+  return decompress_ciphertext_coefficient_d1(a);
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.serialize.deserialize_then_decompress_4
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+
+*/
+static KRML_MUSTINLINE Eurydice_arr_9e
+deserialize_then_decompress_4_28(Eurydice_borrow_slice_u8 serialized)
+{
+  Eurydice_arr_9e re = ZERO_0b_28();
+  for (size_t i = (size_t)0U; i < serialized.meta / (size_t)8U; i++)
+  {
+    size_t i0 = i;
+    Eurydice_borrow_slice_u8
+    bytes =
+      Eurydice_slice_subslice_shared_c8(serialized,
+        (
+          KRML_CLITERAL(core_ops_range_Range_87){
+            .start = i0 * (size_t)8U,
+            .end = i0 * (size_t)8U + (size_t)8U
+          }
+        ));
+    Eurydice_arr_d6 coefficient = libcrux_ml_kem_vector_portable_deserialize_4_44(bytes);
+    Eurydice_arr_d6 uu____0 = decompress_ciphertext_coefficient_44_d1(coefficient);
+    re.data[i0] = uu____0;
   }
   return re;
 }

@@ -1621,20 +1621,6 @@ Eurydice_array_to_subslice_mut_d410(Eurydice_arr_d2 *a, core_ops_range_Range_87 
 A monomorphic instance of Eurydice.array_to_slice_shared
 with types uint8_t
 with const generics
-- N= 22
-*/
-Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_98(const Eurydice_arr_80 *a)
-{
-  Eurydice_borrow_slice_u8 lit;
-  lit.ptr = a->data;
-  lit.meta = (size_t)22U;
-  return lit;
-}
-
-/**
-A monomorphic instance of Eurydice.array_to_slice_shared
-with types uint8_t
-with const generics
 - N= 20
 */
 Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_8f(const Eurydice_arr_fc *a)
@@ -1642,6 +1628,20 @@ Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_8f(const Eurydice_arr_fc
   Eurydice_borrow_slice_u8 lit;
   lit.ptr = a->data;
   lit.meta = (size_t)20U;
+  return lit;
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_shared
+with types uint8_t
+with const generics
+- N= 22
+*/
+Eurydice_borrow_slice_u8 Eurydice_array_to_slice_shared_98(const Eurydice_arr_80 *a)
+{
+  Eurydice_borrow_slice_u8 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)22U;
   return lit;
 }
 

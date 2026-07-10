@@ -49,9 +49,10 @@ symcrust_SymCrustMlKemPolyElementCompressAndEncode(
   size_t cbDstWritten = (size_t)0U;
   uint32_t accumulator = 0U;
   uint32_t nBitsInAccumulator = 0U;
-  EURYDICE_ASSERT(nBitsPerCoefficient > 0U, "panic!");
-  EURYDICE_ASSERT(nBitsPerCoefficient <= 12U, "panic!");
-  EURYDICE_ASSERT((uint64_t)dst.meta == 256ULL * (uint64_t)nBitsPerCoefficient / 8ULL, "panic!");
+  EURYDICE_ASSERT(!!(nBitsPerCoefficient > 0U), "assert failure");
+  EURYDICE_ASSERT(!!(nBitsPerCoefficient <= 12U), "assert failure");
+  EURYDICE_ASSERT(!!((uint64_t)dst.meta == 256ULL * (uint64_t)nBitsPerCoefficient / 8ULL),
+    "assert failure");
   for (size_t i = (size_t)0U; i < (size_t)256U; i++)
   {
     size_t i0 = i;

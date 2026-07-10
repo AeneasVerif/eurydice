@@ -1829,22 +1829,23 @@ libcrux_sha3_simd_portable_store_block_c6(
       uint8_t);
   }
   size_t remaining = len % (size_t)8U;
-  if (remaining > (size_t)0U)
+  if (!(remaining > (size_t)0U))
   {
-    Eurydice_array_u8x8
-    bytes =
-      core_num__u64__to_le_bytes(libcrux_sha3_traits_get_ij_71(s,
-          octets / (size_t)5U,
-          octets % (size_t)5U)[0U]);
-    size_t out_pos = start + len - remaining;
-    Eurydice_mut_borrow_slice_u8
-    uu____0 =
-      Eurydice_slice_subslice_mut_c8(out,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = out_pos, .end = out_pos + remaining }));
-    Eurydice_slice_copy(uu____0,
-      Eurydice_array_to_subslice_to_shared_21(&bytes, remaining),
-      uint8_t);
+    return;
   }
+  Eurydice_array_u8x8
+  bytes =
+    core_num__u64__to_le_bytes(libcrux_sha3_traits_get_ij_71(s,
+        octets / (size_t)5U,
+        octets % (size_t)5U)[0U]);
+  size_t out_pos = start + len - remaining;
+  Eurydice_mut_borrow_slice_u8
+  uu____0 =
+    Eurydice_slice_subslice_mut_c8(out,
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = out_pos, .end = out_pos + remaining }));
+  Eurydice_slice_copy(uu____0,
+    Eurydice_array_to_subslice_to_shared_21(&bytes, remaining),
+    uint8_t);
 }
 
 /**
@@ -1944,11 +1945,7 @@ libcrux_sha3_generic_keccak_portable_keccak1_dc(
       size_t output_len = output.meta;
       size_t output_blocks = output_len / (size_t)72U;
       size_t output_rem = output_len % (size_t)72U;
-      if (output_blocks == (size_t)0U)
-      {
-        libcrux_sha3_simd_portable_squeeze_84_c6(&s, output, (size_t)0U, output_len);
-      }
-      else
+      if (!(output_blocks == (size_t)0U))
       {
         libcrux_sha3_simd_portable_squeeze_84_c6(&s, output, (size_t)0U, (size_t)72U);
         for (size_t i = (size_t)1U; i < output_blocks; i++)
@@ -1962,7 +1959,9 @@ libcrux_sha3_generic_keccak_portable_keccak1_dc(
           libcrux_sha3_generic_keccak_keccakf1600_26_71(&s);
           libcrux_sha3_simd_portable_squeeze_84_c6(&s, output, output_len - output_rem, output_rem);
         }
+        return;
       }
+      libcrux_sha3_simd_portable_squeeze_84_c6(&s, output, (size_t)0U, output_len);
       return;
     }
     size_t i = uu____0.f0;
@@ -2148,22 +2147,23 @@ libcrux_sha3_simd_portable_store_block_b2(
       uint8_t);
   }
   size_t remaining = len % (size_t)8U;
-  if (remaining > (size_t)0U)
+  if (!(remaining > (size_t)0U))
   {
-    Eurydice_array_u8x8
-    bytes =
-      core_num__u64__to_le_bytes(libcrux_sha3_traits_get_ij_71(s,
-          octets / (size_t)5U,
-          octets % (size_t)5U)[0U]);
-    size_t out_pos = start + len - remaining;
-    Eurydice_mut_borrow_slice_u8
-    uu____0 =
-      Eurydice_slice_subslice_mut_c8(out,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = out_pos, .end = out_pos + remaining }));
-    Eurydice_slice_copy(uu____0,
-      Eurydice_array_to_subslice_to_shared_21(&bytes, remaining),
-      uint8_t);
+    return;
   }
+  Eurydice_array_u8x8
+  bytes =
+    core_num__u64__to_le_bytes(libcrux_sha3_traits_get_ij_71(s,
+        octets / (size_t)5U,
+        octets % (size_t)5U)[0U]);
+  size_t out_pos = start + len - remaining;
+  Eurydice_mut_borrow_slice_u8
+  uu____0 =
+    Eurydice_slice_subslice_mut_c8(out,
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = out_pos, .end = out_pos + remaining }));
+  Eurydice_slice_copy(uu____0,
+    Eurydice_array_to_subslice_to_shared_21(&bytes, remaining),
+    uint8_t);
 }
 
 /**
@@ -2266,11 +2266,7 @@ libcrux_sha3_generic_keccak_portable_keccak1_22(
       size_t output_len = output.meta;
       size_t output_blocks = output_len / (size_t)136U;
       size_t output_rem = output_len % (size_t)136U;
-      if (output_blocks == (size_t)0U)
-      {
-        libcrux_sha3_simd_portable_squeeze_84_b2(&s, output, (size_t)0U, output_len);
-      }
-      else
+      if (!(output_blocks == (size_t)0U))
       {
         libcrux_sha3_simd_portable_squeeze_84_b2(&s, output, (size_t)0U, (size_t)136U);
         for (size_t i = (size_t)1U; i < output_blocks; i++)
@@ -2284,7 +2280,9 @@ libcrux_sha3_generic_keccak_portable_keccak1_22(
           libcrux_sha3_generic_keccak_keccakf1600_26_71(&s);
           libcrux_sha3_simd_portable_squeeze_84_b2(&s, output, output_len - output_rem, output_rem);
         }
+        return;
       }
+      libcrux_sha3_simd_portable_squeeze_84_b2(&s, output, (size_t)0U, output_len);
       return;
     }
     size_t i = uu____0.f0;
@@ -2421,11 +2419,7 @@ libcrux_sha3_generic_keccak_portable_keccak1_220(
       size_t output_len = output.meta;
       size_t output_blocks = output_len / (size_t)136U;
       size_t output_rem = output_len % (size_t)136U;
-      if (output_blocks == (size_t)0U)
-      {
-        libcrux_sha3_simd_portable_squeeze_84_b2(&s, output, (size_t)0U, output_len);
-      }
-      else
+      if (!(output_blocks == (size_t)0U))
       {
         libcrux_sha3_simd_portable_squeeze_84_b2(&s, output, (size_t)0U, (size_t)136U);
         for (size_t i = (size_t)1U; i < output_blocks; i++)
@@ -2439,7 +2433,9 @@ libcrux_sha3_generic_keccak_portable_keccak1_220(
           libcrux_sha3_generic_keccak_keccakf1600_26_71(&s);
           libcrux_sha3_simd_portable_squeeze_84_b2(&s, output, output_len - output_rem, output_rem);
         }
+        return;
       }
+      libcrux_sha3_simd_portable_squeeze_84_b2(&s, output, (size_t)0U, output_len);
       return;
     }
     size_t i = uu____0.f0;
@@ -2647,22 +2643,23 @@ libcrux_sha3_simd_portable_store_block_60(
       uint8_t);
   }
   size_t remaining = len % (size_t)8U;
-  if (remaining > (size_t)0U)
+  if (!(remaining > (size_t)0U))
   {
-    Eurydice_array_u8x8
-    bytes =
-      core_num__u64__to_le_bytes(libcrux_sha3_traits_get_ij_71(s,
-          octets / (size_t)5U,
-          octets % (size_t)5U)[0U]);
-    size_t out_pos = start + len - remaining;
-    Eurydice_mut_borrow_slice_u8
-    uu____0 =
-      Eurydice_slice_subslice_mut_c8(out,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = out_pos, .end = out_pos + remaining }));
-    Eurydice_slice_copy(uu____0,
-      Eurydice_array_to_subslice_to_shared_21(&bytes, remaining),
-      uint8_t);
+    return;
   }
+  Eurydice_array_u8x8
+  bytes =
+    core_num__u64__to_le_bytes(libcrux_sha3_traits_get_ij_71(s,
+        octets / (size_t)5U,
+        octets % (size_t)5U)[0U]);
+  size_t out_pos = start + len - remaining;
+  Eurydice_mut_borrow_slice_u8
+  uu____0 =
+    Eurydice_slice_subslice_mut_c8(out,
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = out_pos, .end = out_pos + remaining }));
+  Eurydice_slice_copy(uu____0,
+    Eurydice_array_to_subslice_to_shared_21(&bytes, remaining),
+    uint8_t);
 }
 
 /**
@@ -2942,22 +2939,23 @@ libcrux_sha3_simd_portable_store_block_9e(
       uint8_t);
   }
   size_t remaining = len % (size_t)8U;
-  if (remaining > (size_t)0U)
+  if (!(remaining > (size_t)0U))
   {
-    Eurydice_array_u8x8
-    bytes =
-      core_num__u64__to_le_bytes(libcrux_sha3_traits_get_ij_71(s,
-          octets / (size_t)5U,
-          octets % (size_t)5U)[0U]);
-    size_t out_pos = start + len - remaining;
-    Eurydice_mut_borrow_slice_u8
-    uu____0 =
-      Eurydice_slice_subslice_mut_c8(out,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = out_pos, .end = out_pos + remaining }));
-    Eurydice_slice_copy(uu____0,
-      Eurydice_array_to_subslice_to_shared_21(&bytes, remaining),
-      uint8_t);
+    return;
   }
+  Eurydice_array_u8x8
+  bytes =
+    core_num__u64__to_le_bytes(libcrux_sha3_traits_get_ij_71(s,
+        octets / (size_t)5U,
+        octets % (size_t)5U)[0U]);
+  size_t out_pos = start + len - remaining;
+  Eurydice_mut_borrow_slice_u8
+  uu____0 =
+    Eurydice_slice_subslice_mut_c8(out,
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = out_pos, .end = out_pos + remaining }));
+  Eurydice_slice_copy(uu____0,
+    Eurydice_array_to_subslice_to_shared_21(&bytes, remaining),
+    uint8_t);
 }
 
 /**
@@ -3060,11 +3058,7 @@ libcrux_sha3_generic_keccak_portable_keccak1_3a(
       size_t output_len = output.meta;
       size_t output_blocks = output_len / (size_t)144U;
       size_t output_rem = output_len % (size_t)144U;
-      if (output_blocks == (size_t)0U)
-      {
-        libcrux_sha3_simd_portable_squeeze_84_9e(&s, output, (size_t)0U, output_len);
-      }
-      else
+      if (!(output_blocks == (size_t)0U))
       {
         libcrux_sha3_simd_portable_squeeze_84_9e(&s, output, (size_t)0U, (size_t)144U);
         for (size_t i = (size_t)1U; i < output_blocks; i++)
@@ -3078,7 +3072,9 @@ libcrux_sha3_generic_keccak_portable_keccak1_3a(
           libcrux_sha3_generic_keccak_keccakf1600_26_71(&s);
           libcrux_sha3_simd_portable_squeeze_84_9e(&s, output, output_len - output_rem, output_rem);
         }
+        return;
       }
+      libcrux_sha3_simd_portable_squeeze_84_9e(&s, output, (size_t)0U, output_len);
       return;
     }
     size_t i = uu____0.f0;
@@ -3264,22 +3260,23 @@ libcrux_sha3_simd_portable_store_block_53(
       uint8_t);
   }
   size_t remaining = len % (size_t)8U;
-  if (remaining > (size_t)0U)
+  if (!(remaining > (size_t)0U))
   {
-    Eurydice_array_u8x8
-    bytes =
-      core_num__u64__to_le_bytes(libcrux_sha3_traits_get_ij_71(s,
-          octets / (size_t)5U,
-          octets % (size_t)5U)[0U]);
-    size_t out_pos = start + len - remaining;
-    Eurydice_mut_borrow_slice_u8
-    uu____0 =
-      Eurydice_slice_subslice_mut_c8(out,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = out_pos, .end = out_pos + remaining }));
-    Eurydice_slice_copy(uu____0,
-      Eurydice_array_to_subslice_to_shared_21(&bytes, remaining),
-      uint8_t);
+    return;
   }
+  Eurydice_array_u8x8
+  bytes =
+    core_num__u64__to_le_bytes(libcrux_sha3_traits_get_ij_71(s,
+        octets / (size_t)5U,
+        octets % (size_t)5U)[0U]);
+  size_t out_pos = start + len - remaining;
+  Eurydice_mut_borrow_slice_u8
+  uu____0 =
+    Eurydice_slice_subslice_mut_c8(out,
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = out_pos, .end = out_pos + remaining }));
+  Eurydice_slice_copy(uu____0,
+    Eurydice_array_to_subslice_to_shared_21(&bytes, remaining),
+    uint8_t);
 }
 
 /**
@@ -3382,11 +3379,7 @@ libcrux_sha3_generic_keccak_portable_keccak1_dc0(
       size_t output_len = output.meta;
       size_t output_blocks = output_len / (size_t)104U;
       size_t output_rem = output_len % (size_t)104U;
-      if (output_blocks == (size_t)0U)
-      {
-        libcrux_sha3_simd_portable_squeeze_84_53(&s, output, (size_t)0U, output_len);
-      }
-      else
+      if (!(output_blocks == (size_t)0U))
       {
         libcrux_sha3_simd_portable_squeeze_84_53(&s, output, (size_t)0U, (size_t)104U);
         for (size_t i = (size_t)1U; i < output_blocks; i++)
@@ -3400,7 +3393,9 @@ libcrux_sha3_generic_keccak_portable_keccak1_dc0(
           libcrux_sha3_generic_keccak_keccakf1600_26_71(&s);
           libcrux_sha3_simd_portable_squeeze_84_53(&s, output, output_len - output_rem, output_rem);
         }
+        return;
       }
+      libcrux_sha3_simd_portable_squeeze_84_53(&s, output, (size_t)0U, output_len);
       return;
     }
     size_t i = uu____0.f0;
@@ -3584,11 +3579,7 @@ libcrux_sha3_generic_keccak_portable_keccak1_37(
       size_t output_len = output.meta;
       size_t output_blocks = output_len / (size_t)168U;
       size_t output_rem = output_len % (size_t)168U;
-      if (output_blocks == (size_t)0U)
-      {
-        libcrux_sha3_simd_portable_squeeze_84_60(&s, output, (size_t)0U, output_len);
-      }
-      else
+      if (!(output_blocks == (size_t)0U))
       {
         libcrux_sha3_simd_portable_squeeze_84_60(&s, output, (size_t)0U, (size_t)168U);
         for (size_t i = (size_t)1U; i < output_blocks; i++)
@@ -3602,7 +3593,9 @@ libcrux_sha3_generic_keccak_portable_keccak1_37(
           libcrux_sha3_generic_keccak_keccakf1600_26_71(&s);
           libcrux_sha3_simd_portable_squeeze_84_60(&s, output, output_len - output_rem, output_rem);
         }
+        return;
       }
+      libcrux_sha3_simd_portable_squeeze_84_60(&s, output, (size_t)0U, output_len);
       return;
     }
     size_t i = uu____0.f0;
