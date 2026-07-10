@@ -63,11 +63,6 @@ void traits_main(void)
   lvalue =
     array_to_subslice_shared_7d(&foos,
       (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)2U }));
-  if (!(traits_to_int_db(&lvalue) != 2U))
-  {
-    return;
-  }
-  KRML_HOST_EPRINTF("KaRaMeL abort at %s:%d\n%s\n", __FILE__, __LINE__, "panic!");
-  KRML_HOST_EXIT(255U);
+  EURYDICE_ASSERT(!(traits_to_int_db(&lvalue) != 2U), "assert failure");
 }
 

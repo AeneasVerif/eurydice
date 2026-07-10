@@ -3050,6 +3050,49 @@ static KRML_MUSTINLINE Eurydice_arr_58 PRFxN_88_3b(const Eurydice_arr_801 *input
 }
 
 /**
+A monomorphic instance of libcrux_ml_kem.sampling.sample_from_binomial_distribution_3
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+
+*/
+static KRML_MUSTINLINE Eurydice_arr_13
+sample_from_binomial_distribution_3_52(Eurydice_borrow_slice_u8 randomness)
+{
+  Eurydice_arr_04 sampled_i16s = { .data = { 0U } };
+  for (size_t i0 = (size_t)0U; i0 < randomness.meta / (size_t)3U; i0++)
+  {
+    size_t chunk_number = i0;
+    Eurydice_borrow_slice_u8
+    byte_chunk =
+      Eurydice_slice_subslice_shared_c8(randomness,
+        (
+          KRML_CLITERAL(core_ops_range_Range_87){
+            .start = chunk_number * (size_t)3U,
+            .end = chunk_number * (size_t)3U + (size_t)3U
+          }
+        ));
+    uint32_t
+    random_bits_as_u24 =
+      ((uint32_t)byte_chunk.ptr[0U] | (uint32_t)byte_chunk.ptr[1U] << 8U) |
+        (uint32_t)byte_chunk.ptr[2U] << 16U;
+    uint32_t first_bits = random_bits_as_u24 & 2396745U;
+    uint32_t second_bits = random_bits_as_u24 >> 1U & 2396745U;
+    uint32_t third_bits = random_bits_as_u24 >> 2U & 2396745U;
+    uint32_t coin_toss_outcomes = first_bits + second_bits + third_bits;
+    for (int32_t i = 0; i < 24 / 6; i++)
+    {
+      int32_t outcome_set = i;
+      int32_t outcome_set0 = outcome_set * 6;
+      int16_t outcome_1 = (int16_t)(coin_toss_outcomes >> (uint32_t)outcome_set0 & 7U);
+      int16_t outcome_2 = (int16_t)(coin_toss_outcomes >> (uint32_t)(outcome_set0 + 3) & 7U);
+      size_t offset = (size_t)(outcome_set0 / 6);
+      sampled_i16s.data[(size_t)4U * chunk_number + offset] = outcome_1 - outcome_2;
+    }
+  }
+  return from_i16_array_0b_52(Eurydice_array_to_slice_shared_990(&sampled_i16s));
+}
+
+/**
  Given a series of uniformly random bytes in `randomness`, for some number `eta`,
  the `sample_from_binomial_distribution_{eta}` functions sample
  a ring element from a binomial distribution centered at 0 that uses two sets
@@ -3137,49 +3180,6 @@ sample_from_binomial_distribution_2_52(Eurydice_borrow_slice_u8 randomness)
       int16_t outcome_2 = (int16_t)(coin_toss_outcomes >> (uint32_t)(outcome_set0 + 2U) & 3U);
       size_t offset = (size_t)(outcome_set0 >> 2U);
       sampled_i16s.data[(size_t)8U * chunk_number + offset] = outcome_1 - outcome_2;
-    }
-  }
-  return from_i16_array_0b_52(Eurydice_array_to_slice_shared_990(&sampled_i16s));
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.sampling.sample_from_binomial_distribution_3
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-
-*/
-static KRML_MUSTINLINE Eurydice_arr_13
-sample_from_binomial_distribution_3_52(Eurydice_borrow_slice_u8 randomness)
-{
-  Eurydice_arr_04 sampled_i16s = { .data = { 0U } };
-  for (size_t i0 = (size_t)0U; i0 < randomness.meta / (size_t)3U; i0++)
-  {
-    size_t chunk_number = i0;
-    Eurydice_borrow_slice_u8
-    byte_chunk =
-      Eurydice_slice_subslice_shared_c8(randomness,
-        (
-          KRML_CLITERAL(core_ops_range_Range_87){
-            .start = chunk_number * (size_t)3U,
-            .end = chunk_number * (size_t)3U + (size_t)3U
-          }
-        ));
-    uint32_t
-    random_bits_as_u24 =
-      ((uint32_t)byte_chunk.ptr[0U] | (uint32_t)byte_chunk.ptr[1U] << 8U) |
-        (uint32_t)byte_chunk.ptr[2U] << 16U;
-    uint32_t first_bits = random_bits_as_u24 & 2396745U;
-    uint32_t second_bits = random_bits_as_u24 >> 1U & 2396745U;
-    uint32_t third_bits = random_bits_as_u24 >> 2U & 2396745U;
-    uint32_t coin_toss_outcomes = first_bits + second_bits + third_bits;
-    for (int32_t i = 0; i < 24 / 6; i++)
-    {
-      int32_t outcome_set = i;
-      int32_t outcome_set0 = outcome_set * 6;
-      int16_t outcome_1 = (int16_t)(coin_toss_outcomes >> (uint32_t)outcome_set0 & 7U);
-      int16_t outcome_2 = (int16_t)(coin_toss_outcomes >> (uint32_t)(outcome_set0 + 3) & 7U);
-      size_t offset = (size_t)(outcome_set0 / 6);
-      sampled_i16s.data[(size_t)4U * chunk_number + offset] = outcome_1 - outcome_2;
     }
   }
   return from_i16_array_0b_52(Eurydice_array_to_slice_shared_990(&sampled_i16s));
@@ -4233,6 +4233,65 @@ compute_vector_u_e3(
 /**
 A monomorphic instance of libcrux_ml_kem.vector.avx2.compress.compress_ciphertext_coefficient
 with const generics
+- COEFFICIENT_BITS= 11
+*/
+static KRML_MUSTINLINE __m256i compress_ciphertext_coefficient_c4(__m256i vector)
+{
+  __m256i
+  field_modulus_halved =
+    mm256_set1_epi32(((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - 1) / 2);
+  __m256i compression_factor = mm256_set1_epi32(10321340);
+  __m256i coefficient_bits_mask = mm256_set1_epi32((int32_t)((uint32_t)1 << (uint32_t)11) - 1);
+  __m128i coefficients_low = mm256_castsi256_si128(vector);
+  __m256i coefficients_low0 = mm256_cvtepi16_epi32(coefficients_low);
+  __m256i compressed_low = mm256_slli_epi32(11, coefficients_low0, __m256i);
+  __m256i compressed_low0 = mm256_add_epi32(compressed_low, field_modulus_halved);
+  __m256i
+  compressed_low1 =
+    libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
+      compression_factor);
+  __m256i compressed_low2 = mm256_srli_epi32(3, compressed_low1, __m256i);
+  __m256i compressed_low3 = mm256_and_si256(compressed_low2, coefficient_bits_mask);
+  __m128i coefficients_high = mm256_extracti128_si256(1, vector, __m128i);
+  __m256i coefficients_high0 = mm256_cvtepi16_epi32(coefficients_high);
+  __m256i compressed_high = mm256_slli_epi32(11, coefficients_high0, __m256i);
+  __m256i compressed_high0 = mm256_add_epi32(compressed_high, field_modulus_halved);
+  __m256i
+  compressed_high1 =
+    libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_high0,
+      compression_factor);
+  __m256i compressed_high2 = mm256_srli_epi32(3, compressed_high1, __m256i);
+  __m256i compressed_high3 = mm256_and_si256(compressed_high2, coefficient_bits_mask);
+  __m256i compressed = mm256_packs_epi32(compressed_low3, compressed_high3);
+  return mm256_permute4x64_epi64(216, compressed, __m256i);
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.vector.avx2.compress
+with const generics
+- COEFFICIENT_BITS= 11
+*/
+static KRML_MUSTINLINE __m256i compress_c4(__m256i vector)
+{
+  return compress_ciphertext_coefficient_c4(vector);
+}
+
+/**
+This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.vector.avx2.compress_14
+with const generics
+- COEFFICIENT_BITS= 11
+*/
+static KRML_MUSTINLINE __m256i compress_14_c4(__m256i vector)
+{
+  return compress_c4(vector);
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.vector.avx2.compress.compress_ciphertext_coefficient
+with const generics
 - COEFFICIENT_BITS= 10
 */
 static KRML_MUSTINLINE __m256i compress_ciphertext_coefficient_ef(__m256i vector)
@@ -4314,65 +4373,6 @@ static KRML_MUSTINLINE Eurydice_arr_b0 compress_then_serialize_10_03(const Euryd
       uint8_t);
   }
   return serialized;
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.vector.avx2.compress.compress_ciphertext_coefficient
-with const generics
-- COEFFICIENT_BITS= 11
-*/
-static KRML_MUSTINLINE __m256i compress_ciphertext_coefficient_c4(__m256i vector)
-{
-  __m256i
-  field_modulus_halved =
-    mm256_set1_epi32(((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - 1) / 2);
-  __m256i compression_factor = mm256_set1_epi32(10321340);
-  __m256i coefficient_bits_mask = mm256_set1_epi32((int32_t)((uint32_t)1 << (uint32_t)11) - 1);
-  __m128i coefficients_low = mm256_castsi256_si128(vector);
-  __m256i coefficients_low0 = mm256_cvtepi16_epi32(coefficients_low);
-  __m256i compressed_low = mm256_slli_epi32(11, coefficients_low0, __m256i);
-  __m256i compressed_low0 = mm256_add_epi32(compressed_low, field_modulus_halved);
-  __m256i
-  compressed_low1 =
-    libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
-      compression_factor);
-  __m256i compressed_low2 = mm256_srli_epi32(3, compressed_low1, __m256i);
-  __m256i compressed_low3 = mm256_and_si256(compressed_low2, coefficient_bits_mask);
-  __m128i coefficients_high = mm256_extracti128_si256(1, vector, __m128i);
-  __m256i coefficients_high0 = mm256_cvtepi16_epi32(coefficients_high);
-  __m256i compressed_high = mm256_slli_epi32(11, coefficients_high0, __m256i);
-  __m256i compressed_high0 = mm256_add_epi32(compressed_high, field_modulus_halved);
-  __m256i
-  compressed_high1 =
-    libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_high0,
-      compression_factor);
-  __m256i compressed_high2 = mm256_srli_epi32(3, compressed_high1, __m256i);
-  __m256i compressed_high3 = mm256_and_si256(compressed_high2, coefficient_bits_mask);
-  __m256i compressed = mm256_packs_epi32(compressed_low3, compressed_high3);
-  return mm256_permute4x64_epi64(216, compressed, __m256i);
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.vector.avx2.compress
-with const generics
-- COEFFICIENT_BITS= 11
-*/
-static KRML_MUSTINLINE __m256i compress_c4(__m256i vector)
-{
-  return compress_ciphertext_coefficient_c4(vector);
-}
-
-/**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.vector.avx2.compress_14
-with const generics
-- COEFFICIENT_BITS= 11
-*/
-static KRML_MUSTINLINE __m256i compress_14_c4(__m256i vector)
-{
-  return compress_c4(vector);
 }
 
 /**
@@ -4581,91 +4581,6 @@ compute_ring_element_v_e3(
 /**
 A monomorphic instance of libcrux_ml_kem.vector.avx2.compress.compress_ciphertext_coefficient
 with const generics
-- COEFFICIENT_BITS= 4
-*/
-static KRML_MUSTINLINE __m256i compress_ciphertext_coefficient_d1(__m256i vector)
-{
-  __m256i
-  field_modulus_halved =
-    mm256_set1_epi32(((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - 1) / 2);
-  __m256i compression_factor = mm256_set1_epi32(10321340);
-  __m256i coefficient_bits_mask = mm256_set1_epi32((int32_t)((uint32_t)1 << (uint32_t)4) - 1);
-  __m128i coefficients_low = mm256_castsi256_si128(vector);
-  __m256i coefficients_low0 = mm256_cvtepi16_epi32(coefficients_low);
-  __m256i compressed_low = mm256_slli_epi32(4, coefficients_low0, __m256i);
-  __m256i compressed_low0 = mm256_add_epi32(compressed_low, field_modulus_halved);
-  __m256i
-  compressed_low1 =
-    libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
-      compression_factor);
-  __m256i compressed_low2 = mm256_srli_epi32(3, compressed_low1, __m256i);
-  __m256i compressed_low3 = mm256_and_si256(compressed_low2, coefficient_bits_mask);
-  __m128i coefficients_high = mm256_extracti128_si256(1, vector, __m128i);
-  __m256i coefficients_high0 = mm256_cvtepi16_epi32(coefficients_high);
-  __m256i compressed_high = mm256_slli_epi32(4, coefficients_high0, __m256i);
-  __m256i compressed_high0 = mm256_add_epi32(compressed_high, field_modulus_halved);
-  __m256i
-  compressed_high1 =
-    libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_high0,
-      compression_factor);
-  __m256i compressed_high2 = mm256_srli_epi32(3, compressed_high1, __m256i);
-  __m256i compressed_high3 = mm256_and_si256(compressed_high2, coefficient_bits_mask);
-  __m256i compressed = mm256_packs_epi32(compressed_low3, compressed_high3);
-  return mm256_permute4x64_epi64(216, compressed, __m256i);
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.vector.avx2.compress
-with const generics
-- COEFFICIENT_BITS= 4
-*/
-static KRML_MUSTINLINE __m256i compress_d1(__m256i vector)
-{
-  return compress_ciphertext_coefficient_d1(vector);
-}
-
-/**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.vector.avx2.compress_14
-with const generics
-- COEFFICIENT_BITS= 4
-*/
-static KRML_MUSTINLINE __m256i compress_14_d1(__m256i vector)
-{
-  return compress_d1(vector);
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.serialize.compress_then_serialize_4
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-
-*/
-static KRML_MUSTINLINE void
-compress_then_serialize_4_52(Eurydice_arr_13 re, Eurydice_mut_borrow_slice_u8 serialized)
-{
-  for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++)
-  {
-    size_t i0 = i;
-    __m256i coefficient = compress_14_d1(to_unsigned_field_modulus_52(re.data[i0]));
-    Eurydice_array_u8x8 bytes = libcrux_ml_kem_vector_avx2_serialize_4_14(coefficient);
-    Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_87){
-            .start = (size_t)8U * i0,
-            .end = (size_t)8U * i0 + (size_t)8U
-          }
-        )),
-      Eurydice_array_to_slice_shared_6e(&bytes),
-      uint8_t);
-  }
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.vector.avx2.compress.compress_ciphertext_coefficient
-with const generics
 - COEFFICIENT_BITS= 5
 */
 static KRML_MUSTINLINE __m256i compress_ciphertext_coefficient_f4(__m256i vector)
@@ -4746,6 +4661,91 @@ compress_then_serialize_5_52(Eurydice_arr_13 re, Eurydice_mut_borrow_slice_u8 se
           }
         )),
       Eurydice_array_to_slice_shared_30(&bytes),
+      uint8_t);
+  }
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.vector.avx2.compress.compress_ciphertext_coefficient
+with const generics
+- COEFFICIENT_BITS= 4
+*/
+static KRML_MUSTINLINE __m256i compress_ciphertext_coefficient_d1(__m256i vector)
+{
+  __m256i
+  field_modulus_halved =
+    mm256_set1_epi32(((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS - 1) / 2);
+  __m256i compression_factor = mm256_set1_epi32(10321340);
+  __m256i coefficient_bits_mask = mm256_set1_epi32((int32_t)((uint32_t)1 << (uint32_t)4) - 1);
+  __m128i coefficients_low = mm256_castsi256_si128(vector);
+  __m256i coefficients_low0 = mm256_cvtepi16_epi32(coefficients_low);
+  __m256i compressed_low = mm256_slli_epi32(4, coefficients_low0, __m256i);
+  __m256i compressed_low0 = mm256_add_epi32(compressed_low, field_modulus_halved);
+  __m256i
+  compressed_low1 =
+    libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_low0,
+      compression_factor);
+  __m256i compressed_low2 = mm256_srli_epi32(3, compressed_low1, __m256i);
+  __m256i compressed_low3 = mm256_and_si256(compressed_low2, coefficient_bits_mask);
+  __m128i coefficients_high = mm256_extracti128_si256(1, vector, __m128i);
+  __m256i coefficients_high0 = mm256_cvtepi16_epi32(coefficients_high);
+  __m256i compressed_high = mm256_slli_epi32(4, coefficients_high0, __m256i);
+  __m256i compressed_high0 = mm256_add_epi32(compressed_high, field_modulus_halved);
+  __m256i
+  compressed_high1 =
+    libcrux_ml_kem_vector_avx2_compress_mulhi_mm256_epi32(compressed_high0,
+      compression_factor);
+  __m256i compressed_high2 = mm256_srli_epi32(3, compressed_high1, __m256i);
+  __m256i compressed_high3 = mm256_and_si256(compressed_high2, coefficient_bits_mask);
+  __m256i compressed = mm256_packs_epi32(compressed_low3, compressed_high3);
+  return mm256_permute4x64_epi64(216, compressed, __m256i);
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.vector.avx2.compress
+with const generics
+- COEFFICIENT_BITS= 4
+*/
+static KRML_MUSTINLINE __m256i compress_d1(__m256i vector)
+{
+  return compress_ciphertext_coefficient_d1(vector);
+}
+
+/**
+This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.vector.avx2.compress_14
+with const generics
+- COEFFICIENT_BITS= 4
+*/
+static KRML_MUSTINLINE __m256i compress_14_d1(__m256i vector)
+{
+  return compress_d1(vector);
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.serialize.compress_then_serialize_4
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+
+*/
+static KRML_MUSTINLINE void
+compress_then_serialize_4_52(Eurydice_arr_13 re, Eurydice_mut_borrow_slice_u8 serialized)
+{
+  for (size_t i = (size_t)0U; i < LIBCRUX_ML_KEM_POLYNOMIAL_VECTORS_IN_RING_ELEMENT; i++)
+  {
+    size_t i0 = i;
+    __m256i coefficient = compress_14_d1(to_unsigned_field_modulus_52(re.data[i0]));
+    Eurydice_array_u8x8 bytes = libcrux_ml_kem_vector_avx2_serialize_4_14(coefficient);
+    Eurydice_slice_copy(Eurydice_slice_subslice_mut_c8(serialized,
+        (
+          KRML_CLITERAL(core_ops_range_Range_87){
+            .start = (size_t)8U * i0,
+            .end = (size_t)8U * i0 + (size_t)8U
+          }
+        )),
+      Eurydice_array_to_slice_shared_6e(&bytes),
       uint8_t);
   }
 }
@@ -4942,74 +4942,6 @@ static Eurydice_arr_13 call_mut_db_15(void **_)
 /**
 A monomorphic instance of libcrux_ml_kem.vector.avx2.compress.decompress_ciphertext_coefficient
 with const generics
-- COEFFICIENT_BITS= 10
-*/
-static KRML_MUSTINLINE __m256i decompress_ciphertext_coefficient_ef(__m256i vector)
-{
-  __m256i field_modulus = mm256_set1_epi32((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  __m256i two_pow_coefficient_bits = mm256_set1_epi32((int32_t)((uint32_t)1 << (uint32_t)10));
-  __m128i coefficients_low = mm256_castsi256_si128(vector);
-  __m256i coefficients_low0 = mm256_cvtepi16_epi32(coefficients_low);
-  __m256i decompressed_low = mm256_mullo_epi32(coefficients_low0, field_modulus);
-  __m256i decompressed_low0 = mm256_slli_epi32(1, decompressed_low, __m256i);
-  __m256i decompressed_low1 = mm256_add_epi32(decompressed_low0, two_pow_coefficient_bits);
-  __m256i decompressed_low2 = mm256_srli_epi32(10, decompressed_low1, __m256i);
-  __m256i decompressed_low3 = mm256_srli_epi32(1, decompressed_low2, __m256i);
-  __m128i coefficients_high = mm256_extracti128_si256(1, vector, __m128i);
-  __m256i coefficients_high0 = mm256_cvtepi16_epi32(coefficients_high);
-  __m256i decompressed_high = mm256_mullo_epi32(coefficients_high0, field_modulus);
-  __m256i decompressed_high0 = mm256_slli_epi32(1, decompressed_high, __m256i);
-  __m256i decompressed_high1 = mm256_add_epi32(decompressed_high0, two_pow_coefficient_bits);
-  __m256i decompressed_high2 = mm256_srli_epi32(10, decompressed_high1, __m256i);
-  __m256i decompressed_high3 = mm256_srli_epi32(1, decompressed_high2, __m256i);
-  __m256i compressed = mm256_packs_epi32(decompressed_low3, decompressed_high3);
-  return mm256_permute4x64_epi64(216, compressed, __m256i);
-}
-
-/**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.vector.avx2.decompress_ciphertext_coefficient_14
-with const generics
-- COEFFICIENT_BITS= 10
-*/
-static KRML_MUSTINLINE __m256i decompress_ciphertext_coefficient_14_ef(__m256i vector)
-{
-  return decompress_ciphertext_coefficient_ef(vector);
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.serialize.deserialize_then_decompress_10
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-
-*/
-static KRML_MUSTINLINE Eurydice_arr_13
-deserialize_then_decompress_10_52(Eurydice_borrow_slice_u8 serialized)
-{
-  Eurydice_arr_13 re = ZERO_0b_52();
-  for (size_t i = (size_t)0U; i < serialized.meta / (size_t)20U; i++)
-  {
-    size_t i0 = i;
-    Eurydice_borrow_slice_u8
-    bytes =
-      Eurydice_slice_subslice_shared_c8(serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_87){
-            .start = i0 * (size_t)20U,
-            .end = i0 * (size_t)20U + (size_t)20U
-          }
-        ));
-    __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_10_14(bytes);
-    re.data[i0] = decompress_ciphertext_coefficient_14_ef(coefficient);
-  }
-  return re;
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.vector.avx2.compress.decompress_ciphertext_coefficient
-with const generics
 - COEFFICIENT_BITS= 11
 */
 static KRML_MUSTINLINE __m256i decompress_ciphertext_coefficient_c4(__m256i vector)
@@ -5071,6 +5003,74 @@ deserialize_then_decompress_11_52(Eurydice_borrow_slice_u8 serialized)
         ));
     __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_11_14(bytes);
     re.data[i0] = decompress_ciphertext_coefficient_14_c4(coefficient);
+  }
+  return re;
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.vector.avx2.compress.decompress_ciphertext_coefficient
+with const generics
+- COEFFICIENT_BITS= 10
+*/
+static KRML_MUSTINLINE __m256i decompress_ciphertext_coefficient_ef(__m256i vector)
+{
+  __m256i field_modulus = mm256_set1_epi32((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
+  __m256i two_pow_coefficient_bits = mm256_set1_epi32((int32_t)((uint32_t)1 << (uint32_t)10));
+  __m128i coefficients_low = mm256_castsi256_si128(vector);
+  __m256i coefficients_low0 = mm256_cvtepi16_epi32(coefficients_low);
+  __m256i decompressed_low = mm256_mullo_epi32(coefficients_low0, field_modulus);
+  __m256i decompressed_low0 = mm256_slli_epi32(1, decompressed_low, __m256i);
+  __m256i decompressed_low1 = mm256_add_epi32(decompressed_low0, two_pow_coefficient_bits);
+  __m256i decompressed_low2 = mm256_srli_epi32(10, decompressed_low1, __m256i);
+  __m256i decompressed_low3 = mm256_srli_epi32(1, decompressed_low2, __m256i);
+  __m128i coefficients_high = mm256_extracti128_si256(1, vector, __m128i);
+  __m256i coefficients_high0 = mm256_cvtepi16_epi32(coefficients_high);
+  __m256i decompressed_high = mm256_mullo_epi32(coefficients_high0, field_modulus);
+  __m256i decompressed_high0 = mm256_slli_epi32(1, decompressed_high, __m256i);
+  __m256i decompressed_high1 = mm256_add_epi32(decompressed_high0, two_pow_coefficient_bits);
+  __m256i decompressed_high2 = mm256_srli_epi32(10, decompressed_high1, __m256i);
+  __m256i decompressed_high3 = mm256_srli_epi32(1, decompressed_high2, __m256i);
+  __m256i compressed = mm256_packs_epi32(decompressed_low3, decompressed_high3);
+  return mm256_permute4x64_epi64(216, compressed, __m256i);
+}
+
+/**
+This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.vector.avx2.decompress_ciphertext_coefficient_14
+with const generics
+- COEFFICIENT_BITS= 10
+*/
+static KRML_MUSTINLINE __m256i decompress_ciphertext_coefficient_14_ef(__m256i vector)
+{
+  return decompress_ciphertext_coefficient_ef(vector);
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.serialize.deserialize_then_decompress_10
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+
+*/
+static KRML_MUSTINLINE Eurydice_arr_13
+deserialize_then_decompress_10_52(Eurydice_borrow_slice_u8 serialized)
+{
+  Eurydice_arr_13 re = ZERO_0b_52();
+  for (size_t i = (size_t)0U; i < serialized.meta / (size_t)20U; i++)
+  {
+    size_t i0 = i;
+    Eurydice_borrow_slice_u8
+    bytes =
+      Eurydice_slice_subslice_shared_c8(serialized,
+        (
+          KRML_CLITERAL(core_ops_range_Range_87){
+            .start = i0 * (size_t)20U,
+            .end = i0 * (size_t)20U + (size_t)20U
+          }
+        ));
+    __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_10_14(bytes);
+    re.data[i0] = decompress_ciphertext_coefficient_14_ef(coefficient);
   }
   return re;
 }
@@ -5160,74 +5160,6 @@ deserialize_then_decompress_u_15(const Eurydice_arr_2b *ciphertext)
 /**
 A monomorphic instance of libcrux_ml_kem.vector.avx2.compress.decompress_ciphertext_coefficient
 with const generics
-- COEFFICIENT_BITS= 4
-*/
-static KRML_MUSTINLINE __m256i decompress_ciphertext_coefficient_d1(__m256i vector)
-{
-  __m256i field_modulus = mm256_set1_epi32((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
-  __m256i two_pow_coefficient_bits = mm256_set1_epi32((int32_t)((uint32_t)1 << (uint32_t)4));
-  __m128i coefficients_low = mm256_castsi256_si128(vector);
-  __m256i coefficients_low0 = mm256_cvtepi16_epi32(coefficients_low);
-  __m256i decompressed_low = mm256_mullo_epi32(coefficients_low0, field_modulus);
-  __m256i decompressed_low0 = mm256_slli_epi32(1, decompressed_low, __m256i);
-  __m256i decompressed_low1 = mm256_add_epi32(decompressed_low0, two_pow_coefficient_bits);
-  __m256i decompressed_low2 = mm256_srli_epi32(4, decompressed_low1, __m256i);
-  __m256i decompressed_low3 = mm256_srli_epi32(1, decompressed_low2, __m256i);
-  __m128i coefficients_high = mm256_extracti128_si256(1, vector, __m128i);
-  __m256i coefficients_high0 = mm256_cvtepi16_epi32(coefficients_high);
-  __m256i decompressed_high = mm256_mullo_epi32(coefficients_high0, field_modulus);
-  __m256i decompressed_high0 = mm256_slli_epi32(1, decompressed_high, __m256i);
-  __m256i decompressed_high1 = mm256_add_epi32(decompressed_high0, two_pow_coefficient_bits);
-  __m256i decompressed_high2 = mm256_srli_epi32(4, decompressed_high1, __m256i);
-  __m256i decompressed_high3 = mm256_srli_epi32(1, decompressed_high2, __m256i);
-  __m256i compressed = mm256_packs_epi32(decompressed_low3, decompressed_high3);
-  return mm256_permute4x64_epi64(216, compressed, __m256i);
-}
-
-/**
-This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.vector.avx2.decompress_ciphertext_coefficient_14
-with const generics
-- COEFFICIENT_BITS= 4
-*/
-static KRML_MUSTINLINE __m256i decompress_ciphertext_coefficient_14_d1(__m256i vector)
-{
-  return decompress_ciphertext_coefficient_d1(vector);
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.serialize.deserialize_then_decompress_4
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-
-*/
-static KRML_MUSTINLINE Eurydice_arr_13
-deserialize_then_decompress_4_52(Eurydice_borrow_slice_u8 serialized)
-{
-  Eurydice_arr_13 re = ZERO_0b_52();
-  for (size_t i = (size_t)0U; i < serialized.meta / (size_t)8U; i++)
-  {
-    size_t i0 = i;
-    Eurydice_borrow_slice_u8
-    bytes =
-      Eurydice_slice_subslice_shared_c8(serialized,
-        (
-          KRML_CLITERAL(core_ops_range_Range_87){
-            .start = i0 * (size_t)8U,
-            .end = i0 * (size_t)8U + (size_t)8U
-          }
-        ));
-    __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_4_14(bytes);
-    re.data[i0] = decompress_ciphertext_coefficient_14_d1(coefficient);
-  }
-  return re;
-}
-
-/**
-A monomorphic instance of libcrux_ml_kem.vector.avx2.compress.decompress_ciphertext_coefficient
-with const generics
 - COEFFICIENT_BITS= 5
 */
 static KRML_MUSTINLINE __m256i decompress_ciphertext_coefficient_f4(__m256i vector)
@@ -5289,6 +5221,74 @@ deserialize_then_decompress_5_52(Eurydice_borrow_slice_u8 serialized)
         ));
     re.data[i0] = libcrux_ml_kem_vector_avx2_deserialize_5_14(bytes);
     re.data[i0] = decompress_ciphertext_coefficient_14_f4(re.data[i0]);
+  }
+  return re;
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.vector.avx2.compress.decompress_ciphertext_coefficient
+with const generics
+- COEFFICIENT_BITS= 4
+*/
+static KRML_MUSTINLINE __m256i decompress_ciphertext_coefficient_d1(__m256i vector)
+{
+  __m256i field_modulus = mm256_set1_epi32((int32_t)LIBCRUX_ML_KEM_VECTOR_TRAITS_FIELD_MODULUS);
+  __m256i two_pow_coefficient_bits = mm256_set1_epi32((int32_t)((uint32_t)1 << (uint32_t)4));
+  __m128i coefficients_low = mm256_castsi256_si128(vector);
+  __m256i coefficients_low0 = mm256_cvtepi16_epi32(coefficients_low);
+  __m256i decompressed_low = mm256_mullo_epi32(coefficients_low0, field_modulus);
+  __m256i decompressed_low0 = mm256_slli_epi32(1, decompressed_low, __m256i);
+  __m256i decompressed_low1 = mm256_add_epi32(decompressed_low0, two_pow_coefficient_bits);
+  __m256i decompressed_low2 = mm256_srli_epi32(4, decompressed_low1, __m256i);
+  __m256i decompressed_low3 = mm256_srli_epi32(1, decompressed_low2, __m256i);
+  __m128i coefficients_high = mm256_extracti128_si256(1, vector, __m128i);
+  __m256i coefficients_high0 = mm256_cvtepi16_epi32(coefficients_high);
+  __m256i decompressed_high = mm256_mullo_epi32(coefficients_high0, field_modulus);
+  __m256i decompressed_high0 = mm256_slli_epi32(1, decompressed_high, __m256i);
+  __m256i decompressed_high1 = mm256_add_epi32(decompressed_high0, two_pow_coefficient_bits);
+  __m256i decompressed_high2 = mm256_srli_epi32(4, decompressed_high1, __m256i);
+  __m256i decompressed_high3 = mm256_srli_epi32(1, decompressed_high2, __m256i);
+  __m256i compressed = mm256_packs_epi32(decompressed_low3, decompressed_high3);
+  return mm256_permute4x64_epi64(216, compressed, __m256i);
+}
+
+/**
+This function found in impl {impl libcrux_ml_kem::vector::traits::Operations for libcrux_ml_kem::vector::avx2::SIMD256Vector}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.vector.avx2.decompress_ciphertext_coefficient_14
+with const generics
+- COEFFICIENT_BITS= 4
+*/
+static KRML_MUSTINLINE __m256i decompress_ciphertext_coefficient_14_d1(__m256i vector)
+{
+  return decompress_ciphertext_coefficient_d1(vector);
+}
+
+/**
+A monomorphic instance of libcrux_ml_kem.serialize.deserialize_then_decompress_4
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+
+*/
+static KRML_MUSTINLINE Eurydice_arr_13
+deserialize_then_decompress_4_52(Eurydice_borrow_slice_u8 serialized)
+{
+  Eurydice_arr_13 re = ZERO_0b_52();
+  for (size_t i = (size_t)0U; i < serialized.meta / (size_t)8U; i++)
+  {
+    size_t i0 = i;
+    Eurydice_borrow_slice_u8
+    bytes =
+      Eurydice_slice_subslice_shared_c8(serialized,
+        (
+          KRML_CLITERAL(core_ops_range_Range_87){
+            .start = i0 * (size_t)8U,
+            .end = i0 * (size_t)8U + (size_t)8U
+          }
+        ));
+    __m256i coefficient = libcrux_ml_kem_vector_avx2_deserialize_4_14(bytes);
+    re.data[i0] = decompress_ciphertext_coefficient_14_d1(coefficient);
   }
   return re;
 }
@@ -7976,6 +7976,7 @@ static KRML_MUSTINLINE void
 compress_then_serialize_ring_element_v_72(Eurydice_arr_13 re, Eurydice_mut_borrow_slice_u8 out)
 {
   compress_then_serialize_5_52(re, out);
+  return;
 }
 
 /**

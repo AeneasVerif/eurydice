@@ -280,6 +280,8 @@ Supported options:|}
   let files = Eurydice.Cleanup2.recognize_asserts#visit_files () files in
   Eurydice.Logging.log "Phase2.3" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_ite#visit_files () files in
+  let files = Eurydice.Cleanup2.recover_asserts_before_abort#visit_files () files in
+  let files = Eurydice.Cleanup2.remove_unreachable_after_terminal#visit_files () files in
   Eurydice.Logging.log "Phase2.4" "%a" pfiles files;
   let files = Eurydice.Cleanup2.remove_trivial_into#visit_files () files in
   Eurydice.Logging.log "Phase2.5" "%a" pfiles files;

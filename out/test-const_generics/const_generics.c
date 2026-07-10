@@ -87,8 +87,8 @@ void const_generics_main(void)
   /* original Rust expression is not an lvalue in C */
   Eurydice_arr_a0 lvalue = { .data = { 1U, 2U } };
   Eurydice_array_u8x8 s = const_generics_serialize_70(array_to_slice_shared_49(&lvalue));
-  EURYDICE_ASSERT(s.data[3U] == 1U, "panic!");
-  EURYDICE_ASSERT(s.data[7U] == 2U, "panic!");
+  EURYDICE_ASSERT(!!(s.data[3U] == 1U), "assert failure");
+  EURYDICE_ASSERT(!!(s.data[7U] == 2U), "assert failure");
 }
 
 /**
@@ -156,16 +156,11 @@ bool const_generics_f_06(uint32_t x, size_t y)
     repeat_expression[0U] = y;
   }
   memcpy(arr2.data, repeat_expression, (size_t)1U * sizeof (size_t));
-  bool uu____0;
-  if (arr1.data[0U] == 2U)
+  if (!(arr1.data[0U] == 2U))
   {
-    uu____0 = arr2.data[0U] == (size_t)1U;
+    return false;
   }
-  else
-  {
-    uu____0 = false;
-  }
-  return uu____0;
+  return arr2.data[0U] == (size_t)1U;
 }
 
 /**
@@ -184,16 +179,11 @@ bool const_generics_f_16(uint32_t x, size_t y)
   size_t repeat_expression[3U];
   KRML_MAYBE_FOR3(i, (size_t)0U, (size_t)3U, (size_t)1U, repeat_expression[i] = y;);
   memcpy(arr2.data, repeat_expression, (size_t)3U * sizeof (size_t));
-  bool uu____0;
-  if (arr1.data[0U] == 4U)
+  if (!(arr1.data[0U] == 4U))
   {
-    uu____0 = arr2.data[0U] == (size_t)3U;
+    return false;
   }
-  else
-  {
-    uu____0 = false;
-  }
-  return uu____0;
+  return arr2.data[0U] == (size_t)3U;
 }
 
 /**
@@ -204,23 +194,14 @@ with const generics
 */
 bool const_generics_g_16(uint32_t x, size_t y)
 {
-  bool uu____0;
   if (const_generics_f_16(x, y))
   {
     if (x == 4U)
     {
-      uu____0 = y == (size_t)3U;
-    }
-    else
-    {
-      uu____0 = false;
+      return y == (size_t)3U;
     }
   }
-  else
-  {
-    uu____0 = false;
-  }
-  return uu____0;
+  return false;
 }
 
 typedef struct const_bool__x2_s

@@ -188,17 +188,17 @@ typedef struct Eurydice_arr_6d_s { uint8_t data[10U]; } Eurydice_arr_6d;
 A monomorphic instance of Eurydice.arr
 with types uint8_t
 with const generics
-- $22size_t
+- $20size_t
 */
-typedef struct Eurydice_arr_80_s { uint8_t data[22U]; } Eurydice_arr_80;
+typedef struct Eurydice_arr_fc_s { uint8_t data[20U]; } Eurydice_arr_fc;
 
 /**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
 with const generics
-- $20size_t
+- $22size_t
 */
-typedef struct Eurydice_arr_fc_s { uint8_t data[20U]; } Eurydice_arr_fc;
+typedef struct Eurydice_arr_80_s { uint8_t data[22U]; } Eurydice_arr_80;
 
 /**
 A monomorphic instance of Eurydice.arr

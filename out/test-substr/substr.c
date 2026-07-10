@@ -100,6 +100,6 @@ void substr_main(void)
       size_t,
       Eurydice_c_char_t [],
       Eurydice_dst_ref_shared_0d);
-  EURYDICE_ASSERT(core_str__str__len(take) == (size_t)2U, "panic!");
+  EURYDICE_ASSERT(!!(core_str__str__len(take) == (size_t)2U), "assert failure");
 }
 

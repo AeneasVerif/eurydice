@@ -1011,17 +1011,17 @@ Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_30(Eurydice_arr_6d *a);
 A monomorphic instance of Eurydice.array_to_slice_mut
 with types uint8_t
 with const generics
-- N= 22
+- N= 20
 */
-Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_98(Eurydice_arr_80 *a);
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_8f(Eurydice_arr_fc *a);
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_mut
 with types uint8_t
 with const generics
-- N= 20
+- N= 22
 */
-Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_8f(Eurydice_arr_fc *a);
+Eurydice_mut_borrow_slice_u8 Eurydice_array_to_slice_mut_98(Eurydice_arr_80 *a);
 
 /**
 A monomorphic instance of Eurydice.arr

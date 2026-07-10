@@ -36,11 +36,11 @@ int32_t collision_collision(collision_Either a, collision_Direction b)
 
 void collision_main(void)
 {
-  EURYDICE_ASSERT(collision_collision((
+  EURYDICE_ASSERT(!!(collision_collision((
         KRML_CLITERAL(collision_Either){ .tag = collision_Left0, .val = { .case_Left = 10 } }
       ),
       (KRML_CLITERAL(collision_Direction){ .tag = collision_Right, .val = { .case_Right = 20ULL } }))
-    > 0,
-    "panic!");
+    > 0),
+    "assert failure");
 }
 
