@@ -121,15 +121,14 @@ let parse_file (v : Yaml.value) : file =
               let parse_pattern_vis p = parse_pattern p, vis in
               let parse_exact_vis p = parse_exact p, vis in
               let defs, m_of, m_using, m_exact = parse ls in
-              begin
-                match o with
-                | `A pats -> List.map parse_pattern_vis pats @ defs, m_of, m_using, m_exact
-                | `O o ->
-                    ( map_or parse_pattern_vis o "patterns" @ map_or parse_exact_vis o "exact" @ defs,
-                      map_or parse_pattern_vis o "monomorphizations_of" @ m_of,
-                      map_or parse_pattern_vis o "monomorphizations_using" @ m_using,
-                      map_or parse_exact_vis o "monomorphizations_exact" @ m_exact )
-                | _ -> failwith (k ^ " neither a list nor object")
+              begin match o with
+              | `A pats -> List.map parse_pattern_vis pats @ defs, m_of, m_using, m_exact
+              | `O o ->
+                  ( map_or parse_pattern_vis o "patterns" @ map_or parse_exact_vis o "exact" @ defs,
+                    map_or parse_pattern_vis o "monomorphizations_of" @ m_of,
+                    map_or parse_pattern_vis o "monomorphizations_using" @ m_using,
+                    map_or parse_exact_vis o "monomorphizations_exact" @ m_exact )
+              | _ -> failwith (k ^ " neither a list nor object")
               end
           | _ :: ls -> parse ls
         in
@@ -210,10 +209,9 @@ let parse_config (v : Yaml.value) : config =
           in
           let skip_prefix = List.map (fun p -> Krml.Bundle.Module p) skip_prefix in
           Krml.Options.(no_prefix := !no_prefix @ skip_prefix));
-      begin
-        match List.assoc_opt "files" entries with
-        | Some (`A files) -> List.map parse_file files
-        | _ -> parsing_error "files is not a sequence"
+      begin match List.assoc_opt "files" entries with
+      | Some (`A files) -> List.map parse_file files
+      | _ -> parsing_error "files is not a sequence"
       end
   | _ -> parsing_error "YAML file must be an object with key files"
 

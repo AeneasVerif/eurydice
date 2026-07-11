@@ -30,14 +30,13 @@ let rec is_suitable_array_initializer =
     match e.node, e.typ with
     | _, TArray _ ->
         (* In the case of nested arrays *)
-        begin
-          match e.node with
-          | EBufCreateL (_, es) ->
-              (* We only allow sub-initializer lists *)
-              List.for_all subarrays_only_literals es
-          | _ ->
-              (* Anything else (e.g. variable) is not copy-assignment in C *)
-              false
+        begin match e.node with
+        | EBufCreateL (_, es) ->
+            (* We only allow sub-initializer lists *)
+            List.for_all subarrays_only_literals es
+        | _ ->
+            (* Anything else (e.g. variable) is not copy-assignment in C *)
+            false
         end
     | EFlat es, _ -> List.for_all subarrays_only_literals (List.map snd es)
     | _ ->
@@ -208,16 +207,15 @@ let remove_array_repeats =
           (* Same logic as below: if we can do something smart (like, only zeroes), then we expand,
              let the subsequent `hoist` phase lift this into a let-binding, and code-gen will optimize this into
              { 0 }. If we can't do something smart, we let-bind, and fall back onto the general case. *)
-          begin
-            try (self#expand_repeat (fst env) (with_type (snd env) (EApp (e, es)))).node
-            with Not_found ->
-              (self#visit_expr env
-                 (with_type (snd env)
-                    (ELet
-                       ( H.fresh_binder "repeat_expression" (snd env),
-                         with_type (snd env) (EApp (e, es)),
-                         with_type (snd env) (EBound 0) ))))
-                .node
+          begin try (self#expand_repeat (fst env) (with_type (snd env) (EApp (e, es)))).node
+          with Not_found ->
+            (self#visit_expr env
+               (with_type (snd env)
+                  (ELet
+                     ( H.fresh_binder "repeat_expression" (snd env),
+                       with_type (snd env) (EApp (e, es)),
+                       with_type (snd env) (EBound 0) ))))
+              .node
           end
       | _ -> super#visit_EApp env e es
 
@@ -282,8 +280,8 @@ let remove_array_repeats =
       (* Nothing special here for EBufCreateL otherwise it breaks the invariant expected by
          remove_implicit_array_copies *)
       | EApp ({ node = ETApp ({ node = EQualified lid; _ }, [ len ], _, [ _ ]); _ }, [ init ])
-        when lid = Builtin.array_repeat.name -> begin
-          try
+        when lid = Builtin.array_repeat.name ->
+          begin try
             (* Case 1 (only zeroes). *)
             let r = ELet (b, (self#expand_repeat under_global) e1, self#visit_expr env e2) in
             r
@@ -327,7 +325,7 @@ let remove_array_repeats =
                                   H.with_unit (EAssign (b_i, Krml.DeBruijn.lift 2 init)) )),
                            (* e2 *)
                            Krml.DeBruijn.lift 1 (self#visit_expr env e2) )) ))
-        end
+          end
       | _ -> super#visit_ELet env b e1 e2
   end
 
@@ -501,8 +499,8 @@ let remove_trivial_ite =
         | c -> c
       in
       match normalize scrut.node with
-      | EConstant c -> begin
-          match
+      | EConstant c ->
+          begin match
             List.find_opt
               (function
                 | SConstant c', _ -> const_eq c c'
@@ -510,14 +508,14 @@ let remove_trivial_ite =
               branches
           with
           | Some (_, b) -> (self#visit_expr env b).node
-          | None -> begin
-              match List.find_opt (fun (sv, _) -> sv = SWild) branches with
+          | None ->
+              begin match List.find_opt (fun (sv, _) -> sv = SWild) branches with
               | Some (_, b) -> (self#visit_expr env b).node
               | None ->
                   assert (snd env = TUnit);
                   EUnit
-            end
-        end
+              end
+          end
       | _ -> super#visit_ESwitch env scrut branches
   end
 
@@ -1069,22 +1067,22 @@ end
 let improve_names files =
   let renamed = Hashtbl.create 41 in
   let allocated = Hashtbl.create 41 in
-  (object (_self)
-     inherit [_] iter
+  object (_self)
+    inherit [_] iter
 
-     method! visit_DFunction _ _ _ _ _ _ ((m, n) as lid) _ _ =
-       let trait_impl, m = List.partition (fun s -> s.[0] = '{') m in
-       match trait_impl with
-       | [ trait_impl ] ->
-           let hash = Hashtbl.hash trait_impl in
-           let n = Printf.sprintf "%s_%02x" n (hash land 0xFF) in
-           Krml.Monomorphization.maybe_debug_hash hash
-             (lazy PPrint.(string "trait impl:" ^/^ string trait_impl));
-           let n = Krml.Idents.mk_fresh n (fun n -> Hashtbl.mem allocated (m, n)) in
-           Hashtbl.add renamed lid ((m, n), trait_impl);
-           Hashtbl.add allocated (m, n) ()
-       | _ -> ()
-  end)
+    method! visit_DFunction _ _ _ _ _ _ ((m, n) as lid) _ _ =
+      let trait_impl, m = List.partition (fun s -> s.[0] = '{') m in
+      match trait_impl with
+      | [ trait_impl ] ->
+          let hash = Hashtbl.hash trait_impl in
+          let n = Printf.sprintf "%s_%02x" n (hash land 0xFF) in
+          Krml.Monomorphization.maybe_debug_hash hash
+            (lazy PPrint.(string "trait impl:" ^/^ string trait_impl));
+          let n = Krml.Idents.mk_fresh n (fun n -> Hashtbl.mem allocated (m, n)) in
+          Hashtbl.add renamed lid ((m, n), trait_impl);
+          Hashtbl.add allocated (m, n) ()
+      | _ -> ()
+  end
     #visit_files
     () files;
   (* Hashtbl.iter (fun k (v, _) -> *)
@@ -1099,22 +1097,22 @@ let improve_names files =
             Krml.Bundle.Lid (fst (Hashtbl.find renamed lid))
         | x -> x)
       !Krml.Options.static_header;
-  (object (self)
-     inherit [_] map
+  object (self)
+    inherit [_] map
 
-     method! visit_DFunction env cc flags n_cgs n t lid bs e =
-       match Hashtbl.find_opt renamed lid with
-       | Some (lid, trait_impl) ->
-           let comment = Krml.KPrint.bsprintf "This function found in impl %s" trait_impl in
-           DFunction (cc, flags @ [ Comment comment ], n_cgs, n, t, lid, bs, self#visit_expr_w env e)
-       | None -> DFunction (cc, flags, n_cgs, n, t, lid, bs, self#visit_expr_w env e)
+    method! visit_DFunction env cc flags n_cgs n t lid bs e =
+      match Hashtbl.find_opt renamed lid with
+      | Some (lid, trait_impl) ->
+          let comment = Krml.KPrint.bsprintf "This function found in impl %s" trait_impl in
+          DFunction (cc, flags @ [ Comment comment ], n_cgs, n, t, lid, bs, self#visit_expr_w env e)
+      | None -> DFunction (cc, flags, n_cgs, n, t, lid, bs, self#visit_expr_w env e)
 
-     method! visit_EQualified _ lid =
-       EQualified
-         (match Hashtbl.find_opt renamed lid with
-         | Some (lid, _) -> lid
-         | None -> lid)
-  end)
+    method! visit_EQualified _ lid =
+      EQualified
+        (match Hashtbl.find_opt renamed lid with
+        | Some (lid, _) -> lid
+        | None -> lid)
+  end
     #visit_files
     () files
 
@@ -1218,13 +1216,13 @@ let reconstruct_for_loops =
           _,
           EWhile
             ( { node = EBool true; _ },
-              { node = EIfThenElse (e_cond, e_then, { node = EBreak; _ }); _ } ) ) -> begin
-          match find_terminal_incr 0 e_then with
+              { node = EIfThenElse (e_cond, e_then, { node = EBreak; _ }); _ } ) ) ->
+          begin match find_terminal_incr 0 e_then with
           | Some (e_then, e_incr) when no_control_flow e_incr ->
               let e_then = self#visit_expr env e_then in
               EFor (b, e1, e_cond, e_incr, e_then)
           | _ -> super#visit_ELet env b e1 e2
-        end
+          end
       (* let t x = e1 in
          let _ = while (true) { if (e_cond) { e_then; e_incr } else { break; } in
          e2
@@ -1243,8 +1241,8 @@ let reconstruct_for_loops =
                 _;
               },
               e2' ) )
-        when not (found 1 e2') -> begin
-          match find_terminal_incr 0 e_then with
+        when not (found 1 e2') ->
+          begin match find_terminal_incr 0 e_then with
           | Some (e_then, e_incr) when no_control_flow e_incr ->
               let e_then = self#visit_expr env e_then in
               let e2 = self#visit_expr env e2' in
@@ -1254,7 +1252,7 @@ let reconstruct_for_loops =
                   with_type TUnit (EFor (b, e1, e_cond, e_incr, e_then)),
                   shift1 e2 )
           | _ -> super#visit_ELet env b e1 e2
-        end
+          end
       | _ -> super#visit_ELet env b e1 e2
 
     method! visit_EWhile env e1 e2 =
@@ -1496,14 +1494,13 @@ let globalize_global_locals files =
         let module NameSet = Krml.Idents.LidSet in
         let no_priv_names =
           if List.mem Krml.Common.Macro flags && not (List.mem Krml.Common.Private flags) then
-            (object
-               inherit [_] reduce
-               method private zero = NameSet.empty
-               method private plus = NameSet.union
-               method! visit_EQualified _ name = NameSet.singleton name
-            end)
-              #visit_expr_w
-              () expr
+            object
+              inherit [_] reduce
+              method private zero = NameSet.empty
+              method private plus = NameSet.union
+              method! visit_EQualified _ name = NameSet.singleton name
+            end
+              #visit_expr_w () expr
           else
             NameSet.empty
         in
@@ -1556,60 +1553,60 @@ let float_comments files =
   let filter_meta meta =
     meta
     |> List.filter (function
-         | CommentBefore c ->
-             prepend c;
-             false
-         | _ -> true)
+      | CommentBefore c ->
+          prepend c;
+          false
+      | _ -> true)
     |> List.filter (function
-         | CommentAfter c ->
-             prepend c;
-             false
-         | _ -> true)
+      | CommentAfter c ->
+          prepend c;
+          false
+      | _ -> true)
   in
-  (object (self)
-     inherit [_] map as super
+  object (self)
+    inherit [_] map as super
 
-     method! visit_expr env e =
-       let e = super#visit_expr env e in
-       { e with meta = filter_meta e.meta }
+    method! visit_expr env e =
+      let e = super#visit_expr env e in
+      { e with meta = filter_meta e.meta }
 
-     method private process_block e =
-       let float_one e =
-         let e = self#visit_expr_w () e in
-         { e with meta = flush () }
-       in
-       match e.node with
-       | ELet (b, e1, e2) ->
-           let e1 = self#visit_expr_w () e1 in
-           let e1 = { e1 with meta = filter_meta e1.meta } in
-           let b = { b with meta = filter_meta b.meta } in
-           let meta = flush () in
-           { e with node = ELet (b, e1, self#process_block e2); meta }
-       | ESequence es ->
-           let es = List.map float_one es in
-           { e with node = ESequence es; meta = filter_meta e.meta }
-       | _ -> float_one e
+    method private process_block e =
+      let float_one e =
+        let e = self#visit_expr_w () e in
+        { e with meta = flush () }
+      in
+      match e.node with
+      | ELet (b, e1, e2) ->
+          let e1 = self#visit_expr_w () e1 in
+          let e1 = { e1 with meta = filter_meta e1.meta } in
+          let b = { b with meta = filter_meta b.meta } in
+          let meta = flush () in
+          { e with node = ELet (b, e1, self#process_block e2); meta }
+      | ESequence es ->
+          let es = List.map float_one es in
+          { e with node = ESequence es; meta = filter_meta e.meta }
+      | _ -> float_one e
 
-     method! visit_EFor env b e1 e2 e3 e4 =
-       let e4 = self#process_block e4 in
-       EFor (b, self#visit_expr env e1, self#visit_expr env e2, self#visit_expr env e3, e4)
+    method! visit_EFor env b e1 e2 e3 e4 =
+      let e4 = self#process_block e4 in
+      EFor (b, self#visit_expr env e1, self#visit_expr env e2, self#visit_expr env e3, e4)
 
-     method! visit_EWhile env e1 e2 =
-       let e2 = self#process_block e2 in
-       EWhile (self#visit_expr env e1, e2)
+    method! visit_EWhile env e1 e2 =
+      let e2 = self#process_block e2 in
+      EWhile (self#visit_expr env e1, e2)
 
-     method! visit_EIfThenElse env e1 e2 e3 =
-       let e2 = self#process_block e2 in
-       let e3 = self#process_block e3 in
-       EIfThenElse (self#visit_expr env e1, e2, e3)
+    method! visit_EIfThenElse env e1 e2 e3 =
+      let e2 = self#process_block e2 in
+      let e3 = self#process_block e3 in
+      EIfThenElse (self#visit_expr env e1, e2, e3)
 
-     method! visit_ESwitch env e bs =
-       let bs = List.map (fun (c, e) -> c, self#process_block e) bs in
-       ESwitch (self#visit_expr env e, bs)
+    method! visit_ESwitch env e bs =
+      let bs = List.map (fun (c, e) -> c, self#process_block e) bs in
+      ESwitch (self#visit_expr env e, bs)
 
-     method! visit_DFunction _ cc flags n_cgs n t name bs e =
-       DFunction (cc, flags, n_cgs, n, t, name, bs, self#process_block e)
-  end)
+    method! visit_DFunction _ cc flags n_cgs n t name bs e =
+      DFunction (cc, flags, n_cgs, n, t, name, bs, self#process_block e)
+  end
     #visit_files
     () files
 
@@ -1632,34 +1629,34 @@ let float_comments files =
    *)
 let rewrite_signed_shifts files =
   let open Krml.Constant in
-  (object (self)
-     inherit [_] map as super
+  object (self)
+    inherit [_] map as super
 
-     method! visit_EApp env e es =
-       match e.node, es with
-       | EOp (BShiftL, TInt w), [ e1; e2 ] when is_signed w ->
-           let unsigned_w = unsigned_of_signed w in
-           (* No point in casting to uint16 or uint8: this will be promoted to
+    method! visit_EApp env e es =
+      match e.node, es with
+      | EOp (BShiftL, TInt w), [ e1; e2 ] when is_signed w ->
+          let unsigned_w = unsigned_of_signed w in
+          (* No point in casting to uint16 or uint8: this will be promoted to
               `int` once in C, which AstToCStar defeats by casting to (uint32_t)
               -- we simply anticipate this fact and cast straight to uint32_t. *)
-           let unsigned_w =
-             match unsigned_w with
-             | UInt8 | UInt16 -> UInt32
-             | _ -> unsigned_w
-           in
-           let e1 = self#visit_expr env e1 in
-           let e2 = self#visit_expr env e2 in
-           (* Note that in C, casting to a signed type is implementation-defined
+          let unsigned_w =
+            match unsigned_w with
+            | UInt8 | UInt16 -> UInt32
+            | _ -> unsigned_w
+          in
+          let e1 = self#visit_expr env e1 in
+          let e2 = self#visit_expr env e2 in
+          (* Note that in C, casting to a signed type is implementation-defined
               (yay). We assume all implementations rely on two's complement. *)
-           let e1_unsigned = with_type (TInt unsigned_w) (ECast (e1, TInt unsigned_w)) in
-           let op_type = H.fold_arrow [ TInt unsigned_w; e2.typ ] (TInt unsigned_w) in
-           let shift =
-             with_type (TInt unsigned_w)
-               (EApp (with_type op_type (EOp (BShiftL, TInt unsigned_w)), [ e1_unsigned; e2 ]))
-           in
-           ECast (shift, TInt w)
-       | _ -> super#visit_EApp env e es
-  end)
+          let e1_unsigned = with_type (TInt unsigned_w) (ECast (e1, TInt unsigned_w)) in
+          let op_type = H.fold_arrow [ TInt unsigned_w; e2.typ ] (TInt unsigned_w) in
+          let shift =
+            with_type (TInt unsigned_w)
+              (EApp (with_type op_type (EOp (BShiftL, TInt unsigned_w)), [ e1_unsigned; e2 ]))
+          in
+          ECast (shift, TInt w)
+      | _ -> super#visit_EApp env e es
+  end
     #visit_files
     () files
 
@@ -1677,17 +1674,17 @@ let remove_discriminant_reads (map : Krml.DataTypes.map) files =
     | _ ->
         failwith "TODO: compile discriminant read for something that no longer has a discriminant"
   in
-  (object (_self)
-     inherit [_] map as super
+  object (_self)
+    inherit [_] map as super
 
-     method! visit_expr (((), _) as env) e =
-       match e with
-       | [%cremepat {| Eurydice::discriminant<?, ?u>(?e) |}] -> (
-           match lookup_tag_lid (H.assert_tlid e.typ) with
-           | `Direct -> with_type u (ECast (e, u))
-           | `TagField tag_lid ->
-               with_type u (ECast (with_type (TQualified tag_lid) (EField (e, "tag")), u)))
-       | _ -> super#visit_expr env e
-  end)
+    method! visit_expr (((), _) as env) e =
+      match e with
+      | [%cremepat {| Eurydice::discriminant<?, ?u>(?e) |}] -> (
+          match lookup_tag_lid (H.assert_tlid e.typ) with
+          | `Direct -> with_type u (ECast (e, u))
+          | `TagField tag_lid ->
+              with_type u (ECast (with_type (TQualified tag_lid) (EField (e, "tag")), u)))
+      | _ -> super#visit_expr env e
+  end
     #visit_files
     () files
