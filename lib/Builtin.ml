@@ -935,8 +935,8 @@ let builtin_funcs =
   ]
   (* Declares the 128-bit operations *)
   @ begin
-      Op128Map.to_seq op_128_cfgs |> List.of_seq |> List.map snd
-    end
+    Op128Map.to_seq op_128_cfgs |> List.of_seq |> List.map snd
+  end
 
 let builtin_defined_funcs =
   [

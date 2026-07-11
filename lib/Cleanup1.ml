@@ -143,7 +143,7 @@ let remove_assignments =
         | EWhile (e, e') ->
             mk t e0.meta
             @@ close_now_over not_yet_closed (count e) (fun not_yet_closed ->
-                   EWhile (self#visit_expr_w not_yet_closed e, recurse_or_close not_yet_closed e'))
+                EWhile (self#visit_expr_w not_yet_closed e, recurse_or_close not_yet_closed e'))
         | ESwitch (e, branches) ->
             mk t e0.meta
             @@ close_now_over not_yet_closed
@@ -180,8 +180,8 @@ let remove_assignments =
                else will be using the variable after that. *)
             mk t e0.meta
             @@ close_now_over not_yet_closed (count e0) (fun not_yet_closed ->
-                   (* not_yet_closed should be empty at this stage *)
-                   (self#visit_expr_w not_yet_closed e0).node)
+                (* not_yet_closed should be empty at this stage *)
+                (self#visit_expr_w not_yet_closed e0).node)
       in
 
       match e1.node with
@@ -469,13 +469,13 @@ let remove_slice_eq =
 
     method! visit_expr _ e =
       match e with
-      | [%cremepat {| core::cmp::impls::?impl::eq(#?eq..)<?t,?u>(?s1, ?s2) |}] -> begin
-          match impl with
+      | [%cremepat {| core::cmp::impls::?impl::eq(#?eq..)<?t,?u>(?s1, ?s2) |}] ->
+          begin match impl with
           | "{impl core::cmp::PartialEq<&'_0 mut B> for &'_1 mut A}" ->
               self#do_it ~const:false eq t u s1 s2
           | "{impl core::cmp::PartialEq<&'_0 B> for &'_1 A}" -> self#do_it ~const:true eq t u s1 s2
           | _ -> failwith ("unknown eq impl in core::cmp::impls: " ^ impl)
-        end
+          end
       | _ -> super#visit_expr ((), e.typ) e
   end
 
