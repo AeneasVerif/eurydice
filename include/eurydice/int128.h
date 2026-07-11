@@ -6,8 +6,8 @@
 #define HAS_INT128 1
 #endif
 
-#ifdef HAS_INT128
 #include <inttypes.h>
+#ifdef HAS_INT128
 
 typedef __int128_t Eurydice_Int128_int128_t;
 typedef __uint128_t Eurydice_Int128_uint128_t;
@@ -151,6 +151,9 @@ static inline Eurydice_Int128_uint128_t Eurydice_Int128_u128_neg(Eurydice_Int128
   return -x;
 }
 #else
+
+#include <assert.h>
+#include <stdbool.h>
 typedef struct {
   uint64_t hi;
   uint64_t lo;
@@ -160,38 +163,6 @@ static inline Eurydice_Int128_int128_t Eurydice_Int128_i128_from_bits(uint64_t h
 }
 static inline Eurydice_Int128_uint128_t Eurydice_Int128_u128_from_bits(uint64_t hi, uint64_t lo) {
   return (Eurydice_Int128_uint128_t){.hi = hi, .lo = lo};
-}
-static inline bool Eurydice_Int128_i128_eq(Eurydice_Int128_int128_t x, Eurydice_Int128_int128_t y) {
-  return x.hi == y.hi && x.lo == y.lo;
-}
-static inline bool Eurydice_Int128_u128_eq(Eurydice_Int128_uint128_t x, Eurydice_Int128_uint128_t y) {
-  return x.hi == y.hi && x.lo == y.lo;
-}
-static inline Eurydice_Int128_int128_t Eurydice_Int128_i128_add(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs) {
-  uint64_t lo = lhs.lo + rhs.lo;
-  uint64_t carry = (lo < lhs.lo) ? 1 : 0;
-  return (Eurydice_Int128_int128_t){.hi = lhs.hi + rhs.hi + carry, .lo = lo};
-}
-static inline Eurydice_Int128_uint128_t Eurydice_Int128_u128_add(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs) {
-  uint64_t lo = lhs.lo + rhs.lo;
-  uint64_t carry = (lo < lhs.lo) ? 1 : 0;
-  return (Eurydice_Int128_uint128_t){.hi = lhs.hi + rhs.hi + carry, .lo = lo};
-}
-static inline Eurydice_Int128_int128_t Eurydice_Int128_i128_sub(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs) {
-  uint64_t lo = lhs.lo - rhs.lo;
-  uint64_t borrow = (lhs.lo < rhs.lo) ? 1 : 0;
-  return (Eurydice_Int128_int128_t){.hi = lhs.hi - rhs.hi - borrow, .lo = lo};
-}
-static inline Eurydice_Int128_uint128_t Eurydice_Int128_u128_sub(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs) {
-  uint64_t lo = lhs.lo - rhs.lo;
-  uint64_t borrow = (lhs.lo < rhs.lo) ? 1 : 0;
-  return (Eurydice_Int128_uint128_t){.hi = lhs.hi - rhs.hi - borrow, .lo = lo};
-}
-static inline Eurydice_Int128_uint128_t Eurydice_Int128_u128_neg(Eurydice_Int128_uint128_t x) {
-  Eurydice_Int128_uint128_t result;
-  result.lo = ~x.lo + 1;
-  result.hi = ~x.hi + (result.lo == 0 ? 1 : 0);
-  return result;
 }
 static inline Eurydice_Int128_int128_t i128_of_u128(Eurydice_Int128_uint128_t x) {
   Eurydice_Int128_int128_t result;
@@ -205,52 +176,100 @@ static inline Eurydice_Int128_uint128_t u128_of_i128(Eurydice_Int128_int128_t x)
   result.hi = x.hi;
   return result;
 }
+// These macro reuse functions over u128 to implement fuctions over i128
+#define i128_reuse_u128_impl1(f,x) i128_of_u128(f(u128_of_i128(x)))
+#define i128_reuse_u128_impl2(f,x,y) i128_of_u128(f(u128_of_i128(x),u128_of_i128(y)))
+static const Eurydice_Int128_int128_t neg_one = {
+  .hi = 0xffffffffffffffff,
+  .lo = 0xffffffffffffffff
+};
+static inline bool Eurydice_Int128_i128_eq(Eurydice_Int128_int128_t x, Eurydice_Int128_int128_t y) {
+  return x.hi == y.hi && x.lo == y.lo;
+}
+static inline bool Eurydice_Int128_u128_eq(Eurydice_Int128_uint128_t x, Eurydice_Int128_uint128_t y) {
+  return x.hi == y.hi && x.lo == y.lo;
+}
+static inline Eurydice_Int128_uint128_t Eurydice_Int128_u128_add(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs) {
+  uint64_t lo = lhs.lo + rhs.lo;
+  uint64_t carry = (lo < lhs.lo) ? 1 : 0;
+  return (Eurydice_Int128_uint128_t){.hi = lhs.hi + rhs.hi + carry, .lo = lo};
+}
+static inline Eurydice_Int128_int128_t Eurydice_Int128_i128_add(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs) {
+  return i128_reuse_u128_impl2(Eurydice_Int128_u128_add,lhs,rhs);
+}
+static inline Eurydice_Int128_uint128_t Eurydice_Int128_u128_sub(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs) {
+  uint64_t lo = lhs.lo - rhs.lo;
+  uint64_t borrow = (lhs.lo < rhs.lo) ? 1 : 0;
+  return (Eurydice_Int128_uint128_t){.hi = lhs.hi - rhs.hi - borrow, .lo = lo};
+}
+static inline Eurydice_Int128_int128_t Eurydice_Int128_i128_sub(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs) {
+  return i128_reuse_u128_impl2(Eurydice_Int128_u128_sub,lhs,rhs);
+} 
+static inline Eurydice_Int128_uint128_t Eurydice_Int128_u128_neg(Eurydice_Int128_uint128_t x) {
+  Eurydice_Int128_uint128_t result;
+  result.lo = ~x.lo + 1;
+  result.hi = ~x.hi + (result.lo == 0 ? 1 : 0);
+  return result;
+}
 static inline Eurydice_Int128_int128_t Eurydice_Int128_i128_neg(Eurydice_Int128_int128_t x) {
-  return i128_of_u128(Eurydice_Int128_u128_neg(u128_of_i128(x)));
+  return i128_reuse_u128_impl1(Eurydice_Int128_u128_neg,x);
 }
-static inline void _mul64x64(uint64_t a, uint64_t b, uint64_t* lo, uint64_t* hi) {
-  uint64_t a_lo = (uint32_t)a;
-  uint64_t a_hi = a >> 32;
-  uint64_t b_lo = (uint32_t)b;
-  uint64_t b_hi = b >> 32;
-  uint64_t p0 = a_lo * b_lo;
-  uint64_t p1 = a_lo * b_hi;
-  uint64_t p2 = a_hi * b_lo;
-  uint64_t p3 = a_hi * b_hi;
-  uint64_t carry = ((p0 >> 32) + (uint32_t)p1 + (uint32_t)p2) >> 32;
-  *lo = p0 + ((p1 + p2) << 32);
-  *hi = p3 + (p1 >> 32) + (p2 >> 32) + carry;
+
+static inline bool Eurydice_Int128_i128_is_neg(Eurydice_Int128_int128_t x) {
+  return (x.hi >> 63 & 1);
 }
-static inline uint64_t _add64x64_carry(uint64_t a, uint64_t b, uint64_t* sum) {
-  *sum = a + b;
-  return (*sum < a) ? 1 : 0;
+
+static inline Eurydice_Int128_int128_t Eurydice_Int128_i128_abs(Eurydice_Int128_int128_t x) {
+  return (Eurydice_Int128_i128_is_neg(x) ? Eurydice_Int128_i128_neg(x) : x);
 }
+
+/* 
+  a = a_hi * 2^64 + a_lo
+  b = b_hi * 2^64 + b_lo
+    a * b 
+  = a_hi * b_hi * 2^128 + (a_hi * b_lo + b_hi * a_lo) * 2^64 + a_lo * b_lo
+  res_hi = a_hi * b_lo + b_hi * a_lo + a_lo * b_lo >> 64
+  res_lo = a_lo * b_lo
+*/
+
 static inline Eurydice_Int128_uint128_t Eurydice_Int128_u128_mul(Eurydice_Int128_uint128_t a, Eurydice_Int128_uint128_t b) {
   uint64_t a_lo = a.lo, a_hi = a.hi;
   uint64_t b_lo = b.lo, b_hi = b.hi;
 
-  uint64_t carry_ll = 0;
-  uint64_t product_ll_lo, product_ll_hi;
-  _mul64x64(a_lo, b_lo, &product_ll_lo, &product_ll_hi);
+  uint64_t result_lo = a_lo * b_lo;
+  /*
+    let:
+    a_lo = a_lh * 2^32 + a_ll
+    b_lo = b_lh * 2^32 + b_ll
+    a_lo * b_lo 
+    = a_lh * b_lh * 2^64 + (a_ll * b_lh + b_ll * a_lh) * 2^32 + a_ll * b_ll
+    = a_lh * b_lh * 2^64 
+      + high32bits(a_ll * b_lh + b_ll * a_lh) * 2^64 
+      + low32bits(a_ll * b_lh + b_ll * a_lh) * 2^32 
+      + a_ll * b_ll
+    carry_ll
+    = a_lo * b_lo >> 64
+    = a_lh * b_lh 
+      + (a_ll * b_lh >> 32)
+      + (b_ll * a_lh >> 32) 
+      + carryof((a_ll * b_lh << 32) + (b_ll * a_lh << 32) + (a_ll * b_ll))
+  
+    carryof((a_ll * b_lh << 32) + (b_ll * a_lh << 32) + (a_ll * b_ll))
+    = carryof((a_ll * b_lh << 32) + (b_ll * a_lh << 32) + (high32bit(a_ll * b_ll) << 32))
+    = (a_ll * b_lh) & 0xffffffff + (b_ll * a_lh) & 0xffffffff + (a_ll * b_ll >> 32) >> 32
 
-  uint64_t product_lh_lo, product_lh_hi;
-  _mul64x64(a_lo, b_hi, &product_lh_lo, &product_lh_hi);
-  uint64_t carry_lh = _add64x64_carry(product_ll_hi, product_lh_lo, &product_ll_hi);
-
-  uint64_t product_hl_lo, product_hl_hi;
-  _mul64x64(a_hi, b_lo, &product_hl_lo, &product_hl_hi);
-  uint64_t carry_hl = _add64x64_carry(product_ll_hi, product_hl_lo, &product_ll_hi);
-
-  uint64_t result_hi = product_ll_hi + product_lh_hi + product_hl_hi + carry_lh + carry_hl;
-
-  return (Eurydice_Int128_uint128_t){.hi = result_hi, .lo = product_ll_lo};
+    The last part of the sum is the carry bit of ((a_ll * b_lh + b_ll * a_lh) << 32) +  a_ll * b_ll
+  */
+  uint64_t a_ll = a_lo & 0xffffffff, a_lh = a_lo >> 32;
+  uint64_t b_ll = b_lo & 0xffffffff, b_lh = b_lo >> 32;
+  uint64_t carry_ll = a_lh * b_lh + (a_ll * b_lh >> 32) + (b_ll * a_lh >> 32) + (((a_ll * b_lh & 0xffffffff) + (b_ll * a_lh & 0xffffffff) + (a_ll * b_ll >> 32)) >> 32);
+  uint64_t result_hi = a_hi * b_lo + b_hi * a_lo + carry_ll;
+  return (Eurydice_Int128_uint128_t){.hi = result_hi, .lo = result_lo};
 }
 static inline Eurydice_Int128_int128_t Eurydice_Int128_i128_mul(Eurydice_Int128_int128_t a, Eurydice_Int128_int128_t b) {
   int sign = ((a.hi ^ b.hi) >> 63) & 1;
-  Eurydice_Int128_uint128_t abs_a = (a.hi >> 63) ? Eurydice_Int128_u128_neg(*(Eurydice_Int128_uint128_t*)&a) 
-                                         : *(Eurydice_Int128_uint128_t*)&a;
-  Eurydice_Int128_uint128_t abs_b = (b.hi >> 63) ? Eurydice_Int128_u128_neg(*(Eurydice_Int128_uint128_t*)&b) 
-                                         : *(Eurydice_Int128_uint128_t*)&b;
+  Eurydice_Int128_uint128_t abs_a = u128_of_i128(Eurydice_Int128_i128_abs(a));
+  Eurydice_Int128_uint128_t abs_b = u128_of_i128(Eurydice_Int128_i128_abs(b));
   Eurydice_Int128_uint128_t abs_result = Eurydice_Int128_u128_mul(abs_a, abs_b);
   return sign ? i128_of_u128(Eurydice_Int128_u128_neg(abs_result)) 
               : i128_of_u128(abs_result);
@@ -281,11 +300,18 @@ int _u128_compare(Eurydice_Int128_uint128_t a, Eurydice_Int128_uint128_t b) {
   if (a.hi < b.hi) return -1;
   return (a.lo > b.lo) ? 1 : (a.lo < b.lo) ? -1 : 0;
 }
+static inline 
+int _i128_compare(Eurydice_Int128_int128_t a, Eurydice_Int128_int128_t b) {
+  bool a_sign = Eurydice_Int128_i128_is_neg(a);
+  bool b_sign = Eurydice_Int128_i128_is_neg(b);
+  if (a_sign != b_sign) return (a_sign ? -1 : 1);
+  return _u128_compare(u128_of_i128(a),u128_of_i128(b));
+}
 typedef struct { Eurydice_Int128_uint128_t quot; Eurydice_Int128_uint128_t rem; } u128_divmod_t;
 static inline 
 u128_divmod_t Eurydice_Int128_u128_divmod(Eurydice_Int128_uint128_t n, Eurydice_Int128_uint128_t d) {
   u128_divmod_t result = { {0, 0}, {0, 0} };
-  if (d.hi == 0 && d.lo == 0) return result;
+  if (d.hi == 0 && d.lo == 0) assert(false);
 
   for (int i = 127; i >= 0; i--) {
     result.rem = _u128_shl(result.rem, 1);
@@ -309,15 +335,21 @@ Eurydice_Int128_uint128_t Eurydice_Int128_u128_mod(Eurydice_Int128_uint128_t div
 static inline 
 Eurydice_Int128_int128_t Eurydice_Int128_i128_div(Eurydice_Int128_int128_t a, Eurydice_Int128_int128_t b) {
   int sign = ((a.hi ^ b.hi) >> 63) & 1;
-  Eurydice_Int128_uint128_t abs_a = (a.hi >> 63) ? Eurydice_Int128_u128_neg(u128_of_i128(a)) 
-                                        : u128_of_i128(a);
-  Eurydice_Int128_uint128_t abs_b = (b.hi >> 63) ? Eurydice_Int128_u128_neg(u128_of_i128(b)) 
-                                        : u128_of_i128(b);
+  Eurydice_Int128_uint128_t abs_a = u128_of_i128(Eurydice_Int128_i128_abs(a));
+  Eurydice_Int128_uint128_t abs_b = u128_of_i128(Eurydice_Int128_i128_abs(b));
   Eurydice_Int128_uint128_t abs_quot = Eurydice_Int128_u128_div(abs_a, abs_b);
   Eurydice_Int128_int128_t result = sign ? i128_of_u128(Eurydice_Int128_u128_neg(abs_quot))
                                 : i128_of_u128(abs_quot);
-  if (a.hi >> 63 && result.hi == 0 && result.lo == 0)
-    result = Eurydice_Int128_i128_sub(result, (Eurydice_Int128_int128_t){ .hi = 0, .lo = 1 });
+  return result;
+}
+
+Eurydice_Int128_int128_t Eurydice_Int128_i128_mod(Eurydice_Int128_int128_t a, Eurydice_Int128_int128_t b) {
+  bool sign = Eurydice_Int128_i128_is_neg(a);
+  Eurydice_Int128_uint128_t abs_a = u128_of_i128(Eurydice_Int128_i128_abs(a));
+  Eurydice_Int128_uint128_t abs_b = u128_of_i128(Eurydice_Int128_i128_abs(b));
+  Eurydice_Int128_uint128_t abs_rem = Eurydice_Int128_u128_mod(abs_a, abs_b);
+  Eurydice_Int128_int128_t result = sign ? i128_of_u128(Eurydice_Int128_u128_neg(abs_rem))
+                                : i128_of_u128(abs_rem);
   return result;
 }
 static inline
@@ -365,14 +397,22 @@ Eurydice_Int128_uint128_t Eurydice_Int128_u128_shr(Eurydice_Int128_uint128_t x, 
     return (Eurydice_Int128_uint128_t){.hi = 0, .lo = 0};
   } else if (shift >= 64) {
     return (Eurydice_Int128_uint128_t){.hi = 0, .lo = x.hi >> (shift - 64)};
-  } else {
+  } else if (shift > 0){
     return (Eurydice_Int128_uint128_t){.hi = x.hi >> shift,
                                 .lo = (x.lo >> shift) | (x.hi << (64 - shift))};
-  }
+  } else return x;
 }
 static inline
 Eurydice_Int128_int128_t Eurydice_Int128_i128_shr(Eurydice_Int128_int128_t x, uint32_t shift) {
-  return i128_of_u128(Eurydice_Int128_u128_shr(u128_of_i128(x), shift));
+  Eurydice_Int128_int128_t result = i128_of_u128(Eurydice_Int128_u128_shr(u128_of_i128(x), shift));
+  if (Eurydice_Int128_i128_is_neg(x)){
+    Eurydice_Int128_uint128_t mask = neg_one;
+    if (shift <= 128){
+      mask = Eurydice_Int128_i128_shl(mask, 128 - shift);
+    }
+    return Eurydice_Int128_i128_bor(result, mask);
+  }
+  return result;
 }
 static inline
 Eurydice_Int128_uint128_t Eurydice_Int128_u128_bnot(Eurydice_Int128_uint128_t x) {
@@ -388,7 +428,7 @@ bool Eurydice_Int128_u128_lt(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint
 }
 static inline
 bool Eurydice_Int128_i128_lt(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs) {
-  return _u128_compare(u128_of_i128(lhs), u128_of_i128(rhs)) < 0;
+  return _i128_compare(lhs, rhs) < 0;
 }
 static inline
 bool Eurydice_Int128_u128_gt(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs) {
@@ -396,7 +436,7 @@ bool Eurydice_Int128_u128_gt(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint
 }
 static inline
 bool Eurydice_Int128_i128_gt(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs) {
-  return _u128_compare(u128_of_i128(lhs), u128_of_i128(rhs)) > 0;
+  return _i128_compare(lhs, rhs) > 0;
 }
 static inline
 bool Eurydice_Int128_u128_lte(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs) {
@@ -404,7 +444,7 @@ bool Eurydice_Int128_u128_lte(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uin
 }
 static inline
 bool Eurydice_Int128_i128_lte(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs) {
-  return _u128_compare(u128_of_i128(lhs), u128_of_i128(rhs)) <= 0;
+  return _i128_compare(lhs, rhs) <= 0;
 }
 static inline
 bool Eurydice_Int128_u128_gte(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs) {
@@ -412,7 +452,7 @@ bool Eurydice_Int128_u128_gte(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uin
 }
 static inline
 bool Eurydice_Int128_i128_gte(Eurydice_Int128_int128_t lhs, Eurydice_Int128_int128_t rhs) {
-  return _u128_compare(u128_of_i128(lhs), u128_of_i128(rhs)) >= 0;
+  return _i128_compare(lhs, rhs) >= 0;
 }
 static inline
 bool Eurydice_Int128_u128_neq(Eurydice_Int128_uint128_t lhs, Eurydice_Int128_uint128_t rhs) {
