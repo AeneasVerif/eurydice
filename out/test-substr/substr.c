@@ -36,12 +36,6 @@ typedef struct Option_9f_s
 }
 Option_9f;
 
-extern Option_9f
-core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____get(
-  size_t x0,
-  Eurydice_dst_ref_shared_0d x1
-);
-
 /**
 A monomorphic instance of core.option.Option
 with types Eurydice_dst_ref_mut_0d
@@ -54,20 +48,8 @@ typedef struct Option_c0_s
 }
 Option_c0;
 
-extern Option_c0
-core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____get_mut(
-  size_t x0,
-  dst_ref_mut_0d x1
-);
-
-extern Eurydice_dst_ref_shared_0d
-core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____get_unchecked(
-  size_t x0,
-  Eurydice_dst_ref_shared_0d x1
-);
-
 extern dst_ref_mut_0d
-core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____get_unchecked_mut(
+core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____index_mut(
   size_t x0,
   dst_ref_mut_0d x1
 );
@@ -79,9 +61,27 @@ core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__ra
 );
 
 extern dst_ref_mut_0d
-core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____index_mut(
+core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____get_unchecked_mut(
   size_t x0,
   dst_ref_mut_0d x1
+);
+
+extern Eurydice_dst_ref_shared_0d
+core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____get_unchecked(
+  size_t x0,
+  Eurydice_dst_ref_shared_0d x1
+);
+
+extern Option_c0
+core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____get_mut(
+  size_t x0,
+  dst_ref_mut_0d x1
+);
+
+extern Option_9f
+core_str_traits__impl_core__slice__index__SliceIndex_str__str__for_core__ops__range__RangeFrom_usize___built_in_impl_core__marker__Sized_for_usize____get(
+  size_t x0,
+  Eurydice_dst_ref_shared_0d x1
 );
 
 void substr_main(void)

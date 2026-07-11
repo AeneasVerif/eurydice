@@ -15,24 +15,17 @@
 extern "C" {
 #endif
 
-#define core_result_Ok 0
-#define core_result_Err 1
+/**
+A monomorphic instance of Eurydice.dst_ref_shared
+with types Eurydice_array_u8x4, size_t
 
-typedef uint8_t core_result_Result_10;
-
-extern core_result_Result_10
-core_array__impl_core__fmt__Debug_for_core__array__TryFromSliceError__fmt(
-  const core_array_TryFromSliceError *x0,
-  core_fmt_Formatter *x1
-);
-
-extern uint8_t core_clone_impls__impl_core__clone__Clone_for_u8__clone(const uint8_t *x0);
-
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
+*/
+typedef struct Eurydice_dst_ref_shared_b5_s
+{
+  const Eurydice_array_u8x4 *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_shared_b5;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_mut
@@ -46,6 +39,13 @@ typedef struct Eurydice_dst_ref_mut_b5_s
 }
 Eurydice_dst_ref_mut_b5;
 
+typedef struct Eurydice_dst_ref_mut_b5_x2_s
+{
+  Eurydice_dst_ref_mut_b5 fst;
+  Eurydice_dst_ref_mut_b5 snd;
+}
+Eurydice_dst_ref_mut_b5_x2;
+
 /**
 A monomorphic instance of Eurydice.arr
 with types Eurydice_array_u8x4
@@ -54,28 +54,10 @@ with const generics
 */
 typedef struct Eurydice_arr_ba_s { Eurydice_array_u8x4 data[4U]; } Eurydice_arr_ba;
 
-typedef struct Eurydice_dst_ref_mut_b5_x2_s
-{
-  Eurydice_dst_ref_mut_b5 fst;
-  Eurydice_dst_ref_mut_b5 snd;
-}
-Eurydice_dst_ref_mut_b5_x2;
+#define core_result_Ok 0
+#define core_result_Err 1
 
-void slice_array_f1(void);
-
-/**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types Eurydice_array_u8x4, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_b5_s
-{
-  const Eurydice_array_u8x4 *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_b5;
-
-void slice_array_f2(void);
+typedef uint8_t core_result_Result_10;
 
 /**
 A monomorphic instance of core.result.Result
@@ -109,7 +91,21 @@ typedef struct core_result_Result_90_s
 }
 core_result_Result_90;
 
-void slice_array_f3(void);
+extern core_result_Result_10
+core_array__impl_core__fmt__Debug_for_core__array__TryFromSliceError__fmt(
+  const core_array_TryFromSliceError *x0,
+  core_fmt_Formatter *x1
+);
+
+extern uint8_t core_clone_impls__impl_core__clone__Clone_for_u8__clone(const uint8_t *x0);
+
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
+
+void slice_array_f1(void);
 
 /**
 A monomorphic instance of slice_array.f4
@@ -117,6 +113,10 @@ with const generics
 - K= 4
 */
 void slice_array_f4_23(void);
+
+void slice_array_f2(void);
+
+void slice_array_f3(void);
 
 /**
 A monomorphic instance of slice_array.f5

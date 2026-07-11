@@ -7,14 +7,14 @@
 
 #include "result.h"
 
-result_S result_ident(result_S x)
-{
-  return x;
-}
-
 result_S result_mk1(uint32_t x, uint32_t y)
 {
   return result_S_s(result_S1, &result_S_s::U::case_S1, { x, y });
+}
+
+result_S result_ident(result_S x)
+{
+  return x;
 }
 
 void result_main(void)

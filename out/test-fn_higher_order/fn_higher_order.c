@@ -7,9 +7,35 @@
 
 #include "fn_higher_order.h"
 
-int32_t fn_higher_order_empty_ptr(int32_t (*f)(void))
+typedef struct const_size_t__x2_s
 {
-  return f();
+  const size_t *fst;
+  const size_t *snd;
+}
+const_size_t__x2;
+
+typedef struct const_int32_t__x2_s
+{
+  const int32_t *fst;
+  const int32_t *snd;
+}
+const_int32_t__x2;
+
+/**
+A monomorphic instance of fn_higher_order.sum_lst
+with const generics
+- N= 5
+*/
+size_t fn_higher_order_sum_lst_a5(const Eurydice_arr_2b *lst)
+{
+  size_t sum = (size_t)0U;
+  KRML_MAYBE_FOR5(i,
+    (size_t)0U,
+    (size_t)5U,
+    (size_t)1U,
+    size_t i0 = i;
+    sum += lst->data[i0];);
+  return sum + (size_t)5U;
 }
 
 int32_t fn_higher_order_more_sum_lst(const Eurydice_arr_bf *l)
@@ -22,6 +48,36 @@ int32_t fn_higher_order_more_sum_lst(const Eurydice_arr_bf *l)
     size_t i0 = i;
     sum += l->data[i0];);
   return sum;
+}
+
+int32_t fn_higher_order_empty_ptr(int32_t (*f)(void))
+{
+  return f();
+}
+
+void fn_higher_order_unit_empty_ptr(void (*f)(void))
+{
+  f();
+}
+
+/**
+A monomorphic instance of fn_higher_order.id
+with types size_t
+
+*/
+size_t fn_higher_order_id_60(size_t r)
+{
+  return r;
+}
+
+/**
+A monomorphic instance of fn_higher_order.id
+with types int32_t
+
+*/
+int32_t fn_higher_order_id_a8(int32_t r)
+{
+  return r;
 }
 
 /**
@@ -42,33 +98,6 @@ fn_higher_order_compose_cg_apply_4d(
 }
 
 /**
-A monomorphic instance of fn_higher_order.sum_lst
-with const generics
-- N= 5
-*/
-size_t fn_higher_order_sum_lst_a5(const Eurydice_arr_2b *lst)
-{
-  size_t sum = (size_t)0U;
-  KRML_MAYBE_FOR5(i,
-    (size_t)0U,
-    (size_t)5U,
-    (size_t)1U,
-    size_t i0 = i;
-    sum += lst->data[i0];);
-  return sum + (size_t)5U;
-}
-
-/**
-A monomorphic instance of fn_higher_order.id
-with types size_t
-
-*/
-size_t fn_higher_order_id_60(size_t r)
-{
-  return r;
-}
-
-/**
 A monomorphic instance of fn_higher_order.compose_cg_apply
 with types int32_t, int32_t, int32_t
 with const generics
@@ -84,30 +113,6 @@ fn_higher_order_compose_cg_apply_36(
   int32_t (*uu____0)(int32_t x0) = g;
   return uu____0(f(arg));
 }
-
-/**
-A monomorphic instance of fn_higher_order.id
-with types int32_t
-
-*/
-int32_t fn_higher_order_id_a8(int32_t r)
-{
-  return r;
-}
-
-typedef struct const_size_t__x2_s
-{
-  const size_t *fst;
-  const size_t *snd;
-}
-const_size_t__x2;
-
-typedef struct const_int32_t__x2_s
-{
-  const int32_t *fst;
-  const int32_t *snd;
-}
-const_int32_t__x2;
 
 void fn_higher_order_use_compose_cg(void)
 {
@@ -139,10 +144,5 @@ void fn_higher_order_use_compose_cg(void)
 void fn_higher_order_main(void)
 {
   fn_higher_order_use_compose_cg();
-}
-
-void fn_higher_order_unit_empty_ptr(void (*f)(void))
-{
-  f();
 }
 

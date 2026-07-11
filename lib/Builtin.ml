@@ -958,6 +958,9 @@ let null_mut =
 
 (* -------------------------------------------------------------------------- *)
 
+let builtin_lids_without_func =
+  [ range; range_to; range_from; slice_len; slice_copy; slice_split_at; slice_split_at_mut ]
+
 let builtin_funcs =
   [
     sizeof;

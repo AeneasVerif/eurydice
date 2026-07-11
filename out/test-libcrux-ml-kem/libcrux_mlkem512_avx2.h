@@ -18,35 +18,11 @@ extern "C" {
 #include "libcrux_core.h"
 
 /**
- Decapsulate ML-KEM 512
+ Validate a public key.
 
- Generates an [`MlKemSharedSecret`].
- The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
+ Returns `true` if valid, and `false` otherwise.
 */
-Eurydice_arr_ec
-libcrux_ml_kem_mlkem512_avx2_decapsulate(
-  const Eurydice_arr_ab0 *private_key,
-  const Eurydice_arr_d2 *ciphertext
-);
-
-/**
- Encapsulate ML-KEM 512
-
- Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
- The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
- bytes of `randomness`.
-*/
-tuple_ab
-libcrux_ml_kem_mlkem512_avx2_encapsulate(
-  const Eurydice_arr_03 *public_key,
-  Eurydice_arr_ec randomness
-);
-
-/**
- Generate ML-KEM 512 Key Pair
-*/
-libcrux_ml_kem_types_MlKemKeyPair_0d
-libcrux_ml_kem_mlkem512_avx2_generate_key_pair(Eurydice_arr_c7 randomness);
+bool libcrux_ml_kem_mlkem512_avx2_validate_public_key(const Eurydice_arr_03 *public_key);
 
 /**
  Validate a private key.
@@ -68,11 +44,35 @@ bool
 libcrux_ml_kem_mlkem512_avx2_validate_private_key_only(const Eurydice_arr_ab0 *private_key);
 
 /**
- Validate a public key.
-
- Returns `true` if valid, and `false` otherwise.
+ Generate ML-KEM 512 Key Pair
 */
-bool libcrux_ml_kem_mlkem512_avx2_validate_public_key(const Eurydice_arr_03 *public_key);
+libcrux_ml_kem_types_MlKemKeyPair_0d
+libcrux_ml_kem_mlkem512_avx2_generate_key_pair(Eurydice_arr_c7 randomness);
+
+/**
+ Encapsulate ML-KEM 512
+
+ Generates an ([`MlKem512Ciphertext`], [`MlKemSharedSecret`]) tuple.
+ The input is a reference to an [`MlKem512PublicKey`] and [`SHARED_SECRET_SIZE`]
+ bytes of `randomness`.
+*/
+tuple_ab
+libcrux_ml_kem_mlkem512_avx2_encapsulate(
+  const Eurydice_arr_03 *public_key,
+  Eurydice_arr_ec randomness
+);
+
+/**
+ Decapsulate ML-KEM 512
+
+ Generates an [`MlKemSharedSecret`].
+ The input is a reference to an [`MlKem512PrivateKey`] and an [`MlKem512Ciphertext`].
+*/
+Eurydice_arr_ec
+libcrux_ml_kem_mlkem512_avx2_decapsulate(
+  const Eurydice_arr_ab0 *private_key,
+  const Eurydice_arr_d2 *ciphertext
+);
 
 #if defined(__cplusplus)
 }

@@ -7,11 +7,6 @@
 
 #include "option.h"
 
-void option_main(void)
-{
-
-}
-
 /**
  Converts from `&Option<T>` to `Option<&T>`.
 
@@ -58,5 +53,10 @@ This function found in impl {option::S}
 core_option_Option_4d option_option_ref_b6(const core_option_Option_9e *self)
 {
   return core_option_as_ref_99_4f(self);
+}
+
+void option_main(void)
+{
+
 }
 

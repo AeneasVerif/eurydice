@@ -37,21 +37,7 @@ typedef struct core_marker_MetaSized__vtable__s
 }
 core_marker_MetaSized__vtable_;
 
-void dyn_trait_struct_type_main(void);
-
 typedef struct dyn_trait_struct_type_Trait__vtable__s dyn_trait_struct_type_Trait__vtable_;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types Eurydice_c_void_t,  dyn_trait_struct_type_Trait_{vtable}*
-
-*/
-typedef struct Eurydice_dst_ref_mut_06_s
-{
-  Eurydice_c_void_t *ptr;
-  dyn_trait_struct_type_Trait__vtable_ *meta;
-}
-Eurydice_dst_ref_mut_06;
 
 /**
 A monomorphic instance of Eurydice.dst_ref_shared
@@ -65,6 +51,18 @@ typedef struct Eurydice_dst_ref_shared_06_s
 }
 Eurydice_dst_ref_shared_06;
 
+/**
+A monomorphic instance of Eurydice.dst_ref_mut
+with types Eurydice_c_void_t,  dyn_trait_struct_type_Trait_{vtable}*
+
+*/
+typedef struct Eurydice_dst_ref_mut_06_s
+{
+  Eurydice_c_void_t *ptr;
+  dyn_trait_struct_type_Trait__vtable_ *meta;
+}
+Eurydice_dst_ref_mut_06;
+
 typedef struct dyn_trait_struct_type_Trait__vtable__s
 {
   size_t size;
@@ -76,6 +74,8 @@ typedef struct dyn_trait_struct_type_Trait__vtable__s
 dyn_trait_struct_type_Trait__vtable_;
 
 void dyn_trait_struct_type_use_trait(Eurydice_dst_ref_shared_06 t);
+
+void dyn_trait_struct_type_main(void);
 
 #if defined(__cplusplus)
 }

@@ -7,6 +7,13 @@
 
 #include "array2d.h"
 
+typedef struct const_bool__x2_s
+{
+  const bool *fst;
+  const bool *snd;
+}
+const_bool__x2;
+
 bool array2d_f(Eurydice_arr_ac x)
 {
   x.data[0U] = (KRML_CLITERAL(Eurydice_arr_a0){ .data = { 1U, 2U } });
@@ -22,13 +29,6 @@ bool array2d_f(Eurydice_arr_ac x)
     };
   return Eurydice_array_eq((size_t)4U, &x, &y, Eurydice_arr_a0);
 }
-
-typedef struct const_bool__x2_s
-{
-  const bool *fst;
-  const bool *snd;
-}
-const_bool__x2;
 
 void array2d_main(void)
 {

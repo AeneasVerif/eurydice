@@ -7,6 +7,74 @@
 
 #include "dst.h"
 
+typedef struct const_uint32_t__x2_s
+{
+  const uint32_t *fst;
+  const uint32_t *snd;
+}
+const_uint32_t__x2;
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_mut
+with types uint32_t
+with const generics
+- N= 4
+*/
+static Eurydice_dst_ref_mut_0c array_to_slice_mut_32(Eurydice_arr_e5 *a)
+{
+  Eurydice_dst_ref_mut_0c lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)4U;
+  return lit;
+}
+
+Eurydice_dst_ref_mut_b7 dst_mk(void)
+{
+  dst_T2_e9 x = { .header = (size_t)0U, .my_data = { .data = { 0U } } };
+  x.my_data.data[1U] = 2U;
+  return
+    (
+      KRML_CLITERAL(Eurydice_dst_ref_mut_b7){
+        .ptr = (dst_T2_be *)Eurydice_box_new(x, dst_T2_e9, dst_T2_e9 *),
+        .meta = (size_t)4U
+      }
+    );
+}
+
+void dst_check_regular_field(Eurydice_dst_ref_mut_2f x)
+{
+  /* original Rust expression is not an lvalue in C */
+  uint32_t lvalue = 0U;
+  const_uint32_t__x2 uu____0 = { .fst = &x.ptr->foo, .snd = &lvalue };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+}
+
+void dst_check_var_field(Eurydice_dst_ref_mut_2f x)
+{
+  /* original Rust expression is not an lvalue in C */
+  uint32_t lvalue = 0U;
+  const_uint32_t__x2
+  uu____0 = { .fst = &((const uint32_t *)x.ptr->my_data)[0U], .snd = &lvalue };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+}
+
+void dst_check_regular_field_ref(Eurydice_dst_ref_shared_2f x)
+{
+  /* original Rust expression is not an lvalue in C */
+  uint32_t lvalue = 0U;
+  const_uint32_t__x2 uu____0 = { .fst = &x.ptr->foo, .snd = &lvalue };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+}
+
+void dst_check_var_field_ref(Eurydice_dst_ref_shared_2f x)
+{
+  /* original Rust expression is not an lvalue in C */
+  uint32_t lvalue = 0U;
+  const_uint32_t__x2
+  uu____0 = { .fst = &((const uint32_t *)x.ptr->my_data)[0U], .snd = &lvalue };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+}
+
 Eurydice_dst_ref_mut_2f dst_alloc(void)
 {
   return
@@ -47,47 +115,6 @@ Eurydice_dst_ref_mut_bb dst_alloc3(void)
     );
 }
 
-typedef struct const_uint32_t__x2_s
-{
-  const uint32_t *fst;
-  const uint32_t *snd;
-}
-const_uint32_t__x2;
-
-void dst_check_regular_field(Eurydice_dst_ref_mut_2f x)
-{
-  /* original Rust expression is not an lvalue in C */
-  uint32_t lvalue = 0U;
-  const_uint32_t__x2 uu____0 = { .fst = &x.ptr->foo, .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
-}
-
-void dst_check_regular_field_ref(Eurydice_dst_ref_shared_2f x)
-{
-  /* original Rust expression is not an lvalue in C */
-  uint32_t lvalue = 0U;
-  const_uint32_t__x2 uu____0 = { .fst = &x.ptr->foo, .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
-}
-
-void dst_check_var_field(Eurydice_dst_ref_mut_2f x)
-{
-  /* original Rust expression is not an lvalue in C */
-  uint32_t lvalue = 0U;
-  const_uint32_t__x2
-  uu____0 = { .fst = &((const uint32_t *)x.ptr->my_data)[0U], .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
-}
-
-void dst_check_var_field_ref(Eurydice_dst_ref_shared_2f x)
-{
-  /* original Rust expression is not an lvalue in C */
-  uint32_t lvalue = 0U;
-  const_uint32_t__x2
-  uu____0 = { .fst = &((const uint32_t *)x.ptr->my_data)[0U], .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
-}
-
 void dst_check_var_field_ref3(Eurydice_dst_ref_shared_bb x)
 {
   /* original Rust expression is not an lvalue in C */
@@ -104,33 +131,6 @@ void dst_main3(void)
   dst_check_var_field_ref3((
       KRML_CLITERAL(Eurydice_dst_ref_shared_bb){ .ptr = uu____0->ptr, .meta = uu____0->meta }
     ));
-}
-
-Eurydice_dst_ref_mut_b7 dst_mk(void)
-{
-  dst_T2_e9 x = { .header = (size_t)0U, .my_data = { .data = { 0U } } };
-  x.my_data.data[1U] = 2U;
-  return
-    (
-      KRML_CLITERAL(Eurydice_dst_ref_mut_b7){
-        .ptr = (dst_T2_be *)Eurydice_box_new(x, dst_T2_e9, dst_T2_e9 *),
-        .meta = (size_t)4U
-      }
-    );
-}
-
-/**
-A monomorphic instance of Eurydice.array_to_slice_mut
-with types uint32_t
-with const generics
-- N= 4
-*/
-static Eurydice_dst_ref_mut_0c array_to_slice_mut_32(Eurydice_arr_e5 *a)
-{
-  Eurydice_dst_ref_mut_0c lit;
-  lit.ptr = a->data;
-  lit.meta = (size_t)4U;
-  return lit;
 }
 
 void dst_main4(void)

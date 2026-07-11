@@ -7,67 +7,12 @@
 
 #include "slice_array.h"
 
-/**
-A monomorphic instance of Eurydice.array_to_slice_mut
-with types Eurydice_arr uint8_t[[$4size_t]]
-with const generics
-- N= 4
-*/
-static Eurydice_dst_ref_mut_b5 array_to_slice_mut_4e(Eurydice_arr_ba *a)
-{
-  Eurydice_dst_ref_mut_b5 lit;
-  lit.ptr = a->data;
-  lit.meta = (size_t)4U;
-  return lit;
-}
-
 typedef struct const_uint8_t__x2_s
 {
   const uint8_t *fst;
   const uint8_t *snd;
 }
 const_uint8_t__x2;
-
-void slice_array_f1(void)
-{
-  Eurydice_arr_ba
-  x =
-    { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
-  Eurydice_dst_ref_mut_b5
-  y0 =
-    Eurydice_slice_split_at_mut(array_to_slice_mut_4e(&x),
-      (size_t)2U,
-      Eurydice_array_u8x4,
-      Eurydice_dst_ref_mut_b5_x2).fst;
-  y0.ptr->data[0U] = 1U;
-  uint8_t actual = x.data->data[0U];
-  uint8_t expected = 1U;
-  const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
-}
-
-void slice_array_f2(void)
-{
-  Eurydice_arr_ba
-  x =
-    { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
-  Eurydice_dst_ref_mut_b5
-  y0 =
-    Eurydice_slice_split_at_mut(array_to_slice_mut_4e(&x),
-      (size_t)2U,
-      Eurydice_array_u8x4,
-      Eurydice_dst_ref_mut_b5_x2).fst;
-  Eurydice_array_u8x4 z = y0.ptr[0U];
-  z.data[0U] = 1U;
-  uint8_t actual = x.data->data[0U];
-  uint8_t expected = 0U;
-  const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
-  /* original Rust expression is not an lvalue in C */
-  uint8_t lvalue = 1U;
-  const_uint8_t__x2 uu____1 = { .fst = z.data, .snd = &lvalue };
-  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
-}
 
 /**
 A monomorphic instance of Eurydice.array_to_slice_shared
@@ -78,6 +23,34 @@ with const generics
 static Eurydice_borrow_slice_u8 array_to_slice_shared_98(const Eurydice_array_u8x4 *a)
 {
   Eurydice_borrow_slice_u8 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)4U;
+  return lit;
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_mut
+with types uint8_t
+with const generics
+- N= 4
+*/
+static Eurydice_mut_borrow_slice_u8 array_to_slice_mut_98(Eurydice_array_u8x4 *a)
+{
+  Eurydice_mut_borrow_slice_u8 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)4U;
+  return lit;
+}
+
+/**
+A monomorphic instance of Eurydice.array_to_slice_mut
+with types Eurydice_arr uint8_t[[$4size_t]]
+with const generics
+- N= 4
+*/
+static Eurydice_dst_ref_mut_b5 array_to_slice_mut_4e(Eurydice_arr_ba *a)
+{
+  Eurydice_dst_ref_mut_b5 lit;
   lit.ptr = a->data;
   lit.meta = (size_t)4U;
   return lit;
@@ -125,18 +98,68 @@ static const Eurydice_array_u8x4 *unwrap_37_7f(core_result_Result_90 self)
   }
 }
 
-/**
-A monomorphic instance of Eurydice.array_to_slice_mut
-with types uint8_t
-with const generics
-- N= 4
-*/
-static Eurydice_mut_borrow_slice_u8 array_to_slice_mut_98(Eurydice_array_u8x4 *a)
+void slice_array_f1(void)
 {
-  Eurydice_mut_borrow_slice_u8 lit;
-  lit.ptr = a->data;
-  lit.meta = (size_t)4U;
-  return lit;
+  Eurydice_arr_ba
+  x =
+    { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
+  Eurydice_dst_ref_mut_b5
+  y0 =
+    Eurydice_slice_split_at_mut(array_to_slice_mut_4e(&x),
+      (size_t)2U,
+      Eurydice_array_u8x4,
+      Eurydice_dst_ref_mut_b5_x2).fst;
+  y0.ptr->data[0U] = 1U;
+  uint8_t actual = x.data->data[0U];
+  uint8_t expected = 1U;
+  const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+}
+
+/**
+A monomorphic instance of slice_array.f4
+with const generics
+- K= 4
+*/
+void slice_array_f4_23(void)
+{
+  Eurydice_arr_ba
+  x =
+    { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
+  Eurydice_dst_ref_mut_b5
+  y0 =
+    Eurydice_slice_split_at_mut(array_to_slice_mut_4e(&x),
+      (size_t)2U,
+      Eurydice_array_u8x4,
+      Eurydice_dst_ref_mut_b5_x2).fst;
+  y0.ptr->data[0U] = 1U;
+  uint8_t actual = x.data->data[0U];
+  uint8_t expected = 1U;
+  const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+}
+
+void slice_array_f2(void)
+{
+  Eurydice_arr_ba
+  x =
+    { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
+  Eurydice_dst_ref_mut_b5
+  y0 =
+    Eurydice_slice_split_at_mut(array_to_slice_mut_4e(&x),
+      (size_t)2U,
+      Eurydice_array_u8x4,
+      Eurydice_dst_ref_mut_b5_x2).fst;
+  Eurydice_array_u8x4 z = y0.ptr[0U];
+  z.data[0U] = 1U;
+  uint8_t actual = x.data->data[0U];
+  uint8_t expected = 0U;
+  const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
+  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  /* original Rust expression is not an lvalue in C */
+  uint8_t lvalue = 1U;
+  const_uint8_t__x2 uu____1 = { .fst = z.data, .snd = &lvalue };
+  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
 }
 
 void slice_array_f3(void)
@@ -181,29 +204,6 @@ void slice_array_f3(void)
   EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
   const_uint8_t__x2 uu____2 = { .fst = y1.data, .snd = y3.data };
   EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
-}
-
-/**
-A monomorphic instance of slice_array.f4
-with const generics
-- K= 4
-*/
-void slice_array_f4_23(void)
-{
-  Eurydice_arr_ba
-  x =
-    { .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } } };
-  Eurydice_dst_ref_mut_b5
-  y0 =
-    Eurydice_slice_split_at_mut(array_to_slice_mut_4e(&x),
-      (size_t)2U,
-      Eurydice_array_u8x4,
-      Eurydice_dst_ref_mut_b5_x2).fst;
-  y0.ptr->data[0U] = 1U;
-  uint8_t actual = x.data->data[0U];
-  uint8_t expected = 1U;
-  const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
 }
 
 /**

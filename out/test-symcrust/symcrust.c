@@ -10,20 +10,6 @@
 #include "internal/Eurydice.h"
 
 /**
-A monomorphic instance of Eurydice.slice_subslice_mut
-with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
-
-*/
-static Eurydice_mut_borrow_slice_u8
-slice_subslice_mut_c8(Eurydice_mut_borrow_slice_u8 s, core_ops_range_Range_87 r)
-{
-  return
-    (
-      KRML_CLITERAL(Eurydice_mut_borrow_slice_u8){ .ptr = s.ptr + r.start, .meta = r.end - r.start }
-    );
-}
-
-/**
 A monomorphic instance of Eurydice.array_to_slice_shared
 with types uint8_t
 with const generics
@@ -35,6 +21,20 @@ static Eurydice_borrow_slice_u8 array_to_slice_shared_98(const Eurydice_array_u8
   lit.ptr = a->data;
   lit.meta = (size_t)4U;
   return lit;
+}
+
+/**
+A monomorphic instance of Eurydice.slice_subslice_mut
+with types uint8_t, core_ops_range_Range size_t, Eurydice_derefed_slice uint8_t
+
+*/
+static Eurydice_mut_borrow_slice_u8
+slice_subslice_mut_c8(Eurydice_mut_borrow_slice_u8 s, core_ops_range_Range_87 r)
+{
+  return
+    (
+      KRML_CLITERAL(Eurydice_mut_borrow_slice_u8){ .ptr = s.ptr + r.start, .meta = r.end - r.start }
+    );
 }
 
 void

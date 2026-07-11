@@ -141,17 +141,27 @@ Supported options:|}
             ro
         | _ -> false);
 
-  let files =
-    Eurydice.Builtin.files
-    @ [
-        Eurydice.PreCleanup.merge
-          (List.map
-             (fun filename ->
-               let llbc = Eurydice.LoadLlbc.load_file filename in
-               Eurydice.AstOfLlbc.file_of_crate llbc)
-             !files);
-      ]
+  let input_files =
+    List.map
+      (fun filename ->
+        let llbc = Eurydice.LoadLlbc.load_file filename in
+        Eurydice.AstOfLlbc.file_of_crate llbc)
+      !files
   in
+
+  let source_order =
+    (* Register all the lids we can find, in the order given by Charon's
+     `crate.declarations`, so we can recover it at the end of the pipeline. *)
+    let lids =
+      [ [], "__eq"; [], "__neq"; Krml.Ast.tuple_lid ]
+      @ Eurydice.Builtin.builtin_lids_without_func
+      @ List.map Krml.Ast.lid_of_decl
+          (List.flatten (List.map snd (Eurydice.Builtin.files @ input_files)))
+    in
+    Eurydice.DeclOrder.record_lid_orders lids
+  in
+
+  let files = Eurydice.Builtin.files @ [ Eurydice.PreCleanup.merge input_files ] in
 
   if !O.no_const then
     Printf.printf "⚠️  Not using 'const' for pointer types\n";
@@ -201,7 +211,7 @@ Supported options:|}
   if errors then
     fail __FILE__ __LINE__;
   Eurydice.Logging.log "Phase2.11" "%a" pfiles files;
-  let files = Eurydice.Cleanup2.improve_names files in
+  let lid_origins, files = Eurydice.Cleanup2.improve_names files in
   let files = Eurydice.Cleanup2.recognize_asserts#visit_files () files in
   (* Temporary workaround until Aeneas supports nested loops *)
   let files = Eurydice.Cleanup2.inline_loops#visit_files () files in
@@ -286,7 +296,7 @@ Supported options:|}
   let files = Eurydice.Cleanup2.hoist#visit_files [] files in
   let files = Eurydice.Cleanup2.fixup_hoist#visit_files () files in
   Eurydice.Logging.log "Phase2.75" "%a" pfiles files;
-  let files = Eurydice.Cleanup2.globalize_global_locals files in
+  let files = Eurydice.Cleanup2.globalize_global_locals lid_origins files in
   Eurydice.Logging.log "Phase2.8" "%a" pfiles files;
   let files = Eurydice.Cleanup2.reconstruct_for_loops#visit_files () files in
   let files = Krml.Simplify.misc_cosmetic#visit_files () files in
@@ -378,6 +388,7 @@ Supported options:|}
             ds ))
       files
   in
+  let files = Eurydice.DeclOrder.sort_files source_order ~lid_origins ~datatype_map:map3 files in
   let files = AstToCStar.mk_files files c_name_map Idents.LidSet.empty macros in
 
   (* Uncomment to debug C* AST *)

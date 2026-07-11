@@ -15,12 +15,12 @@
 extern "C" {
 #endif
 
-void issue_107_main(void);
-
 /**
 This function found in impl {impl issue_107::Fun for issue_107::MyStruct}
 */
 uint8_t issue_107_f_0b(void);
+
+void issue_107_main(void);
 
 #if defined(__cplusplus)
 }

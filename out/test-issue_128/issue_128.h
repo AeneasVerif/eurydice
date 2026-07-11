@@ -15,6 +15,14 @@
 extern "C" {
 #endif
 
+/**
+A monomorphic instance of Eurydice.arr
+with types uint8_t
+with const generics
+- $0size_t
+*/
+typedef struct Eurydice_arr_bb_s { uint8_t data[0U]; } Eurydice_arr_bb;
+
 #define issue_128_E_A 1
 #define issue_128_E_B 2
 
@@ -25,14 +33,6 @@ void issue_128_fun_a(Eurydice_borrow_slice_u8 _x);
 void issue_128_fun_b(Eurydice_borrow_slice_u8 _x);
 
 void issue_128_use_enum(issue_128_E e, Eurydice_borrow_slice_u8 x);
-
-/**
-A monomorphic instance of Eurydice.arr
-with types uint8_t
-with const generics
-- $0size_t
-*/
-typedef struct Eurydice_arr_bb_s { uint8_t data[0U]; } Eurydice_arr_bb;
 
 void issue_128_main(void);
 

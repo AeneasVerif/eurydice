@@ -7,11 +7,6 @@
 
 #include "for.h"
 
-void for_main(void)
-{
-
-}
-
 uint8_t for_other(Eurydice_borrow_slice_u8 input)
 {
   for (int32_t i = 0; i < 5; i++)
@@ -23,5 +18,10 @@ uint8_t for_other(Eurydice_borrow_slice_u8 input)
     }
   }
   return input.ptr[0U];
+}
+
+void for_main(void)
+{
+
 }
 

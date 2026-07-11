@@ -16,6 +16,11 @@ extern "C" {
 #endif
 
 /**
+This function found in impl {impl core::marker::Destruct for closure_fn_cast::main::closure}
+*/
+void closure_fn_cast_main_closure_drop_glue_f6(void **_);
+
+/**
 This function found in impl {impl core::ops::function::Fn<(i32,), i32> for closure_fn_cast::main::closure}
 */
 int32_t closure_fn_cast_main_call_be(void *const *_, int32_t tupled_args);
@@ -33,11 +38,6 @@ int32_t closure_fn_cast_main_call_once_bf(int32_t _);
 int32_t closure_fn_cast_main_closure_as_fn(int32_t arg1);
 
 void closure_fn_cast_main(void);
-
-/**
-This function found in impl {impl core::marker::Destruct for closure_fn_cast::main::closure}
-*/
-void closure_fn_cast_main_closure_drop_glue_f6(void **_);
 
 #if defined(__cplusplus)
 }

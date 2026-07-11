@@ -50,14 +50,14 @@ typedef struct lvalue_ThreeWays_s
 }
 lvalue_ThreeWays;
 
-void lvalue_main(void);
-
-lvalue_Struct lvalue_use_struct(lvalue_ThreeWays s);
-
 /**
 This function found in impl {impl core::marker::Destruct for lvalue::ThreeWays}
 */
 void lvalue_ThreeWays_drop_glue_a5(lvalue_ThreeWays *_);
+
+lvalue_Struct lvalue_use_struct(lvalue_ThreeWays s);
+
+void lvalue_main(void);
 
 #if defined(__cplusplus)
 }

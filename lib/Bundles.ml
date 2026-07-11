@@ -353,75 +353,139 @@ let libraries (files : Krml.Ast.file list) : files =
           decls ))
     files
 
+let dependencies_of_decl decl =
+  begin
+    object (self)
+      inherit [_] reduce as super
+      method zero = []
+      method plus = ( @ )
+      method! visit_EQualified (under_ref, _) lid = [ lid, under_ref ]
+      method! visit_TQualified under_ref lid = [ lid, under_ref ]
+
+      method! visit_TApp under_ref lid ts =
+        [ lid, under_ref ] @ List.concat_map (self#visit_typ under_ref) ts
+
+      method! visit_TBuf _ t const = super#visit_TBuf true t const
+    end
+  end
+    #visit_decl
+    false decl
+
+let sort_key_of_decl = function
+  | DType (lid, _, _, _, Forward _) -> lid, `Forward
+  | decl -> lid_of_decl decl, `Regular
+
 let topological_sort decls =
-  let module T = struct
-    type color = White | Gray | Black
+  (* Stable topological sort using the Kahn algorithm, choosing the earliest
+     input declaration whenever several declarations have no unsatisfied local
+     dependencies. *)
+  let module Key = struct
+    type t = lident * [ `Forward | `Regular ]
+
+    let compare = compare
   end in
-  let open T in
-  let graph = Hashtbl.create 41 in
-  let is_forward = function
-    | DType (_, _, _, _, Forward _) -> `Forward
-    | _ -> `Regular
+  let module KeySet = Set.Make (Key) in
+  let module Ready = Set.Make (struct
+    type t = int * Key.t
+
+    let compare = compare
+  end) in
+  let nodes =
+    List.mapi (fun i decl -> i, sort_key_of_decl decl, decl, dependencies_of_decl decl) decls
   in
+  let node_info = Hashtbl.create 41 in
+  let successors = Hashtbl.create 41 in
+  let indegrees = Hashtbl.create 41 in
   List.iter
-    (fun decl ->
-      let deps =
-        begin
-          object (self)
-            inherit [_] reduce as super
-            method zero = []
-            method plus = ( @ )
-            method! visit_EQualified (under_ref, _) lid = [ lid, under_ref ]
-            method! visit_TQualified under_ref lid = [ lid, under_ref ]
-
-            method! visit_TApp under_ref lid ts =
-              [ lid, under_ref ] @ List.concat_map (self#visit_typ under_ref) ts
-
-            method! visit_TBuf _ t const = super#visit_TBuf true t const
-          end
-        end
-          #visit_decl
-          false decl
-      in
-      Hashtbl.add graph (lid_of_decl decl, is_forward decl) (ref White, deps, decl))
-    decls;
-
-  if L.has_logging "dfs" then
-    Hashtbl.iter
-      (fun (lid, forward) (_, deps, _) ->
-        let open Krml in
-        let open PrintAst.Ops in
-        KPrint.bprintf "%a(%s) depends on: %s\n" plid lid
-          (match forward with
-          | `Forward -> "forward"
-          | `Regular -> "regular")
-          (String.concat " ++ "
-             (List.map (fun (lid, b) -> KPrint.bsprintf "%a(%b)" plid lid b) deps)))
-      graph;
-
-  let stack = ref [] in
-  let rec dfs (lid, under_ref) =
-    let has_forward_decl = Hashtbl.mem graph (lid, `Forward) in
-    if Hashtbl.mem graph (lid, `Regular) || has_forward_decl then
+    (fun (i, key, decl, _) ->
+      Hashtbl.replace node_info key (i, decl);
+      Hashtbl.replace successors key (ref KeySet.empty);
+      Hashtbl.replace indegrees key (ref 0))
+    nodes;
+  let key_of_dependency (lid, under_ref) =
+    let has_forward_decl = Hashtbl.mem node_info (lid, `Forward) in
+    if Hashtbl.mem node_info (lid, `Regular) || has_forward_decl then
       let key =
         if has_forward_decl && under_ref then
           lid, `Forward
         else
           lid, `Regular
       in
-      let r, deps, decl = Hashtbl.find graph key in
-      match !r with
-      | Black -> ()
-      | Gray -> ()
-      | White ->
-          r := Gray;
-          List.iter dfs deps;
-          r := Black;
-          (* Krml.(PrintAst.Ops.(KPrint.bprintf "%a %b\n" plid lid under_ref)); *)
-          stack := decl :: !stack
+      if Hashtbl.mem node_info key then
+        Some key
+      else
+        None
+    else
+      None
   in
-  List.iter (fun decl -> dfs (lid_of_decl decl, false)) decls;
-  List.rev !stack
+  List.iter
+    (fun (_, key, _, deps) ->
+      let deps =
+        List.fold_left
+          (fun deps dep ->
+            match key_of_dependency dep with
+            | Some dep_key when dep_key <> key -> KeySet.add dep_key deps
+            | Some _ | None -> deps)
+          KeySet.empty deps
+      in
+      KeySet.iter
+        (fun dep_key ->
+          let dep_successors = Hashtbl.find successors dep_key in
+          if not (KeySet.mem key !dep_successors) then begin
+            dep_successors := KeySet.add key !dep_successors;
+            incr (Hashtbl.find indegrees key)
+          end)
+        deps)
+    nodes;
+  let ready =
+    List.fold_left
+      (fun ready (i, key, _, _) ->
+        match Hashtbl.find_opt node_info key with
+        | Some (current_i, _) when current_i = i && !(Hashtbl.find indegrees key) = 0 ->
+            Ready.add (i, key) ready
+        | Some _ | None -> ready)
+      Ready.empty nodes
+  in
+  let ready = ref ready in
+  let emitted = Hashtbl.create 41 in
+  let remaining = ref (Hashtbl.length node_info) in
+  let result = ref [] in
+  let first_remaining () =
+    List.find_map
+      (fun (i, key, _, _) ->
+        match Hashtbl.find_opt node_info key with
+        | Some (current_i, _) when current_i = i && not (Hashtbl.mem emitted key) -> Some (i, key)
+        | Some _ | None -> None)
+      nodes
+  in
+  while !remaining > 0 do
+    let i, key =
+      if Ready.is_empty !ready then
+        match
+          first_remaining ()
+        with
+        | Some node -> node
+        | None -> assert false
+      else
+        Ready.min_elt !ready
+    in
+    ready := Ready.remove (i, key) !ready;
+    if not (Hashtbl.mem emitted key) then begin
+      Hashtbl.add emitted key ();
+      decr remaining;
+      let _, decl = Hashtbl.find node_info key in
+      result := decl :: !result;
+      KeySet.iter
+        (fun successor_key ->
+          let indegree = Hashtbl.find indegrees successor_key in
+          decr indegree;
+          if !indegree = 0 then
+            let successor_i, _ = Hashtbl.find node_info successor_key in
+            ready := Ready.add (successor_i, successor_key) !ready)
+        !(Hashtbl.find successors key)
+    end
+  done;
+  List.rev !result
 
 module LidMap = Krml.Idents.LidMap
 

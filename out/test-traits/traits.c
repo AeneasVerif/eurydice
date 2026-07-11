@@ -8,6 +8,21 @@
 #include "traits.h"
 
 /**
+A monomorphic instance of Eurydice.array_to_subslice_shared
+with types traits_Foo, core_ops_range_Range size_t, Eurydice_derefed_slice traits_Foo
+with const generics
+- N= 2
+*/
+static Eurydice_dst_ref_shared_42
+array_to_subslice_shared_7d(const Eurydice_arr_0e *a, core_ops_range_Range_87 r)
+{
+  return
+    (
+      KRML_CLITERAL(Eurydice_dst_ref_shared_42){ .ptr = a->data + r.start, .meta = r.end - r.start }
+    );
+}
+
+/**
 This function found in impl {impl traits::ToInt for traits::Foo}
 */
 uint32_t traits_to_int_62(const traits_Foo *self)
@@ -38,21 +53,6 @@ uint32_t traits_to_int_db(const Eurydice_dst_ref_shared_42 *self)
 {
   uint32_t uu____0 = traits_to_int_62(&self->ptr[0U]);
   return uu____0 * traits_to_int_62(&self->ptr[1U]);
-}
-
-/**
-A monomorphic instance of Eurydice.array_to_subslice_shared
-with types traits_Foo, core_ops_range_Range size_t, Eurydice_derefed_slice traits_Foo
-with const generics
-- N= 2
-*/
-static Eurydice_dst_ref_shared_42
-array_to_subslice_shared_7d(const Eurydice_arr_0e *a, core_ops_range_Range_87 r)
-{
-  return
-    (
-      KRML_CLITERAL(Eurydice_dst_ref_shared_42){ .ptr = a->data + r.start, .meta = r.end - r.start }
-    );
 }
 
 void traits_main(void)

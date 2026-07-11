@@ -7,6 +7,29 @@
 
 #include "closure.h"
 
+typedef struct const_size_t__x2_s
+{
+  const size_t *fst;
+  const size_t *snd;
+}
+const_size_t__x2;
+
+/**
+This function found in impl {impl core::marker::Destruct for closure::f::closure<'_0>}
+*/
+void closure_f_closure_drop_glue_03(const Eurydice_arr_58 **_)
+{
+
+}
+
+/**
+This function found in impl {impl core::marker::Destruct for closure::f::closure::closure<'_0, '_1>}
+*/
+void closure_f_closure_closure_drop_glue_a5(closure_f_closure_closure *_)
+{
+
+}
+
 /**
 This function found in impl {impl core::ops::function::FnMut<(usize,), usize> for closure::f::closure::closure<'_0, '_1>}
 */
@@ -60,13 +83,6 @@ Eurydice_arr_2d closure_f(void)
   return a;
 }
 
-typedef struct const_size_t__x2_s
-{
-  const size_t *fst;
-  const size_t *snd;
-}
-const_size_t__x2;
-
 void closure_main(void)
 {
   /* original Rust expression is not an lvalue in C */
@@ -75,21 +91,5 @@ void closure_main(void)
   size_t expected = (size_t)0U;
   const_size_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
   EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
-}
-
-/**
-This function found in impl {impl core::marker::Destruct for closure::f::closure::closure<'_0, '_1>}
-*/
-void closure_f_closure_closure_drop_glue_a5(closure_f_closure_closure *_)
-{
-
-}
-
-/**
-This function found in impl {impl core::marker::Destruct for closure::f::closure<'_0>}
-*/
-void closure_f_closure_drop_glue_03(const Eurydice_arr_58 **_)
-{
-
 }
 
