@@ -99,13 +99,8 @@ Supported options:|}
     Monomorphization.NameGen.short_names := true;
     Monomorphization.NameGen.distinguished := Eurydice.Cleanup3.distinguished_names;
     AstToCStar.no_return_type_lids :=
-      [
-        [ "Eurydice" ], "slice_index_shared";
-        [ "Eurydice" ], "slice_index_mut";
-        [ "Eurydice" ], "slice_len";
-        [ "Eurydice" ], "slice_copy";
-        [ "Eurydice" ], "array_eq";
-      ]);
+      Eurydice.Builtin.
+        [ slice_index_shared.name; slice_index_mut.name; slice_len; slice_copy; array_eq.name ]);
 
   (* Some logic for more precisely tracking readonly functions, so as to remove
      excessive uu__ variables. *)
@@ -129,26 +124,9 @@ Supported options:|}
       fun lid t ->
         let ret_t, _ = Helpers.flatten_arrow t in
         is_readonly_pure_lid_ lid t
+        || Krml.Idents.LidSet.mem lid Eurydice.Builtin.readonly_builtin_lids
         || (match lid with
           | "libcrux_intrinsics" :: _, _ -> ret_t <> TUnit
-          | [ "Eurydice" ], "vec_len"
-          | [ "Eurydice" ], "vec_index"
-          | [ "Eurydice" ], "slice_index_shared"
-          | [ "Eurydice" ], "slice_index_mut"
-          | [ "Eurydice" ], "slice_len"
-          | [ "Eurydice" ], "slice_to_ref_array"
-          | [ "Eurydice" ], "slice_to_ref_array2"
-          | [ "Eurydice" ], "slice_subslice_shared"
-          | [ "Eurydice" ], "slice_subslice_mut"
-          | [ "Eurydice" ], "slice_subslice_to_shared"
-          | [ "Eurydice" ], "slice_subslice_to_mut"
-          | [ "Eurydice" ], "slice_subslice_from_shared"
-          | [ "Eurydice" ], "slice_subslice_from_mut"
-          | [ "Eurydice" ], "array_to_slice_shared"
-          | [ "Eurydice" ], "array_to_slice_mut"
-          | [ "Eurydice" ], "array_to_subslice_shared"
-          | [ "Eurydice" ], "array_to_subslice_mut"
-          | [ "Eurydice" ], "array_repeat"
           | [ "core"; "mem" ], "size_of"
           | "core" :: "slice" :: _, "as_mut_ptr"
           | "core" :: "num" :: _, ("rotate_left" | "from_le_bytes" | "wrapping_add") -> true

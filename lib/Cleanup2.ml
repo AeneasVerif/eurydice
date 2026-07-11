@@ -1285,6 +1285,7 @@ let remove_assign_return =
   end
 
 let bonus_cleanups =
+  let module B = Builtin in
   let open Krml in
   object (self)
     inherit [_] map as super
@@ -1292,10 +1293,10 @@ let bonus_cleanups =
 
     method! visit_lident _ lid =
       match lid with
-      | [ "core"; "slice"; "{[T]}" ], "len" -> [ "Eurydice" ], "slice_len"
-      | [ "core"; "slice"; "{[T]}" ], "copy_from_slice" -> [ "Eurydice" ], "slice_copy"
-      | [ "core"; "slice"; "{[T]}" ], "split_at" -> [ "Eurydice" ], "slice_split_at"
-      | [ "core"; "slice"; "{[T]}" ], "split_at_mut" -> [ "Eurydice" ], "slice_split_at_mut"
+      | [ "core"; "slice"; "{[T]}" ], "len" -> B.slice_len
+      | [ "core"; "slice"; "{[T]}" ], "copy_from_slice" -> B.slice_copy
+      | [ "core"; "slice"; "{[T]}" ], "split_at" -> B.slice_split_at
+      | [ "core"; "slice"; "{[T]}" ], "split_at_mut" -> B.slice_split_at_mut
       | _ -> lid
 
     (* { f = e; ... }.f ~~> e
