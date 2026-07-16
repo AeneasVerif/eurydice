@@ -1097,24 +1097,30 @@ let improve_names files =
             Krml.Bundle.Lid (fst (Hashtbl.find renamed lid))
         | x -> x)
       !Krml.Options.static_header;
-  object (self)
-    inherit [_] map
+  let lid_origins = Hashtbl.create 41 in
+  Hashtbl.iter (fun from_lid (to_lid, _) -> Hashtbl.add lid_origins to_lid from_lid) renamed;
+  let files =
+    object (self)
+      inherit [_] map
 
-    method! visit_DFunction env cc flags n_cgs n t lid bs e =
-      match Hashtbl.find_opt renamed lid with
-      | Some (lid, trait_impl) ->
-          let comment = Krml.KPrint.bsprintf "This function found in impl %s" trait_impl in
-          DFunction (cc, flags @ [ Comment comment ], n_cgs, n, t, lid, bs, self#visit_expr_w env e)
-      | None -> DFunction (cc, flags, n_cgs, n, t, lid, bs, self#visit_expr_w env e)
+      method! visit_DFunction env cc flags n_cgs n t lid bs e =
+        match Hashtbl.find_opt renamed lid with
+        | Some (lid, trait_impl) ->
+            let comment = Krml.KPrint.bsprintf "This function found in impl %s" trait_impl in
+            DFunction
+              (cc, flags @ [ Comment comment ], n_cgs, n, t, lid, bs, self#visit_expr_w env e)
+        | None -> DFunction (cc, flags, n_cgs, n, t, lid, bs, self#visit_expr_w env e)
 
-    method! visit_EQualified _ lid =
-      EQualified
-        (match Hashtbl.find_opt renamed lid with
-        | Some (lid, _) -> lid
-        | None -> lid)
-  end
-    #visit_files
-    () files
+      method! visit_EQualified _ lid =
+        EQualified
+          (match Hashtbl.find_opt renamed lid with
+          | Some (lid, _) -> lid
+          | None -> lid)
+    end
+      #visit_files
+      () files
+  in
+  lid_origins, files
 
 let recognize_asserts =
   object (_self)
@@ -1285,6 +1291,7 @@ let remove_assign_return =
   end
 
 let bonus_cleanups =
+  let module B = Builtin in
   let open Krml in
   object (self)
     inherit [_] map as super
@@ -1292,10 +1299,10 @@ let bonus_cleanups =
 
     method! visit_lident _ lid =
       match lid with
-      | [ "core"; "slice"; "{[T]}" ], "len" -> [ "Eurydice" ], "slice_len"
-      | [ "core"; "slice"; "{[T]}" ], "copy_from_slice" -> [ "Eurydice" ], "slice_copy"
-      | [ "core"; "slice"; "{[T]}" ], "split_at" -> [ "Eurydice" ], "slice_split_at"
-      | [ "core"; "slice"; "{[T]}" ], "split_at_mut" -> [ "Eurydice" ], "slice_split_at_mut"
+      | [ "core"; "slice"; "{[T]}" ], "len" -> B.slice_len
+      | [ "core"; "slice"; "{[T]}" ], "copy_from_slice" -> B.slice_copy
+      | [ "core"; "slice"; "{[T]}" ], "split_at" -> B.slice_split_at
+      | [ "core"; "slice"; "{[T]}" ], "split_at_mut" -> B.slice_split_at_mut
       | _ -> lid
 
     (* { f = e; ... }.f ~~> e
@@ -1443,7 +1450,27 @@ let inline_loops =
 (** A better version of hoist (than [Krml.Simplify.hoist]), also work for [DGlobal]. *)
 let hoist =
   object
-    inherit Krml.Simplify.hoist
+    inherit Krml.Simplify.hoist as super
+
+    method! visit_files loc files =
+      (* Karamel's hoist fills [field_types] while visiting [DType]
+         declarations, then consults it when hoisting struct literals. Eurydice
+         also hoists [DGlobal] initializers, so collect those field types before
+         the normal traversal without changing declaration order. *)
+      List.iter
+        (fun (_, decls) ->
+          List.iter
+            (function
+              | DType (name, _, _, _, Flat fields) ->
+                  List.iter
+                    (function
+                      | Some f, (t, _) -> Hashtbl.replace field_types (name, f) t
+                      | _ -> ())
+                    fields
+              | _ -> ())
+            decls)
+        files;
+      super#visit_files loc files
 
     method! visit_DGlobal loc flags name n ret expr =
       let loc = Krml.Loc.(InTop name :: loc) in
@@ -1473,9 +1500,10 @@ let fixup_hoist =
      eN[v1/VAL_local_1; v2/VAL_local_2; ...; vN-1/VAL_local_(N-1)]; T VAL = e;]
 
     Notably, the locals should be renamed to avoid potential naming conflicts. *)
-let globalize_global_locals files =
+let globalize_global_locals lid_origins files =
   let mapper = function
     | DGlobal (flags, name, n_cgs, ty, expr) ->
+        let global_name = name in
         let rec decompose_expr id info_acc expr =
           match expr.node with
           | ELet (_, e1, e2) ->
@@ -1504,14 +1532,15 @@ let globalize_global_locals files =
           else
             NameSet.empty
         in
-        let make_decl (name, expr) =
+        let make_decl (local_name, expr) =
+          DeclOrder.add_origin lid_origins ~from_lid:global_name ~to_lid:local_name;
           let flags =
-            if NameSet.mem name no_priv_names then
+            if NameSet.mem local_name no_priv_names then
               []
             else
               [ Krml.Common.Private ]
           in
-          DGlobal (flags, name, n_cgs, expr.typ, expr)
+          DGlobal (flags, local_name, n_cgs, expr.typ, expr)
         in
         List.map make_decl info @ [ DGlobal (flags, name, n_cgs, ty, expr) ]
     | decl -> [ decl ]

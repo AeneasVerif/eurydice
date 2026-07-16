@@ -15,18 +15,29 @@
 extern "C" {
 #endif
 
-typedef struct castunsize_T_s
+/**
+A monomorphic instance of Eurydice.dst_ref_shared
+with types uint32_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_shared_0c_s
 {
-  uint32_t foo;
-  uint32_t my_data[];
+  const uint32_t *ptr;
+  size_t meta;
 }
-castunsize_T;
+Eurydice_dst_ref_shared_0c;
 
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
+/**
+A monomorphic instance of Eurydice.dst_ref_mut
+with types uint32_t, size_t
 
-typedef uint8_t core_panicking_AssertKind;
+*/
+typedef struct Eurydice_dst_ref_mut_0c_s
+{
+  uint32_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_mut_0c;
 
 /**
 A monomorphic instance of Eurydice.arr
@@ -35,6 +46,20 @@ with const generics
 - $4size_t
 */
 typedef struct Eurydice_arr_e5_s { uint32_t data[4U]; } Eurydice_arr_e5;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types uint32_t
+with const generics
+- $5size_t
+*/
+typedef struct Eurydice_arr_fb_s { uint32_t data[5U]; } Eurydice_arr_fb;
+
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
 
 /**
 A monomorphic instance of castunsize.S
@@ -49,54 +74,6 @@ typedef struct castunsize_S_e9_s
 castunsize_S_e9;
 
 /**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types castunsize_T, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_8b_s
-{
-  const castunsize_T *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_8b;
-
-/**
-A monomorphic instance of Eurydice.dst_ref_shared
-with types uint32_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_shared_0c_s
-{
-  const uint32_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_shared_0c;
-
-void castunsize_main1(void);
-
-/**
-A monomorphic instance of Eurydice.dst_ref_mut
-with types uint32_t, size_t
-
-*/
-typedef struct Eurydice_dst_ref_mut_0c_s
-{
-  uint32_t *ptr;
-  size_t meta;
-}
-Eurydice_dst_ref_mut_0c;
-
-void castunsize_main3(void);
-
-/**
-A monomorphic instance of Eurydice.arr
-with types uint32_t
-with const generics
-- $5size_t
-*/
-typedef struct Eurydice_arr_fb_s { uint32_t data[5U]; } Eurydice_arr_fb;
-
-/**
 A monomorphic instance of castunsize.S
 with types Eurydice_arr_fb
 
@@ -108,12 +85,35 @@ typedef struct castunsize_S_b9_s
 }
 castunsize_S_b9;
 
+typedef struct castunsize_T_s
+{
+  uint32_t foo;
+  uint32_t my_data[];
+}
+castunsize_T;
+
+/**
+A monomorphic instance of Eurydice.dst_ref_shared
+with types castunsize_T, size_t
+
+*/
+typedef struct Eurydice_dst_ref_shared_8b_s
+{
+  const castunsize_T *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_shared_8b;
+
+void castunsize_main1(void);
+
 /**
 A monomorphic instance of castunsize.main2
 with const generics
 - K= 5
 */
 void castunsize_main2_a5(void);
+
+void castunsize_main3(void);
 
 /**
 A monomorphic instance of castunsize.main4

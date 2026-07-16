@@ -17,7 +17,34 @@ extern "C" {
 
 typedef struct Eurydice_arr_58_s Eurydice_arr_58;
 
+/**
+A monomorphic instance of Eurydice.arr
+with types size_t
+with const generics
+- $1size_t
+*/
+typedef struct Eurydice_arr_58_s { size_t data[1U]; } Eurydice_arr_58;
+
+/**
+A monomorphic instance of Eurydice.arr
+with types Eurydice_arr_58
+with const generics
+- $1size_t
+*/
+typedef struct Eurydice_arr_2d_s { Eurydice_arr_58 data[1U]; } Eurydice_arr_2d;
+
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
+
 typedef const Eurydice_arr_58 *closure_f_closure;
+
+/**
+This function found in impl {impl core::marker::Destruct for closure::f::closure<'_0>}
+*/
+void closure_f_closure_drop_glue_03(const Eurydice_arr_58 **_);
 
 typedef struct closure_f_closure_closure_s
 {
@@ -27,12 +54,9 @@ typedef struct closure_f_closure_closure_s
 closure_f_closure_closure;
 
 /**
-A monomorphic instance of Eurydice.arr
-with types size_t
-with const generics
-- $1size_t
+This function found in impl {impl core::marker::Destruct for closure::f::closure::closure<'_0, '_1>}
 */
-typedef struct Eurydice_arr_58_s { size_t data[1U]; } Eurydice_arr_58;
+void closure_f_closure_closure_drop_glue_a5(closure_f_closure_closure *_);
 
 /**
 This function found in impl {impl core::ops::function::FnMut<(usize,), usize> for closure::f::closure::closure<'_0, '_1>}
@@ -54,33 +78,9 @@ This function found in impl {impl core::ops::function::FnOnce<(usize,), [usize; 
 */
 Eurydice_arr_58 closure_f_call_once_b7(const Eurydice_arr_58 *_, size_t _0);
 
-/**
-A monomorphic instance of Eurydice.arr
-with types Eurydice_arr_58
-with const generics
-- $1size_t
-*/
-typedef struct Eurydice_arr_2d_s { Eurydice_arr_58 data[1U]; } Eurydice_arr_2d;
-
 Eurydice_arr_2d closure_f(void);
 
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
-
 void closure_main(void);
-
-/**
-This function found in impl {impl core::marker::Destruct for closure::f::closure::closure<'_0, '_1>}
-*/
-void closure_f_closure_closure_drop_glue_a5(closure_f_closure_closure *_);
-
-/**
-This function found in impl {impl core::marker::Destruct for closure::f::closure<'_0>}
-*/
-void closure_f_closure_drop_glue_03(const Eurydice_arr_58 **_);
 
 #if defined(__cplusplus)
 }

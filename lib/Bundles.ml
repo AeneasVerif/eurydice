@@ -353,75 +353,166 @@ let libraries (files : Krml.Ast.file list) : files =
           decls ))
     files
 
-let topological_sort decls =
-  let module T = struct
-    type color = White | Gray | Black
-  end in
-  let open T in
-  let graph = Hashtbl.create 41 in
-  let is_forward = function
-    | DType (_, _, _, _, Forward _) -> `Forward
-    | _ -> `Regular
-  in
-  List.iter
-    (fun decl ->
-      let deps =
-        begin
-          object (self)
-            inherit [_] reduce as super
-            method zero = []
-            method plus = ( @ )
-            method! visit_EQualified (under_ref, _) lid = [ lid, under_ref ]
-            method! visit_TQualified under_ref lid = [ lid, under_ref ]
+(* Stable topological sort using the Kahn algorithm, choosing the earliest
+   input value whenever several values have no specific ordering constraints. *)
+module TopologicalSort (Item : sig
+  type t
+  type key
 
-            method! visit_TApp under_ref lid ts =
-              [ lid, under_ref ] @ List.concat_map (self#visit_typ under_ref) ts
+  val key_of : t -> key
+  val dependencies : (key -> bool) -> t -> key list
+end) =
+struct
+  type key_set = (Item.key, unit) Hashtbl.t
+  type node = { i : int; value : Item.t; successors : key_set; indegree : int ref }
+  type graph = (Item.key, node) Hashtbl.t
 
-            method! visit_TBuf _ t const = super#visit_TBuf true t const
-          end
-        end
-          #visit_decl
-          false decl
+  let create_key_set () : key_set = Hashtbl.create 7
+
+  let add_key_to_set set key =
+    if Hashtbl.mem set key then
+      false
+    else begin
+      Hashtbl.add set key ();
+      true
+    end
+
+  let build_graph (values : Item.t list) : graph =
+    let graph = Hashtbl.create 41 in
+    let nodes = List.map (fun value -> Item.key_of value, value) values in
+    List.iteri
+      (fun i (key, value) ->
+        Hashtbl.replace graph key { i; value; successors = create_key_set (); indegree = ref 0 })
+      nodes;
+    List.iter
+      (fun (key, value) ->
+        let key_exists = Hashtbl.mem graph in
+        let dep_keys = create_key_set () in
+        List.iter
+          (fun dep_key ->
+            if dep_key <> key && key_exists dep_key then
+              ignore (add_key_to_set dep_keys dep_key))
+          (Item.dependencies key_exists value);
+        let node = Hashtbl.find graph key in
+        Hashtbl.iter
+          (fun dep_key () ->
+            let dep_node = Hashtbl.find graph dep_key in
+            if add_key_to_set dep_node.successors key then
+              incr node.indegree)
+          dep_keys)
+      nodes;
+    graph
+
+  let sort_graph (graph : graph) : Item.t list =
+    let module ReadySet = Set.Make (struct
+      type t = int * Item.key
+
+      let compare = compare
+    end) in
+    let first_remaining () : Item.key =
+      (* Find the remaining node with the smallest rank. *)
+      let _, key =
+        Option.get
+          (Hashtbl.fold
+             (fun key node best ->
+               match best with
+               | Some rank -> Some (min rank (node.i, key))
+               | None -> Some (node.i, key))
+             graph None)
       in
-      Hashtbl.add graph (lid_of_decl decl, is_forward decl) (ref White, deps, decl))
-    decls;
-
-  if L.has_logging "dfs" then
-    Hashtbl.iter
-      (fun (lid, forward) (_, deps, _) ->
-        let open Krml in
-        let open PrintAst.Ops in
-        KPrint.bprintf "%a(%s) depends on: %s\n" plid lid
-          (match forward with
-          | `Forward -> "forward"
-          | `Regular -> "regular")
-          (String.concat " ++ "
-             (List.map (fun (lid, b) -> KPrint.bsprintf "%a(%b)" plid lid b) deps)))
-      graph;
-
-  let stack = ref [] in
-  let rec dfs (lid, under_ref) =
-    let has_forward_decl = Hashtbl.mem graph (lid, `Forward) in
-    if Hashtbl.mem graph (lid, `Regular) || has_forward_decl then
+      key
+    in
+    (* Keep a priority queue of nodes that have no ordering constraints left. *)
+    let ready =
+      Hashtbl.fold
+        (fun key node ready ->
+          if !(node.indegree) = 0 then
+            ReadySet.add (node.i, key) ready
+          else
+            ready)
+        graph ReadySet.empty
+    in
+    let ready = ref ready in
+    let result = ref [] in
+    while Hashtbl.length graph > 0 do
       let key =
-        if has_forward_decl && under_ref then
-          lid, `Forward
+        if ReadySet.is_empty !ready then
+          (* If all nodes have ordering constraints, there's a cycle. We emit the smallest index node. *)
+          first_remaining ()
         else
-          lid, `Regular
+          let k = ReadySet.min_elt !ready in
+          ready := ReadySet.remove k !ready;
+          snd k
       in
-      let r, deps, decl = Hashtbl.find graph key in
-      match !r with
-      | Black -> ()
-      | Gray -> ()
-      | White ->
-          r := Gray;
-          List.iter dfs deps;
-          r := Black;
-          (* Krml.(PrintAst.Ops.(KPrint.bprintf "%a %b\n" plid lid under_ref)); *)
-          stack := decl :: !stack
-  in
-  List.iter (fun decl -> dfs (lid_of_decl decl, false)) decls;
-  List.rev !stack
+      let node = Hashtbl.find graph key in
+      result := node.value :: !result;
+      Hashtbl.remove graph key;
+      Hashtbl.iter
+        (fun successor_key () ->
+          match Hashtbl.find_opt graph successor_key with
+          | None -> ()
+          | Some successor ->
+              decr successor.indegree;
+              if !(successor.indegree) = 0 then
+                ready := ReadySet.add (successor.i, successor_key) !ready)
+        node.successors
+    done;
+    List.rev !result
+
+  let sort (values : Item.t list) : Item.t list =
+    let graph = build_graph values in
+    sort_graph graph
+end
+
+module DeclTopologicalSort = TopologicalSort (struct
+  type t = decl
+  type key = lident * [ `Forward | `Regular ]
+
+  let key_of decl : key =
+    let direction =
+      match decl with
+      | DType (_, _, _, _, Forward _) -> `Forward
+      | _ -> `Regular
+    in
+    lid_of_decl decl, direction
+
+  let dependencies (key_exists : key -> bool) (decl : t) : key list =
+    (* Treat a forward declaration as a dependency of its regular definition. *)
+    let own_forward_dependency =
+      match key_of decl with
+      | lid, `Regular -> [ lid, `Forward ]
+      | _, `Forward -> []
+    in
+    let key_for_dep lid under_ref : key =
+      let forward_key = lid, `Forward in
+      let regular_key = lid, `Regular in
+      if key_exists forward_key && under_ref then
+        forward_key
+      else
+        regular_key
+    in
+    let deps =
+      begin
+        object (self)
+          inherit [_] reduce as super
+          method zero = []
+          method plus = ( @ )
+          method! visit_EQualified (under_ref, _) lid = [ key_for_dep lid under_ref ]
+          method! visit_TQualified under_ref lid = [ key_for_dep lid under_ref ]
+
+          method! visit_TApp under_ref lid ts =
+            key_for_dep lid under_ref :: List.concat_map (self#visit_typ under_ref) ts
+
+          method! visit_TBuf _ t const = super#visit_TBuf true t const
+        end
+      end
+        #visit_decl
+        false decl
+    in
+    deps @ own_forward_dependency
+end)
+
+let topological_sort decls = DeclTopologicalSort.sort decls
 
 module LidMap = Krml.Idents.LidMap
 

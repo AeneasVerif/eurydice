@@ -7,15 +7,15 @@
 
 #include "result.h"
 
-result_S result_ident(result_S x)
-{
-  return x;
-}
-
 result_S result_mk1(uint32_t x, uint32_t y)
 {
   return
     (KRML_CLITERAL(result_S){ .tag = result_S1, .val = { .case_S1 = { .x1 = x, .y1 = y } } });
+}
+
+result_S result_ident(result_S x)
+{
+  return x;
 }
 
 void result_main(void)

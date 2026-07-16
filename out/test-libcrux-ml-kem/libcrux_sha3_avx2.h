@@ -69,42 +69,6 @@ libcrux_sha3_avx2_x4_incremental_shake128_absorb_final(
 );
 
 /**
- Squeeze three blocks
-*/
-void
-libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
-  Eurydice_arr_c40 *s,
-  Eurydice_mut_borrow_slice_u8 out0,
-  Eurydice_mut_borrow_slice_u8 out1,
-  Eurydice_mut_borrow_slice_u8 out2,
-  Eurydice_mut_borrow_slice_u8 out3
-);
-
-/**
- Squeeze another block
-*/
-void
-libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
-  Eurydice_arr_c40 *s,
-  Eurydice_mut_borrow_slice_u8 out0,
-  Eurydice_mut_borrow_slice_u8 out1,
-  Eurydice_mut_borrow_slice_u8 out2,
-  Eurydice_mut_borrow_slice_u8 out3
-);
-
-/**
- Squeeze five blocks
-*/
-void
-libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_five_blocks(
-  Eurydice_arr_c40 *s,
-  Eurydice_mut_borrow_slice_u8 out0,
-  Eurydice_mut_borrow_slice_u8 out1,
-  Eurydice_mut_borrow_slice_u8 out2,
-  Eurydice_mut_borrow_slice_u8 out3
-);
-
-/**
  Absorb
 */
 void
@@ -133,6 +97,42 @@ libcrux_sha3_avx2_x4_incremental_shake256_squeeze_first_block(
 */
 void
 libcrux_sha3_avx2_x4_incremental_shake256_squeeze_next_block(
+  Eurydice_arr_c40 *s,
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
+);
+
+/**
+ Squeeze three blocks
+*/
+void
+libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_three_blocks(
+  Eurydice_arr_c40 *s,
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
+);
+
+/**
+ Squeeze five blocks
+*/
+void
+libcrux_sha3_avx2_x4_incremental_shake128_squeeze_first_five_blocks(
+  Eurydice_arr_c40 *s,
+  Eurydice_mut_borrow_slice_u8 out0,
+  Eurydice_mut_borrow_slice_u8 out1,
+  Eurydice_mut_borrow_slice_u8 out2,
+  Eurydice_mut_borrow_slice_u8 out3
+);
+
+/**
+ Squeeze another block
+*/
+void
+libcrux_sha3_avx2_x4_incremental_shake128_squeeze_next_block(
   Eurydice_arr_c40 *s,
   Eurydice_mut_borrow_slice_u8 out0,
   Eurydice_mut_borrow_slice_u8 out1,

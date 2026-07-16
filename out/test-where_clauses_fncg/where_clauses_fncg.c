@@ -7,6 +7,13 @@
 
 #include "where_clauses_fncg.h"
 
+typedef struct const_uint64_t__x2_s
+{
+  const uint64_t *fst;
+  const uint64_t *snd;
+}
+const_uint64_t__x2;
+
 /**
 This function found in impl {impl where_clauses_fncg::Foo<K> for u64}
 */
@@ -17,6 +24,20 @@ with const generics
 - L= 4
 */
 uint64_t where_clauses_fncg_bar_16_f4(Eurydice_arr_07 x, Eurydice_arr_34 _)
+{
+  return (uint64_t)(uint32_t)x.data->data[0U];
+}
+
+/**
+This function found in impl {impl where_clauses_fncg::Foo<K> for u64}
+*/
+/**
+A monomorphic instance of where_clauses_fncg.bar_16
+with const generics
+- K= 12
+- L= 4
+*/
+uint64_t where_clauses_fncg_bar_16_9e(Eurydice_arr_40 x, Eurydice_arr_11 _)
 {
   return (uint64_t)(uint32_t)x.data->data[0U];
 }
@@ -45,20 +66,6 @@ uint64_t where_clauses_fncg_f_d3(void)
           .data = { { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } }, { .data = { 0U } } }
         }
       ));
-}
-
-/**
-This function found in impl {impl where_clauses_fncg::Foo<K> for u64}
-*/
-/**
-A monomorphic instance of where_clauses_fncg.bar_16
-with const generics
-- K= 12
-- L= 4
-*/
-uint64_t where_clauses_fncg_bar_16_9e(Eurydice_arr_40 x, Eurydice_arr_11 _)
-{
-  return (uint64_t)(uint32_t)x.data->data[0U];
 }
 
 /**
@@ -99,13 +106,6 @@ uint64_t where_clauses_fncg_g_92(void)
 {
   return where_clauses_fncg_method_foo_4a_27();
 }
-
-typedef struct const_uint64_t__x2_s
-{
-  const uint64_t *fst;
-  const uint64_t *snd;
-}
-const_uint64_t__x2;
 
 void where_clauses_fncg_main(void)
 {

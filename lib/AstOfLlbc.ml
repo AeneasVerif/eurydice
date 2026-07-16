@@ -2943,5 +2943,4 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
     }
   in
   let trans_decls = decls_of_declarations env declarations in
-  let extra_decls = Builtin.[ dst_ref_shared_decl; dst_ref_mut_decl; decl_of_arr ] in
-  name, trans_decls @ extra_decls
+  name, trans_decls

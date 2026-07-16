@@ -39,9 +39,9 @@ typedef struct result_S_s
 }
 result_S;
 
-result_S result_ident(result_S x);
-
 result_S result_mk1(uint32_t x, uint32_t y);
+
+result_S result_ident(result_S x);
 
 void result_main(void);
 

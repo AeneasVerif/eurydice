@@ -40,12 +40,6 @@ typedef struct core_option_Option_9e_s
 }
 core_option_Option_9e;
 
-typedef core_option_Option_9e option_S;
-
-typedef Eurydice_arr_b2 option_Val;
-
-void option_main(void);
-
 /**
 A monomorphic instance of core.option.Option
 with types const Eurydice_arr_b2*
@@ -90,10 +84,16 @@ with types Eurydice_arr uint8_t[[$16size_t]]
 */
 core_option_Option_4d core_option_as_ref_99_4f(const core_option_Option_9e *self);
 
+typedef Eurydice_arr_b2 option_Val;
+
+typedef core_option_Option_9e option_S;
+
 /**
 This function found in impl {option::S}
 */
 core_option_Option_4d option_option_ref_b6(const core_option_Option_9e *self);
+
+void option_main(void);
 
 #if defined(__cplusplus)
 }

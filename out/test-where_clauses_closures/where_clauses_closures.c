@@ -7,13 +7,12 @@
 
 #include "where_clauses_closures.h"
 
-/**
-This function found in impl {impl where_clauses_closures::Ops<1 : usize> for usize}
-*/
-size_t where_clauses_closures_zero_ec(void)
+typedef struct const_size_t__x2_s
 {
-  return (size_t)0U;
+  const size_t *fst;
+  const size_t *snd;
 }
+const_size_t__x2;
 
 /**
 This function found in impl {impl where_clauses_closures::Ops<1 : usize> for usize}
@@ -21,6 +20,14 @@ This function found in impl {impl where_clauses_closures::Ops<1 : usize> for usi
 size_t where_clauses_closures_of_usize_ec(size_t x)
 {
   return x;
+}
+
+/**
+This function found in impl {impl where_clauses_closures::Ops<1 : usize> for usize}
+*/
+size_t where_clauses_closures_zero_ec(void)
+{
+  return (size_t)0U;
 }
 
 /**
@@ -72,13 +79,6 @@ size_t_x2 where_clauses_closures_test_df(void)
   size_t y = where_clauses_closures_zero_ec();
   return (KRML_CLITERAL(size_t_x2){ .fst = x.data[0U], .snd = y });
 }
-
-typedef struct const_size_t__x2_s
-{
-  const size_t *fst;
-  const size_t *snd;
-}
-const_size_t__x2;
 
 void where_clauses_closures_main(void)
 {

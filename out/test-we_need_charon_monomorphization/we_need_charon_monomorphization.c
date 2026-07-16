@@ -8,6 +8,20 @@
 #include "we_need_charon_monomorphization.h"
 
 /**
+A monomorphic instance of Eurydice.array_to_slice_shared
+with types int32_t
+with const generics
+- N= 3
+*/
+static Eurydice_dst_ref_shared_83 array_to_slice_shared_ab(const Eurydice_arr_bf *a)
+{
+  Eurydice_dst_ref_shared_83 lit;
+  lit.ptr = a->data;
+  lit.meta = (size_t)3U;
+  return lit;
+}
+
+/**
 A monomorphic instance of we_need_charon_monomorphization.use_ref
 with types Eurydice_derefed_slice int32_t
 
@@ -20,20 +34,6 @@ void we_need_charon_monomorphization_use_ref_ee(const int32_t (*_t)[])
 void we_need_charon_monomorphization_supply_ref(Eurydice_dst_ref_shared_83 s)
 {
 
-}
-
-/**
-A monomorphic instance of Eurydice.array_to_slice_shared
-with types int32_t
-with const generics
-- N= 3
-*/
-static Eurydice_dst_ref_shared_83 array_to_slice_shared_ab(const Eurydice_arr_bf *a)
-{
-  Eurydice_dst_ref_shared_83 lit;
-  lit.ptr = a->data;
-  lit.meta = (size_t)3U;
-  return lit;
 }
 
 void we_need_charon_monomorphization_main(void)

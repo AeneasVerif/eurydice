@@ -53,12 +53,12 @@ This function found in impl {impl core::cmp::PartialEq<partial_eq::Enum> for par
 */
 bool partial_eq_eq_9e(const partial_eq_Enum *self, const partial_eq_Enum *other);
 
-void partial_eq_main(void);
-
 /**
 This function found in impl {impl core::fmt::Debug for partial_eq::Enum}
 */
 core_result_Result_10 partial_eq_fmt_93(const partial_eq_Enum *self, core_fmt_Formatter *f);
+
+void partial_eq_main(void);
 
 #if defined(__cplusplus)
 }
