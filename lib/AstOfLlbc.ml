@@ -547,7 +547,7 @@ and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
             &&
             let decl = env.get_nth_trait_decl trait.id in
             (* It has the Sized marker, which is of lang_item "sized" *)
-            decl.item_meta.lang_item = Some "sized"
+            decl.item_meta.lang_item = Some RustcLangItemSized
       in
       let var_is_sized =
         true
