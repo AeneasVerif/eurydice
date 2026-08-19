@@ -183,10 +183,11 @@ let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
 
 let string_of_name env ps = String.concat "::" (List.map (string_of_path_elem env) ps)
 
-let mk_field_name f i =
-  match f with
-  | Some f -> f
-  | None -> "f" ^ string_of_int i
+let variant_field_name i (field : C.field) =
+  if field.is_positional then
+    "f" ^ string_of_int i
+  else
+    field.field_name
 
 let is_enum (env : env) (id : C.type_decl_id) : bool =
   let decl = env.get_nth_type id in
@@ -407,13 +408,13 @@ let mk_dst_deref _env t e =
   let ptr_field = K.(with_type (TBuf (t, true)) (EField (e, "ptr"))) in
   K.(with_type t (EBufRead (ptr_field, Krml.Helpers.zero_usize)))
 
-let ensure_named i name =
-  match name, i with
-  | None, 0 -> "fst"
-  | None, 1 -> "snd"
-  | None, 2 -> "thd"
-  | None, _ -> Printf.sprintf "field%d" i
-  | Some name, _ -> name
+let struct_field_name i (field : C.field) =
+  match field.is_positional, i with
+  | false, _ -> field.field_name
+  | true, 0 -> "fst"
+  | true, 1 -> "snd"
+  | true, 2 -> "thd"
+  | true, _ -> Printf.sprintf "field%d" i
 
 let lookup_field env typ_id field_id =
   let ty_decl = env.get_nth_type typ_id in
@@ -424,7 +425,7 @@ let lookup_field env typ_id field_id =
   in
   let i = C.FieldId.to_int field_id in
   let field = List.nth fields i in
-  ensure_named i field.field_name
+  struct_field_name i field
 
 let mk_expr_arr_struct (expr_array : K.expr) = K.EFlat [ Some "data", expr_array ]
 
@@ -965,9 +966,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
               let variant = find_nth_variant env typ_id variant_id in
               let field_id = C.FieldId.to_int field_id in
               let field = List.nth variant.fields field_id in
-              let b =
-                Krml.Helpers.fresh_binder (mk_field_name field.C.field_name field_id) place_typ
-              in
+              let b = Krml.Helpers.fresh_binder (variant_field_name field_id field) place_typ in
               K.with_type place_typ
                 K.(
                   EMatch
@@ -2087,7 +2086,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
           K.with_type t
             (K.EFlat
                (List.mapi
-                  (fun i (f, a) -> Some (ensure_named i f.C.field_name), a)
+                  (fun i (f, a) -> Some (struct_field_name i f), a)
                   (List.combine fields args)))
       end
   | Aggregate (AggregatedAdt ({ id = TBuiltin _; _ }, _, _), _) ->
@@ -2527,8 +2526,8 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
       | Struct fields ->
           let fields =
             List.mapi
-              (fun i { C.field_name; field_ty; _ } ->
-                Some (ensure_named i field_name), (typ_of_ty env field_ty, true))
+              (fun i ({ C.field_ty; _ } as field) ->
+                Some (struct_field_name i field), (typ_of_ty env field_ty, true))
               fields
           in
           Some
@@ -2565,8 +2564,8 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
               (fun ({ C.variant_name; fields; _ } : C.variant) ->
                 ( variant_name,
                   List.mapi
-                    (fun i { C.field_name; field_ty; _ } ->
-                      mk_field_name field_name i, (typ_of_ty env field_ty, true))
+                    (fun i ({ C.field_ty; _ } as field) ->
+                      variant_field_name i field, (typ_of_ty env field_ty, true))
                     fields ))
               branches
           in
