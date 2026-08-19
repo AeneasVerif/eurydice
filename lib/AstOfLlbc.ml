@@ -2505,6 +2505,10 @@ let flags_of_meta (meta : C.item_meta) : K.flags =
             meta.attr_info.attributes));
   ]
 
+let is_global_initializer : C.fun_source -> bool = function
+  | GlobalInitializerFun _ -> true
+  | _ -> false
+
 let decl_of_id (env : env) (id : C.item_id) : K.decl option =
   match id with
   | IdType id -> begin
@@ -2610,7 +2614,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
               let { K.n_cgs; n }, t = typ_of_signature env (C.bound_fun_sig_of_decl decl) in
               Some (K.DExternal (None, [], n_cgs, n, name, t, []))
           | StructuredBody { locals; body; _ }, _ ->
-              if Option.is_some decl.is_global_initializer then
+              if is_global_initializer src then
                 None
               else
                 let env = push_cg_binders env generics.const_generics in
