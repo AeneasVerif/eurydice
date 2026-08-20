@@ -16,6 +16,18 @@ extern "C" {
 #endif
 
 /**
+A monomorphic instance of n-tuple
+with types size_t, bool
+
+*/
+typedef struct tuple_c9_s
+{
+  size_t fst;
+  bool snd;
+}
+tuple_c9;
+
+/**
 A monomorphic instance of core.ops.range.Range
 with types size_t
 
@@ -105,6 +117,18 @@ core_convert_num__impl_core__convert__From_u32__for_u64__from(uint32_t x0);
 
 static inline uint32_t
 core_convert_num__impl_core__convert__From_u16__for_u32__from(uint16_t x0);
+
+extern tuple_c9
+core_iter_range__impl_core__iter__range__Step_for_usize__backward_overflowing(
+  size_t x0,
+  size_t x1
+);
+
+extern tuple_c9
+core_iter_range__impl_core__iter__range__Step_for_usize__forward_overflowing(
+  size_t x0,
+  size_t x1
+);
 
 extern core_option_Option_87
 core_iter_range__impl_core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
