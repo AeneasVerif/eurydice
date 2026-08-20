@@ -15,6 +15,18 @@
 extern "C" {
 #endif
 
+/**
+A monomorphic instance of n-tuple
+with types int32_t, bool
+
+*/
+typedef struct tuple_90_s
+{
+  int32_t fst;
+  bool snd;
+}
+tuple_90;
+
 extern int32_t core_clone_impls__impl_core__clone__Clone_for_i32__clone(const int32_t *x0);
 
 #define core_cmp_Ordering_Less -1
@@ -86,6 +98,18 @@ extern core_option_Option_77
 core_cmp_impls__impl_core__cmp__PartialOrd_i32__for_i32__partial_cmp(
   const int32_t *x0,
   const int32_t *x1
+);
+
+extern tuple_90
+core_iter_range__impl_core__iter__range__Step_for_i32__backward_overflowing(
+  int32_t x0,
+  size_t x1
+);
+
+extern tuple_90
+core_iter_range__impl_core__iter__range__Step_for_i32__forward_overflowing(
+  int32_t x0,
+  size_t x1
 );
 
 extern core_option_Option_9e

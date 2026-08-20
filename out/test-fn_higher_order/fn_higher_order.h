@@ -16,6 +16,18 @@ extern "C" {
 #endif
 
 /**
+A monomorphic instance of n-tuple
+with types size_t, bool
+
+*/
+typedef struct tuple_c9_s
+{
+  size_t fst;
+  bool snd;
+}
+tuple_c9;
+
+/**
 A monomorphic instance of Eurydice.arr
 with types int32_t
 with const generics
@@ -92,6 +104,18 @@ extern core_option_Option_77
 core_cmp_impls__impl_core__cmp__PartialOrd_usize__for_usize__partial_cmp(
   const size_t *x0,
   const size_t *x1
+);
+
+extern tuple_c9
+core_iter_range__impl_core__iter__range__Step_for_usize__backward_overflowing(
+  size_t x0,
+  size_t x1
+);
+
+extern tuple_c9
+core_iter_range__impl_core__iter__range__Step_for_usize__forward_overflowing(
+  size_t x0,
+  size_t x1
 );
 
 extern core_option_Option_87
