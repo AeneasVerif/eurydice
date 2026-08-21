@@ -525,7 +525,7 @@ and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
                 "Eurydice does not handle PtrMetadata inheritance, please consider using \
                  monomorphized LLBC"
         end
-      | C.TTuple ->
+      | C.TBuiltin C.TTuple ->
           begin match List.rev @@ ty_decl_ref.generics.types with
           (* Empty metadata for empty tuple *)
           | [] -> None
@@ -612,7 +612,7 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       let cgs = List.map (cg_of_const_generic env) generic_args in
       let lid = lid_of_type_decl_id env id in
       K.fold_tapp (lid, ts, cgs)
-  | TAdt { id = TTuple; generics = { types = args; const_generics; _ } } ->
+  | TAdt { id = TBuiltin TTuple; generics = { types = args; const_generics; _ } } ->
       assert (const_generics = []);
       begin match args with
       | [] -> TUnit
@@ -932,9 +932,9 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
                 ptyp t (C.show_ty sub_place.ty) (C.show_projection_elem pe);
               failwith "unhandled dereference"
           end
-      | ( Field (ProjAdt (typ_id, None), field_id),
+      | ( Field (None, field_id),
           { kind = PlaceProjection (sub_place, C.Deref); _ },
-          C.TAdt _ ) ->
+          C.TAdt { id = TAdtId typ_id; _ } ) ->
           let field_name = lookup_field env typ_id field_id in
           let sub_e = expression_of_place env sub_place in
           let place_typ = typ_of_ty env p.ty in
@@ -956,7 +956,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
                        mk_deref ~const (Krml.Helpers.assert_tbuf_or_tarray sub_e.K.typ) sub_e.K.node),
                      field_name ))
           end
-      | Field (ProjAdt (typ_id, variant_id), field_id), _, C.TAdt _ -> begin
+      | Field (variant_id, field_id), _, C.TAdt { id = TAdtId typ_id; _ } -> begin
           let place_typ = typ_of_ty env p.ty in
           match variant_id with
           | None ->
@@ -985,9 +985,9 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
                           with_type place_typ (EBound 0) );
                       ] ))
         end
-      | ( Field (ProjTuple n, i),
+      | ( Field (None, i),
           _,
-          C.TAdt { id = _; generics = { types = tys; const_generics = cgs; _ } } ) ->
+          C.TAdt { id = TBuiltin TTuple; generics = { types = tys; const_generics = cgs; _ } } ) ->
           let place_typ = typ_of_ty env p.ty in
           assert (cgs = []);
           (* match e with (_, ..., _, x, _, ..., _) -> x *)
@@ -1003,7 +1003,7 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
               | TTuple ts -> ts
               | _ -> assert false
             in
-            assert (List.length ts = n);
+            assert (List.length ts = List.length tys);
             let binders = [ Krml.Helpers.fresh_binder (uu ()) place_typ ] in
             let pattern =
               K.with_type !*sub_e.typ
@@ -2044,7 +2044,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       K.(
         with_type expected_t
           (EApp (Builtin.(expr_of_builtin_t discriminant) [ e.typ; expected_t ], [ e ])))
-  | Aggregate (AggregatedAdt ({ id = TTuple; _ }, _, None), ops) ->
+  | Aggregate (AggregatedAdt ({ id = TBuiltin TTuple; _ }, _, None), ops) ->
       begin match ops with
       | [] -> K.with_type TUnit K.EUnit
       | [ op ] -> expression_of_operand env op
@@ -2643,15 +2643,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
                 (* Note: Rust allows zero-argument functions but the krml internal
                    representation wants a unit there. This is aligned with typ_of_signature. *)
                 let args =
-                  let t_unit =
-                    C.(
-                      TAdt
-                        {
-                          id = TTuple;
-                          generics =
-                            { types = []; const_generics = []; regions = []; trait_refs = [] };
-                        })
-                  in
+                  let t_unit = C.mk_unit_ty in
                   let v_unit =
                     {
                       C.index = Charon.Expressions.LocalId.of_int max_int;
