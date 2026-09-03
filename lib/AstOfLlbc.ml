@@ -1656,6 +1656,44 @@ let try_get_mono_from_name (name : C.name) =
   | PeInstantiated generics :: _ -> Some generics
   | _ -> None
 
+(** [find_closure_trait_method_by_name env impl_id impl method_name] recovers the function generated
+    for a named closure trait method. Newer monomorphized Charon output can omit the corresponding
+    method reference from call-site generic arguments, while retaining the generated function. *)
+let find_closure_trait_method_by_name env impl_id (impl : C.trait_impl) method_name =
+  match impl.src with
+  | ClosureTraitImpl _ ->
+      let is_method (decl : C.fun_decl) =
+        let has_impl =
+          List.exists
+            (function
+              | Charon.Types.PeImpl (Charon.Types.ImplElemTrait id) -> id = impl_id
+              | _ -> false)
+            decl.item_meta.name
+        in
+        let final_ident =
+          List.find_map
+            (function
+              | Charon.Types.PeIdent (name, _) -> Some name
+              | _ -> None)
+            (List.rev decl.item_meta.name)
+        in
+        has_impl && final_ident = Some method_name
+      in
+      C.FunDeclId.Map.to_list env.crate.fun_decls
+      |> List.find_map (fun (id, decl) ->
+          if is_method decl then
+            Some id
+          else
+            None)
+  | _ -> None
+
+(** [find_closure_trait_method env impl_id impl method_id] resolves a closure method from its trait
+    method identifier when Charon leaves [impl.methods] empty. *)
+let find_closure_trait_method env impl_id (impl : C.trait_impl) method_id =
+  let trait_id = impl.impl_trait.id in
+  let method_name = Charon.GAstUtils.get_method_name env.crate trait_id method_id in
+  find_closure_trait_method_by_name env impl_id impl method_name
+
 (* Only get monomorphized generics for known *Eurydice* builtins *)
 let try_get_mono_generics is_known_builtin (env : env) (f : C.fn_ptr) =
   if not is_known_builtin then
@@ -1671,10 +1709,12 @@ let try_get_mono_generics is_known_builtin (env : env) (f : C.fn_ptr) =
     | FunId (FBuiltin _) -> None
     | TraitMethod ({ kind = TraitImpl { id; _ }; _ }, method_id) ->
         let trait_impl = env.get_nth_trait_impl id in
-        let method_ref =
-          try Some (C.TraitMethodId.Map.find method_id trait_impl.methods) with Not_found -> None
+        let method_id =
+          match C.TraitMethodId.Map.find_opt method_id trait_impl.methods with
+          | Some method_ref -> Some method_ref.C.binder_value.id
+          | None -> find_closure_trait_method env id trait_impl method_id
         in
-        Option.bind method_ref (fun f -> get_from_fid f.C.binder_value.id)
+        Option.bind method_id get_from_fid
     | TraitMethod _ -> None
 
 (* First step: produce an expression for the un-instantiated function reference, along with all the
@@ -1719,13 +1759,18 @@ let lookup_fun (env : env) depth (fn_ptr : C.fn_ptr) : K.expr' * lookup_result *
           match trait_ref.kind with
           | TraitImpl { id; _ } ->
               let trait_impl = env.get_nth_trait_impl id in
-              let f =
-                try C.TraitMethodId.Map.find method_id trait_impl.methods
-                with Not_found ->
-                  fail "Error looking trait impl: %s%!"
-                    (Charon.Print.fn_ptr_to_string env.format_env fn_ptr)
+              let f_id =
+                match C.TraitMethodId.Map.find_opt method_id trait_impl.methods with
+                | Some f -> f.C.binder_value.id
+                | None ->
+                    begin match find_closure_trait_method env id trait_impl method_id with
+                    | Some f_id -> f_id
+                    | None ->
+                        fail "Error looking trait impl: %s%!"
+                          (Charon.Print.fn_ptr_to_string env.format_env fn_ptr)
+                    end
               in
-              lookup_result_of_fun_id f.C.binder_value.id
+              lookup_result_of_fun_id f_id
           | (Clause _ | ParentClause _) as tcid ->
               let f, t, sig_info = lookup_clause_method env tcid method_id in
               (* the sig_info is kind of redundant here *)
@@ -2039,6 +2084,65 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
       []
     else
       build_trait_ref_mapping depth trait_refs_mono
+  in
+  let fn_ptrs_mono =
+    if fn_ptrs_mono <> [] then
+      fn_ptrs_mono
+    else
+      (* Current monomorphized Charon output records the concrete closure type in array closure
+         adapters' instantiated names, but no longer repeats its [FnMut] and [FnOnce] trait
+         references at the call site. Recover the generated methods from the closure declaration so
+         the existing re-polymorphization and [remove_array_from_fn] passes receive the same inputs
+         as before. *)
+      match
+        fn_ptr.kind
+      with
+      | FunId (FRegular fun_id) ->
+          let fun_decl = env.get_nth_function fun_id in
+          let is_array_closure_adapter =
+            match pure_lid_of_name env (pure_c_name fun_decl.item_meta.name) with
+            | [ "core"; "array" ], "from_fn" | "core" :: "array" :: _, "map" -> true
+            | _ -> false
+          in
+          if not is_array_closure_adapter then
+            []
+          else
+            begin match
+              try_get_mono_from_name fun_decl.item_meta.name
+            with
+            | Some { binder_value = { types = _ :: TAdt { id = TAdtId type_id; _ } :: _; _ }; _ } ->
+                begin match (env.get_nth_type type_id).src with
+                | ClosureType { fn_mut_impl = Some fn_mut_impl; fn_once_impl; _ } ->
+                    let closure_method_expr method_name
+                        (impl_ref : C.trait_impl_ref C.region_binder) =
+                      let (impl_ref : C.trait_impl_ref) = impl_ref.C.binder_value in
+                      let trait_impl = env.get_nth_trait_impl impl_ref.id in
+                      Option.map
+                        (fun method_id ->
+                          let method_decl = env.get_nth_function method_id in
+                          let method_generics =
+                            {
+                              C.empty_generic_args with
+                              regions = List.map (fun _ -> C.RErased) method_decl.generics.regions;
+                            }
+                          in
+                          fst3
+                            (expression_of_fn_ptr env (depth ^ "  ")
+                               { kind = FunId (FRegular method_id); generics = method_generics }))
+                        (find_closure_trait_method_by_name env impl_ref.id trait_impl method_name)
+                    in
+                    begin match
+                      ( closure_method_expr "call_mut" fn_mut_impl,
+                        closure_method_expr "call_once" fn_once_impl )
+                    with
+                    | Some call_mut, Some call_once -> [ call_mut; call_once ]
+                    | _ -> []
+                    end
+                | _ -> []
+                end
+            | _ -> []
+            end
+      | _ -> []
   in
   (* update the fn_ptrs_mono in the table *)
   begin if fn_ptrs_mono <> [] then
