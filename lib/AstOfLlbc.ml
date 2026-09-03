@@ -2323,12 +2323,22 @@ let get_dst_ref_base dst_ref =
   | Some (base, _) -> Some K.(with_type (TBuf (base, false)) (EField (dst_ref, "ptr")))
   | None -> None
 
+(* Recover the declaration name of either a regular type application or a monomorphized type that
+   KaRaMeL represents as a fully-qualified, zero-argument type. *)
+let destruct_named_typ t =
+  match t with
+  | K.TApp (lid, _) -> Some lid
+  | K.TQualified full_name ->
+      Option.map (fun (name, _, _, _) -> name) (Hashtbl.find_opt lid_full_generic full_name)
+  | _ -> None
+
 (* Parse the fat pointer Eurydice_dst_ref<T<U>, _> into (T,T<U>),
    where the ignored field `_` must be `usize` as metadata,
    used to handle the unsized cast from &T<V> to &T<U> *)
 let destruct_arr_dst_ref t =
   match t with
-  | K.TApp (dst_ref_hd, [ (TApp (lid, _) as t_u); _ ]) when is_dst_ref dst_ref_hd -> Some (lid, t_u)
+  | K.TApp (dst_ref_hd, [ t_u; _ ]) when is_dst_ref dst_ref_hd ->
+      Option.map (fun lid -> lid, t_u) (destruct_named_typ t_u)
   | _ -> None
 
 (* Reborrows allow going from a mutable slice to an immutable one. *)
@@ -2419,12 +2429,19 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       let t_from = typ_of_ty env ty_from and t_to = typ_of_ty env ty_to in
       let e = expression_of_operand env e in
       begin match meta, t_from, destruct_arr_dst_ref t_to with
-      | MetaLength cg, TBuf (TApp (lid1, _), const), Some (lid2, t_u) when lid1 = lid2 ->
-          (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
-             `Eurydice_derefed_slice data` (a.k.a. `char data[]`) *)
-          let len = expression_of_const_generic env cg in
-          let ptr = K.with_type (TBuf (t_u, const)) (K.ECast (e, TBuf (t_u, const))) in
-          Builtin.dst_new ~const ~len ~ptr t_u
+      | MetaLength cg, TBuf (t_from_base, const), Some (lid2, t_u) ->
+          begin match destruct_named_typ t_from_base with
+          | Some lid1 when lid1 = lid2 ->
+              (* Cast from a struct whose last field is `t data[n]` to a struct whose last field is
+                 `Eurydice_derefed_slice data` (a.k.a. `char data[]`) *)
+              let len = expression_of_const_generic env cg in
+              let ptr = K.with_type (TBuf (t_u, const)) (K.ECast (e, TBuf (t_u, const))) in
+              Builtin.dst_new ~const ~len ~ptr t_u
+          | _ ->
+              Krml.Warn.fatal_error "unknown unsize cast: `%s`\nt_to=%a\nt_from=%a"
+                (Charon.Print.cast_kind_to_string env.format_env ck)
+                ptyp t_to ptyp t_from
+          end
       | MetaLength cg, TBuf (K.TCgApp (K.TApp (lid_arr, [ t ]), _), _), _ when lid_arr = Builtin.arr
         ->
           (* Cast from Box<[T;N]> (represented as a mut reference to an array) to Box<[T]> (which we
