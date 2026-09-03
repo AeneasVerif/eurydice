@@ -243,6 +243,10 @@ module RustNames = struct
     parse_pattern "SliceIndexShared<'_, @T>", Builtin.(slice_index_mut || slice_index_shared);
     parse_pattern "SliceIndexMut<'_, @T>", Builtin.slice_index_mut;
 
+    (* slices: mono *)
+    parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I>}::index<'_, @, core::ops::range::Range<usize>>", builtin_of_function Builtin.(slice_subslice_mono_func_mut || slice_subslice_mono_func_shared);
+    parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I>}::index_mut<'_, @, core::ops::range::Range<usize>>", builtin_of_function Builtin.slice_subslice_mono_func_mut;
+
     parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::Range<usize>, [@]>", builtin_of_function Builtin.(slice_subslice_func_mut || slice_subslice_func_shared);
     parse_pattern "core::slice::index::{core::ops::index::IndexMut<[@T], @I, @Clause2_Output>}::index_mut<'_, @, core::ops::range::Range<usize>, [@]>", builtin_of_function Builtin.slice_subslice_func_mut;
     parse_pattern "core::slice::index::{core::ops::index::Index<[@T], @I, @Clause2_Output>}::index<'_, @, core::ops::range::RangeTo<usize>, [@]>", builtin_of_function Builtin.(slice_subslice_to_func_mut || slice_subslice_to_func_shared);
@@ -258,15 +262,13 @@ module RustNames = struct
     parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I, @Clause2_Clause0_Output>}::index<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", builtin_of_function Builtin.(array_to_subslice_from_func_mut || array_to_subslice_from_func_shared);
     parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I, @Clause2_Clause0_Output>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, [@], @>", builtin_of_function Builtin.array_to_subslice_from_func_mut;
 
-    (*
     (* arrays: mono *)
-    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I>}::index<'_, @, core::ops::range::Range<usize>, @>", Builtin.array_to_subslice_mono;
-    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut<'_, @, core::ops::range::Range<usize>, @>", Builtin.array_to_subslice_mono;
-    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I>}::index<'_, @, core::ops::range::RangeTo<usize>, @>", Builtin.array_to_subslice_to_mono;
-    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, @>", Builtin.array_to_subslice_to_mono;
-    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I>}::index<'_, @, core::ops::range::RangeFrom<usize>, @>", Builtin.array_to_subslice_from_mono;
-    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, @>", Builtin.array_to_subslice_from_mono;
-    *)
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I>}::index<'_, @, core::ops::range::Range<usize>, @>", builtin_of_function Builtin.(array_to_subslice_mono_func_mut || array_to_subslice_mono_func_shared);
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut<'_, @, core::ops::range::Range<usize>, @>", builtin_of_function Builtin.array_to_subslice_mono_func_mut;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I>}::index<'_, @, core::ops::range::RangeTo<usize>, @>", builtin_of_function Builtin.(array_to_subslice_to_mono_func_mut || array_to_subslice_to_mono_func_shared);
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut<'_, @, core::ops::range::RangeTo<usize>, @>", builtin_of_function Builtin.array_to_subslice_to_mono_func_mut;
+    parse_pattern "core::array::{core::ops::index::Index<[@T; @N], @I>}::index<'_, @, core::ops::range::RangeFrom<usize>, @>", builtin_of_function Builtin.(array_to_subslice_from_mono_func_mut || array_to_subslice_from_mono_func_shared);
+    parse_pattern "core::array::{core::ops::index::IndexMut<[@T; @N], @I>}::index_mut<'_, @, core::ops::range::RangeFrom<usize>, @>", builtin_of_function Builtin.array_to_subslice_from_mono_func_mut;
 
     (* slices <-> arrays *)
 
@@ -291,6 +293,10 @@ module RustNames = struct
 
     (* misc *)
     parse_pattern "core::cmp::Ord<u32>::min", Builtin.min_u32;
+    parse_pattern "core::cmp::Ord::min<u32>", Builtin.min_u32;
+    parse_pattern "core::cmp::Ord<usize>::min", Builtin.min_usize;
+    parse_pattern "core::cmp::Ord::min<usize>", Builtin.min_usize;
+    parse_pattern "core::hint::black_box<@T>", Builtin.black_box;
 
     (* boxes *)
     parse_pattern "alloc::boxed::{alloc::boxed::Box<@T>}::new<@>", Builtin.box_new;
@@ -1799,6 +1805,13 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
     ( generics.types @ type_args,
       generics.const_generics @ const_generic_args,
       generics.trait_refs @ trait_refs )
+  in
+  let type_args =
+    (* A monomorphized Rust name may retain method type arguments that the C builtin does not use. *)
+    if is_known_builtin && List.length type_args > ts.n then
+      fst (Krml.KList.split ts.n type_args)
+    else
+      type_args
   in
 
   L.log "Calls" "%s--> %d type_args, %d const_generics, %d trait_refs" depth (List.length type_args)

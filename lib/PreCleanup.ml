@@ -24,20 +24,30 @@ let remove_array_eq =
             let pattern_array_eq =
               Str.regexp {|\{core::cmp::PartialEq::<\[.*;.*\], \[.*;.*\]>\}|}
             in
+            let pattern_array_eq_impl =
+              Str.regexp {|\{impl core::cmp::PartialEq<\[.*;.*\]> for \[.*;.*\]\}|}
+            in
             let pattern_array_eq_slice =
               Str.regexp {|\{core::cmp::PartialEq::<&.* \[.*\], \[.*;.*\]>\}|}
+            in
+            let pattern_array_eq_slice_impl =
+              Str.regexp {|\{impl core::cmp::PartialEq<&.* \[.*\]> for \[.*;.*\]\}|}
             in
             let matches_array_eq s =
               match s with
               | "{impl core::cmp::PartialEq<[U; N]> for [T; N]}"
               | "{core::cmp::PartialEq<[U; N]> for [T; N]}" -> true
-              | _ -> Str.string_match pattern_array_eq s 0
+              | _ ->
+                  Str.string_match pattern_array_eq s 0
+                  || Str.string_match pattern_array_eq_impl s 0
             in
             let matches_array_eq_slice s =
               match s with
               | "{impl core::cmp::PartialEq<&'_0 [U]> for [T; N]}"
               | "{core::cmp::PartialEq<&0 ([U])> for [T; N]}" -> true
-              | _ -> Str.string_match pattern_array_eq_slice s 0
+              | _ ->
+                  Str.string_match pattern_array_eq_slice s 0
+                  || Str.string_match pattern_array_eq_slice_impl s 0
             in
             if matches_array_eq impl then
               with_type TBool

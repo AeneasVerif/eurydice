@@ -1499,6 +1499,10 @@ let remove_assign_return =
       | _ -> super#visit_ESequence env es
   end
 
+let is_slice_receiver_name s =
+  Str.string_match (Str.regexp {|\{\[.*\]\}|}) s 0
+  || Str.string_match (Str.regexp {|\{@Slice<.*>\}|}) s 0
+
 let bonus_cleanups =
   let module B = Builtin in
   object (self)
@@ -1572,12 +1576,21 @@ let cosmetic =
     inherit [_] map as super
 
     method! visit_expr _ e =
-      match e with
+      match AstOfLlbc.re_polymorphize e with
+      | [%cremepat {| core::slice::?impl::copy_from_slice<?t>(?dst, ?src) |}]
+        when is_slice_receiver_name impl ->
+          let dst = super#visit_expr_w () dst in
+          let src = super#visit_expr_w () src in
+          let src_const = not !Options.no_const in
+          let dst_ptr = with_type (TBuf (t, false)) (EField (dst, "ptr")) in
+          let src_ptr = with_type (TBuf (t, src_const)) (EField (src, "ptr")) in
+          let len = with_type (TInt SizeT) (EField (dst, "meta")) in
+          H.with_unit (EBufBlit (src_ptr, H.zero_usize, dst_ptr, H.zero_usize, len))
       | [%cremepat {| core::slice::?impl::len<?>(Eurydice::array_to_slice_shared[#?n]<?>(?)) |}]
-        when impl = "{[T]}" -> n
+        when is_slice_receiver_name impl -> n
       | [%cremepat {| core::slice::?impl::len<?>(Eurydice::array_to_slice_mut[#?n]<?>(?)) |}]
-        when impl = "{[T]}" -> n
-      | [%cremepat {| core::slice::?impl::len<?>(?e) |}] when impl = "{[T]}" ->
+        when is_slice_receiver_name impl -> n
+      | [%cremepat {| core::slice::?impl::len<?>(?e) |}] when is_slice_receiver_name impl ->
           with_type (TInt SizeT) (EField (e, "meta"))
       | [%cremepat {| Eurydice::slice_index_mut<?t>(?s, ?i) |}] ->
           with_type e.typ
