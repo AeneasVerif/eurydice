@@ -1960,6 +1960,11 @@ libcrux_sha3_shake256_ema(Eurydice_mut_borrow_slice_u8 out, Eurydice_borrow_slic
 
 typedef libcrux_sha3_generic_keccak_KeccakState_f3 libcrux_sha3_portable_KeccakState;
 
+/**
+This function found in impl {impl core::clone::Clone for libcrux_sha3::portable::KeccakState}
+*/
+Eurydice_arr_7c libcrux_sha3_portable_clone_5a(const Eurydice_arr_7c *self);
+
 typedef libcrux_sha3_generic_keccak_xof_KeccakXofState_55
 libcrux_sha3_portable_incremental_Shake128Xof;
 

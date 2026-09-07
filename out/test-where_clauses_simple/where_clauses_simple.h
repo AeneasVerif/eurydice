@@ -55,6 +55,8 @@ with const generics
 */
 typedef struct Eurydice_arr_dc_s { uint16_t data[3U]; } Eurydice_arr_dc;
 
+extern uint16_t core_clone_impls__impl_core__clone__Clone_for_u16__clone(const uint16_t *x0);
+
 extern size_t core_clone_impls__impl_core__clone__Clone_for_usize__clone(const size_t *x0);
 
 extern uint64_t core_clone_impls__impl_core__clone__Clone_for_u64__clone(const uint64_t *x0);

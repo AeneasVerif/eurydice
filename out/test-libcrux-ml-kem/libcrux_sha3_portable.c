@@ -3655,6 +3655,14 @@ void libcrux_sha3_shake256_ema(Eurydice_mut_borrow_slice_u8 out, Eurydice_borrow
 }
 
 /**
+This function found in impl {impl core::clone::Clone for libcrux_sha3::portable::KeccakState}
+*/
+inline Eurydice_arr_7c libcrux_sha3_portable_clone_5a(const Eurydice_arr_7c *self)
+{
+  return self[0U];
+}
+
+/**
  Create a new SHAKE-128 state object.
 */
 Eurydice_arr_7c libcrux_sha3_portable_incremental_shake128_init(void)

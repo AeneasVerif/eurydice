@@ -5780,6 +5780,24 @@ generate_keypair_unpacked_ab(
 }
 
 /**
+This function found in impl {impl core::clone::Clone for libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[@TraitClause0, @TraitClause2]}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.polynomial.clone_d1
+with types libcrux_ml_kem_vector_avx2_SIMD256Vector
+with const generics
+
+*/
+static inline Eurydice_arr_13 clone_d1_52(const Eurydice_arr_13 *self)
+{
+  return
+    core_array__impl_core__clone__Clone_for__T__N___clone((size_t)16U,
+      self,
+      __m256i,
+      Eurydice_arr_13);
+}
+
+/**
 This function found in impl {impl core::default::Default for libcrux_ml_kem::ind_cpa::unpacked::IndCpaPublicKeyUnpacked<Vector, K>[@TraitClause0, @TraitClause1]}
 */
 /**
@@ -10193,24 +10211,6 @@ libcrux_ml_kem_ind_cca_unpacked_unpack_public_key_2a(
   uu____3 =
     H_88_af(Eurydice_array_to_slice_shared_3b(libcrux_ml_kem_types_as_slice_e6_df(public_key)));
   unpacked_public_key->public_key_hash = uu____3;
-}
-
-/**
-This function found in impl {impl core::clone::Clone for libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[@TraitClause0, @TraitClause2]}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.polynomial.clone_d1
-with types libcrux_ml_kem_vector_avx2_SIMD256Vector
-with const generics
-
-*/
-static inline Eurydice_arr_13 clone_d1_52(const Eurydice_arr_13 *self)
-{
-  return
-    core_array__impl_core__clone__Clone_for__T__N___clone((size_t)16U,
-      self,
-      __m256i,
-      Eurydice_arr_13);
 }
 
 /**

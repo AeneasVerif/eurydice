@@ -43,6 +43,10 @@ with const generics
 */
 typedef struct Eurydice_arr_a1_s { Eurydice_arr_5c data[4U]; } Eurydice_arr_a1;
 
+extern uint8_t core_clone_impls__impl_core__clone__Clone_for_u8__clone(const uint8_t *x0);
+
+extern uint32_t core_clone_impls__impl_core__clone__Clone_for_u32__clone(const uint32_t *x0);
+
 extern size_t core_clone_impls__impl_core__clone__Clone_for_usize__clone(const size_t *x0);
 
 #define core_cmp_Ordering_Less -1

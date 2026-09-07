@@ -31,6 +31,8 @@ with const generics
 */
 typedef struct Eurydice_arr_ac_s { Eurydice_arr_a0 data[4U]; } Eurydice_arr_ac;
 
+extern uint32_t core_clone_impls__impl_core__clone__Clone_for_u32__clone(const uint32_t *x0);
+
 extern bool
 core_cmp_impls__impl_core__cmp__PartialEq_u32__for_u32__ne(
   const uint32_t *x0,

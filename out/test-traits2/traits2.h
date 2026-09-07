@@ -41,6 +41,8 @@ core_ops_range_Range_87;
 
 extern size_t core_clone_impls__impl_core__clone__Clone_for_usize__clone(const size_t *x0);
 
+extern int16_t core_clone_impls__impl_core__clone__Clone_for_i16__clone(const int16_t *x0);
+
 #define core_cmp_Ordering_Less -1
 #define core_cmp_Ordering_Equal 0
 #define core_cmp_Ordering_Greater 1

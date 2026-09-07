@@ -55,6 +55,8 @@ with const generics
 */
 typedef struct Eurydice_arr_11_s { Eurydice_arr_a3 data[4U]; } Eurydice_arr_11;
 
+extern uint8_t core_clone_impls__impl_core__clone__Clone_for_u8__clone(const uint8_t *x0);
+
 static inline uint64_t
 core_convert_num__impl_core__convert__From_u8__for_u64__from(uint8_t x0);
 
