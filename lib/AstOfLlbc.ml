@@ -801,8 +801,23 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   | TRef (_, t, rk) | TRawPtr (t, rk) ->
       let const = const_of_ref_kind rk in
       ptr_typ_of_ty env ~const t
-  | TAdt { id; generics = { types = [ t ]; _ } as generics } when RustNames.is_vec env id generics
-    -> Builtin.mk_vec (typ_of_ty env t)
+  | TAdt { id; generics } when RustNames.is_vec env id generics ->
+      (* Recover the original Vec arguments from a monomorphized declaration, just as
+         the name matcher does. Ordinary generic Vec references keep their arguments. *)
+      let generics =
+        match id with
+        | TAdtId id ->
+            begin match List.rev (env.get_nth_type id).item_meta.name with
+            | PeInstantiated binder :: _ ->
+                Charon.NameMatcher.instantiate_name_generics binder generics
+            | _ -> generics
+            end
+        | _ -> generics
+      in
+      begin match generics.types with
+      | [ t ] -> Builtin.mk_vec (typ_of_ty env t)
+      | _ -> failwith "Expected one element type for Vec"
+      end
   | TAdt { id = TAdtId id; generics = { types = args; const_generics = generic_args; _ } } ->
       let ts = List.map (typ_of_ty env) args in
       let cgs = List.map (cg_of_const_generic env) generic_args in
