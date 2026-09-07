@@ -179,7 +179,15 @@ let restore_old_pretty_name s =
   s |> restore_old_trait_clause_names |> restore_old_integer_const_names
 
 let string_of_path_elem (env : env) (p : Charon.Types.path_elem) : string =
-  restore_old_pretty_name (Charon.Print.path_elem_to_string env.format_env p)
+  match p with
+  | PeBuiltin (b, d) ->
+      (* use this to not have braces in the string *)
+      let ident = Charon.TypesUtils.builtin_path_elem_ident b in
+      if d = Charon.Types.Disambiguator.zero then
+        ident
+      else
+        ident ^ "#" ^ Charon.Types.Disambiguator.to_string d
+  | _ -> restore_old_pretty_name (Charon.Print.path_elem_to_string env.format_env p)
 
 let string_of_name env ps = String.concat "::" (List.map (string_of_path_elem env) ps)
 

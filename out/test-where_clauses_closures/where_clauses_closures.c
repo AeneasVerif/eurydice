@@ -31,34 +31,34 @@ size_t where_clauses_closures_zero_ec(void)
 }
 
 /**
-This function found in impl {impl core::ops::function::FnMut<(usize,), T> for where_clauses_closures::test::closure<T, K>[@TraitClause0, @TraitClause1, @TraitClause2]}
+This function found in impl {impl core::ops::function::FnMut<(usize,), T> for where_clauses_closures::test::{closure}<T, K>[@TraitClause0, @TraitClause1, @TraitClause2]}
 */
 /**
-A monomorphic instance of where_clauses_closures.test.call_mut_0c
+A monomorphic instance of where_clauses_closures.test.call_mut_c0
 with types size_t
 with const generics
 - K= 1
 */
-size_t where_clauses_closures_test_call_mut_0c_df(void **_, size_t tupled_args)
+size_t where_clauses_closures_test_call_mut_c0_df(void **_, size_t tupled_args)
 {
   size_t i = tupled_args;
   return where_clauses_closures_of_usize_ec(i);
 }
 
 /**
-This function found in impl {impl core::ops::function::FnOnce<(usize,), T> for where_clauses_closures::test::closure<T, K>[@TraitClause0, @TraitClause1, @TraitClause2]}
+This function found in impl {impl core::ops::function::FnOnce<(usize,), T> for where_clauses_closures::test::{closure}<T, K>[@TraitClause0, @TraitClause1, @TraitClause2]}
 */
 /**
-A monomorphic instance of where_clauses_closures.test.call_once_8c
+A monomorphic instance of where_clauses_closures.test.call_once_bb
 with types size_t
 with const generics
 - K= 1
 */
-size_t where_clauses_closures_test_call_once_8c_df(size_t _)
+size_t where_clauses_closures_test_call_once_bb_df(size_t _)
 {
   /* original Rust expression is not an lvalue in C */
   void *lvalue = (void *)0U;
-  return where_clauses_closures_test_call_mut_0c_df(&lvalue, _);
+  return where_clauses_closures_test_call_mut_c0_df(&lvalue, _);
 }
 
 /**
@@ -73,7 +73,7 @@ size_t_x2 where_clauses_closures_test_df(void)
   {
     /* original Rust expression is not an lvalue in C */
     void *lvalue = (void *)0U;
-    arr_struct.data[0U] = where_clauses_closures_test_call_mut_0c_df(&lvalue, (size_t)0U);
+    arr_struct.data[0U] = where_clauses_closures_test_call_mut_c0_df(&lvalue, (size_t)0U);
   }
   Eurydice_arr_58 x = arr_struct;
   size_t y = where_clauses_closures_zero_ec();

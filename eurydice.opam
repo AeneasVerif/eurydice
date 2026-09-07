@@ -15,6 +15,7 @@ depends: [
   "yaml"
   "terminal" {>= "0.4.0"}
   "odoc" {with-doc}
+  "menhir" {>= "20180523"}
 ]
 build: [
   ["dune" "subst"] {dev}

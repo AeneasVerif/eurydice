@@ -7,9 +7,9 @@
 
 #include "dyn_trait_struct_type.h"
 
-void dyn_trait_struct_type_use_trait(Eurydice_dst_ref_shared_06 t)
+void dyn_trait_struct_type_use_trait(Eurydice_dst_ref_shared_d6 t)
 {
-  Eurydice_dst_ref_shared_06 uu____0 = t;
+  Eurydice_dst_ref_shared_d6 uu____0 = t;
   uu____0.meta->method_method(uu____0);
 }
 

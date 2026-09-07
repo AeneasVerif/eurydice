@@ -130,24 +130,24 @@ with const generics
 typedef const uint32_t *array_mk_incr2_closure_e4;
 
 /**
-This function found in impl {impl core::ops::function::FnMut<(usize,), u32> for array::mk_incr2::closure<'_0, K>}
+This function found in impl {impl core::ops::function::FnMut<(usize,), u32> for array::mk_incr2::{closure}<'_0, K>}
 */
 /**
-A monomorphic instance of array.mk_incr2.call_mut_b4
+A monomorphic instance of array.mk_incr2.call_mut_fc
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr2_call_mut_b4_55(const uint32_t **_, size_t tupled_args);
+uint32_t array_mk_incr2_call_mut_fc_55(const uint32_t **_, size_t tupled_args);
 
 /**
-This function found in impl {impl core::ops::function::FnOnce<(usize,), u32> for array::mk_incr2::closure<'_0, K>}
+This function found in impl {impl core::ops::function::FnOnce<(usize,), u32> for array::mk_incr2::{closure}<'_0, K>}
 */
 /**
-A monomorphic instance of array.mk_incr2.call_once_83
+A monomorphic instance of array.mk_incr2.call_once_ea
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr2_call_once_83_55(const uint32_t *_, size_t _0);
+uint32_t array_mk_incr2_call_once_ea_55(const uint32_t *_, size_t _0);
 
 /**
 A monomorphic instance of array.mk_incr2
@@ -157,24 +157,24 @@ with const generics
 Eurydice_arr_6c array_mk_incr2_55(void);
 
 /**
-This function found in impl {impl core::ops::function::FnMut<(usize,), u32> for array::mk_incr::closure<K>}
+This function found in impl {impl core::ops::function::FnMut<(usize,), u32> for array::mk_incr::{closure}<K>}
 */
 /**
-A monomorphic instance of array.mk_incr.call_mut_fc
+A monomorphic instance of array.mk_incr.call_mut_ec
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr_call_mut_fc_55(void **_, size_t tupled_args);
+uint32_t array_mk_incr_call_mut_ec_55(void **_, size_t tupled_args);
 
 /**
-This function found in impl {impl core::ops::function::FnOnce<(usize,), u32> for array::mk_incr::closure<K>}
+This function found in impl {impl core::ops::function::FnOnce<(usize,), u32> for array::mk_incr::{closure}<K>}
 */
 /**
-A monomorphic instance of array.mk_incr.call_once_89
+A monomorphic instance of array.mk_incr.call_once_4a
 with const generics
 - K= 10
 */
-uint32_t array_mk_incr_call_once_89_55(size_t _);
+uint32_t array_mk_incr_call_once_4a_55(size_t _);
 
 /**
 A monomorphic instance of array.mk_incr
@@ -191,44 +191,44 @@ with const generics
 typedef const size_t *array_nested_from_fn_closure_closure_34;
 
 /**
-This function found in impl {impl core::ops::function::FnMut<(usize,), usize> for array::nested_from_fn::closure::closure<'_0, K>}
+This function found in impl {impl core::ops::function::FnMut<(usize,), usize> for array::nested_from_fn::{closure}::{closure}<'_0, K>}
 */
 /**
-A monomorphic instance of array.nested_from_fn.closure.call_mut_a9
+A monomorphic instance of array.nested_from_fn.closure.call_mut_87
 with const generics
 - K= 4
 */
-size_t array_nested_from_fn_closure_call_mut_a9_23(const size_t **_, size_t tupled_args);
+size_t array_nested_from_fn_closure_call_mut_87_23(const size_t **_, size_t tupled_args);
 
 /**
-This function found in impl {impl core::ops::function::FnOnce<(usize,), usize> for array::nested_from_fn::closure::closure<'_0, K>}
+This function found in impl {impl core::ops::function::FnOnce<(usize,), usize> for array::nested_from_fn::{closure}::{closure}<'_0, K>}
 */
 /**
-A monomorphic instance of array.nested_from_fn.closure.call_once_d7
+A monomorphic instance of array.nested_from_fn.closure.call_once_81
 with const generics
 - K= 4
 */
-size_t array_nested_from_fn_closure_call_once_d7_23(const size_t *_, size_t _0);
+size_t array_nested_from_fn_closure_call_once_81_23(const size_t *_, size_t _0);
 
 /**
-This function found in impl {impl core::ops::function::FnMut<(usize,), [usize; K]> for array::nested_from_fn::closure<K>}
+This function found in impl {impl core::ops::function::FnMut<(usize,), [usize; K]> for array::nested_from_fn::{closure}<K>}
 */
 /**
-A monomorphic instance of array.nested_from_fn.call_mut_e9
+A monomorphic instance of array.nested_from_fn.call_mut_03
 with const generics
 - K= 4
 */
-Eurydice_arr_cc array_nested_from_fn_call_mut_e9_23(void **_, size_t tupled_args);
+Eurydice_arr_cc array_nested_from_fn_call_mut_03_23(void **_, size_t tupled_args);
 
 /**
-This function found in impl {impl core::ops::function::FnOnce<(usize,), [usize; K]> for array::nested_from_fn::closure<K>}
+This function found in impl {impl core::ops::function::FnOnce<(usize,), [usize; K]> for array::nested_from_fn::{closure}<K>}
 */
 /**
-A monomorphic instance of array.nested_from_fn.call_once_3c
+A monomorphic instance of array.nested_from_fn.call_once_ed
 with const generics
 - K= 4
 */
-Eurydice_arr_cc array_nested_from_fn_call_once_3c_23(size_t _);
+Eurydice_arr_cc array_nested_from_fn_call_once_ed_23(size_t _);
 
 /**
 A monomorphic instance of array.nested_from_fn
@@ -238,24 +238,24 @@ with const generics
 Eurydice_arr_89 array_nested_from_fn_23(void);
 
 /**
-This function found in impl {impl core::ops::function::FnMut<(u32,), u16> for array::plus_one::closure<K>}
+This function found in impl {impl core::ops::function::FnMut<(u32,), u16> for array::plus_one::{closure}<K>}
 */
 /**
-A monomorphic instance of array.plus_one.call_mut_55
+A monomorphic instance of array.plus_one.call_mut_be
 with const generics
 - K= 1
 */
-uint16_t array_plus_one_call_mut_55_6c(void **_, uint32_t tupled_args);
+uint16_t array_plus_one_call_mut_be_6c(void **_, uint32_t tupled_args);
 
 /**
-This function found in impl {impl core::ops::function::FnOnce<(u32,), u16> for array::plus_one::closure<K>}
+This function found in impl {impl core::ops::function::FnOnce<(u32,), u16> for array::plus_one::{closure}<K>}
 */
 /**
-A monomorphic instance of array.plus_one.call_once_50
+A monomorphic instance of array.plus_one.call_once_bd
 with const generics
 - K= 1
 */
-uint16_t array_plus_one_call_once_50_6c(uint32_t _);
+uint16_t array_plus_one_call_once_bd_6c(uint32_t _);
 
 /**
 A monomorphic instance of array.plus_one

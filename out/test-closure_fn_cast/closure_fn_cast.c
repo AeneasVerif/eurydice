@@ -8,45 +8,45 @@
 #include "closure_fn_cast.h"
 
 /**
-This function found in impl {impl core::marker::Destruct for closure_fn_cast::main::closure}
+This function found in impl {impl core::marker::Destruct for closure_fn_cast::main::{closure}}
 */
-void closure_fn_cast_main_closure_drop_glue_f6(void **_)
+void closure_fn_cast_main_closure_drop_glue_7e(void **_)
 {
 
 }
 
 /**
-This function found in impl {impl core::ops::function::Fn<(i32,), i32> for closure_fn_cast::main::closure}
+This function found in impl {impl core::ops::function::Fn<(i32,), i32> for closure_fn_cast::main::{closure}}
 */
-int32_t closure_fn_cast_main_call_be(void *const *_, int32_t tupled_args)
+int32_t closure_fn_cast_main_call_3f(void *const *_, int32_t tupled_args)
 {
   int32_t x = tupled_args;
   return x + 42;
 }
 
 /**
-This function found in impl {impl core::ops::function::FnMut<(i32,), i32> for closure_fn_cast::main::closure}
+This function found in impl {impl core::ops::function::FnMut<(i32,), i32> for closure_fn_cast::main::{closure}}
 */
-int32_t closure_fn_cast_main_call_mut_3e(void **state, int32_t args)
+int32_t closure_fn_cast_main_call_mut_7f(void **state, int32_t args)
 {
-  return closure_fn_cast_main_call_be(state, args);
+  return closure_fn_cast_main_call_3f(state, args);
 }
 
 /**
-This function found in impl {impl core::ops::function::FnOnce<(i32,), i32> for closure_fn_cast::main::closure}
+This function found in impl {impl core::ops::function::FnOnce<(i32,), i32> for closure_fn_cast::main::{closure}}
 */
-int32_t closure_fn_cast_main_call_once_bf(int32_t _)
+int32_t closure_fn_cast_main_call_once_ea(int32_t _)
 {
   /* original Rust expression is not an lvalue in C */
   void *lvalue = (void *)0U;
-  return closure_fn_cast_main_call_mut_3e(&lvalue, _);
+  return closure_fn_cast_main_call_mut_7f(&lvalue, _);
 }
 
 int32_t closure_fn_cast_main_closure_as_fn(int32_t arg1)
 {
   int32_t args = arg1;
   void *state = (void *)0U;
-  return closure_fn_cast_main_call_once_bf(args);
+  return closure_fn_cast_main_call_once_ea(args);
 }
 
 void closure_fn_cast_main(void)
