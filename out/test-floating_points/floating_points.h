@@ -31,6 +31,10 @@ with const generics
 */
 typedef struct Eurydice_arr_9f_s { double data[100U]; } Eurydice_arr_9f;
 
+extern float core_clone_impls__impl_core__clone__Clone_for_f32__clone(const float *x0);
+
+extern double core_clone_impls__impl_core__clone__Clone_for_f64__clone(const double *x0);
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2

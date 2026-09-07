@@ -31,6 +31,8 @@ with const generics
 */
 typedef struct Eurydice_arr_21_s { Eurydice_arr_d5 data[5U]; } Eurydice_arr_21;
 
+extern uint32_t core_clone_impls__impl_core__clone__Clone_for_u32__clone(const uint32_t *x0);
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2

@@ -47,6 +47,10 @@ with const generics
 */
 typedef struct Eurydice_arr_87_s { Eurydice_arr_b2 data[256U]; } Eurydice_arr_87;
 
+extern uint32_t core_clone_impls__impl_core__clone__Clone_for_u32__clone(const uint32_t *x0);
+
+extern uint8_t core_clone_impls__impl_core__clone__Clone_for_u8__clone(const uint8_t *x0);
+
 #define REPEAT_C1 ((KRML_CLITERAL(Eurydice_arr_d5){ .data = { 0U } }))
 
 #define REPEAT_C2 ((KRML_CLITERAL(Eurydice_arr_aa){ .data = { { .data = { 0U } } } }))

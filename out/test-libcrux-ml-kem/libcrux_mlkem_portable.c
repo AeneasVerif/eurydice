@@ -1121,6 +1121,24 @@ int16_t libcrux_ml_kem_polynomial_zeta(size_t i)
 }
 
 /**
+This function found in impl {impl core::clone::Clone for libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[@TraitClause0, @TraitClause2]}
+*/
+/**
+A monomorphic instance of libcrux_ml_kem.polynomial.clone_d1
+with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
+with const generics
+
+*/
+static inline Eurydice_arr_9e clone_d1_28(const Eurydice_arr_9e *self)
+{
+  return
+    core_array__impl_core__clone__Clone_for__T__N___clone((size_t)16U,
+      self,
+      Eurydice_arr_d6,
+      Eurydice_arr_9e);
+}
+
+/**
  Serialize the secret key.
 */
 /**
@@ -1535,24 +1553,6 @@ libcrux_ml_kem_ind_cca_validate_private_key_d5(
 )
 {
   return libcrux_ml_kem_ind_cca_validate_private_key_only_e2(private_key);
-}
-
-/**
-This function found in impl {impl core::clone::Clone for libcrux_ml_kem::polynomial::PolynomialRingElement<Vector>[@TraitClause0, @TraitClause2]}
-*/
-/**
-A monomorphic instance of libcrux_ml_kem.polynomial.clone_d1
-with types libcrux_ml_kem_vector_portable_vector_type_PortableVector
-with const generics
-
-*/
-static inline Eurydice_arr_9e clone_d1_28(const Eurydice_arr_9e *self)
-{
-  return
-    core_array__impl_core__clone__Clone_for__T__N___clone((size_t)16U,
-      self,
-      Eurydice_arr_d6,
-      Eurydice_arr_9e);
 }
 
 /**

@@ -33,6 +33,8 @@ with const generics
 */
 typedef struct Eurydice_arr_2d_s { Eurydice_arr_58 data[1U]; } Eurydice_arr_2d;
 
+extern size_t core_clone_impls__impl_core__clone__Clone_for_usize__clone(const size_t *x0);
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2

@@ -93,6 +93,8 @@ extern uint32_t core_clone_impls__impl_core__clone__Clone_for_u32__clone(const u
 
 extern uint64_t core_clone_impls__impl_core__clone__Clone_for_u64__clone(const uint64_t *x0);
 
+extern size_t core_clone_impls__impl_core__clone__Clone_for_usize__clone(const size_t *x0);
+
 extern uint8_t core_clone_impls__impl_core__clone__Clone_for_u8__clone(const uint8_t *x0);
 
 static inline Eurydice_array_u8x4 core_num__u32__to_be_bytes(uint32_t x0);

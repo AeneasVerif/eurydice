@@ -573,7 +573,7 @@ and ptr_typ_of_ty (env : env) ~const (ty : Charon.Types.ty) : K.typ =
   (* Handle special cases first *)
   match ty with
   (* Special case to handle slice : &[T] *)
-  | TSlice t -> Builtin.mk_slice ~const (typ_of_ty env t)
+  | TSlice (t, _) -> Builtin.mk_slice ~const (typ_of_ty env t)
   (* Special case to handle &str *)
   | TAdt { builtin = Some TStr; _ } -> Builtin.str_t ~const
   (* Special case to handle DynTrait *)
@@ -616,8 +616,8 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
       let cgs = List.map (cg_of_const_generic env) generic_args in
       let lid = lid_of_type_decl_id env id in
       K.fold_tapp (lid, ts, cgs)
-  | TArray (t, cg) -> typ_of_struct_arr env t cg
-  | TSlice t ->
+  | TArray (t, cg, _) -> typ_of_struct_arr env t cg
+  | TSlice (t, _) ->
       (* Appears in instantiations of patterns and generics, so we translate it to a placeholder. *)
       TApp (Builtin.derefed_slice, [ typ_of_ty env t ])
   | TAdt { builtin = Some TStr; _ } -> Builtin.deref_str_t
@@ -1038,13 +1038,13 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
 
 and buffer_of_place (env : env) (p : C.place) : K.expr * K.typ * K.expr =
   match p.ty, p.kind with
-  | TArray (t, cg), _ ->
+  | TArray (t, cg, _), _ ->
       let elem_t = typ_of_ty env t in
       let array = expression_of_place env p in
       let buffer_t = maybe_cg_array env t cg in
       let buffer = K.with_type buffer_t (K.EField (array, "data")) in
       buffer, elem_t, expression_of_const_generic env cg
-  | TSlice t, _ ->
+  | TSlice (t, _), _ ->
       let elem_t = typ_of_ty env t in
       let slice =
         match dst_reference_of_place env p with
@@ -1636,7 +1636,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   (* Translate effective type and cg arguments. *)
   let const_generic_args =
     match f, type_args with
-    | EQualified lid, [ _; TRef (_, TArray (_, cg), _); _ ]
+    | EQualified lid, [ _; TRef (_, TArray (_, cg, _), _); _ ]
       when lid = Builtin.slice_to_ref_array.name ->
         (* Special case, we *do* need to retain the length, which would disappear if we simply did
            typ_of_ty (owing to array decay rules). *)
@@ -2102,7 +2102,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   | UnaryOp (op, o1) -> mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
-  | Repeat (operand, ty, len) ->
+  | Repeat (operand, ty, len, _) ->
       let operand = expression_of_operand env operand in
       let elem_t = typ_of_ty env ty in
       let array_t = maybe_cg_array env ty len in
@@ -2182,7 +2182,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
           K.with_type typ (K.EFlat [ Some "ptr", ptr; Some "meta", metadata ])
       | None -> K.with_type typ (K.ECast (data, typ))
       end
-  | Aggregate (AggregatedArray (t, cg), ops) ->
+  | Aggregate (AggregatedArray (t, cg, _), ops) ->
       let ty = typ_of_ty env t in
       let typ_arr = typ_of_struct_arr env t cg in
       begin match ops with

@@ -23,6 +23,8 @@ with const generics
 */
 typedef struct Eurydice_arr_48_s { uint8_t data[5U]; } Eurydice_arr_48;
 
+extern uint8_t core_clone_impls__impl_core__clone__Clone_for_u8__clone(const uint8_t *x0);
+
 typedef Eurydice_arr_48 issue_96_MyStruct;
 
 void issue_96_use_it(const Eurydice_arr_48 *x);

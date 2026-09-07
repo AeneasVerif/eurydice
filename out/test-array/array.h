@@ -95,6 +95,10 @@ with const generics
 */
 typedef struct Eurydice_arr_89_s { Eurydice_arr_cc data[4U]; } Eurydice_arr_89;
 
+extern uint32_t core_clone_impls__impl_core__clone__Clone_for_u32__clone(const uint32_t *x0);
+
+extern uint8_t core_clone_impls__impl_core__clone__Clone_for_u8__clone(const uint8_t *x0);
+
 extern bool
 core_cmp_impls__impl_core__cmp__PartialEq_u32__for_u32__eq(
   const uint32_t *x0,
