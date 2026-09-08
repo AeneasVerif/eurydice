@@ -344,18 +344,18 @@ let lid_of_type_decl_id (env : env) (id : C.type_decl_id) =
   let { C.item_meta; _ } = env.get_nth_type id in
   lid_of_name env item_meta.name
 
-let constant_of_scalar_value sv =
-  let w = width_of_integer_type (Charon.Scalars.get_ty sv) in
-  w, Z.to_string (Charon.Scalars.get_val sv)
+let constant_of_integer_value value =
+  let w = width_of_integer_type (Charon.Scalars.get_ty value) in
+  w, Z.to_string (Charon.Scalars.get_val value)
 
-let assert_cg_scalar : C.constant_expr -> C.scalar_value = function
-  | { kind = C.CLiteral (VScalar n); _ } -> n
+let assert_cg_integer : C.constant_expr -> C.integer_value = function
+  | { kind = C.CInteger n; _ } -> n
   | cg -> failwith ("Unsupported: non-constant const generic: " ^ C.show_constant_expr cg)
 
 let cg_of_const_generic env (cg : C.constant_expr) =
   match cg.kind with
   | C.CVar var -> K.CgVar (fst (lookup_cg_in_types env (C.expect_free_var var)))
-  | C.CLiteral (VScalar sv) -> CgConst (constant_of_scalar_value sv)
+  | C.CInteger value -> CgConst (constant_of_integer_value value)
   | _ -> failwith ("cg_of_const_generic: " ^ Charon.Print.constant_expr_to_string env.format_env cg)
 
 let float_width float_ty : K.width =
@@ -364,14 +364,14 @@ let float_width float_ty : K.width =
   | C.F64 -> Float64
   | C.F16 | C.F128 -> failwith "TODO: f16 & f128 are not supported."
 
-let typ_of_literal_ty (_env : env) (ty : Charon.Types.literal_type) : K.typ =
+let typ_of_scalar_ty (_env : env) (ty : Charon.Types.scalar_type) : K.typ =
   match ty with
   | TBool -> K.TBool
   | TChar -> Builtin.char_t
   | TFloat f -> K.TInt (float_width f)
-  | TInt C.I128 -> Builtin.int128_t
-  | TUInt C.U128 -> Builtin.uint128_t
-  | _ -> K.TInt (width_of_integer_type (Charon.TypesUtils.literal_as_integer ty))
+  | TInteger (Signed C.I128) -> Builtin.int128_t
+  | TInteger (Unsigned C.U128) -> Builtin.uint128_t
+  | TInteger ty -> K.TInt (width_of_integer_type ty)
 
 let const_of_ref_kind kind =
   if !Options.no_const then
@@ -561,7 +561,7 @@ and metadata_typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ option =
          monomorphized LLBC."
   (* The metadata of a &dyn Trait object is a pointer to its vtable *)
   | C.TDynTrait pred -> Some (K.TBuf (vtable_typ_of_dyn_pred env pred, false))
-  | C.TLiteral _ | C.TRef (_, _, _) | C.TRawPtr (_, _) | C.TFnPtr _ | C.TFnDef _ | C.TNever -> None
+  | C.TScalar _ | C.TRef (_, _, _) | C.TRawPtr (_, _) | C.TFnPtr _ | C.TFnDef _ | C.TNever -> None
   (* The metadata must not have ptr metadata as they must be Sized. *)
   | C.TPtrMetadata _ -> None
   | C.TError _ -> failwith "Error types to fetch metadata"
@@ -589,7 +589,7 @@ and ptr_typ_of_ty (env : env) ~const (ty : Charon.Types.ty) : K.typ =
 and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   match ty with
   | TVar var -> K.TBound (lookup_typ env (C.expect_free_var var))
-  | TLiteral t -> typ_of_literal_ty env t
+  | TScalar t -> typ_of_scalar_ty env t
   | TNever -> failwith "Impossible: Never"
   | TDynTrait _ -> failwith "TODO: dyn Trait"
   | TAdt { builtin = Some TBox; generics = { types; _ }; _ } ->
@@ -656,7 +656,7 @@ and typ_of_struct_arr (env : env) (t : C.ty) (cg : C.constant_expr) : K.typ =
 
 let maybe_cg_array (env : env) (t : C.ty) (cg : C.constant_expr) =
   match cg.kind with
-  | CLiteral _ -> K.TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg))
+  | CInteger _ -> K.TArray (typ_of_ty env t, constant_of_integer_value (assert_cg_integer cg))
   | CVar var ->
       let id, cg_t = lookup_cg_in_types env (C.expect_free_var var) in
       assert (cg_t = K.TInt SizeT);
@@ -822,21 +822,21 @@ let expression_of_uint128_t (value : Z.t) =
   K.(
     with_type Builtin.uint128_t (EApp (Builtin.(get_128_op ("u", "from_bits")), [ high64; low64 ])))
 
-let expression_of_scalar_value sv : K.expr =
-  let int_ty = Charon.Scalars.get_ty sv in
-  let value = Charon.Scalars.get_val sv in
+let expression_of_integer_value integer : K.expr =
+  let int_ty = Charon.Scalars.get_ty integer in
+  let value = Charon.Scalars.get_val integer in
   match int_ty with
   | C.Signed C.I128 -> expression_of_int128_t value
   | C.Unsigned C.U128 -> expression_of_uint128_t value
   | _ ->
       let w = width_of_integer_type int_ty in
-      K.(with_type (TInt w) (EConstant (constant_of_scalar_value sv)))
+      K.(with_type (TInt w) (EConstant (constant_of_integer_value integer)))
 
-let expression_of_literal (_env : env) (l : C.literal) : K.expr =
-  match l with
-  | VScalar sv -> expression_of_scalar_value sv
-  | VBool b -> K.(with_type TBool (EBool b))
-  | VStr s ->
+let expression_of_constant_value (constant : C.constant_expr_kind) : K.expr =
+  match constant with
+  | CInteger value -> expression_of_integer_value value
+  | CBool b -> K.(with_type TBool (EBool b))
+  | CStr s ->
       let ascii = Utf8.ascii_of_utf8_str s in
       let len = String.length s in
       K.(
@@ -846,20 +846,19 @@ let expression_of_literal (_env : env) (l : C.literal) : K.expr =
                Some "ptr", with_type Krml.Checker.c_string (EString ascii);
                Some "meta", with_type Krml.Helpers.usize (EConstant (SizeT, string_of_int len));
              ]))
-  | VChar c -> K.(with_type Builtin.char_t (EConstant (UInt32, string_of_int @@ Uchar.to_int c)))
-  | VByteStr lst ->
+  | CChar c -> K.(with_type Builtin.char_t (EConstant (UInt32, string_of_int @@ Uchar.to_int c)))
+  | CByteStr lst ->
       let str = List.map (Printf.sprintf "%#x") lst |> String.concat "" in
       K.(with_type Krml.Checker.c_string (EString str))
-  | VFloat { C.float_ty; float_value } ->
+  | CFloat { C.float_ty; float_value } ->
       let w = float_width float_ty in
       K.(with_type (TInt w) (EConstant (w, float_value)))
+  | constant -> failwith ("Unsupported constant value: " ^ C.show_constant_expr_kind constant)
 
 let expression_of_const_generic env (cg : C.constant_expr) =
   match cg.kind with
-  | C.CGlobal _ -> failwith "TODO: CgGLobal"
   | C.CVar var -> expression_of_cg_var_id env (C.expect_free_var var)
-  | C.CLiteral l -> expression_of_literal env l
-  | _ -> failwith "TODO: CgExpr"
+  | value -> expression_of_constant_value value
 
 let has_unresolved_generic (ty : K.typ) : bool =
   object
@@ -1083,9 +1082,8 @@ and dst_reference_of_place (env : env) (p : C.place) : K.expr option =
 and expression_of_projection_operand (env : env) (operand : C.operand) : K.expr =
   match operand with
   | Copy p | Move p -> expression_of_place env p
-  | Constant { kind = CLiteral l; _ } -> expression_of_literal env l
   | Constant { kind = CVar var; _ } -> expression_of_cg_var_id env (C.expect_free_var var)
-  | _ -> fail "unsupported projection operand: `%s`" (C.show_operand operand)
+  | Constant { kind; _ } -> expression_of_constant_value kind
 
 let expression_of_place (env : env) (p : C.place) : K.expr =
   L.log "AstOfLlbc" "expression of place: %s" (C.show_place p);
@@ -1841,7 +1839,6 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
       expression_of_place env p
   | Copy p -> expression_of_place env p
   | Move p -> expression_of_place env p
-  | Constant { kind = CLiteral l; _ } -> expression_of_literal env l
   | Constant { kind = CVar var; _ } -> expression_of_cg_var_id env (C.expect_free_var var)
   | Constant { kind = CFnDef fn_ptr; _ } ->
       let e, _, _ = expression_of_fn_ptr env fn_ptr in
@@ -1871,8 +1868,7 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
             (Charon.Print.operand_to_string env.format_env op)
     end
   | Constant { kind = CAdt _; ty } when Charon.TypesUtils.ty_is_unit ty -> K.with_type TUnit K.EUnit
-  | Constant _ ->
-      fail "expression_of_operand: %s" (Charon.Print.operand_to_string env.format_env op)
+  | Constant { kind; _ } -> expression_of_constant_value kind
 
 let is_str env var_id =
   match lookup_with_original_type env var_id with
@@ -1990,12 +1986,14 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       let t = typ_of_ty env ty in
       K.(with_type TBool (EApp (Builtin.(expr_of_builtin_t alignof [ t ]), [])))
   | UnaryOp (Cast (CastScalar (_, dst)), e) ->
-      let dst = typ_of_literal_ty env dst in
+      let dst = typ_of_scalar_ty env dst in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
   | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
-  | UnaryOp (Cast (CastTransmute ((TRawPtr _ as _from), (TLiteral (TUInt Usize) as to_))), e) ->
+  | UnaryOp
+      (Cast (CastTransmute ((TRawPtr _ as _from), (TScalar (TInteger (Unsigned Usize)) as to_))), e)
+    ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
   | UnaryOp (Cast (CastFnPtr (TFnDef _from, TFnPtr _to)), e) ->
@@ -2073,7 +2071,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       (* Add a simpler case: identity cast is allowed *)
       let is_ident =
         match ck with
-        (* Here are `literal_type`s *)
+        (* Here are scalar types. *)
         | C.CastScalar (f, t) -> f = t
         (* The following are `type`s *)
         | C.CastFnPtr (f, t) | C.CastRawPtr (f, t) | C.CastUnsize (f, t, _) | C.CastTransmute (f, t)
@@ -2196,7 +2194,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       | _ ->
           let array_expr =
             K.with_type
-              (TArray (typ_of_ty env t, constant_of_scalar_value (assert_cg_scalar cg)))
+              (TArray (typ_of_ty env t, constant_of_integer_value (assert_cg_integer cg)))
               (K.EBufCreateL (Stack, List.map (expression_of_operand env) ops))
           in
           K.with_type typ_arr (mk_expr_arr_struct array_expr)
@@ -2254,15 +2252,15 @@ let switch_branch branches branch_id = C.BranchId.nth branches branch_id
 let switch_branches (data : C.switch_data) blocks =
   List.combine (C.switch_group_by_branch data) blocks
 
-let scalar_of_switch_case (case : C.constant_expr) =
+let integer_of_switch_case (case : C.constant_expr) =
   match case.kind with
-  | CLiteral (VScalar sv) -> sv
+  | CInteger value -> value
   | _ -> failwith "Expected an integer switch case"
 
 let constant_of_switch_case (case : C.constant_expr) =
   match case.kind with
-  | CLiteral (VScalar sv) -> constant_of_scalar_value sv
-  | CLiteral (VChar c) -> UInt32, string_of_int (Uchar.to_int c)
+  | CInteger value -> constant_of_integer_value value
+  | CChar c -> UInt32, string_of_int (Uchar.to_int c)
   | _ -> failwith "Expected an integer or character switch case"
 
 let variant_of_switch_case (case : C.constant_expr) =
@@ -2282,7 +2280,7 @@ let rec expression_of_switch_128bits env ret_var scrutinee branches fallback : K
   let folder (cases, block) else_branch =
     let guard =
       let make_eq case =
-        mk_op_app Eq scrutinee [ expression_of_scalar_value (scalar_of_switch_case case) ]
+        mk_op_app Eq scrutinee [ expression_of_integer_value (integer_of_switch_case case) ]
       in
       List.map make_eq cases |> function
       | [] -> Krml.Helpers.etrue
@@ -2408,9 +2406,9 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       | None ->
           let is_128bits =
             match op with
-            | Copy { ty = TLiteral (TInt I128 | TUInt U128); _ }
-            | Move { ty = TLiteral (TInt I128 | TUInt U128); _ }
-            | Constant { ty = TLiteral (TInt I128 | TUInt U128); _ } -> true
+            | Copy { ty = TScalar (TInteger (Signed I128 | Unsigned U128)); _ }
+            | Move { ty = TScalar (TInteger (Signed I128 | Unsigned U128)); _ }
+            | Constant { ty = TScalar (TInteger (Signed I128 | Unsigned U128)); _ } -> true
             | _ -> false
           in
           let grouped_branches =
@@ -2586,8 +2584,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
           let has_custom_constants =
             let rec has_custom_constants i = function
               | { C.discriminant; _ } :: bs ->
-                  Charon.Scalars.get_val (Charon.ValuesUtils.literal_as_scalar discriminant)
-                  <> Z.of_int i
+                  Charon.Scalars.get_val discriminant <> Z.of_int i
                   || has_custom_constants (i + 1) bs
               | _ -> false
             in
@@ -2599,8 +2596,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
               (fun ({ C.variant_name; discriminant; _ } : C.variant) ->
                 let v =
                   if has_custom_constants then
-                    Some
-                      (Charon.Scalars.get_val (Charon.ValuesUtils.literal_as_scalar discriminant))
+                    Some (Charon.Scalars.get_val discriminant)
                   else
                     None
                 in
