@@ -1540,7 +1540,7 @@ let lookup_fun (env : env) depth (fn_ptr : C.fn_ptr) : K.expr' * lookup_result =
       in
 
       match fn_ptr.kind with
-      | FunId (FRegular f) -> lookup_result_of_fun_id f
+      | Fun f -> lookup_result_of_fun_id f
       | TraitMethod (trait_ref, method_id) -> (
           match trait_ref.kind with
           | TraitImpl { id; _ } ->
@@ -1569,7 +1569,7 @@ let lookup_fun (env : env) depth (fn_ptr : C.fn_ptr) : K.expr' * lookup_result =
 
 let fn_ptr_is_opaque env (fn_ptr : C.fn_ptr) =
   match fn_ptr.kind with
-  | FunId (FRegular id) -> (
+  | Fun id -> (
       try
         match (env.get_nth_function id).body with
         | StructuredBody _ -> false
