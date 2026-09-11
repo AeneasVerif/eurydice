@@ -832,7 +832,7 @@ let expression_of_integer_value integer : K.expr =
       let w = width_of_integer_type int_ty in
       K.(with_type (TInt w) (EConstant (constant_of_integer_value integer)))
 
-let expression_of_constant_value (constant : C.constant_expr_kind) : K.expr =
+let expression_of_constant_value env (constant : C.constant_expr_kind) : K.expr =
   match constant with
   | CInteger value -> expression_of_integer_value value
   | CBool b -> K.(with_type TBool (EBool b))
@@ -853,12 +853,18 @@ let expression_of_constant_value (constant : C.constant_expr_kind) : K.expr =
   | CFloat { C.float_ty; float_value } ->
       let w = float_width float_ty in
       K.(with_type (TInt w) (EConstant (w, float_value)))
+  | CSizeOf ty ->
+      let ty = typ_of_ty env ty in
+      K.(with_type (TInt SizeT) (EApp (Builtin.(expr_of_builtin_t sizeof [ ty ]), [])))
+  | CAlignOf ty ->
+      let ty = typ_of_ty env ty in
+      K.(with_type (TInt SizeT) (EApp (Builtin.(expr_of_builtin_t alignof [ ty ]), [])))
   | constant -> failwith ("Unsupported constant value: " ^ C.show_constant_expr_kind constant)
 
 let expression_of_const_generic env (cg : C.constant_expr) =
   match cg.kind with
   | C.CVar var -> expression_of_cg_var_id env (C.expect_free_var var)
-  | value -> expression_of_constant_value value
+  | value -> expression_of_constant_value env value
 
 let has_unresolved_generic (ty : K.typ) : bool =
   object
@@ -1083,7 +1089,7 @@ and expression_of_projection_operand (env : env) (operand : C.operand) : K.expr 
   match operand with
   | Copy p | Move p -> expression_of_place env p
   | Constant { kind = CVar var; _ } -> expression_of_cg_var_id env (C.expect_free_var var)
-  | Constant { kind; _ } -> expression_of_constant_value kind
+  | Constant { kind; _ } -> expression_of_constant_value env kind
 
 let expression_of_place (env : env) (p : C.place) : K.expr =
   L.log "AstOfLlbc" "expression of place: %s" (C.show_place p);
@@ -1868,7 +1874,7 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
             (Charon.Print.operand_to_string env.format_env op)
     end
   | Constant { kind = CAdt _; ty } when Charon.TypesUtils.ty_is_unit ty -> K.with_type TUnit K.EUnit
-  | Constant { kind; _ } -> expression_of_constant_value kind
+  | Constant { kind; _ } -> expression_of_constant_value env kind
 
 let is_str env var_id =
   match lookup_with_original_type env var_id with
@@ -1979,12 +1985,6 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       let metadata = expression_of_operand env metadata in
       let e = expression_of_place env p in
       mk_reference ~const:(const_of_ref_kind rk) e metadata
-  | NullaryOp (SizeOf, ty) ->
-      let t = typ_of_ty env ty in
-      K.(with_type TBool (EApp (Builtin.(expr_of_builtin_t sizeof [ t ]), [])))
-  | NullaryOp (AlignOf, ty) ->
-      let t = typ_of_ty env ty in
-      K.(with_type TBool (EApp (Builtin.(expr_of_builtin_t alignof [ t ]), [])))
   | UnaryOp (Cast (CastScalar (_, dst)), e) ->
       let dst = typ_of_scalar_ty env dst in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
