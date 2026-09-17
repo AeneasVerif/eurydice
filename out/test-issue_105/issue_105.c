@@ -93,7 +93,7 @@ A monomorphic instance of core.result.branch_fd
 with types (), uint8_t
 
 */
-inline core_ops_control_flow_ControlFlow_19
+inline core_ops_control_flow_ControlFlow_20
 core_result_branch_fd_e9(core_result_Result_1d self)
 {
   if (!(self.tag == core_result_Ok))
@@ -101,29 +101,29 @@ core_result_branch_fd_e9(core_result_Result_1d self)
     uint8_t e = self.f0;
     return
       (
-        KRML_CLITERAL(core_ops_control_flow_ControlFlow_19){
+        KRML_CLITERAL(core_ops_control_flow_ControlFlow_20){
           .tag = core_ops_control_flow_Break,
-          .f0 = { .tag = core_result_Err, .val = { .case_Err = e } }
+          .f0 = { .tag = core_result_Err, .f0 = e }
         }
       );
   }
   return
-    (KRML_CLITERAL(core_ops_control_flow_ControlFlow_19){ .tag = core_ops_control_flow_Continue });
+    (KRML_CLITERAL(core_ops_control_flow_ControlFlow_20){ .tag = core_ops_control_flow_Continue });
 }
 
 /**
-This function found in impl {impl core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible, E>[{built_in impl core::marker::Sized for core::convert::Infallible}, @TraitClause1]> for core::result::Result<T, F>[@TraitClause0, @TraitClause2]}
+This function found in impl {impl core::ops::try_trait::FromResidual<core::result::Result<!, E>[{built_in impl core::marker::Sized for !}, @TraitClause1]> for core::result::Result<T, F>[@TraitClause0, @TraitClause2]}
 */
 /**
-A monomorphic instance of core.result.from_residual_9d
+A monomorphic instance of core.result.from_residual_2a
 with types (), uint8_t, uint8_t
 with const generics
 
 */
-inline core_result_Result_1d core_result_from_residual_9d_48(core_result_Result_8f residual)
+inline core_result_Result_1d core_result_from_residual_2a_48(core_result_Result_1d residual)
 {
   EURYDICE_ASSERT(residual.tag == core_result_Err, "panic!");
-  uint8_t e = residual.val.case_Err;
+  uint8_t e = residual.f0;
   return
     (
       KRML_CLITERAL(core_result_Result_1d){
@@ -140,11 +140,11 @@ core_result_Result_1d issue_105_inner(void)
 
 core_result_Result_1d issue_105_call_it(void)
 {
-  core_ops_control_flow_ControlFlow_19 uu____0 = core_result_branch_fd_e9(issue_105_inner());
+  core_ops_control_flow_ControlFlow_20 uu____0 = core_result_branch_fd_e9(issue_105_inner());
   if (!(uu____0.tag == core_ops_control_flow_Continue))
   {
-    core_result_Result_8f residual = uu____0.f0;
-    return core_result_from_residual_9d_48(residual);
+    core_result_Result_1d residual = uu____0.f0;
+    return core_result_from_residual_2a_48(residual);
   }
   return (KRML_CLITERAL(core_result_Result_1d){ .tag = core_result_Ok });
 }

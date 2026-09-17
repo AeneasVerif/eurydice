@@ -51,14 +51,10 @@ static KRML_MUSTINLINE uint8_t core_convert_from_29_90(uint8_t t)
   return t;
 }
 
-
-
-typedef uint8_t core_convert_Infallible;
-
 #define core_ops_control_flow_Continue 0
 #define core_ops_control_flow_Break 1
 
-typedef uint8_t core_ops_control_flow_ControlFlow_19_tags;
+typedef uint8_t core_ops_control_flow_ControlFlow_20_tags;
 
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
@@ -84,32 +80,16 @@ typedef struct core_result_Result_1d_s
 core_result_Result_1d;
 
 /**
-A monomorphic instance of core.result.Result
-with types core_convert_Infallible, uint8_t
-
-*/
-typedef struct core_result_Result_8f_s
-{
-  core_result_Result_1d_tags tag;
-  union {
-    core_convert_Infallible case_Ok;
-    uint8_t case_Err;
-  }
-  val;
-}
-core_result_Result_8f;
-
-/**
 A monomorphic instance of core.ops.control_flow.ControlFlow
-with types core_result_Result_8f, ()
+with types core_result_Result_1d, ()
 
 */
-typedef struct core_ops_control_flow_ControlFlow_19_s
+typedef struct core_ops_control_flow_ControlFlow_20_s
 {
-  core_ops_control_flow_ControlFlow_19_tags tag;
-  core_result_Result_8f f0;
+  core_ops_control_flow_ControlFlow_20_tags tag;
+  core_result_Result_1d f0;
 }
-core_ops_control_flow_ControlFlow_19;
+core_ops_control_flow_ControlFlow_20;
 
 /**
 This function found in impl {impl core::cmp::PartialEq<core::result::Result<T, E>[@TraitClause0, @TraitClause1]> for core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
@@ -131,18 +111,18 @@ A monomorphic instance of core.result.branch_fd
 with types (), uint8_t
 
 */
-core_ops_control_flow_ControlFlow_19 core_result_branch_fd_e9(core_result_Result_1d self);
+core_ops_control_flow_ControlFlow_20 core_result_branch_fd_e9(core_result_Result_1d self);
 
 /**
-This function found in impl {impl core::ops::try_trait::FromResidual<core::result::Result<core::convert::Infallible, E>[{built_in impl core::marker::Sized for core::convert::Infallible}, @TraitClause1]> for core::result::Result<T, F>[@TraitClause0, @TraitClause2]}
+This function found in impl {impl core::ops::try_trait::FromResidual<core::result::Result<!, E>[{built_in impl core::marker::Sized for !}, @TraitClause1]> for core::result::Result<T, F>[@TraitClause0, @TraitClause2]}
 */
 /**
-A monomorphic instance of core.result.from_residual_9d
+A monomorphic instance of core.result.from_residual_2a
 with types (), uint8_t, uint8_t
 with const generics
 
 */
-core_result_Result_1d core_result_from_residual_9d_48(core_result_Result_8f residual);
+core_result_Result_1d core_result_from_residual_2a_48(core_result_Result_1d residual);
 
 core_result_Result_1d issue_105_inner(void);
 
