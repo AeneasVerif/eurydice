@@ -104,13 +104,13 @@ core_cmp_impls__impl_core__cmp__PartialEq_usize__for_usize__eq(
   const size_t *x1
 );
 
+extern uint32_t core_cmp_impls__impl_core__cmp__Ord_for_u32__min(uint32_t x0, uint32_t x1);
+
 extern core_option_Option_77
 core_cmp_impls__impl_core__cmp__PartialOrd_usize__for_usize__partial_cmp(
   const size_t *x0,
   const size_t *x1
 );
-
-extern uint32_t core_cmp_impls__impl_core__cmp__Ord_for_u32__min(uint32_t x0, uint32_t x1);
 
 static inline uint64_t
 core_convert_num__impl_core__convert__From_u32__for_u64__from(uint32_t x0);

@@ -590,7 +590,8 @@ and typ_of_ty (env : env) (ty : Charon.Types.ty) : K.typ =
   match ty with
   | TVar var -> K.TBound (lookup_typ env (C.expect_free_var var))
   | TScalar t -> typ_of_scalar_ty env t
-  | TNever -> failwith "Impossible: Never"
+  (* C doesn't have an empty type. It's fine to pretend it's unit. *)
+  | TNever -> TUnit
   | TDynTrait _ -> failwith "TODO: dyn Trait"
   | TAdt { builtin = Some TBox; generics = { types; _ }; _ } ->
       let t =
