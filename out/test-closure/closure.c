@@ -15,22 +15,6 @@ typedef struct const_size_t__x2_s
 const_size_t__x2;
 
 /**
-This function found in impl {impl core::marker::Destruct for closure::f::{closure}<'_0>}
-*/
-void closure_f_closure_drop_glue_f7(const Eurydice_arr_58 **_)
-{
-
-}
-
-/**
-This function found in impl {impl core::marker::Destruct for closure::f::{closure}::{closure}<'_0, '_1>}
-*/
-void closure_f_closure_closure_drop_glue_9c(closure_f_closure_closure *_)
-{
-
-}
-
-/**
 This function found in impl {impl core::ops::function::FnMut<(usize,), usize> for closure::f::{closure}::{closure}<'_0, '_1>}
 */
 size_t closure_f_closure_call_mut_18(closure_f_closure_closure *_, size_t tupled_args)

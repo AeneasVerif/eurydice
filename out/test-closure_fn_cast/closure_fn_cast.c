@@ -8,14 +8,6 @@
 #include "closure_fn_cast.h"
 
 /**
-This function found in impl {impl core::marker::Destruct for closure_fn_cast::main::{closure}}
-*/
-void closure_fn_cast_main_closure_drop_glue_7e(void **_)
-{
-
-}
-
-/**
 This function found in impl {impl core::ops::function::Fn<(i32,), i32> for closure_fn_cast::main::{closure}}
 */
 int32_t closure_fn_cast_main_call_3f(void *const *_, int32_t tupled_args)
