@@ -41,24 +41,12 @@ extern size_t core_clone_impls__impl_core__clone__Clone_for_usize__clone(const s
 
 typedef uint8_t core_panicking_AssertKind;
 
-typedef const Eurydice_arr_58 *closure_f_closure;
-
-/**
-This function found in impl {impl core::marker::Destruct for closure::f::{closure}<'_0>}
-*/
-void closure_f_closure_drop_glue_f7(const Eurydice_arr_58 **_);
-
 typedef struct closure_f_closure_closure_s
 {
   const Eurydice_arr_58 *fst;
   const size_t *snd;
 }
 closure_f_closure_closure;
-
-/**
-This function found in impl {impl core::marker::Destruct for closure::f::{closure}::{closure}<'_0, '_1>}
-*/
-void closure_f_closure_closure_drop_glue_9c(closure_f_closure_closure *_);
 
 /**
 This function found in impl {impl core::ops::function::FnMut<(usize,), usize> for closure::f::{closure}::{closure}<'_0, '_1>}
@@ -69,6 +57,8 @@ size_t closure_f_closure_call_mut_18(closure_f_closure_closure *_, size_t tupled
 This function found in impl {impl core::ops::function::FnOnce<(usize,), usize> for closure::f::{closure}::{closure}<'_0, '_1>}
 */
 size_t closure_f_closure_call_once_c8(closure_f_closure_closure _, size_t _0);
+
+typedef const Eurydice_arr_58 *closure_f_closure;
 
 /**
 This function found in impl {impl core::ops::function::FnMut<(usize,), [usize; 1 : usize]> for closure::f::{closure}<'_0>}
