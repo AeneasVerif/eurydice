@@ -16,6 +16,30 @@ extern "C" {
 #endif
 
 /**
+A monomorphic instance of Eurydice.dst_ref_shared
+with types int32_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_shared_83_s
+{
+  const int32_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_shared_83;
+
+/**
+A monomorphic instance of Eurydice.dst_ref_mut
+with types int32_t, size_t
+
+*/
+typedef struct Eurydice_dst_ref_mut_83_s
+{
+  int32_t *ptr;
+  size_t meta;
+}
+Eurydice_dst_ref_mut_83;
+
+/**
 A monomorphic instance of Eurydice.arr
 with types uint8_t
 with const generics
