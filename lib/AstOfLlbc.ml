@@ -1837,7 +1837,7 @@ let expression_of_fn_ptr env (fn_ptr : C.fn_ptr) = expression_of_fn_ptr env "" f
 let global_is_const env id =
   match (env.get_nth_global id).global_kind with
   | NamedConst | AnonConst -> true
-  | Static | ThreadLocal -> false
+  | Static _ | VTableGlobal -> false
 
 let expression_of_operand (env : env) (op : C.operand) : K.expr =
   match op with
@@ -2788,7 +2788,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
               []
             else
               [ Macro ]
-        | Static | ThreadLocal ->
+        | Static _ | VTableGlobal ->
             (* This one needs to have an address, so definitely not emitting it as a macro. *)
             []
       in
