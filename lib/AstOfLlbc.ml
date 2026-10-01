@@ -2077,7 +2077,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
         (* The following are `type`s *)
         | C.CastFnPtr (f, t) | C.CastRawPtr (f, t) | C.CastUnsize (f, t, _) | C.CastTransmute (f, t)
           -> f = t
-        | C.CastConcretize _ -> false
+        | C.CastPtrExposeProvenance _ | C.CastPtrWithExposedProvenance _ | C.CastConcretize _ ->
+            false
       in
       if is_ident then
         expression_of_operand env e
@@ -2226,7 +2227,7 @@ let lesser t1 t2 =
 
 (* A `fn` pointer, which does not have trait bounds, and cannot be partially applied. This is a
    much simplified version of expression_of_fn_ptr. *)
-let expression_of_fn_op_dynamic (env : env) ({ func; args; dest } : C.call) =
+let expression_of_fn_op_dynamic (env : env) ({ func; args; dest; _ } : C.call) =
   let fHd =
     match func with
     | C.FnOpDynamic op -> expression_of_operand env op
