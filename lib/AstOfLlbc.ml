@@ -2387,7 +2387,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       in
       Krml.Helpers.with_unit K.(EAssign (dest, rhs))
   | Call (({ func = FnOpDynamic _; _ } as call), _) -> expression_of_fn_op_dynamic env call
-  | Abort _ -> with_any (K.EAbort (None, Some "panic!"))
+  | Panic _ | UndefinedBehavior | UnwindTerminate -> with_any (K.EAbort (None, Some "panic!"))
   | Return ->
       let e = expression_of_var_id env ret_var in
       K.(with_type TAny (EReturn e))
