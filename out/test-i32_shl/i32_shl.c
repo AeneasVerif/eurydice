@@ -20,11 +20,11 @@ void i32_shl_main(void)
   /* original Rust expression is not an lvalue in C */
   int16_t lvalue0 = -256;
   const_int16_t__x2 uu____0 = { .fst = &x, .snd = &lvalue0 };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
   int16_t y = (int16_t)((uint32_t)(-1 & (int16_t)65280U) << 8U) >> 8U;
   /* original Rust expression is not an lvalue in C */
   int16_t lvalue = 0;
   const_int16_t__x2 uu____1 = { .fst = &y, .snd = &lvalue };
-  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____1.fst == *uu____1.snd, "panic!");
 }
 

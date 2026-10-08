@@ -134,11 +134,11 @@ void fn_higher_order_use_compose_cg(void)
   /* original Rust expression is not an lvalue in C */
   size_t lvalue = (size_t)20U;
   const_size_t__x2 uu____0 = { .fst = &x, .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
   /* original Rust expression is not an lvalue in C */
   int32_t lvalue2 = 33;
   const_int32_t__x2 uu____1 = { .fst = &y, .snd = &lvalue2 };
-  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____1.fst == *uu____1.snd, "panic!");
 }
 
 void fn_higher_order_main(void)

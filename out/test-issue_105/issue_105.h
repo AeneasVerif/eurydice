@@ -122,7 +122,7 @@ with types (), uint8_t, uint8_t
 with const generics
 
 */
-core_result_Result_1d core_result_from_residual_2a_48(core_result_Result_1d residual);
+core_result_Result_1d core_result_from_residual_2a_7c(core_result_Result_1d residual);
 
 core_result_Result_1d issue_105_inner(void);
 

@@ -46,6 +46,6 @@ void fn_cast_main(void)
       .fst = fn_cast_applies_99((const int32_t *(*)(const int32_t *x0))fn_cast_id_ref_a8, &lvalue0),
       .snd = &lvalue
     };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 

@@ -12,7 +12,7 @@ This function found in impl {impl core::cmp::PartialEq<u8> for u8}
 */
 inline bool core_cmp_impls_ne_a2(const uint8_t *self, const uint8_t *other)
 {
-  return self[0U] != other[0U];
+  return *self != *other;
 }
 
 /**
@@ -20,7 +20,7 @@ This function found in impl {impl core::cmp::PartialEq<u8> for u8}
 */
 inline bool core_cmp_impls_eq_a2(const uint8_t *self, const uint8_t *other)
 {
-  return self[0U] == other[0U];
+  return *self == *other;
 }
 
 /**
@@ -120,7 +120,7 @@ with types (), uint8_t, uint8_t
 with const generics
 
 */
-inline core_result_Result_1d core_result_from_residual_2a_48(core_result_Result_1d residual)
+inline core_result_Result_1d core_result_from_residual_2a_7c(core_result_Result_1d residual)
 {
   EURYDICE_ASSERT(residual.tag == core_result_Err, "panic!");
   uint8_t e = residual.f0;
@@ -144,7 +144,7 @@ core_result_Result_1d issue_105_call_it(void)
   if (!(uu____0.tag == core_ops_control_flow_Continue))
   {
     core_result_Result_1d residual = uu____0.f0;
-    return core_result_from_residual_2a_48(residual);
+    return core_result_from_residual_2a_7c(residual);
   }
   return (KRML_CLITERAL(core_result_Result_1d){ .tag = core_result_Ok });
 }

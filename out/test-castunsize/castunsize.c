@@ -50,7 +50,7 @@ void castunsize_main1(void)
   uint32_t lvalue = 0U;
   const_uint32_t__x2
   uu____0 = { .fst = &((const uint32_t *)x0.ptr->my_data)[3U], .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 
 /**
@@ -66,7 +66,7 @@ void castunsize_main2_a5(void)
   uint32_t lvalue = 0U;
   const_uint32_t__x2
   uu____0 = { .fst = &((const uint32_t *)x0.ptr->my_data)[3U], .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 
 void castunsize_main3(void)
@@ -79,7 +79,7 @@ void castunsize_main3(void)
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
   const_uint32_t__x2 uu____0 = { .fst = &x.ptr[3U], .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 
 /**
@@ -97,7 +97,7 @@ void castunsize_main4_a5(void)
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
   const_uint32_t__x2 uu____0 = { .fst = &x.ptr[3U], .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 
 void castunsize_main(void)

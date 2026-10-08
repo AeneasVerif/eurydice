@@ -50,6 +50,6 @@ void partial_eq_main(void)
   /* original Rust expression is not an lvalue in C */
   const partial_eq_Enum *lvalue = &expected;
   const_const_partial_eq_Enum___x2 uu____1 = { .fst = &lvalue0, .snd = &lvalue };
-  EURYDICE_ASSERT(partial_eq_eq_9e(uu____1.fst[0U], uu____1.snd[0U]), "panic!");
+  EURYDICE_ASSERT(partial_eq_eq_9e(*uu____1.fst, *uu____1.snd), "panic!");
 }
 

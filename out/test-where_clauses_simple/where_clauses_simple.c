@@ -107,7 +107,7 @@ with types size_t
 with const generics
 - K= 3
 */
-size_t where_clauses_simple_fn_k_f3(void)
+size_t where_clauses_simple_fn_k_2d(void)
 {
   size_t x = where_clauses_simple_of_u16_2c_78(0U);
   return where_clauses_simple_add_2c_78((KRML_CLITERAL(Eurydice_arr_dc){ .data = { 0U } }), x);
@@ -131,7 +131,7 @@ with types size_t
 with const generics
 
 */
-size_t where_clauses_simple_fn_1_2f(void)
+size_t where_clauses_simple_fn_1_4d(void)
 {
   size_t x = where_clauses_simple_of_u16_2c_6c(0U);
   return where_clauses_simple_add_2c_6c((KRML_CLITERAL(Eurydice_arr_96){ .data = { 0U } }), x);
@@ -139,10 +139,10 @@ size_t where_clauses_simple_fn_1_2f(void)
 
 void where_clauses_simple_k_calls_k(void)
 {
-  size_t r = where_clauses_simple_fn_k_f3();
+  size_t r = where_clauses_simple_fn_k_2d();
   size_t r_expected = (size_t)3U;
   const_size_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 
 void where_clauses_simple_k_calls_one(void)
@@ -150,15 +150,15 @@ void where_clauses_simple_k_calls_one(void)
   uint64_t r = where_clauses_simple_fn_k_1c();
   uint64_t r_expected = 0ULL;
   const_uint64_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 
 void where_clauses_simple_one_calls_k(void)
 {
-  size_t r = where_clauses_simple_fn_1_2f();
+  size_t r = where_clauses_simple_fn_1_4d();
   size_t r_expected = (size_t)1U;
   const_size_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 
 void where_clauses_simple_one_calls_one(void)
@@ -166,7 +166,7 @@ void where_clauses_simple_one_calls_one(void)
   uint64_t r = where_clauses_simple_fn_1_fd();
   uint64_t r_expected = 0ULL;
   const_uint64_t__x2 uu____0 = { .fst = &r, .snd = &r_expected };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 
 /**
@@ -175,7 +175,7 @@ with types uint64_t, size_t
 with const generics
 
 */
-tuple_3d where_clauses_simple_double_e2(uint64_t x, size_t y)
+tuple_3d where_clauses_simple_double_5d(uint64_t x, size_t y)
 {
   uint64_t
   uu____0 = where_clauses_simple_add_cc((KRML_CLITERAL(Eurydice_arr_96){ .data = { 0U } }), x);
@@ -194,7 +194,7 @@ with types size_t, uint64_t
 with const generics
 - K= 3
 */
-tuple_7d where_clauses_simple_double_k_c8(size_t x, uint64_t y)
+tuple_7d where_clauses_simple_double_k_1f(size_t x, uint64_t y)
 {
   size_t
   uu____0 = where_clauses_simple_add_2c_78((KRML_CLITERAL(Eurydice_arr_dc){ .data = { 0U } }), x);
@@ -213,19 +213,19 @@ void where_clauses_simple_main(void)
   where_clauses_simple_k_calls_one();
   where_clauses_simple_one_calls_k();
   where_clauses_simple_one_calls_one();
-  tuple_3d x = where_clauses_simple_double_e2(1ULL, (size_t)1U);
-  tuple_7d y = where_clauses_simple_double_k_c8((size_t)1U, 1ULL);
+  tuple_3d x = where_clauses_simple_double_5d(1ULL, (size_t)1U);
+  tuple_7d y = where_clauses_simple_double_k_1f((size_t)1U, 1ULL);
   uint64_t x_0 = 1ULL;
   size_t x_1 = (size_t)2U;
   const_uint64_t__x2 uu____0 = { .fst = &x.fst, .snd = &x_0 };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
   const_size_t__x2 uu____1 = { .fst = &x.snd, .snd = &x_1 };
-  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____1.fst == *uu____1.snd, "panic!");
   size_t y_0 = (size_t)4U;
   uint64_t y_1 = 1ULL;
   const_size_t__x2 uu____2 = { .fst = &y.fst, .snd = &y_0 };
-  EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____2.fst == *uu____2.snd, "panic!");
   const_uint64_t__x2 uu____3 = { .fst = &y.snd, .snd = &y_1 };
-  EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____3.fst == *uu____3.snd, "panic!");
 }
 

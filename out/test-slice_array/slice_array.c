@@ -109,11 +109,11 @@ void slice_array_f1(void)
       (size_t)2U,
       Eurydice_array_u8x4,
       Eurydice_dst_ref_mut_b5_x2).fst;
-  y0.ptr->data[0U] = 1U;
-  uint8_t actual = x.data->data[0U];
+  y0.ptr[0U].data[0U] = 1U;
+  uint8_t actual = x.data[0U].data[0U];
   uint8_t expected = 1U;
   const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 
 /**
@@ -132,11 +132,11 @@ void slice_array_f4_23(void)
       (size_t)2U,
       Eurydice_array_u8x4,
       Eurydice_dst_ref_mut_b5_x2).fst;
-  y0.ptr->data[0U] = 1U;
-  uint8_t actual = x.data->data[0U];
+  y0.ptr[0U].data[0U] = 1U;
+  uint8_t actual = x.data[0U].data[0U];
   uint8_t expected = 1U;
   const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 
 void slice_array_f2(void)
@@ -152,14 +152,14 @@ void slice_array_f2(void)
       Eurydice_dst_ref_mut_b5_x2).fst;
   Eurydice_array_u8x4 z = y0.ptr[0U];
   z.data[0U] = 1U;
-  uint8_t actual = x.data->data[0U];
+  uint8_t actual = x.data[0U].data[0U];
   uint8_t expected = 0U;
   const_uint8_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
   /* original Rust expression is not an lvalue in C */
   uint8_t lvalue = 1U;
-  const_uint8_t__x2 uu____1 = { .fst = z.data, .snd = &lvalue };
-  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+  const_uint8_t__x2 uu____1 = { .fst = &z.data[0U], .snd = &lvalue };
+  EURYDICE_ASSERT(*uu____1.fst == *uu____1.snd, "panic!");
 }
 
 void slice_array_f3(void)
@@ -200,10 +200,10 @@ void slice_array_f3(void)
     unwrap_37_cc((
         KRML_CLITERAL(core_result_Result_c7){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
       ));
-  const_uint8_t__x2 uu____1 = { .fst = y1.data, .snd = y2->data };
-  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
-  const_uint8_t__x2 uu____2 = { .fst = y1.data, .snd = y3.data };
-  EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
+  const_uint8_t__x2 uu____1 = { .fst = &y1.data[0U], .snd = &y2->data[0U] };
+  EURYDICE_ASSERT(*uu____1.fst == *uu____1.snd, "panic!");
+  const_uint8_t__x2 uu____2 = { .fst = &y1.data[0U], .snd = &y3.data[0U] };
+  EURYDICE_ASSERT(*uu____2.fst == *uu____2.snd, "panic!");
 }
 
 /**
@@ -240,8 +240,8 @@ void slice_array_f5_23(void)
         const Eurydice_array_u8x4 *,
         core_array_TryFromSliceError,
         core_result_Result_90));
-  const_uint8_t__x2 uu____1 = { .fst = y1.data, .snd = y2->data };
-  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+  const_uint8_t__x2 uu____1 = { .fst = &y1.data[0U], .snd = &y2->data[0U] };
+  EURYDICE_ASSERT(*uu____1.fst == *uu____1.snd, "panic!");
 }
 
 void slice_array_main(void)

@@ -25,7 +25,7 @@ with const generics
 */
 uint64_t where_clauses_fncg_bar_16_f4(Eurydice_arr_07 x, Eurydice_arr_34 _)
 {
-  return (uint64_t)(uint32_t)x.data->data[0U];
+  return (uint64_t)(uint32_t)x.data[0U].data[0U];
 }
 
 /**
@@ -39,7 +39,7 @@ with const generics
 */
 uint64_t where_clauses_fncg_bar_16_9e(Eurydice_arr_40 x, Eurydice_arr_11 _)
 {
-  return (uint64_t)(uint32_t)x.data->data[0U];
+  return (uint64_t)(uint32_t)x.data[0U].data[0U];
 }
 
 /**
@@ -77,7 +77,7 @@ with types uint64_t
 with const generics
 - K= 12
 */
-uint64_t where_clauses_fncg_method_foo_4a_27(void)
+uint64_t where_clauses_fncg_method_foo_4a_50(void)
 {
   return
     where_clauses_fncg_bar_16_9e((
@@ -104,7 +104,7 @@ with const generics
 */
 uint64_t where_clauses_fncg_g_92(void)
 {
-  return where_clauses_fncg_method_foo_4a_27();
+  return where_clauses_fncg_method_foo_4a_50();
 }
 
 void where_clauses_fncg_main(void)
@@ -113,11 +113,11 @@ void where_clauses_fncg_main(void)
   /* original Rust expression is not an lvalue in C */
   uint64_t lvalue0 = 0ULL;
   const_uint64_t__x2 uu____0 = { .fst = &r, .snd = &lvalue0 };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
   uint64_t r0 = where_clauses_fncg_g_92();
   /* original Rust expression is not an lvalue in C */
   uint64_t lvalue = 0ULL;
   const_uint64_t__x2 uu____1 = { .fst = &r0, .snd = &lvalue };
-  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____1.fst == *uu____1.snd, "panic!");
 }
 
