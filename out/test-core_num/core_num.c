@@ -20,6 +20,6 @@ void core_num_main(void)
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 32U;
   const_uint32_t__x2 uu____0 = { .fst = &x, .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 

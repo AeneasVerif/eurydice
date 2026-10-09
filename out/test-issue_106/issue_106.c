@@ -14,7 +14,7 @@ uint8_t issue_106_generate(void)
 
 uint8_t issue_106_use_it(const uint8_t *x)
 {
-  return x[0U];
+  return *x;
 }
 
 uint8_t issue_106_use_ref(void)

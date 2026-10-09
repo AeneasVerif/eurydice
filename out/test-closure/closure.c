@@ -20,7 +20,7 @@ This function found in impl {impl core::ops::function::FnMut<(usize,), usize> fo
 size_t closure_f_closure_call_mut_18(closure_f_closure_closure *_, size_t tupled_args)
 {
   size_t j = tupled_args;
-  return _->fst->data[0U] + _->snd[0U] + j;
+  return _->fst->data[0U] + *_->snd + j;
 }
 
 /**
@@ -40,7 +40,7 @@ Eurydice_arr_58 closure_f_call_mut_49(const Eurydice_arr_58 **_, size_t tupled_a
   Eurydice_arr_58 arr_struct;
   {
     /* original Rust expression is not an lvalue in C */
-    closure_f_closure_closure lvalue = { .fst = _[0U], .snd = &i0 };
+    closure_f_closure_closure lvalue = { .fst = *_, .snd = &i0 };
     arr_struct.data[0U] = closure_f_closure_call_mut_18(&lvalue, (size_t)0U);
   }
   return arr_struct;
@@ -69,9 +69,9 @@ Eurydice_arr_2d closure_f(void)
 
 void closure_main(void)
 {
-  size_t actual = closure_f().data->data[0U];
+  size_t actual = closure_f().data[0U].data[0U];
   size_t expected = (size_t)0U;
   const_size_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 

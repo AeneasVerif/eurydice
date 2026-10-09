@@ -591,7 +591,7 @@ libcrux_ml_kem_mlkem768_avx2_unpacked_public_key(
   libcrux_ml_kem_ind_cca_unpacked_MlKemPublicKeyUnpacked_ef
   uu____0 =
     libcrux_ml_kem_ind_cca_unpacked_clone_04_e3(libcrux_ml_kem_ind_cca_unpacked_public_key_5b_e3(key_pair));
-  pk[0U] = uu____0;
+  *pk = uu____0;
 }
 
 /**

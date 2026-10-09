@@ -26,13 +26,13 @@ with types trait_generics_Foo[[$10size_t]]
 with const generics
 
 */
-void trait_generics_from_fn_74(void)
+void trait_generics_from_fn_ac(void)
 {
   trait_generics_call_once_b2_55();
 }
 
 void trait_generics_main(void)
 {
-  trait_generics_from_fn_74();
+  trait_generics_from_fn_ac();
 }
 

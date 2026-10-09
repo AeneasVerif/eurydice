@@ -9,7 +9,7 @@
 
 void repeat_main(void)
 {
-  EURYDICE_ASSERT(!(REPEAT_C1.data[0U] + REPEAT_C2.data->data[0U] +
+  EURYDICE_ASSERT(!(REPEAT_C1.data[0U] + REPEAT_C2.data[0U].data[0U] +
       (uint32_t)REPEAT_REJECTION_SAMPLE_SHUFFLE_TABLE.data[255U].data[0U]
     != 0U),
     "assert failure");

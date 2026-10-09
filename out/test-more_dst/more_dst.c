@@ -21,20 +21,20 @@ void more_dst_main(void)
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue0 = 0U;
   const_uint32_t__x2 uu____0 = { .fst = &((const uint32_t *)y1.ptr->data)[1U], .snd = &lvalue0 };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
   more_dst_TS2 x2 = { .foo = 0U, .data = x1 };
   Eurydice_dst_ref_shared_21 y2 = { .ptr = (const more_dst_T2 *)&x2, .meta = (size_t)4U };
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue1 = 0U;
   const_uint32_t__x2
   uu____1 = { .fst = &((const uint32_t *)y2.ptr->data.data)[2U], .snd = &lvalue1 };
-  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____1.fst == *uu____1.snd, "panic!");
   more_dst_TS3 x3 = { .foo = 0U, .data = x2 };
   Eurydice_dst_ref_shared_a8 y3 = { .ptr = (const more_dst_T3 *)&x3, .meta = (size_t)4U };
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 0U;
   const_uint32_t__x2
   uu____2 = { .fst = &((const uint32_t *)y3.ptr->data.data.data)[3U], .snd = &lvalue };
-  EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____2.fst == *uu____2.snd, "panic!");
 }
 

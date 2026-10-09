@@ -88,7 +88,7 @@ with const generics
 uint32_t array_mk_incr2_call_mut_fc_55(const uint32_t **_, size_t tupled_args)
 {
   size_t i = tupled_args;
-  return (uint32_t)i + _[0U][0U];
+  return (uint32_t)i + **_;
 }
 
 /**
@@ -181,7 +181,7 @@ with const generics
 size_t array_nested_from_fn_closure_call_mut_87_23(const size_t **_, size_t tupled_args)
 {
   size_t i = tupled_args;
-  return i + _[0U][0U];
+  return i + **_;
 }
 
 /**
@@ -310,7 +310,7 @@ bool array_const_eq_af(Eurydice_arr_a0 x, Eurydice_arr_a0 y)
 uint8_t array_fun(Eurydice_dst_ref_shared_60 x)
 {
   return
-    array_to_subslice_shared_d4(x.ptr,
+    array_to_subslice_shared_d4(&x.ptr[0U],
       (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)1U })).ptr[0U];
 }
 
@@ -336,28 +336,28 @@ void array_main(void)
   array_mut_foo((KRML_CLITERAL(array_Foo){ .x = x, .y = y }));
   /* XXX3
     XXX4 */
-  const_uint32_t__x2 uu____1 = { .fst = x.data, .snd = &unsigned0 };
-  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+  const_uint32_t__x2 uu____1 = { .fst = &x.data[0U], .snd = &unsigned0 };
+  EURYDICE_ASSERT(*uu____1.fst == *uu____1.snd, "panic!");
   Eurydice_arr_6c a = array_mk_incr_55();
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue0 = 9U;
   const_uint32_t__x2 uu____2 = { .fst = &a.data[9U], .snd = &lvalue0 };
-  EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____2.fst == *uu____2.snd, "panic!");
   Eurydice_arr_6c a0 = array_mk_incr2_55();
   uint32_t expected = 10U;
   const_uint32_t__x2 uu____3 = { .fst = &a0.data[9U], .snd = &expected };
-  EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____3.fst == *uu____3.snd, "panic!");
   Eurydice_arr_96 a1 = array_plus_one_6c((KRML_CLITERAL(Eurydice_arr_d5){ .data = { 0U } }));
   /* original Rust expression is not an lvalue in C */
   uint16_t lvalue1 = 1U;
-  const_uint16_t__x2 uu____4 = { .fst = a1.data, .snd = &lvalue1 };
-  EURYDICE_ASSERT(uu____4.fst[0U] == uu____4.snd[0U], "panic!");
+  const_uint16_t__x2 uu____4 = { .fst = &a1.data[0U], .snd = &lvalue1 };
+  EURYDICE_ASSERT(*uu____4.fst == *uu____4.snd, "panic!");
   /* XXX5 */
   Eurydice_arr_89 a2 = array_nested_from_fn_23();
   /* original Rust expression is not an lvalue in C */
   size_t lvalue2 = (size_t)6U;
   const_size_t__x2 uu____5 = { .fst = &a2.data[3U].data[3U], .snd = &lvalue2 };
-  EURYDICE_ASSERT(uu____5.fst[0U] == uu____5.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____5.fst == *uu____5.snd, "panic!");
   /* XXX6 */
   Eurydice_arr_a0 x0;
   uint32_t repeat_expression0[2U];
@@ -373,6 +373,6 @@ void array_main(void)
   /* original Rust expression is not an lvalue in C */
   bool lvalue = true;
   const_bool__x2 uu____6 = { .fst = &b, .snd = &lvalue };
-  EURYDICE_ASSERT(uu____6.fst[0U] == uu____6.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____6.fst == *uu____6.snd, "panic!");
 }
 

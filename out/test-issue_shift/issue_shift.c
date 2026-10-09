@@ -42,24 +42,24 @@ void issue_shift_main(void)
   /* original Rust expression is not an lvalue in C */
   int32_t lvalue0 = -2;
   const_int32_t__x2 uu____0 = { .fst = &y, .snd = &lvalue0 };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
   int8_t x0 = -1;
   int8_t y0 = (int8_t)((uint32_t)x0 << 1U);
   /* original Rust expression is not an lvalue in C */
   int8_t lvalue1 = -2;
   const_int8_t__x2 uu____1 = { .fst = &y0, .snd = &lvalue1 };
-  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____1.fst == *uu____1.snd, "panic!");
   int16_t x1 = -1;
   int16_t y1 = (int16_t)((uint32_t)x1 << 1U);
   /* original Rust expression is not an lvalue in C */
   int16_t lvalue2 = -2;
   const_int16_t__x2 uu____2 = { .fst = &y1, .snd = &lvalue2 };
-  EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____2.fst == *uu____2.snd, "panic!");
   int64_t x2 = -1LL;
   int64_t y2 = (int64_t)((uint64_t)x2 << 1U);
   /* original Rust expression is not an lvalue in C */
   int64_t lvalue = -2LL;
   const_int64_t__x2 uu____3 = { .fst = &y2, .snd = &lvalue };
-  EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____3.fst == *uu____3.snd, "panic!");
 }
 

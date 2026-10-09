@@ -24,6 +24,6 @@ void issue_49_main(void)
   size_t expected = (size_t)0U;
   size_t actual = issue_49_f((size_t)0U, (size_t)0U);
   const_size_t__x2 uu____0 = { .fst = &expected, .snd = &actual };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 

@@ -51,7 +51,7 @@ void nested_arrays_main(void)
         uint32_t actual = keys.data[i1].data[j].data[k];
         uint32_t expected = (uint32_t)k;
         const_uint32_t__x2 uu____0 = { .fst = &actual, .snd = &expected };
-        EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+        EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
       }
     }
   }

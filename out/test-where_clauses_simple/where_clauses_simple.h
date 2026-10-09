@@ -137,7 +137,7 @@ with types size_t
 with const generics
 - K= 3
 */
-size_t where_clauses_simple_fn_k_f3(void);
+size_t where_clauses_simple_fn_k_2d(void);
 
 /**
 A monomorphic instance of where_clauses_simple.fn_1
@@ -153,7 +153,7 @@ with types size_t
 with const generics
 
 */
-size_t where_clauses_simple_fn_1_2f(void);
+size_t where_clauses_simple_fn_1_4d(void);
 
 void where_clauses_simple_k_calls_k(void);
 
@@ -169,7 +169,7 @@ with types uint64_t, size_t
 with const generics
 
 */
-tuple_3d where_clauses_simple_double_e2(uint64_t x, size_t y);
+tuple_3d where_clauses_simple_double_5d(uint64_t x, size_t y);
 
 /**
 A monomorphic instance of where_clauses_simple.double_k
@@ -177,7 +177,7 @@ with types size_t, uint64_t
 with const generics
 - K= 3
 */
-tuple_7d where_clauses_simple_double_k_c8(size_t x, uint64_t y);
+tuple_7d where_clauses_simple_double_k_1f(size_t x, uint64_t y);
 
 void where_clauses_simple_main(void);
 

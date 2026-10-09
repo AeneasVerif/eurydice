@@ -48,23 +48,23 @@ void floating_points_main(void)
   memcpy(arr2.data, repeat_expression, (size_t)100U * sizeof (double));
   /* original Rust expression is not an lvalue in C */
   float lvalue0 = (float)1;
-  const_float__x2 uu____0 = { .fst = arr.data, .snd = &lvalue0 };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  const_float__x2 uu____0 = { .fst = &arr.data[0U], .snd = &lvalue0 };
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
   /* original Rust expression is not an lvalue in C */
   double lvalue1 = (double)1;
-  const_double__x2 uu____1 = { .fst = arr2.data, .snd = &lvalue1 };
-  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+  const_double__x2 uu____1 = { .fst = &arr2.data[0U], .snd = &lvalue1 };
+  EURYDICE_ASSERT(*uu____1.fst == *uu____1.snd, "panic!");
   /* original Rust expression is not an lvalue in C */
   size_t lvalue2 = (size_t)100U;
   /* original Rust expression is not an lvalue in C */
   size_t lvalue3 = (size_t)100U;
   const_size_t__x2 uu____2 = { .fst = &lvalue2, .snd = &lvalue3 };
-  EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____2.fst == *uu____2.snd, "panic!");
   /* original Rust expression is not an lvalue in C */
   size_t lvalue4 = (size_t)100U;
   /* original Rust expression is not an lvalue in C */
   size_t lvalue = (size_t)100U;
   const_size_t__x2 uu____3 = { .fst = &lvalue4, .snd = &lvalue };
-  EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____3.fst == *uu____3.snd, "panic!");
 }
 

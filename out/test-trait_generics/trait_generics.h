@@ -31,7 +31,7 @@ with types trait_generics_Foo[[$10size_t]]
 with const generics
 
 */
-void trait_generics_from_fn_74(void);
+void trait_generics_from_fn_ac(void);
 
 void trait_generics_main(void);
 

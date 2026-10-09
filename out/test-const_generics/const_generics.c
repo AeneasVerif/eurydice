@@ -105,14 +105,14 @@ void const_generics_main1(void)
   Eurydice_arr_a0 left = uu____0.left;
   Eurydice_arr_a0 right = uu____0.right;
   uint32_t expected = 0U;
-  const_uint32_t__x2 uu____1 = { .fst = left.data, .snd = &expected };
-  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+  const_uint32_t__x2 uu____1 = { .fst = &left.data[0U], .snd = &expected };
+  EURYDICE_ASSERT(*uu____1.fst == *uu____1.snd, "panic!");
   const_uint32_t__x2 uu____2 = { .fst = &left.data[1U], .snd = &expected };
-  EURYDICE_ASSERT(uu____2.fst[0U] == uu____2.snd[0U], "panic!");
-  const_uint32_t__x2 uu____3 = { .fst = right.data, .snd = &expected };
-  EURYDICE_ASSERT(uu____3.fst[0U] == uu____3.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____2.fst == *uu____2.snd, "panic!");
+  const_uint32_t__x2 uu____3 = { .fst = &right.data[0U], .snd = &expected };
+  EURYDICE_ASSERT(*uu____3.fst == *uu____3.snd, "panic!");
   const_uint32_t__x2 uu____4 = { .fst = &right.data[1U], .snd = &expected };
-  EURYDICE_ASSERT(uu____4.fst[0U] == uu____4.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____4.fst == *uu____4.snd, "panic!");
 }
 
 /**
@@ -196,7 +196,7 @@ void const_generics_main3(void)
   }
   bool expected = false;
   const_bool__x2 uu____0 = { .fst = &x, .snd = &expected };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 
 /**

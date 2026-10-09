@@ -25,7 +25,7 @@ void step_by_bar(void)
   /* original Rust expression is not an lvalue in C */
   int32_t lvalue = 36;
   const_int32_t__x2 uu____0 = { .fst = &i0, .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 
 void step_by_main1(void)

@@ -29,7 +29,7 @@ void issue_k630_main(void)
   memcpy(v.data, repeat_expression0, (size_t)5U * sizeof (Eurydice_arr_d5));
   /* original Rust expression is not an lvalue in C */
   uint32_t lvalue = 2U;
-  const_uint32_t__x2 uu____0 = { .fst = v.data->data, .snd = &lvalue };
-  EURYDICE_ASSERT(uu____0.fst[0U] == uu____0.snd[0U], "panic!");
+  const_uint32_t__x2 uu____0 = { .fst = &v.data[0U].data[0U], .snd = &lvalue };
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 

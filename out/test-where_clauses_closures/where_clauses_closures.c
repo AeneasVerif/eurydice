@@ -86,6 +86,6 @@ void where_clauses_closures_main(void)
   size_t x = uu____0.fst;
   size_t y = uu____0.snd;
   const_size_t__x2 uu____1 = { .fst = &x, .snd = &y };
-  EURYDICE_ASSERT(uu____1.fst[0U] == uu____1.snd[0U], "panic!");
+  EURYDICE_ASSERT(*uu____1.fst == *uu____1.snd, "panic!");
 }
 
