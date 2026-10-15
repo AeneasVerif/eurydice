@@ -712,7 +712,7 @@ let push_clause_binders env bs = List.fold_left push_clause_binder env bs
 let rec same_clause (a : C.trait_ref_kind) (b : C.trait_ref_kind) =
   match a, b with
   | Clause (id1, _), Clause (id2, _) -> id1 = id2
-  | ParentClause (parent1, id1), ParentClause (parent2, id2) ->
+  | ParentClause (parent1, id1, _), ParentClause (parent2, id2, _) ->
       id1 = id2 && same_clause parent1.kind parent2.kind
   | _ -> false
 
@@ -1325,20 +1325,15 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
       let substitute_visitor = Charon.Substitute.st_substitute_visitor in
 
       let name = string_of_name env trait_decl.item_meta.name in
-      let region_args : C.region_args =
-        {
-          regions =
-            List.map
-              (fun (r : C.region_param) -> C.RVar (Bound (0, r.index)))
-              tc.trait.binder_regions;
-        }
+      let region_args (regions : C.region_param list) : C.region_args =
+        { regions = List.map (fun (r : C.region_param) -> C.RVar (Bound (0, r.index))) regions }
       in
       let clause_ref : C.trait_ref =
         Option.value
           ~default:
             C.
               {
-                kind = C.Clause (Free clause_id, region_args);
+                kind = C.Clause (Free clause_id, region_args tc.trait.binder_regions);
                 trait_decl_ref = tc.trait.binder_value;
               }
           clause_ref
@@ -1462,7 +1457,11 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
               (* Mapping of the methods of the parent clause *)
               let clause_ref : C.trait_ref =
                 {
-                  kind = ParentClause (clause_ref, parent_clause.clause_id);
+                  kind =
+                    ParentClause
+                      ( clause_ref,
+                        parent_clause.clause_id,
+                        region_args parent_clause.trait.binder_regions );
                   trait_decl_ref = parent_clause.trait.binder_value;
                 }
               in
@@ -1735,7 +1734,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                    the clause arguments at call-site. We must pass whatever is relevant for this
                    clause, *transitively* (this means all the reachable parents). *)
                 let rec relevant = function
-                  | C.ParentClause (tref', _) -> relevant tref'.kind
+                  | C.ParentClause (tref', _, _) -> relevant tref'.kind
                   | clause_id' -> same_clause clause_id clause_id'
                 in
                 List.rev
@@ -1747,7 +1746,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                          when relevant clause_id' -> Some K.(with_type t (EBound i))
                        | _ -> None)
                      env.binders)
-            | ParentClause (tref, clause_id) ->
+            | ParentClause (tref, clause_id, _) ->
                 let decl_id = tref.trait_decl_ref.id in
                 let trait_decl = env.get_nth_trait_decl decl_id in
                 let name = string_of_name env trait_decl.item_meta.name in
