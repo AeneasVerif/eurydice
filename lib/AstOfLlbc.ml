@@ -470,17 +470,14 @@ let rec vtable_typ_of_dyn_pred (env : env) (pred : C.dyn_predicate) : K.typ =
             let find_assoc_ty_arg = function
               | C.TTraitType (tref, type_id, _) ->
                   (* We match by the trait-ID and the assoc-ty id, which is unique *)
-                  let target_id = tref.trait_decl_ref.binder_value.id in
+                  let target_id = tref.trait_decl_ref.id in
                   let assoc_ty_assns = binder_params.trait_type_constraints in
                   let finder (binded_assn : C.trait_type_constraint C.region_binder) =
                     let assn =
                       Charon.Substitute.(
                         extract_from_binder trait_type_constraint_substitute binded_assn)
                     in
-                    if
-                      assn.trait_ref.trait_decl_ref.binder_value.id = target_id
-                      && assn.type_id = type_id
-                    then
+                    if assn.trait_ref.trait_decl_ref.id = target_id && assn.type_id = type_id then
                       Some assn.ty
                     else
                       None
@@ -1322,7 +1319,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
       let name = string_of_name env trait_decl.item_meta.name in
       let clause_ref : C.trait_ref =
         Option.value
-          ~default:C.{ kind = C.Clause (Free clause_id); trait_decl_ref = tc.trait }
+          ~default:C.{ kind = C.Clause (Free clause_id); trait_decl_ref = tc.trait.binder_value }
           clause_ref
       in
 
@@ -1445,7 +1442,7 @@ let rec mk_clause_binders_and_args env ?depth ?clause_ref (trait_clauses : C.tra
               let clause_ref : C.trait_ref =
                 {
                   kind = ParentClause (clause_ref, parent_clause.clause_id);
-                  trait_decl_ref = parent_clause.trait;
+                  trait_decl_ref = parent_clause.trait.binder_value;
                 }
               in
               mk_clause_binders_and_args env ~depth:(depth ^ "--") ~clause_ref [ parent_clause ])
@@ -1625,7 +1622,8 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   L.log "Calls" "%s--> %d type_args, %d const_generics, %d trait_refs" depth (List.length type_args)
     (List.length const_generic_args) (List.length trait_refs);
   L.log "Calls" "%s--> trait_refs: %s\n" depth
-    (String.concat " ++ " (List.map (Charon.Print.trait_ref_to_string env.format_env) trait_refs));
+    (String.concat " ++ "
+       (List.map (Charon.PrintFmt.poly_trait_ref_to_string env.format_env) trait_refs));
   L.log "Calls" "%s--> pattern: %s" depth (string_of_fn_ptr env fn_ptr);
   L.log "Calls" "%s--> type_args: %s" depth
     (String.concat ", " (List.map (Charon.Print.ty_to_string env.format_env) type_args));
@@ -1661,12 +1659,12 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
       []
     else
       (* MUST have the same structure as mk_clause_binders_and_args *)
-      let rec build_trait_ref_mapping depth (trait_refs : C.trait_ref list) =
+      let rec build_trait_ref_mapping depth (trait_refs : C.poly_trait_ref list) =
         List.concat_map
-          (fun (trait_ref : C.trait_ref) ->
+          (fun (poly_trait_ref : C.poly_trait_ref) ->
+            let trait_ref = Charon.Substitute.poly_trait_ref_erase_binder poly_trait_ref in
             let name =
-              string_of_name env
-                (env.get_nth_trait_decl trait_ref.trait_decl_ref.binder_value.id).item_meta.name
+              string_of_name env (env.get_nth_trait_decl trait_ref.trait_decl_ref.id).item_meta.name
             in
             L.log "Calls" "%s--> trait_ref %s: %s\n" depth name (C.show_trait_ref trait_ref);
 
@@ -1708,7 +1706,8 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                      in
                      (*_generics.trait_refs*)
                      List.map
-                       (Charon.Substitute.st_substitute_visitor#visit_trait_ref subst)
+                       (Charon.Substitute.st_substitute_visitor#visit_region_binder
+                          Charon.Substitute.st_substitute_visitor#visit_trait_ref subst)
                        trait_impl.implied_trait_refs)
             | Clause _ as clause_id ->
                 (* Caller it itself polymorphic and refers to one of its own clauses to synthesize
@@ -1728,7 +1727,7 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
                        | _ -> None)
                      env.binders)
             | ParentClause (tref, clause_id) ->
-                let decl_id = tref.trait_decl_ref.binder_value.id in
+                let decl_id = tref.trait_decl_ref.id in
                 let trait_decl = env.get_nth_trait_decl decl_id in
                 let name = string_of_name env trait_decl.item_meta.name in
                 let clause_id = C.TraitClauseId.to_int clause_id in
@@ -1852,7 +1851,7 @@ let expression_of_operand (env : env) (op : C.operand) : K.expr =
       e
   | Constant { kind = CTraitConst (({ C.kind; _ } as trait_ref), const_id); _ } -> begin
       (* Logic similar to lookup_fun *)
-      let trait_id = trait_ref.trait_decl_ref.binder_value.id in
+      let trait_id = trait_ref.trait_decl_ref.id in
       match kind with
       | Clause _ | ParentClause _ ->
           let i, t = lookup_clause_constant env kind trait_id const_id in
