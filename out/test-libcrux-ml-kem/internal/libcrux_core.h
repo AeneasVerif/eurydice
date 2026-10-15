@@ -1385,9 +1385,9 @@ static inline uint32_t core_num__u8__count_ones(uint8_t x0);
 
 static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1);
 
-static inline Eurydice_array_u8x8 core_num__u64__to_le_bytes(uint64_t x0);
-
 static inline uint64_t core_num__u64__from_le_bytes(Eurydice_array_u8x8 x0);
+
+static inline Eurydice_array_u8x8 core_num__u64__to_le_bytes(uint64_t x0);
 
 /**
 This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
@@ -1598,19 +1598,9 @@ libcrux_secrets_int_public_integers_classify_mut_slice_75(Eurydice_mut_borrow_sl
 int16_t libcrux_secrets_int_I16(int16_t v);
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for i16}
+This function found in impl {impl libcrux_secrets::int::CastOps for u8}
 */
-uint8_t libcrux_secrets_int_as_u8_e5(int16_t self);
-
-/**
-This function found in impl {impl libcrux_secrets::int::CastOps for i16}
-*/
-uint16_t libcrux_secrets_int_as_u16_e5(int16_t self);
-
-/**
-This function found in impl {impl libcrux_secrets::int::CastOps for i32}
-*/
-int16_t libcrux_secrets_int_as_i16_06(int32_t self);
+int16_t libcrux_secrets_int_as_i16_c3(uint8_t self);
 
 /**
 This function found in impl {impl libcrux_secrets::int::CastOps for u16}
@@ -1618,19 +1608,19 @@ This function found in impl {impl libcrux_secrets::int::CastOps for u16}
 int16_t libcrux_secrets_int_as_i16_80(uint16_t self);
 
 /**
+This function found in impl {impl libcrux_secrets::int::CastOps for u16}
+*/
+uint64_t libcrux_secrets_int_as_u64_80(uint16_t self);
+
+/**
+This function found in impl {impl libcrux_secrets::int::CastOps for u32}
+*/
+int32_t libcrux_secrets_int_as_i32_c6(uint32_t self);
+
+/**
 This function found in impl {impl libcrux_secrets::int::CastOps for u32}
 */
 int16_t libcrux_secrets_int_as_i16_c6(uint32_t self);
-
-/**
-This function found in impl {impl libcrux_secrets::int::CastOps for u8}
-*/
-int16_t libcrux_secrets_int_as_i16_c3(uint8_t self);
-
-/**
-This function found in impl {impl libcrux_secrets::int::CastOps for i16}
-*/
-int16_t libcrux_secrets_int_as_i16_e5(int16_t self);
 
 /**
 This function found in impl {impl libcrux_secrets::int::CastOps for u64}
@@ -1643,14 +1633,24 @@ This function found in impl {impl libcrux_secrets::int::CastOps for i16}
 int32_t libcrux_secrets_int_as_i32_e5(int16_t self);
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for u32}
+This function found in impl {impl libcrux_secrets::int::CastOps for i16}
 */
-int32_t libcrux_secrets_int_as_i32_c6(uint32_t self);
+uint8_t libcrux_secrets_int_as_u8_e5(int16_t self);
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for u16}
+This function found in impl {impl libcrux_secrets::int::CastOps for i16}
 */
-uint64_t libcrux_secrets_int_as_u64_80(uint16_t self);
+uint16_t libcrux_secrets_int_as_u16_e5(int16_t self);
+
+/**
+This function found in impl {impl libcrux_secrets::int::CastOps for i16}
+*/
+int16_t libcrux_secrets_int_as_i16_e5(int16_t self);
+
+/**
+This function found in impl {impl libcrux_secrets::int::CastOps for i32}
+*/
+int16_t libcrux_secrets_int_as_i16_06(int32_t self);
 
 uint8_t
 libcrux_ml_kem_constant_time_ops_compare_ciphertexts_in_constant_time(
