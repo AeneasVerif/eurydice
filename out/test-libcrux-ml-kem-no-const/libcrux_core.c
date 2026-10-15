@@ -1674,27 +1674,12 @@ int16_t libcrux_secrets_int_I16(int16_t v)
 }
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for i16}
+This function found in impl {impl libcrux_secrets::int::CastOps for u8}
 */
-uint8_t libcrux_secrets_int_as_u8_e5(int16_t self)
+int16_t libcrux_secrets_int_as_i16_c3(uint8_t self)
 {
-  return classify_f9_90((uint8_t)libcrux_secrets_int_public_integers_declassify_22_39(self));
-}
-
-/**
-This function found in impl {impl libcrux_secrets::int::CastOps for i16}
-*/
-uint16_t libcrux_secrets_int_as_u16_e5(int16_t self)
-{
-  return classify_f9_de((uint16_t)libcrux_secrets_int_public_integers_declassify_22_39(self));
-}
-
-/**
-This function found in impl {impl libcrux_secrets::int::CastOps for i32}
-*/
-int16_t libcrux_secrets_int_as_i16_06(int32_t self)
-{
-  return libcrux_secrets_int_public_integers_classify_f9_39((int16_t)declassify_22_a8(self));
+  return
+    libcrux_secrets_int_public_integers_classify_f9_39((int16_t)(uint32_t)declassify_22_90(self));
 }
 
 /**
@@ -1707,29 +1692,27 @@ int16_t libcrux_secrets_int_as_i16_80(uint16_t self)
 }
 
 /**
+This function found in impl {impl libcrux_secrets::int::CastOps for u16}
+*/
+uint64_t libcrux_secrets_int_as_u64_80(uint16_t self)
+{
+  return classify_f9_49((uint64_t)(uint32_t)declassify_22_de(self));
+}
+
+/**
+This function found in impl {impl libcrux_secrets::int::CastOps for u32}
+*/
+int32_t libcrux_secrets_int_as_i32_c6(uint32_t self)
+{
+  return classify_f9_a8((int32_t)declassify_22_df(self));
+}
+
+/**
 This function found in impl {impl libcrux_secrets::int::CastOps for u32}
 */
 int16_t libcrux_secrets_int_as_i16_c6(uint32_t self)
 {
   return libcrux_secrets_int_public_integers_classify_f9_39((int16_t)declassify_22_df(self));
-}
-
-/**
-This function found in impl {impl libcrux_secrets::int::CastOps for u8}
-*/
-int16_t libcrux_secrets_int_as_i16_c3(uint8_t self)
-{
-  return
-    libcrux_secrets_int_public_integers_classify_f9_39((int16_t)(uint32_t)declassify_22_90(self));
-}
-
-/**
-This function found in impl {impl libcrux_secrets::int::CastOps for i16}
-*/
-int16_t libcrux_secrets_int_as_i16_e5(int16_t self)
-{
-  return
-    libcrux_secrets_int_public_integers_classify_f9_39(libcrux_secrets_int_public_integers_declassify_22_39(self));
 }
 
 /**
@@ -1749,19 +1732,36 @@ int32_t libcrux_secrets_int_as_i32_e5(int16_t self)
 }
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for u32}
+This function found in impl {impl libcrux_secrets::int::CastOps for i16}
 */
-int32_t libcrux_secrets_int_as_i32_c6(uint32_t self)
+uint8_t libcrux_secrets_int_as_u8_e5(int16_t self)
 {
-  return classify_f9_a8((int32_t)declassify_22_df(self));
+  return classify_f9_90((uint8_t)libcrux_secrets_int_public_integers_declassify_22_39(self));
 }
 
 /**
-This function found in impl {impl libcrux_secrets::int::CastOps for u16}
+This function found in impl {impl libcrux_secrets::int::CastOps for i16}
 */
-uint64_t libcrux_secrets_int_as_u64_80(uint16_t self)
+uint16_t libcrux_secrets_int_as_u16_e5(int16_t self)
 {
-  return classify_f9_49((uint64_t)(uint32_t)declassify_22_de(self));
+  return classify_f9_de((uint16_t)libcrux_secrets_int_public_integers_declassify_22_39(self));
+}
+
+/**
+This function found in impl {impl libcrux_secrets::int::CastOps for i16}
+*/
+int16_t libcrux_secrets_int_as_i16_e5(int16_t self)
+{
+  return
+    libcrux_secrets_int_public_integers_classify_f9_39(libcrux_secrets_int_public_integers_declassify_22_39(self));
+}
+
+/**
+This function found in impl {impl libcrux_secrets::int::CastOps for i32}
+*/
+int16_t libcrux_secrets_int_as_i16_06(int32_t self)
+{
+  return libcrux_secrets_int_public_integers_classify_f9_39((int16_t)declassify_22_a8(self));
 }
 
 /**

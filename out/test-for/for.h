@@ -106,14 +106,14 @@ core_iter_range__impl_core__iter__range__Step_for_i32__backward_overflowing(
   size_t x1
 );
 
+extern core_option_Option_9e
+core_iter_range__impl_core__iter__range__Step_for_i32__backward_checked(int32_t x0, size_t x1);
+
 extern tuple_90
 core_iter_range__impl_core__iter__range__Step_for_i32__forward_overflowing(
   int32_t x0,
   size_t x1
 );
-
-extern core_option_Option_9e
-core_iter_range__impl_core__iter__range__Step_for_i32__backward_checked(int32_t x0, size_t x1);
 
 extern core_option_Option_9e
 core_iter_range__impl_core__iter__range__Step_for_i32__forward_checked(int32_t x0, size_t x1);

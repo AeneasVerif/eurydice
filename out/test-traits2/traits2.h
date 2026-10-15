@@ -108,14 +108,14 @@ core_iter_range__impl_core__iter__range__Step_for_usize__backward_overflowing(
   size_t x1
 );
 
+extern core_option_Option_87
+core_iter_range__impl_core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
+
 extern tuple_c9
 core_iter_range__impl_core__iter__range__Step_for_usize__forward_overflowing(
   size_t x0,
   size_t x1
 );
-
-extern core_option_Option_87
-core_iter_range__impl_core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
 
 extern core_option_Option_87
 core_iter_range__impl_core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);

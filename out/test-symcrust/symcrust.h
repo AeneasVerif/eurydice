@@ -104,19 +104,19 @@ core_cmp_impls__impl_core__cmp__PartialEq_usize__for_usize__eq(
   const size_t *x1
 );
 
-extern uint32_t core_cmp_impls__impl_core__cmp__Ord_for_u32__min(uint32_t x0, uint32_t x1);
-
 extern core_option_Option_77
 core_cmp_impls__impl_core__cmp__PartialOrd_usize__for_usize__partial_cmp(
   const size_t *x0,
   const size_t *x1
 );
 
-static inline uint64_t
-core_convert_num__impl_core__convert__From_u32__for_u64__from(uint32_t x0);
+extern uint32_t core_cmp_impls__impl_core__cmp__Ord_for_u32__min(uint32_t x0, uint32_t x1);
 
 static inline uint32_t
 core_convert_num__impl_core__convert__From_u16__for_u32__from(uint16_t x0);
+
+static inline uint64_t
+core_convert_num__impl_core__convert__From_u32__for_u64__from(uint32_t x0);
 
 extern tuple_c9
 core_iter_range__impl_core__iter__range__Step_for_usize__backward_overflowing(
@@ -124,14 +124,14 @@ core_iter_range__impl_core__iter__range__Step_for_usize__backward_overflowing(
   size_t x1
 );
 
+extern core_option_Option_87
+core_iter_range__impl_core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
+
 extern tuple_c9
 core_iter_range__impl_core__iter__range__Step_for_usize__forward_overflowing(
   size_t x0,
   size_t x1
 );
-
-extern core_option_Option_87
-core_iter_range__impl_core__iter__range__Step_for_usize__backward_checked(size_t x0, size_t x1);
 
 extern core_option_Option_87
 core_iter_range__impl_core__iter__range__Step_for_usize__forward_checked(size_t x0, size_t x1);
