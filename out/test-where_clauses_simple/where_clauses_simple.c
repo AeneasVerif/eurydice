@@ -21,6 +21,13 @@ typedef struct const_size_t__x2_s
 }
 const_size_t__x2;
 
+typedef struct const_uint32_t__x2_s
+{
+  const uint32_t *fst;
+  const uint32_t *snd;
+}
+const_uint32_t__x2;
+
 /**
 This function found in impl {impl where_clauses_simple::Ops<1 : usize> for u64}
 */
@@ -207,6 +214,25 @@ tuple_7d where_clauses_simple_double_k_1f(size_t x, uint64_t y)
     );
 }
 
+/**
+This function found in impl {impl where_clauses_simple::ReadValue<'a> for u32}
+*/
+uint32_t where_clauses_simple_read_45(const uint32_t *self)
+{
+  return *self;
+}
+
+/**
+A monomorphic instance of where_clauses_simple.read
+with types uint32_t
+with const generics
+
+*/
+uint32_t where_clauses_simple_read_74(const uint32_t *value)
+{
+  return where_clauses_simple_read_45(value);
+}
+
 void where_clauses_simple_main(void)
 {
   where_clauses_simple_k_calls_k();
@@ -227,5 +253,13 @@ void where_clauses_simple_main(void)
   EURYDICE_ASSERT(*uu____2.fst == *uu____2.snd, "panic!");
   const_uint64_t__x2 uu____3 = { .fst = &y.snd, .snd = &y_1 };
   EURYDICE_ASSERT(*uu____3.fst == *uu____3.snd, "panic!");
+  /* original Rust expression is not an lvalue in C */
+  uint32_t lvalue0 = 7U;
+  /* original Rust expression is not an lvalue in C */
+  uint32_t lvalue1 = where_clauses_simple_read_74(&lvalue0);
+  /* original Rust expression is not an lvalue in C */
+  uint32_t lvalue = 7U;
+  const_uint32_t__x2 uu____4 = { .fst = &lvalue1, .snd = &lvalue };
+  EURYDICE_ASSERT(*uu____4.fst == *uu____4.snd, "panic!");
 }
 
