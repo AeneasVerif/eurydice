@@ -2229,10 +2229,10 @@ let lesser t1 t2 =
 let expression_of_fn_op_dynamic (env : env) ({ func; args; dest; _ } : C.call) =
   let fHd =
     match func with
-    | C.FnOpDynamic op -> expression_of_operand env op
+    | C.FnOpDynamic (op, _) -> expression_of_operand env op
     | _otw ->
-        failwith @@ "Internal error: the given call is not to `FnOpMove`."
-        ^ "The function `expression_of_fn_op_dynamic` handles only call to `FnOpMove`."
+        failwith @@ "Internal error: the given call is not to `FnOpDynamic`."
+        ^ "The function `expression_of_fn_op_dynamic` handles only calls to `FnOpDynamic`."
   in
   let lhs = expression_of_place env dest in
   let args = List.map (expression_of_operand env) args in
