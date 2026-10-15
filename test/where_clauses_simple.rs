@@ -72,6 +72,18 @@ fn double_k<const K: usize, T: Ops<K> + Copy, U: Ops<1>+Copy> (x: T, y: U) -> (T
     (T::add([0; K], x), U::add([0; 1], y))
 }
 
+trait ReadValue<'a> {
+    fn read(&'a self) -> u32;
+}
+
+impl<'a> ReadValue<'a> for u32 {
+    fn read(&'a self) -> u32 { *self }
+}
+
+fn read<T: for<'a> ReadValue<'a>>(value: &T) -> u32 {
+    value.read()
+}
+
 fn main() {
     // The four common situations with const generics in bounds.
     k_calls_k();
@@ -90,4 +102,5 @@ fn main() {
     let y_1 = 1u64;
     assert_eq!(y.0, y_0);
     assert_eq!(y.1, y_1);
+    assert_eq!(read(&7u32), 7);
 }

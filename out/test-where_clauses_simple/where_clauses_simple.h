@@ -179,6 +179,19 @@ with const generics
 */
 tuple_7d where_clauses_simple_double_k_1f(size_t x, uint64_t y);
 
+/**
+This function found in impl {impl where_clauses_simple::ReadValue<'a> for u32}
+*/
+uint32_t where_clauses_simple_read_45(const uint32_t *self);
+
+/**
+A monomorphic instance of where_clauses_simple.read
+with types uint32_t
+with const generics
+
+*/
+uint32_t where_clauses_simple_read_74(const uint32_t *value);
+
 void where_clauses_simple_main(void);
 
 #if defined(__cplusplus)
