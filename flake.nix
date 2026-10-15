@@ -45,7 +45,7 @@
         , z3
         , cmake
         , git
-        , mold-wrapped
+        , mold
         , ninja
         , gnugrep
         , charon
@@ -108,7 +108,7 @@
                 nativeBuildInputs = [
                   cmake
                   git
-                  mold-wrapped
+                  mold
                   ninja
                   # Crane hooks that will use the
                   # `cargoArtifacts`/`cargoVendorDir` to tell cargo where to
@@ -193,8 +193,8 @@
           pkgs.ocamlPackages.ocaml-lsp
           pkgs.rustup
         ];
-        buildInputs = [ charon.buildInputs ];
-        nativeBuildInputs = [ charon.nativeBuildInputs pkgs.clang ];
+        buildInputs = charon.buildInputs;
+        nativeBuildInputs = charon.nativeBuildInputs ++ [ pkgs.clang ];
 
         inputsFrom = [
           packages.default
