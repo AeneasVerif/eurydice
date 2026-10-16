@@ -829,9 +829,12 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_1(__m256i vector)
   __m128i high_msbs = mm256_extracti128_si256(1, lsb_to_msb, __m128i);
   __m128i msbs = mm_packs_epi16(low_msbs, high_msbs);
   int32_t bits_packed = mm_movemask_epi8(msbs);
-  Eurydice_array_u8x2
-  result = { .data = { (uint8_t)bits_packed, (uint8_t)(bits_packed >> 8U) } };
-  return result;
+  return
+    (
+      KRML_CLITERAL(Eurydice_array_u8x2){
+        .data = { (uint8_t)bits_packed, (uint8_t)(bits_packed >> 8U) }
+      }
+    );
 }
 
 KRML_MUSTINLINE size_t

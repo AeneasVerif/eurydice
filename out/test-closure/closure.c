@@ -63,8 +63,7 @@ Eurydice_arr_2d closure_f(void)
     const Eurydice_arr_58 *lvalue = &s;
     arr_struct.data[0U] = closure_f_call_mut_49(&lvalue, (size_t)0U);
   }
-  Eurydice_arr_2d a = arr_struct;
-  return a;
+  return arr_struct;
 }
 
 void closure_main(void)

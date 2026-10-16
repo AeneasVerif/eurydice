@@ -3638,9 +3638,7 @@ libcrux_ml_kem_vector_portable_compress_decompress_1(Eurydice_arr_d6 a)
 {
   Eurydice_arr_d6 z = libcrux_ml_kem_vector_portable_vector_type_zero();
   Eurydice_arr_d6 s = libcrux_ml_kem_vector_portable_arithmetic_sub(z, &a);
-  Eurydice_arr_d6
-  res = libcrux_ml_kem_vector_portable_arithmetic_bitwise_and_with_constant(s, 1665);
-  return res;
+  return libcrux_ml_kem_vector_portable_arithmetic_bitwise_and_with_constant(s, 1665);
 }
 
 /**
