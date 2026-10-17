@@ -1858,6 +1858,10 @@ let global_is_const env id =
   | NamedConst | AnonConst -> true
   | Static _ | VTableGlobal -> false
 
+let ty_of_operand = function
+  | C.Copy p | Move p -> p.ty
+  | Constant c -> c.ty
+
 let expression_of_operand (env : env) (op : C.operand) : K.expr =
   match op with
   | Copy ({ kind = PlaceGlobal { id; _ }; _ } as p) when global_is_const env id ->
@@ -2005,32 +2009,46 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       let metadata = expression_of_operand env metadata in
       let e = expression_of_place env p in
       mk_reference ~const:(const_of_ref_kind rk) e metadata
-  | UnaryOp (Cast (CastScalar (_, dst)), e) ->
+  | UnaryOp (Cast (CastScalar dst), e) ->
       let dst = typ_of_scalar_ty env dst in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
-  | UnaryOp (Cast (CastRawPtr (_from, to_)), e) ->
+  | UnaryOp (Cast (CastRawPtr to_), e) ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
-  | UnaryOp
-      (Cast (CastTransmute ((TRawPtr _ as _from), (TScalar (TInteger (Unsigned Usize)) as to_))), e)
-    ->
+  | UnaryOp (Cast (CastTransmute (TScalar (TInteger (Unsigned Usize)) as to_)), e)
+    when match ty_of_operand e with
+         | TRawPtr _ -> true
+         | _ -> false ->
       let dst = typ_of_ty env to_ in
       K.with_type dst (K.ECast (expression_of_operand env e, dst))
-  | UnaryOp (Cast (CastFnPtr (TFnDef _from, TFnPtr _to)), e) ->
+  | UnaryOp (Cast CastFnDefToFnPtr, e) ->
       (* From FnDef to FnPtr *)
-      if Charon.Substitute.lookup_fndef_sig env.crate _from = Some _to then
+      let from = ty_of_operand e in
+      let from =
+        match from with
+        | TFnDef f -> f
+        | _ -> assert false
+      in
+      let to_ =
+        match expected_ty with
+        | TFnPtr f -> f
+        | _ -> assert false
+      in
+      if Charon.Substitute.lookup_fndef_sig env.crate from = Some to_ then
         expression_of_operand env e
       else
-        let dst = typ_of_ty env (TFnPtr _to) in
+        let dst = typ_of_ty env expected_ty in
         K.with_type dst (K.ECast (expression_of_operand env e, dst))
-  | UnaryOp (Cast (CastFnPtr (TFnPtr _, TFnPtr _)), e) ->
+  | UnaryOp (Cast CastFnPtrToUnsafe, e) ->
       (* possible safe fn to unsafe fn, same in C *)
       expression_of_operand env e
-  | UnaryOp (Cast (CastUnsize (ty_from, ty_to, meta) as ck), e) ->
+  | UnaryOp (Cast (CastSubtype _), e) -> expression_of_operand env e
+  | UnaryOp (Cast (CastUnsize (ty_to, meta) as ck), e) ->
       (* DSTs: we support going from &T<S1> to &T<S2> where S1 is sized,  S2 is
          unsized and &T<S2> becomes a fat pointer. The base case is from &T<[U;N]>
          to T<[U]>. See test/more_dst.rs for user-defined DST case. We build this
          coercion by hand, and slightly violate C's strict aliasing rules. *)
+      let ty_from = ty_of_operand e in
       let t_from = typ_of_ty env ty_from and t_to = typ_of_ty env ty_to in
       let e = expression_of_operand env e in
       begin match meta, t_from, destruct_arr_dst_ref t_to with
@@ -2076,7 +2094,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
             (Charon.Print.cast_kind_to_string env.format_env ck)
             ptyp t_to ptyp t_from
       end
-  | UnaryOp (Cast (CastConcretize (_from_ty, to_ty)), e) -> (
+  | UnaryOp (Cast (CastConcretize to_ty), e) -> (
       (* Concretization cast is a no-op at runtime *)
       let op_e = expression_of_operand env e in
       let typ = typ_of_ty env to_ty in
@@ -2085,21 +2103,12 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       | None ->
           failwith
             ("unknown concretize cast: `"
-            ^ Charon.Print.cast_kind_to_string env.format_env (CastConcretize (_from_ty, to_ty))
+            ^ Charon.Print.cast_kind_to_string env.format_env (CastConcretize to_ty)
             ^ "`"))
   | UnaryOp (Cast ck, e) ->
       (* Add a simpler case: identity cast is allowed *)
-      let is_ident =
-        match ck with
-        (* Here are scalar types. *)
-        | C.CastScalar (f, t) -> f = t
-        (* The following are `type`s *)
-        | C.CastFnPtr (f, t) | C.CastRawPtr (f, t) | C.CastUnsize (f, t, _) | C.CastTransmute (f, t)
-          -> f = t
-        | C.CastPtrExposeProvenance _ | C.CastPtrWithExposedProvenance _ | C.CastConcretize _ ->
-            false
-      in
-      if is_ident then
+      let source_ty = ty_of_operand e in
+      if source_ty = expected_ty then
         expression_of_operand env e
       else
         failwith ("unknown cast: `" ^ Charon.Print.cast_kind_to_string env.format_env ck ^ "`")
