@@ -79,6 +79,10 @@ test/core_num.llbc: CHARON_EXTRA = \
   --include=core::num::*::BITS \
   --include=core::num::*::MAX
 
+test/issue_461.llbc: CHARON_EXTRA = \
+  --include=core::num::*::MAX \
+  --include=core::num::*::MIN
+
 test/println.llbc: CHARON_EXTRA = \
   --include=core::fmt::Arguments --include=core::fmt::rt::*::new_const \
   --include=core::fmt::rt::Argument
