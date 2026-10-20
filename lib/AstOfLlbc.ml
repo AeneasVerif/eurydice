@@ -2043,7 +2043,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       (* possible safe fn to unsafe fn, same in C *)
       expression_of_operand env e
   | UnaryOp (Cast (CastSubtype _), e) -> expression_of_operand env e
-  | UnaryOp (Cast (CastUnsize (ty_to, meta) as ck), e) ->
+  | UnaryOp (Cast (CastUnsize (ty_to, meta, _) as ck), e) ->
       (* DSTs: we support going from &T<S1> to &T<S2> where S1 is sized,  S2 is
          unsized and &T<S2> becomes a fat pointer. The base case is from &T<[U;N]>
          to T<[U]>. See test/more_dst.rs for user-defined DST case. We build this
@@ -2094,7 +2094,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
             (Charon.Print.cast_kind_to_string env.format_env ck)
             ptyp t_to ptyp t_from
       end
-  | UnaryOp (Cast (CastConcretize to_ty), e) -> (
+  | UnaryOp (Cast (CastConcretize (to_ty, path)), e) -> (
       (* Concretization cast is a no-op at runtime *)
       let op_e = expression_of_operand env e in
       let typ = typ_of_ty env to_ty in
@@ -2103,7 +2103,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
       | None ->
           failwith
             ("unknown concretize cast: `"
-            ^ Charon.Print.cast_kind_to_string env.format_env (CastConcretize to_ty)
+            ^ Charon.Print.cast_kind_to_string env.format_env (CastConcretize (to_ty, path))
             ^ "`"))
   | UnaryOp (Cast ck, e) ->
       (* Add a simpler case: identity cast is allowed *)
