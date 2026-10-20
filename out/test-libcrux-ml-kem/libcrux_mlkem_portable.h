@@ -273,7 +273,7 @@ Eurydice_array_u8x2 libcrux_ml_kem_vector_portable_serialize_1_44(Eurydice_arr_d
 
 Eurydice_arr_d6 libcrux_ml_kem_vector_portable_vector_type_zero(void);
 
-#define LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_SHIFT (16U)
+#define LIBCRUX_ML_KEM_VECTOR_PORTABLE_ARITHMETIC_MONTGOMERY_SHIFT ((uint8_t)16U)
 
 /**
  Signed Montgomery Reduction
