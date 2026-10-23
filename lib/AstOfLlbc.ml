@@ -856,7 +856,7 @@ let expression_of_constant_value env (constant : C.constant_expr_kind) : K.expr 
   | CByteStr lst ->
       let str = List.map (Printf.sprintf "%#x") lst |> String.concat "" in
       K.(with_type Krml.Checker.c_string (EString str))
-  | CFloat { C.float_ty; float_value } ->
+  | CFloat { C.float_ty; float_value; float_bits = _ } ->
       let w = float_width float_ty in
       K.(with_type (TInt w) (EConstant (w, float_value)))
   | CSizeOf ty ->
