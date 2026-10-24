@@ -2967,28 +2967,28 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
   total := List.length declarations;
   let format_env = Charon.Print.crate_to_fmt_env crate in
   let get_nth_function id =
-    match C.FunDeclId.Map.find_opt id fun_decls with
+    match C.FunDeclId.HashMap.find_opt id fun_decls with
     | Some f -> f
     | None -> fail "Function id not found: %s" (Charon.Print.fun_decl_id_to_string format_env id)
   in
   let get_nth_type id =
-    match C.TypeDeclId.Map.find_opt id type_decls with
+    match C.TypeDeclId.HashMap.find_opt id type_decls with
     | Some ty -> ty
     | None -> fail "Type id not found: %s" (Charon.Print.type_decl_id_to_string format_env id)
   in
   let get_nth_global id =
-    match C.GlobalDeclId.Map.find_opt id global_decls with
+    match C.GlobalDeclId.HashMap.find_opt id global_decls with
     | Some g -> g
     | None -> fail "Global id not found: %s" (Charon.Print.global_decl_id_to_string format_env id)
   in
   let get_nth_trait_impl id =
-    match C.TraitImplId.Map.find_opt id trait_impls with
+    match C.TraitImplId.HashMap.find_opt id trait_impls with
     | Some impl -> impl
     | None ->
         fail "Trait impl id not found: %s" (Charon.Print.trait_impl_id_to_string format_env id)
   in
   let get_nth_trait_decl id =
-    match C.TraitDeclId.Map.find_opt id trait_decls with
+    match C.TraitDeclId.HashMap.find_opt id trait_decls with
     | Some decl -> decl
     | None ->
         fail "Trait decl id not found: %s" (Charon.Print.trait_decl_id_to_string format_env id)
