@@ -883,15 +883,13 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
   | PlaceLocal var_id ->
       let i, t = lookup env var_id in
       K.(with_type t (EBound i))
+  | PlaceGlobal { id; _ }
+    when Option.is_none (Charon.GAstUtils.init_fun_id_of_global (env.get_nth_global id)) ->
+      (* Globals without initializers are constants: we inline them *)
+      expression_of_constant_value env (env.get_nth_global id).value.kind
   | PlaceGlobal { id; _ } ->
       let global = env.get_nth_global id in
-      let ty =
-        match global.value.kind with
-        (* A string literal global, see [expression_of_constant_value] *)
-        | CStr _ -> Krml.Checker.c_string
-        | _ -> typ_of_ty env p.ty
-      in
-      K.with_type ty (K.EQualified (lid_of_name env global.item_meta.name))
+      K.with_type (typ_of_ty env p.ty) (K.EQualified (lid_of_name env global.item_meta.name))
   | PlaceProjection (sub_place, PtrMetadata) -> begin
       let e = expression_of_place env sub_place in
       match e.typ with
