@@ -843,15 +843,9 @@ let expression_of_constant_value env (constant : C.constant_expr_kind) : K.expr 
   | CInteger value -> expression_of_integer_value value
   | CBool b -> K.(with_type TBool (EBool b))
   | CStr s ->
-      let ascii = Utf8.ascii_of_utf8_str s in
-      let len = String.length s in
-      K.(
-        with_type (Builtin.str_t ~const:true)
-          (EFlat
-             [
-               Some "ptr", with_type Krml.Checker.c_string (EString ascii);
-               Some "meta", with_type Krml.Helpers.usize (EConstant (SizeT, string_of_int len));
-             ]))
+      (* A [str] value (not [&str]): only appears in globals, which are then borrowed with their
+         length as metadata. *)
+      K.(with_type Krml.Checker.c_string (EString (Utf8.ascii_of_utf8_str s)))
   | CChar c -> K.(with_type Builtin.char_t (EConstant (UInt32, string_of_int @@ Uchar.to_int c)))
   | CByteStr lst ->
       let str = List.map (Printf.sprintf "%#x") lst |> String.concat "" in
@@ -889,6 +883,10 @@ let rec expression_of_place (env : env) (p : C.place) : K.expr =
   | PlaceLocal var_id ->
       let i, t = lookup env var_id in
       K.(with_type t (EBound i))
+  | PlaceGlobal { id; _ }
+    when Option.is_none (Charon.GAstUtils.init_fun_id_of_global (env.get_nth_global id)) ->
+      (* Globals without initializers are constants: we inline them *)
+      expression_of_constant_value env (env.get_nth_global id).value.kind
   | PlaceGlobal { id; _ } ->
       let global = env.get_nth_global id in
       K.with_type (typ_of_ty env p.ty) (K.EQualified (lid_of_name env global.item_meta.name))
@@ -1917,6 +1915,12 @@ let mk_reference ~const (e : K.expr) (metadata : K.expr) : K.expr =
   | K.TUnit -> addrof ~const e
   | _ -> (
       match e.typ with
+      | _ when e.typ = Krml.Checker.c_string ->
+          (* A string literal: it is already a pointer *)
+          K.(
+            with_type
+              (Builtin.mk_dst_ref ~const Builtin.c_char_t metadata.typ)
+              (EFlat [ Some "ptr", e; Some "meta", metadata ]))
       | TApp (lid, [ t ]) when lid = Builtin.derefed_slice ->
           (* The special "base case" of DSTs: slice<T>
           where we have to cast [derefed_slice<T>] into [T*] for the .ptr field in the fat pointer  *)
@@ -2793,6 +2797,18 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
                        name,
                        arg_binders,
                        body ))))
+  | IdGlobal id when Option.is_none (Charon.GAstUtils.init_fun_id_of_global (env.get_nth_global id))
+    ->
+      (* Globals without initializers are constants *)
+      let global = env.get_nth_global id in
+      let body = expression_of_constant_value env global.value.kind in
+      Some
+        (K.DGlobal
+           ( [ Krml.Common.Private; Const ""; Macro ],
+             lid_of_name env global.item_meta.name,
+             0,
+             body.typ,
+             body ))
   | IdGlobal id ->
       let global = env.get_nth_global id in
       let { C.item_meta; ty; def_id; _ } = global in
