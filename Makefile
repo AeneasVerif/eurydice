@@ -57,7 +57,8 @@ clean-and-test:
 .PRECIOUS: %.llbc
 %.llbc: %.rs .charon_version
 	# --mir elaborated --add-drop-bounds 
-	$(CHARON) rustc --preset=eurydice --dest-file "$@" $(CHARON_EXTRA) -- -Aunused $<
+
+	$(CHARON) rustc --monomorphize --preset=eurydice --dest-file "$@" $(CHARON_EXTRA) -- -Aunused $<
 
 out/test-%/main.c: test/main.c
 	mkdir -p out/test-$*
@@ -87,6 +88,9 @@ test/println.llbc: CHARON_EXTRA = \
   --include=core::fmt::Arguments --include=core::fmt::rt::*::new_const \
   --include=core::fmt::rt::Argument
 
+# test-where_clauses_closures: CHARON_EXTRA = \
+# 	--include=core::convert::*
+
 test/option.llbc: CHARON_EXTRA = \
   --include=core::option::*
 
@@ -95,7 +99,6 @@ test/lvalue.llbc: CHARON_EXTRA = \
 
 test-substr: EXTRA_C = -I../../test ../../test/substr_impl.c
 test-substr: EXTRA = --config test/substr.yaml
-test-partial_eq: EXTRA_C = ../../test/partial_eq_stubs.c
 test-nested_arrays: EXTRA = -funroll-loops 0
 test-array: EXTRA = -fcomments
 test-symcrust: CFLAGS += -Wno-unused-function

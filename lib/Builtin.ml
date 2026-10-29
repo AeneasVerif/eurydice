@@ -246,6 +246,75 @@ let alignof =
     arg_names = [];
   }
 
+(*
+(* The version of `array_to_subslice` for monomorphic LLBC.
+   Core changes: there is no assoc-ty for the generics `Self::Output`
+   Also, its argument is a monomorphized `Range::<usize>` instead of a generic one.
+   The same as below for `array_to_subslice_to` and `array_to_subslice_from`.
+*)
+let array_to_subslice_mono =
+  {
+    name = [ "Eurydice" ], "array_to_subslice_mono";
+    typ =
+      Krml.Helpers.fold_arrow
+        [ TBuf (TBound 1, false); TQualified ([ "core"; "ops"; "range"; "Range" ], "<usize>") ]
+        (mk_slice (TBound 1));
+    n_type_args = 2;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "a"; "r" ];
+  }
+
+let array_to_subslice_to =
+  {
+    name = [ "Eurydice" ], "array_to_subslice_to";
+    typ =
+      Krml.Helpers.fold_arrow
+        [ TBuf (mk_arr (TBound 2) (CgVar 0), false); mk_range_to (TInt SizeT) ]
+        (mk_slice (TBound 2));
+    n_type_args = 3;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "a"; "r" ];
+  }
+
+(* The version of `array_to_subslice_to` for monomorphic LLBC. *)
+let array_to_subslice_to_mono =
+  {
+    name = [ "Eurydice" ], "array_to_subslice_to_mono";
+    typ =
+      Krml.Helpers.fold_arrow
+        [ TBuf (TBound 1, false); TQualified ([ "core"; "ops"; "range"; "RangeTo" ], "<usize>") ]
+        (mk_slice (TBound 1));
+    n_type_args = 2;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "a"; "r" ];
+  }
+
+let array_to_subslice_from =
+  {
+    name = [ "Eurydice" ], "array_to_subslice_from";
+    typ =
+      Krml.Helpers.fold_arrow
+        [ TBuf (mk_arr (TBound 2) (CgVar 0), false); mk_range_from (TInt SizeT) ]
+        (mk_slice (TBound 2));
+    n_type_args = 3;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "a"; "r" ];
+  }
+
+(* The version of `array_to_subslice_from` for monomorphic LLBC. *)
+let array_to_subslice_from_mono =
+  {
+    name = [ "Eurydice" ], "array_to_subslice_from_mono";
+    typ =
+      Krml.Helpers.fold_arrow
+        [ TBuf (TBound 1, false); TQualified ([ "core"; "ops"; "range"; "RangeFrom" ], "<usize>") ]
+        (mk_slice (TBound 1));
+    n_type_args = 2;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "a"; "r" ];
+  }
+*)
+
 let suffix_of_const const =
   if const then
     "_shared"
@@ -275,6 +344,18 @@ let discriminant =
     n_type_args = 2;
     cg_args = [];
     arg_names = [ "adt" ];
+  }
+
+let iterator : K.lident = [ "core"; "iter"; "traits"; "iterator" ], "Iterator"
+let mk_iterator t = K.TApp (iterator, [ t ])
+
+let array_into_iter =
+  {
+    name = [ "Eurydice" ], "array_into_iter";
+    typ = Krml.Helpers.fold_arrow [ TCgArray (TBound 0, 0) ] (mk_iterator (TCgArray (TBound 0, 0)));
+    n_type_args = 1;
+    cg_args = [ TInt SizeT ];
+    arg_names = [ "arr" ];
   }
 
 let array_eq =
@@ -398,6 +479,16 @@ let slice_to_ref_array2 =
     arg_names = [ "s" ];
   }
 
+(** Bytewise equality for scalar/array representations validated by AstOfLlbc. *)
+let raw_eq =
+  {
+    name = [ "Eurydice" ], "raw_eq";
+    typ = Krml.Helpers.fold_arrow [ TBuf (TBound 0, true); TBuf (TBound 0, true) ] TBool;
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [ "left"; "right" ];
+  }
+
 let box_new =
   {
     name = [ "Eurydice" ], "box_new";
@@ -405,6 +496,17 @@ let box_new =
     n_type_args = 1;
     cg_args = [];
     arg_names = [ "v" ];
+  }
+
+(** [black_box] retains the generic core symbol expected by the glue macro when Charon emits a
+    monomorphized function name. *)
+let black_box =
+  {
+    name = [ "core"; "hint" ], "black_box";
+    typ = Krml.Helpers.fold_arrow [ TBound 0 ] (TBound 0);
+    n_type_args = 1;
+    cg_args = [];
+    arg_names = [ "value" ];
   }
 
 let empty_array =
@@ -451,6 +553,25 @@ let min_u32 =
     n_type_args = 0;
     cg_args = [];
     arg_names = [ "x"; "y" ];
+  }
+
+let min_usize =
+  {
+    name = [ "Eurydice" ], "min_usize";
+    typ = Krml.Helpers.fold_arrow [ TInt SizeT; TInt SizeT ] (TInt SizeT);
+    n_type_args = 0;
+    cg_args = [];
+    arg_names = [ "x"; "y" ];
+  }
+
+(** Rust's assume intrinsic has undefined behavior for false; the C helper traps in that case. *)
+let assume =
+  {
+    name = [ "Eurydice" ], "assume";
+    typ = Krml.Helpers.fold_arrow [ TBool ] TUnit;
+    n_type_args = 0;
+    cg_args = [];
+    arg_names = [ "condition" ];
   }
 
 (* A non error-checking function that returns a vector whose ptr component is potentially NULL *)
@@ -647,6 +768,60 @@ let array_to_subslice_from_func const =
 let array_to_subslice_from_func_shared = array_to_subslice_from_func true
 let array_to_subslice_from_func_mut = array_to_subslice_from_func false
 
+(** The concrete range shape used by an array subslice operation in monomorphized LLBC. *)
+type mono_array_subslice_kind = MonoRange | MonoRangeTo | MonoRangeFrom
+
+(** [array_to_subslice_mono_func const kind] builds the mono helper for an array reference with
+    mutability [const] and range shape [kind]. The array length remains a const generic, while the
+    concrete range type is taken directly from monomorphized LLBC. *)
+let array_to_subslice_mono_func const kind =
+  let open Krml in
+  let open Ast in
+  let element_t = TBound 0 in
+  let arrref_t = TBuf (mk_arr element_t (CgVar 0), const) in
+  let ret_t = mk_slice ~const element_t in
+  let range_name, helper_name =
+    match kind with
+    | MonoRange -> "Range", "array_to_subslice_mono"
+    | MonoRangeTo -> "RangeTo", "array_to_subslice_to_mono"
+    | MonoRangeFrom -> "RangeFrom", "array_to_subslice_from_mono"
+  in
+  let range_t = TQualified ([ "core"; "ops"; "range"; range_name ], "<usize>") in
+  let lid = [ "Eurydice" ], helper_name ^ suffix_of_const const in
+  let binders =
+    [
+      Helpers.fresh_binder "N" (TInt SizeT);
+      Helpers.fresh_binder "a" arrref_t;
+      Helpers.fresh_binder "r" range_t;
+    ]
+  in
+  let n = mk_sizeT (EBound 2) in
+  let arrref = with_type arrref_t (EBound 1) in
+  let range = with_type range_t (EBound 0) in
+  let data = data_of_arrref ~const:true arrref element_t 0 in
+  let ptr, meta =
+    match kind with
+    | MonoRange ->
+        let start = mk_sizeT (EField (range, "start")) in
+        let finish = mk_sizeT (EField (range, "end")) in
+        ( with_type (TBuf (element_t, const)) (EBufSub (data, start)),
+          mk_sizeT (EApp (Helpers.mk_op Sub (TInt SizeT), [ finish; start ])) )
+    | MonoRangeTo -> data, mk_sizeT (EField (range, "end"))
+    | MonoRangeFrom ->
+        let start = mk_sizeT (EField (range, "start")) in
+        ( with_type (TBuf (element_t, const)) (EBufSub (data, start)),
+          mk_sizeT (EApp (Helpers.mk_op Sub (TInt SizeT), [ n; start ])) )
+  in
+  let expr = with_type ret_t (EFlat [ Some "ptr", ptr; Some "meta", meta ]) in
+  DFunction (None, [ Private ], 1, 1, ret_t, lid, binders, expr)
+
+let array_to_subslice_mono_func_shared = array_to_subslice_mono_func true MonoRange
+let array_to_subslice_mono_func_mut = array_to_subslice_mono_func false MonoRange
+let array_to_subslice_to_mono_func_shared = array_to_subslice_mono_func true MonoRangeTo
+let array_to_subslice_to_mono_func_mut = array_to_subslice_mono_func false MonoRangeTo
+let array_to_subslice_from_mono_func_shared = array_to_subslice_mono_func true MonoRangeFrom
+let array_to_subslice_from_mono_func_mut = array_to_subslice_mono_func false MonoRangeFrom
+
 (* let slice_subslice<T, _, _> (r: Range<SizeT>, s : DstRef<T,N>)
    = dst_ref { ptr = s.ptr + r.start; meta = r.end - r.start } *)
 let slice_subslice_func const =
@@ -673,6 +848,29 @@ let slice_subslice_func const =
 
 let slice_subslice_func_shared = slice_subslice_func true
 let slice_subslice_func_mut = slice_subslice_func false
+
+(* Monomorphized Charon names retain the element and index types but omit the associated output
+   type used by the polymorphic slice indexing helper. *)
+let slice_subslice_mono_func const =
+  let open Krml in
+  let open Ast in
+  let element_t = TBound 0 in
+  let slice_t = mk_slice ~const element_t in
+  let range_t = TQualified ([ "core"; "ops"; "range"; "Range" ], "<usize>") in
+  let lid = [ "Eurydice" ], "slice_subslice_mono" ^ suffix_of_const const in
+  let binders = [ Helpers.fresh_binder "s" slice_t; Helpers.fresh_binder "r" range_t ] in
+  let slice = with_type slice_t (EBound 1) in
+  let range = with_type range_t (EBound 0) in
+  let ptr = with_type (TBuf (element_t, const)) (EField (slice, "ptr")) in
+  let start = mk_sizeT (EField (range, "start")) in
+  let finish = mk_sizeT (EField (range, "end")) in
+  let ptr = with_type (TBuf (element_t, const)) (EBufSub (ptr, start)) in
+  let meta = mk_sizeT (EApp (Helpers.mk_op Sub (TInt SizeT), [ finish; start ])) in
+  let expr = with_type slice_t (EFlat [ Some "ptr", ptr; Some "meta", meta ]) in
+  DFunction (None, [ Private ], 0, 1, slice_t, lid, binders, expr)
+
+let slice_subslice_mono_func_shared = slice_subslice_mono_func true
+let slice_subslice_mono_func_mut = slice_subslice_mono_func false
 
 (* let slice_subslice_to<T, _, _> (r: RangeTo<SizeT>, s : DstRef<T,N>)
    = dst_ref { ptr = s.ptr ; meta = r.end } *)
@@ -963,6 +1161,9 @@ let builtin_lids_without_func =
 
 let builtin_funcs =
   [
+    (*array_to_subslice_mono;
+    array_to_subslice_to_mono;
+    array_to_subslice_from_mono;*)
     sizeof;
     alignof;
     array_repeat;
@@ -979,12 +1180,16 @@ let builtin_funcs =
     discriminant;
     range_iterator_step_by;
     range_step_by_iterator_next;
+    black_box;
+    raw_eq;
     box_new;
     empty_array;
     replace;
     bitand_pv_u8;
     shr_pv_u8;
     min_u32;
+    min_usize;
+    assume;
     vec_alloc;
     vec_overflows;
     vec_failed;
@@ -1005,8 +1210,16 @@ let builtin_defined_funcs =
     array_to_subslice_to_func_mut;
     array_to_subslice_from_func_shared;
     array_to_subslice_from_func_mut;
+    array_to_subslice_mono_func_shared;
+    array_to_subslice_mono_func_mut;
+    array_to_subslice_to_mono_func_shared;
+    array_to_subslice_to_mono_func_mut;
+    array_to_subslice_from_mono_func_shared;
+    array_to_subslice_from_mono_func_mut;
     slice_subslice_func_shared;
     slice_subslice_func_mut;
+    slice_subslice_mono_func_shared;
+    slice_subslice_mono_func_mut;
     slice_subslice_to_func_shared;
     slice_subslice_to_func_mut;
     slice_subslice_from_func_shared;

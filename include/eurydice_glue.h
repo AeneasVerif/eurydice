@@ -124,6 +124,9 @@ typedef struct Eurydice_mut_borrow_slice_i16_s {
 #define core_array_TryFromSliceError uint8_t
 
 // Distinguished support for some PartialEq trait implementations
+// The translator restricts raw_eq to scalars and arrays with compatible
+// representations.
+#define Eurydice_raw_eq(a, b, t, _ret_t) (memcmp((a), (b), sizeof(t)) == 0)
 //
 // core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>
 #define Eurydice_array_eq(sz, a1, a2, t)                                       \
@@ -251,6 +254,17 @@ core_convert_num__impl_core__convert__From_u16__for_u64__from(uint16_t x) {
 
 static inline size_t
 core_convert_num__impl_core__convert__From_u16__for_usize__from(uint16_t x) {
+  return x;
+}
+
+// for monoed where-clauses_simple
+static inline uint64_t
+core_convert_num__core__convert__From___u64__u16___from(uint16_t x) {
+  return x;
+}
+
+static inline size_t
+core_convert_num__core__convert__From___usize__u16___from(uint16_t x) {
   return x;
 }
 
@@ -400,6 +414,17 @@ static inline uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
   return x < y ? x : y;
 }
 
+// Return the smaller operand; equal operands retain the same value.
+static inline size_t Eurydice_min_usize(size_t x, size_t y) {
+  return x < y ? x : y;
+}
+
+// Invalid assumptions are undefined in Rust. Trap instead of continuing with
+// invalid input.
+static inline void Eurydice_assume(bool condition) {
+  EURYDICE_ASSERT(condition, "invalid Rust assumption");
+}
+
 static inline uint8_t
 core_ops_bit__core__ops__bit__BitAnd_u8__u8__for__0__u8___bitand(
     const uint8_t *x0, uint8_t x1) {
@@ -463,6 +488,7 @@ typedef void Eurydice_c_void_t;
 // This is temporary. Ultimately we want to be able to extract all of this.
 
 typedef void *core_fmt_Formatter;
+typedef void *core_fmt_Formatter_____;
 #define core_fmt_rt__core__fmt__rt__Argument__a___new_display(x1, x2, x3, x4)  \
   NULL
 
