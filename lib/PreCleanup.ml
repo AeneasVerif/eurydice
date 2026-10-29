@@ -11,7 +11,7 @@ let remove_array_eq =
     inherit Krml.DeBruijn.map_counting_cg as super
 
     method! visit_expr (((n_cgs, n_binders) as env), _) e =
-      match e with
+      match AstOfLlbc.re_polymorphize e with
       | [%cremepat {| core::array::equality::?impl::eq[#?n](#?..)<?t,?u>(?a1, ?a2) |}] ->
           let rec is_flat = function
             | TCgApp (TApp (lid, [ t ]), _) -> lid = Builtin.arr && is_flat t
@@ -21,20 +21,48 @@ let remove_array_eq =
           assert (t = u);
           if is_flat t then
             let diff = n_binders - n_cgs in
-            match impl with
-            | "{impl core::cmp::PartialEq<[U; N]> for [T; N]}" ->
-                with_type TBool
-                  (EApp (Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) array_eq [ t ]), [ a1; a2 ]))
-            | "{impl core::cmp::PartialEq<&'_0 [U]> for [T; N]}" ->
-                let hd =
-                  if !Options.no_const then
-                    Builtin.array_eq_slice_mut
-                  else
-                    Builtin.array_eq_slice_shared
-                in
-                with_type TBool
-                  (EApp (Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) hd [ t ]), [ a1; a2 ]))
-            | _ -> failwith ("unknown array eq impl: " ^ impl)
+            let pattern_array_eq =
+              Str.regexp {|\{core::cmp::PartialEq::<\[.*;.*\], \[.*;.*\]>\}|}
+            in
+            let pattern_array_eq_impl =
+              Str.regexp {|\{impl core::cmp::PartialEq<\[.*;.*\]> for \[.*;.*\]\}|}
+            in
+            let pattern_array_eq_slice =
+              Str.regexp {|\{core::cmp::PartialEq::<&.* \[.*\], \[.*;.*\]>\}|}
+            in
+            let pattern_array_eq_slice_impl =
+              Str.regexp {|\{impl core::cmp::PartialEq<&.* \[.*\]> for \[.*;.*\]\}|}
+            in
+            let matches_array_eq s =
+              match s with
+              | "{impl core::cmp::PartialEq<[U; N]> for [T; N]}"
+              | "{core::cmp::PartialEq<[U; N]> for [T; N]}" -> true
+              | _ ->
+                  Str.string_match pattern_array_eq s 0
+                  || Str.string_match pattern_array_eq_impl s 0
+            in
+            let matches_array_eq_slice s =
+              match s with
+              | "{impl core::cmp::PartialEq<&'_0 [U]> for [T; N]}"
+              | "{core::cmp::PartialEq<&0 ([U])> for [T; N]}" -> true
+              | _ ->
+                  Str.string_match pattern_array_eq_slice s 0
+                  || Str.string_match pattern_array_eq_slice_impl s 0
+            in
+            if matches_array_eq impl then
+              with_type TBool
+                (EApp (Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) array_eq [ t ]), [ a1; a2 ]))
+            else if matches_array_eq_slice impl then
+              let hd =
+                if !Options.no_const then
+                  Builtin.array_eq_slice_mut
+                else
+                  Builtin.array_eq_slice_shared
+              in
+              with_type TBool
+                (EApp (Builtin.(expr_of_builtin_t ~cgs:(diff, [ n ]) hd [ t ]), [ a1; a2 ]))
+            else
+              failwith ("unknown array eq impl: " ^ impl)
           else
             failwith "TODO: non-byteeq array comparison"
       | _ -> super#visit_expr (env, e.typ) e
@@ -145,6 +173,89 @@ let expand_slice_to_array =
       super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t name bs e
   end
 
+(* Recover slice conversions whose monomorphic names omit the associated Error.
+   Keep the concrete Result type: it is distinct from the generic builtin Result.
+   Value conversions copy only after checking the length; references alias the source. *)
+let expand_mono_slice_to_array =
+  object
+    inherit Krml.DeBruijn.map_counting_cg as super
+
+    method! visit_expr ((count, _) as env) e =
+      match AstOfLlbc.re_polymorphize e with
+      | [%cremepat {| core::convert::?impl::try_into<?slice_t, ?dst_t>(?src) |}]
+        when Krml.KString.starts_with impl "{impl core::convert::TryInto<"
+             &&
+             match slice_t with
+             | TApp (lid, _) -> lid = Builtin.dst_ref_shared || lid = Builtin.dst_ref_mut
+             | _ -> false ->
+          let arr_t, by_ref =
+            match dst_t with
+            | TBuf (t, _) -> t, true
+            | t -> t, false
+          in
+          begin match arr_t with
+          | TCgApp (TApp (lid, [ t ]), cg) when lid = Builtin.arr ->
+              let error_t = TInt UInt8 in
+              let src = super#visit_expr env src in
+              let slice = with_type slice_t (EBound 0) in
+              let ptr_t = TBuf (t, constness_of_slice_type slice_t) in
+              let ptr = with_type ptr_t (EField (slice, "ptr")) in
+              let n = Krml.DeBruijn.lift 1 (expression_of_cg count cg) in
+              let ok =
+                if by_ref then
+                  with_type e.typ (ECons ("Ok", [ with_type dst_t (ECast (ptr, dst_t)) ]))
+                else
+                  let arr = with_type arr_t (EBound 0) in
+                  let dst = with_type (TBuf (t, false)) (EField (arr, "data")) in
+                  with_type e.typ
+                    (ELet
+                       ( H.fresh_binder "arr" arr_t,
+                         H.any,
+                         with_type e.typ
+                           (ESequence
+                              [
+                                H.with_unit
+                                  (EBufBlit
+                                     ( Krml.DeBruijn.lift 1 ptr,
+                                       H.zero SizeT,
+                                       dst,
+                                       H.zero SizeT,
+                                       Krml.DeBruijn.lift 1 n ));
+                                with_type e.typ (ECons ("Ok", [ arr ]));
+                              ]) ))
+              in
+              (* TryFromSliceError is a zero-sized Rust value represented by a byte in the glue. *)
+              let err = with_type error_t (ECast (H.zero UInt8, error_t)) in
+              let len = with_type (TInt SizeT) (EField (slice, "meta")) in
+              let equal = with_type TBool (EApp (H.mk_op Eq (TInt SizeT), [ len; n ])) in
+              let result = with_type e.typ (EBound 0) in
+              let assign value = H.with_unit (EAssign (result, Krml.DeBruijn.lift 1 value)) in
+              with_type e.typ
+                (ELet
+                   ( H.fresh_binder "slice" slice_t,
+                     src,
+                     with_type e.typ
+                       (ELet
+                          ( H.fresh_binder ~mut:true "result" e.typ,
+                            H.any,
+                            with_type e.typ
+                              (ESequence
+                                 [
+                                   H.with_unit
+                                     (EIfThenElse
+                                        ( Krml.DeBruijn.lift 1 equal,
+                                          assign ok,
+                                          assign (with_type e.typ (ECons ("Err", [ err ]))) ));
+                                   result;
+                                 ]) )) ))
+          | _ -> super#visit_expr env e
+          end
+      | _ -> super#visit_expr env e
+
+    method! visit_DFunction _ cc flags n_cgs n t name bs e =
+      super#visit_DFunction (n_cgs, 0) cc flags n_cgs n t name bs e
+  end
+
 (** Comes from [drop_unused] in Inlining.ml, we use it to remove the builtin function defined using
     abstract syntax when they are not used. Otherwise they will refer to the undefined Range type
     and fail the check *)
@@ -200,9 +311,180 @@ let drop_unused_builtin files =
         Some d)
     files
 
+(* Lower opaque monomorphic slice helpers before the later control-flow passes.
+   Each argument is evaluated once; split_at_mut retains its bounds check. *)
+let expand_mono_slice_ops =
+  object
+    inherit [_] map as super
+
+    method! visit_expr env e =
+      match AstOfLlbc.re_polymorphize e with
+      | [%cremepat {| core::result::?impl::unwrap<?t, ?>(?value) |}]
+        when Krml.KString.starts_with impl "{core::result::Result::" ->
+          let b = H.fresh_binder "value" t in
+          with_type t
+            (ELet
+               ( H.fresh_binder ~mut:true "unwrapped" t,
+                 H.any,
+                 with_type t
+                   (ESequence
+                      [
+                        H.with_unit
+                          (EMatch
+                             ( Unchecked,
+                               Krml.DeBruijn.lift 1 value,
+                               [
+                                 ( [ b ],
+                                   with_type value.typ (PCons ("Ok", [ with_type t (PBound 0) ])),
+                                   H.with_unit
+                                     (EAssign (with_type t (EBound 1), with_type t (EBound 0))) );
+                                 ( [],
+                                   with_type value.typ PWild,
+                                   H.with_unit (EAbort (Some TUnit, Some "unwrap not Ok")) );
+                               ] ));
+                        with_type t (EBound 0);
+                      ]) ))
+      | [%cremepat {| core::array::?impl::as_slice[#?n]<?t>(?arr) |}]
+        when Krml.KString.starts_with impl "{[" ->
+          let arr_t = H.assert_tbuf_or_tarray arr.typ in
+          let data =
+            with_type
+              (TBuf (t, not !Options.no_const))
+              (EField (H.mk_deref ~const:(not !Options.no_const) arr_t arr.node, "data"))
+          in
+          with_type e.typ (EFlat [ Some "ptr", data; Some "meta", n ])
+      | [%cremepat {| core::slice::?impl::split_at_mut<?t>(?slice, ?mid) |}]
+        when Krml.KString.starts_with impl "{[" ->
+          let slice = super#visit_expr_w () slice in
+          let mid = super#visit_expr_w () mid in
+          let s = with_type slice.typ (EBound 1) in
+          let m = with_type mid.typ (EBound 0) in
+          let ptr = with_type (TBuf (t, false)) (EField (s, "ptr")) in
+          let len = with_type (TInt SizeT) (EField (s, "meta")) in
+          let part ptr len = with_type slice.typ (EFlat [ Some "ptr", ptr; Some "meta", len ]) in
+          let result =
+            with_type e.typ
+              (ETuple
+                 [
+                   part ptr m;
+                   part
+                     (with_type ptr.typ (EBufSub (ptr, m)))
+                     (with_type len.typ (EApp (H.mk_op Sub (TInt SizeT), [ len; m ])));
+                 ])
+          in
+          with_type e.typ
+            (ELet
+               ( H.fresh_binder "slice" slice.typ,
+                 slice,
+                 with_type e.typ
+                   (ELet
+                      ( H.fresh_binder "mid" mid.typ,
+                        Krml.DeBruijn.lift 1 mid,
+                        with_type e.typ
+                          (ESequence
+                             [
+                               H.with_unit
+                                 (EIfThenElse
+                                    ( with_type TBool (EApp (H.mk_op Lte (TInt SizeT), [ m; len ])),
+                                      H.eunit,
+                                      H.with_unit
+                                        (EAbort (Some TUnit, Some "split index out of bounds")) ));
+                               result;
+                             ]) )) ))
+      | _ -> super#visit_expr env e
+  end
+
+(* Lower monomorphic str RangeFrom indexing without relying on a generic C stub.
+   Evaluate both arguments once, preserve aliasing, and abort on invalid bounds or
+   a UTF-8 continuation byte. The end position is valid and must not be read. *)
+let expand_mono_str_index =
+  object
+    inherit [_] map as super
+
+    method! visit_expr env e =
+      match AstOfLlbc.re_polymorphize e with
+      | [%cremepat {| core::str::traits::?impl::index<?range_t>(?str, ?range) |}]
+        when Krml.KString.starts_with impl "{impl core::ops::index::Index<"
+             && range_t = TQualified ([ "core"; "ops"; "range"; "RangeFrom" ], "<usize>")
+             && str.typ = Builtin.str_t ~const:true
+             && e.typ = str.typ ->
+          let str = super#visit_expr_w () str in
+          let range = super#visit_expr_w () range in
+          let s = with_type str.typ (EBound 1) in
+          let r = with_type range.typ (EBound 0) in
+          let start = with_type (TInt SizeT) (EField (r, "start")) in
+          let len = with_type (TInt SizeT) (EField (s, "meta")) in
+          let ptr =
+            with_type (TBuf (Builtin.c_char_t, constness_of_slice_type str.typ)) (EField (s, "ptr"))
+          in
+          let in_bounds = with_type TBool (EApp (H.mk_op Lte (TInt SizeT), [ start; len ])) in
+          let at_end = with_type TBool (EApp (H.mk_op Eq (TInt SizeT), [ start; len ])) in
+          let byte =
+            with_type (TInt UInt8)
+              (ECast (with_type Builtin.c_char_t (EBufRead (ptr, start)), TInt UInt8))
+          in
+          let masked =
+            with_type (TInt UInt8)
+              (EApp (H.mk_op BAnd (TInt UInt8), [ byte; expr_of_constant (UInt8, "192") ]))
+          in
+          let boundary =
+            with_type TBool
+              (EApp (H.mk_op Neq (TInt UInt8), [ masked; expr_of_constant (UInt8, "128") ]))
+          in
+          let check condition message =
+            H.with_unit
+              (EIfThenElse (condition, H.eunit, H.with_unit (EAbort (Some TUnit, Some message))))
+          in
+          let result =
+            with_type e.typ
+              (EFlat
+                 [
+                   Some "ptr", with_type ptr.typ (EBufSub (ptr, start));
+                   Some "meta", with_type len.typ (EApp (H.mk_op Sub (TInt SizeT), [ len; start ]));
+                 ])
+          in
+          with_type e.typ
+            (ELet
+               ( H.fresh_binder "str" str.typ,
+                 str,
+                 with_type e.typ
+                   (ELet
+                      ( H.fresh_binder "range" range.typ,
+                        Krml.DeBruijn.lift 1 range,
+                        with_type e.typ
+                          (ESequence
+                             [
+                               check in_bounds "string index out of bounds";
+                               H.with_unit
+                                 (EIfThenElse
+                                    ( at_end,
+                                      H.eunit,
+                                      check boundary "string index is not a character boundary" ));
+                               result;
+                             ]) )) ))
+      | _ -> super#visit_expr env e
+  end
+
 let precleanup files =
+  (* Match the existing glue representation of opaque TryFromSliceError. *)
+  let files =
+    object
+      inherit [_] map as super
+
+      method! visit_TQualified env lid =
+        if lid = ([ "core"; "array" ], "TryFromSliceError") then
+          TInt UInt8
+        else
+          super#visit_TQualified env lid
+    end
+      #visit_files
+      () files
+  in
   let files = remove_array_eq#visit_files (0, 0) files in
   let files = drop_unused_builtin files in
+  let files = expand_mono_slice_to_array#visit_files (0, 0) files in
+  let files = expand_mono_slice_ops#visit_files () files in
+  let files = expand_mono_str_index#visit_files () files in
   let files = expand_slice_to_array#visit_files (0, 0) files in
   files
 
