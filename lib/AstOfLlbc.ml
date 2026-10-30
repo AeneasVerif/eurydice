@@ -2133,7 +2133,8 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   | UnaryOp (op, o1) -> mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
-  | Repeat (operand, ty, len, _) ->
+  | Repeat (operand, len, _, _) ->
+      let ty = ty_of_operand operand in
       let operand = expression_of_operand env operand in
       let elem_t = typ_of_ty env ty in
       let array_t = maybe_cg_array env ty len in
@@ -2259,7 +2260,7 @@ let lesser t1 t2 =
 
 (* A `fn` pointer, which does not have trait bounds, and cannot be partially applied. This is a
    much simplified version of expression_of_fn_ptr. *)
-let expression_of_fn_op_dynamic (env : env) ({ func; args; dest; _ } : C.call) =
+let expression_of_fn_op_dynamic (env : env) ({ func; args; _ } : C.call) dest =
   let fHd =
     match func with
     | C.FnOpDynamic (op, _) -> expression_of_operand env op
@@ -2359,7 +2360,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       | _ -> Krml.Helpers.eunit
       end
   | Assert (a, _on_failure, _) -> expression_of_assertion env a
-  | Call ({ func = FnOpRegular fn_ptr; args; dest; _ }, _)
+  | Call ({ func = FnOpRegular fn_ptr; args; _ }, dest, _)
     when Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u16 fn_ptr
          || Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u32 fn_ptr
          || Charon.NameMatcher.match_fn_ptr env.name_ctx RustNames.config RustNames.from_u64 fn_ptr
@@ -2396,7 +2397,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       let dest = expression_of_place env dest in
       let e = expression_of_operand env (Krml.KList.one args) in
       Krml.Helpers.with_unit K.(EAssign (dest, with_type (TInt w) (ECast (e, TInt w))))
-  | Call ({ func = FnOpRegular fn_ptr; args; dest; _ }, _) ->
+  | Call ({ func = FnOpRegular fn_ptr; args; _ }, dest, _) ->
       (* For now, we take trait type arguments to be part of the code-gen *)
       let hd, _is_known_builtin, output_t = expression_of_fn_ptr env fn_ptr in
       let dest = expression_of_place env dest in
@@ -2418,7 +2419,8 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
           K.with_type output_t (K.EApp (hd, args))
       in
       Krml.Helpers.with_unit K.(EAssign (dest, rhs))
-  | Call (({ func = FnOpDynamic _; _ } as call), _) -> expression_of_fn_op_dynamic env call
+  | Call (({ func = FnOpDynamic _; _ } as call), dest, _) ->
+      expression_of_fn_op_dynamic env call dest
   | Panic _ | UndefinedBehavior | UnwindTerminate -> with_any (K.EAbort (None, Some "panic!"))
   | Return ->
       let e = expression_of_var_id env ret_var in
