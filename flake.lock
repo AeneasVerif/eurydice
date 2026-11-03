@@ -28,11 +28,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1793618384,
-        "narHash": "sha256-BMq69Gw28G7RCHxqCXrO+EHONWy0c0UcIrPFEW7kDxo=",
+        "lastModified": 1793706593,
+        "narHash": "sha256-CyZEHUbPuP6OgemZoViapd0AhN6YabT8a1nkmmctagE=",
         "owner": "aeneasverif",
         "repo": "charon",
-        "rev": "69bbc888fd6930dc0c71d1475e40a41e9e3e2c42",
+        "rev": "a58d159210b3a36fedeaba4437bda896a8b12f0d",
         "type": "github"
       },
       "original": {
@@ -661,11 +661,11 @@
     },
     "nixpkgs_8": {
       "locked": {
-        "lastModified": 1783522502,
-        "narHash": "sha256-nFgG4gPQueCgP8LidXsdI2lYPrSwTcmDl6afcVn7F/U=",
-        "rev": "0bb7ec54c8483066ec9d7720e780a5caa71f8612",
+        "lastModified": 1792502884,
+        "narHash": "sha256-ij8QUxzTOHovLrNOxVRx+RAhGQFOMsJbji0veiatH5k=",
+        "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
         "type": "tarball",
-        "url": "https://releases.nixos.org/nixos/unstable/nixos-26.11pre1031299.0bb7ec54c848/nixexprs.tar.xz"
+        "url": "https://releases.nixos.org/nixos/unstable/nixos-26.11pre1097682.02c087f3fe67/nixexprs.tar.zst"
       },
       "original": {
         "id": "nixpkgs",
