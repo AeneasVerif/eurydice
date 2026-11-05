@@ -2344,7 +2344,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
   | PlaceMention p ->
       let p = expression_of_place env p in
       K.(with_type TUnit (EIgnore p))
-  | Drop (p, _, _, _) ->
+  | Drop (p, _, _, _) | DropEmptyBox (p, _) ->
       let _ = expression_of_place env p in
       begin match p.ty with
       (* doesn't do the right thing yet, need to understand why there are
@@ -2727,6 +2727,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
                       C.index = Charon.Expressions.LocalId.of_int max_int;
                       name = None;
                       local_ty = t_unit;
+                      is_mutable = false;
                       span = decl.item_meta.span;
                       drop_flag_for = None;
                     }
