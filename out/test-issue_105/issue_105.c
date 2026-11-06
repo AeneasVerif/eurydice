@@ -65,24 +65,21 @@ core_result_eq_89_eb(const core_result_Result_1d *self, const core_result_Result
     return false;
   }
   const_core_result_Result_1d__x2 uu____0 = { .fst = self, .snd = other };
-  if (uu____0.fst->tag == core_result_Ok)
-  {
-    EURYDICE_ASSERT(uu____0.snd->tag == core_result_Ok, "panic!");
-    /* original Rust expression is not an lvalue in C */
-    void *lvalue0 = (void *)0U;
-    void *const *__self_0 = &lvalue0;
-    /* original Rust expression is not an lvalue in C */
-    void *lvalue = (void *)0U;
-    void *const *__arg1_0 = &lvalue;
-    return core_cmp_impls_eq_23(__self_0, __arg1_0);
-  }
-  else
+  if (!(uu____0.fst->tag == core_result_Ok))
   {
     EURYDICE_ASSERT(uu____0.snd->tag == core_result_Err, "panic!");
     const uint8_t *__self_0 = &uu____0.fst->f0;
     const uint8_t *__arg1_0 = &uu____0.snd->f0;
     return core_cmp_impls_eq_a2(__self_0, __arg1_0);
   }
+  EURYDICE_ASSERT(uu____0.snd->tag == core_result_Ok, "panic!");
+  /* original Rust expression is not an lvalue in C */
+  void *lvalue0 = (void *)0U;
+  void *const *__self_0 = &lvalue0;
+  /* original Rust expression is not an lvalue in C */
+  void *lvalue = (void *)0U;
+  void *const *__arg1_0 = &lvalue;
+  return core_cmp_impls_eq_23(__self_0, __arg1_0);
 }
 
 /**
