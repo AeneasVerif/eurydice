@@ -1091,7 +1091,7 @@ and dst_reference_of_place (env : env) (p : C.place) : K.expr option =
 
 and expression_of_projection_operand (env : env) (operand : C.operand) : K.expr =
   match operand with
-  | Copy p | Move p -> expression_of_place env p
+  | Copy (p, _) | Read p | Move p -> expression_of_place env p
   | Constant { kind = CVar var; _ } -> expression_of_cg_var_id env (C.expect_free_var var)
   | Constant { kind; _ } -> expression_of_constant_value env kind
 
@@ -1851,22 +1851,13 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
 
 let expression_of_fn_ptr env (fn_ptr : C.fn_ptr) = expression_of_fn_ptr env "" fn_ptr
 
-let global_is_const env id =
-  match (env.get_nth_global id).global_kind with
-  | NamedConst | AnonConst -> true
-  | Static _ | VTableGlobal -> false
-
 let ty_of_operand = function
-  | C.Copy p | Move p -> p.ty
+  | C.Copy (p, _) | Read p | Move p -> p.ty
   | Constant c -> c.ty
 
 let expression_of_operand (env : env) (op : C.operand) : K.expr =
   match op with
-  | Copy ({ kind = PlaceGlobal { id; _ }; _ } as p) when global_is_const env id ->
-      (* No need to copy a const since by definition it cannot be modified *)
-      expression_of_place env p
-  | Copy p -> expression_of_place env p
-  | Move p -> expression_of_place env p
+  | Copy (p, _) | Read p | Move p -> expression_of_place env p
   | Constant { kind = CVar var; _ } -> expression_of_cg_var_id env (C.expect_free_var var)
   | Constant { kind = CFnDef fn_ptr; _ } ->
       let e, _, _ = expression_of_fn_ptr env fn_ptr in
@@ -2441,10 +2432,8 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
           K.(with_type t (EIfThenElse (expression_of_operand env op, e1, e2)))
       | None ->
           let is_128bits =
-            match op with
-            | Copy { ty = TScalar (TInteger (Signed I128 | Unsigned U128)); _ }
-            | Move { ty = TScalar (TInteger (Signed I128 | Unsigned U128)); _ }
-            | Constant { ty = TScalar (TInteger (Signed I128 | Unsigned U128)); _ } -> true
+            match ty_of_operand op with
+            | TScalar (TInteger (Signed I128 | Unsigned U128)) -> true
             | _ -> false
           in
           let grouped_branches =
