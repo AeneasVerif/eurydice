@@ -1133,23 +1133,6 @@ typedef struct core_result_Result_8e_s
 }
 core_result_Result_8e;
 
-#define core_option_None 0
-#define core_option_Some 1
-
-typedef uint8_t core_option_Option_87_tags;
-
-/**
-A monomorphic instance of core.option.Option
-with types size_t
-
-*/
-typedef struct core_option_Option_87_s
-{
-  core_option_Option_87_tags tag;
-  size_t f0;
-}
-core_option_Option_87;
-
 static inline uint32_t core_num__u8__count_ones(uint8_t x0);
 
 static inline uint64_t core_num__u64__rotate_left(uint64_t x0, uint32_t x1);
