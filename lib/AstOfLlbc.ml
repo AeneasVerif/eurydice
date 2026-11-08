@@ -2718,6 +2718,7 @@ let decl_of_id (env : env) (id : C.item_id) : K.decl option =
                       local_ty = t_unit;
                       is_mutable = false;
                       span = decl.item_meta.span;
+                      borrowck_constraints = [];
                       drop_flag_for = None;
                     }
                   in
