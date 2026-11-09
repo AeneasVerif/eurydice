@@ -1229,10 +1229,10 @@ This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitCla
 */
 /**
 A monomorphic instance of core.result.unwrap_37
-with types Eurydice_arr uint8_t[[$10size_t]], core_array_TryFromSliceError
+with types Eurydice_arr uint8_t[[$10size_t]], uint8_t
 
 */
-Eurydice_arr_6d core_result_unwrap_37_63(core_result_Result_80 self)
+Eurydice_arr_6d core_result_unwrap_37_f2(core_result_Result_2a self)
 {
   if (self.tag == core_result_Ok)
   {
@@ -1250,10 +1250,10 @@ This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitCla
 */
 /**
 A monomorphic instance of core.result.unwrap_37
-with types Eurydice_arr uint8_t[[$24size_t]], core_array_TryFromSliceError
+with types Eurydice_arr uint8_t[[$24size_t]], uint8_t
 
 */
-Eurydice_arr_94 core_result_unwrap_37_78(core_result_Result_57 self)
+Eurydice_arr_94 core_result_unwrap_37_2b(core_result_Result_62 self)
 {
   if (self.tag == core_result_Ok)
   {
@@ -1271,10 +1271,10 @@ This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitCla
 */
 /**
 A monomorphic instance of core.result.unwrap_37
-with types Eurydice_arr uint8_t[[$20size_t]], core_array_TryFromSliceError
+with types Eurydice_arr uint8_t[[$20size_t]], uint8_t
 
 */
-Eurydice_arr_fc core_result_unwrap_37_7d(core_result_Result_83 self)
+Eurydice_arr_fc core_result_unwrap_37_ed(core_result_Result_8e self)
 {
   if (self.tag == core_result_Ok)
   {
@@ -1292,10 +1292,10 @@ This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitCla
 */
 /**
 A monomorphic instance of core.result.unwrap_37
-with types Eurydice_arr int16_t[[$16size_t]], core_array_TryFromSliceError
+with types Eurydice_arr int16_t[[$16size_t]], uint8_t
 
 */
-Eurydice_arr_d6 core_result_unwrap_37_d3(core_result_Result_ec self)
+Eurydice_arr_d6 core_result_unwrap_37_d2(core_result_Result_1b self)
 {
   if (self.tag == core_result_Ok)
   {
@@ -1313,10 +1313,10 @@ This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitCla
 */
 /**
 A monomorphic instance of core.result.unwrap_37
-with types Eurydice_arr uint8_t[[$32size_t]], core_array_TryFromSliceError
+with types Eurydice_arr uint8_t[[$32size_t]], uint8_t
 
 */
-Eurydice_arr_ec core_result_unwrap_37_39(core_result_Result_07 self)
+Eurydice_arr_ec core_result_unwrap_37_95(core_result_Result_d7 self)
 {
   if (self.tag == core_result_Ok)
   {
@@ -1334,10 +1334,10 @@ This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitCla
 */
 /**
 A monomorphic instance of core.result.unwrap_37
-with types Eurydice_arr uint8_t[[$8size_t]], core_array_TryFromSliceError
+with types Eurydice_arr uint8_t[[$8size_t]], uint8_t
 
 */
-Eurydice_array_u8x8 core_result_unwrap_37_e0(core_result_Result_8e self)
+Eurydice_array_u8x8 core_result_unwrap_37_37(core_result_Result_1f self)
 {
   if (self.tag == core_result_Ok)
   {

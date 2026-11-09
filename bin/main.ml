@@ -295,6 +295,8 @@ Supported options:|}
   let files = Krml.Simplify.sequence_to_let#visit_files () files in
   let files = Eurydice.Cleanup2.hoist#visit_files [] files in
   let files = Eurydice.Cleanup2.fixup_hoist#visit_files () files in
+  (* Lower conditional initializers introduced by hoisting to statement-level assignments. *)
+  let files = Krml.Simplify.let_if_to_assign#visit_files () files in
   Eurydice.Logging.log "Phase2.75" "%a" pfiles files;
   let files = Eurydice.Cleanup2.globalize_global_locals lid_origins files in
   Eurydice.Logging.log "Phase2.8" "%a" pfiles files;

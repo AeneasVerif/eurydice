@@ -49,39 +49,39 @@ typedef uint8_t core_result_Result_10;
 
 /**
 A monomorphic instance of core.result.Result
-with types Eurydice_array_u8x4, core_array_TryFromSliceError
+with types Eurydice_array_u8x4, uint8_t
 
 */
-typedef struct core_result_Result_c7_s
+typedef struct core_result_Result_fc_s
 {
   core_result_Result_10 tag;
   union {
     Eurydice_array_u8x4 case_Ok;
-    core_array_TryFromSliceError case_Err;
+    uint8_t case_Err;
   }
   val;
 }
-core_result_Result_c7;
+core_result_Result_fc;
 
 /**
 A monomorphic instance of core.result.Result
-with types const Eurydice_array_u8x4*, core_array_TryFromSliceError
+with types const Eurydice_array_u8x4*, uint8_t
 
 */
-typedef struct core_result_Result_90_s
+typedef struct core_result_Result_82_s
 {
   core_result_Result_10 tag;
   union {
     const Eurydice_array_u8x4 *case_Ok;
-    core_array_TryFromSliceError case_Err;
+    uint8_t case_Err;
   }
   val;
 }
-core_result_Result_90;
+core_result_Result_82;
 
 extern core_result_Result_10
 core_array__impl_core__fmt__Debug_for_core__array__TryFromSliceError__fmt(
-  const core_array_TryFromSliceError *x0,
+  const uint8_t *x0,
   core_fmt_Formatter *x1
 );
 
