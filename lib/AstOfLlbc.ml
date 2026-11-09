@@ -275,6 +275,10 @@ module RustNames = struct
     (* misc *)
     parse_pattern "core::cmp::Ord<u32>::min", Builtin.min_u32;
 
+    parse_pattern "core::intrinsics::assume", Builtin.assume;
+    parse_pattern "core::intrinsics::raw_eq<@T>", Builtin.raw_eq;
+    parse_pattern "core::intrinsics::raw_eq<'_, '_, @T>", Builtin.raw_eq;
+
     (* boxes *)
     parse_pattern "alloc::boxed::{alloc::boxed::Box<@T>}::new<@>", Builtin.box_new;
   ]
@@ -431,6 +435,22 @@ let lookup_field env typ_id field_id =
   struct_field_name i field
 
 let mk_expr_arr_struct (expr_array : K.expr) = K.EFlat [ Some "data", expr_array ]
+
+(** Erase all lifetimes, including body regions, when testing whether a cast changes only lifetime
+    annotations. Other type structure and reference mutability remain significant. *)
+let erase_cast_regions =
+  object
+    inherit [_] C.map_ty
+    method! visit_region _ _ = C.RErased
+  end
+    #visit_ty ()
+
+(** Only lower byte equality when padding-free Rust scalar/array values keep their C representation.
+    Unknown generic and nominal types are rejected rather than guessed. *)
+let rec supports_raw_eq = function
+  | C.TScalar (C.TInteger _ | C.TBool | C.TChar) -> true
+  | C.TArray (ty, _, _) -> supports_raw_eq ty
+  | _ -> false
 
 (** A vtable type is actually just a struct type, this function takes out the hinted ID of the
     vtable struct from the dynamic predicate and then translate it, returns a reference to the
@@ -1654,6 +1674,11 @@ let rec expression_of_fn_ptr env depth (fn_ptr : C.fn_ptr) =
   L.log "Calls" "%s--> is_known_builtin?: %b" depth is_known_builtin;
 
   (* Translate effective type and cg arguments. *)
+  (match f, type_args with
+  | K.EQualified lid, [ ty ] when lid = Builtin.raw_eq.name ->
+      if not (supports_raw_eq ty) then
+        failwith "raw_eq requires a supported scalar or array representation"
+  | _ -> ());
   let const_generic_args =
     match f, type_args with
     | EQualified lid, [ _; TRef (_, TArray (_, cg, _), _); _ ]
@@ -2103,7 +2128,7 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
   | UnaryOp (Cast ck, e) ->
       (* Add a simpler case: identity cast is allowed *)
       let source_ty = ty_of_operand e in
-      if source_ty = expected_ty then
+      if erase_cast_regions source_ty = erase_cast_regions expected_ty then
         expression_of_operand env e
       else
         failwith ("unknown cast: `" ^ Charon.Print.cast_kind_to_string env.format_env ck ^ "`")

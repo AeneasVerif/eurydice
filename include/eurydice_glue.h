@@ -124,6 +124,9 @@ typedef struct Eurydice_mut_borrow_slice_i16_s {
 #define core_array_TryFromSliceError uint8_t
 
 // Distinguished support for some PartialEq trait implementations
+// The translator restricts raw_eq to scalars and arrays with compatible
+// representations.
+#define Eurydice_raw_eq(a, b, t, _ret_t) (memcmp((a), (b), sizeof(t)) == 0)
 //
 // core::cmp::PartialEq<@Array<U, N>> for @Array<T, N>
 #define Eurydice_array_eq(sz, a1, a2, t)                                       \
@@ -398,6 +401,12 @@ static inline uint8_t Eurydice_shr_pv_u8(const uint8_t *p, int32_t v) {
 }
 static inline uint32_t Eurydice_min_u32(uint32_t x, uint32_t y) {
   return x < y ? x : y;
+}
+
+// Invalid assumptions are undefined in Rust. Trap instead of continuing with
+// invalid input.
+static inline void Eurydice_assume(bool condition) {
+  EURYDICE_ASSERT(condition, "invalid Rust assumption");
 }
 
 static inline uint8_t

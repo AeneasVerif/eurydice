@@ -74,71 +74,71 @@ let expand_slice_to_array =
                   ( { node = EQualified lid; _ },
                     _,
                     _,
-                    [ _; (TCgApp (TApp (_, [ t ]), cg) as arr_t); _ ] );
+                    [ slice_t; (TCgApp (TApp (_, [ t ]), cg) as arr_t); err_t ] );
               _;
             },
             es )
         when lid = Builtin.slice_to_array.name ->
-          let src = Krml.KList.one es in
+          (* Evaluate the source once and reject both shorter and longer slices before reading it. *)
+          let src = super#visit_expr env (Krml.KList.one es) in
           let result_t = e.typ in
-          (*let arr = .. *)
-          let arr = with_type arr_t (EBound 0) in
-          let src = Krml.DeBruijn.lift 1 src in
-          let dst = with_type (TBuf (t, false)) (EField (arr, "data")) in
-          let src = with_type (TBuf (t, constness_of_slice_type src.typ)) (EField (src, "ptr")) in
+          let slice = with_type slice_t (EBound 0) in
+          let ptr = with_type (TBuf (t, constness_of_slice_type slice_t)) (EField (slice, "ptr")) in
           let n = Krml.DeBruijn.lift 1 (expression_of_cg count cg) in
-          let zero = H.zero SizeT in
-          let memcpy = H.with_unit (EBufBlit (src, zero, dst, zero, n)) in
-          (* let arr = any in {memcpy (src, slice); OK (arr);} *)
+          let len = with_type (TInt SizeT) (EField (slice, "meta")) in
+          let equal = with_type TBool (EApp (H.mk_op Eq (TInt SizeT), [ len; n ])) in
+          let arr = with_type arr_t (EBound 0) in
+          let dst = with_type (TBuf (t, false)) (EField (arr, "data")) in
+          let copy =
+            H.with_unit
+              (EBufBlit
+                 (Krml.DeBruijn.lift 1 ptr, H.zero SizeT, dst, H.zero SizeT, Krml.DeBruijn.lift 1 n))
+          in
+          let ok =
+            with_type result_t
+              (ELet
+                 ( H.fresh_binder "arr" arr_t,
+                   H.any,
+                   with_type result_t
+                     (ESequence [ copy; with_type result_t (ECons ("Ok", [ arr ])) ]) ))
+          in
+          (* The existing glue represents the zero-sized TryFromSliceError by a byte. *)
+          let error = with_type err_t (ECast (H.zero UInt8, err_t)) in
+          let err = with_type result_t (ECons ("Err", [ error ])) in
           with_type result_t
             (ELet
-               ( H.fresh_binder "arr" arr_t,
-                 H.any,
-                 with_type result_t
-                   (ESequence [ memcpy; with_type result_t (ECons ("Ok", [ arr ])) ]) ))
+               ( H.fresh_binder "slice" slice_t,
+                 src,
+                 with_type result_t (EIfThenElse (equal, ok, err)) ))
       | EApp
           ( {
               node =
                 ETApp
                   ( { node = EQualified lid; _ },
-                    cgs,
                     _,
-                    [
-                      slice_t;
-                      (TBuf ((TCgApp (TApp (_, [ t ]), cg) as arr_t), _) as arr_ref_t);
-                      err_t;
-                    ] );
+                    _,
+                    [ slice_t; (TBuf (TCgApp (TApp (_, [ t ]), cg), _) as arr_ref_t); err_t ] );
               _;
             },
-            [ slice ] )
+            [ src ] )
         when lid = Builtin.slice_to_ref_array.name ->
-          (* allocate a Arr<T,C>, do memcpy and let the C macro do the choose and define the return
-             or error value *)
-          let const = constness_of_slice_type slice_t in
-          let slice_to_ref_array2 = Builtin.(expr_of_builtin slice_to_ref_array2) in
-          let ts = [ slice_t; arr_ref_t; err_t ] in
-          let slice_to_ref_array2 =
-            with_type
-              (Krml.DeBruijn.subst_tn ts Builtin.slice_to_ref_array2.typ)
-              (ETApp (slice_to_ref_array2, List.map (Krml.DeBruijn.lift 1) cgs, [], ts))
-          in
-          let arr = with_type arr_t (EBound 0) in
-          let arr_ref = with_type arr_ref_t (EAddrOf arr) in
-          let slice = Krml.DeBruijn.lift 1 slice in
-          let dst = with_type (TBuf (t, true)) (EField (arr, "data")) in
-          let src = with_type (TBuf (t, const)) (EField (slice, "ptr")) in
+          (* Borrow the source storage rather than a temporary array. Evaluate the slice once;
+             exact length is required for both shared and mutable array references. *)
+          let src = super#visit_expr env src in
+          let slice = with_type slice_t (EBound 0) in
+          let ptr = with_type (TBuf (t, constness_of_slice_type slice_t)) (EField (slice, "ptr")) in
           let n = Krml.DeBruijn.lift 1 (expression_of_cg count cg) in
-          (* let n = with_type (TInt SizeT) (EField (slice, "meta")) in *)
-          let zero = H.zero SizeT in
-          let memcpy = H.with_unit (EBufBlit (src, zero, dst, zero, n)) in
+          let len = with_type (TInt SizeT) (EField (slice, "meta")) in
+          let equal = with_type TBool (EApp (H.mk_op Eq (TInt SizeT), [ len; n ])) in
+          let ok =
+            with_type e.typ (ECons ("Ok", [ with_type arr_ref_t (ECast (ptr, arr_ref_t)) ]))
+          in
+          (* The existing glue represents the zero-sized TryFromSliceError by a byte. *)
+          let error = with_type err_t (ECast (H.zero UInt8, err_t)) in
+          let err = with_type e.typ (ECons ("Err", [ error ])) in
           with_type e.typ
             (ELet
-               ( H.fresh_binder "arr" arr_t,
-                 H.any,
-                 with_type e.typ
-                   (ESequence
-                      [ memcpy; with_type e.typ (EApp (slice_to_ref_array2, [ slice; arr_ref ])) ])
-               ))
+               (H.fresh_binder "slice" slice_t, src, with_type e.typ (EIfThenElse (equal, ok, err))))
       | _ -> super#visit_expr env e
 
     method! visit_DFunction _ cc flags n_cgs n t name bs e =
@@ -201,6 +201,20 @@ let drop_unused_builtin files =
     files
 
 let precleanup files =
+  (* Match the existing glue representation of opaque TryFromSliceError. *)
+  let files =
+    object
+      inherit [_] map as super
+
+      method! visit_TQualified env lid =
+        if lid = ([ "core"; "array" ], "TryFromSliceError") then
+          TInt UInt8
+        else
+          super#visit_TQualified env lid
+    end
+      #visit_files
+      () files
+  in
   let files = remove_array_eq#visit_files (0, 0) files in
   let files = drop_unused_builtin files in
   let files = expand_slice_to_array#visit_files (0, 0) files in
