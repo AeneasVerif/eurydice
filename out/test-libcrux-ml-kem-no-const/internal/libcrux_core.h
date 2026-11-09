@@ -1035,103 +1035,103 @@ typedef struct Eurydice_arr_0b0_s { Eurydice_mut_borrow_slice_u8 data[4U]; } Eur
 #define core_result_Ok 0
 #define core_result_Err 1
 
-typedef uint8_t core_result_Result_80_tags;
+typedef uint8_t core_result_Result_2a_tags;
 
 /**
 A monomorphic instance of core.result.Result
-with types Eurydice_arr_6d, core_array_TryFromSliceError
+with types Eurydice_arr_6d, uint8_t
 
 */
-typedef struct core_result_Result_80_s
+typedef struct core_result_Result_2a_s
 {
-  core_result_Result_80_tags tag;
+  core_result_Result_2a_tags tag;
   union {
     Eurydice_arr_6d case_Ok;
-    core_array_TryFromSliceError case_Err;
+    uint8_t case_Err;
   }
   val;
 }
-core_result_Result_80;
+core_result_Result_2a;
 
 /**
 A monomorphic instance of core.result.Result
-with types Eurydice_arr_94, core_array_TryFromSliceError
+with types Eurydice_arr_94, uint8_t
 
 */
-typedef struct core_result_Result_57_s
+typedef struct core_result_Result_62_s
 {
-  core_result_Result_80_tags tag;
+  core_result_Result_2a_tags tag;
   union {
     Eurydice_arr_94 case_Ok;
-    core_array_TryFromSliceError case_Err;
+    uint8_t case_Err;
   }
   val;
 }
-core_result_Result_57;
+core_result_Result_62;
 
 /**
 A monomorphic instance of core.result.Result
-with types Eurydice_arr_fc, core_array_TryFromSliceError
-
-*/
-typedef struct core_result_Result_83_s
-{
-  core_result_Result_80_tags tag;
-  union {
-    Eurydice_arr_fc case_Ok;
-    core_array_TryFromSliceError case_Err;
-  }
-  val;
-}
-core_result_Result_83;
-
-/**
-A monomorphic instance of core.result.Result
-with types Eurydice_arr_d6, core_array_TryFromSliceError
-
-*/
-typedef struct core_result_Result_ec_s
-{
-  core_result_Result_80_tags tag;
-  union {
-    Eurydice_arr_d6 case_Ok;
-    core_array_TryFromSliceError case_Err;
-  }
-  val;
-}
-core_result_Result_ec;
-
-/**
-A monomorphic instance of core.result.Result
-with types Eurydice_arr_ec, core_array_TryFromSliceError
-
-*/
-typedef struct core_result_Result_07_s
-{
-  core_result_Result_80_tags tag;
-  union {
-    Eurydice_arr_ec case_Ok;
-    core_array_TryFromSliceError case_Err;
-  }
-  val;
-}
-core_result_Result_07;
-
-/**
-A monomorphic instance of core.result.Result
-with types Eurydice_array_u8x8, core_array_TryFromSliceError
+with types Eurydice_arr_fc, uint8_t
 
 */
 typedef struct core_result_Result_8e_s
 {
-  core_result_Result_80_tags tag;
+  core_result_Result_2a_tags tag;
   union {
-    Eurydice_array_u8x8 case_Ok;
-    core_array_TryFromSliceError case_Err;
+    Eurydice_arr_fc case_Ok;
+    uint8_t case_Err;
   }
   val;
 }
 core_result_Result_8e;
+
+/**
+A monomorphic instance of core.result.Result
+with types Eurydice_arr_d6, uint8_t
+
+*/
+typedef struct core_result_Result_1b_s
+{
+  core_result_Result_2a_tags tag;
+  union {
+    Eurydice_arr_d6 case_Ok;
+    uint8_t case_Err;
+  }
+  val;
+}
+core_result_Result_1b;
+
+/**
+A monomorphic instance of core.result.Result
+with types Eurydice_arr_ec, uint8_t
+
+*/
+typedef struct core_result_Result_d7_s
+{
+  core_result_Result_2a_tags tag;
+  union {
+    Eurydice_arr_ec case_Ok;
+    uint8_t case_Err;
+  }
+  val;
+}
+core_result_Result_d7;
+
+/**
+A monomorphic instance of core.result.Result
+with types Eurydice_array_u8x8, uint8_t
+
+*/
+typedef struct core_result_Result_1f_s
+{
+  core_result_Result_2a_tags tag;
+  union {
+    Eurydice_array_u8x8 case_Ok;
+    uint8_t case_Err;
+  }
+  val;
+}
+core_result_Result_1f;
 
 static inline uint32_t core_num__u8__count_ones(uint8_t x0);
 
@@ -1146,60 +1146,60 @@ This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitCla
 */
 /**
 A monomorphic instance of core.result.unwrap_37
-with types Eurydice_arr uint8_t[[$10size_t]], core_array_TryFromSliceError
+with types Eurydice_arr uint8_t[[$10size_t]], uint8_t
 
 */
-Eurydice_arr_6d core_result_unwrap_37_63(core_result_Result_80 self);
-
-/**
-This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
-*/
-/**
-A monomorphic instance of core.result.unwrap_37
-with types Eurydice_arr uint8_t[[$24size_t]], core_array_TryFromSliceError
-
-*/
-Eurydice_arr_94 core_result_unwrap_37_78(core_result_Result_57 self);
+Eurydice_arr_6d core_result_unwrap_37_f2(core_result_Result_2a self);
 
 /**
 This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
 */
 /**
 A monomorphic instance of core.result.unwrap_37
-with types Eurydice_arr uint8_t[[$20size_t]], core_array_TryFromSliceError
+with types Eurydice_arr uint8_t[[$24size_t]], uint8_t
 
 */
-Eurydice_arr_fc core_result_unwrap_37_7d(core_result_Result_83 self);
-
-/**
-This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
-*/
-/**
-A monomorphic instance of core.result.unwrap_37
-with types Eurydice_arr int16_t[[$16size_t]], core_array_TryFromSliceError
-
-*/
-Eurydice_arr_d6 core_result_unwrap_37_d3(core_result_Result_ec self);
+Eurydice_arr_94 core_result_unwrap_37_2b(core_result_Result_62 self);
 
 /**
 This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
 */
 /**
 A monomorphic instance of core.result.unwrap_37
-with types Eurydice_arr uint8_t[[$32size_t]], core_array_TryFromSliceError
+with types Eurydice_arr uint8_t[[$20size_t]], uint8_t
 
 */
-Eurydice_arr_ec core_result_unwrap_37_39(core_result_Result_07 self);
+Eurydice_arr_fc core_result_unwrap_37_ed(core_result_Result_8e self);
 
 /**
 This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
 */
 /**
 A monomorphic instance of core.result.unwrap_37
-with types Eurydice_arr uint8_t[[$8size_t]], core_array_TryFromSliceError
+with types Eurydice_arr int16_t[[$16size_t]], uint8_t
 
 */
-Eurydice_array_u8x8 core_result_unwrap_37_e0(core_result_Result_8e self);
+Eurydice_arr_d6 core_result_unwrap_37_d2(core_result_Result_1b self);
+
+/**
+This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
+*/
+/**
+A monomorphic instance of core.result.unwrap_37
+with types Eurydice_arr uint8_t[[$32size_t]], uint8_t
+
+*/
+Eurydice_arr_ec core_result_unwrap_37_95(core_result_Result_d7 self);
+
+/**
+This function found in impl {core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
+*/
+/**
+A monomorphic instance of core.result.unwrap_37
+with types Eurydice_arr uint8_t[[$8size_t]], uint8_t
+
+*/
+Eurydice_array_u8x8 core_result_unwrap_37_37(core_result_Result_1f self);
 
 /**
 This function found in impl {impl libcrux_secrets::traits::ClassifyRef<&'a [T]> for &'a [T]}

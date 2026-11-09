@@ -190,28 +190,38 @@ void slice_array_f3(void)
   /* original Rust expression is not an lvalue in C */
   Eurydice_array_u8x4 lvalue1 = { .data = { 0U } };
   Eurydice_borrow_slice_u8 x2 = array_to_slice_shared_98(&lvalue1);
-  Eurydice_borrow_slice_u8 uu____0 = x2;
-  Eurydice_array_u8x4 arr0;
-  memcpy(arr0.data, uu____0.ptr, (size_t)4U * sizeof (uint8_t));
-  const
-  Eurydice_array_u8x4
-  *y2 =
-    unwrap_37_30(Eurydice_slice_to_ref_array2((size_t)4U,
-        uu____0,
-        &arr0,
-        Eurydice_borrow_slice_u8,
-        const Eurydice_array_u8x4 *,
-        uint8_t,
-        core_result_Result_82));
+  Eurydice_borrow_slice_u8 slice0 = x2;
+  core_result_Result_82 ite1;
+  if (slice0.meta == (size_t)4U)
+  {
+    ite1 =
+      (
+        KRML_CLITERAL(core_result_Result_82){
+          .tag = core_result_Ok,
+          .val = { .case_Ok = (const Eurydice_array_u8x4 *)slice0.ptr }
+        }
+      );
+  }
+  else
+  {
+    ite1 =
+      (
+        KRML_CLITERAL(core_result_Result_82){
+          .tag = core_result_Err,
+          .val = { .case_Err = (uint8_t)0U }
+        }
+      );
+  }
+  const Eurydice_array_u8x4 *y2 = unwrap_37_30(ite1);
   /* original Rust expression is not an lvalue in C */
   Eurydice_array_u8x4 lvalue = { .data = { 0U } };
   Eurydice_mut_borrow_slice_u8 x3 = array_to_slice_mut_98(&lvalue);
-  Eurydice_mut_borrow_slice_u8 slice0 = x3;
+  Eurydice_mut_borrow_slice_u8 slice1 = x3;
   core_result_Result_fc ite;
-  if (slice0.meta == (size_t)4U)
+  if (slice1.meta == (size_t)4U)
   {
     Eurydice_array_u8x4 arr;
-    memcpy(arr.data, slice0.ptr, (size_t)4U * sizeof (uint8_t));
+    memcpy(arr.data, slice1.ptr, (size_t)4U * sizeof (uint8_t));
     ite =
       (KRML_CLITERAL(core_result_Result_fc){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
   }
@@ -226,10 +236,10 @@ void slice_array_f3(void)
       );
   }
   Eurydice_array_u8x4 y3 = unwrap_37_8c(ite);
-  const_uint8_t__x2 uu____1 = { .fst = &y1.data[0U], .snd = &y2->data[0U] };
+  const_uint8_t__x2 uu____0 = { .fst = &y1.data[0U], .snd = &y2->data[0U] };
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
+  const_uint8_t__x2 uu____1 = { .fst = &y1.data[0U], .snd = &y3.data[0U] };
   EURYDICE_ASSERT(*uu____1.fst == *uu____1.snd, "panic!");
-  const_uint8_t__x2 uu____2 = { .fst = &y1.data[0U], .snd = &y3.data[0U] };
-  EURYDICE_ASSERT(*uu____2.fst == *uu____2.snd, "panic!");
 }
 
 /**
@@ -243,17 +253,17 @@ void slice_array_f5_23(void)
   Eurydice_array_u8x4 lvalue0 = { .data = { 0U } };
   Eurydice_borrow_slice_u8 x1 = array_to_slice_shared_98(&lvalue0);
   Eurydice_borrow_slice_u8 slice = x1;
-  core_result_Result_fc ite;
+  core_result_Result_fc ite0;
   if (slice.meta == (size_t)4U)
   {
     Eurydice_array_u8x4 arr;
     memcpy(arr.data, slice.ptr, (size_t)4U * sizeof (uint8_t));
-    ite =
+    ite0 =
       (KRML_CLITERAL(core_result_Result_fc){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
   }
   else
   {
-    ite =
+    ite0 =
       (
         KRML_CLITERAL(core_result_Result_fc){
           .tag = core_result_Err,
@@ -261,26 +271,36 @@ void slice_array_f5_23(void)
         }
       );
   }
-  Eurydice_array_u8x4 y1 = unwrap_37_8c(ite);
+  Eurydice_array_u8x4 y1 = unwrap_37_8c(ite0);
   /* original Rust expression is not an lvalue in C */
   Eurydice_array_u8x4 lvalue = { .data = { 0U } };
   Eurydice_borrow_slice_u8
   x2 = core_array___T__N___as_slice((size_t)4U, &lvalue, uint8_t, Eurydice_borrow_slice_u8);
-  Eurydice_borrow_slice_u8 uu____0 = x2;
-  Eurydice_array_u8x4 arr;
-  memcpy(arr.data, uu____0.ptr, (size_t)4U * sizeof (uint8_t));
-  const
-  Eurydice_array_u8x4
-  *y2 =
-    unwrap_37_30(Eurydice_slice_to_ref_array2((size_t)4U,
-        uu____0,
-        &arr,
-        Eurydice_borrow_slice_u8,
-        const Eurydice_array_u8x4 *,
-        uint8_t,
-        core_result_Result_82));
-  const_uint8_t__x2 uu____1 = { .fst = &y1.data[0U], .snd = &y2->data[0U] };
-  EURYDICE_ASSERT(*uu____1.fst == *uu____1.snd, "panic!");
+  Eurydice_borrow_slice_u8 slice0 = x2;
+  core_result_Result_82 ite;
+  if (slice0.meta == (size_t)4U)
+  {
+    ite =
+      (
+        KRML_CLITERAL(core_result_Result_82){
+          .tag = core_result_Ok,
+          .val = { .case_Ok = (const Eurydice_array_u8x4 *)slice0.ptr }
+        }
+      );
+  }
+  else
+  {
+    ite =
+      (
+        KRML_CLITERAL(core_result_Result_82){
+          .tag = core_result_Err,
+          .val = { .case_Err = (uint8_t)0U }
+        }
+      );
+  }
+  const Eurydice_array_u8x4 *y2 = unwrap_37_30(ite);
+  const_uint8_t__x2 uu____0 = { .fst = &y1.data[0U], .snd = &y2->data[0U] };
+  EURYDICE_ASSERT(*uu____0.fst == *uu____0.snd, "panic!");
 }
 
 void slice_array_main(void)
