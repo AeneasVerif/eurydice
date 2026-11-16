@@ -49,14 +49,14 @@ typedef struct closure_f_closure_closure_s
 closure_f_closure_closure;
 
 /**
-This function found in impl {impl core::ops::function::FnMut<(usize,), usize> for closure::f::{closure}::{closure}<'_0, '_1>}
+This function found in impl {impl core::ops::function::FnMut<(usize,), usize> for closure::f::{closure}::{closure}<'_0, '_1, '_2>}
 */
-size_t closure_f_closure_call_mut_18(closure_f_closure_closure *_, size_t tupled_args);
+size_t closure_f_closure_call_mut_39(closure_f_closure_closure *_, size_t tupled_args);
 
 /**
-This function found in impl {impl core::ops::function::FnOnce<(usize,), usize> for closure::f::{closure}::{closure}<'_0, '_1>}
+This function found in impl {impl core::ops::function::FnOnce<(usize,), usize> for closure::f::{closure}::{closure}<'_0, '_1, '_2>}
 */
-size_t closure_f_closure_call_once_c8(closure_f_closure_closure _, size_t _0);
+size_t closure_f_closure_call_once_c6(closure_f_closure_closure _, size_t _0);
 
 typedef const Eurydice_arr_58 *closure_f_closure;
 
