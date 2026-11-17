@@ -25,6 +25,14 @@ typedef struct Eurydice_arr_e5_s { uint32_t data[4U]; } Eurydice_arr_e5;
 
 extern uint32_t core_clone_impls__impl_core__clone__Clone_for_u32__clone(const uint32_t *x0);
 
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t core_result_Result_10;
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_u32__fmt(const uint32_t *x0, core_fmt_Formatter *x1);
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2

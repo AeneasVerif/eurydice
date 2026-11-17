@@ -60,6 +60,14 @@ extern uint8_t core_clone_impls__impl_core__clone__Clone_for_u8__clone(const uin
 static inline uint64_t
 core_convert_num__impl_core__convert__From_u8__for_u64__from(uint8_t x0);
 
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t core_result_Result_10;
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_u64__fmt(const uint64_t *x0, core_fmt_Formatter *x1);
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2

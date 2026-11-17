@@ -15,6 +15,23 @@
 extern "C" {
 #endif
 
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t core_result_Result_10;
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_i8__fmt(const int8_t *x0, core_fmt_Formatter *x1);
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_i16__fmt(const int16_t *x0, core_fmt_Formatter *x1);
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_i32__fmt(const int32_t *x0, core_fmt_Formatter *x1);
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_i64__fmt(const int64_t *x0, core_fmt_Formatter *x1);
+
 static inline int8_t core_num__i8__wrapping_add(int8_t x0, int8_t x1);
 
 static inline int8_t core_num__i8__wrapping_sub(int8_t x0, int8_t x1);

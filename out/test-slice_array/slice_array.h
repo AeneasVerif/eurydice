@@ -87,6 +87,9 @@ core_array__impl_core__fmt__Debug_for_core__array__TryFromSliceError__fmt(
 
 extern uint8_t core_clone_impls__impl_core__clone__Clone_for_u8__clone(const uint8_t *x0);
 
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_u8__fmt(const uint8_t *x0, core_fmt_Formatter *x1);
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2

@@ -15,6 +15,14 @@
 extern "C" {
 #endif
 
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t core_result_Result_10;
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_u32__fmt(const uint32_t *x0, core_fmt_Formatter *x1);
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2

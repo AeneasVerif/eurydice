@@ -15,6 +15,14 @@
 extern "C" {
 #endif
 
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t core_result_Result_10;
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_u32__fmt(const uint32_t *x0, core_fmt_Formatter *x1);
+
 #define CORE_NUM__U32__MAX (~0U)
 
 static inline uint32_t core_num__u32__count_ones(uint32_t x0);

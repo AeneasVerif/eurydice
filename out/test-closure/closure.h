@@ -35,6 +35,14 @@ typedef struct Eurydice_arr_2d_s { Eurydice_arr_58 data[1U]; } Eurydice_arr_2d;
 
 extern size_t core_clone_impls__impl_core__clone__Clone_for_usize__clone(const size_t *x0);
 
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t core_result_Result_10;
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_usize__fmt(const size_t *x0, core_fmt_Formatter *x1);
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2

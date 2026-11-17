@@ -17,6 +17,14 @@ extern "C" {
 
 extern size_t core_cmp_impls__impl_core__cmp__Ord_for_usize__min(size_t x0, size_t x1);
 
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t core_result_Result_10;
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_usize__fmt(const size_t *x0, core_fmt_Formatter *x1);
+
 #define core_panicking_AssertKind_Eq 0
 #define core_panicking_AssertKind_Ne 1
 #define core_panicking_AssertKind_Match 2

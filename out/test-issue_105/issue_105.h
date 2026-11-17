@@ -51,21 +51,10 @@ static KRML_MUSTINLINE uint8_t core_convert_from_29_90(uint8_t t)
   return t;
 }
 
-#define core_ops_control_flow_Continue 0
-#define core_ops_control_flow_Break 1
-
-typedef uint8_t core_ops_control_flow_ControlFlow_20_tags;
-
-#define core_panicking_AssertKind_Eq 0
-#define core_panicking_AssertKind_Ne 1
-#define core_panicking_AssertKind_Match 2
-
-typedef uint8_t core_panicking_AssertKind;
-
 #define core_result_Ok 0
 #define core_result_Err 1
 
-typedef uint8_t core_result_Result_1d_tags;
+typedef uint8_t core_result_Result_10;
 
 /**
 A monomorphic instance of core.result.Result
@@ -74,10 +63,21 @@ with types (), uint8_t
 */
 typedef struct core_result_Result_1d_s
 {
-  core_result_Result_1d_tags tag;
+  core_result_Result_10 tag;
   uint8_t f0;
 }
 core_result_Result_1d;
+
+extern core_result_Result_10
+core_fmt__impl_core__fmt__Debug_for_____fmt(void *const *x0, core_fmt_Formatter *x1);
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_u8__fmt(const uint8_t *x0, core_fmt_Formatter *x1);
+
+#define core_ops_control_flow_Continue 0
+#define core_ops_control_flow_Break 1
+
+typedef uint8_t core_ops_control_flow_ControlFlow_20_tags;
 
 /**
 A monomorphic instance of core.ops.control_flow.ControlFlow
@@ -90,6 +90,12 @@ typedef struct core_ops_control_flow_ControlFlow_20_s
   core_result_Result_1d f0;
 }
 core_ops_control_flow_ControlFlow_20;
+
+#define core_panicking_AssertKind_Eq 0
+#define core_panicking_AssertKind_Ne 1
+#define core_panicking_AssertKind_Match 2
+
+typedef uint8_t core_panicking_AssertKind;
 
 /**
 This function found in impl {impl core::cmp::PartialEq<core::result::Result<T, E>[@TraitClause0, @TraitClause1]> for core::result::Result<T, E>[@TraitClause0, @TraitClause1]}
