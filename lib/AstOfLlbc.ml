@@ -2975,12 +2975,12 @@ let file_of_crate (crate : Charon.LlbcAst.crate) : Krml.Ast.file =
     global_decls;
     trait_decls;
     trait_impls;
-    options;
+    preset;
     _;
   } =
     crate
   in
-  if options.preset <> Some Eurydice then begin
+  if preset <> Some Eurydice then begin
     Printf.eprintf "ERROR: Eurydice expects Charon to be invoked with `--preset=eurydice`\n";
     exit 255
   end;
