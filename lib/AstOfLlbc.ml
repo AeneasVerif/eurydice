@@ -2412,7 +2412,7 @@ and expression_of_statement_kind (env : env) (ret_var : C.local_id) (s : C.state
       Krml.Helpers.with_unit K.(EAssign (dest, rhs))
   | Call (({ func = FnOpDynamic _; _ } as call), dest, _) ->
       expression_of_fn_op_dynamic env call dest
-  | Panic _ | UndefinedBehavior | UnwindTerminate -> with_any (K.EAbort (None, Some "panic!"))
+  | Panic _ | UndefinedBehavior | UnwindTerminate _ -> with_any (K.EAbort (None, Some "panic!"))
   | Return ->
       let e = expression_of_var_id env ret_var in
       K.(with_type TAny (EReturn e))
@@ -2941,6 +2941,19 @@ let flatten_declarations (d : C.declaration_group list) : C.item_id list =
 let decls_of_declarations (env : env) (d : C.item_id list) : K.decl list =
   incr seen;
   L.log "Progress" "%s: %d/%d" env.crate_name !seen !total;
+  (* Charon gives us rustc's panicking functions, but we translate panics and failed assertions to
+     aborts so these are never called. *)
+  let d =
+    List.filter
+      (fun (id : C.item_id) ->
+        match id with
+        | IdFun id -> (
+            match (env.get_nth_function id).item_meta.name with
+            | PeIdent ("core", _) :: PeIdent ("panicking", _) :: _ -> false
+            | _ -> true)
+        | _ -> true)
+      d
+  in
   Krml.KList.filter_some @@ List.map (decl_of_id env) d
 
 (*

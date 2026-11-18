@@ -15,6 +15,26 @@
 extern "C" {
 #endif
 
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t core_result_Result_10;
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_i8__fmt(const int8_t *x0, core_fmt_Formatter *x1);
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_i16__fmt(const int16_t *x0, core_fmt_Formatter *x1);
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_u32__fmt(const uint32_t *x0, core_fmt_Formatter *x1);
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_u8__fmt(const uint8_t *x0, core_fmt_Formatter *x1);
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_u16__fmt(const uint16_t *x0, core_fmt_Formatter *x1);
+
 #define CORE_NUM__U8__MAX ((uint8_t)~0U)
 
 #define CORE_NUM__I8__MAX ((int8_t)((uint32_t)CORE_NUM__U8__MAX >> 1U & 0xFFU))

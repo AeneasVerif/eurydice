@@ -97,6 +97,17 @@ extern size_t core_clone_impls__impl_core__clone__Clone_for_usize__clone(const s
 
 extern uint8_t core_clone_impls__impl_core__clone__Clone_for_u8__clone(const uint8_t *x0);
 
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t core_result_Result_10;
+
+extern core_result_Result_10
+core_fmt__impl_core__fmt__Debug_for_bool__fmt(const bool *x0, core_fmt_Formatter *x1);
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_u32__fmt(const uint32_t *x0, core_fmt_Formatter *x1);
+
 static inline Eurydice_array_u8x4 core_num__u32__to_be_bytes(uint32_t x0);
 
 #define core_panicking_AssertKind_Eq 0

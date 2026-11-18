@@ -100,6 +100,14 @@ core_cmp_impls__impl_core__cmp__PartialOrd_i32__for_i32__partial_cmp(
   const int32_t *x1
 );
 
+#define core_result_Ok 0
+#define core_result_Err 1
+
+typedef uint8_t core_result_Result_10;
+
+extern core_result_Result_10
+core_fmt_num__impl_core__fmt__Debug_for_i32__fmt(const int32_t *x0, core_fmt_Formatter *x1);
+
 extern tuple_90
 core_iter_range__impl_core__iter__range__Step_for_i32__backward_overflowing(
   int32_t x0,
