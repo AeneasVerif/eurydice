@@ -980,15 +980,29 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_12(__m256i vector)
   mm_storeu_bytes_si128(Eurydice_array_to_subslice_mut_d44(&serialized,
       (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)12U, .end = (size_t)28U })),
     upper_8);
-  Eurydice_arr_94 arr;
-  memcpy(arr.data,
+  Eurydice_borrow_slice_u8
+  slice =
     Eurydice_array_to_subslice_shared_d4(&serialized,
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)24U })).ptr,
-    (size_t)24U * sizeof (uint8_t));
-  return
-    core_result_unwrap_37_78((
-        KRML_CLITERAL(core_result_Result_57){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-      ));
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)24U }));
+  core_result_Result_62 ite;
+  if (slice.meta == (size_t)24U)
+  {
+    Eurydice_arr_94 arr;
+    memcpy(arr.data, slice.ptr, (size_t)24U * sizeof (uint8_t));
+    ite =
+      (KRML_CLITERAL(core_result_Result_62){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
+  }
+  else
+  {
+    ite =
+      (
+        KRML_CLITERAL(core_result_Result_62){
+          .tag = core_result_Err,
+          .val = { .case_Err = (uint8_t)0U }
+        }
+      );
+  }
+  return core_result_unwrap_37_2b(ite);
 }
 
 KRML_MUSTINLINE Eurydice_arr_94 libcrux_ml_kem_vector_avx2_serialize_12(__m256i vector)
@@ -1176,15 +1190,29 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_10(__m256i vector)
   mm_storeu_bytes_si128(Eurydice_array_to_subslice_mut_d44(&serialized,
       (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)10U, .end = (size_t)26U })),
     upper_8);
-  Eurydice_arr_fc arr;
-  memcpy(arr.data,
+  Eurydice_borrow_slice_u8
+  slice =
     Eurydice_array_to_subslice_shared_d4(&serialized,
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)20U })).ptr,
-    (size_t)20U * sizeof (uint8_t));
-  return
-    core_result_unwrap_37_7d((
-        KRML_CLITERAL(core_result_Result_83){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-      ));
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)20U }));
+  core_result_Result_8e ite;
+  if (slice.meta == (size_t)20U)
+  {
+    Eurydice_arr_fc arr;
+    memcpy(arr.data, slice.ptr, (size_t)20U * sizeof (uint8_t));
+    ite =
+      (KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
+  }
+  else
+  {
+    ite =
+      (
+        KRML_CLITERAL(core_result_Result_8e){
+          .tag = core_result_Err,
+          .val = { .case_Err = (uint8_t)0U }
+        }
+      );
+  }
+  return core_result_unwrap_37_ed(ite);
 }
 
 KRML_MUSTINLINE Eurydice_arr_fc libcrux_ml_kem_vector_avx2_serialize_10(__m256i vector)
@@ -1333,15 +1361,29 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_5(__m256i vector)
   mm_storeu_bytes_si128(Eurydice_array_to_subslice_mut_d44(&serialized,
       (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)5U, .end = (size_t)21U })),
     upper_8);
-  Eurydice_arr_6d arr;
-  memcpy(arr.data,
+  Eurydice_borrow_slice_u8
+  slice =
     Eurydice_array_to_subslice_shared_d4(&serialized,
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)10U })).ptr,
-    (size_t)10U * sizeof (uint8_t));
-  return
-    core_result_unwrap_37_63((
-        KRML_CLITERAL(core_result_Result_80){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-      ));
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)10U }));
+  core_result_Result_2a ite;
+  if (slice.meta == (size_t)10U)
+  {
+    Eurydice_arr_6d arr;
+    memcpy(arr.data, slice.ptr, (size_t)10U * sizeof (uint8_t));
+    ite =
+      (KRML_CLITERAL(core_result_Result_2a){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
+  }
+  else
+  {
+    ite =
+      (
+        KRML_CLITERAL(core_result_Result_2a){
+          .tag = core_result_Err,
+          .val = { .case_Err = (uint8_t)0U }
+        }
+      );
+  }
+  return core_result_unwrap_37_f2(ite);
 }
 
 /**
@@ -1490,15 +1532,29 @@ libcrux_ml_kem_vector_avx2_serialize_serialize_4(__m256i vector)
       mm256_set_epi32(0, 0, 0, 0, 0, 0, 4, 0));
   __m128i combined0 = mm256_castsi256_si128(combined);
   mm_storeu_bytes_si128(Eurydice_array_to_slice_mut_29(&serialized), combined0);
-  Eurydice_array_u8x8 arr;
-  memcpy(arr.data,
+  Eurydice_borrow_slice_u8
+  slice =
     Eurydice_array_to_subslice_shared_d40(&serialized,
-      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)8U })).ptr,
-    (size_t)8U * sizeof (uint8_t));
-  return
-    core_result_unwrap_37_e0((
-        KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-      ));
+      (KRML_CLITERAL(core_ops_range_Range_87){ .start = (size_t)0U, .end = (size_t)8U }));
+  core_result_Result_1f ite;
+  if (slice.meta == (size_t)8U)
+  {
+    Eurydice_array_u8x8 arr;
+    memcpy(arr.data, slice.ptr, (size_t)8U * sizeof (uint8_t));
+    ite =
+      (KRML_CLITERAL(core_result_Result_1f){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
+  }
+  else
+  {
+    ite =
+      (
+        KRML_CLITERAL(core_result_Result_1f){
+          .tag = core_result_Err,
+          .val = { .case_Err = (uint8_t)0U }
+        }
+      );
+  }
+  return core_result_unwrap_37_37(ite);
 }
 
 KRML_MUSTINLINE Eurydice_array_u8x8 libcrux_ml_kem_vector_avx2_serialize_4(__m256i vector)
@@ -5582,13 +5638,26 @@ generate_keypair_unpacked_ab1(
   Eurydice_arr_600 error_as_ntt = arr_struct;
   sample_vector_cbd_then_ntt_d61(&error_as_ntt, &prf_input, domain_separator);
   compute_As_plus_e_e3(&public_key->t_as_ntt, &public_key->A, private_key, &error_as_ntt);
-  Eurydice_arr_ec arr;
-  memcpy(arr.data, seed_for_A.ptr, (size_t)32U * sizeof (uint8_t));
-  Eurydice_arr_ec
-  uu____2 =
-    core_result_unwrap_37_39((
-        KRML_CLITERAL(core_result_Result_07){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-      ));
+  Eurydice_borrow_slice_u8 slice = seed_for_A;
+  core_result_Result_d7 ite;
+  if (slice.meta == (size_t)32U)
+  {
+    Eurydice_arr_ec arr;
+    memcpy(arr.data, slice.ptr, (size_t)32U * sizeof (uint8_t));
+    ite =
+      (KRML_CLITERAL(core_result_Result_d7){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
+  }
+  else
+  {
+    ite =
+      (
+        KRML_CLITERAL(core_result_Result_d7){
+          .tag = core_result_Err,
+          .val = { .case_Err = (uint8_t)0U }
+        }
+      );
+  }
+  Eurydice_arr_ec uu____2 = core_result_unwrap_37_95(ite);
   public_key->seed_for_A = uu____2;
 }
 
@@ -5674,13 +5743,26 @@ generate_keypair_unpacked_ab0(
   Eurydice_arr_3b error_as_ntt = arr_struct;
   sample_vector_cbd_then_ntt_d60(&error_as_ntt, &prf_input, domain_separator);
   compute_As_plus_e_5b(&public_key->t_as_ntt, &public_key->A, private_key, &error_as_ntt);
-  Eurydice_arr_ec arr;
-  memcpy(arr.data, seed_for_A.ptr, (size_t)32U * sizeof (uint8_t));
-  Eurydice_arr_ec
-  uu____2 =
-    core_result_unwrap_37_39((
-        KRML_CLITERAL(core_result_Result_07){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-      ));
+  Eurydice_borrow_slice_u8 slice = seed_for_A;
+  core_result_Result_d7 ite;
+  if (slice.meta == (size_t)32U)
+  {
+    Eurydice_arr_ec arr;
+    memcpy(arr.data, slice.ptr, (size_t)32U * sizeof (uint8_t));
+    ite =
+      (KRML_CLITERAL(core_result_Result_d7){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
+  }
+  else
+  {
+    ite =
+      (
+        KRML_CLITERAL(core_result_Result_d7){
+          .tag = core_result_Err,
+          .val = { .case_Err = (uint8_t)0U }
+        }
+      );
+  }
+  Eurydice_arr_ec uu____2 = core_result_unwrap_37_95(ite);
   public_key->seed_for_A = uu____2;
 }
 
@@ -5766,13 +5848,26 @@ generate_keypair_unpacked_ab(
   Eurydice_arr_ee error_as_ntt = arr_struct;
   sample_vector_cbd_then_ntt_d6(&error_as_ntt, &prf_input, domain_separator);
   compute_As_plus_e_16(&public_key->t_as_ntt, &public_key->A, private_key, &error_as_ntt);
-  Eurydice_arr_ec arr;
-  memcpy(arr.data, seed_for_A.ptr, (size_t)32U * sizeof (uint8_t));
-  Eurydice_arr_ec
-  uu____2 =
-    core_result_unwrap_37_39((
-        KRML_CLITERAL(core_result_Result_07){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-      ));
+  Eurydice_borrow_slice_u8 slice = seed_for_A;
+  core_result_Result_d7 ite;
+  if (slice.meta == (size_t)32U)
+  {
+    Eurydice_arr_ec arr;
+    memcpy(arr.data, slice.ptr, (size_t)32U * sizeof (uint8_t));
+    ite =
+      (KRML_CLITERAL(core_result_Result_d7){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
+  }
+  else
+  {
+    ite =
+      (
+        KRML_CLITERAL(core_result_Result_d7){
+          .tag = core_result_Err,
+          .val = { .case_Err = (uint8_t)0U }
+        }
+      );
+  }
+  Eurydice_arr_ec uu____2 = core_result_unwrap_37_95(ite);
   public_key->seed_for_A = uu____2;
 }
 
@@ -10971,13 +11066,26 @@ libcrux_ml_kem_ind_cca_unpacked_generate_keypair_db0(
       Eurydice_array_to_slice_shared_01(&out->public_key.ind_cpa_public_key.seed_for_A));
   Eurydice_arr_ec uu____0 = H_88_23(Eurydice_array_to_slice_shared_b50(&pk_serialized));
   out->public_key.public_key_hash = uu____0;
-  Eurydice_arr_ec arr;
-  memcpy(arr.data, implicit_rejection_value.ptr, (size_t)32U * sizeof (uint8_t));
-  Eurydice_arr_ec
-  uu____1 =
-    core_result_unwrap_37_39((
-        KRML_CLITERAL(core_result_Result_07){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-      ));
+  Eurydice_borrow_slice_u8 slice = implicit_rejection_value;
+  core_result_Result_d7 ite;
+  if (slice.meta == (size_t)32U)
+  {
+    Eurydice_arr_ec arr;
+    memcpy(arr.data, slice.ptr, (size_t)32U * sizeof (uint8_t));
+    ite =
+      (KRML_CLITERAL(core_result_Result_d7){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
+  }
+  else
+  {
+    ite =
+      (
+        KRML_CLITERAL(core_result_Result_d7){
+          .tag = core_result_Err,
+          .val = { .case_Err = (uint8_t)0U }
+        }
+      );
+  }
+  Eurydice_arr_ec uu____1 = core_result_unwrap_37_95(ite);
   out->private_key.implicit_rejection_value = uu____1;
 }
 
@@ -11263,13 +11371,26 @@ libcrux_ml_kem_ind_cca_unpacked_generate_keypair_db(
       Eurydice_array_to_slice_shared_01(&out->public_key.ind_cpa_public_key.seed_for_A));
   Eurydice_arr_ec uu____0 = H_88_af(Eurydice_array_to_slice_shared_3b(&pk_serialized));
   out->public_key.public_key_hash = uu____0;
-  Eurydice_arr_ec arr;
-  memcpy(arr.data, implicit_rejection_value.ptr, (size_t)32U * sizeof (uint8_t));
-  Eurydice_arr_ec
-  uu____1 =
-    core_result_unwrap_37_39((
-        KRML_CLITERAL(core_result_Result_07){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-      ));
+  Eurydice_borrow_slice_u8 slice = implicit_rejection_value;
+  core_result_Result_d7 ite;
+  if (slice.meta == (size_t)32U)
+  {
+    Eurydice_arr_ec arr;
+    memcpy(arr.data, slice.ptr, (size_t)32U * sizeof (uint8_t));
+    ite =
+      (KRML_CLITERAL(core_result_Result_d7){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
+  }
+  else
+  {
+    ite =
+      (
+        KRML_CLITERAL(core_result_Result_d7){
+          .tag = core_result_Err,
+          .val = { .case_Err = (uint8_t)0U }
+        }
+      );
+  }
+  Eurydice_arr_ec uu____1 = core_result_unwrap_37_95(ite);
   out->private_key.implicit_rejection_value = uu____1;
 }
 
@@ -11556,13 +11677,26 @@ libcrux_ml_kem_ind_cca_unpacked_generate_keypair_db1(
       Eurydice_array_to_slice_shared_01(&out->public_key.ind_cpa_public_key.seed_for_A));
   Eurydice_arr_ec uu____0 = H_88_78(Eurydice_array_to_slice_shared_ff(&pk_serialized));
   out->public_key.public_key_hash = uu____0;
-  Eurydice_arr_ec arr;
-  memcpy(arr.data, implicit_rejection_value.ptr, (size_t)32U * sizeof (uint8_t));
-  Eurydice_arr_ec
-  uu____1 =
-    core_result_unwrap_37_39((
-        KRML_CLITERAL(core_result_Result_07){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-      ));
+  Eurydice_borrow_slice_u8 slice = implicit_rejection_value;
+  core_result_Result_d7 ite;
+  if (slice.meta == (size_t)32U)
+  {
+    Eurydice_arr_ec arr;
+    memcpy(arr.data, slice.ptr, (size_t)32U * sizeof (uint8_t));
+    ite =
+      (KRML_CLITERAL(core_result_Result_d7){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
+  }
+  else
+  {
+    ite =
+      (
+        KRML_CLITERAL(core_result_Result_d7){
+          .tag = core_result_Err,
+          .val = { .case_Err = (uint8_t)0U }
+        }
+      );
+  }
+  Eurydice_arr_ec uu____1 = core_result_unwrap_37_95(ite);
   out->private_key.implicit_rejection_value = uu____1;
 }
 

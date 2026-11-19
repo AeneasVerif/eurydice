@@ -2097,16 +2097,29 @@ libcrux_sha3_simd_portable_load_block_60(
   {
     size_t i0 = i;
     size_t offset = start + (size_t)8U * i0;
-    Eurydice_array_u8x8 arr;
-    memcpy(arr.data,
+    Eurydice_mut_borrow_slice_u8
+    slice =
       Eurydice_slice_subslice_mut_c8(blocks,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = offset, .end = offset + (size_t)8U })).ptr,
-      (size_t)8U * sizeof (uint8_t));
-    Eurydice_array_u8x8
-    uu____0 =
-      core_result_unwrap_37_e0((
-          KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-        ));
+        (KRML_CLITERAL(core_ops_range_Range_87){ .start = offset, .end = offset + (size_t)8U }));
+    core_result_Result_1f ite;
+    if (slice.meta == (size_t)8U)
+    {
+      Eurydice_array_u8x8 arr;
+      memcpy(arr.data, slice.ptr, (size_t)8U * sizeof (uint8_t));
+      ite =
+        (KRML_CLITERAL(core_result_Result_1f){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
+    }
+    else
+    {
+      ite =
+        (
+          KRML_CLITERAL(core_result_Result_1f){
+            .tag = core_result_Err,
+            .val = { .case_Err = (uint8_t)0U }
+          }
+        );
+    }
+    Eurydice_array_u8x8 uu____0 = core_result_unwrap_37_37(ite);
     state_flat.data[i0] = core_num__u64__from_le_bytes(uu____0);
   }
   for (size_t i = (size_t)0U; i < (size_t)168U / (size_t)8U; i++)
@@ -2136,16 +2149,29 @@ libcrux_sha3_simd_portable_load_block_c6(
   {
     size_t i0 = i;
     size_t offset = start + (size_t)8U * i0;
-    Eurydice_array_u8x8 arr;
-    memcpy(arr.data,
+    Eurydice_mut_borrow_slice_u8
+    slice =
       Eurydice_slice_subslice_mut_c8(blocks,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = offset, .end = offset + (size_t)8U })).ptr,
-      (size_t)8U * sizeof (uint8_t));
-    Eurydice_array_u8x8
-    uu____0 =
-      core_result_unwrap_37_e0((
-          KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-        ));
+        (KRML_CLITERAL(core_ops_range_Range_87){ .start = offset, .end = offset + (size_t)8U }));
+    core_result_Result_1f ite;
+    if (slice.meta == (size_t)8U)
+    {
+      Eurydice_array_u8x8 arr;
+      memcpy(arr.data, slice.ptr, (size_t)8U * sizeof (uint8_t));
+      ite =
+        (KRML_CLITERAL(core_result_Result_1f){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
+    }
+    else
+    {
+      ite =
+        (
+          KRML_CLITERAL(core_result_Result_1f){
+            .tag = core_result_Err,
+            .val = { .case_Err = (uint8_t)0U }
+          }
+        );
+    }
+    Eurydice_array_u8x8 uu____0 = core_result_unwrap_37_37(ite);
     state_flat.data[i0] = core_num__u64__from_le_bytes(uu____0);
   }
   for (size_t i = (size_t)0U; i < (size_t)72U / (size_t)8U; i++)
@@ -2175,16 +2201,29 @@ libcrux_sha3_simd_portable_load_block_53(
   {
     size_t i0 = i;
     size_t offset = start + (size_t)8U * i0;
-    Eurydice_array_u8x8 arr;
-    memcpy(arr.data,
+    Eurydice_mut_borrow_slice_u8
+    slice =
       Eurydice_slice_subslice_mut_c8(blocks,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = offset, .end = offset + (size_t)8U })).ptr,
-      (size_t)8U * sizeof (uint8_t));
-    Eurydice_array_u8x8
-    uu____0 =
-      core_result_unwrap_37_e0((
-          KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-        ));
+        (KRML_CLITERAL(core_ops_range_Range_87){ .start = offset, .end = offset + (size_t)8U }));
+    core_result_Result_1f ite;
+    if (slice.meta == (size_t)8U)
+    {
+      Eurydice_array_u8x8 arr;
+      memcpy(arr.data, slice.ptr, (size_t)8U * sizeof (uint8_t));
+      ite =
+        (KRML_CLITERAL(core_result_Result_1f){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
+    }
+    else
+    {
+      ite =
+        (
+          KRML_CLITERAL(core_result_Result_1f){
+            .tag = core_result_Err,
+            .val = { .case_Err = (uint8_t)0U }
+          }
+        );
+    }
+    Eurydice_array_u8x8 uu____0 = core_result_unwrap_37_37(ite);
     state_flat.data[i0] = core_num__u64__from_le_bytes(uu____0);
   }
   for (size_t i = (size_t)0U; i < (size_t)104U / (size_t)8U; i++)
@@ -2214,16 +2253,29 @@ libcrux_sha3_simd_portable_load_block_b2(
   {
     size_t i0 = i;
     size_t offset = start + (size_t)8U * i0;
-    Eurydice_array_u8x8 arr;
-    memcpy(arr.data,
+    Eurydice_mut_borrow_slice_u8
+    slice =
       Eurydice_slice_subslice_mut_c8(blocks,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = offset, .end = offset + (size_t)8U })).ptr,
-      (size_t)8U * sizeof (uint8_t));
-    Eurydice_array_u8x8
-    uu____0 =
-      core_result_unwrap_37_e0((
-          KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-        ));
+        (KRML_CLITERAL(core_ops_range_Range_87){ .start = offset, .end = offset + (size_t)8U }));
+    core_result_Result_1f ite;
+    if (slice.meta == (size_t)8U)
+    {
+      Eurydice_array_u8x8 arr;
+      memcpy(arr.data, slice.ptr, (size_t)8U * sizeof (uint8_t));
+      ite =
+        (KRML_CLITERAL(core_result_Result_1f){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
+    }
+    else
+    {
+      ite =
+        (
+          KRML_CLITERAL(core_result_Result_1f){
+            .tag = core_result_Err,
+            .val = { .case_Err = (uint8_t)0U }
+          }
+        );
+    }
+    Eurydice_array_u8x8 uu____0 = core_result_unwrap_37_37(ite);
     state_flat.data[i0] = core_num__u64__from_le_bytes(uu____0);
   }
   for (size_t i = (size_t)0U; i < (size_t)136U / (size_t)8U; i++)
@@ -2253,16 +2305,29 @@ libcrux_sha3_simd_portable_load_block_9e(
   {
     size_t i0 = i;
     size_t offset = start + (size_t)8U * i0;
-    Eurydice_array_u8x8 arr;
-    memcpy(arr.data,
+    Eurydice_mut_borrow_slice_u8
+    slice =
       Eurydice_slice_subslice_mut_c8(blocks,
-        (KRML_CLITERAL(core_ops_range_Range_87){ .start = offset, .end = offset + (size_t)8U })).ptr,
-      (size_t)8U * sizeof (uint8_t));
-    Eurydice_array_u8x8
-    uu____0 =
-      core_result_unwrap_37_e0((
-          KRML_CLITERAL(core_result_Result_8e){ .tag = core_result_Ok, .val = { .case_Ok = arr } }
-        ));
+        (KRML_CLITERAL(core_ops_range_Range_87){ .start = offset, .end = offset + (size_t)8U }));
+    core_result_Result_1f ite;
+    if (slice.meta == (size_t)8U)
+    {
+      Eurydice_array_u8x8 arr;
+      memcpy(arr.data, slice.ptr, (size_t)8U * sizeof (uint8_t));
+      ite =
+        (KRML_CLITERAL(core_result_Result_1f){ .tag = core_result_Ok, .val = { .case_Ok = arr } });
+    }
+    else
+    {
+      ite =
+        (
+          KRML_CLITERAL(core_result_Result_1f){
+            .tag = core_result_Err,
+            .val = { .case_Err = (uint8_t)0U }
+          }
+        );
+    }
+    Eurydice_array_u8x8 uu____0 = core_result_unwrap_37_37(ite);
     state_flat.data[i0] = core_num__u64__from_le_bytes(uu____0);
   }
   for (size_t i = (size_t)0U; i < (size_t)144U / (size_t)8U; i++)
