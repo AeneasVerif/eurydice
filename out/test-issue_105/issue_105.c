@@ -58,9 +58,7 @@ with const generics
 inline bool
 core_result_eq_89_eb(const core_result_Result_1d *self, const core_result_Result_1d *other)
 {
-  ptrdiff_t __self_discr = (ptrdiff_t)self->tag;
-  ptrdiff_t __arg1_discr = (ptrdiff_t)other->tag;
-  if (!(__self_discr == __arg1_discr))
+  if (!((ptrdiff_t)self->tag == (ptrdiff_t)other->tag))
   {
     return false;
   }

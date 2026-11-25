@@ -26,9 +26,7 @@ This function found in impl {impl core::cmp::PartialEq<issue_123::E2> for issue_
 */
 inline bool issue_123_eq_76(const issue_123_E2 *self, const issue_123_E2 *other)
 {
-  ptrdiff_t __self_discr = (ptrdiff_t)*self;
-  ptrdiff_t __arg1_discr = (ptrdiff_t)*other;
-  return __self_discr == __arg1_discr;
+  return (ptrdiff_t)*self == (ptrdiff_t)*other;
 }
 
 int32_t issue_123_fun(issue_123_E e)
