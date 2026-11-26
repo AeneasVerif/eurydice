@@ -15,6 +15,8 @@
 extern "C" {
 #endif
 
+extern uint64_t core_clone_impls__impl_core__clone__Clone_for_u64__clone(const uint64_t *x0);
+
 /**
 A monomorphic instance of traits3.keccak
 with types (uint64_t * uint64_t)
