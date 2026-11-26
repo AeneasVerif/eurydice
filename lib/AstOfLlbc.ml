@@ -2121,6 +2121,24 @@ let expression_of_rvalue (env : env) (p : C.rvalue) expected_ty : K.expr =
        When a type is fully resolved and it is not `Eurydice::DstRef`, we can be confident that it is not a DST. *)
     | _ -> K.with_type TUnit K.EUnit
     end *)
+  | UnaryOp (VTableLookup (vtable_ref, entry), e) ->
+      (* [e] is a pointer to the vtable: we read the field of the vtable struct that holds [entry] *)
+      let field_map =
+        match (env.get_nth_type vtable_ref.id).src with
+        | VTableType (_, field_map, _) -> field_map
+        | _ -> failwith "vtable lookup into a type that is not a vtable"
+      in
+      let field_id = C.FieldId.of_int (Option.get (List.find_index (( = ) entry) field_map)) in
+      let const =
+        match ty_of_operand e with
+        | TRawPtr (_, k) | TRef (_, _, k) -> const_of_ref_kind k
+        | _ -> false
+      in
+      let e = expression_of_operand env e in
+      K.with_type (typ_of_ty env expected_ty)
+        (K.EField
+           ( Krml.Helpers.(mk_deref ~const (assert_tbuf_or_tarray e.K.typ) e.K.node),
+             lookup_field env vtable_ref.id field_id ))
   | UnaryOp (op, o1) -> mk_op_app (op_of_unop op) (expression_of_operand env o1) []
   | BinaryOp (op, o1, o2) ->
       mk_op_app (op_of_binop op) (expression_of_operand env o1) [ expression_of_operand env o2 ]
